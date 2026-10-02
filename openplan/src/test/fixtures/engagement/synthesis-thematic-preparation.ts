@@ -39,16 +39,21 @@ export async function synthesisThematicPreparationFixture() {
   const calls: Array<{ name: string; parameters: Record<string, unknown>; signal?: AbortSignal }> = [];
   const options = { deny: "", denyRead: 0, reads: 0, abortAt: "", before: null as null | ((name: string) => void),
     change: null as null | ((packet: typeof bundle) => void) };
+  const contexts = new Map<string, { context: typeof bundle.context; choice: typeof bundle.choice;
+    client: typeof f.client; throughSequence: number }>();
   const rpc = vi.fn((name: string, parameters: Record<string, unknown>) => {
     const call = { name, parameters, signal: undefined as AbortSignal | undefined }; calls.push(call); options.before?.(name);
     const result = (async () => {
       let data: unknown;
       if (name === "read_engagement_synthesis_thematic_preparation") {
-        options.reads++; const packet = structuredClone(bundle); options.change?.(packet); data = packet;
+        options.reads++; const packet = structuredClone(bundle), selected = contexts.get(String(parameters.p_target));
+        if (selected) { packet.context = structuredClone(selected.context); packet.choice = structuredClone(selected.choice); }
+        options.change?.(packet); data = packet;
       } else if (name === "read_engagement_synthesis_thematic_preparation_selections") {
-        data = (await f.client.rpc("read_engagement_synthesis_generation_selection_history", {
-          p_request: parameters.p_stage === "parent" ? b.parentRequestId : f.scope.requestId,
-          p_through_sequence: parameters.p_stage === "parent" ? b.selectionSequence : expected.manifest.throughSequence,
+        const selected = contexts.get(String(parameters.p_target));
+        data = (await (selected?.client ?? f.client).rpc("read_engagement_synthesis_generation_selection_history", {
+          p_request: parameters.p_stage === "parent" ? b.parentRequestId : selected?.context.request.id ?? f.scope.requestId,
+          p_through_sequence: parameters.p_stage === "parent" ? b.selectionSequence : selected?.throughSequence ?? expected.manifest.throughSequence,
           p_after_task_index: parameters.p_after_task_index, p_limit: parameters.p_limit,
         })).data;
       } else throw new Error(`Unexpected preparation RPC ${name}`);
@@ -60,7 +65,7 @@ export async function synthesisThematicPreparationFixture() {
   const service = { from: f.from, rpc } as unknown as Pick<SupabaseClient, "from" | "rpc">;
   const scope = { campaignId: f.scope.campaignId, workspaceId: f.scope.workspaceId, requestId, targetRecordId: b.targetRecordId };
   f.trace.length = 0; f.calls.length = 0;
-  return { f, expected, bundle, sourceRow, scope, calls, options, service, load: () => loadSynthesisThematicPreparation(service, scope, f.controller.signal),
+  return { f, expected, bundle, sourceRow, scope, calls, options, service, contexts, load: () => loadSynthesisThematicPreparation(service, scope, f.controller.signal),
     patchChoice: (patch: Record<string, unknown>) => { bundle.choice.choiceText = JSON.stringify({ ...JSON.parse(choiceText), ...patch }); bundle.choice.choiceSha256 = hash(bundle.choice.choiceText); } };
 }
 

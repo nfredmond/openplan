@@ -118,6 +118,7 @@ Contract management: [operator workflow](ops/CONTRACT_RECONCILIATION.md) and [v0
 - [Thematic worker input reconstruction](reviews/2026-10-01-context-history/THEMATIC_PREPARATION.md): explicit native preparation authority and pinned historical replay; input sealing and execution remain unfinished.
 - [Reconstructed thematic input custody](reviews/2026-10-01-context-history/THEMATIC_CUSTODY.md): private original output storage, cancellation recovery and remaining whole-source seal work.
 - [Complete-source thematic input seal](reviews/2026-10-01-context-history/THEMATIC_SEAL.md): exact source membership, bounded proof inventory and durable custody; execution and staff import remain unfinished.
+- [Shared thematic preparation](reviews/2026-10-01-context-history/THEMATIC_SHARED_PREPARATION.md): request-scoped reuse of immutable originals while preserving per-contribution replay and current authority.
 - [v0.63.0 exact staff synthesis approval](reviews/2026-09-27-synthesis-approval-recovery/RELEASE_VERIFICATION.md): private version-specific approval/withdrawal, original history, interrupted retry and concurrent-write evidence; [publication and final CI](reviews/2026-09-27-synthesis-approval-recovery/PUBLICATION.md).
 - [v0.62.0 retained synthesis source and staff review](reviews/2026-09-14-m9b-synthesis-custody/RELEASE_VERIFICATION.md): complete selected-source custody, reasoned revisions, interrupted retry and retirement of unsafe legacy generation; [published after final CI](reviews/2026-09-14-m9b-synthesis-custody/PUBLICATION.md).
 

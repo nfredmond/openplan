@@ -58,6 +58,13 @@ commands. Execution, proposal storage and staff import remain unfinished.
 [Complete-source custody checks](docs/reviews/2026-10-01-context-history/THEMATIC_SEAL.md)
 record the evidence and limitations.
 
+The internal thematic preparer now reuses verified immutable source and parent
+records within one request. Each contribution still reconstructs its original
+context, rechecks current authority and reaches the native input writer.
+Cancellation and uncertain acknowledgements retain their existing behavior.
+No new migration is required. [Shared preparation checks](docs/reviews/2026-10-01-context-history/THEMATIC_SHARED_PREPARATION.md)
+record the evidence; thematic execution and staff import remain unfinished.
+
 ## 0.66.0 (2026-09-30)
 
 [Verification](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_RELEASE.md) records release scope and candidate checks. [Publication](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_PUBLICATION.md) records final checks, tagging and local handoff.

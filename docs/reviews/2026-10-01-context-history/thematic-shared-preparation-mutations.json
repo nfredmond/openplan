@@ -1,0 +1,157 @@
+{
+  "applicationInitial": [
+    {
+      "name": "reader-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 8.77,
+      "log": "t3-shared-preparation-mutation-reader-control.log"
+    },
+    {
+      "name": "input-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 7.25,
+      "log": "t3-shared-preparation-mutation-input-control.log"
+    },
+    {
+      "name": "identity-thematicRequest",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.55,
+      "log": "t3-shared-preparation-mutation-identity-thematicRequest.log"
+    },
+    {
+      "name": "identity-thematicBinding",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.55,
+      "log": "t3-shared-preparation-mutation-identity-thematicBinding.log"
+    },
+    {
+      "name": "identity-parentRequest",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.55,
+      "log": "t3-shared-preparation-mutation-identity-parentRequest.log"
+    },
+    {
+      "name": "identity-source",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.48,
+      "log": "t3-shared-preparation-mutation-identity-source.log"
+    },
+    {
+      "name": "identity-guard",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.8,
+      "log": "t3-shared-preparation-mutation-identity-guard.log"
+    },
+    {
+      "name": "cache-disabled",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.53,
+      "log": "t3-shared-preparation-mutation-cache-disabled.log"
+    },
+    {
+      "name": "store-alias",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": false,
+      "seconds": 1.42,
+      "log": "t3-shared-preparation-mutation-store-alias.log"
+    },
+    {
+      "name": "read-alias",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": false,
+      "seconds": 1.54,
+      "log": "t3-shared-preparation-mutation-read-alias.log"
+    },
+    {
+      "name": "stale-context",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 8.33,
+      "log": "t3-shared-preparation-mutation-stale-context.log"
+    },
+    {
+      "name": "skip-save-on-retry",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.39,
+      "log": "t3-shared-preparation-mutation-skip-save-on-retry.log"
+    },
+    {
+      "name": "concurrent-root",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.5,
+      "log": "t3-shared-preparation-mutation-concurrent-root.log"
+    }
+  ],
+  "applicationCorrected": [
+    {
+      "name": "reader-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 8.77,
+      "log": "t3-shared-preparation-mutation-corrected-reader-control.log"
+    },
+    {
+      "name": "store-alias",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.42,
+      "log": "t3-shared-preparation-mutation-corrected-store-alias.log"
+    },
+    {
+      "name": "read-alias",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.53,
+      "log": "t3-shared-preparation-mutation-corrected-read-alias.log"
+    }
+  ],
+  "nativeHTTP": [
+    {
+      "name": "control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 145.53,
+      "log": "t3-shared-preparation-http-control.log"
+    },
+    {
+      "name": "stale-custody",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 143.85,
+      "log": "t3-shared-preparation-http-stale-custody.log"
+    }
+  ],
+  "restoredSourceHashes": {
+    "src/lib/engagement/synthesis-thematic-preparation-server.ts": "090fb65b6fdc719e0f9e66ba5f2fa762c03ec5a9d9e3763037017d9f47324050",
+    "src/lib/engagement/synthesis-thematic-inputs-server.ts": "1c1bfd2a57134e91f1d5d9cf83621c11cb0ef16a2f89bbc10abeae9b7cf58262"
+  },
+  "limits": "Synthetic model and transport fixtures. Native HTTP checks one chosen context and its warm retry. Distinct item/survey contexts use mocked transport with real reconstruction. No large-source benchmark, thematic dispatch, staff import or browser acceptance."
+}

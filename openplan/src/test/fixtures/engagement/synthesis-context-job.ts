@@ -19,8 +19,9 @@ type HistoryEntry = {
   task: { canonical: string; sha256: string; utf8Bytes: number }; binding: SynthesisGenerationAttemptBinding;
 };
 
-export function synthesisContextJobFixture(priorCount = 2, configuration?: Parameters<typeof synthesisContextWorkerFixture>[0]) {
-  const f = synthesisContextWorkerFixture(configuration);
+export function synthesisContextJobFixture(priorCount = 2, configuration?: Parameters<typeof synthesisContextWorkerFixture>[0],
+  retainedWorker?: ReturnType<typeof synthesisContextWorkerFixture>) {
+  const f = retainedWorker ?? synthesisContextWorkerFixture(configuration);
   const args = { authorizationId: randomUUID(), attemptId: randomUUID(), taskIndex: priorCount };
   const grantIntent = { schemaVersion: 1, headerSha256: f.plan.headerSha256, maxAttempts: f.plan.entries.length,
     maxOutputTokens: 8192, responseByteLimit: 1048576, expiresAt: "2099-01-01T00:00:00Z", chargesAcknowledged: true,

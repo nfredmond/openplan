@@ -124,3 +124,9 @@ within a request, then implement the versioned thematic recipe, resource
 approval, resumable execution, original proposal storage and explicit staff
 import. Preserve per-contribution native access checks and original-history
 replay when adding that shared reader.
+
+[Shared preparation](THEMATIC_SHARED_PREPARATION.md) subsequently reuses source
+and anchored parent reconstruction within one request after a successful replay.
+Each context still reconstructs its original frames and captures under current
+native authority. The versioned thematic recipe, execution and staff import are
+the next connected implementation boundary; this optimization does not close it.

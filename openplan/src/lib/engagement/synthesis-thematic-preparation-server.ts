@@ -60,13 +60,18 @@ async function readDelegation(service: Service, scope: Scope, signal: AbortSigna
   return verifySynthesisThematicPreparation(response.data, scope);
 }
 
-/** Replay one chosen context under the new requester's explicit native scope.
- * This performs no provider call or write. Durable preparation must retain its
- * proof and seal complete source membership before authorizing thematic tasks.
- */
-export async function loadSynthesisThematicPreparation(service: Service, rawScope: Scope, signal: AbortSignal) {
-  signal.throwIfAborted(); const scope = scopeSchema.parse(rawScope);
-  const delegation = await readDelegation(service, scope, signal), { thematic, choice, context, parent } = delegation;
+type Delegation = ReturnType<typeof verifySynthesisThematicPreparation>;
+const requestScopeSchema = scopeSchema.omit({ targetRecordId: true });
+
+// These originals are immutable and pinned to a fixed parent selection sequence.
+// Historical cancellations may arrive later; current authority is never cached.
+function sharedIdentity(delegation: Delegation) {
+  return { thematicRequest: delegation.thematic.state.request, thematicBinding: delegation.thematic.state.thematic,
+    parentRequest: delegation.parent.request, source: delegation.source };
+}
+
+async function reconstructSharedInputs(service: Service, scope: Scope, delegation: Delegation, signal: AbortSignal) {
+  const { thematic, parent } = delegation;
   const sourceResponse = await service.from("engagement_synthesis_sources").select(sourceColumns).eq("id", delegation.source.requestId)
     .abortSignal(synthesisWorkerRequestSignal(signal)).maybeSingle();
   signal.throwIfAborted();
@@ -81,6 +86,17 @@ export async function loadSynthesisThematicPreparation(service: Service, rawScop
     { request: { id: parent.request.id, intentText: parent.request.intentText, intentSha256: parent.request.intentSha256 },
       saved, scope: sourceScope, actorId: parent.request.actorId, throughSequence: thematic.binding.selectionSequence }, signal);
   const parentHistory = { campaignId: scope.campaignId, workspaceId: scope.workspaceId, requesterId: parent.request.actorId, ...parentResults };
+  return { source, saved, parentHistory };
+}
+
+type SharedInputs = Awaited<ReturnType<typeof reconstructSharedInputs>> & { identity: ReturnType<typeof sharedIdentity> };
+
+async function replayPreparation(service: Service, scope: Scope, signal: AbortSignal, cached: SharedInputs | null) {
+  signal.throwIfAborted();
+  const delegation = await readDelegation(service, scope, signal), { thematic, choice, context, parent } = delegation;
+  const identity = sharedIdentity(delegation);
+  if (cached && !isDeepStrictEqual(cached.identity, identity)) differs();
+  const { source, saved, parentHistory } = cached ? structuredClone(cached) : await reconstructSharedInputs(service, scope, delegation, signal);
   const contextScope = { campaignId: scope.campaignId, workspaceId: scope.workspaceId, requestId: context.state.request.id };
   const inputs = await reconstructSynthesisContextHistoryInputs(service, contextScope, context, parentHistory, saved, signal);
   const history = await replaySynthesisContextHistory(service, { ...contextScope, throughSequence: choice.choice.selectionSequence }, inputs,
@@ -100,5 +116,32 @@ export async function loadSynthesisThematicPreparation(service: Service, rawScop
     || last?.captureSha256 !== choice.choice.finalCaptureSha256 || last?.resultSha256 !== choice.choice.finalResultSha256) {
     throw new Error("Thematic chosen history is incomplete or differs from its pinned originals");
   }
-  return { delegation, source, parent: parentHistory, history };
+  return { preparation: { delegation, source, parent: parentHistory, history }, shared: { identity, source, saved, parentHistory } };
+}
+
+/** Reuse verified immutable source and anchored parent originals within one
+ * request. Each contribution still obtains fresh native scope and replays its
+ * own history, including the final authority check. Cache only a complete
+ * successful replay, and detach cache values from mutable caller results.
+ * Concurrent initial reads may repeat work; they never share pending authority.
+ */
+export function createSynthesisThematicPreparationReader(service: Service, rawScope: z.infer<typeof requestScopeSchema>) {
+  const requestScope = requestScopeSchema.parse(rawScope);
+  let cached: SharedInputs | null = null;
+  return async (targetRecordId: string, signal: AbortSignal) => {
+    signal.throwIfAborted(); const scope = scopeSchema.parse({ ...requestScope, targetRecordId });
+    const result = await replayPreparation(service, scope, signal, cached);
+    if (cached && !isDeepStrictEqual(cached.identity, result.shared.identity)) differs();
+    if (cached === null) cached = structuredClone(result.shared);
+    return result.preparation;
+  };
+}
+
+/** Replay one chosen context under the new requester's explicit native scope.
+ * This performs no provider call or write. Durable preparation must retain its
+ * proof and seal complete source membership before authorizing thematic tasks.
+ */
+export async function loadSynthesisThematicPreparation(service: Service, rawScope: Scope, signal: AbortSignal) {
+  signal.throwIfAborted(); const scope = scopeSchema.parse(rawScope);
+  return (await replayPreparation(service, scope, signal, null)).preparation;
 }

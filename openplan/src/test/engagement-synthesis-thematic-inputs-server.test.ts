@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it } from "vitest";
 import { readSynthesisThematicInput, readSynthesisThematicInputHistory, retainSynthesisThematicInput,
-  verifySynthesisThematicInput } from "@/lib/engagement/synthesis-thematic-inputs-server";
+  verifySynthesisThematicInput, createSynthesisThematicInputPreparer } from "@/lib/engagement/synthesis-thematic-inputs-server";
 import { synthesisThematicPreparationFixture } from "./fixtures/engagement/synthesis-thematic-preparation";
 import { sourceHash as hash } from "./fixtures/engagement/synthesis-source";
 
@@ -56,6 +56,28 @@ describe("reconstructed thematic input custody", () => {
     expect(f.calls.at(-1)).toMatchObject({ name: "read_engagement_synthesis_thematic_input_history",
       args: { p_campaign: scope.campaignId, p_request: scope.requestId, p_target: scope.targetRecordId }, signal: expect.any(AbortSignal) });
     expect(f.calls.every(call => call.signal instanceof AbortSignal)).toBe(true);
+  });
+  it("shares immutable preparation across retries while rechecking and saving each input", async () => {
+    const f = await fixture(), { targetRecordId, ...scope } = f.f.scope;
+    const prepare = createSynthesisThematicInputPreparer(f.service, scope);
+    const first = await prepare(targetRecordId, f.f.f.controller.signal);
+    const second = await prepare(targetRecordId, f.f.f.controller.signal);
+    expect(second.record).toEqual({ ...first.record, replayed: true });
+    expect(f.f.f.trace.filter(row => row.table === "engagement_synthesis_sources")).toHaveLength(2);
+    expect(f.f.calls.filter(call => call.parameters.p_stage === "parent")).toHaveLength(1);
+    expect(f.f.options.reads).toBe(4); expect(f.calls).toHaveLength(2);
+    f.f.options.denyRead = 5;
+    await expect(prepare(targetRecordId, f.f.f.controller.signal)).rejects.toThrow("preparation access unavailable");
+    expect(f.calls).toHaveLength(2);
+  });
+  it("keeps an uncertain native save unconfirmed with a warm preparation cache", async () => {
+    const f = await fixture(), { targetRecordId, ...scope } = f.f.scope;
+    const prepare = createSynthesisThematicInputPreparer(f.service, scope);
+    f.options.fail = "retain_engagement_synthesis_thematic_input";
+    await expect(prepare(targetRecordId, f.f.f.controller.signal)).rejects.toThrow("save unconfirmed");
+    f.options.fail = "";
+    expect((await prepare(targetRecordId, f.f.f.controller.signal)).record.replayed).toBe(true);
+    expect(f.f.options.reads).toBe(4); expect(f.f.f.trace.filter(row => row.table === "engagement_synthesis_sources")).toHaveLength(2);
   });
   it("does not retain unavailable, incomplete or unpinned original history", async () => {
     const f = await fixture(); f.f.options.denyRead = 2;

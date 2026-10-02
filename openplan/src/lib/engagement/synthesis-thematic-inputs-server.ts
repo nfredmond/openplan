@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { loadSynthesisThematicPreparation } from "./synthesis-thematic-preparation-server";
+import { createSynthesisThematicPreparationReader, loadSynthesisThematicPreparation } from "./synthesis-thematic-preparation-server";
 import { synthesisWorkerRequestSignal } from "./synthesis-generation-worker-load";
 
 const id = z.string().uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -77,6 +77,24 @@ export async function readSynthesisThematicInputHistory(client: Pick<SupabaseCli
 export async function retainSynthesisThematicInput(service: Service, rawScope: Scope, signal: AbortSignal) {
   signal.throwIfAborted(); const scope = scopeSchema.parse(rawScope);
   const preparation = await loadSynthesisThematicPreparation(service, scope, signal);
+  return retainPreparedInput(service, scope, preparation, signal);
+}
+
+/** Prepare multiple contributions of one request with shared immutable originals.
+ * A new process reconstructs its own cache. Each call still replays its context
+ * and reaches the native save's current authority, cancellation and seal checks.
+ */
+export function createSynthesisThematicInputPreparer(service: Service, rawScope: Omit<Scope, "targetRecordId">) {
+  const requestScope = scopeSchema.omit({ targetRecordId: true }).parse(rawScope);
+  const read = createSynthesisThematicPreparationReader(service, requestScope);
+  return async (targetRecordId: string, signal: AbortSignal) => {
+    signal.throwIfAborted(); const scope = scopeSchema.parse({ ...requestScope, targetRecordId });
+    return retainPreparedInput(service, scope, await read(targetRecordId, signal), signal);
+  };
+}
+
+async function retainPreparedInput(service: Service, scope: Scope,
+  preparation: Awaited<ReturnType<typeof loadSynthesisThematicPreparation>>, signal: AbortSignal) {
   const { thematic, choice, context } = preparation.delegation;
   const outputText = preparation.history.finalOutputText;
   if (outputText === null) throw new Error("Thematic input requires complete original context output");
