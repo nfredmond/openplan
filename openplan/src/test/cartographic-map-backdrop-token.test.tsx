@@ -17,7 +17,8 @@ const mockMap = {
 };
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/projects",
+  // The shared map mounts only where it is read; `/aerial` is that route.
+  usePathname: () => "/aerial",
   useRouter: () => ({ push: vi.fn() }),
 }));
 

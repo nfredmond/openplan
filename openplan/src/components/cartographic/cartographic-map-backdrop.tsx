@@ -29,7 +29,7 @@ import {
 } from "@/lib/cartographic/geometry-bbox";
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
-import { routeOwnsMap } from "@/lib/navigation/map-surfaces";
+import { showsSharedMapControls } from "@/lib/navigation/map-surfaces";
 import type { HomeMapView } from "@/lib/workspaces/home-geography";
 import { useTheme } from "@/components/theme-provider";
 
@@ -409,7 +409,12 @@ export function CartographicMapBackdrop({
   // Read here rather than mid-component so the workspace-layer binding below can
   // be told whether this map is live at all. On a route that owns its own map
   // this backdrop draws nothing, and its binding must not race that route's.
-  const suppressed = routeOwnsMap(pathname);
+  // The shared map draws only where a planner reads it (see `map-surfaces`).
+  // It used to draw behind every page as wallpaper, under a panel that covered
+  // it: a full Mapbox instance, its tiles and its feature requests on every
+  // records page, for a map nobody could see. A route that owns its own map
+  // still suppresses it, as before.
+  const suppressed = !showsSharedMapControls(pathname);
   const { resolvedTheme } = useTheme();
   const { registerLayerStatus } = useCartographicLayerStatus();
 

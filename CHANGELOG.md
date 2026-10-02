@@ -50,6 +50,16 @@ unproven directional comparisons on bidirectional links. Frozen studies and
 published metrics remain unchanged. These corrections do not claim full
 engine recovery or new scientific validation.
 
+Internal synthesis preparation now retains a new staff request and its chosen
+historical context inputs. Exact retries preserve original bytes after
+cancellation, and current staff can inspect earlier work after its author leaves.
+Thematic worker execution, machine-proposal storage and staff import remain
+unfinished. Apply `20261015000003_engagement_synthesis_thematic_requests.sql` and
+`20261015000004_engagement_synthesis_thematic_choices.sql` before using these
+internal commands. These migrations add private tables and preserve existing
+records. [Verification](docs/reviews/2026-10-01-context-history/THEMATIC_INPUTS.md)
+records the checks and remaining limits.
+
 ## 0.66.0 (2026-09-30)
 
 [Verification](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_RELEASE.md) records release scope and candidate checks. [Publication](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_PUBLICATION.md) records final checks, tagging and local handoff.

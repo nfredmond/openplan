@@ -104,7 +104,11 @@ describe("safety owns the only map on its page", () => {
   it("leaves the backdrop with no second copy of the ownership list", () => {
     const backdrop = repoFile("src/components/cartographic/cartographic-map-backdrop.tsx");
 
-    expect(backdrop).toContain("routeOwnsMap");
+    // `showsSharedMapControls` is the same module's rule and includes
+    // `routeOwnsMap`: the backdrop now mounts only where the shared map is read,
+    // which is stricter than "not on a route that owns its map".
+    expect(backdrop).toContain("showsSharedMapControls");
+    expect(backdrop).toContain('from "@/lib/navigation/map-surfaces"');
     expect(
       /const\s+MAP_OWNING_ROUTES\s*=/.test(backdrop),
       "cartographic-map-backdrop.tsx declares its own MAP_OWNING_ROUTES again. Import routeOwnsMap " +
