@@ -23,6 +23,7 @@ import { loadSynthesisThematicPreparation } from "@/lib/engagement/synthesis-the
 import { createSynthesisThematicInputPreparer, readSynthesisThematicInput, readSynthesisThematicInputHistory } from "@/lib/engagement/synthesis-thematic-inputs-server";
 import { retainSynthesisThematicInputSeal } from "@/lib/engagement/synthesis-thematic-input-seal-server";
 import { loadSynthesisThematicProposalInputs } from "@/lib/engagement/synthesis-thematic-proposal-inputs-server";
+import { loadSynthesisThematicPlan } from "@/lib/engagement/synthesis-thematic-plan-server";
 import { readSynthesisThematicChoice, retainSynthesisThematicChoice } from "@/lib/engagement/synthesis-thematic-choices-server";
 import { verifySynthesisGenerationApiResult } from "@/lib/engagement/synthesis-generation-api-result";
 import { createSynthesisGenerationInput } from "@/lib/engagement/synthesis-generation-input";
@@ -353,6 +354,15 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       notes: [], uncertainties: JSON.parse(retained.finalOutputText!).uncertainties });
     expect(proposalInputs.originals).toEqual([{ targetRecordId: preparationTarget,
       proofText: savedInput.record.proofText, outputText: retained.finalOutputText }]);
+    const thematicPlan = await loadSynthesisThematicPlan(service, preparationRequest, signal);
+    expect(thematicPlan.header).toMatchObject({ inputManifestSha256: inputSeal.plan.manifestSha256,
+      inputSealSha256: inputSeal.seal.receiptSha256, requestId: preparationRequest.requestId });
+    expect(thematicPlan.content.entities.filter(row => row.kind === "context_output").map(row => row.canonical)).toEqual([retained.finalOutputText]);
+    const rawContextParts = thematicPlan.content.frames.flatMap(frame => (JSON.parse(frame.canonical) as { parts: Array<{ entityKind: string; pointer: string; text?: string }> }).parts)
+      .filter(part => part.entityKind === "context_output" && part.pointer === "/originalOutputText");
+    expect(rawContextParts.map(part => part.text ?? "").join("")).toBe(retained.finalOutputText);
+    expect(thematicPlan.content.manifest.contributionIds).toEqual([preparationTarget]);
+    expect(thematicPlan.content.frames.every(frame => frame.utf8Bytes <= thematicPlan.content.manifest.frameByteLimit)).toBe(true);
     checked(await reader.client.rpc("cancel_engagement_synthesis_generation_request", { p_campaign: scope.campaignId,
       p_request: thematicArgs.requestId, p_cancellation: randomUUID(), p_reason: "SYNTHETIC thematic input cancellation" }));
     await expect(loadSynthesisThematicPreparation(service, preparationScope, signal)).rejects.toThrow("preparation access unavailable");

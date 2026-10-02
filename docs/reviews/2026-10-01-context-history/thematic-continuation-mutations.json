@@ -1,0 +1,560 @@
+{
+  "date": "2026-10-02",
+  "baseline": "0850f0effb3acd4bc6ad3a585dc380b9697570b8",
+  "scope": "versioned original-evidence framing and thematic continuation",
+  "initialApplication": [
+    {
+      "name": "content-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 9.19,
+      "log": "t3-thematic-continuation-mutation-content-control.log"
+    },
+    {
+      "name": "continuation-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 1.06,
+      "log": "t3-thematic-continuation-mutation-continuation-control.log"
+    },
+    {
+      "name": "recipe-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 1.02,
+      "log": "t3-thematic-continuation-mutation-recipe-control.log"
+    },
+    {
+      "name": "cancelled",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.05,
+      "log": "t3-thematic-continuation-mutation-cancelled.log"
+    },
+    {
+      "name": "input-identity",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-thematic-continuation-mutation-input-identity.log"
+    },
+    {
+      "name": "projection",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-thematic-continuation-mutation-projection.log"
+    },
+    {
+      "name": "source-bytes",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.27,
+      "log": "t3-thematic-continuation-mutation-source-bytes.log"
+    },
+    {
+      "name": "omit-output",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.24,
+      "log": "t3-thematic-continuation-mutation-omit-output.log"
+    },
+    {
+      "name": "numeric-tokens",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.04,
+      "log": "t3-thematic-continuation-mutation-numeric-tokens.log"
+    },
+    {
+      "name": "frame-limit",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.24,
+      "log": "t3-thematic-continuation-mutation-frame-limit.log"
+    },
+    {
+      "name": "surrogate-split",
+      "exitCode": 0,
+      "harmless": false,
+      "expected": false,
+      "seconds": 3.41,
+      "log": "t3-thematic-continuation-mutation-surrogate-split.log"
+    },
+    {
+      "name": "recipe-identity",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-thematic-continuation-mutation-recipe-identity.log"
+    },
+    {
+      "name": "header-seal",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-thematic-continuation-mutation-header-seal.log"
+    },
+    {
+      "name": "task-frame",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.02,
+      "log": "t3-thematic-continuation-mutation-task-frame.log"
+    },
+    {
+      "name": "task-contexts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.08,
+      "log": "t3-thematic-continuation-mutation-task-contexts.log"
+    },
+    {
+      "name": "task-prior",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.09,
+      "log": "t3-thematic-continuation-mutation-task-prior.log"
+    },
+    {
+      "name": "task-limit",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.04,
+      "log": "t3-thematic-continuation-mutation-task-limit.log"
+    },
+    {
+      "name": "observation-binding",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.04,
+      "log": "t3-thematic-continuation-mutation-observation-binding.log"
+    },
+    {
+      "name": "output-limit",
+      "exitCode": 0,
+      "harmless": false,
+      "expected": false,
+      "seconds": 1.01,
+      "log": "t3-thematic-continuation-mutation-output-limit.log"
+    },
+    {
+      "name": "coverage",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.01,
+      "log": "t3-thematic-continuation-mutation-coverage.log"
+    },
+    {
+      "name": "prior-state",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-thematic-continuation-mutation-prior-state.log"
+    },
+    {
+      "name": "note-references",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-thematic-continuation-mutation-note-references.log"
+    },
+    {
+      "name": "citation",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.04,
+      "log": "t3-thematic-continuation-mutation-citation.log"
+    },
+    {
+      "name": "final-uncertainty",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.05,
+      "log": "t3-thematic-continuation-mutation-final-uncertainty.log"
+    },
+    {
+      "name": "retained-identity",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.16,
+      "log": "t3-thematic-continuation-mutation-retained-identity.log"
+    },
+    {
+      "name": "retained-bytes",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.06,
+      "log": "t3-thematic-continuation-mutation-retained-bytes.log"
+    },
+    {
+      "name": "unicode-length",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.0,
+      "log": "t3-thematic-continuation-mutation-unicode-length.log"
+    },
+    {
+      "name": "uncertainty-validity",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.02,
+      "log": "t3-thematic-continuation-mutation-uncertainty-validity.log"
+    }
+  ],
+  "isolatedApplication": [
+    {
+      "name": "content-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 9.23,
+      "log": "t3-thematic-continuation-isolated-mutation-content-control.log"
+    },
+    {
+      "name": "output-limit",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.06,
+      "log": "t3-thematic-continuation-isolated-mutation-output-limit.log"
+    },
+    {
+      "name": "corrupt-surrogate",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.36,
+      "log": "t3-thematic-continuation-isolated-mutation-corrupt-surrogate.log"
+    }
+  ],
+  "finalRecipeApplication": [
+    {
+      "name": "content-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 9.3,
+      "log": "t3-thematic-continuation-final-mutation-content-control.log"
+    },
+    {
+      "name": "recipe-identity",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-thematic-continuation-final-mutation-recipe-identity.log"
+    },
+    {
+      "name": "uncertainty-validity",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.06,
+      "log": "t3-thematic-continuation-final-mutation-uncertainty-validity.log"
+    },
+    {
+      "name": "uncertainty-meaning",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.04,
+      "log": "t3-thematic-continuation-final-mutation-uncertainty-meaning.log"
+    }
+  ],
+  "schemaProbe": {
+    "baseline": [
+      {
+        "name": "meaningful-unicode",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "name": "blank",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "name": "unpaired",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "name": "nul",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "name": "codepoint-limit",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "name": "codepoint-over",
+        "expected": false,
+        "actual": false
+      }
+    ],
+    "control": [
+      {
+        "name": "meaningful-unicode",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "name": "blank",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "name": "unpaired",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "name": "nul",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "name": "codepoint-limit",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "name": "codepoint-over",
+        "expected": false,
+        "actual": false
+      }
+    ],
+    "fault": [
+      {
+        "name": "meaningful-unicode",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "name": "blank",
+        "expected": false,
+        "actual": true
+      },
+      {
+        "name": "unpaired",
+        "expected": false,
+        "actual": true
+      },
+      {
+        "name": "nul",
+        "expected": false,
+        "actual": true
+      },
+      {
+        "name": "codepoint-limit",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "name": "codepoint-over",
+        "expected": false,
+        "actual": true
+      }
+    ],
+    "classification": "weakened uncertainty schema detected; files unchanged; vendor compatibility and semantic quality unproved"
+  },
+  "nativeHTTP": [
+    {
+      "name": "control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 148.49,
+      "log": "t3-thematic-continuation-http-control.log"
+    },
+    {
+      "name": "wrong-seal",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 146.87,
+      "log": "t3-thematic-continuation-http-wrong-seal.log"
+    }
+  ],
+  "findings": {
+    "initialOversize": "invalid JSON masked removal of size guard; valid oversized response now detects it",
+    "surrogateGuard": "removing boundary adjustment did not break these fixtures; guard retained; separate actual Unicode corruption is detected; individual guard necessity not proved",
+    "fixture": "historical-definition absence initially kept references to removed definitions and failed source validation; corrected legacy fixture uses null configuration references and retains question snapshot",
+    "finalUncertainty": "new frame uncertainty must already satisfy final meaningful Unicode text requirements; original contextual uncertainty remains unchanged",
+    "providerRawText": "Review after the first QA pass identified duplicate-key loss through parsed-only framing. Exact originalOutputText now survives frames; duplicate-key and escape-spelling tests plus real-stack raw text assertion detect the prior behavior."
+  },
+  "recipeSha256": "7310c615ecff9ec8d67f498d188321c2bc104cec6020b206481953c7f88eda69",
+  "nativeBaseline": {
+    "passed": true,
+    "testSeconds": 148.37,
+    "scope": "real CLI/PostgreSQL/PostgREST, synthetic model, one contribution, before final uncertainty refinement; final native control passes after refinement"
+  },
+  "restoredSourceSha256": {
+    "openplan/src/lib/engagement/synthesis-thematic-content.ts": "d29e581b85dba86352755bae22a38686aba67dc7b1798e761970119f44e2ba7a",
+    "openplan/src/lib/engagement/synthesis-thematic-continuation.ts": "e081ac209de7b6c33b0d3cc38dbf97e8ba3d2ac2143d18f4f15fbf56e7d95b89",
+    "openplan/src/lib/engagement/synthesis-thematic-plan-server.ts": "c8e1a757f0f88034d8c0544c03c5d127bca4f54d3069c42c7dc3c9b9d7ae849c",
+    "openplan/src/lib/engagement/synthesis-generation-thematic-v1.json": "80437530959c1a47c33b3fbf9f7f6b0d21fafd9bd6e1db1e6a790713d0476f4b",
+    "openplan/src/test/engagement-synthesis-thematic-continuation.test.ts": "22e711b91933756fc202ec44cb43e13e9329502eb2b13a45ae7a8fc1a04d322f",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "9efa03dbe33a80c207a0a04b41e71c2d980791d83242ab80f9abe5a91eff41f2"
+  },
+  "rawTextApplication": [
+    {
+      "name": "content-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 5.98,
+      "log": "t3-thematic-continuation-raw-mutation-content-control.log"
+    },
+    {
+      "name": "numeric-tokens",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.04,
+      "log": "t3-thematic-continuation-raw-mutation-numeric-tokens.log"
+    },
+    {
+      "name": "frame-limit",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.22,
+      "log": "t3-thematic-continuation-raw-mutation-frame-limit.log"
+    },
+    {
+      "name": "recipe-identity",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-thematic-continuation-raw-mutation-recipe-identity.log"
+    },
+    {
+      "name": "original-output-text",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.05,
+      "log": "t3-thematic-continuation-raw-mutation-original-output-text.log"
+    },
+    {
+      "name": "corrupt-surrogate",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.29,
+      "log": "t3-thematic-continuation-raw-mutation-corrupt-surrogate.log"
+    }
+  ],
+  "additionalGuards": [
+    {
+      "name": "content-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 5.89,
+      "log": "t3-thematic-continuation-guards-mutation-content-control.log"
+    },
+    {
+      "name": "container-metadata",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.06,
+      "log": "t3-thematic-continuation-guards-mutation-container-metadata.log"
+    },
+    {
+      "name": "scalar-metadata",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.05,
+      "log": "t3-thematic-continuation-guards-mutation-scalar-metadata.log"
+    },
+    {
+      "name": "selection-sequence",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.04,
+      "log": "t3-thematic-continuation-guards-mutation-selection-sequence.log"
+    },
+    {
+      "name": "note-order",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-thematic-continuation-guards-mutation-note-order.log"
+    }
+  ],
+  "finalRawTextNativeHTTP": [
+    {
+      "name": "control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 148.54,
+      "log": "t3-thematic-continuation-raw-http-control.log"
+    },
+    {
+      "name": "original-output-text",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 147.23,
+      "log": "t3-thematic-continuation-raw-http-original-output-text.log"
+    }
+  ],
+  "focusedPassed": 47,
+  "earlierQA": {
+    "applicationPassed": 16944,
+    "applicationSkipped": 1353,
+    "connectorPassed": 382,
+    "connectorSkipped": 4,
+    "build": "pass",
+    "boundary": "before exact raw provider text framing; final QA repeated"
+  },
+  "finalQA": {
+    "passed": true,
+    "applicationPassed": 16950,
+    "applicationSkipped": 1353,
+    "connectorPassed": 382,
+    "connectorSkipped": 4,
+    "lint": "pass",
+    "configuredDeadcode": "pass",
+    "auditVulnerabilities": 0,
+    "webpackBuildIncludingTypescript": "pass",
+    "nativeRLS": "ordinary QA skips; separate native HTTP controls and faults recorded"
+  }
+}

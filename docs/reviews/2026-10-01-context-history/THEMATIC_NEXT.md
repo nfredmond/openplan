@@ -137,3 +137,11 @@ bytes and recheck current scope before return. The reader collects evidence in
 memory; durable bounded tasks and the connected execution/import workflow remain
 unfinished. Original source text and historical definitions must remain available
 when constructing those tasks.
+
+[Versioned thematic continuation](THEMATIC_CONTINUATION.md) now frames original
+source and context bytes and replays checked responses before a final proposal
+task. The 302-contribution synthetic protocol case completes, while explicit byte
+ceilings preserve incomplete work without clipping. Native frame staging,
+resource authorization, original-response execution custody, retained proposals
+and staff import remain the next connected work. Large final evidence collections
+that exceed the supported task budget remain a scaling gap.

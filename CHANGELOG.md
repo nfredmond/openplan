@@ -72,6 +72,12 @@ uncertainty remain attached to each contribution. No new migration is required.
 [Proposal input checks](docs/reviews/2026-10-01-context-history/THEMATIC_PROPOSAL_INPUTS.md)
 record the evidence and limits. Task execution and staff import remain unfinished.
 
+Internal thematic planning now frames original evidence under a separate frozen
+recipe and replays checked responses before creating an unreviewed proposal.
+Explicit byte ceilings preserve incomplete work without clipping source records
+or uncertainty. No new migration is required. [Continuation checks](docs/reviews/2026-10-01-context-history/THEMATIC_CONTINUATION.md)
+record the evidence; native execution and staff import remain unfinished.
+
 ## 0.66.0 (2026-09-30)
 
 [Verification](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_RELEASE.md) records release scope and candidate checks. [Publication](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_PUBLICATION.md) records final checks, tagging and local handoff.
