@@ -1,0 +1,75 @@
+{
+  "date": "2026-10-01",
+  "baseline": "891a0d89a848133d44b9e4f314a76a922cd71ace",
+  "packageVersion": "0.66.0",
+  "release": false,
+  "checks": {
+    "focused": {
+      "passed": 208,
+      "files": 5
+    },
+    "qa": {
+      "exit": 0,
+      "passed": 16739,
+      "skipped": 1173,
+      "passingFiles": 1375,
+      "skippedFiles": 71,
+      "connectorPassed": 382,
+      "connectorSkipped": 4,
+      "auditVulnerabilities": 0,
+      "build": "passed",
+      "fullRlsGate": "not_enabled"
+    },
+    "shuffle": {
+      "exit": 0,
+      "seed": 661002,
+      "passed": 16739,
+      "skipped": 1173
+    },
+    "nativeSql": {
+      "passed": 7,
+      "scope": "isolated history permissions, pagination, Unicode and faults"
+    },
+    "nativeHttp": {
+      "completedOutput": "passed final Unicode case",
+      "uncertainDispatch": "passed",
+      "statusFaults": "two expected assertion failures",
+      "provider": "synthetic local HTTP"
+    },
+    "ci": "pending",
+    "browser": "no visible workflow changed; no new acceptance claim"
+  },
+  "sourceSha256": {
+    "openplan/src/lib/engagement/synthesis-context-history-inputs.ts": "6ecf9872107d3f60f88217ff4a5b9bc44d5f4d0f978dade9dcc52df3b2c21454",
+    "openplan/src/lib/engagement/synthesis-context-history-server.ts": "5a8203ae38b9173952e19af6f42d3f9bf67ba1d37dd3b59fa3306bb9c2d2ce66",
+    "openplan/src/test/engagement-synthesis-context-history-inputs.test.ts": "469d04bb6de89731fe849723351f03969931efe31c34a7cf1a05526574d31bb0",
+    "openplan/src/test/engagement-synthesis-context-history-rls.test.ts": "ffea27f621825d6a99c57b5381edae7a6f47ceb62ca0115660ccf8e294ecf25c",
+    "openplan/src/test/engagement-synthesis-context-history-server.test.ts": "e736ac0fb8ed8e2f6feeecdbd741ba676c158943fba418d38b8d35859c32790a",
+    "openplan/src/test/fixtures/engagement/synthesis-context-history.sql": "9a00f14eb363775ba4eca362028917dae93bf6d67f7ef9396ada39ff5cc109e1",
+    "openplan/src/test/fixtures/engagement/synthesis-context-history.ts": "330b82a30585d0c7fcb6ed7229ccf12d84905b739c44a6f70547b72d81757f5c",
+    "openplan/package.json": "413713922ab752809621dd4731372db4d4820fc78eeafd8ccfdcfcb6e255b2b0",
+    "openplan/src/lib/engagement/synthesis-context-continuation.ts": "43521341ac009589864c29bf15be99e7f858346b8f3eaf58d214786908f7da9a",
+    "openplan/src/lib/engagement/synthesis-generation-selections-server.ts": "350526873bb3514b57f679fe1bb5b3b96143544584c2228b9869fa70b155313d",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "3236fcc6c04b7746c4d1a676b1f1398c49682ae7e19d4e415f16b5827d7e2742",
+    "openplan/src/test/fixtures/engagement/synthesis-context-job.ts": "7602349c3f45b9328641a976783f07b2b5776f1b71778342ed68f1e3f45884e4",
+    "openplan/src/test/fixtures/engagement/synthesis-context-worker.ts": "0df92ca5e53b5e52b59ab0d90ed361388ebd20437c4cffd071e9f54c8068f811"
+  },
+  "localLogSha256": {
+    "t3-context-history-focused-final.log": "bb1a669965a6c3f56738706b06c3e654cf42acef601bd88fb1545ba66b16308a",
+    "t3-context-history-qa-final.log": "8088227ca0e61ad76c2998b6929ab598b97e700508594d5259cddcb02488e345",
+    "t3-context-history-shuffled-final.log": "831a0cf4c347fa27d03ff90260b925ea4673ebab893610b58d3bbd0a79f9b1d6",
+    "t3-context-history-native-final.log": "f039eaec8e4c35f39f53b7624c05659d0c3b5e277dd3948cdf6488941653b0f8",
+    "t3-context-history-http-unicode.log": "a719f68ccc4a94427d85d9b64c4e4da30064dde627fd16f540008c68173db9ef",
+    "t3-context-history-http.log": "e89ddb8153da153f1c77e86cf15f4f59411f546c7d725ff5eb36a0675b84779d",
+    "t3-context-history-native-fault.log": "445f3784cb96f1cae14b7e06248a3b79a948e87c9f72af774d2096a9b42d7c2c",
+    "t3-context-history-unicode-before.log": "4d577c72b8c0a548928153608b858b9d84bfe1f992ba5c8c5ab8d7bb4334a654",
+    "t3-context-history-parent-unicode-before.log": "465c49d209655487e5abd8af70fbe9ee8a4956ccea5980300764d3c58f8e5495"
+  },
+  "limits": [
+    "No full native-isolation campaign rerun in this checkpoint",
+    "No live external model or billing acceptance",
+    "No semantic quality or practitioner acceptance",
+    "Thematic generation and staff import remain unfinished",
+    "Independent review fixes remain owned in their other worktrees"
+  ]
+}

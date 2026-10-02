@@ -38,6 +38,13 @@ function buildDataset(overrides: Partial<LinkedDataset> = {}): LinkedDataset {
   };
 }
 
+const measured = (property: string, ramp: unknown[]): unknown[] => [
+  "case",
+  ["any", ["==", ["typeof", ["get", property]], "number"], ["==", ["typeof", ["get", property]], "string"]],
+  ramp,
+  "#64748b",
+];
+
 describe("explore map layer helpers", () => {
   it("builds crash layer filters for severity and user-type toggles", () => {
     expect(buildCrashLayerFilter("all", "all")).toEqual([
@@ -183,10 +190,10 @@ describe("explore map layer helpers", () => {
       "#64748b",
     ]);
 
-    expect(buildThematicOverlayPaintExpression(undefined)).toEqual([
+    expect(buildThematicOverlayPaintExpression(undefined)).toEqual(measured("pctMinority", [
       "interpolate",
       ["linear"],
-      ["coalesce", ["to-number", ["get", "pctMinority"]], 0],
+      ["to-number", ["get", "pctMinority"]],
       0,
       "#123047",
       30,
@@ -197,7 +204,7 @@ describe("explore map layer helpers", () => {
       "#0f766e",
       100,
       "#34d399",
-    ]);
+    ]));
 
     expect(buildPointThematicOverlayColorExpression("fatalCount")).toEqual([
       "interpolate",

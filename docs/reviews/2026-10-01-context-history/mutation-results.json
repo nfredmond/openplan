@@ -1,0 +1,997 @@
+{
+  "scope": "Mock transport context history mutation probes; native and application QA are separate.",
+  "interpretation": "Retains initial diagnostics, repeated controls, overlapping guards and assertion-only classifier limits. Not a perfect score or a claim of comprehensive coverage.",
+  "runs": [
+    {
+      "run": "t3-context-history-mutations",
+      "cases": [
+        {
+          "name": "harmless-comment",
+          "file": "history-server",
+          "pattern": "replays every retained frame",
+          "exit": 0,
+          "passed": 1,
+          "failed": 0,
+          "expectedFailure": false,
+          "validOutcome": true,
+          "failedNames": []
+        },
+        {
+          "name": "internal-error",
+          "file": "history-server",
+          "pattern": "internal processor defect",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution does not classify an internal processor defect as invalid provider output"
+          ]
+        },
+        {
+          "name": "final-permission",
+          "file": "history-server",
+          "pattern": "refuses access revoked at the final check",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": false,
+          "failedNames": [
+            "current-staff historical context execution preserves cancellation and refuses access revoked at the final check"
+          ]
+        }
+      ],
+      "restoration": {
+        "history-server": {
+          "restored": true,
+          "sha256": "06e43f5c87b308057d338daa42473d91bd8e7a520af67500b80938c691ffaa30"
+        },
+        "history-inputs": {
+          "restored": true,
+          "sha256": "ec37b5e9bbac227cdf97f7469acf716fa593713c1e2b73142d5e9ac387f43b63"
+        },
+        "continuation": {
+          "restored": true,
+          "sha256": "43521341ac009589864c29bf15be99e7f858346b8f3eaf58d214786908f7da9a"
+        }
+      }
+    },
+    {
+      "run": "t3-context-history-mutations-v2",
+      "cases": [
+        {
+          "name": "harmless-comment",
+          "file": "history-server",
+          "pattern": "replays every retained frame",
+          "exit": 0,
+          "passed": 1,
+          "failed": 0,
+          "expectedFailure": false,
+          "validOutcome": true,
+          "failedNames": []
+        },
+        {
+          "name": "internal-error",
+          "file": "history-server",
+          "pattern": "internal processor defect",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution does not classify an internal processor defect as invalid provider output"
+          ]
+        },
+        {
+          "name": "final-permission",
+          "file": "history-server",
+          "pattern": "refuses access revoked at the final check",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution preserves cancellation and refuses access revoked at the final check"
+          ]
+        },
+        {
+          "name": "predecessor-block",
+          "file": "history-server",
+          "pattern": "retains claimed and blocks dependent",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution retains claimed and blocks dependent interpretation"
+          ]
+        },
+        {
+          "name": "manifest-capture",
+          "file": "history-server",
+          "pattern": "replays every retained frame",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution replays every retained frame, including the final one, without dispatch or credentials"
+          ]
+        },
+        {
+          "name": "page-request",
+          "file": "history-server",
+          "pattern": "changed selection requestId",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects changed selection requestId"
+          ]
+        },
+        {
+          "name": "page-anchor",
+          "file": "history-server",
+          "pattern": "changed selection throughSequence",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects changed selection throughSequence"
+          ]
+        },
+        {
+          "name": "page-cursor",
+          "file": "history-server",
+          "pattern": "changed selection afterTaskIndex",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects changed selection afterTaskIndex"
+          ]
+        },
+        {
+          "name": "selection-hash",
+          "file": "history-server",
+          "pattern": "changed selection receiptSha256",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects changed selection receiptSha256"
+          ]
+        },
+        {
+          "name": "selection-request",
+          "file": "history-server",
+          "pattern": "selection identity requestId",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects self-hashed selection identity requestId"
+          ]
+        },
+        {
+          "name": "selection-actor",
+          "file": "history-server",
+          "pattern": "selection identity actorId",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects self-hashed selection identity actorId"
+          ]
+        },
+        {
+          "name": "selection-frame",
+          "file": "history-server",
+          "pattern": "selection identity taskIndex",
+          "exit": 0,
+          "passed": 1,
+          "failed": 0,
+          "expectedFailure": true,
+          "validOutcome": false,
+          "failedNames": []
+        }
+      ],
+      "restoration": {
+        "history-server": {
+          "restored": true,
+          "sha256": "06e43f5c87b308057d338daa42473d91bd8e7a520af67500b80938c691ffaa30"
+        },
+        "history-inputs": {
+          "restored": true,
+          "sha256": "ec37b5e9bbac227cdf97f7469acf716fa593713c1e2b73142d5e9ac387f43b63"
+        },
+        "continuation": {
+          "restored": true,
+          "sha256": "43521341ac009589864c29bf15be99e7f858346b8f3eaf58d214786908f7da9a"
+        }
+      }
+    },
+    {
+      "run": "t3-context-history-mutations-v3",
+      "cases": [
+        {
+          "name": "harmless-comment",
+          "file": "history-server",
+          "pattern": "replays every retained frame",
+          "exit": 0,
+          "passed": 1,
+          "failed": 0,
+          "expectedFailure": false,
+          "validOutcome": true,
+          "failedNames": []
+        },
+        {
+          "name": "selection-frame",
+          "file": "history-server",
+          "pattern": "selection identity taskIndex",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects self-hashed selection identity taskIndex"
+          ]
+        },
+        {
+          "name": "selection-sequence",
+          "file": "history-server",
+          "pattern": "selection identity sequence",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects self-hashed selection identity sequence"
+          ]
+        },
+        {
+          "name": "duplicate-id",
+          "file": "history-server",
+          "pattern": "duplicate selected id",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects duplicate selected id across pages"
+          ]
+        },
+        {
+          "name": "duplicate-sequence",
+          "file": "history-server",
+          "pattern": "duplicate selected sequence",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects duplicate selected sequence across pages"
+          ]
+        },
+        {
+          "name": "duplicate-attempt",
+          "file": "history-server",
+          "pattern": "duplicate selected attemptId",
+          "exit": 0,
+          "passed": 1,
+          "failed": 0,
+          "expectedFailure": true,
+          "validOutcome": false,
+          "failedNames": []
+        },
+        {
+          "name": "input-bytes",
+          "file": "history-server",
+          "pattern": "execution drift task_bytes",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects original execution drift task_bytes"
+          ]
+        },
+        {
+          "name": "input-checksum",
+          "file": "history-server",
+          "pattern": "execution drift task_sha256",
+          "exit": 0,
+          "passed": 1,
+          "failed": 0,
+          "expectedFailure": true,
+          "validOutcome": false,
+          "failedNames": []
+        },
+        {
+          "name": "binding",
+          "file": "history-server",
+          "pattern": "execution drift binding_text",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects original execution drift binding_text"
+          ]
+        },
+        {
+          "name": "predecessor-attempt",
+          "file": "history-server",
+          "pattern": "changed predecessor evidence predecessor_attempt_id",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution preserves changed predecessor evidence predecessor_attempt_id"
+          ]
+        },
+        {
+          "name": "predecessor-selection",
+          "file": "history-server",
+          "pattern": "changed predecessor evidence predecessor_selection_id",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution preserves changed predecessor evidence predecessor_selection_id"
+          ]
+        },
+        {
+          "name": "predecessor-capture",
+          "file": "history-server",
+          "pattern": "changed predecessor evidence predecessor_capture_sha256",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution preserves changed predecessor evidence predecessor_capture_sha256"
+          ]
+        },
+        {
+          "name": "predecessor-result",
+          "file": "history-server",
+          "pattern": "changed predecessor evidence previous_result_sha256",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution preserves changed predecessor evidence previous_result_sha256"
+          ]
+        },
+        {
+          "name": "dispatch-tokens",
+          "file": "history-server",
+          "pattern": "beyond retained grant maxOutputTokens",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects self-hashed dispatch beyond retained grant maxOutputTokens"
+          ]
+        },
+        {
+          "name": "dispatch-bytes",
+          "file": "history-server",
+          "pattern": "beyond retained grant responseByteLimit",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects self-hashed dispatch beyond retained grant responseByteLimit"
+          ]
+        },
+        {
+          "name": "dispatch-expiry",
+          "file": "history-server",
+          "pattern": "beyond retained grant expiresAt",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects self-hashed dispatch beyond retained grant expiresAt"
+          ]
+        },
+        {
+          "name": "dispatch-race",
+          "file": "history-server",
+          "pattern": "output arrives between execution reads",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": false,
+          "failedNames": [
+            "current-staff historical context execution rereads immutable dispatch when output arrives between execution reads"
+          ]
+        },
+        {
+          "name": "output-without-dispatch",
+          "file": "history-server",
+          "pattern": "still missing its dispatch",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution rejects an output still missing its dispatch after a fresh read"
+          ]
+        },
+        {
+          "name": "input-access",
+          "file": "history-inputs",
+          "pattern": "access lost at context read 2",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs refuses staff access lost at context read 2"
+          ]
+        },
+        {
+          "name": "input-request-identity",
+          "file": "history-inputs",
+          "pattern": "immutable request change",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects an immutable request change at final permission check"
+          ]
+        },
+        {
+          "name": "input-cancellation",
+          "file": "history-inputs",
+          "pattern": "changed cancellation custody",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects changed cancellation custody"
+          ]
+        },
+        {
+          "name": "unsealed-race",
+          "file": "history-inputs",
+          "pattern": "unsealed frame commits",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs reports a retryable read when an unsealed frame commits between its component reads"
+          ]
+        },
+        {
+          "name": "frame-frame_text",
+          "file": "history-inputs",
+          "pattern": "original frame drift frame_text",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects original frame drift frame_text"
+          ]
+        },
+        {
+          "name": "frame-frame_sha256",
+          "file": "history-inputs",
+          "pattern": "original frame drift frame_sha256",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects original frame drift frame_sha256"
+          ]
+        },
+        {
+          "name": "frame-frame_bytes",
+          "file": "history-inputs",
+          "pattern": "original frame drift frame_bytes",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects original frame drift frame_bytes"
+          ]
+        },
+        {
+          "name": "frame-frame_index",
+          "file": "history-inputs",
+          "pattern": "original frame drift frame_index",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects original frame drift frame_index"
+          ]
+        },
+        {
+          "name": "frame-request_id",
+          "file": "history-inputs",
+          "pattern": "original frame drift request_id",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects original frame drift request_id"
+          ]
+        },
+        {
+          "name": "reference-task_sha256",
+          "file": "history-inputs",
+          "pattern": "reference row drift task_sha256",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects frame reference row drift task_sha256"
+          ]
+        },
+        {
+          "name": "reference-task_bytes",
+          "file": "history-inputs",
+          "pattern": "reference row drift task_bytes",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects frame reference row drift task_bytes"
+          ]
+        },
+        {
+          "name": "reference-task_index",
+          "file": "history-inputs",
+          "pattern": "reference row drift task_index",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects frame reference row drift task_index"
+          ]
+        },
+        {
+          "name": "reference-cumulative_bytes",
+          "file": "history-inputs",
+          "pattern": "reference row drift cumulative_bytes",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects frame reference row drift cumulative_bytes"
+          ]
+        },
+        {
+          "name": "reference-chain_sha256",
+          "file": "history-inputs",
+          "pattern": "reference row drift chain_sha256",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects frame reference row drift chain_sha256"
+          ]
+        },
+        {
+          "name": "reference-request_id",
+          "file": "history-inputs",
+          "pattern": "reference row drift request_id",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects frame reference row drift request_id"
+          ]
+        },
+        {
+          "name": "typed-json",
+          "file": "continuation",
+          "pattern": "retains invalid_output",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": false,
+          "failedNames": [
+            "current-staff historical context execution retains invalid_output and blocks dependent interpretation"
+          ]
+        },
+        {
+          "name": "typed-schema",
+          "file": "continuation",
+          "pattern": "invalid retained output explicit for schema",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": false,
+          "failedNames": [
+            "current-staff historical context execution keeps invalid retained output explicit for schema"
+          ]
+        }
+      ],
+      "restoration": {
+        "history-server": {
+          "restored": true,
+          "sha256": "06e43f5c87b308057d338daa42473d91bd8e7a520af67500b80938c691ffaa30"
+        },
+        "history-inputs": {
+          "restored": true,
+          "sha256": "ec37b5e9bbac227cdf97f7469acf716fa593713c1e2b73142d5e9ac387f43b63"
+        },
+        "continuation": {
+          "restored": true,
+          "sha256": "43521341ac009589864c29bf15be99e7f858346b8f3eaf58d214786908f7da9a"
+        }
+      }
+    },
+    {
+      "run": "t3-context-history-mutations-v4",
+      "cases": [
+        {
+          "name": "harmless-comment",
+          "file": "history-server",
+          "pattern": "replays every retained frame",
+          "exit": 0,
+          "passed": 1,
+          "failed": 0,
+          "expectedFailure": false,
+          "validOutcome": true,
+          "failedNames": []
+        },
+        {
+          "name": "header-request_id",
+          "file": "history-inputs",
+          "pattern": "retained header drift request_id",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects retained header drift request_id"
+          ]
+        },
+        {
+          "name": "header-header_text",
+          "file": "history-inputs",
+          "pattern": "retained header drift header_text",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects retained header drift header_text"
+          ]
+        },
+        {
+          "name": "header-header_sha256",
+          "file": "history-inputs",
+          "pattern": "retained header drift header_sha256",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects retained header drift header_sha256"
+          ]
+        },
+        {
+          "name": "reference-identity-frameIndex",
+          "file": "history-inputs",
+          "pattern": "self-hashed reference drift frameIndex",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects self-hashed reference drift frameIndex"
+          ]
+        },
+        {
+          "name": "reference-identity-frameSha256",
+          "file": "history-inputs",
+          "pattern": "self-hashed reference drift frameSha256",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects self-hashed reference drift frameSha256"
+          ]
+        },
+        {
+          "name": "reference-identity-frameBytes",
+          "file": "history-inputs",
+          "pattern": "self-hashed reference drift frameBytes",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects self-hashed reference drift frameBytes"
+          ]
+        },
+        {
+          "name": "reference-identity-contextManifestSha256",
+          "file": "history-inputs",
+          "pattern": "self-hashed reference drift contextManifestSha256",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects self-hashed reference drift contextManifestSha256"
+          ]
+        },
+        {
+          "name": "reference-identity-targetRecordId",
+          "file": "history-inputs",
+          "pattern": "self-hashed reference drift targetRecordId",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects self-hashed reference drift targetRecordId"
+          ]
+        },
+        {
+          "name": "cancellation-return",
+          "file": "history-inputs",
+          "pattern": "preserves original cancellation",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs preserves original cancellation and accepts cancellation during inspection"
+          ]
+        },
+        {
+          "name": "preparation-status",
+          "file": "history-inputs",
+          "pattern": "preserves incomplete preparation",
+          "exit": 1,
+          "passed": 0,
+          "failed": 3,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs preserves incomplete preparation not_prepared",
+            "current-staff historical context inputs preserves incomplete preparation staging",
+            "current-staff historical context inputs preserves incomplete preparation all_frames_unsealed"
+          ]
+        },
+        {
+          "name": "missing-choices",
+          "file": "history-server",
+          "pattern": "missing and explicitly cleared",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution keeps missing and explicitly cleared choices separate"
+          ]
+        },
+        {
+          "name": "claimed-status",
+          "file": "history-server",
+          "pattern": "retains claimed",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution retains claimed and blocks dependent interpretation"
+          ]
+        },
+        {
+          "name": "awaiting-status",
+          "file": "history-server",
+          "pattern": "retains awaiting_output",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution retains awaiting_output and blocks dependent interpretation"
+          ]
+        },
+        {
+          "name": "provider-status",
+          "file": "history-server",
+          "pattern": "retains provider_incomplete",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution retains provider_incomplete and blocks dependent interpretation"
+          ]
+        },
+        {
+          "name": "invalid-status",
+          "file": "history-server",
+          "pattern": "invalid retained output explicit",
+          "exit": 1,
+          "passed": 0,
+          "failed": 5,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution keeps invalid retained output explicit for status",
+            "current-staff historical context execution keeps invalid retained output explicit for coverage",
+            "current-staff historical context execution keeps invalid retained output explicit for preceding-state",
+            "current-staff historical context execution keeps invalid retained output explicit for schema",
+            "current-staff historical context execution keeps invalid retained output explicit for truncated"
+          ]
+        },
+        {
+          "name": "original-output-bytes",
+          "file": "history-server",
+          "pattern": "exact unusual provider output bytes",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution retains exact unusual provider output bytes"
+          ]
+        },
+        {
+          "name": "storage-error",
+          "file": "history-server",
+          "pattern": "failed storage reads",
+          "exit": 1,
+          "passed": 1,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context execution keeps failed storage reads and caller aborts out of retained output statuses"
+          ]
+        },
+        {
+          "name": "input-storage-error",
+          "file": "history-inputs",
+          "pattern": "failed storage reads and observes",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "failedNames": [
+            "current-staff historical context inputs rejects failed storage reads and observes cancellation signals"
+          ]
+        },
+        {
+          "name": "frame-projection",
+          "file": "history-inputs",
+          "pattern": "reconstructs original frames",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": false,
+          "failedNames": [
+            "current-staff historical context inputs reconstructs original frames without current execution or credential reads"
+          ]
+        },
+        {
+          "name": "capture-projection",
+          "file": "history-server",
+          "pattern": "replays every retained frame",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "expectedFailure": true,
+          "validOutcome": false,
+          "failedNames": [
+            "current-staff historical context execution replays every retained frame, including the final one, without dispatch or credentials"
+          ]
+        }
+      ],
+      "restoration": {
+        "history-server": {
+          "restored": true,
+          "sha256": "06e43f5c87b308057d338daa42473d91bd8e7a520af67500b80938c691ffaa30"
+        },
+        "history-inputs": {
+          "restored": true,
+          "sha256": "ec37b5e9bbac227cdf97f7469acf716fa593713c1e2b73142d5e9ac387f43b63"
+        },
+        "continuation": {
+          "restored": true,
+          "sha256": "43521341ac009589864c29bf15be99e7f858346b8f3eaf58d214786908f7da9a"
+        }
+      }
+    }
+  ]
+}

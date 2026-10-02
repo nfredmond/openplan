@@ -116,6 +116,13 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
+        {/*
+          First focusable element on every page. Each route group's layout owns
+          the `#main-content` landmark this points at.
+        */}
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <ThemeProvider defaultTheme="dark">{children}</ThemeProvider>
       </body>
     </html>

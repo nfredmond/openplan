@@ -78,6 +78,8 @@ export function useExploreMapInstance() {
       map.addControl(new NavigationControl({ visualizePitch: true }), "top-right");
       map.addControl(new FullscreenControl(), "top-right");
       map.addControl(new ScaleControl({ unit: "imperial" }), "bottom-left");
+      // Mapbox and OpenStreetMap require visible attribution on every map.
+      map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
       setMapReady(true);
     });
 

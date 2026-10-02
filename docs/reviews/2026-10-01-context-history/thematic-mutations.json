@@ -1,0 +1,544 @@
+{
+  "base": "e15e2b938bc19a7e336dc1d883145d5a251e032c",
+  "sourceSha256": "70d280fea1419ef43db64ec7fec8a055c5768572337657414db4772890f1951b",
+  "restored": {
+    "sha256": "70d280fea1419ef43db64ec7fec8a055c5768572337657414db4772890f1951b",
+    "restored": true
+  },
+  "initialOutcomes": [
+    {
+      "name": "harmless-comment",
+      "control": true,
+      "exitCode": 0,
+      "assertionFailure": false,
+      "outcome": "survived"
+    },
+    {
+      "name": "source-binding",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "empty-source",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "missing-context",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "duplicate-context",
+      "control": false,
+      "exitCode": 0,
+      "assertionFailure": false,
+      "outcome": "survived"
+    },
+    {
+      "name": "reused-context",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "note-order",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "task-binding",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "provider-finish",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "byte-ceiling",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "json-error-type",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "schema-status",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "valid-prose",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "nonblank-prose",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "unknown-source",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "duplicate-citation",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "evidence-citation",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "duplicate-group",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "duplicate-member",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "unassigned-conflict",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "missing-contribution",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "assigned-citation-required",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "group-members-required",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "unique-count",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "overlap-count",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "machine-authorship",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "prior-uncertainty",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    },
+    {
+      "name": "output-original",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed"
+    }
+  ],
+  "finalOutcomes": [
+    {
+      "name": "harmless-comment",
+      "control": true,
+      "exitCode": 0,
+      "assertionFailure": false,
+      "outcome": "survived",
+      "before": "Compile a thematic response",
+      "after": "Compile an original thematic response",
+      "diagnostics": []
+    },
+    {
+      "name": "source-binding",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "if (input.sourceId !== source.requestId || input.sourceSha256 !== source.snapshotSha256)",
+      "after": "if (false)",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "empty-source",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "if (!sourceIds.length)",
+      "after": "if (false)",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "missing-context",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "!isDeepStrictEqual([...contexts.keys()].sort(), sourceIds)",
+      "after": "false",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw error including 'one context per selected contribution' but got 'Thematic output references an unknown\u2026'"
+      ]
+    },
+    {
+      "name": "duplicate-context",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "contexts.size !== input.contexts.length",
+      "after": "false",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "reused-context",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "new Set(input.contexts.map(row => row.contextRequestId)).size !== input.contexts.length",
+      "after": "false",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "note-order",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "if (context.notes.some((note, index) => note.id !== index))",
+      "after": "if (false)",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "task-binding",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "observation.data.taskSha256 !== expected",
+      "after": "false",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "provider-finish",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "finishReason: z.literal(\"stop\")",
+      "after": "finishReason: z.string().nullable()",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "byte-ceiling",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "if (Buffer.byteLength(observation.data.outputText, \"utf8\") > 4_194_304)",
+      "after": "if (false)",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "json-error-type",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "throw new SynthesisThematicOutputError(\"Thematic output is not valid JSON\", { cause: error });",
+      "after": "throw new Error(\"Thematic output is not valid JSON\", { cause: error });",
+      "diagnostics": [
+        "AssertionError: expected error to be instance of SynthesisThematicOutputError"
+      ]
+    },
+    {
+      "name": "schema-status",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "status: z.literal(\"complete\")",
+      "after": "status: z.string()",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "valid-prose",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "value.isWellFormed() && !value.includes(\"\\0\")",
+      "after": "true",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "nonblank-prose",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "value.trim().length > 0",
+      "after": "true",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error",
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "unknown-source",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "if (!context) return fail(\"Thematic output references an unknown contribution\");",
+      "after": "if (!context) return;",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error",
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "duplicate-citation",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "if (seen.has(key))",
+      "after": "if (false)",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "evidence-citation",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "if (!note || !note.text.includes(reference.quote))",
+      "after": "if (false)",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "duplicate-group",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "if (new Set(output.groups.map(group => group.id)).size !== output.groups.length)",
+      "after": "if (false)",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "duplicate-member",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "if (new Set(group.members.map(member => member.sourceId)).size !== group.members.length)",
+      "after": "if (false)",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "unassigned-conflict",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "if (notAssigned.has(member.sourceId) || frequencies.has(member.sourceId))",
+      "after": "if (false)",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "missing-contribution",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "if (sourceIds.some(id => !frequencies.has(id) && !notAssigned.has(id)))",
+      "after": "if (false)",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "assigned-citation-required",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "citations: z.array(citation).min(1)",
+      "after": "citations: z.array(citation)",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw an error"
+      ]
+    },
+    {
+      "name": "group-members-required",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "members: z.array(membership).min(1)",
+      "after": "members: z.array(membership)",
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw error including 'output schema differs' but got 'Thematic output omits a selected cont\u2026'"
+      ]
+    },
+    {
+      "name": "unique-count",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "assignedSourceCount: frequencies.size",
+      "after": "assignedSourceCount: [...frequencies.values()].reduce((a, b) => a + b, 0)",
+      "diagnostics": [
+        "AssertionError: expected { schemaVersion: 1, \u2026(15) } to match object { assignedSourceCount: 2, \u2026(3) }"
+      ]
+    },
+    {
+      "name": "overlap-count",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "filter(count => count > 1)",
+      "after": "filter(count => count > 2)",
+      "diagnostics": [
+        "AssertionError: expected { schemaVersion: 1, \u2026(15) } to match object { assignedSourceCount: 2, \u2026(3) }"
+      ]
+    },
+    {
+      "name": "machine-authorship",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "status: \"machine_unreviewed\" as const",
+      "after": "status: \"staff_draft\" as const",
+      "diagnostics": [
+        "AssertionError: expected { schemaVersion: 1, \u2026(15) } to match object { status: 'machine_unreviewed', \u2026(8) }"
+      ]
+    },
+    {
+      "name": "prior-uncertainty",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "contextEvidence: [...input.contexts].sort",
+      "after": "contextEvidence: [...input.contexts].map(context => ({ ...context, uncertainties: [] })).sort",
+      "diagnostics": [
+        "AssertionError: expected [ Array(302) ] to deeply equal [ Array(302) ]"
+      ]
+    },
+    {
+      "name": "output-original",
+      "control": false,
+      "exitCode": 1,
+      "assertionFailure": true,
+      "outcome": "failed",
+      "before": "outputText: observation.data.outputText };",
+      "after": "outputText: JSON.stringify(output) };",
+      "diagnostics": [
+        "AssertionError: expected '{\"status\":\"complete\",\"title\":\"SYNTHET\u2026' to be '{\\n  \"status\": \"complete\",\\n  \"title\"\u2026' // Object.is equality"
+      ]
+    }
+  ]
+}

@@ -234,6 +234,8 @@ export function LocationDisplayMap({
     const stopSizing = keepMapSizedToContainer(map, container);
 
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+    // Mapbox and OpenStreetMap require visible attribution on every map.
+    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
 
     const shapeItemById = new Map(shapeItems.map((item) => [item.id, item]));
 

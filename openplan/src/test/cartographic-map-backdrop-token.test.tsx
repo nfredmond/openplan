@@ -13,6 +13,7 @@ const mockMap = {
   zoomOut: vi.fn(),
   remove: vi.fn(),
   setStyle: mockSetStyle,
+  addControl: vi.fn(),
 };
 
 vi.mock("next/navigation", () => ({
@@ -21,7 +22,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("mapbox-gl", () => ({
-  default: {
+  default: { AttributionControl: class {},
     Map: mockMapConstructor,
     accessToken: "",
   },

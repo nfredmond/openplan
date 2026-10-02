@@ -604,6 +604,11 @@ export function CartographicMapBackdrop({
       pitchWithRotate: false,
       dragRotate: false,
     });
+
+    // Mapbox and OpenStreetMap require visible attribution on every map. The
+    // logo holds bottom-left; the account chip and the Planner Agent button hold
+    // the bottom-right corner, so the compact control sits beside the logo.
+    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");
     appliedStyleRef.current = styleUrl;
 
     didInitialFitRef.current = false;

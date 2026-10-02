@@ -323,6 +323,8 @@ export function GeometryPickerMap({
     // own handler so there is no duplicate tab stop or double-handled key.
     map.keyboard.disable();
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+    // Mapbox and OpenStreetMap require visible attribution on every map.
+    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
 
     map.on("load", () => {
       setMapReady(true);

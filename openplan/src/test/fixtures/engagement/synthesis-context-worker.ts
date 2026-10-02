@@ -87,6 +87,7 @@ export function synthesisContextWorkerFixture(configuration?: { connectionId: st
     nextIndex: plan.entries.length, frameBytes: plan.header.frameBytes, tailSha256: plan.header.tailSha256, cancelled: false,
     seal: { receiptText: contextSeal, receiptSha256: hash(contextSeal) } as { receiptText: string; receiptSha256: string } | null };
   const controller = new AbortController(), options = { failTable: "", failRpc: "", abortTable: "",
+    afterRead: null as null | ((table: string, filters: Record<string, unknown>) => void),
     returnedPatch: null as null | { table: string; key?: string; value?: unknown; patch: Record<string, unknown> } };
   const trace: Array<{ table: string; columns: string; filters: Record<string, unknown>; signal?: AbortSignal }> = [];
   const from = vi.fn((table: string) => {
@@ -96,8 +97,10 @@ export function synthesisContextWorkerFixture(configuration?: { connectionId: st
       const row = rows.get(table)?.find(candidate => Object.entries(entry.filters).every(([key, value]) => candidate[key] === value));
       const patch = options.returnedPatch;
       const returned = row && patch?.table === table && (!patch.key || entry.filters[patch.key] === patch.value) ? { ...row, ...patch.patch } : row;
-      return { data: returned ? Object.fromEntries(entry.columns.split(",").map(column => [column, returned[column]])) : null,
+      const response = { data: returned ? Object.fromEntries(entry.columns.split(",").map(column => [column, returned[column]])) : null,
         error: options.failTable === table ? { code: "SYNTHETIC" } : null };
+      options.afterRead?.(table, entry.filters);
+      return response;
     };
     const query = { select(value: string) { entry.columns = value; return query; }, eq(key: string, value: unknown) { entry.filters[key] = value; return query; },
       abortSignal(signal: AbortSignal) { entry.signal = signal; return query; }, single: finish, maybeSingle: finish }; return query;

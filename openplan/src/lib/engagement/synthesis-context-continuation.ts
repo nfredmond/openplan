@@ -25,6 +25,11 @@ type ContentArgs = Parameters<typeof createSynthesisGenerationContextContent>;
 type FramePart = { id: string; text?: string };
 type Retained = z.infer<typeof retainedSchema>;
 
+/** A retained provider response fails the frozen output contract. Operational
+ * and programming errors must propagate instead of becoming evidence about it.
+ */
+export class SynthesisContextOutputError extends Error {}
+
 /** Frozen separately from segment v1. Neither recipe identity nor a request
  * provides dispatch permission; the future native executor must bind both.
  */
@@ -95,26 +100,34 @@ export function createSynthesisContextContinuation(rawRequest: unknown, scope: S
     if (task.status !== "ready") throw new Error("Context continuation has no executable next frame");
     const observation = observationSchema.parse(raw);
     if (observation.taskSha256 !== task.task.sha256 || observation.finishReason !== "stop") {
-      throw new Error("Context continuation output is truncated or belongs to another task");
+      throw new SynthesisContextOutputError("Context continuation output is truncated or belongs to another task");
     }
-    if (Buffer.byteLength(observation.outputText, "utf8") > 4_194_304) throw new Error("Context continuation output exceeds retention limit");
-    const output = outputSchema.parse(JSON.parse(observation.outputText)), frame = frames[task.frameIndex];
+    if (Buffer.byteLength(observation.outputText, "utf8") > 4_194_304) throw new SynthesisContextOutputError("Context continuation output exceeds retention limit");
+    let decoded: unknown;
+    try { decoded = JSON.parse(observation.outputText); }
+    catch (error) {
+      if (!(error instanceof SyntaxError)) throw error;
+      throw new SynthesisContextOutputError("Context continuation output is not valid JSON", { cause: error });
+    }
+    const parsed = outputSchema.safeParse(decoded);
+    if (!parsed.success) throw new SynthesisContextOutputError(`Context continuation output schema differs: ${parsed.error.message}`, { cause: parsed.error });
+    const output = parsed.data, frame = frames[task.frameIndex];
     if (output.status !== "complete" || !isDeepStrictEqual(output.coveredPartIds, frame.parts.map(part => part.id))) {
-      throw new Error("Context continuation frame coverage is incomplete");
+      throw new SynthesisContextOutputError("Context continuation frame coverage is incomplete");
     }
     const oldNotes = previousOutput?.notes ?? [], oldUncertainties = previousOutput?.uncertainties ?? [];
     if (!isDeepStrictEqual(output.notes.slice(0, oldNotes.length), oldNotes) ||
       !isDeepStrictEqual(output.uncertainties.slice(0, oldUncertainties.length), oldUncertainties)) {
-      throw new Error("Context continuation discarded or rewrote preceding state");
+      throw new SynthesisContextOutputError("Context continuation discarded or rewrote preceding state");
     }
     const available = new Map(seenParts);
     for (const part of frame.parts) available.set(part.id, part);
     for (const [noteIndex, note] of output.notes.entries()) {
       if (note.id !== noteIndex || new Set(note.relatedNoteIds).size !== note.relatedNoteIds.length ||
-        note.relatedNoteIds.some(id => id >= note.id)) throw new Error("Context continuation note references differ");
+        note.relatedNoteIds.some(id => id >= note.id)) throw new SynthesisContextOutputError("Context continuation note references differ");
       for (const citation of note.citations) {
         const part = available.get(citation.partId);
-        if (typeof part?.text !== "string" || !part.text.includes(citation.quote)) throw new Error("Context continuation citation is not retained evidence");
+        if (typeof part?.text !== "string" || !part.text.includes(citation.quote)) throw new SynthesisContextOutputError("Context continuation citation is not retained evidence");
       }
     }
     const result = { schemaVersion: 1, purpose: "private_synthesis_context_step_result", requestId: plan.header.requestId,

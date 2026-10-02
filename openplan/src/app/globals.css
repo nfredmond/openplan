@@ -32,6 +32,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -137,6 +138,7 @@
   --muted-foreground: var(--muted);
   --accent-foreground: #ffffff;
   --destructive: var(--urgent);
+  --destructive-foreground: #ffffff;
   --border: var(--line);
   --input: var(--line);
   --focus-ring-light: var(--accent-2);
@@ -218,6 +220,8 @@
   --muted-foreground: var(--muted);
   --accent-foreground: #1a1a1a;
   --destructive: var(--urgent);
+  /* Dark `--urgent` is a light coral; white on it is 2.7:1. Dark ink is 6.7:1. */
+  --destructive-foreground: #1a1410;
   --border: var(--line);
   --input: rgba(255, 255, 255, 0.16);
   --ring: color-mix(in srgb, var(--accent) 72%, white 28%);
@@ -910,38 +914,21 @@
     box-shadow: none;
   }
 
+  /*
+    STAT TILES SIZE THEMSELVES TO THE CONTAINER, NOT TO A CLASS SUFFIX.
+
+    This grid used to take its column count from `cols-3`, `cols-4` or `cols-5`,
+    and only those three had rules. Pages also wrote `cols-2`, `cols-6` and
+    `cols-7`, which matched nothing, so their tiles stacked one per row at every
+    width: seven full-width tiles each holding a single digit. `auto-fit` fills
+    whatever width the grid is given, in a wide section or a narrow intro card,
+    so a `cols-N` suffix is now a harmless hint and cannot break the layout.
+  */
   .module-summary-grid {
     margin-top: 1.25rem;
     display: grid;
     gap: 0.85rem;
-  }
-
-  @media (min-width: 640px) {
-    .module-summary-grid.cols-3,
-    .module-summary-grid.cols-4,
-    .module-summary-grid.cols-5 {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .module-summary-grid.cols-5 {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-
-  @media (min-width: 1280px) {
-    .module-summary-grid.cols-3 {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .module-summary-grid.cols-4 {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .module-summary-grid.cols-5 {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
   }
 
   .module-summary-card,
@@ -4203,4 +4190,43 @@
   border: 0;
   border-top: 1px solid color-mix(in srgb, var(--foreground) 18%, transparent);
   margin: 1.2em 0;
+}
+
+/*
+  SKIP LINK. Off-screen until a keyboard user tabs to it, then pinned top-left
+  above every layer. Unlayered so no utility can hide it.
+*/
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 200;
+  transform: translateY(-200%);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel-solid);
+  color: var(--ink);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+#main-content:focus {
+  outline: none;
+}
+
+/*
+  A DARK SCOPE INSIDE A LIGHT PAGE.
+
+  Putting `.dark` on a subtree re-declares the tokens there, but `color` is
+  inherited as an already-computed value from `<body>`, so anything without its
+  own colour (a bare heading, a native select) kept the light page's dark ink on
+  the dark surface. Re-anchor the inherited ink and the native control scheme at
+  the scope boundary.
+*/
+:root:not(.dark) .dark {
+  color: var(--foreground);
+  color-scheme: dark;
 }

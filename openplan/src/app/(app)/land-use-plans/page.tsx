@@ -49,7 +49,7 @@ export default async function LandUsePlansPage() {
   );
 
   return (
-    <main className="mx-auto w-full max-w-7xl space-y-6 p-4 md:p-8">
+    <div className="mx-auto w-full max-w-7xl space-y-6 p-4 md:p-8">
       <header>
         <p className="text-sm font-semibold uppercase tracking-wide text-primary">Plans and programming</p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight">Land Use Plans</h1>
@@ -83,6 +83,6 @@ export default async function LandUsePlansPage() {
           jurisdictionUnreadable ? "workspace_jurisdiction_unreadable" : recommendation.kind
         }
       />
-    </main>
+    </div>
   );
 }

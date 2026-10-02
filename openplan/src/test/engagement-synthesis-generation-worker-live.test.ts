@@ -17,6 +17,7 @@ import { readSynthesisGenerationSelectedResults, loadSynthesisGenerationHistory 
 import { createSynthesisContextRequest, readSynthesisContextRequest } from "@/lib/engagement/synthesis-context-requests-server";
 import { retainSynthesisContextPlan } from "@/lib/engagement/synthesis-context-plan-server";
 import { createSynthesisContextContinuation } from "@/lib/engagement/synthesis-context-continuation";
+import { loadSynthesisContextHistory } from "@/lib/engagement/synthesis-context-history-server";
 import { verifySynthesisGenerationApiResult } from "@/lib/engagement/synthesis-generation-api-result";
 import { createSynthesisGenerationInput } from "@/lib/engagement/synthesis-generation-input";
 import { createSynthesisGenerationRecords } from "@/lib/engagement/synthesis-generation-records";
@@ -253,6 +254,10 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       expect(JSON.parse(await readFile(join(directory, "0/pending.json"), "utf8")).phase).toBe("unobserved");
       const attempts = checked(await service.from("engagement_synthesis_generation_attempts").select("id,task_index").eq("request_id", args.requestId));
       expect(attempts).toEqual([{ id: interrupted.attemptId, task_index: 0 }]);
+      const retained = await loadSynthesisContextHistory(staff.client, service, scope, signal);
+      expect(retained.manifest.status).toBe("incomplete");
+      expect(retained.entries[0].status).toBe("awaiting_output");
+      expect(retained.finalOutputText).toBeNull();
       expect(f.calls).toHaveLength(f.plan.entries.length); expect(deliveries).toBe(0); expect(dropped).toBe(true); expect(proxyErrors).toEqual([]);
       return;
     }
@@ -262,7 +267,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(drained.code, drained.stderr).toBe(0);
     expect(drained.stdout).toContain(`${staged.plan.entries.length} outputs retained; 0 dispatches unobserved; 0 scheduled tasks not processed; 0 tasks outside this schedule`);
     const replay = createSynthesisContextContinuation(...stagingArgs);
-    let priorAttempt: string | null = null, priorCapture: string | null = null;
+    let priorAttempt: string | null = null, priorCapture: string | null = null, finalOutput: string | null = null;
     for (let index = 0; index < staged.plan.entries.length; index++) {
       const task = replay.next(); if (task.status !== "ready") throw new Error("Native context replay has no ready task");
       const journal = JSON.parse(await readFile(join(directory, String(index), "pending.json"), "utf8"));
@@ -278,18 +283,34 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
         { dispatchSha256: journal.dispatch.receiptSha256, responseByteLimit: grant.responseByteLimit }).capture;
       replay.accept({ taskSha256: task.task.sha256, outputText: capture.outputText, finishReason: capture.finishReason });
       priorAttempt = outcome.attemptId; priorCapture = output.capture_sha256;
+      finalOutput = capture.outputText;
     }
     expect(replay.next()).toMatchObject({ status: "frames_complete", interpretation: "machine_unreviewed" });
     expect(dropped).toBe(true); expect(deliveries).toBe(staged.plan.entries.length + 2);
     expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length); expect(proxyErrors).toEqual([]);
+    const cancellationReason = "😀".repeat(4000);
     checked(await staff.client.rpc("cancel_engagement_synthesis_generation_request", { p_campaign: args.campaignId, p_request: args.requestId,
-      p_cancellation: randomUUID(), p_reason: "SYNTHETIC completed context custody" }));
+      p_cancellation: randomUUID(), p_reason: cancellationReason }));
     staff.revoke();
     const recovered = await runContext(); expect(recovered.code, recovered.stderr).toBe(0);
     const last = JSON.parse(await readFile(join(directory, String(staged.plan.entries.length - 1), "pending.json"), "utf8"));
     expect(last.captureSha256).toBe(priorCapture);
     expect(deliveries).toBe(staged.plan.entries.length * 2 + 2);
     expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length);
+    const reader = await f.staffHistoryClient();
+    const retained = await loadSynthesisContextHistory(reader.client, service, scope, signal);
+    expect(retained.manifest.status).toBe("frames_complete");
+    expect(retained.manifest.verifiedFrameCount).toBe(staged.plan.entries.length);
+    expect(retained.entries.every(entry => entry.status === "verified")).toBe(true);
+    expect(retained.entries.at(-1)?.captureSha256).toBe(priorCapture);
+    expect(retained.finalOutputText).toBe(finalOutput);
+    expect(retained.interpretation).toBe("machine_unreviewed");
+    expect(retained.request.cancellation).not.toBeNull();
+    expect(JSON.parse(retained.request.cancellation!.receiptText).reason).toBe(cancellationReason);
+    expect(retained.sha256).toBe(hash(retained.canonical));
+    expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length);
+    reader.revoke();
+    await expect(loadSynthesisContextHistory(reader.client, service, scope, signal)).rejects.toThrow("Context request unavailable");
   }, 300000);
 
   it("retains reconstructed context requests through authenticated HTTP after original requester departure", async () => {

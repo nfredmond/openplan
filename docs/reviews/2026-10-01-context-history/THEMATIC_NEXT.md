@@ -1,0 +1,84 @@
+# Thematic processing after context-history verification
+
+October 1, 2026. Investigation against `a6f0376e`. This is the next implementation
+dependency within M9b, not an implemented workflow or a replacement roadmap.
+
+The new history reader supplies complete retained context under current staff
+permission. The next useful outcome is an optional machine proposal that staff
+can inspect and explicitly import into a new review revision in Analysis. Plan,
+execute and verify that connected outcome together; another input inventory by
+itself does not fulfill it.
+
+The [proposal conversion checkpoint](THEMATIC_PROPOSAL.md) now implements the
+receiving content checks with synthetic trusted context descriptors. It is not
+a native input reader or generation route. Complete the retained input and
+execution path before exposing those checks to a browser or worker.
+
+## Freeze complete inputs and preserve interpretation limits
+
+Start from the verified source and parent segment inventory. Every selected
+contribution needs an explicit chosen context request and selection sequence.
+Bind the choice to its verified history manifest, exact final capture and result
+hashes, original source, parent request and segment-result manifest. A sequence
+alone does not bind an output that can arrive later.
+
+Reject duplicate, unknown, cross-source and inconsistent parent choices. Missing
+or incomplete context remains visible; it cannot become an empty contribution or
+ready thematic input. An empty retained source remains a separate no-model case.
+Keep original text, definitions, references, machine notes, quotations and
+uncertainties available through the next stage. Do not treat machine notes as a
+lossless substitute for their originals, or count referenced context as another
+participant. Code computes exact unique source membership and overlap.
+
+Large inventories need retained, resumable preparation and bounded task frames.
+Do not serialize every dependency into the existing 4,096-character request
+intent or assume a browser request can complete all record reads. Reuse existing
+staging, seal, journal, selected-attempt and original-response mechanisms where
+their contracts apply. Preserve explicit resource limits without clipping.
+
+## Give new work its own authority
+
+`loadSynthesisContextWorkerInputs` calls the current context-plan gate, which
+checks the original context requester's membership and active execution scope.
+It is not a historical reader for a new actor's thematic job. Conversely,
+`loadSynthesisContextHistory` uses authenticated current-staff RPCs and does not
+authorize a service worker to act as that user.
+
+Add a separately bound thematic request and versioned recipe. Its preparation
+and worker reads must check the new requester's current scope through an explicit
+native authorization path before accessing selected historical inputs. Bind
+fresh execution to that request's sealed input manifest and approved resources.
+Do not fabricate a user JWT, substitute service-role access for current staff
+permission, or feed a thematic packet through the frozen segment/context recipe.
+Cancellation and membership loss stop new execution; original-output recovery
+and historical inspection remain separate.
+
+The current native stage separation is explicit in migrations
+`20261014000037` through `20261014000039`. The segment plan gate refuses context
+requests; the context gate reads its own request binding. Preserve that
+separation when adding thematic requests. Historical reads for a thematic worker
+need a named native delegation bound to that new request and its selected
+context. Do not disguise that path as the authenticated current-staff RPC client.
+Preparation must durably retain per-contribution choices, permit interruption
+recovery and seal complete source membership before any model dispatch. The
+independent-fixes branch already owns migrations `20261015000001` and
+`20261015000002`; inspect current main before assigning another migration.
+
+## Finish the receiving workflow
+
+Retain machine authorship and the whole dependency chain in each proposal.
+`synthesis-review.ts` currently accepts category-derived creation and reasoned
+staff corrections. A new proposal import needs a distinct retained operation,
+an exact expected parent revision/hash, and lineage verification against the
+original proposal. Existing approvals stay with their original revision.
+
+Keep the complete connected acceptance case: more than 300 contributions,
+long/multilingual text, survey-only and mixed sources, missing historical
+definitions, overlapping groups, stale draft conflicts, interrupted delivery,
+cancelled/departed requesters and explicit staff import. Inspect identified
+desktop and 390px navigation, keyboard use, original artifacts and console output.
+Engineering checks still cannot establish semantic quality or representativeness.
+
+The independent-fixes and UI/UX worktrees remain responsible for their active
+corrections. Coordinate interface ownership before modifying shared UI files,
+and integrate their verified changes before final connected acceptance.

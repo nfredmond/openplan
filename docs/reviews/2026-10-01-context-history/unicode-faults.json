@@ -1,0 +1,47 @@
+{
+  "cases": [
+    {
+      "name": "control",
+      "exit": 0,
+      "passed": 3,
+      "failed": 0,
+      "fault": false,
+      "messages": []
+    },
+    {
+      "name": "cancellation-limit",
+      "exit": 1,
+      "passed": 0,
+      "failed": 1,
+      "fault": true,
+      "messages": [
+        "Error: promise resolved \"{ scope: { \u2026(3) }, \u2026(5) }\" instead of rejecting"
+      ]
+    },
+    {
+      "name": "selection-limit",
+      "exit": 1,
+      "passed": 0,
+      "failed": 1,
+      "fault": true,
+      "messages": [
+        "Error: promise resolved \"{ \u2026(8) }\" instead of rejecting"
+      ]
+    },
+    {
+      "name": "parent-selection-limit",
+      "exit": 1,
+      "passed": 0,
+      "failed": 1,
+      "fault": true,
+      "messages": [
+        "Error: promise resolved \"{ scope: { \u2026(3) }, \u2026(5) }\" instead of rejecting"
+      ]
+    }
+  ],
+  "restoration": {
+    "synthesis-context-history-inputs.ts": "6ecf9872107d3f60f88217ff4a5b9bc44d5f4d0f978dade9dcc52df3b2c21454",
+    "synthesis-context-history-server.ts": "5a8203ae38b9173952e19af6f42d3f9bf67ba1d37dd3b59fa3306bb9c2d2ce66",
+    "synthesis-generation-selections-server.ts": "350526873bb3514b57f679fe1bb5b3b96143544584c2228b9869fa70b155313d"
+  }
+}

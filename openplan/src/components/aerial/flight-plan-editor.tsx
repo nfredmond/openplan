@@ -318,6 +318,8 @@ export function FlightPlanEditor({
       attributionControl: false,
     });
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+    // Mapbox and OpenStreetMap require visible attribution on every map.
+    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
     map.on("load", () => {
       // Same visual family as mission-aoi-editor: sky-blue AOI; the flight
       // grid gets amber lines and small amber trigger points over it.
