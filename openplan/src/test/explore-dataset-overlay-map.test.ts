@@ -1,4 +1,5 @@
 import type { GeoJSONSource, Map as MapboxMap } from "mapbox-gl";
+import { tractMeasurePaint } from "@/lib/cartographic/tract-measure-classes";
 import { describe, expect, it, vi } from "vitest";
 
 import { syncDatasetOverlayMap } from "@/app/(app)/explore/_components/explore-dataset-overlay-map";
@@ -119,13 +120,6 @@ function createMapStub({
   };
 }
 
-const measured = (property: string, ramp: unknown[]): unknown[] => [
-  "case",
-  ["any", ["==", ["typeof", ["get", property]], "number"], ["==", ["typeof", ["get", property]], "string"]],
-  ramp,
-  "#64748b",
-];
-
 describe("syncDatasetOverlayMap", () => {
   it("does nothing when the dataset overlay source has not been installed", () => {
     const mapStub = createMapStub({ hasSource: false });
@@ -188,21 +182,7 @@ describe("syncDatasetOverlayMap", () => {
       ],
     });
     expect(mapStub.setPaintProperty).toHaveBeenCalledWith("dataset-overlay-fill", "fill-opacity", 0.42);
-    expect(mapStub.setPaintProperty).toHaveBeenCalledWith("dataset-overlay-fill", "fill-color", measured("pctBelowPoverty", [
-      "interpolate",
-      ["linear"],
-      ["to-number", ["get", "pctBelowPoverty"]],
-      0,
-      "#0b3b2e",
-      10,
-      "#15803d",
-      20,
-      "#65a30d",
-      30,
-      "#ca8a04",
-      45,
-      "#b91c1c",
-    ]));
+    expect(mapStub.setPaintProperty).toHaveBeenCalledWith("dataset-overlay-fill", "fill-color", tractMeasurePaint("pctBelowPoverty"));
     expect(mapStub.setPaintProperty).toHaveBeenCalledWith("dataset-overlay-line", "line-color", "#f8fafc");
     expect(mapStub.setPaintProperty).toHaveBeenCalledWith("dataset-overlay-line", "line-dasharray", [1, 0]);
   });

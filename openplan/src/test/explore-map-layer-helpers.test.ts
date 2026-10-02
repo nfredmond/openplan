@@ -1,3 +1,4 @@
+import { tractMeasurePaint } from "@/lib/cartographic/tract-measure-classes";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -38,13 +39,6 @@ function buildDataset(overrides: Partial<LinkedDataset> = {}): LinkedDataset {
     ...overrides,
   };
 }
-
-const measured = (property: string, ramp: unknown[]): unknown[] => [
-  "case",
-  ["any", ["==", ["typeof", ["get", property]], "number"], ["==", ["typeof", ["get", property]], "string"]],
-  ramp,
-  "#64748b",
-];
 
 describe("explore map layer helpers", () => {
   it("builds crash layer filters for severity and user-type toggles", () => {
@@ -172,21 +166,7 @@ describe("explore map layer helpers", () => {
   it("builds thematic paint expressions for score and point overlay metrics", () => {
     expect(buildThematicOverlayPaintExpression("overallScore")).toEqual(screeningScorePaint("overallScore"));
 
-    expect(buildThematicOverlayPaintExpression(undefined)).toEqual(measured("pctMinority", [
-      "interpolate",
-      ["linear"],
-      ["to-number", ["get", "pctMinority"]],
-      0,
-      "#123047",
-      30,
-      "#1d4ed8",
-      55,
-      "#2563eb",
-      75,
-      "#0f766e",
-      100,
-      "#34d399",
-    ]));
+    expect(buildThematicOverlayPaintExpression(undefined)).toEqual(tractMeasurePaint("pctMinority"));
 
     expect(buildPointThematicOverlayColorExpression("fatalCount")).toEqual([
       "interpolate",
