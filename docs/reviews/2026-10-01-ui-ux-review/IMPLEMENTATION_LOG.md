@@ -69,3 +69,23 @@ Known gaps from this batch:
 - `qa-harness/openplan-local-control-hit-test-audit.js`, `-escape-hatch-audit.js` and `-card-nesting-audit.js` were not run against the new frame.
 - The workspace clock under the workspace name is hidden in the plain shell.
 - Keyboard order through the new header and the More sheet was not walked by hand.
+
+## Phase 3, first step, October 1, 2026
+
+| Change | How it was checked |
+|---|---|
+| The "Can OpenPlan do this here?" panel on a project page is one row that opens (decision D5). The status badge stays visible on the closed row | Chrome at 1440 and 390, dark and light: the project title is followed by the row and then the project's own tabs. Panel tests pass unchanged because the full panel is still the default elsewhere |
+
+Checks: lint clean, dead-code check exit 0, 16,772 tests passed.
+
+After screenshots are in `evidence/` as files 17 to 21.
+
+## What is next
+
+1. Record hub (decision D2): breadcrumb, title, one status line and URL tabs on plan, program, model and scenario pages; closed tabs unmount; the workspace command board leaves record pages.
+2. One `PageHeader` component, and a dashboard title.
+3. Corridor Analysis and Aerial onto one map shell.
+4. Copy pass. This waits on Nathaniel's vocabulary answers (decision D6).
+5. Chart and map ramps, legends and number formatting.
+6. Public pages: wordmark, screenshots, favicon and social image, closed-campaign page, print stylesheet.
+7. Keyboard and screen-reader walk; refresh the browser audits against the new frame.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download, MapPinned } from "lucide-react";
+import { ChevronDown, Download, MapPinned } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type {
   JurisdictionReadinessReport,
@@ -66,23 +66,8 @@ export function JurisdictionReadinessPanel({
 
   if (!report) return null;
 
-  return (
-    <section
-      className={compact ? "rounded-xl border border-border/70 p-4" : "rounded-xl border border-border/70 p-5"}
-      aria-label="Jurisdiction support"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            <MapPinned className="h-4 w-4" />
-            Local support
-          </div>
-          <h2 className="mt-2 text-base font-semibold text-foreground">Can OpenPlan do this here?</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{report.jurisdiction.label}</p>
-        </div>
-        <StatusBadge tone={STATUS_TONES[report.status]}>{report.statusLabel}</StatusBadge>
-      </div>
-
+  const detail = (
+    <>
       {reports.length > 1 ? (
         <label className="mt-4 block text-sm font-medium text-foreground">
           Planning job
@@ -163,6 +148,55 @@ export function JurisdictionReadinessPanel({
           </a>
         ) : null}
       </div>
+    </>
+  );
+
+  /*
+    COMPACT IS ONE ROW THAT OPENS.
+
+    On a project page this panel used to stand fully open above the project's
+    own tabs: a jurisdiction question, a job picker, two columns of limits and a
+    SHA-256 hash, before anything about the project. The answer still shows on
+    the closed row (the status badge is never hidden); the reasoning, sources
+    and download are one click away.
+  */
+  if (compact) {
+    return (
+      <section className="rounded-xl border border-border/70" aria-label="Jurisdiction support">
+        <details className="group">
+          <summary className="flex min-h-11 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 [&::-webkit-details-marker]:hidden">
+            <MapPinned className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <h2 className="text-sm font-semibold text-foreground">Can OpenPlan do this here?</h2>
+            <span className="text-sm text-muted-foreground">{report.jurisdiction.label}</span>
+            <span className="ml-auto flex items-center gap-2">
+              <StatusBadge tone={STATUS_TONES[report.status]}>{report.statusLabel}</StatusBadge>
+              <ChevronDown
+                className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180"
+                aria-hidden="true"
+              />
+            </span>
+          </summary>
+          <div className="border-t border-border/70 px-4 pb-4">{detail}</div>
+        </details>
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-xl border border-border/70 p-5" aria-label="Jurisdiction support">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            <MapPinned className="h-4 w-4" />
+            Local support
+          </div>
+          <h2 className="mt-2 text-base font-semibold text-foreground">Can OpenPlan do this here?</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{report.jurisdiction.label}</p>
+        </div>
+        <StatusBadge tone={STATUS_TONES[report.status]}>{report.statusLabel}</StatusBadge>
+      </div>
+
+      {detail}
     </section>
   );
 }
