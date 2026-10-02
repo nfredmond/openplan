@@ -15,7 +15,7 @@ type HistoryEntry = {
   dispatch: { schemaVersion: number; attemptId: string; workerId: string; authorizationId: string; binding: SynthesisGenerationAttemptBinding;
     maxOutputTokens: number; responseByteLimit: number; expiresAt: string; authorizedAt: string };
   output: { status: string; coveredPartIds: string[]; notes: unknown[]; uncertainties: string[] };
-  result: { canonical: string; sha256: string }; recapture: (text?: string, finish?: string) => ReturnType<typeof createSynthesisGenerationApiResult>;
+  result: { canonical: string; sha256: string }; recapture: (text?: string, finish?: string, statusCode?: number) => ReturnType<typeof createSynthesisGenerationApiResult>;
   task: { canonical: string; sha256: string; utf8Bytes: number }; binding: SynthesisGenerationAttemptBinding;
 };
 
@@ -32,7 +32,8 @@ export function synthesisContextJobFixture(priorCount = 2, configuration?: Param
   const processor = createSynthesisContextContinuation(f.f.request, f.f.scope, f.contentArgs);
   const history: HistoryEntry[] = [];
   let previous: { attemptId: string; selectionId: string; captureSha256: string } | null = null;
-  for (let index = 0; index < priorCount; index++) {
+  function appendFrame() {
+    const index = history.length;
     const next = processor.next(); if (next.status !== "ready") throw new Error("SYNTHETIC predecessor task unavailable");
     const task = JSON.parse(next.task.canonical), attemptId = randomUUID(), workerId = randomUUID();
     const binding = { jobId: f.f.scope.requestId, planSha256: f.plan.continuation.headerSha256,
@@ -57,12 +58,12 @@ export function synthesisContextJobFixture(priorCount = 2, configuration?: Param
     const output = { status: "complete", coveredPartIds: task.input.frame.parts.map((p: { id: string }) => p.id),
       notes: prior.notes, uncertainties: [...prior.uncertainties, `SYNTHETIC frame ${index}`] };
     const outputRow = add("engagement_synthesis_generation_outputs", { attempt_id: attemptId });
-    function recapture(outputText = JSON.stringify(output), finishReason = "stop") {
+    function recapture(outputText = JSON.stringify(output), finishReason = "stop", statusCode = 200) {
       dispatchRow.receipt_text = JSON.stringify(dispatch); dispatchRow.receipt_sha256 = hash(String(dispatchRow.receipt_text)); dispatchRow.expires_at = dispatch.expiresAt;
       const body = JSON.stringify({ id: "synthetic-context", model: binding.modelId,
         choices: [{ finish_reason: finishReason, message: { role: "assistant", content: outputText } }] });
       const result = createSynthesisGenerationApiResult(binding, { dispatchSha256: String(dispatchRow.receipt_sha256), responseByteLimit: dispatch.responseByteLimit,
-        startedAt: "2026-09-30T00:00:00Z", finishedAt: "2026-09-30T00:01:00Z", receipt: { schemaVersion: 1, statusCode: 200, contentType: "application/json",
+        startedAt: "2026-09-30T00:00:00Z", finishedAt: "2026-09-30T00:01:00Z", receipt: { schemaVersion: 1, statusCode, contentType: "application/json",
           contentEncoding: null, bodyBase64: Buffer.from(body).toString("base64"), bodySha256: hash(body), retainedBytes: Buffer.byteLength(body), bodyComplete: true, termination: "complete" } });
       Object.assign(outputRow, { capture_text: result.canonical, capture_sha256: result.sha256 }); return result;
     }
@@ -71,6 +72,7 @@ export function synthesisContextJobFixture(priorCount = 2, configuration?: Param
     previous = { attemptId, selectionId: selection.id, captureSha256: String(outputRow.capture_sha256) };
     history.push({ selection, attempt, input, dispatch, dispatchRow, output, outputRow, result, recapture, task: next.task, binding });
   }
+  for (let index = 0; index < priorCount; index++) appendFrame();
   const next = processor.next(); if (next.status !== "ready") throw new Error("SYNTHETIC next task unavailable");
   const selectionOptions = { pagePatch: {} as Record<string, unknown>, corruptChecksum: false, changeSequence: false, missing: false, receiptPrefix: "" };
   let pageReads = 0;
@@ -87,6 +89,7 @@ export function synthesisContextJobFixture(priorCount = 2, configuration?: Param
   });
   const service = { from: f.from, rpc } as unknown as Pick<SupabaseClient, "from" | "rpc">;
   return { ...f, service, rpc, args, grantIntent, grant, history, next, selectionOptions,
+    completeHistory: () => { while (history.length < f.plan.entries.length) appendFrame(); },
     resealGrant: () => { grant.intent_text = JSON.stringify(grantIntent); grant.intent_sha256 = hash(grant.intent_text); },
     loadJob: () => loadSynthesisContextWorkerJob(service, args, f.controller.signal) };
 }

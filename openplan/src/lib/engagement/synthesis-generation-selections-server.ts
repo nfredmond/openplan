@@ -15,7 +15,7 @@ const pageSchema = z.object({
 const receiptSchema = z.object({
   schemaVersion: z.literal(1), id, requestId: id, taskIndex: natural, attemptId: id.nullable(),
   previousSelectionId: id.nullable(), sequence: natural.positive(), actorId: id, origin: z.enum(["authorization", "staff"]),
-  authorizationId: id.nullable(), reason: z.string().min(1).max(4000).refine(text => text.trim().length > 0),
+  authorizationId: id.nullable(), reason: z.string().min(1).refine(text => Array.from(text).length <= 4000 && text.trim().length > 0),
   selectedAt: z.string().datetime({ offset: true }),
 }).strict();
 type RetainedSelection = z.infer<typeof retainedReceipt> & { receipt: z.infer<typeof receiptSchema> };

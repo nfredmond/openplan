@@ -1,0 +1,21 @@
+{
+  "exit": 1,
+  "failures": [
+    {
+      "name": "synthesis worker native HTTP delivery recovers native context CLI custody after output acknowledgement loss",
+      "messages": [
+        "AssertionError: expected 'incomplete' to be 'frames_complete' // Object.is equality"
+      ]
+    },
+    {
+      "name": "synthesis worker native HTTP delivery recovers native context CLI custody after dispatch acknowledgement loss",
+      "messages": [
+        "AssertionError: expected 'claimed' to be 'awaiting_output' // Object.is equality"
+      ]
+    }
+  ],
+  "restoration": {
+    "restored": true,
+    "sha256": "06e43f5c87b308057d338daa42473d91bd8e7a520af67500b80938c691ffaa30"
+  }
+}
