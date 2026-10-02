@@ -16,14 +16,26 @@ it("reads all actuals and allocations with stable ranges, source cutoff and comp
  const rows = await loadActualVersions(client, "program", "2026-09-01T00:00:00Z");
  expect(rows).toHaveLength(1201); expect(rows.every(r => r.allocations.length === 1 && r.allocations[0].amount === "0.01")).toBe(true);
  for (const table of ["work_program_actual_versions", "work_program_actual_allocations"]) {
-  const calls = seen.filter(c => c.table === table); expect(calls).toHaveLength(7); expect(calls.at(-1)!.range).toEqual([1200, 1399]);
+  const calls = seen.filter(c => c.table === table); expect(calls).toHaveLength(8); expect(calls.at(-1)!.range).toEqual([1201, 1400]);
   const relation = table.endsWith("allocations") ? "work_program_actual_versions." : "";
   for (const call of calls) { expect(call.filters).toContainEqual([relation + "program_id", "program"]); expect(call.filters).toContainEqual([relation + "created_at", "2026-09-01T00:00:00Z"]); expect(call.columns).toContain("amount"); }
  }
- expect(seen[0].columns).toContain("detail"); expect(seen[0].columns).toContain("cost_rate_id"); expect(seen[7].columns).toContain("actual_version_id"); expect(seen[7].columns).toContain("work_program_actual_versions!inner(program_id, created_at)");
+ expect(seen[0].columns).toContain("detail"); expect(seen[0].columns).toContain("cost_rate_id"); expect(seen[8].columns).toContain("actual_version_id"); expect(seen[8].columns).toContain("work_program_actual_versions!inner(program_id, created_at)");
 });
 it("refuses a failed ledger page instead of treating missing costs as an empty result", async () => {
  const query = { select() { return query; }, eq() { return query; }, order() { return query; }, range() { return query; }, then(resolve: (v: unknown) => unknown) { return Promise.resolve(resolve({ data: null, error: { message: "Synthetic read failure" } })); } };
  const client = { from: () => query } as unknown as Parameters<typeof reportingRows>[0];
  await expect(reportingRows(client, "work_program_actual_versions", "id", ["program_id", "program"])).rejects.toThrow("Could not read work_program_actual_versions");
+});
+
+it("advances by returned rows through short nonterminal pages", async () => {
+ const offsets: number[] = [];
+ const source = Array.from({ length: 251 }, (_, id) => ({ id }));
+ const client = { from() {
+  let offset = 0;
+  const query = { select() { return query; }, eq() { return query; }, order() { return query; }, range(from: number) { offset = from; offsets.push(from); return query; }, then(resolve: (value: unknown) => unknown) { return Promise.resolve(resolve({ data: source.slice(offset, offset + 50), error: null })); } };
+  return query;
+ } } as unknown as Parameters<typeof reportingRows>[0];
+ expect(await reportingRows(client, "ledger", "id", ["program_id", "program"])).toEqual(source);
+ expect(offsets).toEqual([0, 50, 100, 150, 200, 250, 251]);
 });

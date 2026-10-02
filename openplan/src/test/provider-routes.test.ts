@@ -195,13 +195,23 @@ describe("connector bearer routes", () => {
     expect(JSON.stringify(mocks.audit.mock.calls)).not.toContain("PRIVATE_DATABASE_CANARY");
   });
   it.each([
-    { answer: JSON.stringify({ ...answer(), submittal: { ...answer().submittal, projectId: owner } }) },
-    { answer: JSON.stringify({ ...answer(), citations: ["private:other"] }) },
     { receipt: { ...receipt(), model: "different-model" } }, { attemptId: owner },
     { failureCode: "native_failed" }, { receipt: { ...receipt(), cookie: "PRIVATE_COOKIE" } },
-  ])("refuses an altered attempt, wider output or receipt %j", async change => {
+  ])("refuses an altered attempt or receipt %j", async change => {
     const response = await native.POST(nativeRequest({ operation: "finish", turnId: id, attemptId: attempt, answer: JSON.stringify(answer()), receipt: receipt(), failureCode: null, ...change }));
     expect(response.status).toBeGreaterThanOrEqual(400); expect(mocks.rpc.mock.calls.some(c => c[0] === "finish_assistant_provider_turn")).toBe(false);
+  });
+  it.each([
+    "not JSON", JSON.stringify({ ...answer(), answer: "   " }),
+    JSON.stringify({ ...answer(), submittal: { ...answer().submittal, projectId: owner } }),
+    JSON.stringify({ ...answer(), citations: ["private:other"] }),
+  ])("retains invalid native output as a failure without storing invalid content: %s", async invalidAnswer => {
+    const response = await native.POST(nativeRequest({ operation: "finish", turnId: id, attemptId: attempt, answer: invalidAnswer, receipt: receipt(), failureCode: null }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ id, state: "failed", attemptId: attempt });
+    expect(mocks.rpc).toHaveBeenCalledWith("finish_assistant_provider_turn", expect.objectContaining({
+      p_turn_id: id, p_attempt_id: attempt, p_result: null, p_provider_receipt: null, p_failure_code: "native_invalid_output",
+    }));
   });
   it("retains a bounded failure without an answer or provider receipt", async () => {
     const response = await native.POST(nativeRequest({ operation: "finish", turnId: id, attemptId: attempt, answer: null, receipt: null, failureCode: "native_usage_limit" }));

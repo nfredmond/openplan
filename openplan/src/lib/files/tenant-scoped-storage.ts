@@ -16,7 +16,7 @@ export function resolveTenantScopedStorageTarget(
     extension?: string;
   }
 ): TenantScopedStorageTarget | null {
-  const raw = typeof value === "string" ? value.trim() : "";
+  const raw = typeof value === "string" ? value : "";
   if (!raw || raw.startsWith("http://") || raw.startsWith("https://")) return null;
   const ref = parseStorageRef(raw) ?? { bucket: options.bucket, objectPath: raw };
   if (

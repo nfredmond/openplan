@@ -1,0 +1,35 @@
+{
+  "sourceRestored": true,
+  "results": [
+    {
+      "case": "baseline",
+      "passed": 13,
+      "failed": 0,
+      "classification": "SURVIVED",
+      "failedAssertions": []
+    },
+    {
+      "case": "harmless-comment",
+      "passed": 13,
+      "failed": 0,
+      "classification": "SURVIVED",
+      "failedAssertions": []
+    },
+    {
+      "case": "allowlist-bypass",
+      "passed": 5,
+      "failed": 8,
+      "classification": "KILLED",
+      "failedAssertions": [
+        "contract verification stack isolation refuses an unapproved local stack supabase_db_openplan",
+        "contract verification stack isolation refuses an unapproved local stack supabase_db_openplan-demo",
+        "contract verification stack isolation refuses an unapproved local stack supabase_db_independent-review-20261001-01",
+        "contract verification stack isolation refuses an unapproved local stack supabase_db_independent-fixes-20261002",
+        "contract verification stack isolation refuses an unapproved local stack supabase_db_independent-fixes-20261001-demo",
+        "contract verification stack isolation refuses an unapproved local stack supabase_db_unknown",
+        "contract verification stack isolation refuses an unapproved local stack supabase_db_openplan-restore-target-0",
+        "contract verification stack isolation keeps the default stack exception limited to explicit CI"
+      ]
+    }
+  ]
+}

@@ -12,7 +12,6 @@ import { useEffect } from "react";
  */
 export default function PortalError({
   error,
-  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
@@ -26,8 +25,7 @@ export default function PortalError({
       <div role="alert" className="space-y-3">
         <h1 className="text-xl font-semibold text-foreground">This page did not load.</h1>
         <p className="text-base leading-7 text-muted-foreground">
-          The problem is on our side, not with your phone or computer. Anything you already sent was received. Please try
-          again in a moment.
+          Please try loading this page again in a moment.
         </p>
         <p className="text-base leading-7 text-muted-foreground">
           If it keeps happening, contact the city, county or agency that sent you this link and tell them the page would
@@ -37,7 +35,8 @@ export default function PortalError({
       </div>
       <button
         type="button"
-        onClick={reset}
+        // Resetting the boundary alone can retain a failed Server Component response.
+        onClick={() => window.location.reload()}
         className="mt-6 inline-flex min-h-11 w-fit items-center rounded-md border border-border px-5 text-base font-semibold text-foreground hover:bg-secondary"
       >
         Try again

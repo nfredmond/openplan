@@ -1,3 +1,4 @@
+import { refuseOutOfScopeAgentRequest } from "@/lib/assistant/agent-request-scope";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
@@ -5,6 +6,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/observability/action-audit";
 import {
   type AssistantApprovalVerification,
+  readAssistantExecutionSource,
   verifyAssistantActionApproval,
 } from "@/lib/assistant/action-approval-server";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
@@ -85,6 +87,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (!payloadBody.ok) return payloadBody.response;
 
     const payload = payloadBody.data;
+    const executionSource = readAssistantExecutionSource(request);
+    const scopeRefusal = refuseOutOfScopeAgentRequest({
+      executionSource,
+      body: payload,
+      allowedKeys: ["decisionState"],
+      actionKind: "update_funding_opportunity_decision",
+    });
+    if (scopeRefusal) {
+      return NextResponse.json({ error: scopeRefusal.error, details: scopeRefusal.details }, { status: 400 });
+    }
+
     const parsed = patchFundingOpportunitySchema.safeParse(payload);
     if (!parsed.success) {
       audit.warn("validation_failed", { issues: parsed.error.issues });

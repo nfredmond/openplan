@@ -104,11 +104,7 @@ const CREATE_PROJECT_FUNDING_PROFILE: ActionRecord<"create_project_funding_profi
     await patchJson(
       `/api/projects/${action.projectId}/funding-profile`,
       {
-        fundingNeedAmount: null,
-        localMatchNeedAmount: null,
-        notes:
-          action.notes ??
-          "Planner Agent created this funding profile anchor. Add funding need and local match next.",
+        notes: action.notes,
       },
       "Failed to create project funding profile",
       context

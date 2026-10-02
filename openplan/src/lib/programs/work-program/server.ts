@@ -31,12 +31,14 @@ export async function loadWorkProgramPreparation(supabase: Awaited<ReturnType<ty
   const revisions: WorkProgramPreparation["revisions"] = [];
   // Bound history to the captured latest revision so a concurrent save cannot
   // produce a history that appears newer than the document being edited.
-  if (latest) for (let offset = 0; ; offset += 100) {
+  if (latest) for (let offset = 0, page = 0; ; page += 1) {
+    if (page >= 200) throw new Error("Work-program history pagination did not complete");
     const result = await supabase.from("program_work_program_revisions").select(revisionColumns).eq("program_id", programId).lte("revision", latest.revision).order("revision", { ascending: false }).range(offset, offset + 99);
     if (result.error) throw new Error("Could not load work-program history");
     const rows = (result.data ?? []) as WorkProgramPreparation["revisions"];
     revisions.push(...rows);
-    if (rows.length < 100) break;
+    if (rows.length === 0) break;
+    offset += rows.length;
   }
   return { sources, latest, revisions };
 }
@@ -45,7 +47,8 @@ export async function loadWorkProgramPreparation(supabase: Awaited<ReturnType<ty
 export async function loadWorkProgramSources(supabase: Awaited<ReturnType<typeof createClient>>, programId: string, sourceIds?: string[]): Promise<WorkProgramSource[]> {
   if (sourceIds?.length === 0) return [];
   const sources: WorkProgramSource[] = [];
-  for (let offset = 0; ; offset += 100) {
+  for (let offset = 0, page = 0; ; page += 1) {
+    if (page >= 200) throw new Error("Work-program history pagination did not complete");
     let query = supabase.from("program_work_program_sources").select(sourceColumns).eq("program_id", programId);
     if (sourceIds) query = query.in("id", sourceIds);
     const result = await query.order("created_at").order("id").range(offset, offset + 99);
@@ -58,15 +61,18 @@ export async function loadWorkProgramSources(supabase: Awaited<ReturnType<typeof
       const { kb_documents: _document, ...source } = row;
       sources.push({ ...source, title: document.title });
     }
-    if (rows.length < 100) break;
+    if (rows.length === 0) break;
+    offset += rows.length;
   }
   for (const source of sources) {
     const versions = [];
-    for (let offset = 0; ; offset += 100) {
+    for (let offset = 0, page = 0; ; page += 1) {
+    if (page >= 200) throw new Error("Work-program history pagination did not complete");
       const result = await supabase.from("program_work_program_extractions").select("id, source_id, document_extraction_id, extraction_json, content_sha256, page_count, created_at").eq("source_id", source.id).order("created_at").order("id").range(offset, offset + 99);
       if (result.error) throw new Error("Could not load source extraction versions");
       versions.push(...(result.data ?? []));
-      if ((result.data?.length ?? 0) < 100) break;
+      if ((result.data?.length ?? 0) === 0) break;
+      offset += result.data!.length;
     }
     source.versions = versions;
   }

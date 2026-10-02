@@ -1038,8 +1038,8 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       .limit(200),
     supabase
       .from("project_submittals")
-      .select("id, project_id, submittal_type, status, updated_at")
-      .eq("workspace_id", workspaceId)
+      .select("id, project_id, submittal_type, status, updated_at, projects!inner(workspace_id)")
+      .eq("projects.workspace_id", workspaceId)
       .order("updated_at", { ascending: false })
       .limit(200),
     supabase

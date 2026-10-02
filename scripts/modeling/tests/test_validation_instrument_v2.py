@@ -65,7 +65,9 @@ def audit(item, match):
         "model_output_bytes_read": False,
         "observation_package_sha256": HASH,
         "network_sha256": HASH,
-        "matches": [match],
+        "matches": [{**match, "candidate_links": match.get("candidate_links", [
+            {"link_id": value, "link_direction": 1} for value in match.get("selected_link_ids", [])
+        ])}],
     }
 
 

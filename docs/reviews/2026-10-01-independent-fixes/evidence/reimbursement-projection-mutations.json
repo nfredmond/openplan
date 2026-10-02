@@ -1,0 +1,12 @@
+[
+  {
+    "mode": "harmless",
+    "exit": 0,
+    "result": "survived"
+  },
+  {
+    "mode": "missing_snapshot_hash",
+    "exit": 1,
+    "result": "detected missing projection field"
+  }
+]

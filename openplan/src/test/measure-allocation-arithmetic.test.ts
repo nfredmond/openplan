@@ -951,3 +951,25 @@ describe("measure allocation — the narrative escape hatch", () => {
     expect(outcome.message).toContain("by hand");
   });
 });
+
+describe("recipient rounding stays nonnegative", () => {
+ const rule = parseMeasureAllocationRule({ version: 1, categories: [{ id: "all", label: "All", percentOfAllocable: 100, distribution: { kind: "return_to_source", basisId: "population" } }], basisDefinitions: [{ id: "population", label: "Population", statedSourceNote: "Synthetic test" }] });
+ const ids = ["a", "b", "c", "d"];
+ function allocate(amount: string, values: number[]) {
+  const result = unwrap(allocateMeasureReceipt({ rule, receiptAmount: amount, recipients: ids.map(id => ({ id, is_active: true })), basisVintageLabel: "test", basisValues: values.map((basis_value, i) => ({ recipient_id: ids[i]!, basis_id: "population", vintage_label: "test", basis_value })) }));
+  const distribution = result.categories[0]!.distribution;
+  if (distribution.kind !== "return_to_source") throw new Error("Expected allocated shares");
+  return distribution;
+ }
+ it("spreads a negative residual across enough recipients without creating debt", () => {
+  const result = allocate("0.02", [1, 1, 1, 1]);
+  expect(result.shares.map(share => share.amount)).toEqual([0.01, 0.01, 0, 0]);
+  expect(result.shares.filter(share => share.carriesResidual).map(share => share.recipientId)).toEqual(["c", "d"]);
+ });
+ it("does not debit a zero-weight final recipient", () => {
+  expect(allocate("1000000.01", [1, 1, 1, 0]).shares.map(share => share.amount)).toEqual([333333.34, 333333.34, 333333.33, 0]);
+ });
+ it("retains exact ordinary shares", () => {
+  expect(allocate("4.00", [1, 1, 1, 1]).shares.map(share => share.amount)).toEqual([1, 1, 1, 1]);
+ });
+});

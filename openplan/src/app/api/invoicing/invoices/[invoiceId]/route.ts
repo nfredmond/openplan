@@ -1,3 +1,4 @@
+import { refuseOutOfScopeAgentRequest } from "@/lib/assistant/agent-request-scope";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
@@ -6,6 +7,7 @@ import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/ob
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import {
   type AssistantApprovalVerification,
+  readAssistantExecutionSource,
   verifyAssistantActionApproval,
 } from "@/lib/assistant/action-approval-server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
@@ -74,10 +76,25 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (!payloadBody.ok) return payloadBody.response;
 
     const payload = payloadBody.data;
+    const executionSource = readAssistantExecutionSource(request);
+    const scopeRefusal = refuseOutOfScopeAgentRequest({
+      executionSource,
+      body: payload,
+      allowedKeys: ["workspaceId", "fundingAwardId"],
+      actionKind: "link_billing_invoice_funding_award",
+    });
+    if (scopeRefusal) {
+      return NextResponse.json({ error: scopeRefusal.error, details: scopeRefusal.details }, { status: 400 });
+    }
+
     const parsed = patchBillingInvoiceSchema.safeParse(payload);
     if (!parsed.success) {
       audit.warn("validation_failed", { issues: parsed.error.issues });
       return NextResponse.json({ error: "Invalid invoice patch payload" }, { status: 400 });
+    }
+
+    if (executionSource !== "manual" && !parsed.data.fundingAwardId) {
+      return NextResponse.json({ error: "Planner Agent approval can link a funding award, not remove one." }, { status: 403 });
     }
 
     const supabase = await createClient();

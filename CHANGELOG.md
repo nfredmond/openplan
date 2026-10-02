@@ -62,6 +62,36 @@ internal worker commands. Staging grants no provider execution permission.
 [Evidence and limits](docs/reviews/2026-10-01-context-history/THEMATIC_STAGING.md)
 retain the unfinished execution, proposal-storage and staff-import work.
 
+Independent review corrections tighten Storage object paths, artifact upload
+roles and exact Planner Agent approval fields. Retained invalid native-provider
+results finish without authorizing a replacement call. Agent profile creation
+refuses to overwrite a profile saved after approval preparation.
+
+Apply `20261015000001_measure_period_fund_integrity.sql` and
+`20261015000002_security_artifact_storage_writes.sql` before deploying these
+corrections. Financial children now enforce their period/fund/workspace parent.
+Existing mismatches are preserved and flagged for reconciliation, with no
+automatic reassignment or deletion. See the
+[correction record](docs/reviews/2026-10-01-independent-fixes/FINANCE_AND_READS.md).
+
+Recipient rounding stays nonnegative. OWP histories and generated project
+evidence read through capped responses or refuse an incomplete result. The
+dashboard reads project submittals through their actual project relationship.
+
+Public portal retries request a fresh page and no longer claim an unverified
+submission receipt. Malformed authentication destinations return to the local
+dashboard. Current ACS numeric overlays retain missing-value provenance; zero
+income and missing income use different fills. Legacy saved counts and aggregate
+Census classifications retain their existing interpretation.
+
+The optional ActivitySim HTTP wrapper now requires a token and operator-owned
+bundle/output roots. Request-level execution configuration is refused; follow
+its updated deployment guide. County cancellation terminates its owned POSIX
+process group with bounded waits. A successor observation matcher refuses
+unproven directional comparisons on bidirectional links. Frozen studies and
+published metrics remain unchanged. These corrections do not claim full
+engine recovery or new scientific validation.
+
 Internal synthesis preparation now retains a new staff request and its chosen
 historical context inputs. Exact retries preserve original bytes after
 cancellation, and current staff can inspect earlier work after its author leaves.

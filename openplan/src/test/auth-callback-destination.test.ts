@@ -19,6 +19,20 @@ describe("auth callback destination", () => {
     );
   });
 
+  it("preserves a valid local query and fragment", () => {
+    expect(resolveCallbackDestination("/dashboard?intent=modeling#start", ORIGIN).href).toBe(
+      `${ORIGIN}/dashboard?intent=modeling#start`
+    );
+  });
+
+  it.each(["/\n/[", "/\t/[", "/\r/[::1"])("falls back for a malformed destination %j", (next) => {
+    expect(resolveCallbackDestination(next, ORIGIN).href).toBe(`${ORIGIN}/dashboard`);
+  });
+
+  it("rejects an origin change revealed by URL normalization", () => {
+    expect(resolveCallbackDestination("/\n/elsewhere.example/x", ORIGIN).href).toBe(`${ORIGIN}/dashboard`);
+  });
+
   it("falls back to the dashboard for a missing, absolute or protocol-relative `next`", () => {
     for (const hostile of [null, "", "https://evil.example/x", "//evil.example/x", "/\\evil.example/x", "dashboard"]) {
       expect(safeNextPath(hostile)).toBe("/dashboard");

@@ -1,9 +1,10 @@
+import { refuseOutOfScopeAgentRequest } from "@/lib/assistant/agent-request-scope";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/observability/action-audit";
-import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
+import { readAssistantExecutionSource, verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
@@ -323,6 +324,17 @@ export async function POST(request: NextRequest) {
     const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
     if (!payloadBody.ok) return payloadBody.response;
     const payload = payloadBody.data;
+    const executionSource = readAssistantExecutionSource(request);
+    const scopeRefusal = refuseOutOfScopeAgentRequest({
+      executionSource,
+      body: payload,
+      allowedKeys: ["programId", "projectId", "title"],
+      actionKind: "create_funding_opportunity",
+    });
+    if (scopeRefusal) {
+      return NextResponse.json({ error: scopeRefusal.error, details: scopeRefusal.details }, { status: 400 });
+    }
+
     const parsed = createFundingOpportunitySchema.safeParse(payload);
 
     if (!parsed.success) {

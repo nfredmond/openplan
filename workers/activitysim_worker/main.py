@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+import hmac
+import uuid
 import json
 import os
 import shlex
@@ -47,22 +49,46 @@ def _coerce_string(payload: dict[str, Any], key: str) -> str | None:
     return value.strip()
 
 
+def http_configuration() -> tuple[Path, Path]:
+    """Require operator-owned roots and credentials for every HTTP deployment."""
+    if not WORKER_TOKEN:
+        raise ValueError("OPENPLAN_ACTIVITYSIM_WORKER_TOKEN is required for HTTP operation")
+    roots = []
+    for name in ("OPENPLAN_ACTIVITYSIM_BUNDLE_ROOT", "OPENPLAN_ACTIVITYSIM_RUNTIME_ROOT"):
+        value = os.getenv(name)
+        if not value or not Path(value).expanduser().is_dir():
+            raise ValueError(f"{name} must name an existing operator-owned directory")
+        roots.append(Path(value).expanduser().resolve())
+    return roots[0], roots[1]
+
+
 def _parse_payload(payload: Any) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("Expected a JSON object payload")
+    if set(payload) - {"bundlePath", "manifestPath", "runLabel"}:
+        raise ValueError("HTTP requests may select a bundle and label only; execution configuration belongs to the operator")
+    bundle_root, runtime_root = http_configuration()
+    bundle = _coerce_string(payload, "bundlePath")
+    manifest = _coerce_string(payload, "manifestPath")
+    if bool(bundle) == bool(manifest):
+        raise ValueError("Provide exactly one bundlePath or manifestPath")
+    selected = Path(bundle or manifest).expanduser()
+    selected = (selected if selected.is_absolute() else bundle_root / selected).resolve()
+    if selected != bundle_root and bundle_root not in selected.parents:
+        raise ValueError("Bundle path escapes the configured bundle root")
     return {
-        "bundle_path": _coerce_string(payload, "bundlePath"),
-        "manifest_path": _coerce_string(payload, "manifestPath"),
-        "runtime_dir": _coerce_string(payload, "runtimeOutputDir"),
-        "config_dir": _coerce_string(payload, "configDir"),
-        "cli_template": _coerce_string(payload, "activitysimCliTemplate"),
-        "cli_command": _split_cli_command(_coerce_string(payload, "activitysimCli")),
-        "container_image": _coerce_string(payload, "activitysimContainerImage"),
-        "container_engine_command": _split_cli_command(_coerce_string(payload, "containerEngineCli")),
-        "container_template": _coerce_string(payload, "activitysimContainerCliTemplate"),
-        "container_network_mode": _coerce_string(payload, "containerNetworkMode"),
+        "bundle_path": str(selected) if bundle else None,
+        "manifest_path": str(selected) if manifest else None,
+        "runtime_dir": str(runtime_root / str(uuid.uuid4())),
+        "config_dir": os.getenv("ACTIVITYSIM_CONFIG_DIR") or None,
+        "cli_template": os.getenv("ACTIVITYSIM_CLI_TEMPLATE") or None,
+        "cli_command": _split_cli_command(os.getenv("ACTIVITYSIM_CLI")),
+        "container_image": os.getenv("ACTIVITYSIM_CONTAINER_IMAGE") or None,
+        "container_engine_command": _split_cli_command(os.getenv("ACTIVITYSIM_CONTAINER_ENGINE_CLI")),
+        "container_template": os.getenv("ACTIVITYSIM_CONTAINER_CLI_TEMPLATE") or None,
+        "container_network_mode": os.getenv("ACTIVITYSIM_CONTAINER_NETWORK_MODE", "none"),
         "run_label": _coerce_string(payload, "runLabel"),
-        "force": bool(payload.get("force")),
+        "force": False,
     }
 
 
@@ -103,10 +129,9 @@ def healthz():
 @app.post("/run")
 @app.post("/jobs")
 def run_job():
-    if WORKER_TOKEN:
-        request_token = _parse_bearer_token(request.headers.get("authorization"))
-        if request_token != WORKER_TOKEN:
-            return jsonify({"error": "Unauthorized"}), 401
+    request_token = _parse_bearer_token(request.headers.get("authorization"))
+    if not WORKER_TOKEN or request_token is None or not hmac.compare_digest(request_token, WORKER_TOKEN):
+        return jsonify({"error": "Unauthorized"}), 401
 
     try:
         payload = _parse_payload(request.get_json(silent=True))
@@ -120,7 +145,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run the OpenPlan ActivitySim worker runtime prototype against a built input bundle."
     )
-    source_group = parser.add_mutually_exclusive_group(required=True)
+    source_group = parser.add_mutually_exclusive_group(required=False)
     source_group.add_argument("--bundle-path", help="Path to an ActivitySim input bundle directory")
     source_group.add_argument("--manifest-path", help="Path to the bundle manifest.json inside an ActivitySim bundle")
     parser.add_argument("--runtime-dir", help="Output runtime directory. Defaults to <bundle>/runtime/<timestamp>-<label>")
@@ -160,13 +185,24 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Run the Flask HTTP wrapper instead of the CLI entrypoint",
     )
-    return parser.parse_args()
+    parser.add_argument("--check-http-config", action="store_true", help="Validate HTTP credentials and roots before starting Gunicorn")
+    args = parser.parse_args()
+    if not args.serve and not args.check_http_config and not (args.bundle_path or args.manifest_path):
+        parser.error("a bundle or manifest is required for CLI execution")
+    return args
 
 
 def main() -> int:
     args = parse_args()
-    if args.serve:
-        host = os.getenv("OPENPLAN_ACTIVITYSIM_WORKER_HOST", "0.0.0.0")
+    if args.serve or args.check_http_config:
+        try:
+            http_configuration()
+        except ValueError as exc:
+            print(str(exc))
+            return 2
+        if args.check_http_config:
+            return 0
+        host = os.getenv("OPENPLAN_ACTIVITYSIM_WORKER_HOST", "127.0.0.1")
         port = int(os.getenv("PORT", os.getenv("OPENPLAN_ACTIVITYSIM_WORKER_PORT", "8080")))
         app.run(host=host, port=port)
         return 0

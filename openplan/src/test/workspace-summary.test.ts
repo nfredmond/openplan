@@ -40,7 +40,10 @@ function createWorkspaceOperationsSupabaseStub(dataByTable: Record<string, Works
 
   const chain = (table: string) => {
     const self = {
-      eq: () => self,
+      eq: (column: string) => {
+        if (table === "project_submittals") expect(column).toBe("projects.workspace_id");
+        return self;
+      },
       in: () => self,
       order: () => self,
       limit: () => self,
@@ -55,7 +58,12 @@ function createWorkspaceOperationsSupabaseStub(dataByTable: Record<string, Works
 
   return {
     from: (table: string) => ({
-      select: () => chain(table),
+      select: (columns: string) => {
+        if (table === "project_submittals") {
+          expect(columns).toBe("id, project_id, submittal_type, status, updated_at, projects!inner(workspace_id)");
+        }
+        return chain(table);
+      },
     }),
   } as unknown as WorkspaceOperationsSupabaseLike;
 }

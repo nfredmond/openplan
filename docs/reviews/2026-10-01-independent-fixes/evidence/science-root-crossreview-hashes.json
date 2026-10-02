@@ -1,0 +1,16 @@
+{
+  "baseline": "891a0d89a848133d44b9e4f314a76a922cd71ace",
+  "method": "read-only independent source review; no application mutation or additional test execution",
+  "files": {
+    "openplan/src/lib/measures/allocation.ts": "d07498448eec1e1adbe8edac08df37f31cf3efc6339503a33a295312b76063f3",
+    "openplan/src/lib/programs/work-program/reporting-server.ts": "ba8c9b5a017798ca18e1f18983360ff3791de1aeada7e8daf3181288d1534d0d",
+    "openplan/src/lib/programs/work-program/server.ts": "44f726f23f90ad25259ea2ca20fa43dea66fcf0f31063547cfd6efab19c3894b",
+    "openplan/src/lib/operations/workspace-summary.ts": "e67e3083e90930c2ac7e3c62e5f1198a263a6c00a055231c3ed36071c6ec6c04",
+    "openplan/src/lib/project-evidence-bundles/generated-records.ts": "60486e4388cc54d00dcd3fb5c3266724daa4c66d5c671b1f7a8c84ea0f333be4",
+    "openplan/src/test/measure-allocation-arithmetic.test.ts": "841f1cc8e0cfd29f2d3584c92eb8d1e3cca24ee70697a2da10d9706ab80ae07e",
+    "openplan/src/test/work-program-reporting-pagination.test.ts": "439ef7f99febdbb407edbec5241e5e74e18e9d553ff14056b98dce3e2c5d9903",
+    "openplan/src/test/work-program-access.test.ts": "e918d09cd23f259243511dea602e823738627169f3e8e58b5cf34fd04985a0e0",
+    "openplan/src/test/workspace-summary.test.ts": "affc97456162475d885dc4e5007bef00d39f65d49776876e8aa3e1d4c075193c",
+    "openplan/src/test/project-evidence-generated-pagination.test.ts": "d68b010f985a680405f847eb6da6ce5f7fd883d101c33688638866dc07761216"
+  }
+}
