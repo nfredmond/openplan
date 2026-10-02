@@ -41,5 +41,9 @@
  * symptom for every page a RESIDENT can reach, which is what this group is.
  */
 export default function PortalLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <div className="min-h-dvh overflow-x-clip bg-background text-foreground">{children}</div>;
+  return (
+    <main id="main-content" tabIndex={-1} className="min-h-dvh overflow-x-clip bg-background text-foreground">
+      {children}
+    </main>
+  );
 }

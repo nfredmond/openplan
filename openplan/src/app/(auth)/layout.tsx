@@ -22,8 +22,8 @@ export default function AuthLayout({
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Your workspace</p>
         </div>
 
-        <main className="grid flex-1 gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(420px,540px)] lg:gap-12">
-          <aside className="flex flex-col justify-between gap-8 border-b border-border/60 pb-8 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-10">
+        <main id="main-content" tabIndex={-1} className="grid flex-1 gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(420px,540px)] lg:gap-12">
+          <aside className="order-2 flex flex-col justify-between gap-8 border-t border-border/60 pt-8 lg:order-1 lg:border-r lg:border-t-0 lg:pr-10 lg:pt-0">
             <div className="space-y-5">
               <div className="space-y-2">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Your workspace</p>
@@ -56,7 +56,7 @@ export default function AuthLayout({
             </div>
           </aside>
 
-          <div className="flex items-start lg:items-center">
+          <div className="order-1 flex items-start lg:order-2 lg:items-center">
             <div className="w-full">{children}</div>
           </div>
         </main>

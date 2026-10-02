@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { resolveCallbackDestination, safeNextPath } from "@/lib/auth/callback-destination";
 
 /**
  * Supabase auth callback — the code-exchange route every emailed link lands on.
@@ -16,14 +17,6 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
  * whatever `next` path the flow asked for — so confirmation and invite flows can
  * use it without another bespoke endpoint.
  */
-
-/** Only same-origin app paths, so `next` cannot be turned into an open redirect. */
-function safeNextPath(raw: string | null): string {
-  if (!raw) return "/dashboard";
-  // Reject protocol-relative ("//evil.com") and absolute URLs outright.
-  if (!raw.startsWith("/") || raw.startsWith("//")) return "/dashboard";
-  return raw;
-}
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("auth.callback", request);
@@ -67,8 +60,5 @@ export async function GET(request: NextRequest) {
   }
 
   audit.info("auth_callback_exchanged", { next });
-  const destination = url.clone();
-  destination.pathname = next;
-  destination.search = "";
-  return NextResponse.redirect(destination);
+  return NextResponse.redirect(resolveCallbackDestination(next, url.origin));
 }

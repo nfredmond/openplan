@@ -135,29 +135,31 @@ export function GrantsProgramCatalogSection({
                   </StatusBadge>
                 </div>
                 <p className="text-sm text-muted-foreground">{program.summary}</p>
-                <dl className="grid gap-x-6 gap-y-0.5 text-[0.8rem] text-muted-foreground sm:grid-cols-2">
-                  <div className="flex gap-1.5">
+                {/* One column of label and value rows. Two columns inside this half-width
+                    card left each value about 50px wide, one word per line. */}
+                <dl className="grid gap-y-1 text-[0.8rem] text-muted-foreground">
+                  <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2">
                     <dt className="shrink-0 font-semibold text-foreground/70">Agency</dt>
                     <dd>{program.administeringAgency}</dd>
                   </div>
-                  <div className="flex gap-1.5">
+                  <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2">
                     <dt className="shrink-0 font-semibold text-foreground/70">Applicants</dt>
                     <dd>{program.typicalApplicants}</dd>
                   </div>
-                  <div className="flex gap-1.5">
+                  <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2">
                     <dt className="shrink-0 font-semibold text-foreground/70">Eligible</dt>
                     <dd>{program.eligibleProjectTypes.join("; ")}</dd>
                   </div>
-                  <div className="flex gap-1.5">
+                  <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2">
                     <dt className="shrink-0 font-semibold text-foreground/70">Cycle</dt>
                     <dd>{program.cycleNote}</dd>
                   </div>
-                  <div className="flex gap-1.5 sm:col-span-2">
+                  <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2">
                     <dt className="shrink-0 font-semibold text-foreground/70">Match</dt>
                     <dd>{program.matchRequirement}</dd>
                   </div>
                   {program.bcaNote ? (
-                    <div className="flex gap-1.5 sm:col-span-2">
+                    <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2">
                       <dt className="shrink-0 font-semibold text-foreground/70">Benefit-cost</dt>
                       <dd>{program.bcaNote}</dd>
                     </div>

@@ -68,7 +68,13 @@ export function CartographicOverviewSurface({
           ) : null}
         </header>
       ) : null}
-      <div className="op-cart-surface__body">{children}</div>
+      {/*
+        The page's main landmark and the skip link's target. `tabIndex={-1}`
+        lets the skip link move focus here without adding a tab stop.
+      */}
+      <main id="main-content" tabIndex={-1} className="op-cart-surface__body">
+        {children}
+      </main>
     </section>
   );
 }

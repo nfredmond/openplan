@@ -18,7 +18,7 @@ export async function LandUsePlanReportPage({ report }: { report: Report }) {
     supabase.from("report_artifacts").select("id, generated_at, metadata_json").eq("report_id", report.id).order("generated_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
   if (planResult.error || artifactsResult.error || !planResult.data || !artifactsResult.data) {
-    return <main className="mx-auto max-w-3xl p-8"><h1 className="text-3xl font-semibold">This plan report could not be loaded</h1><p className="mt-4">The linked plan or frozen report file is missing or unreadable. OpenPlan did not substitute an empty report.</p></main>;
+    return <div className="mx-auto max-w-3xl p-8"><h1 className="text-3xl font-semibold">This plan report could not be loaded</h1><p className="mt-4">The linked plan or frozen report file is missing or unreadable. OpenPlan did not substitute an empty report.</p></div>;
   }
   return <LandUsePlanReportDetail report={report} plan={planResult.data} artifact={artifactsResult.data} />;
 }

@@ -27,11 +27,11 @@ export async function loadEngagementReviewReportPage(client: Client, report: Rep
     .eq("workspace_id", report.workspace_id)
     .maybeSingle();
   if (job.error) {
-    return <main className="mx-auto w-full max-w-5xl space-y-4 p-4 md:p-8">
+    return <div className="mx-auto w-full max-w-5xl space-y-4 p-4 md:p-8">
       <h1 className="text-2xl font-semibold">This engagement report could not be read</h1>
       <p role="alert">The saved review could not be loaded. Reload this page to try again.</p>
       <Link className="underline" href="/reports">Back to Reports</Link>
-    </main>;
+    </div>;
   }
   if (!job.data) return null;
 
@@ -51,7 +51,7 @@ export async function loadEngagementReviewReportPage(client: Client, report: Rep
     .eq("workspace_id", report.workspace_id).eq("user_id", userId).maybeSingle();
   const canEdit = !membership.error && canAccessWorkspaceAction("reports.write", membership.data?.role);
 
-  return <main className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-8">
+  return <div className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-8">
     <header className="space-y-3 border-b pb-6">
       <p className="text-sm text-muted-foreground">Saved engagement review</p>
       <h1 className="break-words text-2xl font-semibold md:text-3xl">{report.title}</h1>
@@ -74,7 +74,7 @@ export async function loadEngagementReviewReportPage(client: Client, report: Rep
     <EngagementReviewFiles campaignId={report.engagement_campaign_id} reportId={report.id} />
     {membership.error ? <p role="alert">Editing permissions could not be loaded. Reload this page to try again.</p> : null}
     {canEdit ? <ReportDetailControls metadataOnly report={{ ...report, hasGeneratedArtifact: Boolean(report.generated_at) }} /> : null}
-  </main>;
+  </div>;
 }
 
 // Select the report's existing owner before the generic project report reads.

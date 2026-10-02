@@ -8,6 +8,7 @@ import { WorkspaceCommandBoard } from "@/components/operations/workspace-command
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { useIsLightMode } from "@/components/theme-provider";
 import { Input } from "@/components/ui/input";
 import {
   type CrashSeverityFilter,
@@ -96,6 +97,7 @@ export function ExploreWorkbench({
 }: ExploreWorkbenchProps) {
   const { mapContainerRef, mapRef, mapReady, mapUnavailableReason } = useExploreMapInstance();
 
+  const isLightMode = useIsLightMode();
   const [workspaceId, setWorkspaceId] = useState("");
   const [queryText, setQueryText] = useState("");
   const [corridorGeojson, setCorridorGeojson] = useState<CorridorGeometry | null>(null);
@@ -695,7 +697,17 @@ export function ExploreWorkbench({
       directly rather than through `inset-0`.
   */
   return (
-    <section className="analysis-explore-shell grid min-h-[520px] gap-0 overflow-hidden lg:h-full lg:grid-cols-[minmax(0,1fr)_420px] lg:grid-rows-[minmax(0,1fr)]">
+    <section
+      /*
+        This shell is painted dark in both modes. In light mode the token-based
+        parts inside it (the tiles, the command board) resolved to light-mode
+        values and drew pale cards with unreadable numbers on the dark rail.
+        Declaring the subtree dark makes every token inside agree with the
+        surface it sits on. In dark mode the page is already dark, so nothing is
+        added and the active palette is left alone.
+      */
+      className={`${isLightMode ? "dark " : ""}analysis-explore-shell grid min-h-[520px] gap-0 overflow-hidden lg:h-full lg:grid-cols-[minmax(0,1fr)_420px] lg:grid-rows-[minmax(0,1fr)]`}
+    >
       <div className="analysis-explore-mapstage relative min-h-[360px] overflow-hidden lg:min-h-0">
         <div ref={mapContainerRef} className="h-full w-full" />
 
