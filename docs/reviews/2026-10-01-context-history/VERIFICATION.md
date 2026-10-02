@@ -3,6 +3,13 @@
 October 1, 2026. Local verification on the resumed synthesis branch. This is
 server-side preparation within M9b, not a release or a completed staff workflow.
 
+The implementation landed on main at `a6f0376e6b9742038646ebfe90095b43f122e985`.
+[Exact-commit application CI](https://github.com/nfredmond/openplan/actions/runs/36962820262)
+passed on October 1, including shuffled tests and Python jobs. The separate
+[full native isolation run](https://github.com/nfredmond/openplan/actions/runs/36962820261)
+also passed on October 1. The UI agent subsequently
+advanced main to `e15e2b93`; that commit has separate checks. No release tag changed.
+
 ## Behavior and defects found
 
 The history reader reconstructs the original parent selection and context plan,
