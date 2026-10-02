@@ -14,6 +14,11 @@ receiving content checks with synthetic trusted context descriptors. It is not
 a native input reader or generation route. Complete the retained input and
 execution path before exposing those checks to a browser or worker.
 
+[Authenticated input custody](THEMATIC_INPUTS.md) subsequently adds the new
+thematic request and per-contribution choices. Continue the sealed preparation
+and worker path described below. These retained choices do not supply that seal
+or execution authority.
+
 ## Freeze complete inputs and preserve interpretation limits
 
 Start from the verified source and parent segment inventory. Every selected
@@ -44,7 +49,7 @@ It is not a historical reader for a new actor's thematic job. Conversely,
 `loadSynthesisContextHistory` uses authenticated current-staff RPCs and does not
 authorize a service worker to act as that user.
 
-Add a separately bound thematic request and versioned recipe. Its preparation
+Use the separately bound thematic request and add its versioned recipe. Its preparation
 and worker reads must check the new requester's current scope through an explicit
 native authorization path before accessing selected historical inputs. Bind
 fresh execution to that request's sealed input manifest and approved resources.

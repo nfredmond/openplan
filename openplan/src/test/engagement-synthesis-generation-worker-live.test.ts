@@ -18,6 +18,8 @@ import { createSynthesisContextRequest, readSynthesisContextRequest } from "@/li
 import { retainSynthesisContextPlan } from "@/lib/engagement/synthesis-context-plan-server";
 import { createSynthesisContextContinuation } from "@/lib/engagement/synthesis-context-continuation";
 import { loadSynthesisContextHistory } from "@/lib/engagement/synthesis-context-history-server";
+import { createSynthesisThematicRequest, readSynthesisThematicRequest } from "@/lib/engagement/synthesis-thematic-requests-server";
+import { readSynthesisThematicChoice, retainSynthesisThematicChoice } from "@/lib/engagement/synthesis-thematic-choices-server";
 import { verifySynthesisGenerationApiResult } from "@/lib/engagement/synthesis-generation-api-result";
 import { createSynthesisGenerationInput } from "@/lib/engagement/synthesis-generation-input";
 import { createSynthesisGenerationRecords } from "@/lib/engagement/synthesis-generation-records";
@@ -308,9 +310,59 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(retained.request.cancellation).not.toBeNull();
     expect(JSON.parse(retained.request.cancellation!.receiptText).reason).toBe(cancellationReason);
     expect(retained.sha256).toBe(hash(retained.canonical));
+    const thematicArgs = { ...f.contextArgs, requestId: randomUUID(), actorId: reader.userId,
+      throughSequence: retained.request.binding.selectionSequence, frameByteLimit: 4096 };
+    await createSynthesisThematicRequest(reader.client, service, thematicArgs, signal);
+    const choiceArgs = { campaignId: scope.campaignId, workspaceId: scope.workspaceId, requestId: thematicArgs.requestId,
+      actorId: reader.userId, contextRequestId: scope.requestId, throughSequence: retained.manifest.throughSequence!,
+      targetRecordId: retained.request.binding.targetRecordId };
+    const choice = await retainSynthesisThematicChoice(reader.client, service, choiceArgs, signal);
+    expect(choice.choice.historyManifestSha256).toBe(retained.sha256);
+    expect(choice.choice.finalCaptureSha256).toBe(priorCapture);
+    expect(choice.choice.finalResultSha256).toBe(retained.entries.at(-1)!.resultSha256);
+    expect(choice.record).toMatchObject({ createdBy: reader.userId, replayed: false });
+    checked(await reader.client.rpc("cancel_engagement_synthesis_generation_request", { p_campaign: scope.campaignId,
+      p_request: thematicArgs.requestId, p_cancellation: randomUUID(), p_reason: "SYNTHETIC thematic input cancellation" }));
+    const recoveredChoice = await retainSynthesisThematicChoice(reader.client, service, choiceArgs, signal);
+    expect(recoveredChoice.record.replayed).toBe(true); expect(recoveredChoice.choice).toEqual(choice.choice);
     expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length);
     reader.revoke();
     await expect(loadSynthesisContextHistory(reader.client, service, scope, signal)).rejects.toThrow("Context request unavailable");
+    await expect(readSynthesisThematicChoice(reader.client, { ...scope, requestId: thematicArgs.requestId }, choiceArgs.targetRecordId, signal)).rejects.toThrow("Thematic request unavailable");
+  }, 300000);
+
+  it("retains a fresh thematic request through authenticated HTTP after original requester departure", async () => {
+    const f = await fixture({ allTasks: true, validOutputs: true }), staff = await f.staffHistoryClient();
+    const signal = new AbortController().signal;
+    const args = { ...f.contextArgs, requestId: randomUUID(), actorId: staff.userId, throughSequence: 0, frameByteLimit: 4096 };
+    await expect(createSynthesisThematicRequest(staff.client, service, args, signal)).rejects.toThrow("complete retained results");
+    const run = await f.run(true); expect(run.code, run.stderr).toBe(0);
+    f.cancelParent(); f.revokeRequester();
+    const history = await staff.read(); args.throughSequence = history.selections.throughSequence;
+    const calls = f.calls.length;
+    const created = await createSynthesisThematicRequest(staff.client, service, args, signal);
+    expect(created.state.replayed).toBe(false); expect(created.state.request.actorId).toBe(staff.userId);
+    expect(created.state.request.actorId).not.toBe(f.owner);
+    expect(created.binding.segmentResultsManifestSha256).toBe(history.inventory.manifestSha256);
+    expect(created.binding.selectionSequence).toBe(f.plan.entries.length);
+    const scope = { campaignId: args.campaignId, workspaceId: args.workspaceId, requestId: args.requestId };
+    checked(await staff.client.rpc("cancel_engagement_synthesis_generation_request", { p_campaign: args.campaignId,
+      p_request: args.requestId, p_cancellation: randomUUID(), p_reason: "SYNTHETIC thematic cancellation" }));
+    const replay = await createSynthesisThematicRequest(staff.client, service, args, signal);
+    expect(replay.state.replayed).toBe(true); expect(replay.state.request).toEqual(created.state.request);
+    expect(replay.state.thematic).toEqual(created.state.thematic); expect(replay.state.cancellation).not.toBeNull();
+    const reader = await f.staffHistoryClient();
+    expect((await readSynthesisThematicRequest(reader.client, scope, signal)).state.thematic).toEqual(created.state.thematic);
+    await expect(createSynthesisThematicRequest(reader.client, service, { ...args, actorId: reader.userId }, signal)).rejects.toThrow("save unconfirmed");
+    for (const name of ["read_engagement_synthesis_generation_plan", "read_engagement_synthesis_context_plan"]) {
+      expect((await service.rpc(name, { p_request: args.requestId })).error?.code).toBe("0A000");
+    }
+    staff.revoke();
+    await expect(readSynthesisThematicRequest(staff.client, scope, signal)).rejects.toThrow("unavailable");
+    expect((await readSynthesisThematicRequest(reader.client, scope, signal)).state.thematic).toEqual(created.state.thematic);
+    reader.revoke();
+    await expect(readSynthesisThematicRequest(reader.client, scope, signal)).rejects.toThrow("unavailable");
+    expect(f.calls).toHaveLength(calls);
   }, 300000);
 
   it("retains reconstructed context requests through authenticated HTTP after original requester departure", async () => {

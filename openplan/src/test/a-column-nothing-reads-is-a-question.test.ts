@@ -73,6 +73,12 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "engagement_synthesis_thematic_requests.thematic_text", category: "READ_IN_SQL", reason: "Native request reads return the original thematicText; creation compares exact retry bytes and choices read its parent binding." },
+  { column: "engagement_synthesis_thematic_requests.thematic_sha256", category: "READ_IN_SQL", reason: "The native request reader returns thematicSha256; the application recomputes the original thematicText digest before using the binding." },
+  { column: "engagement_synthesis_thematic_choices.choice_text", category: "READ_IN_SQL", reason: "Native choice reads return the original choiceText for application verification; exact retries compare these retained bytes." },
+  { column: "engagement_synthesis_thematic_choices.choice_sha256", category: "READ_IN_SQL", reason: "The native choice reader returns choiceSha256; the application recomputes the digest before returning the historical input choice." },
+  { column: "engagement_synthesis_thematic_choices.context_request_id", category: "READ_IN_SQL", reason: "The foreign key requires a retained context request and the unique constraint prevents that context from occupying two choices in one thematic request." },
+  { column: "engagement_synthesis_thematic_choices.target_record_id", category: "READ_IN_SQL", reason: "Native choice reads and exact retries select by the retained target; the read receipt returns targetRecordId for application scope checks." },
   { column: "engagement_synthesis_generation_selections.previous_selection_id", category: "READ_IN_SQL", reason: "Native staff choices compare the expected current predecessor; paginated inventory follows explicit successor links at the retained sequence." },
   { column: "engagement_synthesis_generation_selections.sequence_no", category: "READ_IN_SQL", reason: "Native selections increment the request sequence under its lock; inventory reads use a fixed sequence for stable historical pagination." },
   { column: "engagement_synthesis_generation_attempts.claim_expires_at", category: "READ_IN_SQL", reason: "Native dispatch refuses an expired claim; explicit retry authorization checks whether its predecessor can still be active." },

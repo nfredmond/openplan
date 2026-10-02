@@ -1,0 +1,610 @@
+{
+  "requests": [
+    {
+      "name": "harmless-comment",
+      "control": true,
+      "before": "Inspect retained request bytes",
+      "after": "Inspect original retained request bytes",
+      "exitCode": 0,
+      "assertionFailure": false,
+      "diagnostics": [],
+      "outcome": "survived"
+    },
+    {
+      "name": "campaign",
+      "control": false,
+      "before": "state.campaignId !== scope.campaignId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "workspace",
+      "control": false,
+      "before": "state.workspaceId !== scope.workspaceId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "request-id",
+      "control": false,
+      "before": "state.request.id !== scope.requestId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "intent-hash",
+      "control": false,
+      "before": "digest(state.request.intentText) !== state.request.intentSha256",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "binding-hash",
+      "control": false,
+      "before": "digest(state.thematic.thematicText) !== state.thematic.thematicSha256",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "parent-binding",
+      "control": false,
+      "before": "binding.parentRequestId !== state.thematic.parentRequestId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "self-request",
+      "control": false,
+      "before": "if (args.parentRequestId === args.requestId)",
+      "after": "if (false)",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw error including 'own parent' but got 'Thematic request history identity dif\u2026'"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "history-scope",
+      "control": false,
+      "before": "if (history.campaignId !== args.campaignId || history.workspaceId !== args.workspaceId ||\n    history.selections.requestId !== args.parentRequestId || history.inventory.job.jobId !== args.parentRequestId ||\n    history.selections.throughSequence !== args.throughSequence)",
+      "after": "if (false)",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "incomplete-input",
+      "control": false,
+      "before": "history.inventory.status !== \"ready_for_record_consolidation\"",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw error including 'complete retained results' but got 'Synthesis result inventory differs fr\u2026'"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "empty-input",
+      "control": false,
+      "before": "!history.inventory.contributionIds.length",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw error including 'selected contribution' but got 'Synthesis result inventory differs fr\u2026'"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "source-read-error",
+      "control": false,
+      "before": "if (sourceResponse.error)",
+      "after": "if (false)",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "parent-source",
+      "control": false,
+      "before": "if (intent.sourceId !== saved.requestId || intent.sourceSha256 !== saved.snapshotSha256)",
+      "after": "if (false)",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "graph-reconstruction",
+      "control": false,
+      "before": "const context = createSynthesisGenerationContext(history.inventory, reconstruction, args.throughSequence);",
+      "after": "const context = { manifestSha256: \"0\".repeat(64) };",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: expected { schemaVersion: 1, \u2026(5) } to deeply equal { schemaVersion: 1, \u2026(5) }",
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "write-error",
+      "control": false,
+      "before": "if (response.error) throw new Error(\"Thematic request save unconfirmed; retain the same identity and retry\");",
+      "after": "",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw error including 'save unconfirmed' but got '[\\n  {\\n    \"expected\": \"object\",\\n  \u2026'",
+        "AssertionError: expected [Function] to throw error including 'save unconfirmed' but got '[\\n  {\\n    \"expected\": \"object\",\\n  \u2026'"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "receipt-actor",
+      "control": false,
+      "before": "retained.state.request.actorId !== args.actorId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "receipt-intent",
+      "control": false,
+      "before": "retained.state.request.intentText !== args.intentText",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "receipt-binding",
+      "control": false,
+      "before": "retained.state.thematic.thematicText !== thematicText",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "receipt-replayed",
+      "control": false,
+      "before": "retained.state.replayed === undefined",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "read-error",
+      "control": false,
+      "before": "if (response.error) throw new Error(\"Thematic request unavailable; retry the authenticated read\");",
+      "after": "",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw error including 'unavailable' but got '[\\n  {\\n    \"expected\": \"object\",\\n  \u2026'"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "abort-checks",
+      "control": false,
+      "before": "signal.throwIfAborted();",
+      "after": "",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(3) }\" instead of rejecting",
+        "AssertionError: expected [ { \u2026(3) } ] to deeply equal []"
+      ],
+      "outcome": "failed"
+    }
+  ],
+  "requestRestoration": {
+    "sha256": "879e727bcf809e5aebc8f9597a77c4d7e4870109184dfb72b1b67c882d326c0c",
+    "restored": true
+  },
+  "choices": [
+    {
+      "name": "harmless-comment",
+      "control": true,
+      "before": "Retain one reconstructed context",
+      "after": "Retain one original reconstructed context",
+      "exitCode": 0,
+      "assertionFailure": false,
+      "diagnostics": [],
+      "outcome": "survived"
+    },
+    {
+      "name": "record-campaign",
+      "control": false,
+      "before": "record.campaignId !== scope.campaignId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "record-workspace",
+      "control": false,
+      "before": "record.workspaceId !== scope.workspaceId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "record-request",
+      "control": false,
+      "before": "record.requestId !== scope.requestId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "record-target",
+      "control": false,
+      "before": "record.targetRecordId !== targetRecordId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "record-hash",
+      "control": false,
+      "before": "digest(record.choiceText) !== record.choiceSha256",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "empty-read-scope",
+      "control": false,
+      "before": "await readSynthesisThematicRequest(client, scope, signal);\n  // The native reader",
+      "after": "// The native reader",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"null\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "read-error",
+      "control": false,
+      "before": "if (response.error) throw new Error(\"Thematic input choice unavailable\");",
+      "after": "",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"null\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "requester",
+      "control": false,
+      "before": "if (request.state.request.actorId !== args.actorId)",
+      "after": "if (false)",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw error including 'Only the thematic requester' but got 'Saved thematic input differs from the\u2026'"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "complete-history",
+      "control": false,
+      "before": "if (history.manifest.status !== \"frames_complete\" || history.finalOutputText === null || !last?.captureSha256 || !last.resultSha256)",
+      "after": "if (false)",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw error including 'complete retained context' but got '[\\n  {\\n    \"expected\": \"string\",\\n  \u2026'"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "input-source",
+      "control": false,
+      "before": "history.request.intent.sourceId !== request.intent.sourceId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "input-source-hash",
+      "control": false,
+      "before": "history.request.intent.sourceSha256 !== request.intent.sourceSha256",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "input-parent",
+      "control": false,
+      "before": "binding.parentRequestId !== request.binding.parentRequestId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "input-sequence",
+      "control": false,
+      "before": "binding.selectionSequence !== request.binding.selectionSequence",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "input-segments",
+      "control": false,
+      "before": "binding.segmentResultsManifestSha256 !== request.binding.segmentResultsManifestSha256",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "input-context",
+      "control": false,
+      "before": "binding.contextManifestSha256 !== request.binding.contextManifestSha256",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "input-target",
+      "control": false,
+      "before": "binding.targetRecordId !== args.targetRecordId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "original-history",
+      "control": false,
+      "before": "historyManifestSha256: history.sha256",
+      "after": "historyManifestSha256: \"0\".repeat(64)",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: expected { schemaVersion: 1, \u2026(6) } to deeply equal { schemaVersion: 1, \u2026(6) }"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "original-capture",
+      "control": false,
+      "before": "finalCaptureSha256: last.captureSha256",
+      "after": "finalCaptureSha256: \"0\".repeat(64)",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: expected { schemaVersion: 1, \u2026(6) } to deeply equal { schemaVersion: 1, \u2026(6) }"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "original-result",
+      "control": false,
+      "before": "finalResultSha256: last.resultSha256",
+      "after": "finalResultSha256: \"0\".repeat(64)",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: expected { schemaVersion: 1, \u2026(6) } to deeply equal { schemaVersion: 1, \u2026(6) }"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "write-error",
+      "control": false,
+      "before": "if (response.error) throw new Error(\"Thematic input save unconfirmed; retry the same choice\");",
+      "after": "",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: expected [Function] to throw error including 'save unconfirmed' but got '[\\n  {\\n    \"expected\": \"object\",\\n  \u2026'"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "receipt-bytes",
+      "control": false,
+      "before": "retained.record.choiceText !== choiceText",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "receipt-author",
+      "control": false,
+      "before": "retained.record.createdBy !== args.actorId",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "receipt-replayed",
+      "control": false,
+      "before": "retained.record.replayed === undefined",
+      "after": "false",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ \u2026(2) }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    },
+    {
+      "name": "abort-checks",
+      "control": false,
+      "before": "signal.throwIfAborted();",
+      "after": "",
+      "exitCode": 1,
+      "assertionFailure": true,
+      "diagnostics": [
+        "AssertionError: promise resolved \"{ record: { \u2026(10) }, choice: { \u2026(7) } }\" instead of rejecting"
+      ],
+      "outcome": "failed"
+    }
+  ],
+  "choiceRestoration": {
+    "sha256": "aa5b4d81376fbbcc1ead2b6be8308234279fb6d3f0007dcf62113f4277bf8e58",
+    "restored": true
+  },
+  "nativeChoiceHashFault": {
+    "before": "historyManifestSha256: history.sha256",
+    "after": "historyManifestSha256: \"0\".repeat(64)",
+    "exitCode": 1,
+    "assertionFailure": true,
+    "diagnostics": [
+      "AssertionError: expected '0000000000000000000000000000000000000\u2026' to be '55ae6e934e88531d636f9feca5c383f79c972\u2026' // Object.is equality"
+    ]
+  },
+  "nativeChoiceRestoration": {
+    "restored": true,
+    "sha256": "aa5b4d81376fbbcc1ead2b6be8308234279fb6d3f0007dcf62113f4277bf8e58"
+  },
+  "verifiedFileSha256": {
+    "openplan/src/lib/engagement/synthesis-thematic-requests-server.ts": "879e727bcf809e5aebc8f9597a77c4d7e4870109184dfb72b1b67c882d326c0c",
+    "openplan/src/lib/engagement/synthesis-thematic-choices-server.ts": "aa5b4d81376fbbcc1ead2b6be8308234279fb6d3f0007dcf62113f4277bf8e58",
+    "openplan/supabase/migrations/20261015000003_engagement_synthesis_thematic_requests.sql": "3a4ace70a54a0cbb9b68f036adae631c44e22e8463f08c609311b9bc3f970a5d",
+    "openplan/supabase/migrations/20261015000004_engagement_synthesis_thematic_choices.sql": "7afc13e695a7152ed1aaf9b0af39a0b9474089e8e772d11f44ac209dd46cc295"
+  },
+  "schemaAccounting": {
+    "probes": [
+      {
+        "name": "harmless-comment",
+        "exitCode": 0,
+        "expected": null,
+        "expectedFailure": false
+      },
+      {
+        "name": "unaccounted-column",
+        "exitCode": 1,
+        "expected": "undocumented_synthetic_field",
+        "expectedFailure": true
+      },
+      {
+        "name": "missing-rls",
+        "exitCode": 1,
+        "expected": "to have a length of 273 but got 272",
+        "expectedFailure": true
+      }
+    ],
+    "restoration": {
+      "restored": true,
+      "sha256": "7afc13e695a7152ed1aaf9b0af39a0b9474089e8e772d11f44ac209dd46cc295"
+    }
+  }
+}
