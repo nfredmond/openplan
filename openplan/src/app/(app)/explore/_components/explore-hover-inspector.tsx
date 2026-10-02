@@ -6,7 +6,7 @@ import {
   type CrashSeverityFilter,
   type CrashUserFilter,
 } from "@/lib/analysis/map-view-state";
-import { formatCurrency, formatPercent, titleize } from "./_helpers";
+import { formatCurrency, formatPercent, titleize, NO_DATA_FILL_COLOR } from "./_helpers";
 import type { HoveredCrash, HoveredTract, TractLegendItem, TractMetric } from "./_types";
 
 type ExploreHoverInspectorProps = {
@@ -34,6 +34,7 @@ function buildTractLegend(tractMetric: TractMetric): {
         { label: "20-30%", color: "#65a30d" },
         { label: "30-45%", color: "#ca8a04" },
         { label: "45%+", color: "#b91c1c" },
+        { label: "No data", color: NO_DATA_FILL_COLOR },
       ],
     };
   }
@@ -48,6 +49,7 @@ function buildTractLegend(tractMetric: TractMetric): {
         { label: "$70k-$100k", color: "#0f766e" },
         { label: "$100k-$150k", color: "#0ea5e9" },
         { label: "$150k+", color: "#e0f2fe" },
+        { label: "No data", color: NO_DATA_FILL_COLOR },
       ],
     };
   }
@@ -72,6 +74,7 @@ function buildTractLegend(tractMetric: TractMetric): {
       { label: "55-75%", color: "#2563eb" },
       { label: "75-100%", color: "#0f766e" },
       { label: "Highest concentration", color: "#34d399" },
+        { label: "No data", color: NO_DATA_FILL_COLOR },
     ],
   };
 }

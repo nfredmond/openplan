@@ -168,7 +168,7 @@ Severity: **High** blocks a task or breaks a legal or licence duty. **Medium** s
 
 - **P1, High.** A person who confirms their email after choosing "Run your first corridor study" lands on a 404. `app/auth/callback/route.ts:70` assigns `/dashboard?intent=modeling` to `pathname`, which encodes the question mark. Verified in code; not reproduced in a browser because local sign-up skips confirmation.
 - **P2, High.** The portal asks for a name "if you want the team to know who sent this," then shows the name publicly on approved comments. No privacy link exists in the portal.
-- **P3, High.** The language picker offers 21 languages. Only Spanish has interface text. The other 19 return English controls. On desktop the 21 chips sit above the campaign title (`evidence/14-portal-1440.png`).
+- **P3, Medium (corrected October 1).** The language picker showed 21 options as open chips above the campaign title (`evidence/14-portal-1440.png`). Only Spanish has interface text; the others show English controls with a disclosure, and campaign content can be translated per language. That fallback is a recorded design choice in `portal-language-picker.tsx` and `portal-i18n/messages.ts`, so the first draft of this finding was wrong to call the list itself a defect. The defect is the placement and size. Fixed by collapsing the list into one row.
 - **P4, High.** A closed or archived campaign returns the generic 404, so a printed postcard link dies and the results page is unreachable.
 - **P5, High.** A failed portal read sends a resident to the app's error page, which says "go back to Overview."
 - **P6, High.** No print stylesheet covers the public plan pages, and the default theme is dark.
@@ -207,7 +207,7 @@ Small, independent fixes. No design decision needed.
 9. Skip link and `<main>` landmark (R5).
 10. Portal error page, loading state and closed-campaign page (P4, P5).
 11. Favicon, PNG social image, remove scaffold files (P10).
-12. Language picker shows only languages with interface text or published translations (P3).
+12. Language picker collapses to one row and keeps every language (P3).
 
 ### Phase 1. Foundations
 

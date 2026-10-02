@@ -141,7 +141,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("mapbox-gl", () => ({
-  default: { Map: mapboxMocks.Map, accessToken: "" },
+  default: { AttributionControl: class {}, Map: mapboxMocks.Map, accessToken: "" },
   FullscreenControl: mapboxMocks.FullscreenControl,
   NavigationControl: mapboxMocks.NavigationControl,
   ScaleControl: mapboxMocks.ScaleControl,

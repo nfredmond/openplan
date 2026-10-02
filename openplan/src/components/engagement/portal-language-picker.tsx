@@ -1,4 +1,4 @@
-import { Languages } from "lucide-react";
+import { ChevronDown, Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TRANSLATION_LANGUAGE_NATIVE_LABELS } from "@/lib/engagement/translation-languages";
 import {
@@ -56,53 +56,71 @@ export function PortalLanguagePicker({
 }) {
   const translator = createPortalTranslator(messages);
 
+  const currentName = TRANSLATION_LANGUAGE_NATIVE_LABELS[locale.locale];
+
+  /*
+    ONE ROW CLOSED, EVERY LANGUAGE OPEN.
+
+    All of the options used to sit open as chips above the campaign title: three
+    rows of small pills before a resident learned what the page was about. A
+    native `<details>` keeps all three constraints above. It needs no
+    JavaScript, every option is still a real link in its own script, and the
+    closed row names the current language in that language. Rows are 44px tall
+    so they can be tapped on a phone.
+  */
   return (
-    <nav
-      aria-label={translator.t("language.pickerLabel")}
-      className={cn("flex flex-wrap items-center gap-x-2 gap-y-1 text-xs", className)}
-    >
-      <span className="inline-flex items-center gap-1.5 font-semibold text-muted-foreground">
-        <Languages className="h-3.5 w-3.5" aria-hidden="true" />
-        {translator.t("language.pickerLabel")}
-      </span>
+    <nav aria-label={translator.t("language.pickerLabel")} className={cn("text-sm", className)}>
+      <details className="group">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-md font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+          <Languages className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          <span className="text-muted-foreground">{translator.t("language.pickerLabel")}</span>
+          <span lang={locale.locale} dir={PORTAL_LOCALE_DIRECTION[locale.locale]}>
+            {currentName}
+          </span>
+          <ChevronDown
+            className="ml-auto h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180"
+            aria-hidden="true"
+          />
+        </summary>
 
-      <ul className="flex flex-wrap items-center gap-1">
-        {PORTAL_LOCALES.map((candidate) => {
-          const current = candidate === locale.locale;
-          const nativeName = TRANSLATION_LANGUAGE_NATIVE_LABELS[candidate];
+        <ul className="mt-1 grid grid-cols-2 gap-1 pb-1 sm:grid-cols-3">
+          {PORTAL_LOCALES.map((candidate) => {
+            const current = candidate === locale.locale;
+            const nativeName = TRANSLATION_LANGUAGE_NATIVE_LABELS[candidate];
 
-          return (
-            <li key={candidate}>
-              <a
-                href={portalLocaleHref(pathname, search, candidate)}
-                // The language of the LINK TEXT, not of the page — a screen
-                // reader told the page is English will otherwise pronounce
-                // «한국어» as English, which is the one word in the list that
-                // has to be recognisable.
-                lang={candidate}
-                dir={PORTAL_LOCALE_DIRECTION[candidate]}
-                hrefLang={candidate}
-                aria-current={current ? "true" : undefined}
-                // The accessible name says what the link DOES, in the language
-                // the reader is currently being served.
-                aria-label={
-                  current
-                    ? translator.t("language.current", { language: nativeName })
-                    : translator.t("language.switchTo", { language: nativeName })
-                }
-                className={cn(
-                  "inline-block rounded-full border px-2.5 py-1 transition-colors",
-                  current
-                    ? "border-primary/60 bg-primary/10 font-semibold text-foreground"
-                    : "border-border/70 text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                )}
-              >
-                {nativeName}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
+            return (
+              <li key={candidate}>
+                <a
+                  href={portalLocaleHref(pathname, search, candidate)}
+                  // The language of the LINK TEXT, not of the page — a screen
+                  // reader told the page is English will otherwise pronounce
+                  // «한국어» as English, which is the one word in the list that
+                  // has to be recognisable.
+                  lang={candidate}
+                  dir={PORTAL_LOCALE_DIRECTION[candidate]}
+                  hrefLang={candidate}
+                  aria-current={current ? "true" : undefined}
+                  // The accessible name says what the link DOES, in the language
+                  // the reader is currently being served.
+                  aria-label={
+                    current
+                      ? translator.t("language.current", { language: nativeName })
+                      : translator.t("language.switchTo", { language: nativeName })
+                  }
+                  className={cn(
+                    "flex min-h-11 items-center rounded-md border px-3 transition-colors",
+                    current
+                      ? "border-primary/60 bg-primary/10 font-semibold text-foreground"
+                      : "border-border/70 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                  )}
+                >
+                  {nativeName}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </details>
     </nav>
   );
 }

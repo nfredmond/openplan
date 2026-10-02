@@ -48,6 +48,7 @@ const fakeMap = {
   once: () => {},
   remove: () => {},
   setStyle: () => {},
+  addControl: () => {},
   zoomIn: () => {},
   zoomOut: () => {},
   isStyleLoaded: () => true,
@@ -74,7 +75,7 @@ const fakeMap = {
 };
 
 vi.mock("mapbox-gl", () => ({
-  default: {
+  default: { AttributionControl: class {},
     Map: function MapboxMap() {
       return fakeMap;
     },

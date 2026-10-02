@@ -1,12 +1,12 @@
 import type { ExpressionSpecification } from "mapbox-gl";
-import { coerceNumber } from "./_helpers";
+import { coerceNumber, paintWhereMeasured } from "./_helpers";
 import type { HoveredTract, TractMetric } from "./_types";
 
 const TRACT_METRIC_PAINT_EXPRESSIONS: Record<TractMetric, ExpressionSpecification> = {
-  minority: [
+  minority: paintWhereMeasured("pctMinority", [
     "interpolate",
     ["linear"],
-    ["coalesce", ["to-number", ["get", "pctMinority"]], 0],
+    ["to-number", ["get", "pctMinority"]],
     0,
     "#123047",
     30,
@@ -17,11 +17,11 @@ const TRACT_METRIC_PAINT_EXPRESSIONS: Record<TractMetric, ExpressionSpecificatio
     "#0f766e",
     100,
     "#34d399",
-  ],
-  poverty: [
+  ]),
+  poverty: paintWhereMeasured("pctBelowPoverty", [
     "interpolate",
     ["linear"],
-    ["coalesce", ["to-number", ["get", "pctBelowPoverty"]], 0],
+    ["to-number", ["get", "pctBelowPoverty"]],
     0,
     "#0b3b2e",
     10,
@@ -32,11 +32,11 @@ const TRACT_METRIC_PAINT_EXPRESSIONS: Record<TractMetric, ExpressionSpecificatio
     "#ca8a04",
     45,
     "#b91c1c",
-  ],
-  income: [
+  ]),
+  income: paintWhereMeasured("medianIncome", [
     "interpolate",
     ["linear"],
-    ["coalesce", ["to-number", ["get", "medianIncome"]], 0],
+    ["to-number", ["get", "medianIncome"]],
     0,
     "#7f1d1d",
     45000,
@@ -47,7 +47,7 @@ const TRACT_METRIC_PAINT_EXPRESSIONS: Record<TractMetric, ExpressionSpecificatio
     "#0ea5e9",
     150000,
     "#e0f2fe",
-  ],
+  ]),
   disadvantaged: [
     "case",
     ["==", ["coalesce", ["to-number", ["get", "isDisadvantaged"]], 0], 1],

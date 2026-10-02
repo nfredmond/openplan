@@ -44,7 +44,7 @@ const mapboxMocks = vi.hoisted(() => {
 });
 
 vi.mock("mapbox-gl", () => ({
-  default: {
+  default: { AttributionControl: class {},
     Map: mapboxMocks.Map,
     NavigationControl: mapboxMocks.NavigationControl,
     accessToken: "",

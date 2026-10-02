@@ -66,6 +66,7 @@ const fakeMap = {
   },
   remove: () => {},
   setStyle: () => {},
+  addControl: () => {},
   zoomIn: () => {},
   zoomOut: () => {},
   isStyleLoaded: () => true,
@@ -103,7 +104,7 @@ const fakeMap = {
 };
 
 vi.mock("mapbox-gl", () => ({
-  default: {
+  default: { AttributionControl: class {},
     // A constructor, not an arrow: the backdrop calls `new mapboxgl.Map(...)`.
     Map: function MapboxMap() {
       return fakeMap;

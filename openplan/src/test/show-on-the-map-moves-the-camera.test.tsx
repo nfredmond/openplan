@@ -176,7 +176,7 @@ vi.mock("mapbox-gl", () => {
     });
   }
   return {
-    default: {
+    default: { AttributionControl: class {},
       Map: FakeMapConstructor,
       LngLatBounds: FakeLngLatBounds,
       Popup: FakePopup,

@@ -50,7 +50,7 @@ vi.mock("mapbox-gl", () => {
     return self;
   });
   return {
-    default: { Map, NavigationControl: ctl, FullscreenControl: ctl, ScaleControl: ctl, Popup: ctl, Marker: ctl, LngLatBounds: ctl, accessToken: "" },
+    default: { AttributionControl: class {}, Map, NavigationControl: ctl, FullscreenControl: ctl, ScaleControl: ctl, Popup: ctl, Marker: ctl, LngLatBounds: ctl, accessToken: "" },
     Map,
     NavigationControl: ctl,
     FullscreenControl: ctl,

@@ -52,7 +52,7 @@ vi.mock("mapbox-gl", () => {
     zoomOut = vi.fn();
   }
   return {
-    default: { Map: MockMap, NavigationControl: class {}, accessToken: "" },
+    default: { AttributionControl: class {}, Map: MockMap, NavigationControl: class {}, accessToken: "" },
     Map: MockMap,
     NavigationControl: class {},
   };

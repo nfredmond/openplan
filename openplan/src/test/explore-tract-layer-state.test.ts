@@ -6,11 +6,18 @@ import {
 } from "@/app/(app)/explore/_components/explore-tract-layer-state";
 import type { TractMetric } from "@/app/(app)/explore/_components/_types";
 
+const measured = (property: string, ramp: unknown[]): unknown[] => [
+  "case",
+  ["any", ["==", ["typeof", ["get", property]], "number"], ["==", ["typeof", ["get", property]], "string"]],
+  ramp,
+  "#64748b",
+];
+
 const expectedPaintExpressions: Record<TractMetric, unknown[]> = {
-  minority: [
+  minority: measured("pctMinority", [
     "interpolate",
     ["linear"],
-    ["coalesce", ["to-number", ["get", "pctMinority"]], 0],
+    ["to-number", ["get", "pctMinority"]],
     0,
     "#123047",
     30,
@@ -21,11 +28,11 @@ const expectedPaintExpressions: Record<TractMetric, unknown[]> = {
     "#0f766e",
     100,
     "#34d399",
-  ],
-  poverty: [
+  ]),
+  poverty: measured("pctBelowPoverty", [
     "interpolate",
     ["linear"],
-    ["coalesce", ["to-number", ["get", "pctBelowPoverty"]], 0],
+    ["to-number", ["get", "pctBelowPoverty"]],
     0,
     "#0b3b2e",
     10,
@@ -36,11 +43,11 @@ const expectedPaintExpressions: Record<TractMetric, unknown[]> = {
     "#ca8a04",
     45,
     "#b91c1c",
-  ],
-  income: [
+  ]),
+  income: measured("medianIncome", [
     "interpolate",
     ["linear"],
-    ["coalesce", ["to-number", ["get", "medianIncome"]], 0],
+    ["to-number", ["get", "medianIncome"]],
     0,
     "#7f1d1d",
     45000,
@@ -51,7 +58,7 @@ const expectedPaintExpressions: Record<TractMetric, unknown[]> = {
     "#0ea5e9",
     150000,
     "#e0f2fe",
-  ],
+  ]),
   disadvantaged: [
     "case",
     ["==", ["coalesce", ["to-number", ["get", "isDisadvantaged"]], 0], 1],
@@ -106,5 +113,15 @@ describe("explore tract layer state", () => {
       isDisadvantaged: false,
     });
     expect(buildHoveredTract(null)).toBeNull();
+  });
+
+  it("paints a tract with no value in the no-data grey, never as the lowest class", () => {
+    for (const metric of ["minority", "poverty", "income"] as const) {
+      const expression = buildTractMetricPaintExpression(metric) as unknown[];
+      expect(expression[0]).toBe("case");
+      expect(expression.at(-1)).toBe("#64748b");
+      // `coalesce(..., 0)` is how a missing value became a zero.
+      expect(JSON.stringify(expression)).not.toContain('"coalesce"');
+    }
   });
 });
