@@ -66,5 +66,33 @@
     "native_rls_opted_out_in_aggregate_gate": true,
     "log": "evidence/qa-gate-publish.log",
     "source_hashes": "evidence/fix-source-hashes.json"
+  },
+  "first_github_ci": {
+    "head": "e5bae0750ae4acb5bca7f20f4dcb833c76e51c6c",
+    "base": "49deefd0cea09db5649be801d32bc879d2159a0d",
+    "merge": "ce572751e2a5de08af3823dc3d780e38a8f8e03f",
+    "application_passed_each_normal_and_shuffled": 16891,
+    "application_skipped_each": 1197,
+    "native_files_passed": 81,
+    "native_tests_passed": 1094,
+    "native_tests_skipped": 125,
+    "native_recovery_seconds": 184.022,
+    "restore": "failed 14 tests: duplicate probe guard rejects disposable restore target"
+  },
+  "latest_integrated_main": "2402241129553ff85cad7df12d63e913a22da7c4",
+  "latest_integration_commit": "3f497f89",
+  "restore_guard_correction": {
+    "shared_allowlist_changed": false,
+    "focused_tests_passed": 31,
+    "probe_cases": 18,
+    "lint": "passed",
+    "harmless_probe_control_passed": 18,
+    "targeted_mutations": {
+      "storage_guard_removed_failures": 5,
+      "storage_restore_rejected_failures": 2,
+      "finance_guard_removed_failures": 5,
+      "finance_restore_rejected_failures": 2
+    },
+    "SQL_or_application_changed": false
   }
 }

@@ -3,14 +3,12 @@ import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { LIVE_RLS } from "./local-supabase-env";
 import { resolveLocalDbContainer } from "./helpers/live-catalog";
+import { requireContractVerificationStack } from "./helpers/contract-verification-stack";
 
 /** Native policy checks use rolled-back synthetic rows, never stored file bytes. */
 function probe(mutation = "") {
   const container = resolveLocalDbContainer();
-  if (!(process.env.GITHUB_ACTIONS === "true" && container === "supabase_db_openplan") &&
-      !/^supabase_db_(independent-fixes-20261001|openplan-security-verification(?:-[a-z0-9-]+)?)$/.test(container)) {
-    throw new Error("Select a disposable artifact Storage verification stack");
-  }
+  requireContractVerificationStack(container);
   const actor = randomUUID(), workspace = randomUUID(), foreignWorkspace = randomUUID();
   const sql = `BEGIN;
 SET LOCAL statement_timeout='15s'; SET LOCAL lock_timeout='2s';

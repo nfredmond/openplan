@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { LIVE_RLS } from "./local-supabase-env";
 import { resolveLocalDbContainer } from "./helpers/live-catalog";
+import { requireContractVerificationStack } from "./helpers/contract-verification-stack";
 
 const migration = readFileSync("supabase/migrations/20261015000001_measure_period_fund_integrity.sql", "utf8");
 const tables = ["measure_allocations", "measure_period_off_the_top", "measure_period_reserve"] as const;
@@ -12,10 +13,7 @@ type ChildTable = typeof tables[number];
 /** Replay the upgrade and all assertions within one disposable transaction. */
 function probe(options: { historicalTable?: ChildTable; mutation?: string; harmless?: boolean } = {}) {
   const container = resolveLocalDbContainer();
-  if (!(process.env.GITHUB_ACTIONS === "true" && container === "supabase_db_openplan") &&
-      !/^supabase_db_(independent-fixes-20261001|openplan-security-verification(?:-[a-z0-9-]+)?)$/.test(container)) {
-    throw new Error("Select a disposable financial parent verification stack");
-  }
+  requireContractVerificationStack(container);
   const actor = randomUUID(), workspace = randomUUID(), fund = randomUUID(), otherFund = randomUUID(), period = randomUUID();
   const insert = (table: ChildTable, label: string, parent = fund) => {
     const common = `workspace_id,measure_fund_id,period_id`;

@@ -67,3 +67,12 @@ Path mutation results are retained in `evidence/security-path-mutations.json` an
 The SDK test does not establish native Storage authorization, MIME handling, network delivery or a browser download. The native suite establishes PostgreSQL policy behavior with synthetic metadata; it does not establish Storage HTTP endpoint behavior or byte transport. Earlier automatic safety review blocked offensive native confirmation of the reported traversal, and this implementation does not retry that test. The defensive regression verifies refusal before a privileged request and preserves legitimate SDK targets.
 
 No practitioner, scientific or whole-product acceptance claim follows from these results. Neither correction depends on the unfinished context-history prototype. No historical finding is marked retrospectively disproved; the corrected behavior is supported by the new regression evidence above.
+
+
+## Restore drill guard integration
+
+The first PR restore drill reaches the new native suites but their duplicated test-only stack checks refuse `openplan-restore-target-<positive integer>`. Four Storage and ten financial migration checks therefore fail before their SQL probes; those failures are not accepted as successful mutation detection. Both suites now invoke the existing `requireContractVerificationStack` helper. Its allowlist is unchanged.
+
+`native-review-probe-stack-identity.test.ts` executes each actual native probe with the real shared guard in a VM. It intercepts only container discovery, Docker transport and native suite registration. Eighteen cases prove approved restore IDs reach the exact Docker target and transaction payload, and that demo, unknown, malformed restore and non-CI default targets are refused before dispatch. Together with the 13 shared-guard cases, 31 focused tests pass. Scoped lint passes.
+
+The baseline and harmless comment each pass all 18 probe cases. Removing the Storage guard fails five named refusal assertions; restoring its erroneous restore rejection fails two approved-target assertions. The financial probe produces the same intended five and two failures. Every source mutation is restored. Results are in `evidence/security-restore-identity-mutations.json`; the executable harness is beside it. These checks prove identity/dispatch integration, not SQL enforcement or a successful restore. Native database and restore CI retain those separate responsibilities.

@@ -1,0 +1,132 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "passed": 18,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "case": "harmless-comment",
+      "passed": 18,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "case": "artifact-storage-writes-rls.test-guard-removed",
+      "passed": 13,
+      "failed": 5,
+      "failures": [
+        {
+          "title": "native probe stack identity: artifact-storage-writes-rls.test.ts refuses supabase_db_openplan-demo with CI=false before Docker dispatch",
+          "messages": [
+            "AssertionError: expected [Function probe] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:69:19\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        },
+        {
+          "title": "native probe stack identity: artifact-storage-writes-rls.test.ts refuses supabase_db_unknown with CI=true before Docker dispatch",
+          "messages": [
+            "AssertionError: expected [Function probe] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:69:19\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        },
+        {
+          "title": "native probe stack identity: artifact-storage-writes-rls.test.ts refuses supabase_db_openplan with CI=false before Docker dispatch",
+          "messages": [
+            "AssertionError: expected [Function probe] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:69:19\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        },
+        {
+          "title": "native probe stack identity: artifact-storage-writes-rls.test.ts refuses supabase_db_openplan-restore-target-0 with CI=true before Docker dispatch",
+          "messages": [
+            "AssertionError: expected [Function probe] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:69:19\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        },
+        {
+          "title": "native probe stack identity: artifact-storage-writes-rls.test.ts refuses supabase_db_openplan-restore-target-1-demo with CI=true before Docker dispatch",
+          "messages": [
+            "AssertionError: expected [Function probe] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:69:19\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "artifact-storage-writes-rls.test-restore-regression",
+      "passed": 16,
+      "failed": 2,
+      "failures": [
+        {
+          "title": "native probe stack identity: artifact-storage-writes-rls.test.ts dispatches the real probe only to approved supabase_db_openplan-restore-target-1 with CI=false",
+          "messages": [
+            "Error: Restore target wrongly refused\n    at probe (evalmachine.<anonymous>:13:15)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:51:12\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)"
+          ]
+        },
+        {
+          "title": "native probe stack identity: artifact-storage-writes-rls.test.ts dispatches the real probe only to approved supabase_db_openplan-restore-target-123456 with CI=true",
+          "messages": [
+            "Error: Restore target wrongly refused\n    at probe (evalmachine.<anonymous>:13:15)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:51:12\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "measure-period-parent-migration.test-guard-removed",
+      "passed": 13,
+      "failed": 5,
+      "failures": [
+        {
+          "title": "native probe stack identity: measure-period-parent-migration.test.ts refuses supabase_db_openplan-demo with CI=false before Docker dispatch",
+          "messages": [
+            "AssertionError: expected [Function probe] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:69:19\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        },
+        {
+          "title": "native probe stack identity: measure-period-parent-migration.test.ts refuses supabase_db_unknown with CI=true before Docker dispatch",
+          "messages": [
+            "AssertionError: expected [Function probe] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:69:19\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        },
+        {
+          "title": "native probe stack identity: measure-period-parent-migration.test.ts refuses supabase_db_openplan with CI=false before Docker dispatch",
+          "messages": [
+            "AssertionError: expected [Function probe] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:69:19\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        },
+        {
+          "title": "native probe stack identity: measure-period-parent-migration.test.ts refuses supabase_db_openplan-restore-target-0 with CI=true before Docker dispatch",
+          "messages": [
+            "AssertionError: expected [Function probe] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:69:19\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        },
+        {
+          "title": "native probe stack identity: measure-period-parent-migration.test.ts refuses supabase_db_openplan-restore-target-1-demo with CI=true before Docker dispatch",
+          "messages": [
+            "AssertionError: expected [Function probe] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:69:19\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "measure-period-parent-migration.test-restore-regression",
+      "passed": 16,
+      "failed": 2,
+      "failures": [
+        {
+          "title": "native probe stack identity: measure-period-parent-migration.test.ts dispatches the real probe only to approved supabase_db_openplan-restore-target-1 with CI=false",
+          "messages": [
+            "Error: Restore target wrongly refused\n    at probe (evalmachine.<anonymous>:16:15)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:51:12\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)"
+          ]
+        },
+        {
+          "title": "native probe stack identity: measure-period-parent-migration.test.ts dispatches the real probe only to approved supabase_db_openplan-restore-target-123456 with CI=true",
+          "messages": [
+            "Error: Restore target wrongly refused\n    at probe (evalmachine.<anonymous>:16:15)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/native-review-probe-stack-identity.test.ts:51:12\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ]
+    }
+  ],
+  "restored": {
+    "openplan/src/test/artifact-storage-writes-rls.test.ts": "da09eead2504aa5351a9767591702bef6274ea4f987d36217f47453c490cfeb1",
+    "openplan/src/test/measure-period-parent-migration.test.ts": "f878957d5773d9aa8c1d494a1286186cf85089c66b4ddc5a137c4fc09a77e5f1"
+  }
+}
