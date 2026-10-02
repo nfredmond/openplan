@@ -1,0 +1,287 @@
+{
+  "date": "2026-10-02",
+  "baseline": "88bf46508ea744ff0f01867269e233792cd35c68",
+  "scope": "Exact-parent staff thematic import, complete original proposal/history retention, authenticated original replay through review/approval/response services, unchanged prior approvals. Browser import controls remain unfinished.",
+  "applicationMutations": {
+    "cases": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "validOutcome": true,
+        "seconds": 23.25,
+        "log": "t3-thematic-import-mutation-harmless.log"
+      },
+      {
+        "name": "history-binding",
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 3.02,
+        "log": "t3-thematic-import-mutation-history-binding.log"
+      },
+      {
+        "name": "proposal-binding",
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 3.02,
+        "log": "t3-thematic-import-mutation-proposal-binding.log"
+      },
+      {
+        "name": "capture-binding",
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 2.97,
+        "log": "t3-thematic-import-mutation-capture-binding.log"
+      },
+      {
+        "name": "source-binding",
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 2.97,
+        "log": "t3-thematic-import-mutation-source-binding.log"
+      },
+      {
+        "name": "retained-replay-comparison",
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 4.77,
+        "log": "t3-thematic-import-mutation-retained-replay-comparison.log"
+      },
+      {
+        "name": "expected-parent",
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 4.32,
+        "log": "t3-thematic-import-mutation-expected-parent.log"
+      },
+      {
+        "name": "category-recovery-refusal",
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 1.52,
+        "log": "t3-thematic-import-mutation-category-recovery-refusal.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sourceSha256": {
+      "src/lib/engagement/synthesis-thematic-import-server.ts": "bbb3c3d575636c0671aeb2763c85a45bb2f3b019745dbd4beec8c21723cc8701",
+      "src/lib/engagement/synthesis-review-server.ts": "80587fd0ce9f02f78fe46625b822f9631d2840d95f12fb08e7bd236f4372ff0d",
+      "src/lib/engagement/synthesis-review-recovery.ts": "f13170a601ba08a1b12eebc2a3e1b0a273a3f1d17932bc03377b8d156129f89c"
+    }
+  },
+  "routeMutations": {
+    "cases": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "validOutcome": true,
+        "seconds": 4.07,
+        "log": "t3-thematic-import-route-harmless.log"
+      },
+      {
+        "name": "review-route-reader",
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 3.37,
+        "log": "t3-thematic-import-route-review-route-reader.log"
+      },
+      {
+        "name": "approval-route-reader",
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 3.62,
+        "log": "t3-thematic-import-route-approval-route-reader.log"
+      },
+      {
+        "name": "response-route-reader",
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 3.87,
+        "log": "t3-thematic-import-route-response-route-reader.log"
+      },
+      {
+        "name": "approval-server-reader",
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 3.62,
+        "log": "t3-thematic-import-route-approval-server-reader.log"
+      },
+      {
+        "name": "correction-parent-reader",
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 3.87,
+        "log": "t3-thematic-import-route-correction-parent-reader.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sourceSha256": {
+      "src/app/api/engagement/campaigns/[campaignId]/synthesis/reviews/route.ts": "5c399a47da6b1b7342d8b4ff72e2aeef61f8821c54b285629931d992e46478e3",
+      "src/app/api/engagement/campaigns/[campaignId]/synthesis/approvals/route.ts": "fa98afed7c270c0379678f37445ec1a84551304e4d4c3b17748ba6f78af38cdf",
+      "src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts": "31779ad95103a339c8c6ea552ab2cad1f334e8af4444cab52c1dd3e4ec016a3f",
+      "src/lib/engagement/synthesis-approval-server.ts": "fcfb66d5015999d8b59d57537a2e5380243ba8d5d4572c8bc8dae28ac6a55735",
+      "src/lib/engagement/synthesis-review-server.ts": "80587fd0ce9f02f78fe46625b822f9631d2840d95f12fb08e7bd236f4372ff0d"
+    }
+  },
+  "regression": {
+    "tests": 181,
+    "seconds": 23.29,
+    "log": "t3-thematic-import-regression-final.log",
+    "boundary": "Before the added actual-route join and expanded native helper probes."
+  },
+  "routeJoin": {
+    "tests": 1,
+    "seconds": 3.75,
+    "log": "t3-thematic-import-route-join.log",
+    "boundary": "Actual application route handlers and original-history replay over mocked transport; not a browser or native staff permission result."
+  },
+  "nativeHttp": {
+    "tests": 1,
+    "skipped": 14,
+    "seconds": 181.17,
+    "log": "t3-thematic-import-http-bytes.log",
+    "faultsInsideJourney": 10,
+    "boundary": "One synthetic contribution and local provider; real CLI, PostgREST, SQL, exact lost-reply import recovery, prior approvals and reviewer revocation."
+  },
+  "nativeExpanded": {
+    "tests": 1,
+    "seconds": 1.91,
+    "log": "t3-thematic-import-native-expanded.log",
+    "faults": 15,
+    "runner": "temporary-thematic-import-probes.test.ts",
+    "durableHelper": "openplan/src/test/helpers/synthesis-thematic-import-native.ts",
+    "boundary": "Runs all expanded probes against the completed retained HTTP fixture; temporary membership changes and function mutations roll back. Final HTTP source calls the same expanded helper, but the whole provider journey was not repeated solely for added helper cases."
+  },
+  "nativeRegression": {
+    "tests": 80,
+    "seconds": 207.47,
+    "log": "t3-thematic-import-native-regression.log"
+  },
+  "initialQA": {
+    "passed": 17320,
+    "failed": 2,
+    "skipped": 1429,
+    "log": "t3-thematic-import-qa.log",
+    "failures": [
+      "response-link route assertion omitted the new evidence-reader argument",
+      "changelog used migration number without the full filename"
+    ]
+  },
+  "qaCorrections": {
+    "tests": 22,
+    "seconds": 1.1,
+    "log": "t3-thematic-import-qa-corrections.log"
+  },
+  "initialFailures": [
+    {
+      "log": "t3-thematic-import-http-first.log",
+      "seconds": 171.85,
+      "finding": "Native JSON validation rejects preserved escaped NUL and unpaired UTF-16 evidence."
+    },
+    {
+      "log": "t3-thematic-import-http-corrected.log",
+      "seconds": 175.14,
+      "finding": "Ordinary JSON field extraction also rejects the originals. Native checks now bind exact proposal text hashes, safe history metadata and native source/selected capture; TypeScript replays semantics."
+    },
+    {
+      "log": "t3-thematic-import-regression-first.log",
+      "finding": "Three older assertions expected the original two-argument service calls; updated to require evidence capability propagation."
+    },
+    {
+      "log": "t3-thematic-import-types-first.log",
+      "finding": "Category-only editor fixture needed an explicit correction discriminator after adding the new intent."
+    },
+    {
+      "log": "t3-thematic-import-types-second.log",
+      "finding": "Synthetic map keys and head needed string annotations; completed native capture needed explicit non-null typing."
+    }
+  ],
+  "migration": {
+    "path": "openplan/supabase/migrations/20261015000010_engagement_synthesis_thematic_import.sql",
+    "stack": "openplan-restore-target-2026091050",
+    "initialInstallationLog": "t3-thematic-import-migration.log",
+    "candidateCorrections": 2,
+    "newTable": false,
+    "boundary": "Unreleased candidate installed on owned disposable stack, then corrected with additive function replacements. Canonical/demo/other stacks untouched."
+  },
+  "fullQA": {
+    "exit": 0,
+    "log": "t3-thematic-import-qa-final.log",
+    "applicationPassed": 17323,
+    "applicationSkipped": 1429,
+    "applicationFilesPassed": 1397,
+    "applicationFilesSkipped": 78,
+    "applicationSeconds": 181.23,
+    "connectorPassed": 382,
+    "connectorSkipped": 4,
+    "lint": "pass",
+    "configuredDeadcode": "pass",
+    "dependencyFindings": 0,
+    "webpack": "pass",
+    "typescript": "pass",
+    "broadNativeRls": "skipped; separate native evidence above"
+  },
+  "localLogs": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27",
+  "blindCategories": [
+    "Mocked routes and transports cannot establish native permission or browser acceptance.",
+    "One native synthetic contribution is not campaign-scale performance or semantic usefulness.",
+    "Full original proposal text accompanies later revisions; repeated replay and storage costs remain unmeasured.",
+    "No identified desktop/390px import journey, practitioner observation, new release or full-v1 completion claim."
+  ],
+  "direction": {
+    "exit": 0,
+    "log": "t3-thematic-import-direction-final.log",
+    "boundary": "Existing review-age and jurisdiction registry reminders retained."
+  },
+  "finalSourceSha256": {
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/approvals/route.ts": "fa98afed7c270c0379678f37445ec1a84551304e4d4c3b17748ba6f78af38cdf",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts": "31779ad95103a339c8c6ea552ab2cad1f334e8af4444cab52c1dd3e4ec016a3f",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/reviews/route.ts": "5c399a47da6b1b7342d8b4ff72e2aeef61f8821c54b285629931d992e46478e3",
+    "openplan/src/lib/engagement/synthesis-approval-server.ts": "fcfb66d5015999d8b59d57537a2e5380243ba8d5d4572c8bc8dae28ac6a55735",
+    "openplan/src/lib/engagement/synthesis-response-links-server.ts": "5620ddd88ef82ecc665bde678d4be3c0d43a2b3c6ea55477cbedead964fe50c6",
+    "openplan/src/lib/engagement/synthesis-response-write-server.ts": "e6f02980589aeb2977f7f8bc6b5667690d08768bbbff6f7db66b66b40e1c4309",
+    "openplan/src/lib/engagement/synthesis-review-recovery.ts": "f13170a601ba08a1b12eebc2a3e1b0a273a3f1d17932bc03377b8d156129f89c",
+    "openplan/src/lib/engagement/synthesis-review-server.ts": "80587fd0ce9f02f78fe46625b822f9631d2840d95f12fb08e7bd236f4372ff0d",
+    "openplan/src/lib/engagement/synthesis-review.ts": "5bcea675176a7a4f394caee23b331ffa2c01dd6db5d40d47fa9b0fc9b8305655",
+    "openplan/src/lib/engagement/synthesis-thematic-import-server.ts": "bbb3c3d575636c0671aeb2763c85a45bb2f3b019745dbd4beec8c21723cc8701",
+    "openplan/src/test/engagement-synthesis-approval-route.test.ts": "bd1866086b2db92d528166455fb10a3c24d7ba3082f93410d807d59282c841ce",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "a7156ff46febf521cec2f84e1220c6412d2efcad19e02cd8f3890fd5162be782",
+    "openplan/src/test/engagement-synthesis-response-link-route.test.ts": "335b53e75e780136979ffe4d9a7be52e9fc31255ba98680b33182267f91b8027",
+    "openplan/src/test/engagement-synthesis-response-write.test.ts": "2538874a49e9f9aa414fa0c6b1b6f27cc6af0f6b506fc42fabc3e1570070ac53",
+    "openplan/src/test/engagement-synthesis-review-editor.test.tsx": "95dd4ec133b9770ffbc450db3d218b09468a4082b01c243fd351c8a8151696e9",
+    "openplan/src/test/engagement-synthesis-review-recovery.test.ts": "75b58875fdd16797eacb742ef5a612fc408ea42e5f54e50b97ecd401fd9876c8",
+    "openplan/src/test/engagement-synthesis-thematic-import.test.ts": "aff3c4970a6a5adf02ee87adc96ebdb9233525ba965291e17f833588c43ee904",
+    "openplan/src/test/helpers/synthesis-thematic-import-native.ts": "6286ffaf19b79c0d403e2c9b3c702191b093be4ebb5347f90e2f1288e0174a7d",
+    "openplan/supabase/migrations/20261015000010_engagement_synthesis_thematic_import.sql": "09b17eb0f23097fec0771af688ed3ea6adcddcc27c4dfb05a1c1a6f64aef17bb"
+  },
+  "logSha256": {
+    "t3-thematic-import-direction-final.log": "ac8e97e9b028924f6312e697d38735e18fc7bdb038ed078ae145c6ee87eb6a54",
+    "t3-thematic-import-http-bytes.log": "b6995fe71ef6b1aa34d1a7e5fee29da80cf0b5af75eac9bb0a92b34c91562bc0",
+    "t3-thematic-import-http-corrected.log": "75b1e9a633ef5fc7684c85263e79e2c4783a6bc0933446740e929a6b27d03461",
+    "t3-thematic-import-http-first.log": "e9d6ab3703b8812fc93c2a5b0069db4ed165511dcaabb5b5db0b66b52ef4656e",
+    "t3-thematic-import-mutation-capture-binding.log": "6acfa1e2abda1b57eeb1c2b34624014ba2e96344624510d872d2a9f3364a1085",
+    "t3-thematic-import-mutation-category-recovery-refusal.log": "fc50eba623a626bff92826620504f55c1a7dab205facddc295b2b66f68817395",
+    "t3-thematic-import-mutation-expected-parent.log": "af7f02bf393168b6d3cdf98d23a3571560e0b66055172f49c64ad0a3bfca55e4",
+    "t3-thematic-import-mutation-harmless.log": "709d88912ecf60561a93111033c188fc360605a5de6de8fdff8e1d643aab2cea",
+    "t3-thematic-import-mutation-history-binding.log": "2d019170d67a03a6c91855802b4396ae7531dc2f12cf12d8dac83f488ab3ce39",
+    "t3-thematic-import-mutation-proposal-binding.log": "01c935cab571031cd49311b751b26b2a52a29bd44024d2b9c88e4cc9b44ebc8e",
+    "t3-thematic-import-mutation-retained-replay-comparison.log": "ef1f0ef4910e2129362d224f9441929830ae792d5b92829bc385c498932d5a02",
+    "t3-thematic-import-mutation-source-binding.log": "b4db2f09b8fe471b1995684484988d5d883ebc5257a5f51c4207166a21835ed6",
+    "t3-thematic-import-native-expanded.log": "73521ce16baf765859813900d99cc127ecb585f24b797299c7b39e711a3ada31",
+    "t3-thematic-import-native-regression.log": "341d7f8e81bfbd3a94220f6265ac3f9fd09138251cbe366ce6e6faad97e7ed9d",
+    "t3-thematic-import-qa-corrections.log": "2d2012784a48dfe059fdc54792c40c346e6331c3d1acfbaf3e3c991041a968d1",
+    "t3-thematic-import-qa-final.log": "1f246c30767f33b756b96b2a7efe7a9c19b116df5e0da7979b37d4390122b5e9",
+    "t3-thematic-import-qa.log": "ca7309014424c3b971e627467e5f92570ce32a1a6eb6907237fcb888e8351a20",
+    "t3-thematic-import-regression-final.log": "bf6204d941f14dec387a0808e4848c88a8bfc0cccbfe04fc083bcc22f7f90a09",
+    "t3-thematic-import-regression-first.log": "4b1d6c5174869a7c8058bc0fa3edf80596a6a90e3e41749c52aead7b26c83b61",
+    "t3-thematic-import-route-approval-route-reader.log": "b74bd3d7bb22f8eb5008973a849eba42c3900aa4224ebec3b5005cfd286428b9",
+    "t3-thematic-import-route-approval-server-reader.log": "555de8799b395fff53ab41a72014e559b47cfee6d907633b9e93e21db5fac9dc",
+    "t3-thematic-import-route-correction-parent-reader.log": "4c72d62e7c72d286ff4f77eed22f1295b94ce104fb7524f0d3234a6a01deb97a",
+    "t3-thematic-import-route-harmless.log": "f46c875d0b744131dee6fbbad25ecf7bfba97024fc1428af4118beb44b6775d7",
+    "t3-thematic-import-route-join.log": "49e3165295f0d711cec767f71b70cd3f01d6127a966be22ba353485a072fcee4",
+    "t3-thematic-import-route-response-route-reader.log": "da0f2350a5e43eeb4bee9a79078e820d5e6280b439c64d410cc9c1725cb4b659",
+    "t3-thematic-import-route-review-route-reader.log": "b62c1876985cbed9fc2424bc2ec0e6c86f7face2e20da41841787a88a92ee640",
+    "t3-thematic-import-types-first.log": "d4a70344dad42aa3a77551ecc0aa7b9a3953330b1a3d4d3c3e05629c85576c5c",
+    "t3-thematic-import-types-second.log": "5fd34736dfa8071970caa5f9f2248cf9364c938f3640ce2d3e0067bc760a285a"
+  },
+  "postQaFormatting": "Removed one extra blank line after the migration function definitions; SQL behavior unchanged."
+}

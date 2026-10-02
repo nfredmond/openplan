@@ -63,7 +63,7 @@ export async function GET(request: NextRequest, context: Context) {
     }
     const address = { ...scope, responseId: query.data.responseId, groupId: query.data.groupId };
     if (query.data.mode === "context") {
-      const result = await loadSynthesisResponseContext(access.client, address);
+      const result = await loadSynthesisResponseContext(access.client, address, createServiceRoleClient());
       return NextResponse.json({ context: result.packet }, { headers });
     }
     const result = await loadSynthesisResponseLinkHistory(access.client, address);

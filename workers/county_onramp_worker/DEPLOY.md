@@ -207,3 +207,14 @@ You will also need SpatiaLite â€” `libsqlite3-mod-spatialite` on Debian/Ubuntu â
 and `SPATIALITE_LIBRARY_PATH` pointing at it if it is not in a standard place.
 Python 3.11 is not arbitrary: it is the only interpreter this chain has been
 observed to complete a run on.
+
+## Cancellation ownership
+
+The county worker requires a POSIX host. It starts each bootstrap in a new
+session and cancels that owned process group, including child processes that
+retain output pipes. Termination escalates after the configured grace period;
+a second bounded wait that cannot confirm completion reports failure rather
+than claiming cancellation completed. Detached or externally managed engine
+resources require their own ownership and termination checks. The regression
+suite exercises local child processes, including one that ignores SIGTERM.
+It does not establish Docker-daemon or physical power-loss recovery.

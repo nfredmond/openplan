@@ -1,0 +1,18 @@
+{
+  "baseline": "9530d77c860dccea228f57debe4496afc6b3a513",
+  "build": "owned Next dev process on3198 plus recorded source changes",
+  "desktop_css": [
+    1440,
+    900
+  ],
+  "mobile_css": [
+    390,
+    844
+  ],
+  "navigation": "synthetic fixture link to real portal error boundary",
+  "original_reset_only": "error and digest persisted after fault flag removal; fresh navigation recovered",
+  "corrected_reload": "same fault flag test, Try again fetched page and displayed Synthetic recovery completed",
+  "console": "expected synthetic server failure and portal error log; separate map probe failed for absent Mapbox token",
+  "map_visible_acceptance": false,
+  "temporary_routes_removed": true
+}

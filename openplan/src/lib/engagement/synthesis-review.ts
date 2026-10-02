@@ -11,9 +11,18 @@ const sourceId = z.string().regex(/^(item|answer):[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-
 const sentiment = z.enum(["not_assessed", "positive", "mixed", "neutral", "negative"]);
 const groupFields = { label, summary: text, sentiment };
 export const synthesisReviewGroupSchema = z.object({ id: groupId, ...groupFields, sourceIds: z.array(sourceId) }).strict();
+export const synthesisThematicImportReferenceSchema = z.object({
+  requestId: uuid, selectionSequence: z.number().int().nonnegative().safe(),
+  historyManifestSha256: digest, proposalSha256: digest, finalCaptureSha256: digest,
+}).strict();
+export const synthesisReviewMachineOriginSchema = z.object({
+  interpretation: z.literal("machine_unreviewed"), reference: synthesisThematicImportReferenceSchema,
+  proposalText: text, historyText: text,
+}).strict();
 export const synthesisReviewContentSchema = z.object({
   schemaVersion: z.literal(1), status: z.literal("staff_draft"),
   sourceId: uuid, sourceSha256: digest, title: label, notes: text,
+  machineOrigin: synthesisReviewMachineOriginSchema.optional(),
   groups: z.array(synthesisReviewGroupSchema), unassignedSourceIds: z.array(sourceId),
   assignedSourceCount: z.number().int().nonnegative(), overlappingSourceCount: z.number().int().nonnegative(),
 }).strict();
@@ -31,6 +40,8 @@ export const synthesisReviewIntentSchema = z.discriminatedUnion("operation", [
   z.object({ ...identity, operation: z.literal("create"), sourceId: uuid, sourceSha256: digest }).strict(),
   z.object({ ...identity, operation: z.literal("correct"), reviewId: uuid, expectedRevisionId: uuid,
     expectedRevisionSha256: digest, reason: label, change: synthesisReviewChangeSchema }).strict(),
+  z.object({ ...identity, operation: z.literal("import_thematic"), reviewId: uuid, expectedRevisionId: uuid,
+    expectedRevisionSha256: digest, reason: label, proposal: synthesisThematicImportReferenceSchema }).strict(),
 ]);
 export type SynthesisReviewIntent = z.infer<typeof synthesisReviewIntentSchema>;
 

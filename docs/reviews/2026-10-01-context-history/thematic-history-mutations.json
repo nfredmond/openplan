@@ -1,0 +1,690 @@
+{
+  "date": "2026-10-02",
+  "baseline": "0268749a8d3a0aad9ebbe125060b3967a4ee5a5f",
+  "scope": "Authenticated current-staff reconstruction of sealed thematic inputs, selected original task/capture replay and a machine-unreviewed proposal; no import or new execution authority.",
+  "application": {
+    "t3-thematic-history-mutations.json": {
+      "cases": [
+        {
+          "name": "control",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "seconds": 45.64,
+          "log": "t3-thematic-history-mutation-control.log"
+        },
+        {
+          "name": "fresh-cancellation",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-fresh-cancellation.log"
+        },
+        {
+          "name": "historical-cancellation",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.17,
+          "log": "t3-thematic-history-mutation-historical-cancellation.log"
+        },
+        {
+          "name": "initial-access",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.17,
+          "log": "t3-thematic-history-mutation-initial-access.log"
+        },
+        {
+          "name": "unsealed-inputs",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-unsealed-inputs.log"
+        },
+        {
+          "name": "input-final-access",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-input-final-access.log"
+        },
+        {
+          "name": "request-identity",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-request-identity.log"
+        },
+        {
+          "name": "cancellation-checksum",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-cancellation-checksum.log"
+        },
+        {
+          "name": "cancellation-retained",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-cancellation-retained.log"
+        },
+        {
+          "name": "choice-creator",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-choice-creator.log"
+        },
+        {
+          "name": "trust-retained-input",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-trust-retained-input.log"
+        },
+        {
+          "name": "input-seal-recheck",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.57,
+          "log": "t3-thematic-history-mutation-input-seal-recheck.log"
+        },
+        {
+          "name": "storage-errors",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.57,
+          "log": "t3-thematic-history-mutation-storage-errors.log"
+        },
+        {
+          "name": "frame-text",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-frame-text.log"
+        },
+        {
+          "name": "frame-index",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-frame-index.log"
+        },
+        {
+          "name": "frame-bytes",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-frame-bytes.log"
+        },
+        {
+          "name": "task-hash",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-task-hash.log"
+        },
+        {
+          "name": "task-bytes",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-task-bytes.log"
+        },
+        {
+          "name": "task-chain",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-task-chain.log"
+        },
+        {
+          "name": "reference",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-reference.log"
+        },
+        {
+          "name": "final-bytes",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-final-bytes.log"
+        },
+        {
+          "name": "final-reference",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-final-reference.log"
+        },
+        {
+          "name": "staging-projection",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-staging-projection.log"
+        },
+        {
+          "name": "final-staff-access",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.52,
+          "log": "t3-thematic-history-mutation-final-staff-access.log"
+        },
+        {
+          "name": "selection-request",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-selection-request.log"
+        },
+        {
+          "name": "selection-cursor",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-selection-cursor.log"
+        },
+        {
+          "name": "selection-snapshot",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-selection-snapshot.log"
+        },
+        {
+          "name": "selection-checksum",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-selection-checksum.log"
+        },
+        {
+          "name": "selection-actor",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-selection-actor.log"
+        },
+        {
+          "name": "selection-origin",
+          "expectedFailure": true,
+          "exit": 0,
+          "validOutcome": false,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-selection-origin.log"
+        },
+        {
+          "name": "selection-duplicate-sequence",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-selection-duplicate-sequence.log"
+        },
+        {
+          "name": "last-proposal",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-last-proposal.log"
+        },
+        {
+          "name": "predecessor-comparison",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-predecessor-comparison.log"
+        },
+        {
+          "name": "attempt-request",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-attempt-request.log"
+        },
+        {
+          "name": "attempt-index",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-attempt-index.log"
+        },
+        {
+          "name": "attempt-binding",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-attempt-binding.log"
+        },
+        {
+          "name": "grant-predecessor",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-grant-predecessor.log"
+        },
+        {
+          "name": "input-id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-input-id.log"
+        },
+        {
+          "name": "input-bytes",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-input-bytes.log"
+        },
+        {
+          "name": "dispatch-id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-dispatch-id.log"
+        },
+        {
+          "name": "dispatch-expiry",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-dispatch-expiry.log"
+        },
+        {
+          "name": "dispatch-budget",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-dispatch-budget.log"
+        },
+        {
+          "name": "output-id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-mutation-output-id.log"
+        },
+        {
+          "name": "history-projection",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-mutation-history-projection.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sourceHashes": {
+        "inputs": "b472ea7ebba0cf3d78eae9ad9748656d50b4042618039abc0a1d4286ba94798c",
+        "history": "9b34f4938cc4d3428cd078db337a178689e656d87804ef6b253b26f24ed62ee1",
+        "content": "4b7ce2908bc891dc5a5d7704acf9434c97d648e095a066f0a981edb0946be176"
+      }
+    },
+    "t3-thematic-history-corrected-mutations.json": {
+      "cases": [
+        {
+          "name": "control",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "seconds": 3.52,
+          "log": "t3-thematic-history-corrected-mutation-control.log"
+        },
+        {
+          "name": "selection-origin",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 3.62,
+          "log": "t3-thematic-history-corrected-mutation-selection-origin.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sourceHashes": {
+        "inputs": "b472ea7ebba0cf3d78eae9ad9748656d50b4042618039abc0a1d4286ba94798c",
+        "history": "9b34f4938cc4d3428cd078db337a178689e656d87804ef6b253b26f24ed62ee1",
+        "content": "4b7ce2908bc891dc5a5d7704acf9434c97d648e095a066f0a981edb0946be176"
+      }
+    },
+    "t3-thematic-history-sequence-mutations.json": {
+      "cases": [
+        {
+          "name": "control",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "seconds": 4.42,
+          "log": "t3-thematic-history-sequence-mutation-control.log"
+        },
+        {
+          "name": "unobserved-sequence",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 4.42,
+          "log": "t3-thematic-history-sequence-mutation-unobserved-sequence.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sourceHashes": {
+        "inputs": "b472ea7ebba0cf3d78eae9ad9748656d50b4042618039abc0a1d4286ba94798c",
+        "history": "41c5defdb87aef32af2b9001df9df131d874e3bad9e2620818018a71d11efb65",
+        "content": "4b7ce2908bc891dc5a5d7704acf9434c97d648e095a066f0a981edb0946be176"
+      }
+    },
+    "t3-thematic-history-projection-mutations.json": {
+      "cases": [
+        {
+          "name": "control",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-projection-mutation-control.log"
+        },
+        {
+          "name": "history-projection",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.42,
+          "log": "t3-thematic-history-projection-mutation-history-projection.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sourceHashes": {
+        "inputs": "b472ea7ebba0cf3d78eae9ad9748656d50b4042618039abc0a1d4286ba94798c",
+        "history": "95b48da9ecd92d8d4e827d1d20db92fd4edc023267348e6e502c9a025151e3b0",
+        "content": "4b7ce2908bc891dc5a5d7704acf9434c97d648e095a066f0a981edb0946be176"
+      }
+    },
+    "t3-thematic-history-read-error-mutations.json": {
+      "cases": [
+        {
+          "name": "control",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "seconds": 5.67,
+          "log": "t3-thematic-history-read-error-mutation-control.log"
+        },
+        {
+          "name": "input-seal-error",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-read-error-mutation-input-seal-error.log"
+        },
+        {
+          "name": "source-error",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 2.47,
+          "log": "t3-thematic-history-read-error-mutation-source-error.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sourceHashes": {
+        "inputs": "b472ea7ebba0cf3d78eae9ad9748656d50b4042618039abc0a1d4286ba94798c",
+        "history": "95b48da9ecd92d8d4e827d1d20db92fd4edc023267348e6e502c9a025151e3b0",
+        "content": "4b7ce2908bc891dc5a5d7704acf9434c97d648e095a066f0a981edb0946be176"
+      }
+    }
+  },
+  "initialFailures": [
+    {
+      "log": "t3-thematic-history-first.log",
+      "finding": "Independent proof construction used a different property order than the retained proof schema. The reader now reconstructs the established canonical representation; stored bytes remain untouched."
+    },
+    {
+      "log": "t3-thematic-history-types-expanded.log",
+      "finding": "The synthetic final selection needed a nullable attempt type to exercise a cleared choice; corrected fixture typing."
+    },
+    {
+      "log": "t3-thematic-history-unobserved-sequence-first.log",
+      "finding": "Three incomplete-preparation cases echoed a requested sequence without reading a native selection snapshot. Their manifests now return null for the unobserved sequence."
+    },
+    {
+      "log": "t3-thematic-history-projection-check.log",
+      "finding": "The first focused retry ran from the repository root rather than the application package, so aliases failed and no tests ran. The corrected retry uses the package working directory."
+    }
+  ],
+  "diagnosticReview": [
+    {
+      "case": "selection-origin",
+      "initial": "A changed missing authorization ID was also rejected by the later attempt/grant comparison, so the origin-guard mutation survived.",
+      "correction": "Added an improper initial predecessor with a valid unchanged authorization binding. The same mutation now resolves the invalid selection and fails the intended assertion; the original overlap case remains."
+    },
+    {
+      "case": "native final-access revocation",
+      "initial": "The first native pair revoked the reviewer when the final RPC ran. Removing the RPC also omitted revocation, so this was call-presence evidence rather than an independently revoked reader.",
+      "correction": "The revised HTTP proxy revokes membership before delivering the last original capture, independently of the final access call. The test verifies the database role is viewer before asserting the read is refused."
+    },
+    {
+      "case": "unobserved sequence",
+      "correction": "A harmless control passes all three preparation states; restoring the echoed sequence fails the null assertions. The native complete-proposal path is unchanged from its independent control/fault pair."
+    },
+    {
+      "case": "failed initial reads",
+      "correction": "Only the first source or input-seal read reports an error with retained data. Removing that new reader error check resolves the read and fails its intended refusal assertion, without relying on a later repeated denial."
+    }
+  ],
+  "regression": {
+    "tests": 138,
+    "seconds": 45.74,
+    "log": "t3-thematic-history-regression.log",
+    "boundary": "Before final selection-origin and independent native revocation refinements."
+  },
+  "nativeBaseline": {
+    "tests": 1,
+    "seconds": 170.41,
+    "log": "t3-thematic-history-http-first.log"
+  },
+  "initialNativeMutations": {
+    "cases": [
+      {
+        "name": "harmless",
+        "expectedFailure": false,
+        "exit": 0,
+        "validOutcome": true,
+        "seconds": 171.21,
+        "log": "t3-thematic-history-http-harmless.log"
+      },
+      {
+        "name": "missing-final-access",
+        "expectedFailure": true,
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 171.65,
+        "log": "t3-thematic-history-http-missing-final-access.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "f6e2703644a902f9e75e86160294dc8e505701baa9450b5e6a9c91d1adb48a0c"
+  },
+  "independentNativeMutations": {
+    "cases": [
+      {
+        "name": "harmless",
+        "expectedFailure": false,
+        "exit": 0,
+        "validOutcome": true,
+        "seconds": 172.16,
+        "log": "t3-thematic-history-independent-http-harmless.log"
+      },
+      {
+        "name": "missing-final-access",
+        "expectedFailure": true,
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 171.36,
+        "log": "t3-thematic-history-independent-http-missing-final-access.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "f6e2703644a902f9e75e86160294dc8e505701baa9450b5e6a9c91d1adb48a0c"
+  },
+  "fullQA": {
+    "log": "t3-thematic-history-qa-final.log",
+    "applicationPassed": 17306,
+    "applicationSkipped": 1429,
+    "applicationFilesPassed": 1396,
+    "applicationFilesSkipped": 78,
+    "applicationSeconds": 212.28,
+    "connectorPassed": 382,
+    "connectorSkipped": 4,
+    "dependencyFindings": 0,
+    "lint": "completed",
+    "configuredDeadcode": "completed",
+    "webpack": "completed",
+    "typescript": "completed",
+    "liveRls": "skipped; separate native HTTP control/fault recorded above",
+    "process": "original shell 2032464 and npm 2032528 terminated after completed build inventory",
+    "terminalExitCode": null,
+    "observationLimit": "Tool session handle lost across context compaction; final log and process inspected without restarting the run."
+  },
+  "localLogs": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27",
+  "blindCategories": [
+    "Mocked transport cannot prove live native staff permissions or transaction behavior.",
+    "The native case uses one synthetic contribution and a synthetic local provider; no quality, representative-use or billing claim.",
+    "The pure 302-contribution continuation case is not a large-campaign history performance result.",
+    "No staff import, browser acceptance, practitioner observation or nationwide scientific completion claim."
+  ],
+  "initialQA": {
+    "log": "t3-thematic-history-qa.log",
+    "applicationPassed": 17305,
+    "applicationFailed": 1,
+    "applicationSkipped": 1429,
+    "failure": "Object-backed projection strings add four unresolved sites, reaching 253 against the unchanged strict limit of 250. Replaced them with the same literal projections; no query fields or threshold changed."
+  },
+  "projectionRegression": {
+    "tests": 85,
+    "seconds": 45.7,
+    "log": "t3-thematic-history-projection-corrected.log"
+  },
+  "finalSourceSha256": {
+    "openplan/src/lib/engagement/synthesis-thematic-content.ts": "4b7ce2908bc891dc5a5d7704acf9434c97d648e095a066f0a981edb0946be176",
+    "openplan/src/lib/engagement/synthesis-thematic-continuation.ts": "01d278265ed4edeae55c55821824b0466dabc95d8d497296fb70cd4a44e62d16",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "5c7118a96c0bce8ce5d576ca59f9a5346ae94a7f46267e11f9fa559853d2ae01",
+    "openplan/src/lib/engagement/synthesis-thematic-history-inputs.ts": "b472ea7ebba0cf3d78eae9ad9748656d50b4042618039abc0a1d4286ba94798c",
+    "openplan/src/lib/engagement/synthesis-thematic-history-server.ts": "95b48da9ecd92d8d4e827d1d20db92fd4edc023267348e6e502c9a025151e3b0",
+    "openplan/src/test/engagement-synthesis-thematic-history-inputs.test.ts": "fd54eef9483294ec9f1c0f53527828299e63068eb03248b83e6de0833dd41d95",
+    "openplan/src/test/engagement-synthesis-thematic-history-server.test.ts": "db7ada915925e3b72eb88b736f13c1a7d622e1a654ad72f3184a24a43e39d0fa",
+    "openplan/src/test/fixtures/engagement/synthesis-thematic-history.ts": "003b078827ed33e61ed41c510c51cd4215bc7c0efd8d42ad64fb23497afcd1e3"
+  },
+  "logSha256": {
+    "t3-thematic-history-corrected-mutation-control.log": "d093683c7bc84ff9fb11afb30b6adbb5df169510de1c9be5cc67259c71adee34",
+    "t3-thematic-history-corrected-mutation-selection-origin.log": "c6c7ebf2ddf2ab5572ebe6d29597429f9f8021c5b8816589caafc7e6d382ebf9",
+    "t3-thematic-history-first.log": "326e0d79de29dae01dcb4e8df0bb5a597c0254f6427db96eac1b7739da2368ea",
+    "t3-thematic-history-http-first.log": "ca13b285130a3a28ae4a8a3d6c0a0d13c2657967917a8117c6c4a0dcc47dc052",
+    "t3-thematic-history-http-harmless.log": "68a40b065afd82b9c5cc428c8da34f1375da38b028388dffd113eb40b4301138",
+    "t3-thematic-history-http-missing-final-access.log": "828a5a438d1add5f5cfb93d5a9bec7dd9f099289ef2ad8e5beaecc1d54a54141",
+    "t3-thematic-history-independent-http-harmless.log": "24c925e60bc323c4dbe75fa64728a49989f6fa108acc6f2d8daa0d59b9cfc435",
+    "t3-thematic-history-independent-http-missing-final-access.log": "380fd652b7188acd36744f597f438eec32ea57a151d38bd2907c1c8bb7d2c274",
+    "t3-thematic-history-mutation-attempt-binding.log": "a0e5223c2077d960b81b7690003453251ba59fa777a7ef0abf114922f4ef268d",
+    "t3-thematic-history-mutation-attempt-index.log": "1da6d2b54c73d08c97bda08f1aefebbcde2ee3b14175513c87a8e4e8eedf4c98",
+    "t3-thematic-history-mutation-attempt-request.log": "8b6224ded1fd3571e75206e461f4c2b015481bbc6b7eaafeed43c7e32465fd06",
+    "t3-thematic-history-mutation-cancellation-checksum.log": "c54470cbfa4b2064d2170d4befaed1261a156bd72a1e3704d524c64975bb03e7",
+    "t3-thematic-history-mutation-cancellation-retained.log": "b01e586e970ccfe585521929de6e0c1e39d6393f785d3e9c280b8518af4303ae",
+    "t3-thematic-history-mutation-choice-creator.log": "a8739841d357599094f2f9358131be9b856f15d1e80c55944bb3de0492d97231",
+    "t3-thematic-history-mutation-control.log": "8996dcb011c9b32ac2120e9a9a78e4105a003a131e0a41c1f66a2216f8cde06d",
+    "t3-thematic-history-mutation-dispatch-budget.log": "b99a641ba5db227ceab987290aad70df09bad9d52f9c35bc986a4e0550ef3c00",
+    "t3-thematic-history-mutation-dispatch-expiry.log": "7af3c3fd5e5fa405767427e06135ab5a8c1fe36767397afe8b04f03c099bf86a",
+    "t3-thematic-history-mutation-dispatch-id.log": "10430ad57e400d6d14c74bfb6a5bfed4e0a65adf1f22cc6fc391b7bc3799f26b",
+    "t3-thematic-history-mutation-final-bytes.log": "05591d00382020d3e34ae16e4e26e96595de169cd9a13d3352c882e9bf607602",
+    "t3-thematic-history-mutation-final-reference.log": "9a549c8d44a9eceaef5fb6d789a006d6fd17654850081c650685b12068df0d06",
+    "t3-thematic-history-mutation-final-staff-access.log": "217fd9dbbe4409c5a78649f9f27c5a49cf3e62590a7d4e1fb094fd263caf2dfb",
+    "t3-thematic-history-mutation-frame-bytes.log": "04e7d973deb0758a79a2b17365f327e0cf59791ddd0ff6e2403b65fff04a4954",
+    "t3-thematic-history-mutation-frame-index.log": "fea867a35cbfe3e2d7ccc1d8378a5cccd1c434f5c726494fe147a96a9fb1e672",
+    "t3-thematic-history-mutation-frame-text.log": "c8607a40e74711bc7203bd44e19dfb61fb69994577fa2096df8a39d656f0a268",
+    "t3-thematic-history-mutation-fresh-cancellation.log": "4439c80daed53fcfad7ad9500ce2b0a62104767d398d1ab4b4270569889b690d",
+    "t3-thematic-history-mutation-grant-predecessor.log": "ce335d01faf68523588a31a3d94eac293848fe24bb50b0c80e65744a0d7d234d",
+    "t3-thematic-history-mutation-historical-cancellation.log": "456448ffd43e56de8981b9e06d53b680a508f19433238095abbe743e5f84e69b",
+    "t3-thematic-history-mutation-history-projection.log": "1adcd56cd7b2db5fedc8fb1f26341dd72ef3cb8839b58eab05f04867a4b15755",
+    "t3-thematic-history-mutation-initial-access.log": "3f6f7f223d0fe55c16979cda2cce05adbe559c1a4c91a2db0777429d16c2e5b3",
+    "t3-thematic-history-mutation-input-bytes.log": "79ce9d2ffb89b03f413dee1c99ea193f8ec038219fa87a266475981b72081954",
+    "t3-thematic-history-mutation-input-final-access.log": "54e6195736af3f558eae7f44e5b00fb0b3697070c70957abe9395b0b092b2cff",
+    "t3-thematic-history-mutation-input-id.log": "60d8dc22fe7ac084e777685d86ca0f541d7dce12cd93713d250f1ba4f922ad84",
+    "t3-thematic-history-mutation-input-seal-recheck.log": "7b9f215b81c6f3aafb08b73c53d624117c55675357bef64669ba361b47061cfd",
+    "t3-thematic-history-mutation-last-proposal.log": "8bb8074e925ef824b49cc040552103ecec2c1bc1c639536e6d82562efeba1dc2",
+    "t3-thematic-history-mutation-output-id.log": "d0342abf1e649c356eaea6a2054b5f7e95306d312720f68a97e850aea781c16b",
+    "t3-thematic-history-mutation-predecessor-comparison.log": "639fd6d122d962d03a267038be1416ae47cbf1eab66f4b8816eb7059dcbb35bb",
+    "t3-thematic-history-mutation-reference.log": "d68665eb03a7a4794f9d930b7f7ddf12422df51233cc3f2349f57e06f11bf24f",
+    "t3-thematic-history-mutation-request-identity.log": "b32007368d8d070e40c469af499778def6abec07735e49990781688f4af3df81",
+    "t3-thematic-history-mutation-selection-actor.log": "e04f95303cbd41e774451dccd6beb98a3ed9262255269e24d546af7d1bcb78a1",
+    "t3-thematic-history-mutation-selection-checksum.log": "94f2b1e7c25ef94edc7a87fd6b13cde43e94281ccc3f2787775dc53ca75a795b",
+    "t3-thematic-history-mutation-selection-cursor.log": "972d6d60f53b5059b2eaeb858cb3d9a98494e5ac09d80ccaa344ae44e7d2aeb7",
+    "t3-thematic-history-mutation-selection-duplicate-sequence.log": "c709887e392ca454b829ade3736399ec3b34062f7bee2e97186b35a6a168ce9b",
+    "t3-thematic-history-mutation-selection-origin.log": "c7e1e85ea699d759fa576c3564734f3b6fc58a027b398481a87e70aad6b28220",
+    "t3-thematic-history-mutation-selection-request.log": "0a74877a549009271e266f3ee3b82c86a10ae2e0a14db6432f880e4e2c3c8026",
+    "t3-thematic-history-mutation-selection-snapshot.log": "d4d9b14a17ac9d8ed9717bf6bd58dddbd2b6135bfff3e3f0ef78bb020fb3fa93",
+    "t3-thematic-history-mutation-staging-projection.log": "33c8b94451133cc53348c8b46998bbeb4bc5cf0416be6645175742e0554ac5f4",
+    "t3-thematic-history-mutation-storage-errors.log": "49e1e3e38b1d3187868969b827f93446e2479e2e9ec1d2af1e4d0151c791c002",
+    "t3-thematic-history-mutation-task-bytes.log": "e1e5d1c69a70f257fdfcd48c309f8b5d70402d39e9e5cafea279aa73d59cac9b",
+    "t3-thematic-history-mutation-task-chain.log": "70ae92bf71e9a711e063f5d2d904faf181a178aebf4d092b10b8b4096249ed06",
+    "t3-thematic-history-mutation-task-hash.log": "44f33422c2e63650e9a27d2dc6049309b16ef7d378b11ad7801321dd140a7c5b",
+    "t3-thematic-history-mutation-trust-retained-input.log": "ebe84066f0775eec5cf3296dfdd84ab56f9a79d0ad0295bffd1ddeec4c33cdb2",
+    "t3-thematic-history-mutation-unsealed-inputs.log": "070300f6f4df98e6f5096d30fc8e7c51ef6e694d2ed726f2e2a65cc04f5b745a",
+    "t3-thematic-history-projection-check.log": "91ef03098a3c5c170d0fac0ac33664b81eeeeb98a122e2e34b369706a5a7ec25",
+    "t3-thematic-history-projection-corrected.log": "dbcb03c3af5d565631e2d0064f712a414a24fd9e7c3875776197c809ebc50efd",
+    "t3-thematic-history-projection-mutation-control.log": "8209cc5cc28dc67714c7af46fc27baa6429e11cf475f24a26019a630e8204e8c",
+    "t3-thematic-history-projection-mutation-history-projection.log": "0ebacb151efbaec7c8ec2289d0ced349b3020ae7b8c899795bbc74eb7bf17c0c",
+    "t3-thematic-history-qa-final.log": "8d0f3cc1293c881391656084b076d4cbd1dca42d2b2d07071e407e62eb9e55cd",
+    "t3-thematic-history-qa.log": "079e2cd3e162fce73494db92bf7ebaffc5027ea711da20e03356a52d9b40beb0",
+    "t3-thematic-history-read-error-mutation-control.log": "bf4fd43e339ff2698ee72c38ff1a0b14401367ec88e194818d0bb0f336312c4d",
+    "t3-thematic-history-read-error-mutation-input-seal-error.log": "db3e8e55eb5e60ccd1f155f9b34787eea356c880d9442a43806a579961d2f65d",
+    "t3-thematic-history-read-error-mutation-source-error.log": "f4c22a7f6d85a8940e81759d21228e4b1dc1c0c225252692066fe1c0040f05e0",
+    "t3-thematic-history-regression.log": "88a5f94f4648a736937824b329ee8f13a2e4ca3594bfa3ce01bddf7566da2977",
+    "t3-thematic-history-sequence-mutation-control.log": "04f2a4beb14bb71d75175a4ffa46d1af802938c97b6c7d35a94fa2ababdc02b8",
+    "t3-thematic-history-sequence-mutation-unobserved-sequence.log": "95b2bbd596194f6dbee1342612f4a4f3a919efc6bfc5d0071e2bdb8339eb9465",
+    "t3-thematic-history-types-expanded.log": "e0be23ab549c558c2dcdfe71a8aedf8f6535e03dcd5d9ed8cd2ced7fc518413e",
+    "t3-thematic-history-unobserved-sequence-first.log": "a194b5c92a61071df426e86dabeaff0d38b22e71d3ada76c596b20d9ce630236"
+  }
+}

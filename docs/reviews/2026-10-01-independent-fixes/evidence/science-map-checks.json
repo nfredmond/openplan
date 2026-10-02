@@ -1,0 +1,32 @@
+{
+  "baseline": "9530d77c860dccea228f57debe4496afc6b3a513",
+  "tests": {
+    "command": "npm exec -- vitest run src/test/census-overlay-availability.test.ts src/test/engagement-representativeness-route.test.ts src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts src/test/explore-map-layer-helpers.test.ts src/test/explore-tract-layer-state.test.ts src/test/explore-dataset-overlay-map.test.ts",
+    "cwd": "openplan",
+    "exit": 0,
+    "files_passed": 6,
+    "tests_passed": 70
+  },
+  "lint": {
+    "tool": "eslint --max-warnings 0",
+    "files": [
+      "openplan/src/lib/data-sources/census.ts",
+      "openplan/src/lib/data-sources/census-geometry.ts",
+      "openplan/src/app/(app)/explore/_components/_helpers.ts",
+      "openplan/src/app/api/engagement/campaigns/[campaignId]/representativeness/route.ts",
+      "openplan/src/test/census-overlay-availability.test.ts",
+      "openplan/src/test/engagement-representativeness-route.test.ts"
+    ],
+    "exit": 0
+  },
+  "typecheck": "Not run by this agent; integrating agent owns full TypeScript check.",
+  "initial_command_error": "First attempt used npm --prefix openplan exec from root. Vitest did not use package config and could not resolve @ aliases; no tests ran. Correct package-directory command above passed.",
+  "sha256": {
+    "openplan/src/lib/data-sources/census.ts": "94aab35d09cfafc3552c68bc56ad6b22452277861703406ad770c4c4b3bb7055",
+    "openplan/src/lib/data-sources/census-geometry.ts": "d0515e20a0856f1b08be0a2860d01a1a217beb003413a7a09177a2e0e6634b93",
+    "openplan/src/app/(app)/explore/_components/_helpers.ts": "d4049107c61e179ea6adf2153ff69c0ec0f5ee343cf0bfcf92da3d8c07a6e656",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/representativeness/route.ts": "37f71b8146817dfa4bae716697e6333cc76ee5e0a0aabb779902894b040affb2",
+    "openplan/src/test/census-overlay-availability.test.ts": "615699d85be0113c7ee15017225933bfae4e188e8b51041fedefcaadcf1a9555",
+    "openplan/src/test/engagement-representativeness-route.test.ts": "a021604c02fb529d0e2ed25c3a2cdc27bed38a2f68b4c70b726f8ebeb118d457"
+  }
+}

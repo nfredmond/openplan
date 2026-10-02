@@ -38,7 +38,7 @@ describe("authenticated synthesis response link writes", () => {
     expect(result.event.eventText).toBe(original.eventText); expect(result.replayed).toBe(false);
     expect(readRpc).toHaveBeenNthCalledWith(1, "read_engagement_synthesis_response_link", { p_campaign: actor.campaignId, p_request: command.intent.requestId });
     expect(readRpc.mock.calls.map(([name]) => name)).toEqual(["read_engagement_synthesis_response_link", "read_engagement_synthesis_response_links"]);
-    expect(m.current).toHaveBeenCalledWith(client, scope);
+    expect(m.current).toHaveBeenCalledWith(client, scope, service);
     expect(writeRpc).toHaveBeenCalledExactlyOnceWith("retain_engagement_synthesis_response_link", {
       p_campaign: actor.campaignId, p_actor: actor.actorId, p_workspace: actor.workspaceId, p_intent: command.intent, p_context_text: command.contextText,
     });
@@ -233,7 +233,7 @@ describe("compact synthesis response commands", () => {
   it("resolves the expected context on the server without a browser-supplied packet", async () => {
     const result = await retainSynthesisResponseLinkCommand(client, service, actor, command.intent);
     expect(result.event.eventText).toBe(original.eventText);
-    expect(m.current).toHaveBeenCalledExactlyOnceWith(client, scope);
+    expect(m.current).toHaveBeenCalledExactlyOnceWith(client, scope, service);
     expect(writeRpc).toHaveBeenCalledExactlyOnceWith("retain_engagement_synthesis_response_link", {
       p_campaign: actor.campaignId, p_actor: actor.actorId, p_workspace: actor.workspaceId,
       p_intent: command.intent, p_context_text: command.contextText,

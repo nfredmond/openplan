@@ -1,0 +1,357 @@
+{
+  "initialApplication": [
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 1.44,
+      "log": "t3-thematic-staging-app-mutation-harmless.log"
+    },
+    {
+      "name": "chain",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.27,
+      "log": "t3-thematic-staging-app-mutation-chain.log"
+    },
+    {
+      "name": "seed",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.33,
+      "log": "t3-thematic-staging-app-mutation-seed.log"
+    },
+    {
+      "name": "page-count",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.39,
+      "log": "t3-thematic-staging-app-mutation-page-count.log"
+    },
+    {
+      "name": "packet-bytes",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.45,
+      "log": "t3-thematic-staging-app-mutation-packet-bytes.log"
+    },
+    {
+      "name": "identity",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.05,
+      "log": "t3-thematic-staging-app-mutation-identity.log"
+    },
+    {
+      "name": "prefix",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.08,
+      "log": "t3-thematic-staging-app-mutation-prefix.log"
+    },
+    {
+      "name": "receipt-hash",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.07,
+      "log": "t3-thematic-staging-app-mutation-receipt-hash.log"
+    },
+    {
+      "name": "reference-hash",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.05,
+      "log": "t3-thematic-staging-app-mutation-reference-hash.log"
+    },
+    {
+      "name": "receipt-requestId",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.06,
+      "log": "t3-thematic-staging-app-mutation-receipt-requestId.log"
+    },
+    {
+      "name": "receipt-headerSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.04,
+      "log": "t3-thematic-staging-app-mutation-receipt-headerSha256.log"
+    },
+    {
+      "name": "receipt-frameCount",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.06,
+      "log": "t3-thematic-staging-app-mutation-receipt-frameCount.log"
+    },
+    {
+      "name": "receipt-taskCount",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.06,
+      "log": "t3-thematic-staging-app-mutation-receipt-taskCount.log"
+    },
+    {
+      "name": "receipt-frameBytes",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.05,
+      "log": "t3-thematic-staging-app-mutation-receipt-frameBytes.log"
+    },
+    {
+      "name": "receipt-tailSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.02,
+      "log": "t3-thematic-staging-app-mutation-receipt-tailSha256.log"
+    },
+    {
+      "name": "receipt-sealedAt",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.04,
+      "log": "t3-thematic-staging-app-mutation-receipt-sealedAt.log"
+    },
+    {
+      "name": "reference-purpose",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.04,
+      "log": "t3-thematic-staging-app-mutation-reference-purpose.log"
+    },
+    {
+      "name": "reference-taskIndex",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.04,
+      "log": "t3-thematic-staging-app-mutation-reference-taskIndex.log"
+    },
+    {
+      "name": "reference-inputManifestSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.06,
+      "log": "t3-thematic-staging-app-mutation-reference-inputManifestSha256.log"
+    },
+    {
+      "name": "reference-inputSealSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.07,
+      "log": "t3-thematic-staging-app-mutation-reference-inputSealSha256.log"
+    },
+    {
+      "name": "reference-continuationHeaderSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.06,
+      "log": "t3-thematic-staging-app-mutation-reference-continuationHeaderSha256.log"
+    },
+    {
+      "name": "reference-contentManifestSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.07,
+      "log": "t3-thematic-staging-app-mutation-reference-contentManifestSha256.log"
+    },
+    {
+      "name": "reference-frameTailSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-thematic-staging-app-mutation-reference-frameTailSha256.log"
+    },
+    {
+      "name": "acknowledgement",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.27,
+      "log": "t3-thematic-staging-app-mutation-acknowledgement.log"
+    },
+    {
+      "name": "completion",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 3.37,
+      "log": "t3-thematic-staging-app-mutation-completion.log"
+    },
+    {
+      "name": "rpc-error",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 4.54,
+      "log": "t3-thematic-staging-app-mutation-rpc-error.log"
+    },
+    {
+      "name": "read-scope",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 3.33,
+      "log": "t3-thematic-staging-app-mutation-read-scope.log"
+    },
+    {
+      "name": "read-error",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 3.41,
+      "log": "t3-thematic-staging-app-mutation-read-error.log"
+    },
+    {
+      "name": "abort",
+      "exitCode": 0,
+      "harmless": false,
+      "expected": false,
+      "seconds": 3.4,
+      "log": "t3-thematic-staging-app-mutation-abort.log"
+    }
+  ],
+  "isolatedApplication": [
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 1.37,
+      "log": "t3-thematic-staging-app-final-mutation-harmless.log"
+    },
+    {
+      "name": "abort",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.31,
+      "log": "t3-thematic-staging-app-final-mutation-abort.log"
+    },
+    {
+      "name": "native-ack-verification",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.34,
+      "log": "t3-thematic-staging-app-final-mutation-native-ack-verification.log"
+    },
+    {
+      "name": "receipt-version",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-thematic-staging-app-final-mutation-receipt-version.log"
+    },
+    {
+      "name": "reference-version",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-thematic-staging-app-final-mutation-reference-version.log"
+    }
+  ],
+  "schema": [
+    {
+      "name": "harmless",
+      "harmless": true,
+      "expected": true,
+      "exitCode": 0,
+      "seconds": 1.83,
+      "log": "t3-thematic-staging-schema-harmless.log"
+    },
+    {
+      "name": "unread-column",
+      "harmless": false,
+      "expected": true,
+      "exitCode": 1,
+      "seconds": 1.82,
+      "log": "t3-thematic-staging-schema-unread-column.log"
+    },
+    {
+      "name": "missing-rls",
+      "harmless": false,
+      "expected": true,
+      "exitCode": 1,
+      "seconds": 1.85,
+      "log": "t3-thematic-staging-schema-missing-rls.log"
+    }
+  ],
+  "nativeHTTP": [
+    {
+      "name": "control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 150.75,
+      "log": "t3-thematic-staging-http-control.log"
+    },
+    {
+      "name": "wrong-native-cursor",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 149.46,
+      "log": "t3-thematic-staging-http-wrong-native-cursor.log"
+    }
+  ],
+  "nativeCandidate": {
+    "testsPassed": 42,
+    "seconds": 112.17,
+    "log": "t3-thematic-staging-native-mutations-expanded.log",
+    "mechanism": "Transactional function mutations, harmless comment control and explicit failure labels in the committed native suite."
+  },
+  "blindCategories": [
+    "Transport mocks cannot establish native permissions or commit recovery.",
+    "Native structural frames do not authenticate semantic evidence or actual provider output.",
+    "HTTP recovery uses one synthetic contribution and provider; it does not establish large-campaign scale or planner acceptance.",
+    "Schema accounting tests do not replace installed native grants and catalog comparison."
+  ],
+  "restoredSourceSha256": {
+    "openplan/src/lib/engagement/synthesis-thematic-staging.ts": "8ade0a51cb0dd19e8eaa94b2714965616bf7847116572cd6bdc851a6a640875c",
+    "openplan/src/lib/engagement/synthesis-thematic-plan-server.ts": "ba2c35e6b9466056d65aaff02b0642447afc0d643e516d89fc4118cfc22f32cb",
+    "openplan/supabase/migrations/20261015000008_engagement_synthesis_thematic_plans.sql": "b2ffc15f8a24acb650a1cf0498b38a302f6abd97d5026cae4093619ebd1ea188"
+  },
+  "installedNative": {
+    "testsPassed": 47,
+    "log": "t3-thematic-staging-installed.log",
+    "includes": "42 native staging cases and five live/offline migration reconciliation cases"
+  },
+  "fullQA": {
+    "passed": true,
+    "applicationPassed": 16988,
+    "applicationSkipped": 1395,
+    "connectorPassed": 382,
+    "connectorSkipped": 4,
+    "lint": "pass",
+    "configuredDeadcode": "pass; reports are not a zero-unused-code claim",
+    "auditFindings": 0,
+    "webpackBuildWithTypeScript": "pass",
+    "log": "t3-thematic-staging-qa.log",
+    "liveRlsInOrdinaryQA": false
+  }
+}

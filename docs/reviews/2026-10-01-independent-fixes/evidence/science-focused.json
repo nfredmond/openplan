@@ -1,0 +1,32 @@
+[
+  {
+    "suite": "workers/activitysim_worker/test_http_security.py",
+    "exitCode": 0,
+    "output": "......\n----------------------------------------------------------------------\nRan 6 tests in 0.582s\n\nOK\n"
+  },
+  {
+    "suite": "workers/activitysim_worker/tests/test_runtime.py",
+    "exitCode": 0,
+    "output": "..............\n----------------------------------------------------------------------\nRan 14 tests in 0.083s\n\nOK\n"
+  },
+  {
+    "suite": "workers/county_onramp_worker/tests/test_main.py",
+    "exitCode": 0,
+    "output": "....2026-10-01 20:53:30,645 INFO Starting county onramp job 123e4567-e89b-12d3-a456-426614174001\n2026-10-01 20:53:30,645 INFO Bootstrap command: worker-test 123e4567-e89b-12d3-a456-426614174001\n2026-10-01 20:53:30,651 INFO Cancelled county onramp job 123e4567-e89b-12d3-a456-426614174001\n2026-10-01 20:53:30,651 INFO Starting county onramp job 123e4567-e89b-12d3-a456-426614174004\n2026-10-01 20:53:30,651 INFO Bootstrap command: worker-test 123e4567-e89b-12d3-a456-426614174004\n2026-10-01 20:53:30,651 INFO Completed county onramp job 123e4567-e89b-12d3-a456-426614174004\n2026-10-01 20:53:30,651 INFO Job 123e4567-e89b-12d3-a456-426614174004 stdout: second complete\n.2026-10-01 20:53:30,652 ERROR County onramp job 123e4567-e89b-12d3-a456-426614174001 failed\nTraceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/independent-fixes-20261001/workers/county_onramp_worker/main.py\", line 413, in _run_job\n    command, manifest_path = _build_bootstrap_command(job)\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/unittest/mock.py\", line 1139, in __call__\n    return self._mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/unittest/mock.py\", line 1143, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/unittest/mock.py\", line 1198, in _execute_mock_call\n    raise effect\nFileNotFoundError: missing bootstrap\n.....\n----------------------------------------------------------------------\nRan 10 tests in 0.012s\n\nOK\n"
+  },
+  {
+    "suite": "workers/county_onramp_worker/tests/test_process_cancellation.py",
+    "exitCode": 0,
+    "output": ".2026-10-01 20:53:34,007 INFO Starting county onramp job synthetic-session\n2026-10-01 20:53:34,007 INFO Bootstrap command: synthetic\n2026-10-01 20:53:34,007 INFO Completed county onramp job synthetic-session\n.\n----------------------------------------------------------------------\nRan 2 tests in 3.020s\n\nOK\n"
+  },
+  {
+    "suite": "scripts/modeling/tests/test_validation_instrument_v2.py",
+    "exitCode": 0,
+    "output": "validation_instrument_v2: all tests passed\n"
+  },
+  {
+    "suite": "scripts/modeling/tests/test_directional_refusal.py",
+    "exitCode": 0,
+    "output": "...\n----------------------------------------------------------------------\nRan 3 tests in 0.002s\n\nOK\n"
+  }
+]

@@ -127,10 +127,25 @@ export async function connectorCycle(config, directory, options = {}) {
   let saved;
   try { saved = await request(config.setup, pending.delivery, { signal }); }
   catch (error) {
-    if (error.status !== 409) throw error;
+    if (![400, 409].includes(error.status)) throw error;
     const current = await request(config.setup, { operation: "status", turnId: pending.job.id }, { signal });
-    if (current?.id !== pending.job.id || current?.attemptId !== pending.job.attemptId || !["cancelled", "interrupted"].includes(current?.state)) throw error;
-    saved = current;
+    if (current?.id !== pending.job.id || current?.attemptId !== pending.job.attemptId) throw error;
+    if (["cancelled", "interrupted"].includes(current?.state) ||
+      (error.status === 400 && ["succeeded", "failed"].includes(current?.state))) {
+      saved = current;
+    } else if (error.status === 400 && current?.state === "running" && pending.delivery.failureCode === null) {
+      // A definitive invalid-request response is not an unknown dispatch
+      // outcome. Preserve the rejected bytes and sync a failure-only delivery
+      // before trying to finish this exact attempt. Never generate a replacement.
+      pending = { ...pending, rejectedDelivery: pending.delivery, delivery: {
+        operation: "finish", turnId: pending.job.id, attemptId: pending.job.attemptId,
+        answer: null, receipt: null, failureCode: "native_result_rejected",
+      } };
+      await writeConnectorJournal(directory, pending);
+      saved = await request(config.setup, pending.delivery, { signal });
+    } else {
+      throw error;
+    }
   }
   if (saved?.id !== pending.job.id || saved?.attemptId !== pending.job.attemptId || !["succeeded", "failed", "cancelled", "interrupted"].includes(saved?.state)) throw new ConnectorError("connector_delivery_mismatch");
   await writeConnectorJournal(directory, { ...pending, phase: "delivered", acknowledgedState: saved.state });

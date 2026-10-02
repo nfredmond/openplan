@@ -17,6 +17,9 @@ const workingSchema = z.object({
   pending: z.object({ intent: synthesisReviewIntentSchema, revisionNo: z.number().int().positive() }).strict().nullable(),
 }).strict().superRefine((value, ctx) => {
   const intent = value.pending?.intent;
+  if (intent?.operation === "import_thematic") {
+    ctx.addIssue({ code: "custom", message: "The category editor cannot recover a thematic import command" });
+  }
   if (intent && (intent.actorId !== value.userId || intent.workspaceId !== value.workspaceId
     || (intent.operation === "create" && (intent.sourceId !== value.sourceId || intent.sourceSha256 !== value.sourceSha256 || value.pending?.revisionNo !== 1)))) {
     ctx.addIssue({ code: "custom", message: "Review request belongs to another account or source" });

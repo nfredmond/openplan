@@ -1,9 +1,10 @@
+import { refuseOutOfScopeAgentRequest } from "@/lib/assistant/agent-request-scope";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/observability/action-audit";
-import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
+import { readAssistantExecutionSource, verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { loadProjectAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
@@ -16,6 +17,8 @@ const patchFundingProfileSchema = z.object({
   localMatchNeedAmount: z.union([z.number().min(0), z.null()]).optional(),
   notes: z.union([z.string().trim().max(4000), z.null()]).optional(),
 });
+
+class FundingProfileAlreadyExists extends Error {}
 
 type RouteContext = {
   params: Promise<{ projectId: string }>;
@@ -38,6 +41,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (!payloadBody.ok) return payloadBody.response;
 
     const payload = payloadBody.data;
+    const executionSource = readAssistantExecutionSource(request);
+    const scopeRefusal = refuseOutOfScopeAgentRequest({
+      executionSource,
+      body: payload,
+      allowedKeys: ["notes"],
+      actionKind: "create_project_funding_profile",
+    });
+    if (scopeRefusal) {
+      return NextResponse.json({ error: scopeRefusal.error, details: scopeRefusal.details }, { status: 400 });
+    }
+
     const parsed = patchFundingProfileSchema.safeParse(payload);
     if (!parsed.success) {
       audit.warn("validation_failed", { issues: parsed.error.issues });
@@ -118,12 +132,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           },
         },
         async () => {
-          const { data, error } = await supabase
-            .from("project_funding_profiles")
-            .upsert(upsertPayload, { onConflict: "project_id" })
+          // A create approval must never overwrite a profile another writer
+          // saved after the proposal. The database unique key closes that race.
+          const profiles = supabase.from("project_funding_profiles");
+          const write = executionSource === "manual"
+            ? profiles.upsert(upsertPayload, { onConflict: "project_id" })
+            : profiles.insert(upsertPayload);
+          const { data, error } = await write
             .select("id, workspace_id, project_id, funding_need_amount, local_match_need_amount, notes, created_at, updated_at")
             .single();
 
+          if (executionSource !== "manual" && error?.code === "23505") {
+            throw new FundingProfileAlreadyExists();
+          }
           if (error || !data) {
             throw new Error(error?.message ?? "project_funding_profile_upsert_returned_no_row");
           }
@@ -131,6 +152,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         }
       );
     } catch (upsertErr) {
+      if (upsertErr instanceof FundingProfileAlreadyExists) {
+        return NextResponse.json({ error: "A project funding profile already exists. Review it before making changes." }, { status: 409 });
+      }
       audit.error("project_funding_profile_upsert_failed", {
         projectId: access.project.id,
         userId: user.id,

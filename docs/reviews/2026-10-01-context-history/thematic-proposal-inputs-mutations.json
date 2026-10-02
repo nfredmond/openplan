@@ -1,0 +1,254 @@
+{
+  "date": "2026-10-02",
+  "baseline": "301429b0bbfd84e052e85b87aaf9f6c6c5882b32",
+  "scope": "complete sealed thematic proposal-input reconstruction",
+  "initialApplication": [
+    {
+      "name": "reader-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 17.37,
+      "log": "t3-proposal-inputs-mutation-reader-control.log"
+    },
+    {
+      "name": "custody-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 2.68,
+      "log": "t3-proposal-inputs-mutation-custody-control.log"
+    },
+    {
+      "name": "cancellation",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.06,
+      "log": "t3-proposal-inputs-mutation-cancellation.log"
+    },
+    {
+      "name": "metadata-proof",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.01,
+      "log": "t3-proposal-inputs-mutation-metadata-proof.log"
+    },
+    {
+      "name": "metadata-bytes",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.05,
+      "log": "t3-proposal-inputs-mutation-metadata-bytes.log"
+    },
+    {
+      "name": "replayed-request",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.06,
+      "log": "t3-proposal-inputs-mutation-replayed-request.log"
+    },
+    {
+      "name": "replayed-binding",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.05,
+      "log": "t3-proposal-inputs-mutation-replayed-binding.log"
+    },
+    {
+      "name": "replayed-source-date",
+      "exitCode": 0,
+      "harmless": false,
+      "expected": false,
+      "seconds": 2.07,
+      "log": "t3-proposal-inputs-mutation-replayed-source-date.log"
+    },
+    {
+      "name": "final-request",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.05,
+      "log": "t3-proposal-inputs-mutation-final-request.log"
+    },
+    {
+      "name": "final-binding",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.06,
+      "log": "t3-proposal-inputs-mutation-final-binding.log"
+    },
+    {
+      "name": "final-source",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.0,
+      "log": "t3-proposal-inputs-mutation-final-source.log"
+    },
+    {
+      "name": "final-seal",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.01,
+      "log": "t3-proposal-inputs-mutation-final-seal.log"
+    },
+    {
+      "name": "skip-final-scope",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.05,
+      "log": "t3-proposal-inputs-mutation-skip-final-scope.log"
+    },
+    {
+      "name": "omit-last-contribution",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.86,
+      "log": "t3-proposal-inputs-mutation-omit-last-contribution.log"
+    },
+    {
+      "name": "drop-uncertainty",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.05,
+      "log": "t3-proposal-inputs-mutation-drop-uncertainty.log"
+    },
+    {
+      "name": "drop-note-text",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.04,
+      "log": "t3-proposal-inputs-mutation-drop-note-text.log"
+    },
+    {
+      "name": "wrong-manifest",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.03,
+      "log": "t3-proposal-inputs-mutation-wrong-manifest.log"
+    },
+    {
+      "name": "replayed-originals",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.97,
+      "log": "t3-proposal-inputs-mutation-replayed-originals.log"
+    }
+  ],
+  "isolatedReplayChecks": [
+    {
+      "name": "reader-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 17.08,
+      "log": "t3-proposal-inputs-isolated-mutation-reader-control.log"
+    },
+    {
+      "name": "replayed-request",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.07,
+      "log": "t3-proposal-inputs-isolated-mutation-replayed-request.log"
+    },
+    {
+      "name": "replayed-binding",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.03,
+      "log": "t3-proposal-inputs-isolated-mutation-replayed-binding.log"
+    },
+    {
+      "name": "replayed-source-date",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 2.02,
+      "log": "t3-proposal-inputs-isolated-mutation-replayed-source-date.log"
+    }
+  ],
+  "explicitGuardChecks": [
+    {
+      "name": "reader-control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 17.32,
+      "log": "t3-proposal-inputs-guard-mutation-reader-control.log"
+    },
+    {
+      "name": "require-seal",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.86,
+      "log": "t3-proposal-inputs-guard-mutation-require-seal.log"
+    },
+    {
+      "name": "require-retained",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.87,
+      "log": "t3-proposal-inputs-guard-mutation-require-retained.log"
+    }
+  ],
+  "nativeHTTP": [
+    {
+      "name": "control",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 146.97,
+      "log": "t3-proposal-inputs-http-control.log"
+    },
+    {
+      "name": "lost-uncertainty",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 145.78,
+      "log": "t3-proposal-inputs-http-lost-uncertainty.log"
+    }
+  ],
+  "initialSurvivor": "replayed-source-date initially survived because the later inventory also saw the changed source; restore that later row and require the intended comparison error to isolate this guard",
+  "nativeBaseline": {
+    "passed": true,
+    "testSeconds": 147.74,
+    "stack": "openplan-restore-target-2026091050",
+    "scope": "one complete source contribution through real CLI/PostgREST/PostgreSQL; synthetic provider"
+  },
+  "restoredSourceSha256": {
+    "openplan/src/lib/engagement/synthesis-thematic-proposal-inputs-server.ts": "8edc241350cd1b39366d6846ec20f9a81d55ad272a66f986eab669ce57975b0b",
+    "openplan/src/lib/engagement/synthesis-thematic-inputs-server.ts": "1d4029861eaf10643961b7211f0dd63c8a3c194e16f199c62f1b3746753a1f7a",
+    "openplan/src/test/engagement-synthesis-thematic-proposal-inputs-server.test.ts": "c82cf2bda74a1e2845b568bb46bdb88d030c515f1b8add6a57986db810ef242d",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "8168854cf3a8f0f65b335e90805e7887238c9e7d3b07699aa6a815172925584f"
+  },
+  "fullQA": {
+    "passed": true,
+    "applicationPassed": 16903,
+    "applicationSkipped": 1353,
+    "connectorPassed": 382,
+    "connectorSkipped": 4,
+    "lint": "pass",
+    "configuredDeadcode": "pass",
+    "auditVulnerabilities": 0,
+    "webpackBuildIncludingTypescript": "pass",
+    "nativeRLS": "skipped by ordinary gate; separate targeted native HTTP recorded above"
+  }
+}

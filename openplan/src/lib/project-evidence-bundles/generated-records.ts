@@ -1,4 +1,5 @@
 import "server-only";
+import { readEveryPage } from "@/lib/supabase/paged-read";
 
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -22,10 +23,22 @@ type ProjectScope = { id: string; workspace_id: string; updated_at?: string | nu
 
 type DynamicReadResult = { data: unknown; error: { message?: string | null } | null };
 type DynamicQuery = PromiseLike<DynamicReadResult> & {
+  range(from: number, to: number): DynamicQuery;
   eq(column: string, value: string): DynamicQuery;
   in(column: string, values: string[]): DynamicQuery;
   order(column: string, options: { ascending: boolean }): DynamicQuery;
 };
+
+/** Refuse partial exported records, including under a smaller server row cap. */
+async function readGeneratedRows(build: () => DynamicQuery, uniqueColumn = "id"): Promise<DynamicReadResult> {
+  const result = await readEveryPage<Record<string, unknown>, { message?: string | null }>(async (from, to) => {
+    const page = await build().order(uniqueColumn, { ascending: true }).range(from, to);
+    return { data: page.data as Record<string, unknown>[] | null, error: page.error };
+  });
+  return result.complete
+    ? { data: result.rows, error: null }
+    : { data: null, error: result.error ?? { message: "Evidence pagination did not complete" } };
+}
 
 function jsonBytes(value: unknown): Buffer {
   return Buffer.from(`${canonicalizeActionPayload(value)}\n`, "utf8");
@@ -106,11 +119,11 @@ async function evidenceRows(
   for (const descriptor of tableReads) {
     const parts: Record<string, unknown>[] = [];
     if (modelRunIds.length > 0) {
-      const read = await dynamicFrom(descriptor.table)
+      const read = await readGeneratedRows(() => dynamicFrom(descriptor.table)
         .select(descriptor.select)
         .eq("workspace_id", workspaceId)
         .in("model_run_id", modelRunIds)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: true }));
       if (read.error) {
         throw new ProjectEvidenceBundleError(
           "missing_evidence",
@@ -120,11 +133,11 @@ async function evidenceRows(
       parts.push(...rows(read.data));
     }
     if (countyRunIds.length > 0) {
-      const read = await dynamicFrom(descriptor.table)
+      const read = await readGeneratedRows(() => dynamicFrom(descriptor.table)
         .select(descriptor.select)
         .eq("workspace_id", workspaceId)
         .in("county_run_id", countyRunIds)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: true }));
       if (read.error) {
         throw new ProjectEvidenceBundleError(
           "missing_evidence",
@@ -143,13 +156,13 @@ async function evidenceRows(
   let structuralDemandCustody: Record<string, unknown>[] = [];
   let distributedWorkLoadingCustody: Record<string, unknown>[] = [];
   if (modelRunIds.length > 0) {
-    const read = await dynamicFrom("modeling_validation_assessments")
+    const read = await readGeneratedRows(() => dynamicFrom("modeling_validation_assessments")
       .select(
         "id, workspace_id, model_run_id, track, model_output_artifact_id, validation_input_bundle_artifact_id, comparison_basis_artifact_id, model_validation_assessment_artifact_id, comparison_basis_sha256, validation_rules_version, partition_json, planning_use, scientific_outcome, reasons_json, created_at"
       )
       .eq("workspace_id", workspaceId)
       .in("model_run_id", modelRunIds)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true }));
     if (read.error) {
       throw new ProjectEvidenceBundleError(
         "missing_evidence",
@@ -158,13 +171,13 @@ async function evidenceRows(
     }
     assessments = rows(read.data);
 
-    const diagnosisRead = await dynamicFrom("modeling_validation_structural_diagnoses")
+    const diagnosisRead = await readGeneratedRows(() => dynamicFrom("modeling_validation_structural_diagnoses")
       .select(
         "id, workspace_id, model_run_id, modeling_validation_assessment_id, diagnosis_artifact_id, assessment_sha256, diagnosis_sha256, scientific_outcome, created_at"
       )
       .eq("workspace_id", workspaceId)
       .in("model_run_id", modelRunIds)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true }));
     if (diagnosisRead.error) {
       throw new ProjectEvidenceBundleError(
         "missing_evidence",
@@ -173,13 +186,13 @@ async function evidenceRows(
     }
     diagnoses = rows(diagnosisRead.data);
 
-    const comparableRead = await dynamicFrom("modeling_validation_instrument_v2_custody")
+    const comparableRead = await readGeneratedRows(() => dynamicFrom("modeling_validation_instrument_v2_custody")
       .select(
         "id, workspace_id, model_run_id, input_bundle_artifact_id, match_audit_artifact_id, comparison_basis_artifact_id, assessment_artifact_id, diagnosis_artifact_id, input_bundle_sha256, match_audit_sha256, comparison_basis_sha256, assessment_sha256, diagnosis_sha256, scientific_outcome, created_at"
       )
       .eq("workspace_id", workspaceId)
       .in("model_run_id", modelRunIds)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true }));
     if (comparableRead.error) {
       throw new ProjectEvidenceBundleError(
         "missing_evidence",
@@ -188,21 +201,21 @@ async function evidenceRows(
     }
     comparableObservationCustody = rows(comparableRead.data);
 
-    const structuralDemandRead = await dynamicFrom("modeling_structural_demand_diagnosis_custody")
+    const structuralDemandRead = await readGeneratedRows(() => dynamicFrom("modeling_structural_demand_diagnosis_custody")
       .select("id, workspace_id, model_run_id, input_audit_artifact_id, diagnosis_artifact_id, input_audit_sha256, diagnosis_sha256, method, scientific_outcome, created_at")
       .eq("workspace_id", workspaceId)
       .in("model_run_id", modelRunIds)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true }));
     if (structuralDemandRead.error) {
       throw new ProjectEvidenceBundleError("missing_evidence", "Project-linked structural demand custody could not be read.");
     }
     structuralDemandCustody = rows(structuralDemandRead.data);
 
-    const distributedWorkLoadingRead = await dynamicFrom("modeling_distributed_work_loading_custody")
+    const distributedWorkLoadingRead = await readGeneratedRows(() => dynamicFrom("modeling_distributed_work_loading_custody")
       .select("id, workspace_id, model_run_id, loading_input_artifact_id, pre_output_audit_artifact_id, development_comparison_artifact_id, loading_input_sha256, pre_output_audit_sha256, development_comparison_sha256, source_custody_sha256, network_custody_sha256, method, scientific_outcome, defaults_changed, holdout_accessed, created_at")
       .eq("workspace_id", workspaceId)
       .in("model_run_id", modelRunIds)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true }));
     if (distributedWorkLoadingRead.error) {
       throw new ProjectEvidenceBundleError("missing_evidence", "Project-linked distributed work-loading custody could not be read.");
     }
@@ -224,6 +237,9 @@ export async function loadProjectEvidenceGeneratedFiles(
   selectedPlan?: Record<string, unknown> | null,
 ): Promise<{ files: GeneratedProjectEvidenceFile[]; projectRecord: Record<string, unknown> }> {
   const client = supabaseValue as SupabaseClient;
+  const dynamicFrom = client.from.bind(client) as unknown as (
+    table: string
+  ) => { select(columns: string): DynamicQuery };
   const [projectRead, corridorRead, datasetRead, modelRead, countyRunRead, crashIngestRead, campaignRead] = await Promise.all([
     client
       .from("projects")
@@ -231,42 +247,38 @@ export async function loadProjectEvidenceGeneratedFiles(
       .eq("id", project.id)
       .eq("workspace_id", project.workspace_id)
       .maybeSingle(),
-    client
-      .from("project_corridors")
+    readGeneratedRows(() => dynamicFrom("project_corridors")
       .select(CORRIDOR_COLUMNS)
       .eq("project_id", project.id)
       .eq("workspace_id", project.workspace_id)
-      .order("created_at", { ascending: true }),
-    client
-      .from("data_dataset_project_links")
+      .order("created_at", { ascending: true })),
+    readGeneratedRows(() => dynamicFrom("data_dataset_project_links")
       .select(
         "dataset_id, project_id, relationship_type, linked_by, linked_at, data_datasets!inner(id, workspace_id, connector_id, name, status, geography_scope, coverage_summary, vintage_label, source_url, license_label, citation_text, schema_version, checksum, row_count, refresh_cadence, last_refreshed_at, notes, created_at, updated_at)"
       )
       .eq("project_id", project.id)
       .eq("data_datasets.workspace_id", project.workspace_id)
-      .order("linked_at", { ascending: true }),
-    client
-      .from("models")
+      .order("linked_at", { ascending: true }), "dataset_id"),
+    readGeneratedRows(() => dynamicFrom("models")
       .select(
         "id, workspace_id, project_id, scenario_set_id, title, model_family, status, config_version, owner_label, horizon_label, assumptions_summary, input_summary, output_summary, summary, config_json, last_validated_at, last_run_recorded_at, created_at, updated_at"
       )
       .eq("workspace_id", project.workspace_id)
       .eq("project_id", project.id)
-      .order("created_at", { ascending: true }),
-    client
-      .from("county_runs")
+      .order("created_at", { ascending: true })),
+    readGeneratedRows(() => dynamicFrom("county_runs")
       .select(
         "id, workspace_id, project_id, geography_type, geography_id, geography_label, run_name, stage, status_label, mode, requested_runtime_json, manifest_json, run_summary_json, validation_summary_json, created_at, updated_at, worker_started_at, worker_completed_at"
       )
       .eq("workspace_id", project.workspace_id)
       .eq("project_id", project.id)
-      .order("created_at", { ascending: true }),
-    client.from("safety_crash_ingests")
+      .order("created_at", { ascending: true })),
+    readGeneratedRows(() => dynamicFrom("safety_crash_ingests")
       .select(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION)
       .eq("workspace_id", project.workspace_id)
       .eq("project_id", project.id)
       .eq("status", "ready")
-      .order("created_at", { ascending: true }),
+      .order("created_at", { ascending: true })),
     loadPublishableProjectEngagementGeometry(client, project),
   ]);
 
@@ -294,21 +306,20 @@ export async function loadProjectEvidenceGeneratedFiles(
   let modelRuns: Record<string, unknown>[] = [];
   let modelArtifacts: Record<string, unknown>[] = [];
   if (modelIds.length > 0) {
-    const modelRunsRead = await client
-      .from("model_runs")
+    const modelRunsRead = await readGeneratedRows(() => dynamicFrom("model_runs")
       .select(
         "id, workspace_id, model_id, project_id, scenario_set_id, scenario_entry_id, source_analysis_run_id, engine_key, launch_source, run_title, query_text, status, input_snapshot_json, assumption_snapshot_json, result_summary_json, error_message, started_at, completed_at, created_at, updated_at"
       )
       .eq("workspace_id", project.workspace_id)
       .in("model_id", modelIds)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true }));
     if (modelRunsRead.error) {
       throw new ProjectEvidenceBundleError("missing_evidence", "Project-linked model runs could not be read.");
     }
     modelRuns = rows(modelRunsRead.data);
     const runIds = ids(modelRuns);
     if (runIds.length > 0) {
-      const artifactsRead = await client.from("model_run_artifacts")
+      const artifactsRead = await readGeneratedRows(() => dynamicFrom("model_run_artifacts")
         .select("id, run_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at")
         .in("run_id", runIds)
         .in("artifact_type", [
@@ -329,7 +340,7 @@ export async function loadProjectEvidenceGeneratedFiles(
           "pre_output_audit_v1",
           "development_comparison_v1",
         ])
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: true }));
       if (artifactsRead.error) {
         throw new ProjectEvidenceBundleError("missing_evidence", "Project model link artifacts could not be read.");
       }
@@ -351,12 +362,12 @@ export async function loadProjectEvidenceGeneratedFiles(
   }
   let crashes: ProjectGeoPackageCrash[] = [];
   if (crashIngestIds.length > 0) {
-    const crashRead = await client.from("safety_crashes")
+    const crashRead = await readGeneratedRows(() => dynamicFrom("safety_crashes")
       .select("id, longitude, latitude, severity, source_id, collision_date")
       .eq("workspace_id", project.workspace_id)
       .in("ingest_id", crashIngestIds)
       .in("severity", ["fatal", "severe_injury"])
-      .order("collision_date", { ascending: true });
+      .order("collision_date", { ascending: true }));
     if (crashRead.error) throw new ProjectEvidenceBundleError("missing_evidence", "Project crash/KSI geometry could not be read.");
     crashes = rows(crashRead.data).flatMap((row) =>
       typeof row.longitude === "number" && typeof row.latitude === "number"

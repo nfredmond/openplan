@@ -1,0 +1,131 @@
+[
+  {
+    "mutation": "noop",
+    "outcome": "survived",
+    "expectedFailure": null,
+    "exitCodes": [
+      0,
+      0
+    ]
+  },
+  {
+    "mutation": "profile-scope",
+    "outcome": "detected",
+    "expectedFailure": "refuses profile extra fields",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "opportunity-scope",
+    "outcome": "detected",
+    "expectedFailure": "refuses opportunity extra fields",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "decision-scope",
+    "outcome": "detected",
+    "expectedFailure": "refuses decision extra fields",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "invoice-scope",
+    "outcome": "detected",
+    "expectedFailure": "refuses invoice extra fields",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "profile-overwrite",
+    "outcome": "detected",
+    "expectedFailure": "refuses an existing profile",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "registry-unsigned-default",
+    "outcome": "detected",
+    "expectedFailure": "without inventing unsigned fallback notes",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "invoice-unlink",
+    "outcome": "detected",
+    "expectedFailure": "refuses agent unlink",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "profile-manual-refusal",
+    "outcome": "detected",
+    "expectedFailure": "preserves manual profile fields",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "native-output-terminal",
+    "outcome": "detected",
+    "expectedFailure": "retains invalid native output as a failure",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "native-rejected-envelope",
+    "outcome": "detected",
+    "expectedFailure": "a rejected completed result is retained",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "native-attempt-mismatch",
+    "outcome": "detected",
+    "expectedFailure": "invalid result recovery never adopts another attempt",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "native-failure-journal",
+    "outcome": "detected",
+    "expectedFailure": "a rejected completed result is retained",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "native-terminal-ack",
+    "outcome": "detected",
+    "expectedFailure": "a rejected result acknowledges only its already-terminal attempt",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "native-connection-mismatch",
+    "outcome": "detected",
+    "expectedFailure": "a changed connection cannot recover",
+    "exitCodes": [
+      1
+    ]
+  },
+  {
+    "mutation": "native-unknown-outcome",
+    "outcome": "detected",
+    "expectedFailure": "unauthorized, unavailable and unknown delivery outcomes",
+    "exitCodes": [
+      1
+    ]
+  }
+]

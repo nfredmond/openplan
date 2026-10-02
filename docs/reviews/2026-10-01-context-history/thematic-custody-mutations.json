@@ -1,0 +1,292 @@
+{
+  "applicationInitial": [
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 18.45,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-harmless.log"
+    },
+    {
+      "name": "receipt-request",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 16.73,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-receipt-request.log"
+    },
+    {
+      "name": "receipt-target",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 16.37,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-receipt-target.log"
+    },
+    {
+      "name": "proof-request",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 15.27,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-proof-request.log"
+    },
+    {
+      "name": "proof-target",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 16.41,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-proof-target.log"
+    },
+    {
+      "name": "proof-campaign",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 17.35,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-proof-campaign.log"
+    },
+    {
+      "name": "proof-workspace",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 8.57,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-proof-workspace.log"
+    },
+    {
+      "name": "proof-limit",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 7.13,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-proof-limit.log"
+    },
+    {
+      "name": "unicode",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 7.47,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-unicode.log"
+    },
+    {
+      "name": "nul",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 7.33,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-nul.log"
+    },
+    {
+      "name": "empty-output",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 7.18,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-empty-output.log"
+    },
+    {
+      "name": "output-limit",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 7.23,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-output-limit.log"
+    },
+    {
+      "name": "proof-digest",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 7.21,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-proof-digest.log"
+    },
+    {
+      "name": "output-digest",
+      "exitCode": 0,
+      "harmless": false,
+      "expected": false,
+      "seconds": 7.36,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-output-digest.log"
+    },
+    {
+      "name": "bound-output-digest",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 7.16,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-bound-output-digest.log"
+    },
+    {
+      "name": "saved-proof",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.28,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-saved-proof.log"
+    },
+    {
+      "name": "retry-evidence",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 7.02,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-retry-evidence.log"
+    },
+    {
+      "name": "mapping-actorId",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.88,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-mapping-actorId.log"
+    },
+    {
+      "name": "mapping-intentSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.86,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-mapping-intentSha256.log"
+    },
+    {
+      "name": "mapping-thematicSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.91,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-mapping-thematicSha256.log"
+    },
+    {
+      "name": "mapping-sourceId",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 7.2,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-mapping-sourceId.log"
+    },
+    {
+      "name": "mapping-sourceSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.88,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-mapping-sourceSha256.log"
+    },
+    {
+      "name": "mapping-choiceSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.28,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-mapping-choiceSha256.log"
+    },
+    {
+      "name": "mapping-contextRequestId",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.89,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-mapping-contextRequestId.log"
+    },
+    {
+      "name": "mapping-contextRequestSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.87,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-mapping-contextRequestSha256.log"
+    },
+    {
+      "name": "mapping-historyManifestSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 7.13,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-mapping-historyManifestSha256.log"
+    },
+    {
+      "name": "mapping-finalCaptureSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.9,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-mapping-finalCaptureSha256.log"
+    },
+    {
+      "name": "mapping-finalResultSha256",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.78,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-mapping-finalResultSha256.log"
+    }
+  ],
+  "applicationIsolated": [
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 7.22,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-isolated-harmless.log"
+    },
+    {
+      "name": "output-digest",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 7.05,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-input-custody-mutation-isolated-output-digest.log"
+    }
+  ],
+  "schema": {
+    "results": [
+      {
+        "name": "harmless",
+        "exitCode": 0,
+        "expected": true
+      },
+      {
+        "name": "unread-column",
+        "exitCode": 1,
+        "expected": true
+      },
+      {
+        "name": "missing-rls",
+        "exitCode": 1,
+        "expected": true
+      }
+    ],
+    "restoredSha256": "23c26ec565b9b4fb0819ceeccf2d55a3f9fa978d1a588285ce72e9ffc0efbfa6"
+  },
+  "nativeHTTP": {
+    "results": [
+      {
+        "name": "harmless",
+        "exitCode": 0,
+        "expected": true,
+        "seconds": 149.77
+      },
+      {
+        "name": "wrong-result-binding",
+        "exitCode": 1,
+        "expected": true,
+        "seconds": 144.48
+      }
+    ],
+    "restoredSha256": "e434b1b0372d6ab89e1f29958f4430adbbe164f3d8da78fe7207b3e6bc5b4b61"
+  },
+  "sourceHashes": {
+    "openplan/src/lib/engagement/synthesis-thematic-inputs-server.ts": "e434b1b0372d6ab89e1f29958f4430adbbe164f3d8da78fe7207b3e6bc5b4b61",
+    "openplan/src/test/engagement-synthesis-thematic-inputs-server.test.ts": "88c8003e716a21afca9e227b03e1c95bd9f2b0daa12cad43b265ecb1f9f321b4",
+    "openplan/src/test/engagement-synthesis-thematic-inputs-rls.test.ts": "808f21d9c237fd69af13a0bcf94c73c4b6c1da170e3101e3ca9d457809bcd9fb",
+    "openplan/src/test/fixtures/engagement/synthesis-thematic-inputs.sql": "60fbd54df6d51cd1d94cf7f9c43a6d57e1600f4c36bfd1f3208d807121531abe",
+    "openplan/src/test/fixtures/engagement/synthesis-thematic-preparation.ts": "bff63e12473eae6299dc42c3179f674071bf03925235ec16b6e0812a47d1a53a",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "b25161200c1ababcd19d1d0d50d8aec0b2fe6be852e027176e459c14564766d0",
+    "openplan/supabase/migrations/20261015000006_engagement_synthesis_thematic_inputs.sql": "23c26ec565b9b4fb0819ceeccf2d55a3f9fa978d1a588285ce72e9ffc0efbfa6"
+  }
+}

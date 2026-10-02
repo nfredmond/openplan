@@ -1,0 +1,1594 @@
+{
+  "date": "2026-10-02",
+  "worktree": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13",
+  "baseline": "49f41f2169811008b6645426588095786f5d83c7",
+  "scope": "Internal thematic execution, original replay, shared API and worker custody. Synthetic providers do not prove semantic quality.",
+  "application": {
+    "job": {
+      "cases": [
+        {
+          "name": "control",
+          "edits": [
+            "Replay each selected predecessor"
+          ],
+          "testPattern": null,
+          "exit": 0,
+          "expectedFailure": false,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-control.log"
+        },
+        {
+          "name": "grant-id",
+          "edits": [
+            "row.id !== authorizationId"
+          ],
+          "testPattern": "inconsistent returned engagement_synthesis_generation_authorizations id",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-grant-id.log"
+        },
+        {
+          "name": "grant-hash",
+          "edits": [
+            "digest(row.intent_text) !== row.intent_sha256"
+          ],
+          "testPattern": "changed grant checksum",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-grant-hash.log"
+        },
+        {
+          "name": "grant-scope",
+          "edits": [
+            "row.request_id !== scope.requestId"
+          ],
+          "testPattern": "authorized for a different request",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-grant-scope.log"
+        },
+        {
+          "name": "grant-budget",
+          "edits": [
+            "authorization.maxAttempts > plan.header.taskCount"
+          ],
+          "testPattern": "invalid current grant maxAttempts",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-grant-budget.log"
+        },
+        {
+          "name": "page-request",
+          "edits": [
+            "page.requestId !== scope.requestId"
+          ],
+          "testPattern": "foreign page requestId",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-page-request.log"
+        },
+        {
+          "name": "page-cursor",
+          "edits": [
+            "page.afterTaskIndex !== index - 1"
+          ],
+          "testPattern": "foreign page afterTaskIndex",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-page-cursor.log"
+        },
+        {
+          "name": "page-sequence",
+          "edits": [
+            "throughSequence !== null && page.throughSequence !== throughSequence"
+          ],
+          "testPattern": "selection inventory changeSequence",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-page-sequence.log"
+        },
+        {
+          "name": "receipt-bytes",
+          "edits": [
+            "Buffer.byteLength(original.receiptText, \"utf8\") > 32768"
+          ],
+          "testPattern": "UTF8 bytes",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-receipt-bytes.log"
+        },
+        {
+          "name": "receipt-hash",
+          "edits": [
+            "digest(original.receiptText) !== original.receiptSha256"
+          ],
+          "testPattern": "selection inventory corruptChecksum",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-receipt-hash.log"
+        },
+        {
+          "name": "selection-request",
+          "edits": [
+            "selected.requestId !== scope.requestId"
+          ],
+          "testPattern": "selected receipt requestId",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-selection-request.log"
+        },
+        {
+          "name": "selection-frame",
+          "edits": [
+            "selected.taskIndex !== index"
+          ],
+          "testPattern": "selected receipt taskIndex",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-selection-frame.log"
+        },
+        {
+          "name": "selection-actor",
+          "edits": [
+            "selected.actorId !== request.request.actorId"
+          ],
+          "testPattern": "selected receipt actorId",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-selection-actor.log"
+        },
+        {
+          "name": "selection-sequence",
+          "edits": [
+            "selected.sequence > throughSequence"
+          ],
+          "testPattern": "selected receipt sequence",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-selection-sequence.log"
+        },
+        {
+          "name": "selection-duplicate",
+          "edits": [
+            "seenSelections.has(selected.id)"
+          ],
+          "testPattern": "repeated selection identities",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-selection-duplicate.log"
+        },
+        {
+          "name": "selection-history",
+          "edits": [
+            "selected.previousSelectionId !== null"
+          ],
+          "testPattern": "selected receipt previousSelectionId",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-selection-history.log"
+        },
+        {
+          "name": "attempt-frame",
+          "edits": [
+            "attempt.task_index !== index"
+          ],
+          "testPattern": "returned engagement_synthesis_generation_attempts task_index",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-attempt-frame.log"
+        },
+        {
+          "name": "retry-predecessor",
+          "edits": [
+            "attempt.previous_attempt_id !== checked.intent.retryOfAttemptId"
+          ],
+          "testPattern": "returned engagement_synthesis_generation_attempts previous_attempt_id",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-retry-predecessor.log"
+        },
+        {
+          "name": "attempt-binding",
+          "edits": [
+            "!isDeepStrictEqual(JSON.parse(attempt.binding_text), checked.job.binding)"
+          ],
+          "testPattern": "changed dynamic attempt binding",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-attempt-binding.log"
+        },
+        {
+          "name": "input-attempt",
+          "edits": [
+            "input.attempt_id !== attempt.id"
+          ],
+          "testPattern": "returned engagement_synthesis_thematic_attempt_inputs attempt_id",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-input-attempt.log"
+        },
+        {
+          "name": "input-task",
+          "edits": [
+            "input.task_text !== next.task.canonical"
+          ],
+          "testPattern": "input drift task_text",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-input-task.log"
+        },
+        {
+          "name": "input-hash",
+          "edits": [
+            "input.task_sha256 !== next.task.sha256"
+          ],
+          "testPattern": "input drift task_sha256",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-input-hash.log"
+        },
+        {
+          "name": "input-bytes",
+          "edits": [
+            "input.task_bytes !== next.task.utf8Bytes"
+          ],
+          "testPattern": "input drift task_bytes",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-input-bytes.log"
+        },
+        {
+          "name": "predecessor-attempt",
+          "edits": [
+            "input.predecessor_attempt_id !== (predecessor?.attemptId ?? null)"
+          ],
+          "testPattern": "input drift predecessor_attempt_id",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-predecessor-attempt.log"
+        },
+        {
+          "name": "predecessor-selection",
+          "edits": [
+            "input.predecessor_selection_id !== (predecessor?.selectionId ?? null)"
+          ],
+          "testPattern": "input drift predecessor_selection_id|new choice of an unchanged",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-predecessor-selection.log"
+        },
+        {
+          "name": "predecessor-capture",
+          "edits": [
+            "input.predecessor_capture_sha256 !== (predecessor?.captureSha256 ?? null)"
+          ],
+          "testPattern": "input drift predecessor_capture_sha256",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-predecessor-capture.log"
+        },
+        {
+          "name": "predecessor-result",
+          "edits": [
+            "input.previous_result_sha256 !== next.previousResultSha256"
+          ],
+          "testPattern": "input drift previous_result_sha256",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-predecessor-result.log"
+        },
+        {
+          "name": "dispatch-attempt",
+          "edits": [
+            "dispatch.attempt_id !== attempt.id"
+          ],
+          "testPattern": "returned engagement_synthesis_generation_dispatches attempt_id",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-dispatch-attempt.log"
+        },
+        {
+          "name": "dispatch-expiry",
+          "edits": [
+            "Date.parse(dispatch.expires_at) !== Date.parse(verified.receipt.expiresAt)"
+          ],
+          "testPattern": "returned engagement_synthesis_generation_dispatches expires_at",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-dispatch-expiry.log"
+        },
+        {
+          "name": "grant-deadline",
+          "edits": [
+            "Date.parse(verified.receipt.expiresAt) > Date.parse(checked.intent.expiresAt)"
+          ],
+          "testPattern": "dispatch beyond its grant expiresAt",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-grant-deadline.log"
+        },
+        {
+          "name": "grant-tokens",
+          "edits": [
+            "verified.receipt.maxOutputTokens !== checked.intent.maxOutputTokens"
+          ],
+          "testPattern": "dispatch beyond its grant maxOutputTokens",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-grant-tokens.log"
+        },
+        {
+          "name": "grant-bytes",
+          "edits": [
+            "verified.receipt.responseByteLimit !== checked.intent.responseByteLimit"
+          ],
+          "testPattern": "dispatch beyond its grant responseByteLimit",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-grant-bytes.log"
+        },
+        {
+          "name": "output-attempt",
+          "edits": [
+            "output.attempt_id !== attempt.id"
+          ],
+          "testPattern": "returned engagement_synthesis_generation_outputs attempt_id",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-output-attempt.log"
+        },
+        {
+          "name": "grant-current",
+          "edits": [
+            "Date.parse(checked.intent.expiresAt) <= Date.now()"
+          ],
+          "testPattern": "invalid current grant expiresAt",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-grant-current.log"
+        },
+        {
+          "name": "staff-origin",
+          "edits": [
+            ": selected.authorizationId !== null)"
+          ],
+          "testPattern": "falsely attributed",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-staff-origin.log"
+        },
+        {
+          "name": "initial-origin",
+          "edits": [
+            "selected.authorizationId === null",
+            "(selected.origin === \"authorization\" && attempt.authorization_id !== selected.authorizationId)"
+          ],
+          "testPattern": "selected receipt authorizationId",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-initial-origin.log"
+        },
+        {
+          "name": "read-error",
+          "edits": [
+            "if (response.error) throw new Error(\"Thematic worker execution history unavailable\")"
+          ],
+          "testPattern": "failed native",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-read-error.log"
+        },
+        {
+          "name": "selection-error",
+          "edits": [
+            "if (response.error) throw new Error(\"Thematic worker predecessor selection unavailable\")"
+          ],
+          "testPattern": "denied selections",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-selection-error.log"
+        },
+        {
+          "name": "abort",
+          "edits": [
+            "signal.throwIfAborted();"
+          ],
+          "testPattern": "denied selections",
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-job-mutation-abort.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sha256": "d1dffbd2602832385c8ac8b90e3983f7c8da4eca5fa0e4cb5f9aa95d47457c82"
+    },
+    "loader": {
+      "cases": [
+        {
+          "name": "control",
+          "edits": [
+            [
+              "Reconstruct original sealed inputs",
+              "Rebuild original sealed inputs"
+            ]
+          ],
+          "testPattern": "compares every",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-control.log"
+        },
+        {
+          "name": "request",
+          "edits": [
+            [
+              "row.id!==requestId",
+              "false"
+            ]
+          ],
+          "testPattern": "replaced request identity",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-request.log"
+        },
+        {
+          "name": "frame-request_id",
+          "edits": [
+            [
+              "frame.request_id!==requestId",
+              "false"
+            ]
+          ],
+          "testPattern": "incorrect original frame request_id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-frame-request_id.log"
+        },
+        {
+          "name": "frame-frame_index",
+          "edits": [
+            [
+              "frame.frame_index!==expected.index",
+              "false"
+            ]
+          ],
+          "testPattern": "incorrect original frame frame_index",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-frame-frame_index.log"
+        },
+        {
+          "name": "frame-frame_sha256",
+          "edits": [
+            [
+              "frame.frame_sha256!==expected.sha256",
+              "false"
+            ]
+          ],
+          "testPattern": "incorrect original frame frame_sha256",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-frame-frame_sha256.log"
+        },
+        {
+          "name": "frame-frame_bytes",
+          "edits": [
+            [
+              "frame.frame_bytes!==expected.utf8Bytes",
+              "false"
+            ]
+          ],
+          "testPattern": "incorrect original frame frame_bytes",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-frame-frame_bytes.log"
+        },
+        {
+          "name": "reference-frameIndex",
+          "edits": [
+            [
+              "reference.frameIndex!==expected.index",
+              "false"
+            ]
+          ],
+          "testPattern": "rehashed frame reference frameIndex",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-reference-frameIndex.log"
+        },
+        {
+          "name": "reference-frameSha256",
+          "edits": [
+            [
+              "reference.frameSha256!==expected.sha256",
+              "false"
+            ]
+          ],
+          "testPattern": "rehashed frame reference frameSha256",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-reference-frameSha256.log"
+        },
+        {
+          "name": "reference-frameBytes",
+          "edits": [
+            [
+              "reference.frameBytes!==expected.utf8Bytes",
+              "false"
+            ]
+          ],
+          "testPattern": "rehashed frame reference frameBytes",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-reference-frameBytes.log"
+        },
+        {
+          "name": "reference-inputManifestSha256",
+          "edits": [
+            [
+              "reference.inputManifestSha256!==plan.header.inputManifestSha256",
+              "false"
+            ]
+          ],
+          "testPattern": "rehashed frame reference inputManifestSha256",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-reference-inputManifestSha256.log"
+        },
+        {
+          "name": "reference-contentManifestSha256",
+          "edits": [
+            [
+              "reference.contentManifestSha256!==plan.header.contentManifestSha256",
+              "false"
+            ]
+          ],
+          "testPattern": "rehashed frame reference contentManifestSha256",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-reference-contentManifestSha256.log"
+        },
+        {
+          "name": "ledger-request_id",
+          "edits": [
+            [
+              "task.request_id!==requestId",
+              "false"
+            ]
+          ],
+          "testPattern": "frame ledger drift request_id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-ledger-request_id.log"
+        },
+        {
+          "name": "ledger-task_index",
+          "edits": [
+            [
+              "task.task_index!==expected.index",
+              "false"
+            ]
+          ],
+          "testPattern": "frame ledger drift task_index",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-ledger-task_index.log"
+        },
+        {
+          "name": "ledger-task_sha256",
+          "edits": [
+            [
+              "digest(task.task_text)!==task.task_sha256",
+              "false"
+            ]
+          ],
+          "testPattern": "frame ledger drift task_sha256",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-ledger-task_sha256.log"
+        },
+        {
+          "name": "ledger-task_bytes",
+          "edits": [
+            [
+              "Buffer.byteLength(task.task_text)!==task.task_bytes",
+              "false"
+            ]
+          ],
+          "testPattern": "frame ledger drift task_bytes",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-ledger-task_bytes.log"
+        },
+        {
+          "name": "ledger-cumulative_bytes",
+          "edits": [
+            [
+              "task.cumulative_bytes!==expected.cumulativeBytes",
+              "false"
+            ]
+          ],
+          "testPattern": "frame ledger drift cumulative_bytes",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-ledger-cumulative_bytes.log"
+        },
+        {
+          "name": "ledger-chain_sha256",
+          "edits": [
+            [
+              "task.chain_sha256!==expected.chainSha256",
+              "false"
+            ]
+          ],
+          "testPattern": "frame ledger drift chain_sha256",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-ledger-chain_sha256.log"
+        },
+        {
+          "name": "final-request_id",
+          "edits": [
+            [
+              "final.request_id!==requestId",
+              "false"
+            ]
+          ],
+          "testPattern": "proposal ledger drift request_id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-final-request_id.log"
+        },
+        {
+          "name": "final-task_index",
+          "edits": [
+            [
+              "final.task_index!==plan.header.frameCount",
+              "false"
+            ]
+          ],
+          "testPattern": "proposal ledger drift task_index",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-final-task_index.log"
+        },
+        {
+          "name": "final-task_text",
+          "edits": [
+            [
+              "final.task_text!==receipt.proposalReferenceText",
+              "false"
+            ]
+          ],
+          "testPattern": "proposal ledger drift task_text",
+          "expectedFailure": true,
+          "exit": 0,
+          "validOutcome": false,
+          "log": "t3-thematic-loader-final-task_text.log"
+        },
+        {
+          "name": "final-task_sha256",
+          "edits": [
+            [
+              "final.task_sha256!==receipt.proposalReferenceSha256",
+              "false"
+            ]
+          ],
+          "testPattern": "proposal ledger drift task_sha256",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-final-task_sha256.log"
+        },
+        {
+          "name": "final-cumulative_bytes",
+          "edits": [
+            [
+              "final.cumulative_bytes!==plan.header.frameBytes",
+              "false"
+            ]
+          ],
+          "testPattern": "proposal ledger drift cumulative_bytes",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-final-cumulative_bytes.log"
+        },
+        {
+          "name": "final-chain_sha256",
+          "edits": [
+            [
+              "final.chain_sha256!==plan.header.tailSha256",
+              "false"
+            ]
+          ],
+          "testPattern": "proposal ledger drift chain_sha256",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-final-chain_sha256.log"
+        },
+        {
+          "name": "final-bytes",
+          "edits": [
+            [
+              "Buffer.byteLength(final.task_text)!==final.task_bytes",
+              "false"
+            ]
+          ],
+          "testPattern": "proposal ledger drift task_bytes",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-final-bytes.log"
+        },
+        {
+          "name": "cancel",
+          "edits": [
+            [
+              "state.cancelled",
+              "false"
+            ]
+          ],
+          "testPattern": "cancelled",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-cancel.log"
+        },
+        {
+          "name": "seal",
+          "edits": [
+            [
+              "!state.seal",
+              "false"
+            ]
+          ],
+          "testPattern": "unsealed",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-seal.log"
+        },
+        {
+          "name": "original-frame",
+          "edits": [
+            [
+              "frame.frame_text!==expected.canonical",
+              "false"
+            ],
+            [
+              "frame.frame_sha256!==expected.sha256",
+              "false"
+            ],
+            [
+              "frame.frame_bytes!==expected.utf8Bytes",
+              "false"
+            ]
+          ],
+          "testPattern": "self-hashed original",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-original-frame.log"
+        },
+        {
+          "name": "current-scope",
+          "edits": [
+            [
+              "const refreshed=await current();",
+              "const refreshed=state;"
+            ]
+          ],
+          "testPattern": "cancelled-after-read",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-current-scope.log"
+        },
+        {
+          "name": "read-error",
+          "edits": [
+            [
+              "if(response.error) throw new Error(\"Thematic worker retained inputs unavailable\")",
+              "if(false) throw new Error(\"Thematic worker retained inputs unavailable\")"
+            ]
+          ],
+          "testPattern": "failed .* read",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-read-error.log"
+        },
+        {
+          "name": "scope-error",
+          "edits": [
+            [
+              "if(response.error) throw new Error(\"Thematic worker current scope unavailable\")",
+              "if(false) throw new Error(\"Thematic worker current scope unavailable\")"
+            ]
+          ],
+          "testPattern": "lost current scope",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-scope-error.log"
+        },
+        {
+          "name": "abort",
+          "edits": [
+            [
+              "signal.throwIfAborted();",
+              ""
+            ]
+          ],
+          "testPattern": "interrupted original",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-abort.log"
+        },
+        {
+          "name": "frame-projection",
+          "edits": [
+            [
+              "\"request_id,frame_index,frame_text,frame_sha256,frame_bytes\"",
+              "\"request_id,frame_index,frame_text,frame_sha256\""
+            ]
+          ],
+          "testPattern": "compares every",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-frame-projection.log"
+        },
+        {
+          "name": "final-inventory",
+          "edits": [
+            [
+              "for(const expected of plan.entries)",
+              "for(const expected of plan.entries.slice(0,0))"
+            ]
+          ],
+          "testPattern": "compares every",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-final-inventory.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sha256": "29ec284d897c62379ba8fb5df18392fbe3f135a3fd40ed5b28f2123372b375a5"
+    },
+    "loader-corrected": {
+      "cases": [
+        {
+          "name": "control",
+          "edits": [
+            [
+              "Reconstruct original sealed inputs",
+              "Rebuild original sealed inputs"
+            ]
+          ],
+          "testPattern": "compares every",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-corrected-control.log"
+        },
+        {
+          "name": "final-text-isolated",
+          "edits": [
+            [
+              "final.task_text!==receipt.proposalReferenceText",
+              "false"
+            ]
+          ],
+          "testPattern": "same-length replacement",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-loader-corrected-final-text-isolated.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sha256": "29ec284d897c62379ba8fb5df18392fbe3f135a3fd40ed5b28f2123372b375a5"
+    },
+    "shared": {
+      "cases": [
+        {
+          "name": "api-control",
+          "edits": [
+            [
+              "Both thematic phases use",
+              "Both thematic phases share"
+            ]
+          ],
+          "testPattern": "thematic",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-api-control.log"
+        },
+        {
+          "name": "api-route",
+          "edits": [
+            [
+              "return createAttempt(args, \"thematic\");",
+              "return createAttempt(args, \"segment\");"
+            ]
+          ],
+          "testPattern": "thematic",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-api-route.log"
+        },
+        {
+          "name": "api-stage",
+          "edits": [
+            [
+              "task.input.stage !== \"frame\" && task.input.stage !== \"proposal\"",
+              "false"
+            ]
+          ],
+          "testPattern": "thematic identity stage",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-api-stage.log"
+        },
+        {
+          "name": "api-instructions",
+          "edits": [
+            [
+              "task.instructions !== recipe.instructions",
+              "false"
+            ]
+          ],
+          "testPattern": "thematic",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-api-instructions.log"
+        },
+        {
+          "name": "api-schema",
+          "edits": [
+            [
+              "!isDeepStrictEqual(task.outputSchema, recipe.outputSchema)",
+              "false"
+            ]
+          ],
+          "testPattern": "thematic",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-api-schema.log"
+        },
+        {
+          "name": "api-purpose",
+          "edits": [
+            [
+              "task.input.purpose !== \"private_synthesis_thematic_continuation\"",
+              "false"
+            ]
+          ],
+          "testPattern": "thematic",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-api-purpose.log"
+        },
+        {
+          "name": "api-request",
+          "edits": [
+            [
+              "task.input.requestId !== binding.jobId",
+              "false"
+            ]
+          ],
+          "testPattern": "thematic",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-api-request.log"
+        },
+        {
+          "name": "api-header",
+          "edits": [
+            [
+              "task.input.headerSha256 !== binding.planSha256",
+              "false"
+            ]
+          ],
+          "testPattern": "thematic",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-api-header.log"
+        },
+        {
+          "name": "api-schema-name",
+          "edits": [
+            [
+              "`synthesis_thematic_${task.input.stage}_v1`",
+              "\"synthesis_segment_v1\""
+            ]
+          ],
+          "testPattern": "thematic",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-api-schema-name.log"
+        },
+        {
+          "name": "api-permission",
+          "edits": [
+            [
+              "authorizedNow: z.literal(true)",
+              "authorizedNow: z.boolean()"
+            ]
+          ],
+          "testPattern": "thematic",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-api-permission.log"
+        },
+        {
+          "name": "api-once",
+          "edits": [
+            [
+              "if (consumed) throw new Error",
+              "if (false) throw new Error"
+            ]
+          ],
+          "testPattern": "thematic",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-api-once.log"
+        },
+        {
+          "name": "worker-control",
+          "edits": [
+            [
+              "Thematic tasks retain their mode",
+              "Thematic tasks preserve their mode"
+            ]
+          ],
+          "testPattern": "dispatches task 0",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-worker-control.log"
+        },
+        {
+          "name": "pending-mode",
+          "edits": [
+            [
+              "Boolean(pending.thematic) !== (stage === \"thematic\")",
+              "false"
+            ]
+          ],
+          "testPattern": "refuses a thematic pending|refuses a segment",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-pending-mode.log"
+        },
+        {
+          "name": "temporary-mode",
+          "edits": [
+            [
+              "Boolean(candidate.thematic) !== (stage === \"thematic\")",
+              "false"
+            ]
+          ],
+          "testPattern": "refuses a thematic temporary",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-temporary-mode.log"
+        },
+        {
+          "name": "prepared-mode",
+          "edits": [
+            [
+              "pending = { ...mode, version: 1",
+              "pending = { version: 1"
+            ]
+          ],
+          "testPattern": "retries an unknown thematic claim",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-prepared-mode.log"
+        },
+        {
+          "name": "identity-mode",
+          "edits": [
+            [
+              "const identity = { ...mode, version: 1",
+              "const identity = { version: 1"
+            ]
+          ],
+          "testPattern": "dispatches task 0",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-identity-mode.log"
+        },
+        {
+          "name": "unknown-mode",
+          "edits": [
+            [
+              "const unknown: Journal = { ...mode, version: 1",
+              "const unknown: Journal = { version: 1"
+            ]
+          ],
+          "testPattern": "unknown thematic dispatch",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-unknown-mode.log"
+        },
+        {
+          "name": "thematic-loader",
+          "edits": [
+            [
+              "const loaded = stage === \"thematic\" ?",
+              "const loaded = false ?"
+            ]
+          ],
+          "testPattern": "dispatches task 0",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-thematic-loader.log"
+        },
+        {
+          "name": "thematic-claim",
+          "edits": [
+            [
+              "claim_engagement_synthesis_${stage === \"segment\" ? \"generation\" : stage}_attempt",
+              "claim_engagement_synthesis_generation_attempt"
+            ]
+          ],
+          "testPattern": "dispatches task 0",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-thematic-claim.log"
+        },
+        {
+          "name": "thematic-dispatch",
+          "edits": [
+            [
+              "dispatch_engagement_synthesis_${stage === \"segment\" ? \"generation\" : stage}_attempt",
+              "dispatch_engagement_synthesis_generation_attempt"
+            ]
+          ],
+          "testPattern": "dispatches task 0",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-thematic-dispatch.log"
+        },
+        {
+          "name": "thematic-status",
+          "edits": [
+            [
+              "read_engagement_synthesis_${stage === \"segment\" ? \"generation\" : stage}_execution_status",
+              "read_engagement_synthesis_generation_execution_status"
+            ]
+          ],
+          "testPattern": "dispatches task 0",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-thematic-status.log"
+        },
+        {
+          "name": "claim-pins",
+          "edits": [
+            [
+              "p_worker: pending.workerId, ...loaded.claim",
+              "p_worker: pending.workerId"
+            ]
+          ],
+          "testPattern": "dispatches task 0",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-claim-pins.log"
+        },
+        {
+          "name": "thematic-api",
+          "edits": [
+            [
+              "stage === \"thematic\" ? createSynthesisThematicApiAttempt",
+              "false ? createSynthesisThematicApiAttempt"
+            ]
+          ],
+          "testPattern": "dispatches task 0",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-thematic-api.log"
+        },
+        {
+          "name": "status-denial",
+          "edits": [
+            [
+              "await observe(); runningSignal.throwIfAborted();",
+              "/* synthetic fault */"
+            ]
+          ],
+          "testPattern": "refuses lost current thematic authority",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-status-denial.log"
+        },
+        {
+          "name": "ambiguous-mode",
+          "edits": [
+            [
+              "if (value.context && value.thematic) mismatch();",
+              ""
+            ],
+            [
+              "Boolean(pending.context) !== (stage === \"context\")",
+              "false"
+            ]
+          ],
+          "testPattern": "refuses an ambiguous",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-shared-ambiguous-mode.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sha256": {
+        "src/lib/engagement/synthesis-generation-api.ts": "0c596872d93e64cc88be13ca30682c176be695ba25d4d264e4c188f9b79beb46",
+        "src/lib/engagement/synthesis-generation-worker.ts": "92544532a249a470b69d496b34f007360540999122f30c79cfd9394e035651f2"
+      }
+    }
+  },
+  "schema": [
+    {
+      "name": "harmless",
+      "harmless": true,
+      "expected": true,
+      "exitCode": 0,
+      "seconds": 1.89,
+      "log": "t3-thematic-execution-schema-harmless.log"
+    },
+    {
+      "name": "unread-column",
+      "harmless": false,
+      "expected": true,
+      "exitCode": 1,
+      "seconds": 1.87,
+      "log": "t3-thematic-execution-schema-unread-column.log"
+    },
+    {
+      "name": "missing-rls",
+      "harmless": false,
+      "expected": true,
+      "exitCode": 1,
+      "seconds": 1.9,
+      "log": "t3-thematic-execution-schema-missing-rls.log"
+    }
+  ],
+  "nativeSQL": {
+    "file": "openplan/src/test/engagement-synthesis-thematic-execution-rls.test.ts",
+    "installedCombined": {
+      "tests": 77,
+      "seconds": 162.28,
+      "log": "t3-thematic-execution-native-installed.log"
+    },
+    "initialDiagnosticFailure": "Expanded native suite caught frame-only inventory fault, but expected the unwrapped inner error. Fixture now labels the full-inventory authorization boundary explicitly.",
+    "candidateLogs": [
+      "t3-thematic-execution-native-first.log",
+      "t3-thematic-execution-native-candidate.log",
+      "t3-thematic-execution-native-expanded.log",
+      "t3-thematic-execution-native-corrected.log"
+    ]
+  },
+  "httpBaseline": {
+    "tests": 1,
+    "seconds": 173.59,
+    "log": "t3-thematic-execution-http-first.log"
+  },
+  "httpControls": {
+    "cases": [
+      {
+        "name": "harmless",
+        "expectedFailure": false,
+        "exit": 0,
+        "validOutcome": true,
+        "seconds": 173.5,
+        "log": "t3-thematic-execution-http-harmless.log"
+      },
+      {
+        "name": "late-original-redelivery",
+        "expectedFailure": true,
+        "exit": 1,
+        "validOutcome": false,
+        "seconds": 173.86,
+        "log": "t3-thematic-execution-http-late-original-redelivery.log"
+      },
+      {
+        "name": "unsupported-schedule",
+        "expectedFailure": true,
+        "exit": 1,
+        "validOutcome": true,
+        "seconds": 150.11,
+        "log": "t3-thematic-execution-http-unsupported-schedule.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "92544532a249a470b69d496b34f007360540999122f30c79cfd9394e035651f2",
+    "diagnosticReview": {
+      "case": "late-original-redelivery",
+      "validIntendedFailure": true,
+      "assertion": "recoveredThematic.code equals 0",
+      "actual": 2,
+      "location": "src/test/engagement-synthesis-generation-worker-live.test.ts:455:123",
+      "reasonInitialMatcherMissed": "Vitest truncated source excerpt before recoveredThematic.code; initial validOutcome false is preserved."
+    }
+  },
+  "blindCategories": [
+    "Mocked transport does not establish RLS or concurrent transaction fencing.",
+    "SQL structural custody does not establish semantic correctness of service-supplied task bytes.",
+    "Local synthetic provider HTTP does not establish model quality, vendor billing or large-campaign performance.",
+    "No UI or practitioner acceptance claim."
+  ],
+  "localLogDirectory": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27",
+  "projectionCorrection": {
+    "cases": [
+      {
+        "name": "control",
+        "edits": [
+          "Reconstruct original sealed inputs"
+        ],
+        "testPattern": "compares every",
+        "expectedFailure": false,
+        "exit": 0,
+        "validOutcome": true,
+        "log": "t3-thematic-projection-control.log"
+      },
+      {
+        "name": "unknown-frame-column",
+        "edits": [
+          "select(\"request_id,frame_index,frame_text,frame_sha256,frame_bytes\")"
+        ],
+        "testPattern": "never names a column",
+        "expectedFailure": true,
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-projection-unknown-frame-column.log"
+      },
+      {
+        "name": "unknown-grant-column",
+        "edits": [
+          "select(\"id,request_id,intent_text,intent_sha256,credential_sha256\")"
+        ],
+        "testPattern": "never names a column",
+        "expectedFailure": true,
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-projection-unknown-grant-column.log"
+      },
+      {
+        "name": "loader-read-error",
+        "edits": [
+          "if(response.error) throw new Error(\"Thematic worker retained inputs unavailable\")"
+        ],
+        "testPattern": "failed .* read",
+        "expectedFailure": true,
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-projection-loader-read-error.log"
+      },
+      {
+        "name": "loader-abort",
+        "edits": [
+          "signal.throwIfAborted();"
+        ],
+        "testPattern": "interrupted original",
+        "expectedFailure": true,
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-projection-loader-abort.log"
+      },
+      {
+        "name": "job-read-error",
+        "edits": [
+          "if (response.error) throw new Error(\"Thematic worker execution history unavailable\")"
+        ],
+        "testPattern": "failed native",
+        "expectedFailure": true,
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-projection-job-read-error.log"
+      },
+      {
+        "name": "job-abort",
+        "edits": [
+          "signal.throwIfAborted();"
+        ],
+        "testPattern": "denied selections",
+        "expectedFailure": true,
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-projection-job-abort.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": {
+      "src/lib/engagement/synthesis-thematic-worker-load.ts": "71bb5a9c7d1bafaf84236f1b0ddbcf5d9651619030749aed5c7f12e1e8c24bf3",
+      "src/lib/engagement/synthesis-thematic-worker-job.ts": "6bb62c03822d008534f542c005100393c734b828f89233dd5a309249cd7b95ba"
+    }
+  },
+  "initialQA": {
+    "passed": 17098,
+    "failed": 1,
+    "skipped": 1429,
+    "seconds": 156.46,
+    "log": "t3-thematic-execution-qa.log",
+    "failure": "reference-count-projection-guard guards the guard: unresolved projections 251 exceeded the strict less-than-250 ceiling.",
+    "correction": "New thematic readers now expose explicit static table and projection selects. The existing guard and its threshold are unchanged.",
+    "focused": {
+      "tests": 95,
+      "seconds": 60.6,
+      "log": "t3-thematic-execution-projection-correction.log"
+    }
+  },
+  "nativeRegression": {
+    "tests": 63,
+    "seconds": 168.0,
+    "log": "t3-thematic-execution-native-regression.log",
+    "scope": "Existing segment execution and migration-schema-drift on the owned installed stack."
+  },
+  "finalQA": {
+    "applicationPassed": 17099,
+    "applicationSkipped": 1429,
+    "applicationSeconds": 159.57,
+    "connectorPassed": 382,
+    "connectorSkipped": 4,
+    "lint": "passed",
+    "configuredDeadcode": "passed with reported unused exports",
+    "dependencyAuditFindings": 0,
+    "webpackBuild": "passed",
+    "typescript": "passed",
+    "liveRlsInOrdinaryQA": false,
+    "log": "t3-thematic-execution-qa-final.log"
+  },
+  "postProjectionHttp": {
+    "tests": 1,
+    "seconds": 299.71,
+    "concurrentFullQA": true,
+    "log": "t3-thematic-execution-http-final.log",
+    "followingTestTimeoutChange": "Extended integration-test timeout 300000 to 600000 ms after measured 299.71-second shared-host run; no application deadline or assertion changed.",
+    "isolatedRepeat": {
+      "tests": 1,
+      "seconds": 173.74,
+      "log": "t3-thematic-execution-http-isolated.log",
+      "changedTestLint": "passed"
+    }
+  },
+  "finalSourceSha256": {
+    "openplan/package.json": "fc22c8f0d6a5c144e474d98c9f960b2e4c0e69015ff47520de24187d6140385b",
+    "openplan/scripts/workers/synthesis-generation.ts": "5a8358a8ae71f72f634e44d3dbe9d45e6478a89865155e1169c0f1ab75f3d355",
+    "openplan/src/lib/engagement/synthesis-generation-api.ts": "0c596872d93e64cc88be13ca30682c176be695ba25d4d264e4c188f9b79beb46",
+    "openplan/src/lib/engagement/synthesis-generation-worker.ts": "92544532a249a470b69d496b34f007360540999122f30c79cfd9394e035651f2",
+    "openplan/src/test/engagement-synthesis-generation-api.test.ts": "8b523768b178aeec30b98a48cbe36f06cc778700d965a331ed8eb45c135aad79",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "6a32a0aeecc046bc794e0484d4c75f387d8bd7eaa0fa74a366313846ecc6fc5f",
+    "openplan/src/test/fixtures/engagement/synthesis-thematic-proposal-inputs.ts": "d94904077c22bd0ec3db78e62c9295f29b9aab94ef41f41b4a11ad144e65dc5c",
+    "openplan/src/test/migrations/inventory.test.ts": "f8266591c06101742d337201702da29fe3e62e2c41b3d80eac03b62d76b43801",
+    "openplan/src/lib/engagement/synthesis-thematic-worker-job.ts": "6bb62c03822d008534f542c005100393c734b828f89233dd5a309249cd7b95ba",
+    "openplan/src/lib/engagement/synthesis-thematic-worker-load.ts": "71bb5a9c7d1bafaf84236f1b0ddbcf5d9651619030749aed5c7f12e1e8c24bf3",
+    "openplan/src/test/engagement-synthesis-thematic-execution-rls.test.ts": "66a2a6ee0d717253236691edda41e0d17fa63463f5e87777b07cfffc85cb899d",
+    "openplan/src/test/engagement-synthesis-thematic-worker-job.test.ts": "cfc6a0997ae3d73dc989189dde37011e8fda88c01fa1c9d7d05a3f3254482f10",
+    "openplan/src/test/engagement-synthesis-thematic-worker-load.test.ts": "6e2bb6f517558b3e73a7ceb3d21926eb955fb89ddadc7c42522c0865df9491ef",
+    "openplan/src/test/engagement-synthesis-thematic-worker.test.ts": "57bafd835aaf32dd60137923b230d2d8d78f304bcc3786bffb4f90072e14c2d9",
+    "openplan/src/test/fixtures/engagement/synthesis-thematic-execution-worker.ts": "3e6508fd222c4cc0da3c3c940620b5d5252104c7ee68aa9f700d675880291820",
+    "openplan/src/test/fixtures/engagement/synthesis-thematic-execution.sql": "96758fc649e24fe530b0323f7cad210608f5c1890b40dbae2021df94e3906f0c",
+    "openplan/src/test/fixtures/engagement/synthesis-thematic-job.ts": "7c8580d6b2bf3e29f299ee4e95750c72feee840c17a88343a3012ddc7d07a033",
+    "openplan/src/test/fixtures/engagement/synthesis-thematic-worker.ts": "b929e61e2119d3e258f5c3a69d495461b1a931ed0fe55764ed59d9a0db8c6af1",
+    "openplan/supabase/migrations/20261015000009_engagement_synthesis_thematic_execution.sql": "5d4f4c199f7965a6920a864235cfd551347767a803a7ec6fb6540d460072e0c2"
+  },
+  "localLogSha256": {
+    "t3-thematic-execution-http-final.log": "226de1733e278f43a7d92b39dfc070d618082c9f46967c835ac5e95efc2324eb",
+    "t3-thematic-execution-http-first.log": "5d024c50360e7211986245ba4625ea7d23662dc058f4bfa70c57dcf1990c93ac",
+    "t3-thematic-execution-http-harmless.log": "369ff85490873371b15fe8c9830cd1dd3d1ea25e0401c05cb3c7028c21ec75a8",
+    "t3-thematic-execution-http-isolated.log": "2d14865a8b87b230826523e486df277d54920bad48e0f4c2ecc8feff15e98a95",
+    "t3-thematic-execution-http-late-original-redelivery.log": "5f661d507d20e63ba2a5fa67eb107b7c4b27cd7d36b3e613ce3d1c42ff63bcbc",
+    "t3-thematic-execution-http-mutation-run.log": "23cb80dcf5b39838c8a78e160e4d12c9189d11de4cf13667726475e788009485",
+    "t3-thematic-execution-http-unsupported-schedule.log": "dd9838c868f6f46faff97f80408ca673bba5502d61e7ddd0eb09236c0788cd11",
+    "t3-thematic-execution-install.log": "dfe0ac91fb7fccb8bff6dcef8ef3f1331a91486e8c7075ad350d53193ff1ca8f",
+    "t3-thematic-execution-lint-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "t3-thematic-execution-native-candidate.log": "14860b0209824a58cfc732be9347443e56e58f81a2a7488491bbba68107b8091",
+    "t3-thematic-execution-native-corrected.log": "900dad02c76a08dbc073bf7a759f0c3feb58f7865ac273cc72f9825e0cac9bf5",
+    "t3-thematic-execution-native-expanded.log": "006b92f034a6cfa5f79e132362b1a48fd180cbc251cf8d37429abab3cec52614",
+    "t3-thematic-execution-native-first.log": "cd3ab9e1cd99f44cc9f44c94e1fb22cb72ab4d8d5c02af728bebfb083069e332",
+    "t3-thematic-execution-native-installed.log": "b2e468bda27f496ce232b81b9b7ca86648bf3b47d229d2290d2ffdb45b122324",
+    "t3-thematic-execution-native-regression.log": "617572b8b86c07555e62e5d2518cfb054552f385addb3a61289fb0e0d8d23c7d",
+    "t3-thematic-execution-projection-correction.log": "28edcd967983569d3a08eeb75e12f99952c6de9b5ab22f03a6433575dfb50898",
+    "t3-thematic-execution-qa-final.log": "61b6e01825ee342475320f2723896c9738192f03b56dee07cbcb1edc7e2778bd",
+    "t3-thematic-execution-qa.log": "89489b3be0bb3c7e514c5b4a6523be8eb4a1da22643014bd7c1a82b080626397",
+    "t3-thematic-execution-schema-harmless.log": "9e970ed724b121794111b2670ca9d687126b9c95f860002d7c3d0522d0683285",
+    "t3-thematic-execution-schema-missing-rls.log": "649dc330c935f4910fa01a9c78a70b4bf85cc49378b26594689fbf94f1805c2e",
+    "t3-thematic-execution-schema-mutation-run.log": "1ec8fd43219f431690fd4f4f5faf9943b7ec95acdaafc81afee70efe05bf7556",
+    "t3-thematic-execution-schema-unread-column.log": "77627bf1b8cf6bb0d9502343fc87a5174b28f9086a7563b20de89e8852fd1cad",
+    "t3-thematic-execution-schema.log": "ce8d7626531cc1e3290a7e981e2af0135a65dd06901d574687ee3754b4e1ef42",
+    "t3-thematic-execution-types-api.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "t3-thematic-execution-types-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "t3-thematic-execution-types-first.log": "af0223b07d0c2a040ca17be60ed25451d17174e4f9b0b221234a52e8225c6a4a",
+    "t3-thematic-execution-types-http.log": "b8116b20cff7db8f6e4abd2c7ceb4df9bb200a1d2398eda98c21e834a112f927",
+    "t3-thematic-execution-types-worker.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "t3-thematic-projection-mutation-run.log": "26b1e1c2e577084d7c81294108256445f192a18560b174db77e2b065249ce4cb"
+  },
+  "finalFormatting": "Removed one trailing blank line from the migration after checks; executable SQL unchanged."
+}

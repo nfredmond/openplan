@@ -8,6 +8,7 @@ import { synthesisGenerationSegmentRecipe } from "./synthesis-generation-recipe"
 import { synthesisGenerationAttemptBindingSchema, type SynthesisGenerationAttemptBinding } from "./synthesis-generation-results";
 import { createSynthesisGenerationApiResult } from "./synthesis-generation-api-result";
 import contextRecipe from "./synthesis-generation-context-v1.json";
+import thematicRecipe from "./synthesis-generation-thematic-v1.json";
 
 const id = z.string().uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/);
 const digest = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
@@ -76,19 +77,34 @@ export function createSynthesisContextApiAttempt(args: SynthesisGenerationApiAtt
   return createAttempt(args, "context");
 }
 
-function createAttempt(args: SynthesisGenerationApiAttemptArgs, stage: "segment" | "context") {
+/** Both thematic phases use the same original-response transport. The retained
+ * task chooses the independently frozen frame or proposal instructions/schema.
+ */
+export function createSynthesisThematicApiAttempt(args: SynthesisGenerationApiAttemptArgs) {
+  return createAttempt(args, "thematic");
+}
+
+function createAttempt(args: SynthesisGenerationApiAttemptArgs, stage: "segment" | "context" | "thematic") {
   args.signal.throwIfAborted();
   if (typeof args.retainReceipt !== "function") throw new Error("Synthesis API receipt storage required");
   const { binding, dispatch, receipt } = verifySynthesisGenerationApiDispatch(args);
   if (typeof args.taskCanonical !== "string" || Buffer.byteLength(args.taskCanonical, "utf8") > 1_048_576 ||
     digest(args.taskCanonical) !== binding.taskSha256) throw new Error("Synthesis API task bytes differ");
   const task = taskSchema.parse(JSON.parse(args.taskCanonical));
-  const recipe = stage === "context" ? structuredClone(contextRecipe) : synthesisGenerationSegmentRecipe();
+  if (stage === "thematic" && (task.input.stage !== "frame" && task.input.stage !== "proposal")) throw new Error("Synthesis API thematic stage differs");
+  const recipe = stage === "thematic" ? {
+    instructions: task.input.stage === "frame" ? thematicRecipe.frameInstructions : thematicRecipe.proposalInstructions,
+    outputSchema: structuredClone(task.input.stage === "frame" ? thematicRecipe.frameOutputSchema : thematicRecipe.proposalOutputSchema),
+  } : stage === "context" ? structuredClone(contextRecipe) : synthesisGenerationSegmentRecipe();
   if (JSON.stringify(task) !== args.taskCanonical || task.instructions !== recipe.instructions ||
     !isDeepStrictEqual(task.outputSchema, recipe.outputSchema)) throw new Error("Synthesis API task recipe differs");
   if (stage === "context" && (task.input.purpose !== "private_synthesis_context_continuation" ||
     task.input.requestId !== binding.jobId || task.input.headerSha256 !== binding.planSha256)) {
     throw new Error("Synthesis API context identity differs");
+  }
+  if (stage === "thematic" && (task.input.purpose !== "private_synthesis_thematic_continuation" ||
+    task.input.requestId !== binding.jobId || task.input.headerSha256 !== binding.planSha256)) {
+    throw new Error("Synthesis API thematic identity differs");
   }
   const configuration = providerApiConfigurationSchema.parse(args.revision.configuration);
   if (args.revision.workspaceId !== id.parse(args.workspaceId) || args.revision.connectionId !== id.parse(args.connectionId) ||
@@ -101,7 +117,7 @@ function createAttempt(args: SynthesisGenerationApiAttemptArgs, stage: "segment"
   let apiKey = openProviderApiRevisionCredential(stored);
   const body = JSON.stringify({ model: binding.modelId, max_tokens: receipt.maxOutputTokens,
     messages: [{ role: "system", content: task.instructions }, { role: "user", content: args.taskCanonical }],
-    response_format: { type: "json_schema", json_schema: { name: stage === "context" ? "synthesis_context_v1" : "synthesis_segment_v1", strict: true, schema: recipe.outputSchema } },
+    response_format: { type: "json_schema", json_schema: { name: stage === "thematic" ? `synthesis_thematic_${task.input.stage}_v1` : stage === "context" ? "synthesis_context_v1" : "synthesis_segment_v1", strict: true, schema: recipe.outputSchema } },
   });
   const parentSignal = args.signal;
   const retainReceipt = args.retainReceipt;

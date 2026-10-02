@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import shlex
+import signal
 import subprocess
 import sys
 import threading
@@ -379,6 +380,27 @@ def _post_callback(job: dict[str, Any], payload: dict[str, Any]) -> None:
     response.raise_for_status()
 
 
+def _stop_owned_process_group(process: subprocess.Popen) -> tuple[str, str]:
+    """Terminate this attempt's session before reaping its group leader."""
+    # Keep the leader unreaped until the last group signal. Its reserved PID
+    # prevents reuse as an unrelated process group during the grace interval.
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    time.sleep(CANCEL_GRACE_SECONDS)
+    # Even a child that closed its pipes may still be running after SIGTERM.
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    try:
+        return process.communicate(timeout=CANCEL_GRACE_SECONDS)
+    except subprocess.TimeoutExpired as exc:
+        # Detached descendants and external engines need independent custody.
+        raise RuntimeError("Cancellation could not confirm termination of the owned execution") from exc
+
+
 def _run_job(job: dict[str, Any]) -> None:
     job_id = job["jobId"]
     with _jobs_lock:
@@ -401,24 +423,22 @@ def _run_job(job: dict[str, Any]) -> None:
         logger.info("Starting county onramp job %s", job_id)
         logger.info("Bootstrap command: %s", " ".join(shlex.quote(part) for part in command))
 
+        if os.name != "posix":
+            raise RuntimeError("County execution requires POSIX process-group cancellation support")
         process = subprocess.Popen(
             command,
             cwd=str(REPO_ROOT),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            start_new_session=True,
         )
         with _jobs_lock:
             _jobs[job_id]["process"] = process
 
         while True:
             if cancel_event.is_set():
-                process.terminate()
-                try:
-                    stdout, stderr = process.communicate(timeout=CANCEL_GRACE_SECONDS)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                    stdout, stderr = process.communicate()
+                stdout, stderr = _stop_owned_process_group(process)
                 cancelled_at = _utc_now()
                 _set_job_status(job_id, "cancelled", cancelledAt=cancelled_at)
                 _post_callback(job, {"jobId": job_id, "status": "cancelled"})

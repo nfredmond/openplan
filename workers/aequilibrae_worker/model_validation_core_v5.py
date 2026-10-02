@@ -108,6 +108,14 @@ def validate_inputs(
         identifier = str(match.get("observation_id") or "")
         if not identifier or identifier in by_id or match.get("status") not in MATCH_STATES:
             raise ContractError("match audit changed ids or states")
+        # Legacy audits can contain one-direction selections on bidirectional
+        # links. Refuse new assessment of those bytes rather than silently
+        # compare a directional observation with a total-volume column.
+        if match.get("status") == "matched" and match.get("direction_aggregation") == "one_direction":
+            candidates = {str(item.get("link_id")): item for item in match.get("candidate_links", [])}
+            selected = match.get("selected_link_ids") or []
+            if not selected or any(candidates.get(str(link_id), {}).get("link_direction") not in {-1, 1} for link_id in selected):
+                raise ContractError("Directional assessment requires proven one-way links; AB/BA extraction is not implemented")
         by_id[identifier] = match
     ids = [str(item.get("observation_id") or "") for item in observations]
     if ids != [str(item.get("observation_id") or "") for item in matches]:

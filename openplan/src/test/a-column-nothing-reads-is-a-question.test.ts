@@ -73,8 +73,11 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
-  { column: "engagement_synthesis_thematic_requests.thematic_text", category: "READ_IN_SQL", reason: "Native request reads return the original thematicText; creation compares exact retry bytes and choices read its parent binding." },
-  { column: "engagement_synthesis_thematic_requests.thematic_sha256", category: "READ_IN_SQL", reason: "The native request reader returns thematicSha256; the application recomputes the original thematicText digest before using the binding." },
+  { column: "engagement_synthesis_thematic_inputs.proof_text", category: "READ_IN_SQL", reason: "Native custody reads return proofText; saves compare exact retained proof bytes and the application verifies their scope and digest." },
+  { column: "engagement_synthesis_thematic_inputs.proof_sha256", category: "READ_IN_SQL", reason: "Native input records return the generated proofSha256 for application byte verification." },
+  { column: "engagement_synthesis_thematic_inputs.output_text", category: "READ_IN_SQL", reason: "Native input records return original outputText without jsonb coercion; exact retries compare its bytes." },
+  { column: "engagement_synthesis_thematic_inputs.output_sha256", category: "READ_IN_SQL", reason: "Native custody returns the generated outputSha256, compared with both original output bytes and its proof binding." },
+  { column: "engagement_synthesis_thematic_inputs.target_record_id", category: "READ_IN_SQL", reason: "The composite choice foreign key and native input commands use target_record_id to preserve one scoped contribution per record." },
   { column: "engagement_synthesis_thematic_choices.choice_text", category: "READ_IN_SQL", reason: "Native choice reads return the original choiceText for application verification; exact retries compare these retained bytes." },
   { column: "engagement_synthesis_thematic_choices.choice_sha256", category: "READ_IN_SQL", reason: "The native choice reader returns choiceSha256; the application recomputes the digest before returning the historical input choice." },
   { column: "engagement_synthesis_thematic_choices.context_request_id", category: "READ_IN_SQL", reason: "The foreign key requires a retained context request and the unique constraint prevents that context from occupying two choices in one thematic request." },

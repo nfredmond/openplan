@@ -51,6 +51,11 @@ function cancellation(request: Request, scope: Scope) {
  */
 export async function recheckSynthesisContextHistoryAccess(client: Client, previous: Request, scope: Scope, signal: AbortSignal) {
   const current = await readSynthesisContextRequest(client, scope, signal);
+  return verifySynthesisContextHistoryRecheck(previous, current, scope);
+}
+
+/** Compare immutable history after a caller re-establishes its own access. */
+export function verifySynthesisContextHistoryRecheck(previous: Request, current: Request, scope: Scope) {
   if (!isDeepStrictEqual(previous.state.request, current.state.request) ||
     !isDeepStrictEqual(previous.state.context, current.state.context)) differs();
   const originalCancellation = cancellation(previous, scope), currentCancellation = cancellation(current, scope);
@@ -73,12 +78,26 @@ export async function loadSynthesisContextHistoryInputs(client: Client, service:
   if (parent.campaignId !== scope.campaignId || parent.workspaceId !== scope.workspaceId ||
     parent.selections.requestId !== binding.parentRequestId || parent.inventory.job.jobId !== binding.parentRequestId ||
     parent.selections.throughSequence !== binding.selectionSequence) differs();
-  const sourceScope = { requestId: intent.sourceId, campaignId: scope.campaignId, workspaceId: scope.workspaceId };
   const response = await client.rpc("read_engagement_synthesis_sources", { p_campaign: scope.campaignId, p_request: intent.sourceId })
     .abortSignal(synthesisWorkerRequestSignal(signal));
   signal.throwIfAborted();
   if (response.error) throw new Error("Historical context source unavailable");
-  const source = verifySynthesisSource(response.data, sourceScope);
+  const inputs = await reconstructSynthesisContextHistoryInputs(service, scope, request, parent, response.data, signal);
+  const current = await recheckSynthesisContextHistoryAccess(client, request, scope, signal);
+  return { ...inputs, request: current };
+}
+
+/** Internal replay shared by staff inspection and explicitly authorized thematic
+ * preparation. This helper grants no access. Its caller must establish native
+ * scope before private reads and recheck that authority before returning data.
+ */
+export async function reconstructSynthesisContextHistoryInputs(service: Service, scope: Scope, request: Request,
+  parent: Awaited<ReturnType<typeof loadSynthesisGenerationHistory>>, rawSource: unknown, signal: AbortSignal,
+) {
+  signal.throwIfAborted();
+  const { intent, binding } = request;
+  const sourceScope = { requestId: intent.sourceId, campaignId: scope.campaignId, workspaceId: scope.workspaceId };
+  const source = verifySynthesisSource(rawSource, sourceScope);
   const saved = { ...sourceScope, snapshotText: source.snapshotText, snapshotSha256: source.snapshotSha256, createdAt: source.createdAt };
   const input = createSynthesisGenerationInput(saved, sourceScope), records = createSynthesisGenerationRecords(input, saved, sourceScope);
   const parentPlan = parent.selections.plan.taskPlan;
@@ -133,7 +152,6 @@ export async function loadSynthesisContextHistoryInputs(client: Client, service:
       tailSha256: last?.chainSha256 ?? plan.seedSha256, cancelled: request.state.cancellation !== null,
       seal: seal && { receiptText: seal.receipt_text, receiptSha256: seal.receipt_sha256 } });
   }
-  const current = await recheckSynthesisContextHistoryAccess(client, request, scope, signal);
-  return { scope, request: current, plan, contentArgs, storedFrameCount,
+  return { scope, request: { ...request, cancellation: cancellation(request, scope) }, plan, contentArgs, storedFrameCount,
     preparationStatus: stored === null ? "not_prepared" as const : seal === null ? "staging" as const : "sealed" as const };
 }

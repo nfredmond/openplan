@@ -1,0 +1,62 @@
+[
+  {
+    "guard": "rounding",
+    "mutation": "noop",
+    "exit": 0,
+    "outcome": "survived"
+  },
+  {
+    "guard": "rounding",
+    "mutation": "broken",
+    "exit": 1,
+    "outcome": "detected by intended assertion"
+  },
+  {
+    "guard": "reporting",
+    "mutation": "noop",
+    "exit": 0,
+    "outcome": "survived"
+  },
+  {
+    "guard": "reporting",
+    "mutation": "broken",
+    "exit": 1,
+    "outcome": "detected by intended assertion"
+  },
+  {
+    "guard": "preparation",
+    "mutation": "noop",
+    "exit": 0,
+    "outcome": "survived"
+  },
+  {
+    "guard": "preparation",
+    "mutation": "broken",
+    "exit": 1,
+    "outcome": "detected by intended assertion"
+  },
+  {
+    "guard": "dashboard",
+    "mutation": "noop",
+    "exit": 0,
+    "outcome": "survived"
+  },
+  {
+    "guard": "dashboard",
+    "mutation": "broken",
+    "exit": 1,
+    "outcome": "detected by intended assertion"
+  },
+  {
+    "guard": "export",
+    "mutation": "noop",
+    "exit": 0,
+    "outcome": "survived"
+  },
+  {
+    "guard": "export",
+    "mutation": "broken",
+    "exit": 1,
+    "outcome": "detected by intended assertion"
+  }
+]

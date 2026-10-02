@@ -66,7 +66,7 @@ describe("private synthesis response link API", () => {
   it("returns exact current context and complete history with no enriched fields", async () => {
     const context = await GET(get(selectedQuery("context")), routeContext);
     expect(context.status).toBe(200); expect(context.headers.get("cache-control")).toBe("private, no-store"); expect(await context.json()).toEqual({ context: saved.context });
-    expect(mocks.context).toHaveBeenCalledExactlyOnceWith(expect.anything(), address);
+    expect(mocks.context).toHaveBeenCalledExactlyOnceWith(expect.anything(), address, expect.objectContaining({ rpc: expect.any(Function) }));
     const history = await GET(get(selectedQuery("history")), routeContext);
     expect(history.status).toBe(200); expect(history.headers.get("cache-control")).toBe("private, no-store");
     expect(await history.json()).toEqual({ history: { ...address, eventCount: 1, headId: intent.requestId, headSha256: retained.eventSha256, entries: [retained] } });

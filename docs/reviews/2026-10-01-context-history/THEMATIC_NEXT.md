@@ -17,7 +17,10 @@ execution path before exposing those checks to a browser or worker.
 [Authenticated input custody](THEMATIC_INPUTS.md) subsequently adds the new
 thematic request and per-contribution choices. Continue the sealed preparation
 and worker path described below. These retained choices do not supply that seal
-or execution authority.
+or execution authority. The subsequent [worker reader](THEMATIC_PREPARATION.md)
+adds explicit native delegation and original-history replay for each chosen input.
+Durable retained proofs, complete source membership and the input seal remain the
+next preparation work.
 
 ## Freeze complete inputs and preserve interpretation limits
 
@@ -87,3 +90,140 @@ Engineering checks still cannot establish semantic quality or representativeness
 The independent-fixes and UI/UX worktrees remain responsible for their active
 corrections. Coordinate interface ownership before modifying shared UI files,
 and integrate their verified changes before final connected acceptance.
+
+## Retained inputs before a complete seal
+
+[Input custody](THEMATIC_CUSTODY.md) now retains one reconstructed contribution's
+proof and exact original final output. Recovery and staff inspection remain
+separate from fresh preparation. These records do not establish a complete input
+set and do not replace original history replay before execution.
+
+The next native seal must compare actual selected item and answer identifiers
+with retained choices and inputs in both directions. Counts alone cannot catch a
+substituted, duplicate or missing contribution. Use a fixed ordering for prefixed
+source identifiers and a versioned hash chain over exact proof and output hashes.
+Keep the request, intent, thematic binding and source snapshot in the chain seed.
+Exact retries may recover existing sealed bytes; fresh input insertion must stop
+once a seal exists. Missing input remains incomplete, not a smaller ready set.
+
+Read large inventories in bounded pages without returning every original output
+in each page. Reconstruct each chosen original before using its saved proof. A
+reader scoped to one thematic request can share immutable source and anchored
+parent reconstruction across contributions, while rechecking the new requester's
+native authority and exact dependency identities for each one. This optimization
+is still unimplemented and has no large-source performance result here.
+
+## October 2 complete-source custody checkpoint
+
+[The input seal](THEMATIC_SEAL.md) implements the native membership comparison,
+bounded proof inventory and durable hash chain described above. It preserves
+cancellation recovery and prevents fresh input insertion after sealing. This is
+an internal custody checkpoint; the connected proposal workflow remains the
+implementation target. Share verified immutable source and parent reconstruction
+within a request, then implement the versioned thematic recipe, resource
+approval, resumable execution, original proposal storage and explicit staff
+import. Preserve per-contribution native access checks and original-history
+replay when adding that shared reader.
+
+[Shared preparation](THEMATIC_SHARED_PREPARATION.md) subsequently reuses source
+and anchored parent reconstruction within one request after a successful replay.
+Each context still reconstructs its original frames and captures under current
+native authority. The versioned thematic recipe, execution and staff import are
+the next connected implementation boundary; this optimization does not close it.
+
+[Complete proposal inputs](THEMATIC_PROPOSAL_INPUTS.md) now reconstruct every
+chosen context under the exact complete-source seal, compare original retained
+bytes and recheck current scope before return. The reader collects evidence in
+memory; durable bounded tasks and the connected execution/import workflow remain
+unfinished. Original source text and historical definitions must remain available
+when constructing those tasks.
+
+[Versioned thematic continuation](THEMATIC_CONTINUATION.md) now frames original
+source and context bytes and replays checked responses before a final proposal
+task. The 302-contribution synthetic protocol case completes, while explicit byte
+ceilings preserve incomplete work without clipping. Native frame staging,
+resource authorization, original-response execution custody, retained proposals
+and staff import remain the next connected work. Large final evidence collections
+that exceed the supported task budget remain a scaling gap.
+
+October 2 staging continuation: [native thematic staging](THEMATIC_STAGING.md)
+adds bounded original-frame custody, exact-prefix recovery and an atomic final
+proposal reference. It grants no execution permission. Resource authorization,
+original-response execution custody, retained proposals, staff import and the
+large final-task scaling gap remain open under the roadmap's existing M9b lane.
+
+October 2 execution continuation: [native thematic execution](THEMATIC_EXECUTION.md)
+adds resource authorization, original-response custody and single-task CLI
+recovery for evidence frames and the final proposal. The next connected work is
+a durable thematic scheduler, original proposal replay and retained derived
+proposal history, then explicit staff import and identified-build user journeys.
+Preserve the full source and uncertainty when addressing large final-task limits.
+This checkpoint does not close M9b or change the roadmap's whole-product queue.
+
+The existing `synthesis-context-scheduler.ts` and its authority reader provide the
+next implementation reference. Thematic scheduling must use `taskCount`, including
+the proposal, rather than `frameCount`. Keep the saved schedule and exact initial
+attempt identities stable across retries. Historical authority reconstruction must
+permit recovery of already observed responses after cancellation; creating a new
+schedule still requires current original-input replay and permission. A scheduler
+must stop at an unresolved predecessor, never select a retry automatically, and
+keep thematic journals separate from segment and context journals. Preserve the
+current single-task mode and test mixed prior attempts, grant exhaustion, changed
+ancestors, interrupted journal writes and final-task recovery on the owned stack.
+
+Keep new native reads explicit about table names and column projections. Generic
+projection parameters exceeded the existing static coverage limit during the
+execution checkpoint; explicit selects restored coverage without loosening it.
+
+October 2 scheduler continuation: [durable thematic scheduling](THEMATIC_SCHEDULER.md)
+adds a saved task inventory through the final proposal and historical authority
+reconstruction for original-output recovery. Continue with an exact selected
+final-proposal reader and immutable derived proposal custody/history, then an
+explicit import into a new staff review revision. Replay original tasks and
+captures, bind every selected predecessor and retain machine authorship. Preserve
+old approvals, current-staff history after an earlier requester leaves, and the
+complete-source/uncertainty requirements. Scheduling does not close the connected
+staff workflow or the large final-task scaling gap.
+
+The next reader can start from existing authenticated request, choice, input and
+input-seal history RPCs. The generic selection-history RPC in migration
+`20261014000036` also reads the generation request's fixed selection sequence;
+the thematic execution tables reuse that selection inventory. Verify this path
+on the installed stack before adding another native reader or storage table.
+`loadSynthesisThematicProposalInputs` remains a current-worker preparation path
+and rejects cancellation. It cannot serve as staff history after requester
+departure. Reconstruct the same originals under current staff permission and
+retain the final access recheck. Inspect whether original task/capture custody
+plus a derived replay manifest satisfies proposal history before introducing
+redundant proposal storage. Explicit import still needs retained lineage and an
+exact expected review parent.
+
+October 2 historical replay continuation: [current-staff proposal history](THEMATIC_HISTORY.md)
+uses existing authenticated native reads and immutable captures to reconstruct the
+complete machine proposal after original requester departure. No new proposal
+storage table is required for this read. The selected next boundary is explicit
+staff import into a new review revision, with source/proposal/history hashes,
+original authorship and an exact expected parent. It must preserve old approvals.
+
+The current receiving path is `synthesis-review.ts`, `synthesis-review-records.ts`
+and `synthesis-review-server.ts`. `loadSynthesisReview` replays every retained
+create/correct command and currently accepts only the authenticated RPC client.
+The native `retain_engagement_synthesis_review` function rejects other operations.
+Design the import's immutable custody and historical verification together; do
+not merely add a UI operation or copy proposal groups into category creation.
+Check all existing review/approval consumers and use the action registry for any
+agent write, or retain an executable refusal. Coordinate UI ownership before
+connecting the new operation to Analysis. Large-history performance and final-task
+byte limits remain explicit work after this bounded replay checkpoint.
+
+October 2 import continuation: [original thematic import](THEMATIC_IMPORT.md)
+adds the exact-parent retained staff operation and original replay on review reads.
+It preserves the full machine proposal and history text through later corrections.
+Existing approvals remain attached to their old revisions. Finish the receiving
+Analysis workflow with an explicit replacement preview, visible original evidence
+and uncertainty, exact command recovery and identified desktop/390px journeys.
+Coordinate shared UI ownership before editing components. A dedicated import
+working copy is required; the category editor refuses import recovery. Measure
+large-history repeated reads and retained revision size, and preserve full inputs
+when addressing synchronous import and final-task resource limits. No current
+engineering case establishes model quality or closes M9b.

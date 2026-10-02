@@ -247,7 +247,7 @@ export function buildThematicOverlayPaintExpression(metricKey: string | null | u
       ["linear"],
       ["to-number", ["get", "medianIncome"]],
       0,
-      "#64748b",
+      "#7f1d1d",
       45000,
       "#b45309",
       70000,

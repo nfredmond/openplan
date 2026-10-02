@@ -20,6 +20,78 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Internal thematic import now creates an exact-parent staff draft from the original
+selected proposal. It retains machine authorship, citations and uncertainty,
+replays imported history, preserves prior approvals and recovers lost replies.
+Additive migration `20261015000010_engagement_synthesis_thematic_import.sql` extends review custody. The connected Analysis
+import controls and browser acceptance remain unfinished. See the
+[import evidence](docs/reviews/2026-10-01-context-history/THEMATIC_IMPORT.md).
+
+Internal thematic history now reconstructs the complete selected proposal under
+current staff permission after earlier requesters depart or cancel their work.
+Original task, dispatch and capture checks preserve incomplete states and machine
+authorship. Fresh execution still requires its own authority. No new migration is
+required. [History evidence](docs/reviews/2026-10-01-context-history/THEMATIC_HISTORY.md)
+records the boundary; explicit staff import and the connected Analysis workflow
+remain unfinished.
+
+Internal thematic execution now supports `--all-tasks --thematic` for one explicit
+authorization. Its saved schedule includes the final proposal, preserves original
+attempts, stops at unresolved predecessors and recovers observed output without
+new provider calls. Recovery also preserves and checks complete temporary
+schedules left before rename. No additional migration is required. [Scheduling evidence](docs/reviews/2026-10-01-context-history/THEMATIC_SCHEDULER.md)
+records the current boundary; derived proposal history and staff import remain
+unfinished. This supersedes the automatic-scheduling gap in the earlier execution
+checkpoint below.
+
+Internal thematic execution now supports an explicitly authorized frame or final
+proposal task, exact original-response custody and recovery without a second
+provider call. Apply `20261015000009_engagement_synthesis_thematic_execution.sql`
+before using `--task-index INTEGER --thematic` with an authorization. Automatic
+thematic scheduling, derived proposal history and staff import remain unfinished.
+[Execution evidence and limits](docs/reviews/2026-10-01-context-history/THEMATIC_EXECUTION.md)
+record the current boundary. Earlier checkpoint notes below retain their dated
+scope; this execution increment supersedes their unfinished single-task execution
+statements.
+
+Internal thematic staging now retains exact evidence frames with bounded batches,
+recoverable retries and a separate final proposal reference. Preparation replays
+original inputs; cancellation stops fresh writes while preserving exact recovery.
+Apply `20261015000008_engagement_synthesis_thematic_plans.sql` before using these
+internal worker commands. Staging grants no provider execution permission.
+[Evidence and limits](docs/reviews/2026-10-01-context-history/THEMATIC_STAGING.md)
+retain the unfinished execution, proposal-storage and staff-import work.
+
+Independent review corrections tighten Storage object paths, artifact upload
+roles and exact Planner Agent approval fields. Retained invalid native-provider
+results finish without authorizing a replacement call. Agent profile creation
+refuses to overwrite a profile saved after approval preparation.
+
+Apply `20261015000001_measure_period_fund_integrity.sql` and
+`20261015000002_security_artifact_storage_writes.sql` before deploying these
+corrections. Financial children now enforce their period/fund/workspace parent.
+Existing mismatches are preserved and flagged for reconciliation, with no
+automatic reassignment or deletion. See the
+[correction record](docs/reviews/2026-10-01-independent-fixes/FINANCE_AND_READS.md).
+
+Recipient rounding stays nonnegative. OWP histories and generated project
+evidence read through capped responses or refuse an incomplete result. The
+dashboard reads project submittals through their actual project relationship.
+
+Public portal retries request a fresh page and no longer claim an unverified
+submission receipt. Malformed authentication destinations return to the local
+dashboard. Current ACS numeric overlays retain missing-value provenance; zero
+income and missing income use different fills. Legacy saved counts and aggregate
+Census classifications retain their existing interpretation.
+
+The optional ActivitySim HTTP wrapper now requires a token and operator-owned
+bundle/output roots. Request-level execution configuration is refused; follow
+its updated deployment guide. County cancellation terminates its owned POSIX
+process group with bounded waits. A successor observation matcher refuses
+unproven directional comparisons on bidirectional links. Frozen studies and
+published metrics remain unchanged. These corrections do not claim full
+engine recovery or new scientific validation.
+
 Internal synthesis preparation now retains a new staff request and its chosen
 historical context inputs. Exact retries preserve original bytes after
 cancellation, and current staff can inspect earlier work after its author leaves.
@@ -29,6 +101,54 @@ unfinished. Apply `20261015000003_engagement_synthesis_thematic_requests.sql` an
 internal commands. These migrations add private tables and preserve existing
 records. [Verification](docs/reviews/2026-10-01-context-history/THEMATIC_INPUTS.md)
 records the checks and remaining limits.
+
+The internal thematic worker reader now reconstructs a chosen historical input
+under the new requester's current access. It checks the original source,
+selection anchors, provider captures and pinned context hashes. Cancelled or
+departed earlier authors retain their original attribution. Apply
+`20261015000005_engagement_synthesis_thematic_preparation.sql` for its named
+service authorization commands. Durable input seals and thematic execution remain
+unfinished. [Preparation checks](docs/reviews/2026-10-01-context-history/THEMATIC_PREPARATION.md)
+record this boundary.
+
+The internal thematic worker can retain each reconstructed contribution's exact
+original output and input bindings. Recovery reads and exact retries preserve
+custody after cancellation; fresh writes still require current preparation
+authority. Staff history remains available after the earlier author leaves.
+Apply `20261015000006_engagement_synthesis_thematic_inputs.sql` before using these
+commands. This additive private table is not a whole-source seal or execution
+grant. [Custody checks](docs/reviews/2026-10-01-context-history/THEMATIC_CUSTODY.md)
+record the evidence and remaining work.
+
+The internal thematic worker can now seal the complete retained input set. Native
+checks compare every original item and survey-answer identifier, reject missing
+or substituted inputs, and bind the exact proof and output hashes in a fixed
+order. Bounded reads support interrupted preparation; exact seal retries remain
+recoverable after cancellation. Apply
+`20261015000007_engagement_synthesis_thematic_input_seals.sql` before using these
+commands. Execution, proposal storage and staff import remain unfinished.
+[Complete-source custody checks](docs/reviews/2026-10-01-context-history/THEMATIC_SEAL.md)
+record the evidence and limitations.
+
+The internal thematic preparer now reuses verified immutable source and parent
+records within one request. Each contribution still reconstructs its original
+context, rechecks current authority and reaches the native input writer.
+Cancellation and uncertain acknowledgements retain their existing behavior.
+No new migration is required. [Shared preparation checks](docs/reviews/2026-10-01-context-history/THEMATIC_SHARED_PREPARATION.md)
+record the evidence; thematic execution and staff import remain unfinished.
+
+The internal thematic reader now reconstructs every chosen context under its
+complete-source seal, compares exact retained proofs and original outputs, and
+rechecks current access before returning proposal inputs. Original note text and
+uncertainty remain attached to each contribution. No new migration is required.
+[Proposal input checks](docs/reviews/2026-10-01-context-history/THEMATIC_PROPOSAL_INPUTS.md)
+record the evidence and limits. Task execution and staff import remain unfinished.
+
+Internal thematic planning now frames original evidence under a separate frozen
+recipe and replays checked responses before creating an unreviewed proposal.
+Explicit byte ceilings preserve incomplete work without clipping source records
+or uncertainty. No new migration is required. [Continuation checks](docs/reviews/2026-10-01-context-history/THEMATIC_CONTINUATION.md)
+record the evidence; native execution and staff import remain unfinished.
 
 ## 0.66.0 (2026-09-30)
 

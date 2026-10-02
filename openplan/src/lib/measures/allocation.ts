@@ -79,7 +79,7 @@ import { z } from "zod";
  *      category only, leaving its `programmableAmount`.
  *   6. RETURN TO SOURCE distributes a category's programmable amount over the
  *      recipients' stated basis values — ONE basis, or a weighted list of them
- *      whose weights total 100. Its residual goes to the recipient last by id
+ *      whose weights total 100. Its residual starts with the recipient last by id
  *      ascending and is REPORTED.
  *   7. A MINIMUM PER RECIPIENT, if the ordinance states one, then redistributes
  *      within that category: recipients below the floor come up to it and the
@@ -812,7 +812,7 @@ export type MeasureRecipientShare = {
   /** What the ordinance's formula alone gave, before any floor moved money. */
   formulaAmount: number;
   amount: number;
-  /** True for the one recipient that absorbed the rounding residual. */
+  /** True for each recipient whose share absorbed part of the rounding residual. */
   carriesResidual: boolean;
   floorEffect: MeasureShareFloorEffect;
 };
@@ -1390,13 +1390,20 @@ export function allocateMeasureReceipt(input: MeasureAllocationInput): MeasureAl
           shareCents.set(recipientId, share);
           naiveShareTotal += share;
         }
-        // The pool's residual goes to the recipient LAST BY ID ASCENDING —
-        // deterministic, so the same period allocates the same cent to the same
-        // jurisdiction every time it is recomputed.
+        // Place rounding in descending ID order, without taking more than a
+        // recipient has. A zero-weight final recipient cannot owe the pool.
         const poolResidual = programmableCents - naiveShareTotal;
-        const residualRecipientId = activeRecipients.at(-1) ?? null;
-        if (residualRecipientId && poolResidual !== BIG_ZERO) {
-          shareCents.set(residualRecipientId, (shareCents.get(residualRecipientId) ?? BIG_ZERO) + poolResidual);
+        const residualRecipients = new Set<string>();
+        let remainingResidual = poolResidual;
+        for (const recipientId of [...activeRecipients].reverse()) {
+          if (remainingResidual === BIG_ZERO) break;
+          const current = shareCents.get(recipientId) ?? BIG_ZERO;
+          const adjustment = remainingResidual < -current ? -current : remainingResidual;
+          if (adjustment !== BIG_ZERO) {
+            shareCents.set(recipientId, current + adjustment);
+            residualRecipients.add(recipientId);
+            remainingResidual -= adjustment;
+          }
         }
 
         // What the formula alone gave, kept before the floor moves anything.
@@ -1538,7 +1545,7 @@ export function allocateMeasureReceipt(input: MeasureAllocationInput): MeasureAl
             })),
             formulaAmount: centsToAmount(formulaCents.get(recipientId) ?? BIG_ZERO),
             amount: centsToAmount(shareCents.get(recipientId) ?? BIG_ZERO),
-            carriesResidual: poolResidual !== BIG_ZERO && recipientId === residualRecipientId,
+            carriesResidual: residualRecipients.has(recipientId),
             floorEffect: floorEffects.get(recipientId) ?? "none",
           })),
         };

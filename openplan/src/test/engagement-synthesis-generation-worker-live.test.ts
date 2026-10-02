@@ -1,12 +1,16 @@
 // @vitest-environment node
 import { execFileSync, spawn } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rename, rm } from "node:fs/promises";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { verifyThematicImportNativeGuards } from "./helpers/synthesis-thematic-import-native";
+import { loadSynthesisReview, retainSynthesisReview } from "@/lib/engagement/synthesis-review-server";
+import { loadSynthesisApprovalState, retainSynthesisApproval } from "@/lib/engagement/synthesis-approval-server";
+import { loadSynthesisThematicHistory } from "@/lib/engagement/synthesis-thematic-history-server";
 import { prepareProviderApiRevision } from "@/lib/integrations/provider-api-credentials";
 import { createSynthesisGenerationPlan, synthesisGenerationPlanBatch, verifySynthesisGenerationPlanState } from "@/lib/engagement/synthesis-generation-plan";
 import { LIVE_RLS, getLocalSupabaseEnv, liveClient, type LocalSupabaseEnv } from "./local-supabase-env";
@@ -16,9 +20,15 @@ import { readSynthesisGenerationSelectedResults, loadSynthesisGenerationHistory 
 
 import { createSynthesisContextRequest, readSynthesisContextRequest } from "@/lib/engagement/synthesis-context-requests-server";
 import { retainSynthesisContextPlan } from "@/lib/engagement/synthesis-context-plan-server";
+import { createSynthesisThematicContinuation } from "@/lib/engagement/synthesis-thematic-continuation";
 import { createSynthesisContextContinuation } from "@/lib/engagement/synthesis-context-continuation";
 import { loadSynthesisContextHistory } from "@/lib/engagement/synthesis-context-history-server";
 import { createSynthesisThematicRequest, readSynthesisThematicRequest } from "@/lib/engagement/synthesis-thematic-requests-server";
+import { loadSynthesisThematicPreparation } from "@/lib/engagement/synthesis-thematic-preparation-server";
+import { createSynthesisThematicInputPreparer, readSynthesisThematicInput, readSynthesisThematicInputHistory } from "@/lib/engagement/synthesis-thematic-inputs-server";
+import { retainSynthesisThematicInputSeal } from "@/lib/engagement/synthesis-thematic-input-seal-server";
+import { loadSynthesisThematicProposalInputs } from "@/lib/engagement/synthesis-thematic-proposal-inputs-server";
+import { loadSynthesisThematicPlan, retainSynthesisThematicPlan, readSynthesisThematicPlanState } from "@/lib/engagement/synthesis-thematic-plan-server";
 import { readSynthesisThematicChoice, retainSynthesisThematicChoice } from "@/lib/engagement/synthesis-thematic-choices-server";
 import { verifySynthesisGenerationApiResult } from "@/lib/engagement/synthesis-generation-api-result";
 import { createSynthesisGenerationInput } from "@/lib/engagement/synthesis-generation-input";
@@ -76,7 +86,12 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       if (options.validOutputs) {
         const task = JSON.parse(body.messages.find((message: { role: string }) => message.role === "user").content);
         const previous = task.input.previous ? JSON.parse(task.input.previous.outputText) : { notes: [], uncertainties: [] };
-        const content = task.input.purpose === "private_synthesis_context_continuation"
+        const content = task.input.purpose === "private_synthesis_thematic_continuation"
+          ? JSON.stringify(task.input.stage === "frame" ? { status:"complete",coveredPartIds:task.input.frame.parts.map((part:{id:string})=>part.id),notes:previous.notes,
+              uncertainties:previous.uncertainties.length?previous.uncertainties:["SYNTHETIC thematic coverage; no semantic inference"] }
+            : { status:"complete",title:"SYNTHETIC unassigned contributions",notes:"SYNTHETIC structural proposal",groups:[],
+              unassigned:task.input.contexts.map((context:{sourceId:string})=>({sourceId:context.sourceId,reason:"SYNTHETIC no retained contextual note",citations:[]})),uncertainties:previous.uncertainties })
+          : task.input.purpose === "private_synthesis_context_continuation"
           ? JSON.stringify({ status: "complete", coveredPartIds: task.input.frame.parts.map((part: { id: string }) => part.id),
             notes: previous.notes, uncertainties: [...previous.uncertainties, "SYNTHETIC context coverage only\u0000\ud800 é 😀"] })
           : JSON.stringify({ status: "complete", coveredPartIds: task.input.parts.map((part: { id: string }) => part.id),
@@ -204,7 +219,10 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       maxOutputTokens: 8192, responseByteLimit: 65536, expiresAt: new Date(Date.now() + 3600000).toISOString(),
       chargesAcknowledged: true, retryTaskIndex: null, retryOfAttemptId: null };
     checked(await staff.client.rpc("authorize_engagement_synthesis_context", { p_request: args.requestId, p_authorization: authorizationId, p_intent_text: JSON.stringify(grant) }));
-    let dropped = false, deliveries = 0;
+    let dropped = false, deliveries = 0, thematicFrameDropped = false, thematicOutputDropped = false;
+    let thematicFinalIndex = -1, thematicFinalAttempt: string | null = null;
+    let revokeThematicReviewer: (() => void) | null = null;
+    let thematicImportReplyDropped = false;
     const proxyErrors: string[] = [];
     const target = await listen(createServer(async (req, res) => {
       try {
@@ -214,11 +232,29 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
         const body = Buffer.concat(parts), response = await fetch(`${environment.API_URL}${req.url}`, {
           method: req.method, headers, body: body.length ? body : undefined, redirect: "manual" });
         const bytes = Buffer.from(await response.arrayBuffer());
+        const requested = new URL(req.url ?? "/", environment.API_URL);
+        if (response.ok && revokeThematicReviewer && requested.pathname.endsWith("/engagement_synthesis_generation_outputs")
+          && requested.searchParams.get("attempt_id") === `eq.${thematicFinalAttempt}`) {
+          const revoke = revokeThematicReviewer; revokeThematicReviewer = null; revoke();
+        }
+        if (response.ok && !thematicImportReplyDropped && req.url?.endsWith("/retain_engagement_synthesis_review")
+          && JSON.parse(body.toString()).p_intent.operation === "import_thematic") {
+          thematicImportReplyDropped = true; res.destroy(); return;
+        }
+        if (response.ok && !thematicFrameDropped && req.url?.endsWith("/stage_engagement_synthesis_thematic_frames")) {
+          thematicFrameDropped = true; res.destroy(); return;
+        }
         if (loss === "dispatch" && response.ok && !dropped && req.url?.endsWith("/dispatch_engagement_synthesis_context_attempt")) {
           dropped = true; res.destroy(); return;
         }
+        if (response.ok && req.url?.endsWith("/claim_engagement_synthesis_thematic_attempt") && JSON.parse(body.toString()).p_task_index === thematicFinalIndex) {
+          thematicFinalAttempt = JSON.parse(bytes.toString()).attemptId;
+        }
         if (req.url?.endsWith("/retain_engagement_synthesis_generation_output")) {
           deliveries++;
+          if (response.ok && !thematicOutputDropped && thematicFinalAttempt !== null && JSON.parse(body.toString()).p_attempt === thematicFinalAttempt) {
+            thematicOutputDropped=true;res.destroy();return;
+          }
           if (loss === "output" && response.ok && !dropped) { dropped = true; res.destroy(); return; }
         }
         res.statusCode = response.status;
@@ -311,7 +347,8 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(JSON.parse(retained.request.cancellation!.receiptText).reason).toBe(cancellationReason);
     expect(retained.sha256).toBe(hash(retained.canonical));
     const thematicArgs = { ...f.contextArgs, requestId: randomUUID(), actorId: reader.userId,
-      throughSequence: retained.request.binding.selectionSequence, frameByteLimit: 4096 };
+      throughSequence: retained.request.binding.selectionSequence, frameByteLimit: 4096,
+      intentText: JSON.stringify({...JSON.parse(f.contextArgs.intentText),taskByteLimit:65536}) };
     await createSynthesisThematicRequest(reader.client, service, thematicArgs, signal);
     const choiceArgs = { campaignId: scope.campaignId, workspaceId: scope.workspaceId, requestId: thematicArgs.requestId,
       actorId: reader.userId, contextRequestId: scope.requestId, throughSequence: retained.manifest.throughSequence!,
@@ -321,15 +358,196 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(choice.choice.finalCaptureSha256).toBe(priorCapture);
     expect(choice.choice.finalResultSha256).toBe(retained.entries.at(-1)!.resultSha256);
     expect(choice.record).toMatchObject({ createdBy: reader.userId, replayed: false });
+    const preparationScope = { campaignId: scope.campaignId, workspaceId: scope.workspaceId,
+      requestId: thematicArgs.requestId, targetRecordId: choiceArgs.targetRecordId };
+    const prepared = await loadSynthesisThematicPreparation(service, preparationScope, signal);
+    expect(prepared.history.canonical).toBe(retained.canonical);
+    expect(prepared.history.finalOutputText).toBe(retained.finalOutputText);
+    expect(prepared.delegation.thematic.state.request.actorId).toBe(reader.userId);
+    expect(prepared.delegation.context.state.request.actorId).not.toBe(reader.userId);
+    const { targetRecordId: preparationTarget, ...preparationRequest } = preparationScope;
+    const prepareInput = createSynthesisThematicInputPreparer(service, preparationRequest);
+    await expect(loadSynthesisThematicProposalInputs(service, preparationRequest, signal)).rejects.toThrow("requires sealed complete-source");
+    const savedInput = await prepareInput(preparationTarget, signal);
+    expect(savedInput.record.outputText).toBe(retained.finalOutputText);
+    expect(savedInput.record.replayed).toBe(false);
+    expect(savedInput.proof.historyManifestSha256).toBe(retained.sha256);
+    expect(savedInput.proof.finalCaptureSha256).toBe(priorCapture);
+    expect(savedInput.proof.finalResultSha256).toBe(retained.entries.at(-1)!.resultSha256);
+    expect(savedInput.proof.actorId).toBe(reader.userId);
+    const warmInput = await prepareInput(preparationTarget, signal);
+    expect(warmInput.record).toEqual({ ...savedInput.record, replayed: true });
+    const inputSeal = await retainSynthesisThematicInputSeal(service, preparationRequest, signal);
+    const proposalInputs = await loadSynthesisThematicProposalInputs(service, preparationRequest, signal);
+    expect(proposalInputs.input.manifestSha256).toBe(inputSeal.plan.manifestSha256);
+    expect(proposalInputs.input.contexts.map(context => context.sourceId)).toEqual([preparationTarget]);
+    expect(proposalInputs.input.contexts[0]).toMatchObject({ historyManifestSha256: retained.sha256,
+      finalCaptureSha256: priorCapture, finalResultSha256: retained.entries.at(-1)!.resultSha256,
+      notes: [], uncertainties: JSON.parse(retained.finalOutputText!).uncertainties });
+    expect(proposalInputs.originals).toEqual([{ targetRecordId: preparationTarget,
+      proofText: savedInput.record.proofText, outputText: retained.finalOutputText }]);
+    const thematicPlan = await loadSynthesisThematicPlan(service, preparationRequest, signal);
+    expect(thematicPlan.header).toMatchObject({ inputManifestSha256: inputSeal.plan.manifestSha256,
+      inputSealSha256: inputSeal.seal.receiptSha256, requestId: preparationRequest.requestId });
+    expect(thematicPlan.content.entities.filter(row => row.kind === "context_output").map(row => row.canonical)).toEqual([retained.finalOutputText]);
+    const rawContextParts = thematicPlan.content.frames.flatMap(frame => (JSON.parse(frame.canonical) as { parts: Array<{ entityKind: string; pointer: string; text?: string }> }).parts)
+      .filter(part => part.entityKind === "context_output" && part.pointer === "/originalOutputText");
+    expect(rawContextParts.map(part => part.text ?? "").join("")).toBe(retained.finalOutputText);
+    expect(thematicPlan.content.manifest.contributionIds).toEqual([preparationTarget]);
+    expect(thematicPlan.content.frames.every(frame => frame.utf8Bytes <= thematicPlan.content.manifest.frameByteLimit)).toBe(true);
+    const thematicProxy = liveClient(target, environment.SERVICE_ROLE_KEY, "synthesis-thematic-staging");
+    await expect(retainSynthesisThematicPlan(thematicProxy, preparationRequest, signal)).rejects.toThrow("acknowledgement unavailable");
+    expect(thematicFrameDropped).toBe(true);
+    const interruptedThematic = await readSynthesisThematicPlanState(service, preparationRequest, signal);
+    expect(interruptedThematic.nextIndex).toBe(thematicPlan.content.frames.length);
+    expect(interruptedThematic.seal).toBeNull();
+    const resumedThematic = await retainSynthesisThematicPlan(service, preparationRequest, signal);
+    expect(resumedThematic.state.nextIndex).toBe(resumedThematic.plan.header.frameCount);
+    expect(resumedThematic.state.seal).not.toBeNull();
+    const retainedFrames = checked(await service.from("engagement_synthesis_thematic_frames").select("frame_index,frame_text,frame_sha256,frame_bytes")
+      .eq("request_id", preparationRequest.requestId).order("frame_index"));
+    expect(retainedFrames).toEqual(resumedThematic.plan.entries.map(frame => ({ frame_index: frame.index,frame_text: frame.canonical,frame_sha256: frame.sha256,frame_bytes: frame.utf8Bytes })));
+    const proposalSlot = checked(await service.from("engagement_synthesis_generation_plan_tasks").select("task_index,task_text,task_sha256")
+      .eq("request_id", preparationRequest.requestId).eq("task_index", resumedThematic.plan.header.frameCount).single());
+    const thematicReceipt = JSON.parse(resumedThematic.state.seal!.receiptText);
+    expect(proposalSlot).toEqual({ task_index: resumedThematic.plan.header.frameCount,task_text: thematicReceipt.proposalReferenceText,task_sha256: thematicReceipt.proposalReferenceSha256 });
+    expect(checked(await service.rpc("prepare_engagement_synthesis_thematic_plan", { p_request: preparationRequest.requestId,
+      p_header_text: resumedThematic.plan.headerText }))).toEqual(resumedThematic.state);
+    expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length);
+    const thematicAuthorizationId=randomUUID(),thematicGrant={...grant,headerSha256:resumedThematic.plan.headerSha256,maxAttempts:resumedThematic.plan.header.taskCount};
+    checked(await reader.client.rpc("authorize_engagement_synthesis_thematic",{p_request:preparationRequest.requestId,p_authorization:thematicAuthorizationId,p_intent_text:JSON.stringify(thematicGrant)}));
+    const thematicDirectory=join(root,hash(target),thematicAuthorizationId);
+    thematicFinalIndex=resumedThematic.plan.header.frameCount;
+    async function runThematic(index:number|"all"){
+      const child=spawn(process.execPath,["--import","tsx","scripts/workers/synthesis-generation.ts","--authorization",thematicAuthorizationId,...(index==="all"?["--all-tasks"]:["--task-index",String(index)]),"--thematic"],{
+        cwd:process.cwd(),stdio:["ignore","pipe","pipe"],env:{...process.env,NEXT_PUBLIC_SUPABASE_URL:target,SUPABASE_SERVICE_ROLE_KEY:environment.SERVICE_ROLE_KEY,
+          OPENPLAN_SYNTHESIS_GENERATION_WORK_DIR:root,OPENPLAN_INTEGRATION_KEY_SECRET:"SYNTHETIC-SYNTHESIS-WORKER-SECRET",OPENPLAN_AI_LOCAL_ENDPOINTS:JSON.stringify([f.endpoint]),NODE_DEBUG:""}});
+      let stderr="",stdout="";child.stderr.on("data",chunk=>{stderr+=String(chunk);});child.stdout.on("data",chunk=>{stdout+=String(chunk);});
+      const ended=new Promise<{code:number|null;stderr:string;stdout:string}>((resolve,reject)=>{child.once("error",reject);child.once("close",code=>resolve({code,stderr,stdout}));});
+      cleanup.push(async()=>{if(child.exitCode===null&&child.signalCode===null)child.kill("SIGKILL");await ended;});return ended;
+    }
+    const firstThematic=await runThematic(0);expect(firstThematic.code,firstThematic.stderr).toBe(0);
+    const thematicSchedule=await runThematic("all");
+    const savedThematicSchedule=JSON.parse(await readFile(join(thematicDirectory,"schedule/pending.json"),"utf8"));
+    expect(savedThematicSchedule.thematic).toBe(true);expect(savedThematicSchedule.context).toBeUndefined();
+    expect(savedThematicSchedule.taskIndices).toEqual(Array.from({length:resumedThematic.plan.header.taskCount},(_,index)=>index));
+    expect(thematicSchedule.code,thematicSchedule.stderr).toBe(1);
+    expect(savedThematicSchedule.initialAttempts).toHaveLength(1);
+    const thematicReplay=createSynthesisThematicContinuation(proposalInputs);
+    let thematicPriorAttempt:string|null=null,thematicPriorCapture:string|null=null;
+    for(let index=0;index<resumedThematic.plan.header.taskCount;index++){
+      const next=thematicReplay.next();if(next.status!=="ready")throw new Error("Native thematic task unavailable");
+      const journal=JSON.parse(await readFile(join(thematicDirectory,String(index),"pending.json"),"utf8"));
+      expect(journal.thematic).toBe(true);expect(journal.context).toBeUndefined();expect(journal.phase).toBe(index===thematicFinalIndex?"observed":"delivered");
+      const originalTask=checked(await service.from("engagement_synthesis_thematic_attempt_inputs").select("task_text,task_sha256,predecessor_attempt_id,predecessor_capture_sha256,previous_result_sha256").eq("attempt_id",journal.attemptId).single());
+      expect(originalTask).toEqual({task_text:next.task.canonical,task_sha256:next.task.sha256,predecessor_attempt_id:thematicPriorAttempt,predecessor_capture_sha256:thematicPriorCapture,previous_result_sha256:next.previousResultSha256});
+      const originalOutput=checked(await service.from("engagement_synthesis_generation_outputs").select("capture_text,capture_sha256").eq("attempt_id",journal.attemptId).single());
+      if(!originalOutput)throw new Error("Native thematic original output is absent");
+      const captured=verifySynthesisGenerationApiResult(journal.job.binding,{canonical:originalOutput.capture_text,sha256:originalOutput.capture_sha256},{dispatchSha256:journal.dispatch.receiptSha256,responseByteLimit:thematicGrant.responseByteLimit}).capture;
+      thematicReplay.accept({taskSha256:next.task.sha256,outputText:captured.outputText,finishReason:captured.finishReason});
+      thematicPriorAttempt=journal.attemptId;thematicPriorCapture=originalOutput.capture_sha256;
+    }
+    expect(thematicReplay.next()).toMatchObject({status:"proposal_complete",interpretation:"machine_unreviewed"});
+    expect(thematicOutputDropped).toBe(true);
+    const completedCallCount=f.plan.entries.length+staged.plan.entries.length+resumedThematic.plan.header.taskCount;
+    expect(f.calls).toHaveLength(completedCallCount);
     checked(await reader.client.rpc("cancel_engagement_synthesis_generation_request", { p_campaign: scope.campaignId,
       p_request: thematicArgs.requestId, p_cancellation: randomUUID(), p_reason: "SYNTHETIC thematic input cancellation" }));
+    expect(await readSynthesisThematicPlanState(service, preparationRequest, signal)).toEqual({ ...resumedThematic.state, cancelled: true });
+    await expect(retainSynthesisThematicPlan(service, preparationRequest, signal)).rejects.toThrow("preparation was cancelled");
+    await expect(loadSynthesisThematicPreparation(service, preparationScope, signal)).rejects.toThrow("preparation access unavailable");
+    await expect(prepareInput(preparationTarget, signal)).rejects.toThrow("preparation access unavailable");
+    await expect(loadSynthesisThematicProposalInputs(service, preparationRequest, signal)).rejects.toThrow("preparation was cancelled");
+    const { replayed: _inputReplayed, ...originalInput } = savedInput.record;
+    expect((await readSynthesisThematicInput(service, preparationScope, signal))?.record).toEqual(originalInput);
+    expect((await readSynthesisThematicInputHistory(reader.client, preparationScope, signal))?.record).toEqual(originalInput);
+    const retryInput = checked(await service.rpc("retain_engagement_synthesis_thematic_input", { p_request: preparationScope.requestId,
+      p_target: preparationScope.targetRecordId, p_proof_text: savedInput.record.proofText, p_output_text: savedInput.record.outputText }));
+    expect(retryInput).toEqual({ ...savedInput.record, replayed: true });
     const recoveredChoice = await retainSynthesisThematicChoice(reader.client, service, choiceArgs, signal);
     expect(recoveredChoice.record.replayed).toBe(true); expect(recoveredChoice.choice).toEqual(choice.choice);
-    expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length);
+    expect(f.calls).toHaveLength(completedCallCount);
     reader.revoke();
+    const temporaryThematicSchedule=join(thematicDirectory,"schedule",`pending-${randomUUID()}.tmp`);
+    await rename(join(thematicDirectory,"schedule/pending.json"),temporaryThematicSchedule);
+    const recoveredThematic=await runThematic("all");
+    expect(recoveredThematic.code,recoveredThematic.stderr).toBe(0);
+    expect(JSON.parse(await readFile(temporaryThematicSchedule,"utf8"))).toEqual(savedThematicSchedule);
+    expect(JSON.parse(await readFile(join(thematicDirectory,"schedule/pending.json"),"utf8"))).toEqual(savedThematicSchedule);
+    const thematicFinalJournal=JSON.parse(await readFile(join(thematicDirectory,String(thematicFinalIndex),"pending.json"),"utf8"));
+    expect(thematicFinalJournal.phase).toBe("delivered");expect(thematicFinalJournal.captureSha256).toBe(thematicPriorCapture);
+    expect(f.calls).toHaveLength(completedCallCount);expect(proxyErrors).toEqual([]);
+    const reviewer=await f.staffHistoryClient();
+    const thematicHistory=await loadSynthesisThematicHistory(reviewer.client,service,preparationRequest,signal);
+    expect(thematicHistory.manifest.status).toBe("proposal_complete");
+    expect(thematicHistory.manifest.verifiedTaskCount).toBe(resumedThematic.plan.header.taskCount);
+    expect(thematicHistory.entries.at(-1)?.captureSha256).toBe(thematicPriorCapture);
+    const originalProposal=thematicReplay.next();if(originalProposal.status!=="proposal_complete")throw new Error("SYNTHETIC expected proposal absent");
+    expect(thematicHistory.proposal).toEqual(originalProposal.proposal);
+    expect(thematicHistory.interpretation).toBe("machine_unreviewed");
+    expect(thematicHistory.request.state.cancellation).not.toBeNull();
+    expect(f.calls).toHaveLength(completedCallCount);
+    const reviewId = randomUUID(), reviewScope = { campaignId: scope.campaignId, workspaceId: scope.workspaceId, reviewId };
+    const firstReview = await retainSynthesisReview(reviewer.client, service, scope.campaignId, {
+      operation: "create", requestId: reviewId, actorId: reviewer.userId, workspaceId: scope.workspaceId,
+      sourceId: f.saved.requestId, sourceSha256: f.saved.snapshotSha256,
+    });
+    const beforeImport = (await loadSynthesisApprovalState(reviewer.client, reviewScope, service))!;
+    const originalApproval = await retainSynthesisApproval(reviewer.client, service, { ...reviewScope, actorId: reviewer.userId }, {
+      ...beforeImport.current, requestId: randomUUID(), actorId: reviewer.userId, operation: "approve", reason: "SYNTHETIC prior draft approval",
+      predecessorId: null, predecessorSha256: null,
+    });
+    const importIntent = { operation: "import_thematic" as const, requestId: randomUUID(), actorId: reviewer.userId,
+      workspaceId: scope.workspaceId, reviewId, expectedRevisionId: reviewId, expectedRevisionSha256: firstReview.revisionSha256,
+      reason: "SYNTHETIC inspect the complete machine proposal", proposal: { requestId: preparationRequest.requestId,
+        selectionSequence: thematicHistory.manifest.throughSequence!, historyManifestSha256: thematicHistory.sha256,
+        proposalSha256: thematicHistory.proposal!.sha256, finalCaptureSha256: thematicPriorCapture! } };
+    await expect(retainSynthesisReview(reviewer.client, thematicProxy, scope.campaignId, importIntent)).rejects.toMatchObject({ kind: "unavailable" });
+    expect(thematicImportReplyDropped).toBe(true);
+    const importedReceipt = await retainSynthesisReview(reviewer.client, service, scope.campaignId, importIntent);
+    expect(importedReceipt).toMatchObject({ revisionNo: 2, replayed: true });
+    const importedReview = (await loadSynthesisReview(reviewer.client, reviewScope, undefined, service))!;
+    expect(importedReview.content.machineOrigin).toEqual({ interpretation: "machine_unreviewed", reference: importIntent.proposal,
+      proposalText: thematicHistory.proposal!.canonical, historyText: thematicHistory.canonical });
+    const afterImport = (await loadSynthesisApprovalState(reviewer.client, reviewScope, service))!;
+    expect(afterImport.history.head!.eventSha256).toBe(originalApproval.event.eventSha256);
+    expect(afterImport.history.head!.intent.revisionId).toBe(reviewId);
+    expect(afterImport.current.revisionId).toBe(importIntent.requestId);
+    const stale = await service.rpc("retain_engagement_synthesis_review", { p_campaign: scope.campaignId, p_actor: reviewer.userId,
+      p_workspace: scope.workspaceId, p_source: f.saved.requestId, p_source_sha256: f.saved.snapshotSha256, p_preparation_text: null,
+      p_intent: { ...importIntent, requestId: randomUUID() }, p_content_text: JSON.stringify({ ...importedReview.content, title: "SYNTHETIC stale import" }) });
+    expect(stale.error?.code).toBe("PT409");
+    const correction = { operation: "correct" as const, requestId: randomUUID(), actorId: reviewer.userId, workspaceId: scope.workspaceId, reviewId,
+      expectedRevisionId: importIntent.requestId, expectedRevisionSha256: importedReceipt.revisionSha256, reason: "SYNTHETIC wording edit",
+      change: { kind: "notes" as const, title: "SYNTHETIC staff wording", notes: "Preserve every original uncertainty." } };
+    const stripped = { ...importedReview.content }; delete stripped.machineOrigin;
+    const changedOrigin = await service.rpc("retain_engagement_synthesis_review", { p_campaign: scope.campaignId, p_actor: reviewer.userId,
+      p_workspace: scope.workspaceId, p_source: f.saved.requestId, p_source_sha256: f.saved.snapshotSha256, p_preparation_text: null,
+      p_intent: correction, p_content_text: JSON.stringify(stripped) });
+    expect(changedOrigin.error?.code).toBe("22023");
+    expect((await retainSynthesisReview(reviewer.client, service, scope.campaignId, correction)).revisionNo).toBe(3);
+    expect((await loadSynthesisReview(reviewer.client, reviewScope, undefined, service))!.content.machineOrigin).toEqual(importedReview.content.machineOrigin);
+    expect(checked(await service.from("engagement_synthesis_review_revisions").select("id").eq("review_id", reviewId))).toHaveLength(3);
+    expect(f.calls).toHaveLength(completedCallCount);
+    expect(verifyThematicImportNativeGuards(container, importIntent.requestId)).toBe(15);
+    let reviewerRevokedDuringRead=false;
+    revokeThematicReviewer=()=>{reviewer.revoke();reviewerRevokedDuringRead=true;};
+    const afterRevocation=await loadSynthesisThematicHistory(reviewer.client,thematicProxy,preparationRequest,signal).then(()=>null,(error:unknown)=>error);
+    expect(reviewerRevokedDuringRead).toBe(true);
+    expect(checked(await service.from("workspace_members").select("role").eq("workspace_id",scope.workspaceId).eq("user_id",reviewer.userId).single())).toEqual({role:"viewer"});
+    expect(afterRevocation).toBeInstanceOf(Error);
+    expect((afterRevocation as Error).message).toContain("Thematic request unavailable");
+    expect(f.calls).toHaveLength(completedCallCount);expect(proxyErrors).toEqual([]);
+    await expect(readSynthesisThematicPlanState(service, preparationRequest, signal)).rejects.toThrow("custody unavailable");
+    await expect(prepareInput(preparationTarget, signal)).rejects.toThrow("preparation access unavailable");
+    await expect(loadSynthesisThematicProposalInputs(service, preparationRequest, signal)).rejects.toThrow("inventory unavailable");
+    await expect(readSynthesisThematicInput(service, preparationScope, signal)).rejects.toThrow("custody unavailable");
+    await expect(readSynthesisThematicInputHistory(reader.client, preparationScope, signal)).rejects.toThrow("input unavailable");
     await expect(loadSynthesisContextHistory(reader.client, service, scope, signal)).rejects.toThrow("Context request unavailable");
     await expect(readSynthesisThematicChoice(reader.client, { ...scope, requestId: thematicArgs.requestId }, choiceArgs.targetRecordId, signal)).rejects.toThrow("Thematic request unavailable");
-  }, 300000);
+  // The full context-to-thematic replay reached 299 seconds alongside full QA.
+  // Allow shared-host overhead without changing any worker or provider deadline.
+  }, 600000);
 
   it("retains a fresh thematic request through authenticated HTTP after original requester departure", async () => {
     const f = await fixture({ allTasks: true, validOutputs: true }), staff = await f.staffHistoryClient();

@@ -1,0 +1,28 @@
+name: Worker security and cancellation
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  focused-workers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install flask requests python-dotenv shapely
+      - name: HTTP, runtime, process-tree and directional regressions
+        run: |
+          python -B workers/activitysim_worker/test_http_security.py
+          python -B workers/activitysim_worker/tests/test_runtime.py
+          python -B workers/county_onramp_worker/tests/test_main.py
+          python -B workers/county_onramp_worker/tests/test_process_cancellation.py
+          python -B scripts/modeling/tests/test_validation_instrument_v2.py
+          python -B scripts/modeling/tests/test_directional_refusal.py
+      - name: Harmless controls and targeted fault checks
+        run: python -B workers/science_regression_mutations.py

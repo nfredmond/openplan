@@ -48,15 +48,34 @@ export type ArtifactReadScope = {
   localRoot?: string;
 };
 
-/** True when the parsed ref stays inside the scope's bucket + path prefix. */
+/**
+ * Storage references carry raw object names, not URL-encoded paths. Refuse
+ * syntax the SDK or URL parser could reinterpret before comparing ownership.
+ * Ordinary spaces and Unicode names remain valid within a path segment.
+ */
+function canonicalStorageObjectPath(objectPath: string): boolean {
+  if (/[\\%?#]/.test(objectPath)) return false;
+  if (Array.from(objectPath).some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127)) {
+    return false;
+  }
+  return objectPath.split("/").every(
+    (segment) => segment.length > 0 && segment !== "." && segment !== ".." && segment.trim() === segment
+  );
+}
+
+/** True when a canonical raw object name stays inside the authorized prefix. */
 export function storageRefAllowed(
   ref: { bucket: string; objectPath: string },
   scope: Pick<ArtifactReadScope, "bucket" | "objectPathPrefix">
 ): boolean {
   return (
     ref.bucket === scope.bucket &&
+    /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(ref.bucket) &&
+    scope.objectPathPrefix.endsWith("/") &&
+    canonicalStorageObjectPath(scope.objectPathPrefix.slice(0, -1)) &&
+    canonicalStorageObjectPath(ref.objectPath) &&
     ref.objectPath.startsWith(scope.objectPathPrefix) &&
-    !ref.objectPath.includes("..")
+    ref.objectPath.length > scope.objectPathPrefix.length
   );
 }
 

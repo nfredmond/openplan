@@ -9,8 +9,8 @@ import { loadSynthesisContextHistoryInputs } from "@/lib/engagement/synthesis-co
  * storage verification use their real implementations. Native permissions need
  * separate database/HTTP tests; this fixture cannot establish those permissions.
  */
-export function synthesisContextHistoryFixture(priorCount = 2) {
-  const f = synthesisContextJobFixture(priorCount), scope = f.f.scope;
+export function synthesisContextHistoryFixture(priorCount = 2, retainedJob?: ReturnType<typeof synthesisContextJobFixture>) {
+  const f = retainedJob ?? synthesisContextJobFixture(priorCount), scope = f.f.scope;
   const request: { [K in keyof typeof f.f.request]: K extends "cancellation" ? unknown : typeof f.f.request[K] } = structuredClone(f.f.request);
   const planRow = { request_id: scope.requestId, header_text: f.plan.headerText, header_sha256: f.plan.headerSha256 };
   const sealRow = { request_id: scope.requestId, receipt_text: f.state.seal!.receiptText, receipt_sha256: f.state.seal!.receiptSha256 };

@@ -1,7 +1,9 @@
 import { fetchJsonWithRetry } from "./http";
 import { evaluateProxyDisadvantage } from "./equity";
+import type { CensusTractOverlayAvailability } from "./census";
 
 export type CensusTractOverlayMetrics = {
+  overlayAvailability?: CensusTractOverlayAvailability;
   geoid: string;
   population: number;
   medianIncome: number | null;
@@ -103,10 +105,12 @@ export async function fetchTractOverlayFeatures(
         name: String(feature.properties?.NAME ?? feature.properties?.BASENAME ?? geoid),
         population: tract.population,
         medianIncome: tract.medianIncome,
-        pctMinority: tract.pctMinority,
-        pctBelowPoverty: tract.pctBelowPoverty,
-        zeroVehiclePct,
-        transitCommutePct,
+        // Current ACS reads retain suppression and denominator availability.
+        // Older inputs without that provenance retain their recorded values.
+        pctMinority: tract.overlayAvailability?.pctMinority === false ? null : tract.pctMinority,
+        pctBelowPoverty: tract.overlayAvailability?.pctBelowPoverty === false ? null : tract.pctBelowPoverty,
+        zeroVehiclePct: tract.overlayAvailability?.zeroVehiclePct === false ? null : zeroVehiclePct,
+        transitCommutePct: tract.overlayAvailability?.transitCommutePct === false ? null : transitCommutePct,
         isDisadvantaged: isDisadvantaged ? 1 : 0,
       },
     });

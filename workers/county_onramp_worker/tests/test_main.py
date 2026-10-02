@@ -254,7 +254,9 @@ class CountyOnrampWorkerTests(unittest.TestCase):
 
         with patch.object(county_worker, "_build_bootstrap_command", side_effect=build), patch.object(
             county_worker, "_post_callback", side_effect=lambda job, payload: callbacks.append((job["jobId"], payload["status"]))
-        ), patch.object(county_worker.subprocess, "Popen", FakeProcess):
+        ), patch.object(county_worker.subprocess, "Popen", FakeProcess), patch.object(
+            county_worker, "_stop_owned_process_group", side_effect=lambda process: (process.terminate(), process.communicate())[1]
+        ):
             with ThreadPoolExecutor(max_workers=1) as single_worker:
                 first_future = single_worker.submit(county_worker._run_job, first)
                 second_future = single_worker.submit(county_worker._run_job, second)

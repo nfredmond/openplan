@@ -28,7 +28,7 @@ OBSERVATION_SCHEMA = "openplan.observed-traffic-observation.v2"
 PACKAGE_SCHEMA = "openplan.validation-observation-package.v2"
 MATCH_AUDIT_SCHEMA = "openplan.pre-volume-observation-match-audit.v2"
 INPUT_BUNDLE_SCHEMA = "openplan.validation-input-bundle.v2"
-MATCHER_VERSION = "openplan.pre-volume-observation-matcher.v2"
+MATCHER_VERSION = "openplan.pre-volume-observation-matcher.v2.1-directional-refusal"
 UNKNOWN = "unknown"
 ALLOWED_SOURCE_STATES = {
     "available", "source_unavailable", "supported_but_empty", "geography_unsupported",
@@ -398,7 +398,7 @@ def _direction_evidence(observation: Mapping[str, Any], link: Mapping[str, Any])
     if target is None:
         return {"compatible": False, "basis": "direction_unproven", "bearing_difference_degrees": UNKNOWN}
     if network_direction == 0:
-        return {"compatible": True, "basis": "bidirectional_link", "bearing_difference_degrees": 0.0}
+        return {"compatible": False, "basis": "directional_output_unproven", "bearing_difference_degrees": UNKNOWN}
     bearing = _bearing(link["geometry"], network_direction)
     if bearing is None:
         return {"compatible": False, "basis": "network_bearing_unavailable", "bearing_difference_degrees": UNKNOWN}

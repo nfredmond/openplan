@@ -513,10 +513,19 @@ const EXPECTED = {
   // Installed isolated catalog has 271 RLS tables and the same 14 views.
   // 20261015000003/00004 add private thematic requests and input choices.
   // Installed isolated catalog: 273 RLS tables, 14 views, no new policies.
-  relations: 287,
-  tables: 273,
+  // 20261015000006 adds private reconstructed thematic input custody.
+  // Installed catalog: 274 application RLS tables and 14 application views.
+  // PostGIS spatial_ref_sys and its two metadata views are extension relations.
+  // 20261015000007 adds immutable complete-source thematic input seals.
+  // Installed isolated catalog: 275 application RLS tables and 14 views.
+  // 20261015000008 adds one private thematic frame table, with RLS and no policies.
+  // Installed isolated catalog confirms 276 application RLS tables and 14 views.
+  // 20261015000009 adds private thematic dynamic attempt inputs.
+  // Installed isolated catalog confirms 277 application RLS tables and 14 views.
+  relations: 291,
+  tables: 277,
   views: 14,
-  rlsEnabledTables: 273,
+  rlsEnabledTables: 277,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
