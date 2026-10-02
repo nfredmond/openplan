@@ -164,6 +164,20 @@ Re-seeded budget, before and after: RTP depth 6 to 3 and deep boxes 26 to 0; Rep
 
 Not covered by these audits: keyboard order through every page, screen readers, the other four palettes, and real data volumes.
 
+## Map colour, October 2, 2026 (review findings M5, M7 and M8, in part)
+
+Checks: 17,525 tests passed, typecheck, lint and dead-code check clean. Production build of this worktree served on port 3211; maps looked at in Chrome at 1440.
+
+| Change | How it was checked |
+|---|---|
+| Corridor screening scores are painted from one shared ramp (`lib/cartographic/screening-score-ramp.ts`): one blue from dim to bright, interpolated from 0 to 100 with no cut points; a withheld score is grey. It replaces two different red-to-green ramps with cut points at 40, 60, 75, 90 and at 45, 70, which contradicted the adopted presentation research (no validated bands, no good or bad reading) | New `screening-scores-are-not-banded-on-maps.test.ts`; restoring the old corridor ramp fails three of its five tests. Not seen on screen: the test workspace's Corridor Analysis page showed no scored corridor |
+| The model run list reads its overall score through the shared presentation rule, so a composite whose inputs were missing is withheld there too, and the badge is neutral ("Screening score N/100") instead of green | Model run tests pass |
+| Traffic volume map uses fixed classes (under 5,000 to 40,000 and over, daily PCE) shared by the lines and a numbered legend, in a colour-blind-safe ramp. It used to stretch red-to-green between zero and each run's busiest link, so colours did not compare across runs, and the legend said only "Low" and "High" | New `traffic-volume-classes.test.ts` evaluates the paint with Mapbox's own expression engine; shifting the paint breaks away from the legend fails it. Chrome: legend and lines match |
+| The volume route reports how many links existed before it kept the busiest 5,000, and the map says "The busiest 5,000 of 130,685 road links ... Quieter roads are not drawn." Without it, a map of only the busiest links read as a region where every road carries 30,000 or more | Chrome, on the test workspace's run. No route unit test exists; the route's database and storage reads were not mocked for this |
+| Model-agreement map uses Okabe-Ito blue, orange and vermillion with its existing line patterns. Green on "agree" read as "correct", and agreement is not evidence of accuracy | Agreement map tests updated to the new colours and pass. Chrome: classes distinct on the dark basemap |
+
+Not done from M7: the census tract ramps (poverty, minority, zero-vehicle, income) still mix hues, some red with green. They carry the independent review's availability fixes and their own pinned tests, and are the next map item.
+
 ## What is next
 
 1. Finish record hubs: the same header on campaign, RTP cycle and report pages; closed tabs unmount; the command board leaves the remaining record pages.

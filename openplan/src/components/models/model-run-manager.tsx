@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, ArrowRight, Loader2, Play, Sparkles } from "lucide-react";
@@ -1309,7 +1310,9 @@ export function ModelRunManager({
             <div className="mt-5 module-record-list">
               {modelRuns.map((run) => {
                 const resultSummary = run.result_summary_json ?? {};
-                const overallScore = typeof resultSummary.overallScore === "number" ? resultSummary.overallScore : null;
+                // Through the shared presentation rule, so a composite whose inputs
+                // were missing is withheld here as it is everywhere else.
+                const overallScore = scoreValueForPresentation(resultSummary, "overallScore");
                 const runLink = run.source_analysis_run_id ? `/explore?runId=${run.source_analysis_run_id}#analysis-run-history` : null;
                 const scenarioLabel = findScenarioEntryLabel(scenarioEntries, run.scenario_entry_id);
                 const runMode = getManagedRunModeDefinition(run.engine_key);
@@ -1338,7 +1341,7 @@ export function ModelRunManager({
                         <StatusBadge tone={runStatus.tone}>{runStatus.label}</StatusBadge>
                         <StatusBadge tone="neutral">{labelForEngineKey(run.engine_key)}</StatusBadge>
                         {scenarioLabel ? <StatusBadge tone="neutral">{scenarioLabel}</StatusBadge> : null}
-                        {overallScore !== null ? <StatusBadge tone="success">Overall {overallScore}/100</StatusBadge> : null}
+                        {overallScore !== null ? <StatusBadge tone="neutral">Screening score {overallScore}/100</StatusBadge> : null}
                         {runMode.availability !== "launchable" ? <StatusBadge tone="warning">{runMode.availability === "preflight" ? "Readiness check" : "Prototype"}</StatusBadge> : null}
                       </div>
                       <div className="space-y-1.5">

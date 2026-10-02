@@ -1,25 +1,9 @@
 import type { ExpressionSpecification, Map as MapboxMap } from "mapbox-gl";
+import { screeningScorePaint } from "@/lib/cartographic/screening-score-ramp";
 import { buildTractMetricPaintExpression } from "./explore-tract-layer-state";
 
 export function buildAnalysisCorridorFillExpression(): ExpressionSpecification {
-  return [
-    "case",
-    ["==", ["typeof", ["get", "overallScore"]], "number"],
-    [
-      "interpolate",
-      ["linear"],
-      ["to-number", ["get", "overallScore"]],
-      0,
-      "#7f1d1d",
-      45,
-      "#be8e2f",
-      70,
-      "#0f766e",
-      100,
-      "#34d399",
-    ],
-    "#64748b",
-  ];
+  return screeningScorePaint("overallScore");
 }
 
 export function installAnalysisLayers(map: MapboxMap): void {

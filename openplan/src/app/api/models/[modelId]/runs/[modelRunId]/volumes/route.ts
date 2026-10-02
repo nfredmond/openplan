@@ -177,6 +177,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
           metadata: {
             ...(geojson.metadata ?? {}),
             totalLinks: limitedFeatures.length,
+            // How many links passed the volume filter before the busiest
+            // `limit` were kept, so the map can say it shows only those.
+            linksAvailable: features.length,
             maxVolume,
             minVolume,
             modelRunId,
@@ -260,6 +263,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       }
     }
 
+    const linksAvailable = volumeMap.size;
     const linkIds = Array.from(volumeMap.keys())
       .sort(
         (a, b) =>
@@ -364,6 +368,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       features,
       metadata: {
         totalLinks: features.length,
+        linksAvailable,
         maxVolume,
         minVolume,
         modelRunId,
