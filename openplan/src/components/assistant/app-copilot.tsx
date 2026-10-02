@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useId, useMemo, useState } from "react";
+import { ModalDialog } from "@/components/ui/modal-dialog";
 import { ArrowUpRight, Bot, ChevronDown, ChevronRight, Eye, EyeOff, Loader2, Pin, Send, Sparkles, User, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -1450,6 +1450,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  const drawerTitleId = useId();
   const [basePreview, setBasePreview] = useState<AssistantPreview | null>(null);
   const [liveConsoleState, setLiveConsoleState] = useState<AssistantLocalConsoleState | null>(null);
   const [operationStatus, setOperationStatus] = useState<OperationInvocationState | null>(null);
@@ -2160,9 +2161,21 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         <span>Planner Agent</span>
       </Button>
 
-      {open ? createPortal(
-        <div className="fixed inset-0 z-[110] flex justify-end bg-slate-950/55 backdrop-blur-[2px]" role="dialog" aria-modal="true">
-          <button type="button" className="flex-1 cursor-default" aria-label="Close Planner Agent overlay" onClick={() => setOpen(false)} />
+      {/*
+        The drawer is the shared modal. It was a hand-built overlay with
+        `role="dialog"` and no name, no focus trap and no focus return, so a
+        keyboard user could tab out of it into the page behind. `ModalDialog`
+        supplies all of that. Escape is blocked while an approval is pending,
+        so one press cancels the approval and never also closes the drawer.
+      */}
+      {open ? (
+        <ModalDialog
+          titleId={drawerTitleId}
+          onRequestClose={() => setOpen(false)}
+          closeBlocked={Boolean(pendingApproval)}
+          closeOnBackdropPress
+          className="fixed inset-y-0 left-auto right-0 m-0 h-dvh max-h-none w-full max-w-[560px] rounded-none border-0 bg-transparent backdrop:bg-slate-950/55"
+        >
           <aside className="surface-dark relative flex h-full w-full max-w-[560px] flex-col border-l border-white/10 bg-[linear-gradient(180deg,rgba(6,12,18,0.98),rgba(9,16,24,0.985))] text-slate-100 shadow-[-24px_0_60px_rgba(2,8,15,0.34)]">
             <div className="shrink-0 border-b border-white/8 px-5 py-4 sm:px-6">
               <div className="flex items-start justify-between gap-4">
@@ -2173,7 +2186,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     </span>
                     <div className="min-w-0">
                       <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Planner Agent</p>
-                      <h2 className="truncate text-lg font-semibold text-white">{summaryLabel}</h2>
+                      <h2 id={drawerTitleId} className="truncate text-lg font-semibold text-white">{summaryLabel}</h2>
                     </div>
                   </div>
                   <p className="mt-3 text-sm leading-relaxed text-slate-300/82">
@@ -2745,8 +2758,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
               </div>
             ) : null}
           </aside>
-        </div>,
-        document.body
+        </ModalDialog>
       ) : null}
     </>
   );

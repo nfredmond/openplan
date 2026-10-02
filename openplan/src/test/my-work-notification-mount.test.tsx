@@ -102,7 +102,7 @@ beforeEach(() => {
 });
 
 describe("/my-work mounts the reminder panel", () => {
-  it("renders the reminders above the queue, on the real route segment", async () => {
+  it("renders the reminders below the queue, on the real route segment", async () => {
     const fake = db();
     createClientMock.mockReturnValue(fake);
 
@@ -112,7 +112,16 @@ describe("/my-work mounts the reminder panel", () => {
     expect(screen.getByText("Authorization packet")).toBeTruthy();
     // … and so is the page it wraps: a mount that displaced the queue would be
     // a different defect, not a fix.
-    expect(screen.getByTestId("queue")).toBeTruthy();
+    const queue = screen.getByTestId("queue");
+    expect(queue).toBeTruthy();
+    // The queue comes first: it is what the planner opened the page for.
+    expect(
+      queue.compareDocumentPosition(screen.getByText("Authorization packet")) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    // Reminder settings, when this workspace has them, start closed.
+    const settings = screen.queryByTestId("reminder-settings");
+    if (settings) expect(settings.hasAttribute("open")).toBe(false);
   });
 
   it("reads reminders with the CALLER's client and the heartbeat with the service role", async () => {

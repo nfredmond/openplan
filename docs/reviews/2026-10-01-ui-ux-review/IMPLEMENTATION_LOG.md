@@ -132,6 +132,23 @@ Known gaps from this batch:
 - Closed tabs still mount. Flipping the flag fails 134 tests in 11 page test files that look for content in closed tabs; they need to render the right tab first.
 - The remaining index pages (Grants, Data Hub, Model Validation, Documents, Invoices, Land Use Plans, Aerial, My Work) keep their older headers.
 
+## Remaining headers and widget accessibility, October 2, 2026
+
+Two helper agents converted pages in the worktree; four earlier helpers were cut off by a usage limit with no edits left behind (checked: the tree was clean when work resumed). The session then moved from Fable 5.1 to Opus 5.5 at Nathaniel's request to save Fable usage. Checks on the combined tree: 17,514 tests passed, typecheck clean, lint clean, dead-code check exit 0, production build exit 0. Browser checks on port 3210 from the worktree.
+
+| Change | How it was checked |
+|---|---|
+| `RecordHubHeader` on the engagement campaign, RTP cycle and both report detail pages. The campaign's share-link state stays above the tabs; the moderation tiles moved into Responses. The report's generate control stays above the tabs | Page and `page-tabs-*` tests pass. Chrome at 1440: campaign page header, chips and tabs |
+| `PageHeader` on Grants, Data Hub, Invoices & Reimbursements, Land Use Plans (primary link to its form), Model Validation, Documents, My Work, Workspace setup & health and Planner Agent Activity. My Work puts the queue first and reminder settings in a closed disclosure | Page tests pass; header-action guard has a new `page-header-link` row for Land Use Plans. Chrome at 1440 on all nine: no overflow, no console errors |
+| The workspace command board is off every record page and the project overview | Read in source; tests pass |
+| Data Hub build notes removed ("automation theater", "Why this slice matters", "Visible system component", "policy diffing ... later"); the LODES card that became empty is removed rather than given a sentence I could not verify | Chrome at 1440 |
+| Planner Agent drawer and command palette render through the shared `ModalDialog`. The palette is a combobox with a listbox and announces the highlighted option. Both close on a backdrop press; the drawer will not close while an approval is pending | Chrome at 1440 and 390: drawer docked right at full height, focus held through 40 Tab presses, Escape closes and focus returns to the launcher. Palette: Ctrl+K focuses the input, arrows move `aria-activedescendant`, typing and Enter navigated to /grants. New `command-palette.test.tsx` fails when `aria-activedescendant` or the backdrop close is removed |
+| Workspace switcher is a plain disclosure list (it claimed listbox roles with buttons inside options); Escape closes it and returns focus; the current workspace has `aria-current` | New test fails when the focus return is removed |
+| Layer delete answer is a focused named group instead of a `role="dialog"` that never took focus | Existing tests pass |
+| Loading skeleton announces "Loading" in a status outside the hidden placeholder; data table scroll area is a keyboard-reachable region; selectable rows select from a real button | Tests updated; the row test now presses the button |
+
+Not done in this batch: closed tabs still mount; Aerial is not map-first; the hosted-only smoke script `openplan-prod-rtp-release-review-smoke.js` still expects the removed command board.
+
 ## What is next
 
 1. Finish record hubs: the same header on campaign, RTP cycle and report pages; closed tabs unmount; the command board leaves the remaining record pages.

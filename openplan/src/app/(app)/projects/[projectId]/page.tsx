@@ -11,7 +11,6 @@ import {
   buildGrantDecisionModelingSupport,
   describeProjectGrantModelingReadiness,
 } from "@/lib/grants/modeling-evidence";
-import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
 import { buildAerialProjectPosture, describeAerialProjectPosture } from "@/lib/aerial/public";
 import { loadAerialMissionsAndPackagesForProject, loadAerialProjectPosture } from "@/lib/aerial/queries";
 import { buildProjectBudgetSnapshot, type DeliverableBudgetSummary } from "@/lib/projects/budget";
@@ -401,11 +400,6 @@ export default async function ProjectDetailPage({
   const projectModelRunCount = projectModelRunsResult.error
     ? 0
     : (projectModelRunsResult.data ?? []).length;
-
-  const operationsSummaryPromise = loadWorkspaceOperationsSummaryForWorkspace(
-    supabase as unknown as WorkspaceOperationsSupabaseLike,
-    project.workspace_id
-  );
 
   const projectReportResult = await supabase
     .from("reports")
@@ -1212,8 +1206,6 @@ export default async function ProjectDetailPage({
     unreadable: laneUnreadable,
   });
 
-  const operationsSummary = await operationsSummaryPromise;
-
   const timelineItems: TimelineItem[] = buildProjectTimelineItems({
     milestones,
     submittals,
@@ -1328,7 +1320,6 @@ export default async function ProjectDetailPage({
           aerialCachedPostureUpdatedAt={aerialCachedPostureUpdatedAt}
           spineSummary={projectSpineCrosslinkSummary}
           spineRollup={projectSpineReadiness}
-          operationsSummary={operationsSummary}
           stageGateSummary={stageGateSummary}
           stageGateRunOptions={buildStageGateRunOptions(availableRunRows, recentRuns)}
           canRecordDecision={canAccessWorkspaceAction("stage_gates.decisions.write", membership.role)}

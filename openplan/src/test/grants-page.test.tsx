@@ -188,10 +188,6 @@ vi.mock("@/components/projects/project-funding-profile-editor", () => ({
   ProjectFundingProfileEditor: () => <div data-testid="project-funding-profile-editor" />,
 }));
 
-vi.mock("@/components/operations/workspace-runtime-cue", () => ({
-  WorkspaceRuntimeCue: () => <div data-testid="workspace-runtime-cue" />,
-}));
-
 import GrantsPage from "@/app/(app)/grants/page";
 import {
   INTERIM_DEFAULT_RATIONALE,

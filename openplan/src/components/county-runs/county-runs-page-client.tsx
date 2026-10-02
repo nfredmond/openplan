@@ -12,9 +12,11 @@ import {
 } from "@/lib/models/county-onramp";
 import { buildCountyRunUiCard } from "@/lib/ui/county-onramp";
 import { buildCountyRunDetailHref } from "@/lib/ui/county-runs-navigation";
+import { navLabel } from "@/components/nav/nav-registry";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { PLACE_KIND_LABELS, type PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import { StateBlock } from "@/components/ui/state-block";
@@ -191,29 +193,24 @@ export function CountyRunsPageClient({
 
   return (
     <section className="module-page pb-10">
-      <div className="module-intro-card">
-        <div className="module-intro-kicker">Model Validation</div>
-        <div className="module-intro-body">
-          <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge tone="info">Screening-model validation</StatusBadge>
-            <StatusBadge tone="neutral">25 most recent runs</StatusBadge>
-          </div>
-          <h1 className="module-intro-title">Model Validation</h1>
-          <p className="module-intro-description">
-            Bring a county into the modeling workflow, from first setup through validation. Launch a run,
-            check its current stage, then open the detail page for its files, worker handoff, and caveats.
-          </p>
-        </div>
-        <div className="mt-5 flex flex-wrap items-center gap-3">
+      <PageHeader
+        title={navLabel("/county-runs")}
+        description="Bring a county into the modeling workflow, from first setup through validation. Launch a run, check its current stage, then open the detail page for its files, worker handoff, and caveats."
+        actions={
           <Button variant="outline" onClick={() => void refresh()} disabled={loading}>
             <RefreshCcw className="h-4 w-4" />
             Refresh
           </Button>
-          <Link href="/models" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+        }
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge tone="info">Screening-model validation</StatusBadge>
+          <StatusBadge tone="neutral">25 most recent runs</StatusBadge>
+          <Link href="/models" className="ml-1 text-sm font-medium text-muted-foreground hover:text-foreground">
             Back to models
           </Link>
         </div>
-      </div>
+      </PageHeader>
 
       <StateBlock
         className="mt-4"

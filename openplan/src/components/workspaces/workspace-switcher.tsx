@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import type { WorkspaceOption } from "@/lib/workspaces/current";
@@ -82,6 +82,8 @@ export function WorkspaceSwitcher({
   const [open, setOpen] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const listId = useId();
 
   if (workspaces.length <= 1) {
     return <span className="block truncate text-sm font-semibold text-foreground">{currentWorkspaceName}</span>;
@@ -112,7 +114,8 @@ export function WorkspaceSwitcher({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        aria-haspopup="listbox"
+        ref={triggerRef}
+        aria-controls={listId}
         aria-expanded={open}
         className="inline-flex min-h-10 min-w-0 max-w-full items-center gap-1.5 rounded-md px-1.5 py-0.5 text-sm font-semibold text-foreground transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
@@ -124,20 +127,30 @@ export function WorkspaceSwitcher({
         <>
           {/* Click-away layer. */}
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden="true" />
+          {/* A plain list of buttons under a disclosure. It used to claim
+              `listbox` and `option` roles with a button inside each option and
+              no arrow keys, which is neither a listbox nor a list. */}
           <ul
-            role="listbox"
+            id={listId}
             aria-label="Switch workspace"
+            onKeyDown={(event) => {
+              if (event.key !== "Escape") return;
+              event.stopPropagation();
+              setOpen(false);
+              triggerRef.current?.focus();
+            }}
             className="absolute left-0 z-20 mt-1 max-h-72 w-64 max-w-[calc(100vw-5rem)] overflow-auto rounded-lg border border-border bg-background/98 py-1 shadow-lg"
           >
             {workspaces.map((workspace) => {
               const isCurrent = workspace.id === currentWorkspaceId;
               const isPending = workspace.id === pendingId;
               return (
-                <li key={workspace.id} role="option" aria-selected={isCurrent}>
+                <li key={workspace.id}>
                   <button
                     type="button"
                     onClick={() => void select(workspace.id)}
                     disabled={pendingId !== null}
+                    aria-current={isCurrent ? "true" : undefined}
                     className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none disabled:opacity-60"
                   >
                     <span className="min-w-0 flex-1 whitespace-normal break-words text-foreground">{workspace.name}</span>

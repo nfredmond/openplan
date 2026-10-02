@@ -31,7 +31,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Database, Link2, RefreshCw, ShieldAlert } from "lucide-react";
+import { Database, Link2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -973,15 +973,6 @@ export function DataHubRecordComposer({
         </p>
       ) : null}
 
-      <div className="module-alert mt-5 text-sm">
-        <div className="flex items-start gap-3">
-          <ShieldAlert className="mt-0.5 h-4.5 w-4.5" />
-          <p>
-            Register the governance records first. Automated ingestion and policy diffing are wired
-            into these same objects later, rather than into parallel hidden state.
-          </p>
-        </div>
-      </div>
 
       <GuidedFlow flow={connectorFlow} />
       <GuidedFlow flow={datasetFlow} />

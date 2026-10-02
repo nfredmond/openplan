@@ -130,7 +130,9 @@ describe("AssistantActivityPage", () => {
     expect(screen.getByText(/2 actions · 1 approval-gated · 1 failed/)).toBeInTheDocument();
 
     // Approval evidence describes retained entries without promising completeness.
-    expect(screen.getAllByText(/server-computed input hash/).length).toBeGreaterThan(0);
+    expect(
+      screen.getByText(/cannot take an action that needs approval without one\. Each approval covers\s+one specific action, expires, and works once\./)
+    ).toBeInTheDocument();
     expect(screen.getByText(/single-use, time-limited approval/)).toBeInTheDocument();
 
     // Rows: human-readable action kinds.
@@ -163,7 +165,7 @@ describe("AssistantActivityPage", () => {
 
     await renderPage();
 
-    expect(screen.getByText("No retained Planner Agent executions")).toBeInTheDocument();
+    expect(screen.getByText("No Planner Agent actions to show")).toBeInTheDocument();
     expect(screen.getByText(/An empty list does not establish that no actions ran/)).toBeInTheDocument();
     expect(screen.getByText(/0 actions · 0 approval-gated · 0 failed/)).toBeInTheDocument();
   });

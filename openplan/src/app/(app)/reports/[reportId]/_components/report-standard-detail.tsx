@@ -1,18 +1,16 @@
 import { EngagementReviewFiles } from "@/components/engagement/engagement-review-files";
 import type { ComponentProps } from "react";
 import Link from "next/link";
-import { ScrollText } from "lucide-react";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
-import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { ReportDetailControls, type ReportSafetyIngestOption } from "@/components/reports/report-detail-controls";
 import { ReportNarrativeDraftPanel } from "@/components/reports/report-narrative-draft-panel";
+import { RecordHubHeader } from "@/components/ui/record-hub-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   buildGrantDecisionModelingSupport,
   describeProjectGrantModelingReadiness,
 } from "@/lib/grants/modeling-evidence";
-import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import type { ProjectFundingSnapshot } from "@/lib/projects/funding";
 import type { AgreementCorridorSelection, ReportAgreementEvidence } from "@/lib/reports/dual-demand-agreement";
 import type { AerialOrthoCatalog } from "@/lib/aerial/ortho-map-layers";
@@ -106,7 +104,6 @@ type ReportStandardDetailProps = {
   initialSafetyIngestId?: string | null;
   latestArtifact: ReportArtifact | null;
   fundingSnapshot: ProjectFundingSnapshot | null;
-  operationsSummary: WorkspaceOperationsSummary;
   driftItems: DriftItem[];
   driftedItems: DriftItem[];
   evidenceSummaryDigest: ReportEvidenceChainDigest | null;
@@ -143,7 +140,6 @@ export function ReportStandardDetail({
   initialSafetyIngestId = null,
   latestArtifact,
   fundingSnapshot,
-  operationsSummary,
   driftItems,
   driftedItems,
   evidenceSummaryDigest,
@@ -237,22 +233,12 @@ export function ReportStandardDetail({
     <section className="module-page space-y-6">
       {engagementCampaign ? <EngagementReviewFiles campaignId={engagementCampaign.id} reportId={report.id} /> : null}
       <CartographicSurfaceWide />
-      <header className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <ScrollText className="h-3.5 w-3.5" />
-            Report detail
-          </div>
-
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {report.title}
-          </h1>
-          <p className="mt-4 max-w-[36rem] text-reading leading-[1.65] text-muted-foreground">
-            {report.summary ||
-              "No summary yet. Say what this report is for, and OpenPlan can generate it as a web page you can send."}
-          </p>
-
-          <div className="mt-5 flex flex-wrap items-center gap-2">
+      <RecordHubHeader
+        parentHref="/reports"
+        parentLabel="Reports"
+        title={report.title}
+        status={
+          <>
             <StatusBadge tone={reportStatusTone(report.status)}>
               {formatReportStatusLabel(report.status)}
             </StatusBadge>
@@ -269,106 +255,43 @@ export function ReportStandardDetail({
                 <strong>{engagementCampaign.title}</strong>
               </Link>
             ) : null}
-            {report.latest_artifact_kind ? (
-              <span className="text-label text-muted-foreground">
-                {report.latest_artifact_kind.toUpperCase()}
-              </span>
-            ) : null}
-          </div>
+          </>
+        }
+        description={
+          report.summary ||
+          "No summary yet. Say what this report is for, and OpenPlan can generate it as a web page you can send."
+        }
+      />
 
-          <div className="module-summary-grid cols-4 mt-6">
-            <div className="module-summary-card">
-              <p className="module-summary-label">
-                {isCampaignTarget ? "Engagement campaign" : "Project"}
-              </p>
-              <p className="module-summary-value truncate text-xl">
-                {isCampaignTarget
-                  ? engagementCampaign?.title ?? "Unknown campaign"
-                  : project?.name ?? "Unknown"}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Workspace</p>
-              <p className="module-summary-value truncate text-xl">
-                {workspace?.name ?? "Unknown"}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Linked runs</p>
-              <p className="module-summary-value text-xl tabular-nums">
-                {runs.length}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Generated</p>
-              <p className="module-summary-value text-base">
-                {latestArtifact?.generated_at ?? report.generated_at
-                  ? formatDateTime(
-                      latestArtifact?.generated_at ?? report.generated_at
-                    )
-                  : "Not yet"}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Funding</p>
-              <p className="module-summary-value text-base">
-                {fundingSnapshot?.label ?? "Not captured"}
-              </p>
-              <p className="module-summary-detail">
-                {fundingSnapshot
-                  ? fundingSnapshot.unfundedAfterLikelyAmount > 0
-                    ? `${formatCurrency(fundingSnapshot.unfundedAfterLikelyAmount)} still uncovered after likely dollars.`
-                    : fundingSnapshot.uninvoicedAwardAmount > 0
-                      ? `${formatCurrency(fundingSnapshot.uninvoicedAwardAmount)} still uninvoiced.`
-                      : fundingSnapshot.reimbursementLabel
-                  : "Generate a packet and the funding picture at that moment is saved with it."}
-              </p>
-            </div>
-          </div>
-
-          <div className="module-inline-list mt-4">
-            <span className="module-inline-item">
-              Created {formatDateTime(report.created_at)}
-            </span>
-            <span className="module-inline-item">
-              Updated {formatDateTime(report.updated_at)}
-            </span>
-            {project?.updated_at ? (
-              <span className="module-inline-item">
-                Project snapshot {formatDateTime(project.updated_at)}
-              </span>
-            ) : null}
-          </div>
-        </article>
-
-        <div id="report-controls">
-          <ReportDetailControls
-            report={{
-              id: report.id,
-              title: report.title,
-              summary: report.summary,
-              status: report.status,
-              hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
-            }}
-            driftSummary={{
-              changedCount: driftedItems.length,
-              totalCount: driftItems.length,
-              labels: driftedItems.map((item) => item.label),
-            }}
-            evidenceSummary={evidenceSummaryDigest}
-            fundingSummary={fundingSummaryDigest}
-            modelRunOptions={citeableModelRuns}
-            citedModelRunIds={citedModelRunIds}
-            agreementEvidence={agreementEvidence}
-            agreementCorridorSelections={agreementCorridorSelections}
-            aerialOrthoCatalog={aerialOrthoCatalog}
-            aerialOrthoSelections={aerialOrthoSelections}
-            safetyIngestOptions={safetyIngestOptions}
-            safetyIngestSelections={safetyIngestSelections}
-            initialSafetyIngestId={initialSafetyIngestId}
-          />
-        </div>
-      </header>
+      {/* Above the tab strip on purpose: generating the packet, and the
+          drift it reports, apply to the whole report whichever tab is open. */}
+      <div id="report-controls">
+        <ReportDetailControls
+          report={{
+            id: report.id,
+            title: report.title,
+            summary: report.summary,
+            status: report.status,
+            hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
+          }}
+          driftSummary={{
+            changedCount: driftedItems.length,
+            totalCount: driftItems.length,
+            labels: driftedItems.map((item) => item.label),
+          }}
+          evidenceSummary={evidenceSummaryDigest}
+          fundingSummary={fundingSummaryDigest}
+          modelRunOptions={citeableModelRuns}
+          citedModelRunIds={citedModelRunIds}
+          agreementEvidence={agreementEvidence}
+          agreementCorridorSelections={agreementCorridorSelections}
+          aerialOrthoCatalog={aerialOrthoCatalog}
+          aerialOrthoSelections={aerialOrthoSelections}
+          safetyIngestOptions={safetyIngestOptions}
+          safetyIngestSelections={safetyIngestSelections}
+          initialSafetyIngestId={initialSafetyIngestId}
+        />
+      </div>
 
       <PageTabNav
         tabs={tabs}
@@ -380,12 +303,74 @@ export function ReportStandardDetail({
       />
 
       <PageTabPanel tabKey="packet" active={activeTab === "packet"}>
-      <WorkspaceCommandBoard
-        summary={operationsSummary}
-        label="Across your workspace"
-        title="What needs attention next"
-        description="The most pressing work anywhere in this workspace, kept in view so it does not get lost while you are in here."
-      />
+      <div className="module-summary-grid cols-4">
+        <div className="module-summary-card">
+          <p className="module-summary-label">
+            {isCampaignTarget ? "Engagement campaign" : "Project"}
+          </p>
+          <p className="module-summary-value truncate text-xl">
+            {isCampaignTarget
+              ? engagementCampaign?.title ?? "Unknown campaign"
+              : project?.name ?? "Unknown"}
+          </p>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Workspace</p>
+          <p className="module-summary-value truncate text-xl">
+            {workspace?.name ?? "Unknown"}
+          </p>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Linked runs</p>
+          <p className="module-summary-value text-xl tabular-nums">
+            {runs.length}
+          </p>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Generated</p>
+          <p className="module-summary-value text-base">
+            {latestArtifact?.generated_at ?? report.generated_at
+              ? formatDateTime(
+                  latestArtifact?.generated_at ?? report.generated_at
+                )
+              : "Not yet"}
+          </p>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Funding</p>
+          <p className="module-summary-value text-base">
+            {fundingSnapshot?.label ?? "Not captured"}
+          </p>
+          <p className="module-summary-detail">
+            {fundingSnapshot
+              ? fundingSnapshot.unfundedAfterLikelyAmount > 0
+                ? `${formatCurrency(fundingSnapshot.unfundedAfterLikelyAmount)} still uncovered after likely dollars.`
+                : fundingSnapshot.uninvoicedAwardAmount > 0
+                  ? `${formatCurrency(fundingSnapshot.uninvoicedAwardAmount)} still uninvoiced.`
+                  : fundingSnapshot.reimbursementLabel
+              : "Generate a packet and the funding picture at that moment is saved with it."}
+          </p>
+        </div>
+      </div>
+
+      <div className="module-inline-list mt-4">
+        <span className="module-inline-item">
+          Created {formatDateTime(report.created_at)}
+        </span>
+        <span className="module-inline-item">
+          Updated {formatDateTime(report.updated_at)}
+        </span>
+        {report.latest_artifact_kind ? (
+          <span className="module-inline-item">
+            {report.latest_artifact_kind.toUpperCase()}
+          </span>
+        ) : null}
+        {project?.updated_at ? (
+          <span className="module-inline-item">
+            Project snapshot {formatDateTime(project.updated_at)}
+          </span>
+        ) : null}
+      </div>
 
       <PilotWorkflowHandoff
         currentStep="packet"

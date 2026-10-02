@@ -193,6 +193,7 @@ vi.mock("@/components/cartographic/cartographic-selection-link", () => ({
 }));
 
 import EngagementPage from "@/app/(app)/engagement/page";
+import LandUsePlansPage from "@/app/(app)/land-use-plans/page";
 import ModelsPage from "@/app/(app)/models/page";
 import PlansPage from "@/app/(app)/plans/page";
 import ProgramsPage from "@/app/(app)/programs/page";
@@ -321,6 +322,15 @@ const MODULES: ModuleUnderTest[] = [
     label: "Start project comparison",
     reaches: "choose-project-comparison",
     render: () => ModelsPage({ searchParams: emptyParams() }),
+  },
+  {
+    module: "/land-use-plans",
+    // The setup form needs a boundary picker and stays open at the bottom of
+    // the page, so the header action is a link that jumps to it.
+    header: "page-header-link",
+    label: "New land use plan",
+    reaches: "create-land-use-plan",
+    render: () => LandUsePlansPage(),
   },
   {
     module: "/scenarios",

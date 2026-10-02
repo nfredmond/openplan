@@ -55,7 +55,7 @@ describe("WorkspaceSwitcher", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Nevada County/i }));
-    const listbox = await screen.findByRole("listbox");
+    const listbox = await screen.findByRole("list", { name: "Switch workspace" });
     fireEvent.click(within(listbox).getByRole("button", { name: /Foothills MPO/i }));
 
     await waitFor(() => expect(calls.length).toBe(1));
@@ -72,7 +72,7 @@ describe("WorkspaceSwitcher", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Nevada County/i }));
-    const listbox = await screen.findByRole("listbox");
+    const listbox = await screen.findByRole("list", { name: "Switch workspace" });
     fireEvent.click(within(listbox).getByRole("button", { name: /Foothills MPO/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(/Workspace not found/i);
@@ -87,7 +87,7 @@ describe("WorkspaceSwitcher", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Nevada County/i }));
-    const listbox = await screen.findByRole("listbox");
+    const listbox = await screen.findByRole("list", { name: "Switch workspace" });
     await act(async () => {
       fireEvent.click(within(listbox).getByRole("button", { name: /Nevada County/i }));
     });
@@ -116,5 +116,22 @@ describe("WorkspaceSwitcher", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Workspace not found");
     expect(refreshMock).not.toHaveBeenCalled();
+  });
+
+  it("closes on Escape and puts focus back on the button that opened it", async () => {
+    render(
+      <WorkspaceSwitcher workspaces={TWO} currentWorkspaceId="ws-1" currentWorkspaceName="Nevada County" />
+    );
+    const trigger = screen.getByRole("button", { name: /Nevada County/i });
+    fireEvent.click(trigger);
+    const list = await screen.findByRole("list", { name: "Switch workspace" });
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    // The current workspace is marked for assistive technology.
+    expect(within(list).getByRole("button", { name: /Nevada County/i }).getAttribute("aria-current")).toBe("true");
+
+    fireEvent.keyDown(list, { key: "Escape" });
+
+    expect(screen.queryByRole("list", { name: "Switch workspace" })).toBeNull();
+    expect(document.activeElement).toBe(trigger);
   });
 });

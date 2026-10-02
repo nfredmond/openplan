@@ -143,7 +143,11 @@ describe("DataTable primitive", () => {
       />
     );
     const row = container.querySelector("tr[data-row-id='a']")!;
-    fireEvent.click(row);
+    // Selection is a real button in the row's first cell, so a keyboard can
+    // reach it. A click on the row itself no longer selects.
+    const select = row.querySelector("td button")!;
+    expect(select).not.toBeNull();
+    fireEvent.click(select);
     expect(onRowSelect).toHaveBeenCalledTimes(1);
     expect(onRowSelect.mock.calls[0]?.[0]).toEqual(rows[0]);
     expect(row.getAttribute("aria-selected")).toBe("true");

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ReportArtifactPreview } from "@/app/(app)/reports/[reportId]/_components/report-artifact-preview";
-import { ArrowRight, BookOpenText, FileOutput, Route as RouteIcon, ScrollText } from "lucide-react";
-import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
+import { ArrowRight, BookOpenText, FileOutput, Route as RouteIcon } from "lucide-react";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
 import { RtpReportSectionControls } from "@/components/reports/rtp-report-section-controls";
+import { RecordHubHeader } from "@/components/ui/record-hub-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import type { PortfolioFundingSnapshot } from "@/lib/projects/funding";
@@ -20,7 +20,6 @@ import {
   getReportPacketFreshness,
   reportStatusTone,
 } from "@/lib/reports/catalog";
-import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 import { formatMoney, ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER } from "@/lib/money/format";
 
@@ -98,7 +97,6 @@ export function RtpReportDetail({
   latestHtml,
   generationContext,
   currentContext,
-  operationsSummary,
 }: {
   report: {
     id: string;
@@ -199,7 +197,6 @@ export function RtpReportDetail({
     approvedCommentCount: number | null;
     readyCommentCount: number | null;
   };
-  operationsSummary: WorkspaceOperationsSummary;
 }) {
   const enabledSections = sections.filter((section) => section.enabled).length;
   const latestArtifactGeneratedAt = artifacts[0]?.generated_at ?? report.generated_at;
@@ -395,74 +392,54 @@ export function RtpReportDetail({
 
   return (
     <section className="module-page grid-cols-1">
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <ScrollText className="h-3.5 w-3.5" />
-            RTP board packet record
-          </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">{report.title}</h1>
-            <p className="module-intro-description">
-              This report record is anchored to an RTP cycle and points at the compiled digital document and export surfaces.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
+      <RecordHubHeader
+        parentHref="/reports"
+        parentLabel="Reports"
+        title={report.title}
+        status={
+          <>
             <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge>
             <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
-            {cycle ? <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge> : null}
-            {report.latest_artifact_kind ? <StatusBadge tone="neutral">{report.latest_artifact_kind.toUpperCase()}</StatusBadge> : null}
             <StatusBadge tone={packetFreshness.tone}>{packetFreshness.label}</StatusBadge>
-            <StatusBadge tone={releaseReviewSummary.tone}>{releaseReviewSummary.label}</StatusBadge>
-          </div>
+          </>
+        }
+        description={
+          report.summary?.trim() ||
+          cycle?.summary?.trim() ||
+          "No packet summary yet. Use this record to track the RTP cycle packet and generation history."
+        }
+      />
 
-          <p className="text-sm text-muted-foreground">
-            {report.summary?.trim() || cycle?.summary?.trim() || "No packet summary yet. Use this record to track the RTP cycle packet and generation history."}
-          </p>
+      <div className="space-y-3">
+        <div className="flex flex-wrap gap-2">
+          {cycle ? <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge> : null}
+          {report.latest_artifact_kind ? <StatusBadge tone="neutral">{report.latest_artifact_kind.toUpperCase()}</StatusBadge> : null}
+          <StatusBadge tone={releaseReviewSummary.tone}>{releaseReviewSummary.label}</StatusBadge>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          This report record is anchored to an RTP cycle and points at the compiled digital document and export surfaces.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          {cycle ? (
+            <>
+              <Link href={`/rtp/${cycle.id}`} className="module-inline-action">
+                Open RTP cycle control room
+              </Link>
+              <Link href={`/rtp/${cycle.id}/document`} className="module-inline-action">
+                Open compiled digital RTP
+              </Link>
+              <Link href={`/api/rtp-cycles/${cycle.id}/export?format=html`} target="_blank" className="module-inline-action">
+                Open HTML export
+              </Link>
+              <Link href={`/api/rtp-cycles/${cycle.id}/export?format=pdf`} target="_blank" className="module-inline-action">
+                Open PDF export
+              </Link>
+            </>
+          ) : null}
+        </div>
+      </div>
 
-          <div className="mt-4 flex flex-wrap gap-3">
-            {cycle ? (
-              <>
-                <Link href={`/rtp/${cycle.id}`} className="module-inline-action">
-                  Open RTP cycle control room
-                </Link>
-                <Link href={`/rtp/${cycle.id}/document`} className="module-inline-action">
-                  Open compiled digital RTP
-                </Link>
-                <Link href={`/api/rtp-cycles/${cycle.id}/export?format=html`} target="_blank" className="module-inline-action">
-                  Open HTML export
-                </Link>
-                <Link href={`/api/rtp-cycles/${cycle.id}/export?format=pdf`} target="_blank" className="module-inline-action">
-                  Open PDF export
-                </Link>
-              </>
-            ) : null}
-          </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <RouteIcon className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Cycle packet bridge</p>
-              <h2 className="module-operator-title">Reports can now hold RTP packet records</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            This is the bridge between RTP document assembly and the broader packet registry. It gives the cycle a report record, packet history, and generation status without pretending the RTP is just another project packet.
-          </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">Workspace: {workspace?.name ?? "Unknown workspace"}</div>
-            <div className="module-operator-item">Enabled sections: {enabledSections}</div>
-            <div className="module-operator-item">Artifacts: {artifacts.length}</div>
-          </div>
-        </article>
-      </header>
-
-      <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
         <div className="space-y-6">
           <ReportDetailControls
             report={{
@@ -479,12 +456,25 @@ export function RtpReportDetail({
             }}
           />
 
-          <WorkspaceCommandBoard
-            summary={operationsSummary}
-            label="Across your workspace"
-            title="What needs attention next"
-            description="The most pressing work anywhere in this workspace, kept in view so it does not get lost while you are in here."
-          />
+          <article className="module-operator-card">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
+                <RouteIcon className="h-5 w-5 text-emerald-200" />
+              </span>
+              <div>
+                <p className="module-operator-eyebrow">Cycle packet bridge</p>
+                <h2 className="module-operator-title">Reports can now hold RTP packet records</h2>
+              </div>
+            </div>
+            <p className="module-operator-copy">
+              This is the bridge between RTP document assembly and the broader packet registry. It gives the cycle a report record, packet history, and generation status without pretending the RTP is just another project packet.
+            </p>
+            <div className="module-operator-list">
+              <div className="module-operator-item">Workspace: {workspace?.name ?? "Unknown workspace"}</div>
+              <div className="module-operator-item">Enabled sections: {enabledSections}</div>
+              <div className="module-operator-item">Artifacts: {artifacts.length}</div>
+            </div>
+          </article>
 
           <article id="packet-release-review" className="module-section-surface">
             {report.rtp_basis_stale ? (

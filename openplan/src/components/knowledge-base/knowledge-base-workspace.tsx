@@ -12,8 +12,10 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
+import { navLabel } from "@/components/nav/nav-registry";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -639,18 +641,15 @@ export function KnowledgeBaseWorkspace({
 
   return (
     <section className="module-page">
-      <header className="module-section-header">
-        <span className="module-section-label">Library</span>
-        <h1 className="module-section-title">Documents</h1>
-        <p className="module-section-description">
-          Your workspace&apos;s file cabinet. Upload your agency&apos;s own documents — adopted plans,
-          comment letters, prior studies, grant notices — so the Planner Agent and Grant Writer can
-          ground and cite from them; images, spreadsheets, CAD drawings, and other office files are
-          kept for reference and download. Retrieval is keyword-based (
-          <ScreeningGradeLink />); scanned, image-only PDFs without a text layer are stored but not
-          indexed yet.
+      <PageHeader title={navLabel("/knowledge-base")} description="Your workspace's file cabinet.">
+        <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+          Upload your agency&apos;s own documents — adopted plans, comment letters, prior studies, grant
+          notices — so the Planner Agent and Grant Writer can ground and cite from them; images,
+          spreadsheets, CAD drawings, and other office files are kept for reference and download.
+          Retrieval is keyword-based (<ScreeningGradeLink />); scanned, image-only PDFs without a text
+          layer are stored but not indexed yet.
         </p>
-      </header>
+      </PageHeader>
 
       <div className="module-section-surface">
         <Tabs value={mode} onValueChange={(value) => setMode(value as "upload" | "paste")}>

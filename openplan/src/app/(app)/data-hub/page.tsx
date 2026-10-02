@@ -9,8 +9,6 @@ import {
   Link2,
   RefreshCw,
   ShieldAlert,
-  ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 import { DataHubRecordComposer } from "@/components/data-hub/data-hub-record-composer";
 import { GtfsIngestPanel } from "@/components/data-hub/gtfs-ingest-panel";
@@ -21,8 +19,8 @@ import {
   homeGeographyBbox,
   parseWorkspaceHomeGeography,
 } from "@/lib/workspaces/home-geography";
-import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
-import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
+import { navLabel } from "@/components/nav/nav-registry";
+import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   resolveDatasetDependentOutputContext,
@@ -34,10 +32,6 @@ import {
 } from "@/lib/data-sources/dataset-lineage-readiness";
 import { resolveDatasetTrustLabel, toneForDatasetTrustLevel } from "@/lib/data-sources/dataset-provenance";
 import { describeRefreshJobStatus } from "@/lib/data-sources/refresh-log";
-import {
-  loadWorkspaceOperationsSummaryForWorkspace,
-  type WorkspaceOperationsSupabaseLike,
-} from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
@@ -184,7 +178,7 @@ export default async function DataHubPage() {
     redirect("/sign-in");
   }
 
-  const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, user.id);
+  const { membership } = await loadCurrentWorkspaceMembership(supabase, user.id);
 
   if (!membership) {
     return (
@@ -462,11 +456,6 @@ export default async function DataHubPage() {
   }).length;
   const runningJobs = refreshJobs.filter((job) => job.status === "running" || job.status === "queued").length;
 
-  const operationsSummary = await loadWorkspaceOperationsSummaryForWorkspace(
-    supabase as unknown as WorkspaceOperationsSupabaseLike,
-    workspaceId
-  );
-
   /**
    * The transit-feed card is READ, not written.
    *
@@ -500,28 +489,22 @@ export default async function DataHubPage() {
 
   /**
    * `kicker` is explicit per card because the panel used to print "Visible
-   * system component" over every one of them unconditionally — which is the
-   * same overclaim as the transit copy itself, one layer up. A workspace with
-   * no feed, or one whose registry read failed, is not looking at a visible
-   * system component and must not be told it is.
+   * system component" over every one of them unconditionally, which is the
+   * same overclaim as the transit copy itself, one layer up. Only the transit
+   * card carries one now, because it is the only card backed by a read: a
+   * workspace with no feed, or one whose registry read failed, is told so.
    */
   const liveFoundations: Array<{
     label: string;
-    detail: string;
+    detail: string | null;
     tone: "info" | "success" | "warning" | "neutral";
-    kicker: string;
+    kicker: string | null;
   }> = [
     {
       label: "Census / ACS",
       detail: "Corridor Analysis already captures corridor demographic retrieval metadata.",
       tone: "success",
-      kicker: "Visible system component",
-    },
-    {
-      label: "LODES employment",
-      detail: "Source posture is surfaced today, even before bulk ingestion becomes fully automated.",
-      tone: "info",
-      kicker: "Visible system component",
+      kicker: null,
     },
     {
       label: transitFeedCard.label,
@@ -542,77 +525,44 @@ export default async function DataHubPage() {
       label: "Crash / safety inputs",
       detail: "Data Hub now gives these sources a home instead of leaving them implicit in analysis flows.",
       tone: "neutral",
-      kicker: "Visible system component",
+      kicker: null,
     },
   ];
 
   return (
     <section className="module-page">
       <CartographicSurfaceWide />
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <Sparkles className="h-3.5 w-3.5" />
-            Data Hub
-          </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">Data Hub</h1>
-            <p className="module-intro-description">
-              The datasets your analysis draws on — where each one came from, when it was last refreshed, and which
-              projects rely on it.
-            </p>
-          </div>
-
-          <div className="module-summary-grid cols-4">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Connectors</p>
-              <p className="module-summary-value">{connectors.length}</p>
-              <p className="module-summary-detail">{activeConnectors} active in the current workspace.</p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Datasets</p>
-              <p className="module-summary-value">{datasets.length}</p>
-              <p className="module-summary-detail">
-                {overlayReadyDatasets} overlay-ready · {thematicReadyDatasets} thematic-ready · {outputReadyDatasets} output-ready · {lineageCompleteDatasets} lineage-complete.
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Refresh log</p>
-              <p className="module-summary-value">{refreshJobs.length}</p>
-              <p className="module-summary-detail">
-                {runningJobs} recorded as queued or running — no runner executes these.
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Needs attention</p>
-              <p className="module-summary-value">{monitoredConnectors}</p>
-              <p className="module-summary-detail">{staleDatasets} datasets currently need attention.</p>
-            </div>
-          </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Data Hub</p>
-              <h2 className="module-operator-title">One place to find the data {workspace?.name ?? "your team"} works from</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            When someone asks where a number came from, the answer is here — the dataset, its source, and the projects using it.
+      <PageHeader
+        title={navLabel("/data-hub")}
+        description="The datasets your analysis draws on — where each one came from, when it was last refreshed, and which projects rely on it."
+      >
+      <div className="module-summary-grid cols-4">
+        <div className="module-summary-card">
+          <p className="module-summary-label">Connectors</p>
+          <p className="module-summary-value">{connectors.length}</p>
+          <p className="module-summary-detail">{activeConnectors} active in the current workspace.</p>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Datasets</p>
+          <p className="module-summary-value">{datasets.length}</p>
+          <p className="module-summary-detail">
+            {overlayReadyDatasets} overlay-ready · {thematicReadyDatasets} thematic-ready · {outputReadyDatasets} output-ready · {lineageCompleteDatasets} lineage-complete.
           </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">Datasets belong to this workspace only.</div>
-            <div className="module-operator-item">A project can point straight at the data it relies on.</div>
-          </div>
-          <div className="mt-4">
-            <WorkspaceRuntimeCue summary={operationsSummary} />
-          </div>
-        </article>
-      </header>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Refresh log</p>
+          <p className="module-summary-value">{refreshJobs.length}</p>
+          <p className="module-summary-detail">
+            {runningJobs} recorded as queued or running — no runner executes these.
+          </p>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Needs attention</p>
+          <p className="module-summary-value">{monitoredConnectors}</p>
+          <p className="module-summary-detail">{staleDatasets} datasets currently need attention.</p>
+        </div>
+      </div>
+      </PageHeader>
 
       {migrationPending ? (
         <article className="module-alert">
@@ -640,12 +590,6 @@ export default async function DataHubPage() {
               connectorId: dataset.connector_id,
             }))}
           />
-          <WorkspaceCommandBoard
-            summary={operationsSummary}
-            label="Across your workspace"
-            title="What needs attention next"
-            description="The most pressing work anywhere in this workspace, kept in view so it does not get lost while you are in here."
-          />
         </div>
 
         <article className="module-section-surface">
@@ -668,16 +612,13 @@ export default async function DataHubPage() {
               <div key={item.label} className="module-subpanel">
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge tone={item.tone}>{item.label}</StatusBadge>
-                  <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{item.kicker}</p>
+                  {item.kicker ? (
+                    <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{item.kicker}</p>
+                  ) : null}
                 </div>
-                <p className="mt-2 text-sm text-muted-foreground">{item.detail}</p>
+                {item.detail ? <p className="mt-2 text-sm text-muted-foreground">{item.detail}</p> : null}
               </div>
             ))}
-          </div>
-
-          <div className="module-note mt-5 text-sm">
-            First version deliberately favors traceability over automation theater: operators can now register what exists,
-            what changed, who owns it, and which projects rely on it.
           </div>
         </article>
       </div>
@@ -1028,7 +969,7 @@ export default async function DataHubPage() {
         </article>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+      <div>
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
@@ -1104,39 +1045,6 @@ export default async function DataHubPage() {
               })}
             </div>
           )}
-        </article>
-
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-violet-500/10 text-violet-700 dark:text-violet-300">
-                <ShieldCheck className="h-5 w-5" />
-              </span>
-              <div className="module-section-heading">
-                <p className="module-section-label">Operating note</p>
-                <h2 className="module-section-title">Why this slice matters</h2>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-5 space-y-3 text-sm text-muted-foreground">
-            <div className="module-subpanel">
-              Connectors, datasets, and jobs now exist as first-class workspace records instead of scattered assumptions
-              inside analysis code paths.
-            </div>
-            <div className="module-subpanel">
-              Provenance fields are visible where operators actually need them: source URL, license posture, schema
-              version, checksum, cadence, and last refresh timing.
-            </div>
-            <div className="module-subpanel">
-              Projects can now surface linked datasets, which closes the gap between the new Planning OS shell and the
-              geospatial / data-fabric layer under it.
-            </div>
-            <div className="module-subpanel">
-              Next logical wave: automated connector runners, evidence-pack exports, and richer Corridor Analysis
-              run-to-dataset lineage.
-            </div>
-          </div>
         </article>
       </div>
     </section>

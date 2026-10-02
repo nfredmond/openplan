@@ -1,8 +1,6 @@
 export { ProjectContracts } from "@/components/invoicing/contracts/project-contracts";
 import type { ComponentProps, ReactNode } from "react";
 import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
-import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
-import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
 import { ProjectStageGateBoard } from "@/components/projects/project-stage-gate-board";
 import { ProjectPostureHeader } from "./project-posture-header";
@@ -32,7 +30,6 @@ export function ProjectOverviewTab({
   aerialCachedPostureUpdatedAt,
   spineSummary,
   spineRollup,
-  operationsSummary,
   stageGateSummary,
   stageGateRunOptions,
   canRecordDecision,
@@ -46,7 +43,6 @@ export function ProjectOverviewTab({
   aerialCachedPostureUpdatedAt: string | null;
   spineSummary: ComponentProps<typeof ProjectSpineBoard>["summary"];
   spineRollup: ComponentProps<typeof ProjectSpineBoard>["rollup"];
-  operationsSummary: ComponentProps<typeof WorkspaceCommandBoard>["summary"];
   stageGateSummary: ComponentProps<typeof ProjectStageGateBoard>["stageGateSummary"];
   stageGateRunOptions: ComponentProps<typeof ProjectStageGateBoard>["runOptions"];
   canRecordDecision: boolean;
@@ -77,25 +73,13 @@ export function ProjectOverviewTab({
         description={`${project.name} is the context anchor. Move next into analysis evidence, engagement signal, packet assembly, and readiness proof without losing the project thread.`}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <div className="space-y-6">
-          <WorkspaceRuntimeCue summary={operationsSummary} />
-          <WorkspaceCommandBoard
-            summary={operationsSummary}
-            label="Across your workspace"
-            title="What needs attention next"
-            description={`Workspace priorities — packet, funding-window, and setup pressure — stay visible while you work on ${project.name}. Use this board to keep the project aligned with the rest of the workspace.`}
-          />
-        </div>
-
-        <ProjectStageGateBoard
-          stageGateSummary={stageGateSummary}
-          workspaceId={project.workspace_id}
-          projectId={project.id}
-          canRecordDecision={canRecordDecision}
-          runOptions={stageGateRunOptions}
-        />
-      </div>
+      <ProjectStageGateBoard
+        stageGateSummary={stageGateSummary}
+        workspaceId={project.workspace_id}
+        projectId={project.id}
+        canRecordDecision={canRecordDecision}
+        runOptions={stageGateRunOptions}
+      />
 
       <ProjectIdentityEditor
         project={identity}
