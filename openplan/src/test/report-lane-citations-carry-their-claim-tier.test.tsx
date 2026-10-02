@@ -99,6 +99,9 @@ const redirectMock = vi.fn((..._args: unknown[]) => {
 });
 const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
 
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: (...args: unknown[]) => redirectMock(...args),
@@ -203,7 +206,7 @@ function seedPage(overrides: Record<string, unknown> = {}) {
 }
 
 /**
- * The report page is tabbed, and a closed tab is not rendered at all. The cited
+ * The report page is tabbed, and this file renders only the open tab (`helpers/open-tab-only`). The cited
  * runs and their claim tiers are listed by `ReportCompositionAudit`, on the
  * "evidence" tab, so that is the default here. The notice above the tab strip
  * renders on every tab.

@@ -3,6 +3,9 @@ import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // This suite invokes server pages in jsdom; retain their real data loaders.
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("server-only", () => ({}));
 
 const createClientMock = vi.fn();

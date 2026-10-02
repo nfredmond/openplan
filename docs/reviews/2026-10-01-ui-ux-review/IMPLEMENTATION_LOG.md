@@ -207,23 +207,34 @@ Checks: 743 tests in 48 files (every page test that renders a tabbed record page
 | Each record-page tab is wrapped in React's `Activity` (`components/ui/page-tab-panel.tsx`). The server leaves closed tabs out of the HTML; once the page runs, React renders them hidden and keeps their state. Before, every tab was in the HTML and hidden with a class. The project overview page drops from 576 KB on main to 454 KB. The page's data payload still carries every tab, so that is the whole saving | `page-tabs-nav-and-panels.test.tsx`: the closed panel is hidden, it is absent from server HTML, and a typed draft survives closing and reopening its tab. Returning nothing for a closed tab fails 2; leaving it visible fails 2. Chrome: sizes measured on port 3000 (main 32dbc44b) and 3211 |
 | A draft survives a tab switch. Unmounting closed tabs, the plan in the review, would have lost it; the engagement page relied on this | Chrome at both widths: text typed in the project's RTP rationale field on Overview is still there after Delivery and back |
 | A map in a closed tab is not started. The engagement Responses maps start when that tab opens and are removed when it closes | Chrome: no map elements on Record, two drawn on Responses, none after moving to Setup, two again on return; no page errors |
-| 230 page tests in 11 files now open the tab that holds what they check. Before, they found content in closed tabs. Negative checks that passed only because their tab was closed now run on the tab where the text would appear, or on every tab. Two order checks on the engagement page became per-tab placement checks, because those sections are never on screen together | Each file was mutated by pointing a changed test at a wrong tab; each failed on the missing content and passed after a harmless edit |
+| 230 page tests in 11 files now open the tab that holds what they check. Before, they found content in closed tabs. Negative checks that passed only because their tab was closed now run on the tab where the text would appear, or on every tab. Two order checks on the engagement page became per-tab placement checks, because those sections are never on screen together | Each file was mutated by pointing a changed test at a wrong tab; each failed on the missing content and passed after a harmless edit. **Correction, same day:** those runs used a version that returned nothing for a closed tab. Under `Activity`, jsdom keeps closed tabs in the page, hidden, so a wrong-tab test passed again (checked on the plan page). Fixed in the next section |
 | "Open invoice lane" on a project's Delivery tab pointed at the invoice list on the Funding tab and went nowhere. It now reads "Open invoices" and opens the Funding tab at the list | Chrome at both widths: lands on `?tab=funding#project-invoices`, list at the top of the window. The jargon count for "lane" fell from 54 to 53 and the baseline was lowered |
 | The engagement banner for comments awaiting review told the reader to use "the moderation sections below", which are on the Responses tab. It now has a "Review comments" link to Responses, shown on every other tab. Its title no longer uses a dash | Two new tests; showing the link on Responses fails one, pointing it at Setup fails the other. Not seen on screen: no live campaign in the test workspace has comments waiting |
 
-Found while doing this, not fixed yet:
+Found while doing this (fixed in the next section):
 
 - Plan page: the "Linked work" tab is marked unreadable only for scenarios, campaigns and reports, not for linked projects or supporting models. The banner above the tabs still names every failed read.
 - Plan page: "No explicit links yet" points to the "Plan record workflow panel", which is now the "Edit plan" tab.
 - Report page: when the stage-gate log cannot be read, the History tab drops the stage-gate row without saying why; the explanation is only on Packet.
 
+## Page tests check the tab again; plan and report tab warnings, October 2, 2026
+
+Checks: 746 tests in 48 files on one worker, then the plan, report and tab-guard files again after the last edits; lint on changed files; dead-code check clean. No browser pass for this batch: the changes are a test stand-in and tab warning lists, and the warning marks were seen in the previous batch's journey only in their passing state.
+
+| Change | How it was checked |
+|---|---|
+| New test stand-in `src/test/helpers/open-tab-only.tsx` renders only the open tab. The 11 page-test files that render a tabbed page use it, so a test passes only when it opens the tab that holds what it checks. The real panel's hiding, server omission and draft keeping stay covered in `page-tabs-nav-and-panels.test.tsx` | Pointing the plan readiness test at the Edit tab now fails (it passed under the real panel). Inverting the stand-in to render only closed tabs fails 172 tests across 10 files; the eleventh checks only content above the tabs. A harmless edit to the stand-in keeps all 246 passing |
+| Plan page: tab definitions move to `plans/[planId]/_tabs.ts` (`buildPlanTabs`), registered with the read-failure wiring guard. "Linked work" now names failed reads of linked projects, supporting models, their link sets, the plan's own links and the scenario, campaign and report statistics; "Overview" names readiness checks and the plan's own links. Before, only scenarios, campaigns and reports marked the tab | Two new page tests. Dropping either model lane fails its test; wiring the models flag to `false` fails the guard and the test; reordering lanes passes |
+| Plan page: "No explicit links yet" pointed to the "Plan record workflow panel". It now says to use the Edit plan tab | Existing empty-state tests pass |
+| Report page: the History tab now names a failed read of the live stage-gate board or the project's crash evidence, in the notice above the tabs and with a mark on the tab. Before, History dropped the stage-gate row without saying why | Three report tests gained the History mark, plus one new crash-evidence test and a control. Wiring the flag to `false` fails the guard and two tests; dropping either lane fails its tests |
+| The notice "Reads that failed behind a tab" joined each tab to its list with an em dash. It now uses a colon ("Funding: funding awards"). The stage-gate sentence on the report page also loses its dash | `page-tabs-url-and-anchors.test.ts` pins "Funding: funding awards"; restoring the dash fails it |
+
 ## What is next
 
-1. The three page findings listed under "Closed tabs".
-2. Aerial onto the map-first frame.
-3. Number formatting (review finding M10) and charts (M9).
-4. Copy pass. This waits on Nathaniel's vocabulary answers (decision D6).
-5. Keyboard and screen-reader walk.
-6. The four remaining palettes.
-7. A hosted smoke script for the public pages.
-8. Spanish strings reviewed by a speaker; the footer credit is Nathaniel's call.
+1. Aerial onto the map-first frame.
+2. Number formatting (review finding M10) and charts (M9).
+3. Copy pass. This waits on Nathaniel's vocabulary answers (decision D6).
+4. Keyboard and screen-reader walk.
+5. The four remaining palettes.
+6. A hosted smoke script for the public pages.
+7. Spanish strings reviewed by a speaker; the footer credit is Nathaniel's call.

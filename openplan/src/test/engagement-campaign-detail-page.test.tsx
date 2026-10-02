@@ -341,6 +341,9 @@ const fromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected table: ${table}`);
 });
 
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: (...args: unknown[]) => redirectMock(...args),
@@ -464,8 +467,8 @@ async function renderPage(searchParams?: { created?: string; tab?: string }) {
 }
 
 /**
- * The console's four URL tabs, in the order the strip shows them. A closed tab
- * is not rendered at all, so an assertion only means something on the tab that
+ * The console's four URL tabs, in the order the strip shows them. This file renders
+ * only the open tab (`helpers/open-tab-only`), so an assertion only means something on the tab that
  * holds the content it names.
  */
 const CAMPAIGN_TABS = ["setup", "responses", "analysis", "record"] as const;
@@ -1805,7 +1808,7 @@ describe("EngagementCampaignDetailPage", () => {
 
     /*
      * The two order tests below compared DOM positions in one render when every
-     * tab was in the document. With closed tabs unmounted the sections being
+     * tab was in the document. With only the open tab rendered, the sections being
      * compared are never in the same render, so the order is now the order of
      * their TABS: each section is pinned to its tab's open panel, and the tab
      * links are compared in the strip.

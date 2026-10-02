@@ -90,6 +90,9 @@ const CYCLE_ROW = {
   updated_at: "2026-04-14T06:30:00.000Z",
 };
 
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: () => redirectMock(),

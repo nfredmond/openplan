@@ -3,6 +3,9 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // This suite invokes server pages in jsdom; retain their real data loaders.
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("server-only", () => ({}));
 
 /**
@@ -163,7 +166,7 @@ const ALTERNATIVE_ENTRY_ROW = {
 };
 
 /**
- * The detail page is tabbed, and a closed tab is not rendered at all. The
+ * The detail page is tabbed, and this file renders only the open tab (`helpers/open-tab-only`). The
  * registry under test lives on the "alternatives" tab, so a negative assertion
  * made on any other tab would pass because the panel is absent, not because it
  * behaved. Each test names its tab.

@@ -262,6 +262,9 @@ const fromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected table: ${table}`);
 });
 
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: (...args: unknown[]) => redirectMock(...args),
@@ -975,6 +978,9 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
   it("shows the governance and stage-gate provenance frozen into the packet", async () => {
     await renderReport("history");
 
+    // The control for the History mark: every read succeeded.
+    expect(screen.queryByTestId("page-tab-unreadable-history")).not.toBeInTheDocument();
+
     expect(
       screen.getByText("Governance and stage-gate provenance")
     ).toBeInTheDocument();
@@ -1234,6 +1240,11 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     expect(
       screen.queryByText(/Review counts and next steps still match the saved report snapshot/i)
     ).not.toBeInTheDocument();
+    // A reader on History, where the gate row is missing, is told why.
+    expect(screen.getByTestId("page-tab-unreadable-history")).toBeInTheDocument();
+    expect(screen.getByTestId("page-tabs-unreadable-notice")).toHaveTextContent(
+      "History: the live stage-gate board"
+    );
 
     // The packet's freshness line is on the Packet tab.
     cleanup();
@@ -1349,6 +1360,20 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     ).not.toBeInTheDocument();
   });
 
+  it("marks History when the project's live crash evidence could not be read", async () => {
+    safetyIngestLimitMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "permission denied for table safety_crash_ingests" },
+    });
+
+    await renderReport("packet");
+
+    expect(screen.getByTestId("page-tab-unreadable-history")).toBeInTheDocument();
+    expect(screen.getByTestId("page-tabs-unreadable-notice")).toHaveTextContent(
+      "History: the project's linked crash evidence"
+    );
+  });
+
   it("reports the stage-gate check uncovered when the workspace binding cannot be read, instead of rendering default gates", async () => {
     const stageUnreadableWorkspace = () =>
       workspaceMaybeSingleMock.mockResolvedValueOnce({
@@ -1362,6 +1387,11 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
 
     expect(screen.queryByText(/Review counts and next steps still match/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Snapshot 1 pass/i)).not.toBeInTheDocument();
+    // A reader on History, where the gate row is missing, is told why.
+    expect(screen.getByTestId("page-tab-unreadable-history")).toBeInTheDocument();
+    expect(screen.getByTestId("page-tabs-unreadable-notice")).toHaveTextContent(
+      "History: the live stage-gate board"
+    );
 
     // ...nor in the packet's freshness line (Packet)...
     cleanup();

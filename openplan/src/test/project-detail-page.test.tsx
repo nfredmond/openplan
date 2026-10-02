@@ -473,6 +473,9 @@ const fromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected table: ${table}`);
 });
 
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: (...args: unknown[]) => redirectMock(...args),
@@ -578,7 +581,7 @@ vi.mock("@/lib/operations/workspace-summary", async () => {
 import ProjectDetailPage from "@/app/(app)/projects/[projectId]/page";
 
 /**
- * The page is URL-tabbed and a closed tab is not rendered at all, so a test
+ * The page is URL-tabbed and this file renders only the open tab (`helpers/open-tab-only`), so a test
  * names the tab whose content it asserts on. With no tab the page opens
  * "overview": the posture header, report freshness, the crosslink board, the
  * readiness rollup and stage gates. "delivery" holds milestones, submittals and

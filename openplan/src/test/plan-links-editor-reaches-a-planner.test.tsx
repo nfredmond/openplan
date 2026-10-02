@@ -282,6 +282,9 @@ function baseStore(): Record<string, Row[]> {
 const createClientMock = vi.fn();
 const routerRefreshMock = vi.fn();
 
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
 }));
@@ -364,7 +367,7 @@ function installRouteBackedFetch() {
 }
 
 /**
- * The plan page is URL-tabbed and a closed tab is not rendered at all. The link
+ * The plan page is URL-tabbed and this file renders only the open tab (`helpers/open-tab-only`). The link
  * editor (`PlanDetailControls`) lives on the "edit" tab, so that is the default
  * here; the explicit-links empty state lives on the "linked" tab.
  */

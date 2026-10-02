@@ -17,7 +17,8 @@ import { RecordHubHeader } from "@/components/ui/record-hub-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { titleizeEngagementValue, engagementStatusTone } from "@/lib/engagement/catalog";
-import { resolvePageTab, type PageTabDefinition } from "@/lib/ui/page-tabs";
+import { resolvePageTab } from "@/lib/ui/page-tabs";
+import { buildPlanTabs } from "./_tabs";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -180,8 +181,6 @@ function SectionReadFailure({ title, noun }: { title: string; noun: string }) {
 
 /** A count that cannot be trusted is shown as unknown, never as zero. */
 const UNKNOWN_COUNT = "—";
-
-type PlanTabKey = "overview" | "linked" | "edit";
 
 export default async function PlanDetailPage({
   params,
@@ -709,16 +708,17 @@ export default async function PlanDetailPage({
     be one scroll of ten section cards under a two-card header, with the
     workspace-wide command board repeated beside the plan's own controls.
   */
-  const unreadableLinks = [
-    linkedScenariosUnreadable ? "scenarios" : null,
-    linkedCampaignsUnreadable ? "engagement campaigns" : null,
-    linkedReportsUnreadable ? "reports" : null,
-  ].filter((label): label is string => label !== null);
-  const planTabs: PageTabDefinition<PlanTabKey>[] = [
-    { key: "overview", label: "Overview" },
-    { key: "linked", label: "Linked work", unreadable: unreadableLinks },
-    { key: "edit", label: "Edit plan" },
-  ];
+  const planTabs = buildPlanTabs({
+    overview: { readinessBasis: readinessBasisUnreadable, planLinks: planLinksUnreadable },
+    linked: {
+      projects: linkedProjectsUnreadable, planLinks: planLinksUnreadable,
+      scenarios: linkedScenariosUnreadable || scenarioStatsUnreadable,
+      campaigns: linkedCampaignsUnreadable || campaignStatsUnreadable,
+      reports: linkedReportsUnreadable || reportStatsUnreadable,
+      supportingModels: supportingModelsUnreadable,
+      supportingModelLinks: supportingModelLinksUnreadable,
+    },
+  });
   const activeTab = resolvePageTab(planTabs, resolvedSearchParams.tab, "overview");
 
   return (
@@ -1266,7 +1266,7 @@ export default async function PlanDetailPage({
             <SectionReadFailure title="The plan's link set could not be read" noun="explicit plan links" />
           ) : planLinks.length === 0 ? (
             <div className="mt-5">
-              <EmptyState title="No explicit links yet" description="Project-derived context is already shown above. Use Linked records in the Plan record workflow panel to attach projects, programs, reports, or scenario sets directly." compact />
+              <EmptyState title="No explicit links yet" description="Work shown above comes through the primary project. To link a project, program, report or scenario set to this plan directly, use the Edit plan tab." compact />
             </div>
           ) : (
             <div className="mt-5 space-y-4">
