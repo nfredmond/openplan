@@ -27,6 +27,7 @@ function ApprovalPanel({ scope, revision, hasUnsavedReview, memory, onAccessLost
   const [loaded, setLoaded] = useState<Loaded | null>(null), [ready, setReady] = useState(false), [blocked, setBlocked] = useState(false);
   const [busy, setBusy] = useState(false), [accessLost, setAccessLost] = useState(false);
   const [error, setError] = useState<string | null>(null), [notice, setNotice] = useState<string | null>(null);
+  const [historyError, setHistoryError] = useState<string | null>(null);
   const [copies, setCopies] = useState<ReturnType<typeof listPreservedApprovalCopies>>([]);
   const endpoint = `/api/engagement/campaigns/${campaignId}/synthesis/approvals`;
   const adopt = (value: ApprovalWorkingCopy) => { workingRef.current = value; setWorking(value); };
@@ -46,8 +47,8 @@ function ApprovalPanel({ scope, revision, hasUnsavedReview, memory, onAccessLost
       // This protocol reader validates the full current-context schema and its history scope before use.
       const current = data.current as SynthesisApprovalContext;
       synthesisApprovalForRevision(history, current);
-      if (currentEpoch === epoch.current && sequence === reads.current) setLoaded({ current, history });
-    } catch (cause) { if (currentEpoch === epoch.current && sequence === reads.current) { setLoaded(null); setError(message(cause)); } }
+      if (currentEpoch === epoch.current && sequence === reads.current) { setLoaded({ current, history }); setHistoryError(null); }
+    } catch (cause) { if (currentEpoch === epoch.current && sequence === reads.current) { setLoaded(null); setHistoryError(message(cause)); } }
   }, [endpoint, reviewId, userId, workspaceId, campaignId, sourceId, sourceSha256, preparationSha256, loseAccess]);
 
   // Only leaving this keyed scope invalidates a write. Revision selection still needs its exact receipt.
@@ -117,10 +118,11 @@ function ApprovalPanel({ scope, revision, hasUnsavedReview, memory, onAccessLost
     <p>Staff approval applies to this exact saved version. It does not publish findings, establish representative support or change unassessed interpretation.</p>
     <p role="status">{status ? `Revision ${revision.revisionNo} is ${status.state}.` : "Approval status is unavailable until its history is verified."}</p>
     {notice ? <p role="status">{notice}</p> : null}{error ? <p role="alert" className="break-words">{error}</p> : null}
+    {historyError ? <p role="alert" className="break-words">{historyError}</p> : null}
     {blocked ? <p role="alert">Browser recovery needs attention. Preserve or copy the latest reason before leaving or reloading.</p> : null}
     {working.draft && (blocked || otherDraft) ? <details><summary>Latest approval reason retained on screen</summary><pre className="whitespace-pre-wrap break-all text-xs">{JSON.stringify(working.draft, null, 2)}</pre></details> : null}
     {otherDraft ? <p>An unfinished approval reason belongs to another revision. Preserve it before starting another action.</p> : null}
-    {hasUnsavedReview ? <p>A review correction is unfinished. Save or preserve that correction before a new approval.</p> : null}
+    {hasUnsavedReview ? <p>A review correction or proposal import is unfinished. Save or preserve it before a new approval.</p> : null}
     {working.pending ? <div className="rounded border p-3 space-y-2"><p>Exact {working.pending.operation} request for revision {working.pending.revisionNo} retained for retry.</p><p className="text-xs break-all">Request {working.pending.requestId}</p><Button type="button" className={buttonClass} disabled={busy || blocked || !ready} onClick={() => void send()}>Retry retained approval request</Button></div> : null}
     <label className="block">Reason for approval or withdrawal<textarea className="block w-full rounded border p-2" rows={3}
       disabled={disabled} value={otherDraft ? "" : working.draft?.reason ?? ""} onChange={event => update({ ...workingRef.current,

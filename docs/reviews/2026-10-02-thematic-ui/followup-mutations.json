@@ -1,0 +1,58 @@
+{
+  "cases": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-followup-mutation-harmless.log",
+      "logSha256": "65400a5d3994a41bee8d75c9c5b77f4f4858fa1346883166139ba7587c5d9ae7",
+      "seconds": 19.7
+    },
+    {
+      "name": "unmounted-read",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-followup-mutation-unmounted-read.log",
+      "logSha256": "cbdc094281adb4d2419614e2cffcccdc86b16299e6d75a7299fe4a6b16d175ca",
+      "seconds": 3.02
+    },
+    {
+      "name": "aborted-read",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-followup-mutation-aborted-read.log",
+      "logSha256": "ad38b7f24b65e7ad0fe71f052807d5834889c3213c34564dff244fb01d92f2b9",
+      "seconds": 3.12
+    },
+    {
+      "name": "refresh-loading",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-followup-mutation-refresh-loading.log",
+      "logSha256": "b13483a34998c46d6169e88b94e6de5abd83f0b45d46977be91bcdf3b3dd89c6",
+      "seconds": 3.17
+    },
+    {
+      "name": "context-notes",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-followup-mutation-context-notes.log",
+      "logSha256": "8f5b00bcaf70fbe8917e604c7d7ce2489ef443f3e03a1985b9c69b532752cecf",
+      "seconds": 3.27
+    },
+    {
+      "name": "context-uncertainty",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-followup-mutation-context-uncertainty.log",
+      "logSha256": "a5d28bffaf80869d4380eadca7ec1b4dea166238ad6804ec1a2b8b59c7fa15fe",
+      "seconds": 3.22
+    }
+  ],
+  "sourceRestored": true,
+  "sourceSha256": {
+    "panel": "5ad66152ff37c97affb1d418f0446be33c207f7a61d4ce6bbbfdd4397cd5c9b9",
+    "evidence": "624c1dd588401afae91d5f49d7ef42293b86593503c3e1a5010219efa3c7d5d8",
+    "parent": "682cf12fac517972ec0fe1ff4376fd9f2cb1a73f0acfc49a4bec21a7844a6091"
+  }
+}

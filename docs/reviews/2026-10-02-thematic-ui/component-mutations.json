@@ -1,0 +1,285 @@
+{
+  "initial": {
+    "cases": [
+      {
+        "name": "harmless",
+        "exit": 1,
+        "validOutcome": false,
+        "log": "t3-thematic-ui-component-mutation-harmless.log",
+        "logSha256": "1af6f889c011ded2ba52b1b412214a7664751ee7ff060fa03acfd7d6f7bd1124",
+        "seconds": 14.54
+      },
+      {
+        "name": "retained-inspection",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-retained-inspection.log",
+        "logSha256": "eec36875257c44efef20120b6282d07857cf0a6d78211e4f9ee49db6947b66cf",
+        "seconds": 3.32
+      },
+      {
+        "name": "quota-memory",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-quota-memory.log",
+        "logSha256": "b780c7bc8c1ffd40d320089955dec628b36cbbf20e78dc19622621e81038493d",
+        "seconds": 3.17
+      },
+      {
+        "name": "failed-read-clear",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-failed-read-clear.log",
+        "logSha256": "b18b0869f962dee9fc8ea77213bdb2406dece09267fde1c92c6e0539f062a71d",
+        "seconds": 3.22
+      },
+      {
+        "name": "access-clear",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-access-clear.log",
+        "logSha256": "75dfffc47bae71ff3a169a76ee13c82573be1df1f845ff0a3828318e5766faf3",
+        "seconds": 3.17
+      },
+      {
+        "name": "reason-required",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-reason-required.log",
+        "logSha256": "5145c80e712310f01fe42c07a4ef74dfacafcfdcfdb9fd3c4b7be925edbc235a",
+        "seconds": 3.22
+      },
+      {
+        "name": "parent-hash",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-parent-hash.log",
+        "logSha256": "0ff6719e089383bcbf967c6f64a4ee43479ae54340dd9247ef3615701c8ccb5f",
+        "seconds": 3.22
+      },
+      {
+        "name": "latest-preserve",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-latest-preserve.log",
+        "logSha256": "a25b0d3dddd36609f7c92d5ff7e96d8a2351509595d3ca0ef462bab709215739",
+        "seconds": 3.27
+      },
+      {
+        "name": "closed-save",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-closed-save.log",
+        "logSha256": "0b2286ed3a726a41c0ef079bcc4a2aae1d1d330022033315b3185697957f2b69",
+        "seconds": 3.22
+      },
+      {
+        "name": "artifact-bytes",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-artifact-bytes.log",
+        "logSha256": "0cf5e8cf88d404c1060066277cf1d2c232b2d41759d1716ce162adf502e0cefb",
+        "seconds": 3.72
+      },
+      {
+        "name": "original-text",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-original-text.log",
+        "logSha256": "95f4d2a51e04cbf9228109fc985c6e947574125842f9137af479b066bfc5600b",
+        "seconds": 3.37
+      },
+      {
+        "name": "selected-focus",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-selected-focus.log",
+        "logSha256": "efa266c8f6918ef903889eff69bbe725aca0de141a31a0f005d0d634fa34c23b",
+        "seconds": 3.17
+      },
+      {
+        "name": "approval-competes",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-approval-competes.log",
+        "logSha256": "80a81a01c1e5d6b3bea0296d35d5c1454829f43263fded47a793c83cdb439837",
+        "seconds": 1.92
+      },
+      {
+        "name": "correction-competes",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-correction-competes.log",
+        "logSha256": "d9561743ce668d1425c18efaa5835e0b61a40c260bc33dfb6769496060759239",
+        "seconds": 1.87
+      }
+    ],
+    "sourceRestored": true,
+    "sourceSha256": {
+      "panel": "8f1b8a0d98d61b3f638d3405693859623649703fd6b4462d7eecf67c948a1121",
+      "evidence": "2e819e64eb0bc7f2021749a7a8b8b5e518e26379716eedd1f3855326c324d403",
+      "parent": "682cf12fac517972ec0fe1ff4376fd9f2cb1a73f0acfc49a4bec21a7844a6091"
+    }
+  },
+  "corrected": {
+    "cases": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-harmless.log",
+        "logSha256": "6b9a60fe6ddcdb63294ef8c2590e0be3a58e431fd5918c5ae9df0dae3e09ca0b",
+        "seconds": 14.84
+      },
+      {
+        "name": "retained-inspection",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-retained-inspection.log",
+        "logSha256": "4cc9abe81f394853b225e7448576d98b22ec92a4f8e132d8a9e88f912b22b6dd",
+        "seconds": 3.37
+      },
+      {
+        "name": "quota-memory",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-quota-memory.log",
+        "logSha256": "57c1f80bae461b0285d2471c003aab4777ddc39ba618aa27a1b6b7dbcc8712d1",
+        "seconds": 3.22
+      },
+      {
+        "name": "failed-read-clear",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-failed-read-clear.log",
+        "logSha256": "fd5b93ef3065e8a367e29ff952a7d334a386b12848b5318ebc27fb09c51b2a20",
+        "seconds": 3.17
+      },
+      {
+        "name": "access-clear",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-access-clear.log",
+        "logSha256": "752bf53dc4a8a74e5ed507fa77632d2d94080c1847913df69397f2e4488908e1",
+        "seconds": 3.27
+      },
+      {
+        "name": "reason-required",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-reason-required.log",
+        "logSha256": "0314a7395c6bd099d08ee9e46775c2f3cebdcddc651678011e5552401414303e",
+        "seconds": 3.17
+      },
+      {
+        "name": "parent-hash",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-parent-hash.log",
+        "logSha256": "b15fdc6490052b15405f50a8ff6e8be938230a549df089ea9cf5f4af64a4fef8",
+        "seconds": 3.12
+      },
+      {
+        "name": "latest-preserve",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-latest-preserve.log",
+        "logSha256": "d4d1c6b6cc7fc27cf50f774eb1ac2596446a517a25364f170aa811e4f962cf20",
+        "seconds": 3.27
+      },
+      {
+        "name": "closed-save",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-closed-save.log",
+        "logSha256": "81baff1581ec239ae0ae2b76d2056311504e65f197b0b67d2b5596dbe4572451",
+        "seconds": 3.27
+      },
+      {
+        "name": "artifact-bytes",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-artifact-bytes.log",
+        "logSha256": "4beee675e1cc4fb54be0ba8c05a34cc8269c704ee06e6e21b024207dfad89258",
+        "seconds": 3.77
+      },
+      {
+        "name": "original-text",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-original-text.log",
+        "logSha256": "139bba084bf8b4b6617e80febb9053302ce2e70aac45bab89f60c93bd31d9d1e",
+        "seconds": 3.27
+      },
+      {
+        "name": "selected-focus",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-selected-focus.log",
+        "logSha256": "126a78b816bb47c4d53c7788e0540e500cf5e7bb1f0170aa607372ab89357568",
+        "seconds": 3.17
+      },
+      {
+        "name": "approval-competes",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-approval-competes.log",
+        "logSha256": "bb293f064a4a67f2f22ba1e156f7b6d2c4df18822b0d5789bd143ef0f42e8ecf",
+        "seconds": 1.97
+      },
+      {
+        "name": "correction-competes",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-component-mutation-correction-competes.log",
+        "logSha256": "f291443adb5946fcad1c6e56aa4404094dcb6d3c3cea9b9c83173b25bacd7923",
+        "seconds": 1.97
+      },
+      {
+        "name": "restoring-competes",
+        "exit": 0,
+        "validOutcome": false,
+        "log": "t3-thematic-ui-component-mutation-restoring-competes.log",
+        "logSha256": "dc3a2463a27f6104a0c831d883f3b19a979e63f810a03d6c5cc401e594696ef2",
+        "seconds": 1.97
+      }
+    ],
+    "sourceRestored": true,
+    "sourceSha256": {
+      "panel": "1e7d918074804d4226d90a60d9a6c862c261ba68b35ada6cdaf6f848b1f4088f",
+      "evidence": "2e819e64eb0bc7f2021749a7a8b8b5e518e26379716eedd1f3855326c324d403",
+      "parent": "682cf12fac517972ec0fe1ff4376fd9f2cb1a73f0acfc49a4bec21a7844a6091"
+    }
+  },
+  "restoration": {
+    "cases": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-restoration-mutation-harmless.log",
+        "logSha256": "2d9a705ef3f968c3e6fafe843cca3fc0e485dd1c0b33bacc61bdd2da18dad21f",
+        "seconds": 15.94
+      },
+      {
+        "name": "restoring-competes",
+        "exit": 1,
+        "validOutcome": true,
+        "log": "t3-thematic-ui-restoration-mutation-restoring-competes.log",
+        "logSha256": "e2357f934cb709868edbb93a5dd53081dd2423a975e599ea6409cc353faa2e5b",
+        "seconds": 3.22
+      }
+    ],
+    "sourceRestored": true,
+    "sourceSha256": {
+      "panel": "1e7d918074804d4226d90a60d9a6c862c261ba68b35ada6cdaf6f848b1f4088f",
+      "evidence": "2e819e64eb0bc7f2021749a7a8b8b5e518e26379716eedd1f3855326c324d403",
+      "parent": "682cf12fac517972ec0fe1ff4376fd9f2cb1a73f0acfc49a4bec21a7844a6091"
+    }
+  },
+  "blindCategories": [
+    "Browser layout and actual downloads",
+    "Native access and transaction behavior",
+    "Semantic quality and practitioner usefulness"
+  ]
+}

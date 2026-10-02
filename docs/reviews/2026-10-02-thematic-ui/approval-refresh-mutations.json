@@ -1,0 +1,27 @@
+{
+  "cases": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "validOutcome": true,
+      "log": "t3-approval-refresh-harmless.log",
+      "logSha256": "6cadaaa825f32b4e777ac8f51887cb72936443856156f2067d652368fe5c8e41"
+    },
+    {
+      "name": "stale-history-error",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-approval-refresh-stale-history-error.log",
+      "logSha256": "b902baecd62892fd9df9c3c66d87ef3cf990972420ea56782f46dd5e7e0adca4"
+    },
+    {
+      "name": "clear-save-error",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-approval-refresh-clear-save-error.log",
+      "logSha256": "42f23eb8eb6815ba5196b37fec97d66f7cb1dd2710ac7d094fde530933584971"
+    }
+  ],
+  "sourceRestored": true,
+  "sourceSha256": "1f2d7f3b3634856258d192f11ba7153a1d98686c2c3738c4bfc69142dc3c4357"
+}

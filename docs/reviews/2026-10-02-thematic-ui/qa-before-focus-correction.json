@@ -1,0 +1,25 @@
+{
+  "session": 41073,
+  "exitCode": 0,
+  "application": {
+    "passed": 17544,
+    "skipped": 1469,
+    "filesPassed": 1409,
+    "filesSkipped": 82,
+    "seconds": 475.01
+  },
+  "connector": {
+    "passed": 387,
+    "skipped": 4
+  },
+  "lint": "passed",
+  "configuredDeadcode": "passed",
+  "dependencyAuditVulnerabilities": 0,
+  "webpack": "passed",
+  "typescript": "passed",
+  "fullNativeRls": "explicitly skipped in QA; separate installed discovery16 and previously retained combined native evidence",
+  "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-thematic-ui-final-qa.log",
+  "logSha256": "0dc2b17f7f3d41e245295124b29fd96243b6fc53bcd42533f3bce856fde868ec",
+  "sourceManifest": "after-crash-source-manifest.json",
+  "boundary": "Before subsequent focus-refresh correction. These full results do not cover later edits."
+}

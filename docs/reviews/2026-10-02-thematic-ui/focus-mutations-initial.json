@@ -1,0 +1,52 @@
+{
+  "cases": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "validOutcome": true,
+      "log": "t3-focus-harmless.log",
+      "logSha256": "4ac9aeca61e84dafacb9c110f2ded64a34256b0c23c90b6ce77adb8072489d48"
+    },
+    {
+      "name": "remember-request",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-focus-remember-request.log",
+      "logSha256": "c9a975b0580416d3837b3cfdd06c896602dbd3ec04447d5fc0596461da259a07"
+    },
+    {
+      "name": "reopen-panel",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-focus-reopen-panel.log",
+      "logSha256": "633471fbc4ab4e106f61860dcb06b482cff76ead599495717a84eedc5b2e02eb"
+    },
+    {
+      "name": "source-memory",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-focus-source-memory.log",
+      "logSha256": "e0487efdd85e43aef060cdaa81711b2d306ebdbd1405a147ea65f76fdb5b2274"
+    },
+    {
+      "name": "explicit-close",
+      "exit": 0,
+      "validOutcome": false,
+      "log": "t3-focus-explicit-close.log",
+      "logSha256": "098748fd40a28d2c372e0b9725dfd3e559b0f70a1a8f76fff90d81fb0551ac7c"
+    },
+    {
+      "name": "fresh-read",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-focus-fresh-read.log",
+      "logSha256": "96c61def47611910e65a58541cac841474d16a44ebbb75cd3f85ce7ae3f76169"
+    }
+  ],
+  "sourceRestored": true,
+  "sourceSha256": {
+    "panel": "ed65849a898e7fe1f7cd521a4b05a26ba92effec0017f453d58017b7e3071c4d",
+    "review": "efdaf4e1813c045b382a1049ddfd7499e6ee2196fcf975f6aa0f58d6342ee954",
+    "source": "944754a0a5627d77b0ec8f1b27ba17cb3900e7fe81ec99d3c8101a1b8a22a8b4"
+  }
+}

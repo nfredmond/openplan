@@ -20,6 +20,20 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+The unreleased Analysis UI now includes discovery and inspection of saved thematic
+proposals, an explicit replacement preview and exact import recovery. Imported
+reviews display their original machine evidence and uncertainty. Apply
+`20261015000011_engagement_synthesis_thematic_discovery.sql` for private saved-source
+browsing. Component and native checks are recorded in the
+[UI work record](docs/reviews/2026-10-02-thematic-ui/PROGRESS.md); full QA and identified
+browser acceptance remain pending. This supersedes the import-control gap in the
+backend checkpoint below without closing complete M9b or model-quality evidence.
+
+Source task serialization now fixes source-field order so identical identifiers
+produce the same retained plan regardless of caller object insertion order.
+Approval-history refresh clears recovered read failures while preserving
+unconfirmed save errors and exact retry requests.
+
 Internal thematic import now creates an exact-parent staff draft from the original
 selected proposal. It retains machine authorship, citations and uncertainty,
 replays imported history, preserves prior approvals and recovers lost replies.
