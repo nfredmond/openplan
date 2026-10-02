@@ -145,3 +145,9 @@ ceilings preserve incomplete work without clipping. Native frame staging,
 resource authorization, original-response execution custody, retained proposals
 and staff import remain the next connected work. Large final evidence collections
 that exceed the supported task budget remain a scaling gap.
+
+October 2 staging continuation: [native thematic staging](THEMATIC_STAGING.md)
+adds bounded original-frame custody, exact-prefix recovery and an atomic final
+proposal reference. It grants no execution permission. Resource authorization,
+original-response execution custody, retained proposals, staff import and the
+large final-task scaling gap remain open under the roadmap's existing M9b lane.

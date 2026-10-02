@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Internal thematic staging now retains exact evidence frames with bounded batches,
+recoverable retries and a separate final proposal reference. Preparation replays
+original inputs; cancellation stops fresh writes while preserving exact recovery.
+Apply `20261015000008_engagement_synthesis_thematic_plans.sql` before using these
+internal worker commands. Staging grants no provider execution permission.
+[Evidence and limits](docs/reviews/2026-10-01-context-history/THEMATIC_STAGING.md)
+retain the unfinished execution, proposal-storage and staff-import work.
+
 Internal synthesis preparation now retains a new staff request and its chosen
 historical context inputs. Exact retries preserve original bytes after
 cancellation, and current staff can inspect earlier work after its author leaves.

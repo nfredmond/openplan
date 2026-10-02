@@ -23,7 +23,7 @@ import { loadSynthesisThematicPreparation } from "@/lib/engagement/synthesis-the
 import { createSynthesisThematicInputPreparer, readSynthesisThematicInput, readSynthesisThematicInputHistory } from "@/lib/engagement/synthesis-thematic-inputs-server";
 import { retainSynthesisThematicInputSeal } from "@/lib/engagement/synthesis-thematic-input-seal-server";
 import { loadSynthesisThematicProposalInputs } from "@/lib/engagement/synthesis-thematic-proposal-inputs-server";
-import { loadSynthesisThematicPlan } from "@/lib/engagement/synthesis-thematic-plan-server";
+import { loadSynthesisThematicPlan, retainSynthesisThematicPlan, readSynthesisThematicPlanState } from "@/lib/engagement/synthesis-thematic-plan-server";
 import { readSynthesisThematicChoice, retainSynthesisThematicChoice } from "@/lib/engagement/synthesis-thematic-choices-server";
 import { verifySynthesisGenerationApiResult } from "@/lib/engagement/synthesis-generation-api-result";
 import { createSynthesisGenerationInput } from "@/lib/engagement/synthesis-generation-input";
@@ -209,7 +209,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       maxOutputTokens: 8192, responseByteLimit: 65536, expiresAt: new Date(Date.now() + 3600000).toISOString(),
       chargesAcknowledged: true, retryTaskIndex: null, retryOfAttemptId: null };
     checked(await staff.client.rpc("authorize_engagement_synthesis_context", { p_request: args.requestId, p_authorization: authorizationId, p_intent_text: JSON.stringify(grant) }));
-    let dropped = false, deliveries = 0;
+    let dropped = false, deliveries = 0, thematicFrameDropped = false;
     const proxyErrors: string[] = [];
     const target = await listen(createServer(async (req, res) => {
       try {
@@ -219,6 +219,9 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
         const body = Buffer.concat(parts), response = await fetch(`${environment.API_URL}${req.url}`, {
           method: req.method, headers, body: body.length ? body : undefined, redirect: "manual" });
         const bytes = Buffer.from(await response.arrayBuffer());
+        if (response.ok && !thematicFrameDropped && req.url?.endsWith("/stage_engagement_synthesis_thematic_frames")) {
+          thematicFrameDropped = true; res.destroy(); return;
+        }
         if (loss === "dispatch" && response.ok && !dropped && req.url?.endsWith("/dispatch_engagement_synthesis_context_attempt")) {
           dropped = true; res.destroy(); return;
         }
@@ -363,8 +366,29 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(rawContextParts.map(part => part.text ?? "").join("")).toBe(retained.finalOutputText);
     expect(thematicPlan.content.manifest.contributionIds).toEqual([preparationTarget]);
     expect(thematicPlan.content.frames.every(frame => frame.utf8Bytes <= thematicPlan.content.manifest.frameByteLimit)).toBe(true);
+    const thematicProxy = liveClient(target, environment.SERVICE_ROLE_KEY, "synthesis-thematic-staging");
+    await expect(retainSynthesisThematicPlan(thematicProxy, preparationRequest, signal)).rejects.toThrow("acknowledgement unavailable");
+    expect(thematicFrameDropped).toBe(true);
+    const interruptedThematic = await readSynthesisThematicPlanState(service, preparationRequest, signal);
+    expect(interruptedThematic.nextIndex).toBe(thematicPlan.content.frames.length);
+    expect(interruptedThematic.seal).toBeNull();
+    const resumedThematic = await retainSynthesisThematicPlan(service, preparationRequest, signal);
+    expect(resumedThematic.state.nextIndex).toBe(resumedThematic.plan.header.frameCount);
+    expect(resumedThematic.state.seal).not.toBeNull();
+    const retainedFrames = checked(await service.from("engagement_synthesis_thematic_frames").select("frame_index,frame_text,frame_sha256,frame_bytes")
+      .eq("request_id", preparationRequest.requestId).order("frame_index"));
+    expect(retainedFrames).toEqual(resumedThematic.plan.entries.map(frame => ({ frame_index: frame.index,frame_text: frame.canonical,frame_sha256: frame.sha256,frame_bytes: frame.utf8Bytes })));
+    const proposalSlot = checked(await service.from("engagement_synthesis_generation_plan_tasks").select("task_index,task_text,task_sha256")
+      .eq("request_id", preparationRequest.requestId).eq("task_index", resumedThematic.plan.header.frameCount).single());
+    const thematicReceipt = JSON.parse(resumedThematic.state.seal!.receiptText);
+    expect(proposalSlot).toEqual({ task_index: resumedThematic.plan.header.frameCount,task_text: thematicReceipt.proposalReferenceText,task_sha256: thematicReceipt.proposalReferenceSha256 });
+    expect(checked(await service.rpc("prepare_engagement_synthesis_thematic_plan", { p_request: preparationRequest.requestId,
+      p_header_text: resumedThematic.plan.headerText }))).toEqual(resumedThematic.state);
+    expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length);
     checked(await reader.client.rpc("cancel_engagement_synthesis_generation_request", { p_campaign: scope.campaignId,
       p_request: thematicArgs.requestId, p_cancellation: randomUUID(), p_reason: "SYNTHETIC thematic input cancellation" }));
+    expect(await readSynthesisThematicPlanState(service, preparationRequest, signal)).toEqual({ ...resumedThematic.state, cancelled: true });
+    await expect(retainSynthesisThematicPlan(service, preparationRequest, signal)).rejects.toThrow("preparation was cancelled");
     await expect(loadSynthesisThematicPreparation(service, preparationScope, signal)).rejects.toThrow("preparation access unavailable");
     await expect(prepareInput(preparationTarget, signal)).rejects.toThrow("preparation access unavailable");
     await expect(loadSynthesisThematicProposalInputs(service, preparationRequest, signal)).rejects.toThrow("preparation was cancelled");
@@ -378,6 +402,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(recoveredChoice.record.replayed).toBe(true); expect(recoveredChoice.choice).toEqual(choice.choice);
     expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length);
     reader.revoke();
+    await expect(readSynthesisThematicPlanState(service, preparationRequest, signal)).rejects.toThrow("custody unavailable");
     await expect(prepareInput(preparationTarget, signal)).rejects.toThrow("preparation access unavailable");
     await expect(loadSynthesisThematicProposalInputs(service, preparationRequest, signal)).rejects.toThrow("inventory unavailable");
     await expect(readSynthesisThematicInput(service, preparationScope, signal)).rejects.toThrow("custody unavailable");
