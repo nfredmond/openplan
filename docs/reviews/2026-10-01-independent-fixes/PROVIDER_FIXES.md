@@ -2,7 +2,7 @@
 
 October 1, 2026. Baseline: `891a0d89a848133d44b9e4f314a76a922cd71ace`. Working branch: `fix/independent-review-20261001`. This report covers corrections to PROV-01 and PROV-02 from the independent review. It does not declare a release or whole-product acceptance.
 
-Ownership is limited to the four financial routes, action-registry funding-profile effect, native provider route, connector recovery, their tests and this report's `providers-*` evidence. Other agents own the remaining fixes and Git publication. No live database, demo, native provider account, real provider dispatch or browser resource was used. The direction check passed with its existing review-age reminders. Requirements and action approval schemas remain unchanged.
+Ownership is limited to the four financial routes, action-registry funding-profile effect, native provider route, connector recovery, their tests and this report's `providers-*` evidence. Other agents own the remaining fixes and Git publication. Implementation and focused tests used no live database, demo, native provider account, real provider dispatch or browser resource. A later authorized aggregate-only database investigation is recorded below. The direction check passed with its existing review-age reminders. Requirements and action approval schemas remain unchanged.
 
 ## PROV-01: exact approved payloads and stale creates
 
@@ -71,3 +71,17 @@ Do not run the mutation harness while another session is verifying these files. 
 The coordinator's final TypeScript check caught a test-bridge interop error: JavaScript inferred `ConnectorError`'s default-null status parameter as accepting only null. The synthetic bridge now constructs the same error class and assigns its numeric HTTP status explicitly. The runtime class, code and status remain the same; no implementation file changed. The seven real connector/route composition tests passed again after this correction (`providers-composition-type-followup.txt`). The coordinator's reported compiler rejection establishes that the compile check detects this specific defect.
 
 The full application `tsc --noEmit --incremental false` check then completed with exit 0 and no diagnostics (`providers-typescript.txt`). This verifies the shared fix worktree as it stood during that run, including the test-only correction; it does not substitute for runtime or native database checks.
+
+## Native synthesis timeout investigation
+
+The full native run reported a 300,084 ms failure in the existing output-acknowledgement-loss context CLI test, whose deadline is 300,000 ms. This is a separate synthesis execution path. It does not call the modified `connectorCycle`; it imports only the unchanged connector journal and lock helpers.
+
+Read-only aggregate queries against the review's exact database, `supabase_db_independent-fixes-20261001`, located 124 staged frames/tasks with 122 attempts, dispatches and retained outputs. Task indices 0 through 121 had output; indices 122 and 123 were unclaimed. The last output was retained at October 2, 04:33:41.495 UTC, immediately before the test deadline. No cancellation was recorded and no claimed attempt lacked output. The test had not completed its drain or entered final replay.
+
+Across successive 20-frame blocks, mean elapsed time from the prior output to the next claim was 0.888, 0.979, 1.211, 3.801, 4.409, 2.560 and 2.206 seconds. Mean claim-to-output time ranged from 0.060 to 0.140 seconds. The measured delay therefore falls mainly before the next claim. `synthesis-context-worker-load.ts:94-100` rereads all staged frames/tasks for each new attempt; `synthesis-context-worker-job.ts:78` onward replays earlier frames with serial queries. Those repeated reads and reconstruction are credible contributors. These timestamps do not distinguish CPU, database, filesystem or competing-load effects.
+
+The aggregate evidence is [providers-native-timeout.json](providers-native-timeout.json). It omits synthetic record IDs, credentials and retained text. Queries used explicit read-only transactions and a 15-second statement timeout. No source, database record or running test was changed during investigation.
+
+Successor commit `a6f0376e6b9742038646ebfe90095b43f122e985` adds historical-reader assertions and Unicode handling, but does not change the test deadline or normal recovery execution. It is not an established fix for this timeout. The coordinating reviewer plans to integrate it and rerun the same case in isolation with the unchanged 300,000 ms limit. That result remains separate from the failed full-run attempt; no broader native success is claimed here.
+
+The integrated tree then passed the exact output-loss test with all 124 frames and the unchanged 300-second limit: 275.308 seconds for the test, 278.68 seconds for the invocation. It includes the new current-staff history assertions from main. The original aggregate timeout remains in the evidence; the narrow timing margin remains a performance concern. No runtime optimization, fixture reduction or deadline increase was made.

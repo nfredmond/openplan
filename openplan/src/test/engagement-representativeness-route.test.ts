@@ -142,6 +142,13 @@ describe("POST /api/engagement/campaigns/[campaignId]/representativeness", () =>
     expect(corridorsLimit).not.toHaveBeenCalled();
   });
 
+  it("retains ACS field availability when projecting tract metrics for geometry", async () => {
+    const overlayAvailability = { pctMinority: true, pctBelowPoverty: false, zeroVehiclePct: true, transitCommutePct: true };
+    fetchCensusForCorridor.mockResolvedValue({ tracts: [{ ...censusTract("A", 20), overlayAvailability }] });
+    expect((await POST(req(), ctx)).status).toBe(200);
+    expect(fetchTractOverlayFeatures.mock.calls[0][1][0].overlayAvailability).toEqual(overlayAvailability);
+  });
+
   it("sources the study area from the project corridor when one exists", async () => {
     loadCampaignAccess.mockResolvedValue({
       campaign: { workspace_id: "ws-1", project_id: "project-1" },

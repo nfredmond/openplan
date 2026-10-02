@@ -180,6 +180,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       const overlayMetrics: CensusTractOverlayMetrics[] = census.tracts.map((tract) => ({
         geoid: tract.geoid,
+        overlayAvailability: tract.overlayAvailability,
         population: tract.population,
         medianIncome: tract.medianIncome,
         pctMinority: tract.pctMinority,

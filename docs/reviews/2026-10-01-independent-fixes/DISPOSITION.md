@@ -18,3 +18,14 @@ This branch corrects the demonstrated findings from the October 1 independent re
 | Adjacent read concerns | Complete generated evidence collections and preparation/source/extraction history | Real JSON builder bytes under a simulated cap, stable ordering and late-page refusal. Native geographic application acceptance remains separate. |
 
 Specialists independently reviewed the financial/migration and provider/authorization paths. Disagreements and test limitations remain in their reports. The correction uses two additive migrations; it does not delete existing records, change national coverage, combine modeling engines, add a paid tier, or change the roadmap.
+
+
+## Findings in intervening main commits
+
+These findings concern development changes integrated through `d72c1109`, not the published v0.66.0 baseline.
+
+| Finding | Correction and evidence | Remaining boundary |
+|---|---|---|
+| UI-02, unsupported public receipt and ineffective retry, Medium / demonstrated | Neutral error wording and fresh document request. Real Server Component fault recovers after the fault is removed; the original reset-only control does not. [Evidence](UI_RECOVERY_FIXES.md). | No participant or screen-reader acceptance claim. |
+| UI-03, malformed authentication destination, Medium / demonstrated | Catch invalid caller paths and preserve same-origin fallback, query and fragment behavior. Real URL parser tests and targeted faults. [Evidence](UI_RECOVERY_FIXES.md). | Full authentication-provider exchange is not exercised by the focused test. |
+| MAP-01, unavailable ACS rates shown as zero, Medium / demonstrated | Retain source availability for four numeric overlays, propagate it through engagement geometry, and distinguish income zero from missing income. Actual parser-to-style tests and seven fault/control pairs. [Evidence](MAP_DATA_FIXES.md). | Legacy records, aggregates and proxy classifications need broader availability design; physical map rendering is not established. |

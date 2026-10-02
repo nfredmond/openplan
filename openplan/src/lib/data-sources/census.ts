@@ -27,7 +27,17 @@ import { withCensusApiKey } from "./census-api-key";
 import { fetchJsonWithRetry } from "./http";
 import { pointInPolygon } from "@/lib/engagement/representativeness";
 
+/** Source availability for numeric map fields; legacy raw counts stay compatible. */
+export interface CensusTractOverlayAvailability {
+  pctMinority: boolean;
+  pctBelowPoverty: boolean;
+  zeroVehiclePct: boolean;
+  transitCommutePct: boolean;
+}
+
 export interface CensusTractData {
+  /** Present on current ACS reads; absent on older saved inputs. */
+  overlayAvailability?: CensusTractOverlayAvailability;
   geoid: string;
   state: string;
   county: string;
@@ -474,6 +484,12 @@ export async function fetchAcsForCounties(
           popBelowPoverty: belowPoverty,
           povertyUniverse: povertyTotal,
           raceUniverse: totalPopRace,
+          overlayAvailability: {
+            pctMinority: totalPopRace > 0 && numOrNull("B03002_003E") !== null,
+            pctBelowPoverty: povertyTotal > 0 && numOrNull("B17001_002E") !== null,
+            zeroVehiclePct: totalHH > 0 && numOrNull("B25044_003E") !== null && numOrNull("B25044_010E") !== null,
+            transitCommutePct: num("B08301_001E") > 0 && numOrNull("B08301_010E") !== null,
+          },
         } satisfies CensusTractData;
       });
     })

@@ -1,0 +1,122 @@
+{
+  "observedAtUtc": "2026-10-02T04:37:11.696289Z",
+  "database": "supabase_db_independent-fixes-20261001",
+  "method": "Read-only PostgreSQL aggregate queries; each transaction uses BEGIN READ ONLY and a 15-second statement timeout. No credentials, retained response text or raw records read.",
+  "test": "engagement-synthesis-generation-worker-live.test.ts: recovers native context CLI custody after output acknowledgement loss",
+  "log": "evidence/rls-all-final.log",
+  "timeoutMs": 300000,
+  "reportedDurationMs": 300084,
+  "requestCreatedUtc": "2026-10-02T04:28:46.851395Z",
+  "parentRequestCreatedUtc": "2026-10-02T04:28:43.217669Z",
+  "counts": {
+    "frames": 124,
+    "tasks": 124,
+    "attempts": 122,
+    "dispatches": 122,
+    "outputs": 122,
+    "cancellations": 0
+  },
+  "completedTaskIndexRange": [
+    0,
+    121
+  ],
+  "unclaimedTaskIndices": [
+    122,
+    123
+  ],
+  "lastOutputUtc": "2026-10-02T04:33:41.495265Z",
+  "blocks": [
+    {
+      "firstTaskIndex": 0,
+      "lastTaskIndex": 19,
+      "outputs": 20,
+      "firstClaimUtc": "2026-10-02T04:28:49.825881Z",
+      "lastOutputUtc": "2026-10-02T04:29:08.013752Z",
+      "meanPriorOutputToClaimSeconds": 0.888,
+      "maxPriorOutputToClaimSeconds": 2.058,
+      "meanClaimToOutputSeconds": 0.065
+    },
+    {
+      "firstTaskIndex": 20,
+      "lastTaskIndex": 39,
+      "outputs": 20,
+      "firstClaimUtc": "2026-10-02T04:29:08.864294Z",
+      "lastOutputUtc": "2026-10-02T04:29:28.805601Z",
+      "meanPriorOutputToClaimSeconds": 0.979,
+      "maxPriorOutputToClaimSeconds": 1.162,
+      "meanClaimToOutputSeconds": 0.06
+    },
+    {
+      "firstTaskIndex": 40,
+      "lastTaskIndex": 59,
+      "outputs": 20,
+      "firstClaimUtc": "2026-10-02T04:29:29.899902Z",
+      "lastOutputUtc": "2026-10-02T04:29:54.301953Z",
+      "meanPriorOutputToClaimSeconds": 1.211,
+      "maxPriorOutputToClaimSeconds": 1.394,
+      "meanClaimToOutputSeconds": 0.064
+    },
+    {
+      "firstTaskIndex": 60,
+      "lastTaskIndex": 79,
+      "outputs": 20,
+      "firstClaimUtc": "2026-10-02T04:29:55.983053Z",
+      "lastOutputUtc": "2026-10-02T04:31:13.118110Z",
+      "meanPriorOutputToClaimSeconds": 3.801,
+      "maxPriorOutputToClaimSeconds": 4.995,
+      "meanClaimToOutputSeconds": 0.14
+    },
+    {
+      "firstTaskIndex": 80,
+      "lastTaskIndex": 99,
+      "outputs": 20,
+      "firstClaimUtc": "2026-10-02T04:31:17.544430Z",
+      "lastOutputUtc": "2026-10-02T04:32:44.101714Z",
+      "meanPriorOutputToClaimSeconds": 4.409,
+      "maxPriorOutputToClaimSeconds": 4.95,
+      "meanClaimToOutputSeconds": 0.14
+    },
+    {
+      "firstTaskIndex": 100,
+      "lastTaskIndex": 119,
+      "outputs": 20,
+      "firstClaimUtc": "2026-10-02T04:32:48.585765Z",
+      "lastOutputUtc": "2026-10-02T04:33:36.948005Z",
+      "meanPriorOutputToClaimSeconds": 2.56,
+      "maxPriorOutputToClaimSeconds": 5.078,
+      "meanClaimToOutputSeconds": 0.083
+    },
+    {
+      "firstTaskIndex": 120,
+      "lastTaskIndex": 121,
+      "outputs": 2,
+      "firstClaimUtc": "2026-10-02T04:33:39.111321Z",
+      "lastOutputUtc": "2026-10-02T04:33:41.495265Z",
+      "meanPriorOutputToClaimSeconds": 2.206,
+      "maxPriorOutputToClaimSeconds": 2.249,
+      "meanClaimToOutputSeconds": 0.068
+    }
+  ],
+  "diagnosis": {
+    "demonstrated": "The run retained every claimed frame and continued producing outputs until just before the test deadline. It had not completed the drain or entered final replay; the last two frames were unclaimed.",
+    "supportedInference": "Most elapsed time was between one retained output and the next claim. The context loader rereads all staged frames and replays all predecessors for each new task, so repeated reconstruction and serial database reads are credible contributors.",
+    "notEstablished": [
+      "Exact CPU, database, filesystem or competing-load contribution",
+      "Whether an isolated rerun completes within the existing deadline",
+      "A lost-output recovery deadlock",
+      "That successor commit a6f0376 fixes this timeout"
+    ],
+    "integration": "a6f0376 adds history assertions and Unicode handling but leaves the 300000 ms limit and normal recovery execution unchanged. PROV-02 changes connectorCycle; this synthesis worker uses only the unchanged connector journal and lock helpers.",
+    "nextCheck": "After integrating a6f0376, run the same output-acknowledgement-loss case in isolation with its unchanged 300000 ms deadline. Record the actual result; do not reinterpret the failed full run as passed."
+  },
+  "isolated_rerun": {
+    "commit": "9530d77c860dccea228f57debe4496afc6b3a513",
+    "passed": true,
+    "test_duration_seconds": 275.308,
+    "invocation_duration_seconds": 278.68,
+    "deadline_seconds": 300,
+    "frames": 124,
+    "other_tests_skipped_by_name_selection": 13,
+    "source_or_deadline_changed_to_pass": false
+  }
+}

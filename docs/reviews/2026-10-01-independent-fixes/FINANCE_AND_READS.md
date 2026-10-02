@@ -16,7 +16,7 @@ Generated project exports now paginate 15 previously unpaged query paths. Existi
 
 ## Verification boundaries
 
-The initial financial/reporting/dashboard suites pass56 tests. Preparation, generated exports and order guards pass8. Native financial/dashboard and existing measure RLS checks pass10; the independent parent-migration suite passes another10. Full integration evidence is recorded separately in STATUS.md.
+The initial financial/reporting/dashboard suites pass 56 tests. Preparation, generated exports and order guards pass 8. Native financial/dashboard and existing measure RLS checks pass 10; the independent parent-migration suite passes another 10. Full integration evidence is recorded separately in STATUS.md.
 
 `evidence/root-mutations.py` exercises five guards. Every harmless comment survives. Removing the nonnegative clamp, truncating reporting, stopping preparation on a short page, restoring the invalid dashboard filter and truncating exported records each fail their named assertion. Source restores exact saved bytes in `finally`. Native migration tests additionally remove each FK and parent guard within rollback transactions, and detect attempted deletion of historic records. Unit mocks cannot establish native authorization; native tests cannot establish a full agency accounting workflow.
 

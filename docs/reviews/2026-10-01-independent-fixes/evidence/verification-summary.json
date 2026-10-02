@@ -1,0 +1,70 @@
+{
+  "original_baseline": "891a0d89a848133d44b9e4f314a76a922cd71ace",
+  "fix_commit": "a08f0b000039abdf4b9fcb5289257ba2e1060ff9",
+  "integrated_main": "d72c11095e679e897dcf7796fcc6bbcc4ee1ad0c",
+  "integration_commit": "9530d77c860dccea228f57debe4496afc6b3a513",
+  "qa_gate": {
+    "passed": true,
+    "application_passed": 16740,
+    "application_skipped": 1190,
+    "connector_passed": 387,
+    "connector_skipped": 4,
+    "audit_reported_vulnerabilities": 0,
+    "production_build": "passed",
+    "native_rls_opted_out_in_aggregate_gate": true,
+    "source_boundary": "a08f0b000039abdf4b9fcb5289257ba2e1060ff9"
+  },
+  "separate_native_full_run": {
+    "passed": false,
+    "tests_passed": 1086,
+    "tests_failed": 1,
+    "tests_skipped": 125,
+    "files_passed": 79,
+    "files_failed": 1,
+    "duration_seconds": 1982.51,
+    "failure": "synthesis output-loss CLI test exceeded 300 seconds"
+  },
+  "isolated_native_recovery_rerun": {
+    "commit": "9530d77c860dccea228f57debe4496afc6b3a513",
+    "passed": true,
+    "test_duration_seconds": 275.308,
+    "invocation_duration_seconds": 278.68,
+    "deadline_seconds": 300,
+    "frames": 124,
+    "other_tests_skipped_by_name_selection": 13,
+    "source_or_deadline_changed_to_pass": false
+  },
+  "integrated_native_history": {
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0
+  },
+  "integration_focused_unit": {
+    "passed": 121,
+    "failed": 0
+  },
+  "direction_check": "passed with existing reminders",
+  "full_worker_matrix": "not run: five engine environments absent; relevant lightweight suites and mutation checks run separately",
+  "typescript": {
+    "default_heap": "exhausted",
+    "existing_build_heap_6144_mb": "passed without changing type rules"
+  },
+  "followup_checks": {
+    "portal_callback_tests": 9,
+    "map_related_tests": 70,
+    "portal_browser_recovery": "passed at desktop and 390px",
+    "map_renderer": "not established: no isolated Mapbox token"
+  },
+  "final_local_qa_gate": {
+    "passed": true,
+    "application_passed": 16887,
+    "application_skipped": 1197,
+    "connector_passed": 387,
+    "connector_skipped": 4,
+    "audit_reported_vulnerabilities": 0,
+    "production_build": "passed including TypeScript",
+    "native_rls_opted_out_in_aggregate_gate": true,
+    "log": "evidence/qa-gate-publish.log",
+    "source_hashes": "evidence/fix-source-hashes.json"
+  }
+}

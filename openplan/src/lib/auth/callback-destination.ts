@@ -21,8 +21,12 @@ export function safeNextPath(raw: string | null): string {
 }
 
 export function resolveCallbackDestination(rawNext: string | null, origin: string): URL {
-  const destination = new URL(safeNextPath(rawNext), origin);
-  // Belt and braces: a parse that escaped the origin falls back to the default.
-  if (destination.origin !== new URL(origin).origin) return new URL(FALLBACK_PATH, origin);
-  return destination;
+  const fallback = new URL(FALLBACK_PATH, origin);
+  try {
+    const destination = new URL(safeNextPath(rawNext), origin);
+    return destination.origin === fallback.origin ? destination : fallback;
+  } catch {
+    // A malformed caller-supplied path must not break a completed code exchange.
+    return fallback;
+  }
 }

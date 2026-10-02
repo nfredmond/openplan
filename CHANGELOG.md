@@ -36,6 +36,12 @@ Recipient rounding stays nonnegative. OWP histories and generated project
 evidence read through capped responses or refuse an incomplete result. The
 dashboard reads project submittals through their actual project relationship.
 
+Public portal retries request a fresh page and no longer claim an unverified
+submission receipt. Malformed authentication destinations return to the local
+dashboard. Current ACS numeric overlays retain missing-value provenance; zero
+income and missing income use different fills. Legacy saved counts and aggregate
+Census classifications retain their existing interpretation.
+
 The optional ActivitySim HTTP wrapper now requires a token and operator-owned
 bundle/output roots. Request-level execution configuration is refused; follow
 its updated deployment guide. County cancellation terminates its owned POSIX

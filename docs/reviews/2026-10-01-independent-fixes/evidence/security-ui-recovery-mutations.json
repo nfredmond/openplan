@@ -1,0 +1,132 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "passed": 9,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "passed": 9,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "case": "malformed-throws",
+      "exit": 1,
+      "passed": 6,
+      "failed": 3,
+      "failures": [
+        {
+          "title": "auth callback destination falls back for a malformed destination \"/\\n/[\"",
+          "messages": [
+            "Error: Malformed destination escaped fallback\n    at resolveCallbackDestination (/home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/lib/auth/callback-destination.ts:30:11)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/auth-callback-destination.test.ts:29:12\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)"
+          ]
+        },
+        {
+          "title": "auth callback destination falls back for a malformed destination \"/\\t/[\"",
+          "messages": [
+            "Error: Malformed destination escaped fallback\n    at resolveCallbackDestination (/home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/lib/auth/callback-destination.ts:30:11)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/auth-callback-destination.test.ts:29:12\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)"
+          ]
+        },
+        {
+          "title": "auth callback destination falls back for a malformed destination \"/\\r/[::1\"",
+          "messages": [
+            "Error: Malformed destination escaped fallback\n    at resolveCallbackDestination (/home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/lib/auth/callback-destination.ts:30:11)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/auth-callback-destination.test.ts:29:12\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "origin-guard-removed",
+      "exit": 1,
+      "passed": 8,
+      "failed": 1,
+      "failures": [
+        {
+          "title": "auth callback destination rejects an origin change revealed by URL normalization",
+          "messages": [
+            "AssertionError: expected 'https://elsewhere.example/x' to be 'https://openplan.example/dashboard' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/auth-callback-destination.test.ts:33:80\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "fragment-dropped",
+      "exit": 1,
+      "passed": 8,
+      "failed": 1,
+      "failures": [
+        {
+          "title": "auth callback destination preserves a valid local query and fragment",
+          "messages": [
+            "AssertionError: expected 'https://openplan.example/dashboard?in\u2026' to be 'https://openplan.example/dashboard?in\u2026' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/auth-callback-destination.test.ts:23:89\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "receipt-asserted",
+      "exit": 1,
+      "passed": 8,
+      "failed": 1,
+      "failures": [
+        {
+          "title": "public portal error recovery offers a reload without asserting a submission receipt or failure cause",
+          "messages": [
+            "Error: expect(element).not.toHaveTextContent()\n\nExpected element not to have text content:\n  /was received|on our side|not with your phone/i\nReceived:\n  This page did not load.Please try loading this page again in a moment. Anything you already sent was received.If it keeps happening, contact the city, county or agency that sent you this link and tell them the page would not open.\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/portal-error-recovery.test.tsx:29:23\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "cause-asserted",
+      "exit": 1,
+      "passed": 8,
+      "failed": 1,
+      "failures": [
+        {
+          "title": "public portal error recovery offers a reload without asserting a submission receipt or failure cause",
+          "messages": [
+            "Error: expect(element).not.toHaveTextContent()\n\nExpected element not to have text content:\n  /was received|on our side|not with your phone/i\nReceived:\n  This page did not load.Please try loading this page again in a moment. The problem is on our side.If it keeps happening, contact the city, county or agency that sent you this link and tell them the page would not open.\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/portal-error-recovery.test.tsx:29:23\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "reload-disconnected",
+      "exit": 1,
+      "passed": 8,
+      "failed": 1,
+      "failures": [
+        {
+          "title": "public portal error recovery offers a reload without asserting a submission receipt or failure cause",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called 1 times, but got 0 times\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/portal-error-recovery.test.tsx:33:20\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "reset-only",
+      "exit": 1,
+      "passed": 8,
+      "failed": 1,
+      "failures": [
+        {
+          "title": "public portal error recovery offers a reload without asserting a submission receipt or failure cause",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called 1 times, but got 0 times\n    at /home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/src/test/portal-error-recovery.test.tsx:33:20\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/independent-fixes-20261001/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+          ]
+        }
+      ]
+    }
+  ],
+  "restored": {
+    "openplan/src/lib/auth/callback-destination.ts": "c49c057da08c0ec6f476b1a22994439e6dbf3a6069b973a3f565ee4a8b3c2367",
+    "openplan/src/app/(portal)/error.tsx": "f60a5896dc42d909848ee36a30f6d051f1e2f5ddc1de0437a8bd54d5934f275b"
+  }
+}
