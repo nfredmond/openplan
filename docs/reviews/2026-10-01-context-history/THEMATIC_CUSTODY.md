@@ -1,9 +1,11 @@
 # Reconstructed thematic input custody
 
 October 1–2, 2026. Local continuation from `309e2813`, on base `24022411`.
-Neither this checkpoint nor the prior preparation checkpoint has been pushed
-while the correction owner retains PR 112's merge path. UI main `bb0dad34` is
-observed separately and is not included in the local baseline checks.
+Code checkpoints `309e2813` and `1fd2450f` are backed up on remote branch
+`work/engagement-synthesis-generation`. They remain outside main while the
+correction owner retains PR 112's merge path. UI main `8cb534f5` is observed
+separately and is not included in the local baseline checks. No CI run for
+`1fd2450f` is present on direct inspection after that branch push.
 
 ## What the change retains
 
@@ -85,7 +87,7 @@ skip; lint, configured deadcode check, dependency audit (zero findings) and the
 production build, including TypeScript, pass. The ordinary gate skips live RLS;
 the separate installed native and HTTP results above cover the changed boundary.
 The later UI commits `bb0dad34` and `8cb534f5` and correction PR 112 are not in
-this baseline. No CI is claimed for this unpublished checkpoint.
+this baseline. No main or release acceptance is claimed for this branch checkpoint.
 
 The initial test-file creation used an extra `openplan/` prefix while already in
 the application package. No file was created there. The corrected invocation
