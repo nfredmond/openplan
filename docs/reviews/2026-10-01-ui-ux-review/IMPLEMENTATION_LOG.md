@@ -149,6 +149,21 @@ Two helper agents converted pages in the worktree; four earlier helpers were cut
 
 Not done in this batch: closed tabs still mount; Aerial is not map-first; the hosted-only smoke script `openplan-prod-rtp-release-review-smoke.js` still expects the removed command board.
 
+## Browser audits against the new frame, October 2, 2026
+
+Nathaniel refreshed the walkthrough instance on port 3000 to `32dbc44b`; `which-openplan.sh` from this worktree confirmed the match. The four `qa-harness` browser audits ran for the first time against the new page frame: first on port 3000, then, after fixes, on a production build of this worktree served on port 3211. The dev server was not usable for this, because Safety never reaches network idle under `next dev`.
+
+| Audit | First run | Change | Final run |
+|---|---|---|---|
+| Control hit-test (dashboard, Safety, projects at 1440 and 390) | 5 covered | Three were slivers: controls with under a pixel showing at a scroll panel's edge, whose aim point the browser rounded onto the neighbor. The audit now skips a control with less than 8px showing (`tooThinToJudge`, unit checked; the check fails if the threshold swallows a fully shown, covered control). The other two were Safety's Mapbox logo, under the rail and then under the account card. It now sits past the rail and above the bottom chrome strip. Mapbox requires it visible | 0 covered, exit 0 |
+| Escape hatch (Safety, Corridor Analysis, Overview, Projects, a resident portal) | Pass | None | Pass |
+| Map reading | Failed: no "Read the map" control on Safety | The audit's default route was stale; Safety has owned its map since August and the control lives on the Aerial index. Default changed to `/aerial` | Pass: 10.4% of the window is map with the page showing, 70.4% in map-reading mode |
+| Card nesting | 19 findings: 15 better than budget, Grants 5 deep with 16 boxes past the limit, Help 207 characters per line | Grants opportunity notes became labeled rows and its evidence boxes became ruled sections; the modeling decision box, the reports funding follow-through box and the RTP registry's queue boxes became rules. Help became a reading column (38rem, 16px body). Budget re-seeded; no route got worse | Every route matches its budget, exit 0 |
+
+Re-seeded budget, before and after: RTP depth 6 to 3 and deep boxes 26 to 0; Reports deep 4 to 0; Overview deep 1 to 0; Help depth 3 to 0. Part of every route's drop is the plain frame no longer drawing a box; the budget's note says so.
+
+Not covered by these audits: keyboard order through every page, screen readers, the other four palettes, and real data volumes.
+
 ## What is next
 
 1. Finish record hubs: the same header on campaign, RTP cycle and report pages; closed tabs unmount; the command board leaves the remaining record pages.

@@ -2221,6 +2221,22 @@ body[data-page-flush="true"] .op-cart-shell .op-cart-surface__body > .analysis-e
   }
 }
 
+/*
+  SAFETY'S MAPBOX LOGO CLEARS THE RAIL. The full-bleed map runs under the
+  collapsed rail by design, which put the logo, which Mapbox requires to be
+  visible, under the rail at x=7. Clearing the rail alone moved it under the
+  account card, which floats in the same bottom-left corner. It now sits past
+  the rail and above the bottom strip the floating chrome owns. Found by the
+  control hit-test audit on 2026-10-02. Desktop only: on a phone the rail is
+  the bottom bar.
+*/
+@media (min-width: 721px) {
+  body[data-map-fills-surface="true"] .op-cart-surface .mapboxgl-ctrl-bottom-left {
+    left: var(--op-cart-rail-edge);
+    bottom: var(--op-cart-safe-bottom);
+  }
+}
+
 /* ---------- The phone "More" sheet: every destination, by name ---------- */
 
 .op-cart-navsheet {

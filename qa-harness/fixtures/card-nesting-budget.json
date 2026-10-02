@@ -1,25 +1,173 @@
 {
-  "why": "Today's measured card nesting, per route, as an EQUALITY. Higher fails as a regression; lower fails until the number is lowered here in the same commit. Seeded 2026-08-13 against a near-empty workspace on localhost:3200 — real data can only make these numbers worse, so treat them as a floor. KNOWN RED as seeded: /help renders a 200-character line and the reading rule wants 45-90, so this audit exits 1 until the reading surface work lands. That is a real finding with an owner, not a broken check. depth counts nested boxes with the page shell as 1: shell(1) > section(2) > item card(3) is the limit, so depth 3 is the target and 'deep' (boxes at depth 4+) must reach 0.",
-  "measuredAt": "2026-08-13",
-  "target": { "depth": 3, "deep": 0, "readingCharsPerLine": [45, 90] },
+  "why": "Today's measured card nesting, per route, as an EQUALITY. Higher fails as a regression; lower fails until the number is lowered here in the same commit. Re-seeded 2026-10-02 against a production build of the UI review branch on localhost, signed in as the local mapaudit test workspace. Two things lowered the numbers since the 2026-08-13 seeding. The plain page frame no longer draws a box around ordinary pages, which takes one level off every route by itself. The remaining reductions are real: nested boxes on Grants, Reports and the RTP registry were flattened to rules and labeled rows, and Help became a reading surface. depth counts boxes the way a reader sees them; 3 is the limit and 'deep' (boxes at depth 4+) must stay 0. A richer workspace can still produce deeper chains than this test workspace does, so treat these as a floor.",
+  "measuredAt": "2026-10-02",
+  "target": {
+    "depth": 3,
+    "deep": 0,
+    "readingCharsPerLine": [
+      45,
+      90
+    ]
+  },
   "routes": {
-    "/dashboard": { "depth": 4, "deep": 1, "reading": false },
-    "/my-work": { "depth": 3, "deep": 0, "reading": false },
-    "/projects": { "depth": 3, "deep": 0, "reading": false },
-    "/programs": { "depth": 3, "deep": 0, "reading": false },
-    "/grants": { "depth": 3, "deep": 0, "reading": false },
-    "/reports": { "depth": 4, "deep": 4, "reading": false },
-    "/models": { "depth": 3, "deep": 0, "reading": false },
-    "/scenarios": { "depth": 3, "deep": 0, "reading": false },
-    "/data-hub": { "depth": 3, "deep": 0, "reading": false },
-    "/rtp": { "depth": 6, "deep": 26, "reading": false },
-    "/plans": { "depth": 3, "deep": 0, "reading": false },
-    "/engagement": { "depth": 3, "deep": 0, "reading": false },
-    "/invoicing": { "depth": 1, "deep": 0, "reading": false },
-    "/county-runs": { "depth": 2, "deep": 0, "reading": false },
-    "/knowledge-base": { "depth": 3, "deep": 0, "reading": false },
-    "/aerial": { "depth": 3, "deep": 0, "reading": false },
-    "/assistant-activity": { "depth": 3, "deep": 0, "reading": false },
-    "/help": { "depth": 3, "deep": 0, "reading": true }
+    "/dashboard": {
+      "depth": 3,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "Analysis run history",
+        "(untitled box)",
+        "(untitled box)"
+      ]
+    },
+    "/my-work": {
+      "depth": 2,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "Dated work",
+        "(untitled box)"
+      ]
+    },
+    "/projects": {
+      "depth": 2,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "Import project list",
+        "(untitled box)"
+      ]
+    },
+    "/programs": {
+      "depth": 2,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "Your programming cycles",
+        "(untitled box)"
+      ]
+    },
+    "/grants": {
+      "depth": 3,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "Workspace awards and reimbursement status",
+        "Spine Smoke Project 001128",
+        "(untitled box)"
+      ]
+    },
+    "/reports": {
+      "depth": 3,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "Report records",
+        "FARS coverage verification packet",
+        "(untitled box)"
+      ]
+    },
+    "/models": {
+      "depth": 3,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "Why all fourteen assessments are inconclusive",
+        "(untitled box)",
+        "(untitled box)"
+      ]
+    },
+    "/scenarios": {
+      "depth": 1,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "(untitled box)"
+      ]
+    },
+    "/data-hub": {
+      "depth": 3,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "Datasets, with where they came from",
+        "Spine smoke dataset 3 (001128)",
+        "(untitled box)"
+      ]
+    },
+    "/rtp": {
+      "depth": 3,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "Tracked RTP cycles",
+        "(untitled box)",
+        "(untitled box)"
+      ]
+    },
+    "/plans": {
+      "depth": 1,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "(untitled box)"
+      ]
+    },
+    "/engagement": {
+      "depth": 1,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "(untitled box)"
+      ]
+    },
+    "/invoicing": {
+      "depth": 0,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": []
+    },
+    "/county-runs": {
+      "depth": 1,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "(untitled box)"
+      ]
+    },
+    "/knowledge-base": {
+      "depth": 2,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "(untitled box)",
+        "(untitled box)"
+      ]
+    },
+    "/aerial": {
+      "depth": 3,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "Aerial Imagery",
+        "Aerial Imagery",
+        "(untitled box)"
+      ]
+    },
+    "/assistant-activity": {
+      "depth": 2,
+      "deep": 0,
+      "reading": false,
+      "deepestChain": [
+        "Recorded executions in this workspace",
+        "Generate report artifact"
+      ]
+    },
+    "/help": {
+      "depth": 0,
+      "deep": 0,
+      "reading": true,
+      "deepestChain": []
+    }
   }
 }

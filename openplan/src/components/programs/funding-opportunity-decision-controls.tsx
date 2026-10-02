@@ -153,7 +153,7 @@ export function FundingOpportunityDecisionControls({
         </div>
 
         {modelingSupport ? (
-          <div className="rounded-2xl border border-sky-200/70 bg-sky-50/80 px-4 py-3 text-sm dark:border-sky-900/60 dark:bg-sky-950/30">
+          <div className="border-l-2 border-sky-400/60 pl-4 text-sm">
             <div className="space-y-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="space-y-1.5 text-sky-950 dark:text-sky-100">
@@ -192,7 +192,7 @@ export function FundingOpportunityDecisionControls({
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-sky-200/80 bg-background/80 px-3 py-3 dark:border-sky-900/70 dark:bg-sky-950/40">
+              <div className="border-t border-sky-400/30 pt-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-1.5 text-sky-950 dark:text-sky-100">
                     <p className="text-label font-semibold uppercase tracking-[0.14em] text-sky-700 dark:text-sky-300">

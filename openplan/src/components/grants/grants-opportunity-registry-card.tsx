@@ -158,23 +158,23 @@ export function GrantsOpportunityRegistryCard({
           ) : null}
         </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
-            <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground">Fit notes</p>
-            <p className="mt-2">{opportunity.fit_notes || "No fit notes recorded yet."}</p>
-          </div>
-          <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
-            <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground">Readiness notes</p>
-            <p className="mt-2">{opportunity.readiness_notes || "No readiness notes recorded yet."}</p>
-          </div>
-          <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
-            <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground">Decision rationale</p>
-            <p className="mt-2">{opportunity.decision_rationale || "No decision rationale recorded yet."}</p>
-          </div>
-        </div>
+        {/*
+          LABELED ROWS, NOT THREE MORE BOXES. These sat as boxed tiles inside the
+          opportunity card inside the registry section, five frames deep; the
+          card-nesting audit measured 16 boxes past the three-frame limit on this
+          page. A row with a label carries the same three notes.
+        */}
+        <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm md:grid-cols-[10rem_minmax(0,1fr)]">
+          <dt className="font-semibold text-foreground">Fit notes</dt>
+          <dd className="text-muted-foreground">{opportunity.fit_notes || "No fit notes recorded yet."}</dd>
+          <dt className="font-semibold text-foreground">Readiness notes</dt>
+          <dd className="text-muted-foreground">{opportunity.readiness_notes || "No readiness notes recorded yet."}</dd>
+          <dt className="font-semibold text-foreground">Decision rationale</dt>
+          <dd className="text-muted-foreground">{opportunity.decision_rationale || "No decision rationale recorded yet."}</dd>
+        </dl>
 
         {projectGrantModelingEvidence ? (
-          <div className="module-note mt-4 text-sm">
+          <div className="mt-4 border-t border-border/60 pt-4 text-sm">
             <p className="font-semibold text-foreground">Project modeling evidence</p>
             <p className="mt-1 text-muted-foreground">
               {modelingReadiness?.detail ??
@@ -206,7 +206,7 @@ export function GrantsOpportunityRegistryCard({
         ) : null}
 
         {projectGrantDualDemandAgreementEvidence ? (
-          <div className="module-note mt-4 text-sm">
+          <div className="mt-4 border-t border-border/60 pt-4 text-sm">
             <p className="font-semibold text-foreground">Frozen dual-model agreement evidence</p>
             <p className="mt-1 text-muted-foreground">
               {projectGrantDualDemandAgreementEvidence.leadReport.title} carries {projectGrantDualDemandAgreementEvidence.leadReport.agreements.length} verified comparison{projectGrantDualDemandAgreementEvidence.leadReport.agreements.length === 1 ? "" : "s"}. {AGREEMENT_METHOD_SENSITIVITY_STATEMENT}
@@ -222,7 +222,7 @@ export function GrantsOpportunityRegistryCard({
           </div>
         ) : null}
 
-        <div className="module-note mt-4 text-sm">
+        <div className="mt-4 border-t border-border/60 pt-4 text-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="font-semibold text-foreground">What to check before applying</p>
@@ -234,9 +234,9 @@ export function GrantsOpportunityRegistryCard({
               Final review required
             </StatusBadge>
           </div>
-          <div className="mt-3 grid gap-2 md:grid-cols-2">
+          <div className="mt-3 grid gap-x-6 md:grid-cols-2">
             {evidenceReadinessCues.map((cue) => (
-              <div key={cue.key} className="rounded-xl border border-border/60 bg-background/70 px-3 py-2">
+              <div key={cue.key} className="border-t border-border/40 py-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-semibold text-foreground">{cue.label}</p>
                   <StatusBadge tone={cue.tone}>{formatEvidenceCueStatusLabel(cue.tone)}</StatusBadge>

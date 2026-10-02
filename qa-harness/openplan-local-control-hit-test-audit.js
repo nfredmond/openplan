@@ -81,7 +81,7 @@ const {
   getOutputDir,
   repoRoot,
 } = require('./harness-env');
-const { sampleControls, classify } = require('./pointer-reachability');
+const { sampleControls, classify, tooThinToJudge } = require('./pointer-reachability');
 
 const baseUrl = process.env.OPENPLAN_BASE_URL || 'http://localhost:3200';
 const email = process.env.OPENPLAN_QA_EMAIL || 'mapaudit@openplan.test';
@@ -296,6 +296,9 @@ async function auditRoute(page, route, viewport) {
     samples.forEach((sample, index) => {
       if (sample.disabled || sample.ariaHidden) return;
       if (sample.visibleFraction <= 0) return;
+      // A sliver at a panel's edge is judged where it is shown whole instead.
+      // See `tooThinToJudge`.
+      if (tooThinToJudge(sample)) return;
       const before = first.samples[index];
       const stable =
         before &&
