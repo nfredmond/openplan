@@ -1,0 +1,114 @@
+{
+  "startedAt": "2026-10-02T23:21:53.189Z",
+  "source": "522fcca79ef92a01f33214fa3287e4051fb03ff0",
+  "target": "http://staff-generation-20261002.localhost:3478",
+  "requestId": "e56723ef-7c8d-4e28-9775-83d2fdad41f6",
+  "absentId": "d1b9430b-6887-4d09-9f3b-13b2e78da76d",
+  "checks": [
+    {
+      "label": "create; discard acknowledgement",
+      "status": 201
+    },
+    {
+      "label": "same creation replay",
+      "status": 200
+    },
+    {
+      "label": "read original request",
+      "status": 200
+    },
+    {
+      "label": "different original bytes refused",
+      "status": 409
+    },
+    {
+      "label": "cancel existing request",
+      "status": 201
+    },
+    {
+      "label": "same cancellation replay",
+      "status": 200
+    },
+    {
+      "label": "creation replay after cancellation",
+      "status": 200
+    },
+    {
+      "label": "cancel before creation",
+      "status": 201
+    },
+    {
+      "label": "creation after prior cancellation refused",
+      "status": 409
+    },
+    {
+      "label": "read cancellation without request",
+      "status": 200
+    },
+    {
+      "label": "changed cancellation refused",
+      "status": 409
+    },
+    {
+      "label": "foreign account header refused",
+      "status": 403
+    },
+    {
+      "label": "foreign workspace header refused",
+      "status": 403
+    },
+    {
+      "label": "anonymous read refused",
+      "status": 401
+    },
+    {
+      "label": "unregistered agent refused",
+      "status": 403
+    },
+    {
+      "label": "cross-origin mutation refused",
+      "status": 403
+    },
+    {
+      "label": "no rows in engagement_synthesis_generation_plans",
+      "count": 0
+    },
+    {
+      "label": "no rows in engagement_synthesis_generation_authorizations",
+      "count": 0
+    }
+  ],
+  "status": "passed",
+  "identity": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-02T23:21:53.307Z",
+    "deployment": {
+      "commit": "522fcca79ef9",
+      "version": "0.66.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  },
+  "finishedAt": "2026-10-02T23:21:56.431Z",
+  "evidenceFiles": {
+    "staff-generation-http-journey.cjs": "97be9bbca9d46211f13799e53899297769c375978073383fba015568867ed3d5",
+    "staff-generation-http-journey.log": "79cc29affb00e39ec4dae8ca207e9ffb4cd1097bda4ebb34bf043b97cd2c2547",
+    "staff-generation-http-server.log": "51ede6904251c0628f9e3944f9c5ebf162160e81e595b2b51a9382e06eea5be4"
+  },
+  "serverShutdown": {
+    "exitCode": 0,
+    "serviceResult": "success",
+    "termination": "owned service stopped with SIGTERM",
+    "memoryPeak": "1 GiB",
+    "swapPeakBytes": 0,
+    "port3478": "no listener after shutdown"
+  },
+  "limits": [
+    "Synthetic native HTTP journey, not browser acceptance or semantic quality",
+    "Does not prove all role transitions, full RLS isolation, scale, preparation or provider execution",
+    "Lost acknowledgement discards a successful response, not a server rollback"
+  ]
+}

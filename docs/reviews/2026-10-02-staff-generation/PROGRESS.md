@@ -52,3 +52,20 @@ request cancellation before creation, lost HTTP acknowledgements and stale
 identity recovery still need an installed-stack journey through these handlers.
 Continue durable preparation and explicit execution authorization before
 claiming a usable staff generation workflow.
+
+
+## Installed request HTTP recovery
+
+The identified 522fcca7 server passes 18 checks through actual HTTP and the owned
+isolated database. [The native record](request-native-http.json) preserves each
+result and hashes the local script and logs. Exact creation recovers after a
+discarded acknowledgement; altered original bytes fail. Cancellation replays,
+precedes creation and prevents a late creation. Foreign account/workspace,
+anonymous, cross-origin and unregistered agent requests fail. Neither synthetic
+request produces a plan or execution authorization.
+
+The owned server stops successfully after this journey. Its memory peak is 1 GiB,
+with no swap use; port 3478 has no remaining listener. This closes the earlier
+HTTP-check boundary, not queue preparation, browser usability, provider execution,
+role-transition coverage, semantic accuracy or large-consultation capacity.
+The full workflow remains unfinished.
