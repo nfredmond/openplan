@@ -123,8 +123,8 @@ export function RtpRegistryPacketRowAction({
         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
         {buttonCopy}
       </Button>
-      {message ? <p className="text-xs text-emerald-700 dark:text-emerald-300">{message}</p> : null}
-      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+      {message ? <p role="status" className="text-xs text-emerald-700 dark:text-emerald-300">{message}</p> : null}
+      {error ? <p role="alert" className="text-xs text-destructive">{error}</p> : null}
     </div>
   );
 }

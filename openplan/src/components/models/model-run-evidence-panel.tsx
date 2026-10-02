@@ -789,7 +789,7 @@ export function ModelRunEvidencePanel({
         </div>
       </div>
 
-      {error ? <p className="mt-3 text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+      {error ? <p role="alert" className="mt-3 text-xs text-red-600 dark:text-red-300">{error}</p> : null}
 
       {/* WHETHER THE RELAUNCH WILL FARE ANY BETTER. Deliberately outside the
           collapsible evidence section: a run that never produced evidence has
@@ -1617,6 +1617,7 @@ export function ModelRunEvidencePanel({
                         ) : null}
                         <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center">
                           <select
+                            aria-label="Baseline run"
                             className="module-select md:max-w-sm"
                             value={selectedBaselineRunId}
                             onChange={(event) => {

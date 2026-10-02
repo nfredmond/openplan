@@ -495,7 +495,8 @@
     whole column past the phone screen and everything in that column was cut off
     at the right edge. In the base layer, so `min-w-*` utilities still win.
   */
-  .grid > * {
+  .grid > *,
+  .module-page > * {
     min-width: 0;
   }
 
@@ -4311,5 +4312,119 @@
   .animate-spin {
     animation-duration: 2s !important;
     animation-iteration-count: infinite !important;
+  }
+}
+
+/*
+  PRINT, FOR THE PAGES AN AGENCY PUBLISHES (finding P6, 2026-10-01).
+
+  Scope: `.published-reading`, the wrapper in `src/app/(published)/layout.tsx`.
+  That covers the public plan page, the plan document, the measure page, the
+  published land use plan and the review release. Nothing here matches the
+  Safety print sheet (see the block near the top of this file) or any page in
+  the signed-in app, which print through their own `print:` utilities.
+
+  The default theme is dark. Paper is not, so the colour tokens are reset to
+  black on white for everything inside the wrapper, and then text and
+  backgrounds are set outright, because many elements carry `dark:` utilities
+  with fixed colours that a token reset does not reach.
+
+  The margins use a named page so they apply only to these pages. A bare
+  `@page` rule would change the margins of every printout in the product.
+
+  Each page's own footer stays. Those footers hold the caveats (read-only
+  view, the adopted document is the official record). Only OpenPlan's
+  attribution line, buttons, the skip link and site navigation are hidden.
+  The plan document's table of contents is content and prints.
+*/
+@media print {
+  @page published {
+    margin: 18mm 16mm 20mm;
+  }
+
+  body:has(.published-reading) {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  body:has(.published-reading) .skip-link,
+  .published-reading .published-attribution,
+  .published-reading button,
+  .published-reading nav:not([aria-label="Contents"]) {
+    display: none !important;
+  }
+
+  .published-reading {
+    page: published;
+    color-scheme: light;
+    min-height: 0 !important;
+    font-size: 11pt;
+
+    --background: #ffffff;
+    --foreground: #000000;
+    --card: #ffffff;
+    --card-foreground: #000000;
+    --popover: #ffffff;
+    --popover-foreground: #000000;
+    --secondary: #ffffff;
+    --secondary-foreground: #000000;
+    --muted-foreground: #333333;
+    --border: #999999;
+    --ink: #000000;
+    --ink-2: #333333;
+    --muted: #333333;
+    --line: #999999;
+    --bg: #ffffff;
+    --panel: #ffffff;
+    --panel-solid: #ffffff;
+  }
+
+  .published-reading,
+  .published-reading *,
+  .published-reading *::before,
+  .published-reading *::after {
+    color: #000000 !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: #999999 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* A map or a picture keeps its own pixels. */
+  .published-reading :is(img, svg, canvas, video) {
+    background-color: initial !important;
+  }
+
+  .published-reading a {
+    text-decoration: underline;
+  }
+
+  /* A wide table scrolls sideways on screen. Paper cannot scroll. */
+  .published-reading [class*="overflow-x-"] {
+    overflow: visible !important;
+  }
+
+  .published-reading table {
+    min-width: 0 !important;
+  }
+
+  .published-reading :is(table, tr, figure, img, canvas, aside, blockquote, [role="status"], [role="note"], [role="alert"]) {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .published-reading thead {
+    display: table-header-group;
+  }
+
+  .published-reading :is(h1, h2, h3, h4, h5, h6) {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .published-reading :is(p, li) {
+    orphans: 3;
+    widows: 3;
   }
 }

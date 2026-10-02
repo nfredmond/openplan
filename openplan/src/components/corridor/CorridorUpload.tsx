@@ -203,6 +203,7 @@ export function CorridorUpload({ onUpload, isCurrentBoundary = true }: CorridorU
         <Input
           ref={inputRef}
           type="file"
+          aria-label="Boundary file"
           accept=".geojson,.json,.kml,.kmz,.zip,application/geo+json,application/json,application/vnd.google-earth.kml+xml,application/vnd.google-earth.kmz,application/zip"
           className="hidden"
           onChange={(event) => {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
-import { ArrowLeft, Database, FileStack, ShieldCheck } from "lucide-react";
+import { FileStack, ShieldCheck } from "lucide-react";
 import { ModelDetailControls } from "@/components/models/model-detail-controls";
 import { ModelLinkedRecordsBoard } from "@/components/models/model-linked-records";
 import {
@@ -11,6 +11,9 @@ import {
   type TransitFeedOption,
 } from "@/components/models/model-run-manager";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
+import { PageTabNav } from "@/components/ui/page-tab-nav";
+import { PageTabPanel } from "@/components/ui/page-tab-panel";
+import { RecordHubHeader } from "@/components/ui/record-hub-header";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { resolveModelingWorkerDeclaration } from "@/lib/config/deployment-health-facts";
@@ -37,6 +40,7 @@ import {
 } from "@/lib/models/evidence-backbone";
 import { filterToCurrentReadyVersion } from "@/lib/gtfs/persist";
 import { createClient } from "@/lib/supabase/server";
+import { resolvePageTab, unreadableLanes, type PageTabDefinition } from "@/lib/ui/page-tabs";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
@@ -52,6 +56,8 @@ import { isGuidedProjectComparisonModel } from "@/lib/models/project-comparison"
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
 
 type RouteParams = Promise<{ modelId: string }>;
+
+type ModelTabKey = "runs" | "overview" | "edit";
 
 /**
  * Just enough of a PostgREST builder for the current-version read to compile.
@@ -281,8 +287,8 @@ export default async function ModelDetailPage({
       .eq("workspace_id", model.workspace_id) as unknown as CurrentTransitVersionQuery
   ).limit(100);
 
-  reads.check("this workspace's transit feeds", transitFeedsResult);
-  reads.check("the transit feed ingests in use", transitFeedVersionsResult);
+  const transitFeedsUnreadable = reads.check("this workspace's transit feeds", transitFeedsResult);
+  const transitVersionsUnreadable = reads.check("the transit feed ingests in use", transitFeedVersionsResult);
 
   const transitVersionsByFeedId = new Map(
     (((transitFeedVersionsResult.data ?? []) as unknown) as Array<{
@@ -376,16 +382,19 @@ export default async function ModelDetailPage({
   // The option lists behind the Links tab. A failed read here offers the
   // planner nothing to attach, which looks identical to a workspace that has
   // nothing to attach.
-  reads.check("selectable projects", projectsResult);
-  reads.check("selectable scenario sets", scenarioOptionsResult);
-  reads.check("selectable plans", plansResult);
-  reads.check("selectable reports", reportsResult);
-  reads.check("selectable datasets", datasetsResult);
-  reads.check("selectable runs", runsResult);
-  reads.check("the primary project", primaryProjectResult);
-  reads.check("the primary scenario set", primaryScenarioResult);
-  reads.check("scenario entries", scenarioEntriesResult);
-  reads.check("this workspace's home geography", workspaceResult);
+  // The flags are kept so each tab can name the reads that failed behind it.
+  const editOptionsUnreadable = unreadableLanes([
+    ["selectable projects", reads.check("selectable projects", projectsResult)],
+    ["selectable scenario sets", reads.check("selectable scenario sets", scenarioOptionsResult)],
+    ["selectable plans", reads.check("selectable plans", plansResult)],
+    ["selectable reports", reads.check("selectable reports", reportsResult)],
+    ["selectable datasets", reads.check("selectable datasets", datasetsResult)],
+    ["selectable runs", reads.check("selectable runs", runsResult)],
+  ]);
+  const primaryProjectUnreadable = reads.check("the primary project", primaryProjectResult);
+  const primaryScenarioUnreadable = reads.check("the primary scenario set", primaryScenarioResult);
+  const scenarioEntriesUnreadable = reads.check("scenario entries", scenarioEntriesResult);
+  const homeGeographyUnreadable = reads.check("this workspace's home geography", workspaceResult);
 
   // The link set itself. Everything downstream of it — the six linked-record
   // sections, the four linkage counts in the header, and the link-derived
@@ -599,16 +608,22 @@ export default async function ModelDetailPage({
   // Classified first, collected second. A spine table this deployment has not
   // migrated yet already has a truer thing to say than "could not be read", and
   // it says it below; only the failures that are NOT that are disclosed.
-  if (!scenarioSpineSchemaPending) {
-    reads.check("scenario assumption sets", scenarioAssumptionSetsResult);
-    reads.check("scenario data packages", scenarioDataPackagesResult);
-    reads.check("scenario indicator snapshots", scenarioIndicatorSnapshotsResult);
-  }
+  // Each `check` runs unconditionally inside its array: `||` would short-circuit
+  // and leave a second failure out of the disclosure.
+  const scenarioSpineUnreadable = scenarioSpineSchemaPending
+    ? false
+    : [
+        reads.check("scenario assumption sets", scenarioAssumptionSetsResult),
+        reads.check("scenario data packages", scenarioDataPackagesResult),
+        reads.check("scenario indicator snapshots", scenarioIndicatorSnapshotsResult),
+      ].some(Boolean);
 
-  if (!networkBasisSchemaPending) {
-    reads.check("this model's network basis", networkBasisResult);
-    reads.check("the linked network package version", networkBasisVersionResult);
-  }
+  const networkBasisUnreadable = networkBasisSchemaPending
+    ? false
+    : [
+        reads.check("this model's network basis", networkBasisResult),
+        reads.check("the linked network package version", networkBasisVersionResult),
+      ].some(Boolean);
 
   const primaryScenarioSpine = model.scenario_set_id
     ? {
@@ -635,9 +650,7 @@ export default async function ModelDetailPage({
   const launchTemplate = extractModelLaunchTemplate(model.config_json ?? {});
   const modelRunsSchemaPending = Boolean(modelRunsResult.error && looksLikePendingSchema(modelRunsResult.error.message));
 
-  if (!modelRunsSchemaPending) {
-    reads.check("this model's runs", modelRunsResult);
-  }
+  const modelRunsUnreadable = modelRunsSchemaPending ? false : reads.check("this model's runs", modelRunsResult);
 
   // Reconcile-on-read: reap runs whose worker crashed or never picked them up
   // so the UI never shows a run stuck "running"/"queued" forever. The client
@@ -774,6 +787,45 @@ export default async function ModelDetailPage({
   const modelingWorkerDeclaration = resolveModelingWorkerDeclaration();
   const modelingWorkerHealth = await loadModelingWorkerHealth(modelingWorkerDeclaration);
 
+  /*
+    A RECORD HUB: breadcrumb, title, one status line, then tabs. The page used to
+    be one scroll under a two-card header, with the edit controls beside the run
+    manager. Runs is first and the default because launching and reading runs is
+    what a planner opens a model record to do.
+  */
+  const modelTabs: PageTabDefinition<ModelTabKey>[] = [
+    {
+      key: "runs",
+      label: "Runs",
+      // `#run-model` is where the project comparison starter sends a planner.
+      anchors: ["run-model"],
+      unreadable: unreadableLanes([
+        ["this model's runs", modelRunsUnreadable],
+        ["transit feeds", transitFeedsUnreadable || transitVersionsUnreadable],
+        ["scenario entries", scenarioEntriesUnreadable],
+        ["the workspace's home geography", homeGeographyUnreadable],
+      ]),
+    },
+    {
+      key: "overview",
+      label: "Overview",
+      unreadable: unreadableLanes([
+        ["this model's links", linkSetUnreadable],
+        ["linked scenario sets", linkedScenariosUnreadable],
+        ["linked plans", linkedPlansUnreadable],
+        ["linked reports", linkedReportsUnreadable],
+        ["linked datasets", linkedDatasetsUnreadable],
+        ["linked runs", linkedRunsUnreadable],
+        ["linked projects", linkedProjectsUnreadable],
+        ["the primary project", primaryProjectUnreadable],
+        ["the primary scenario set", primaryScenarioUnreadable || scenarioSpineUnreadable],
+        ["the network basis", networkBasisUnreadable],
+      ]),
+    },
+    { key: "edit", label: "Edit model", unreadable: editOptionsUnreadable },
+  ];
+  const activeTab = resolvePageTab(modelTabs, query.tab, "runs");
+
   return (
     <section className="module-page relative">
       <CartographicSurfaceWide />
@@ -781,13 +833,22 @@ export default async function ModelDetailPage({
 
       <div className="space-y-6">
         <PlanningContextStripForProject requestedProjectId={query.projectId} project={primaryProjectResult.data} error={primaryProjectResult.error} />
-        <Link
-          href={model.project_id ? `${withPlanningContext("/models", model.project_id)}#project-comparison-starter` : "/models"}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Models
-        </Link>
+        <RecordHubHeader
+          parentHref={model.project_id ? `${withPlanningContext("/models", model.project_id)}#project-comparison-starter` : "/models"}
+          parentLabel="Travel modeling"
+          title={model.title}
+          status={
+            <>
+              <StatusBadge tone={modelStatusTone(model.status)}>{formatModelStatusLabel(model.status)}</StatusBadge>
+              <StatusBadge tone="info">{formatModelFamilyLabel(model.model_family)}</StatusBadge>
+              <StatusBadge tone={readiness.ready ? "success" : "warning"}>{readiness.label}</StatusBadge>
+            </>
+          }
+          description={
+            model.summary ||
+            "No summary yet. Use this record to document the model setup, linked inputs, and downstream outputs."
+          }
+        />
 
         <ReadFailureNotice reads={reads} />
 
@@ -827,25 +888,39 @@ export default async function ModelDetailPage({
           />
         ) : null}
 
-        <header className="module-header-grid">
-          <article className="module-intro-card">
-            <div className="module-intro-kicker">
-              <Database className="h-3.5 w-3.5" />
-              Model detail
-            </div>
-            <div className="module-intro-body">
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge tone={modelStatusTone(model.status)}>{formatModelStatusLabel(model.status)}</StatusBadge>
-                <StatusBadge tone="info">{formatModelFamilyLabel(model.model_family)}</StatusBadge>
-                <StatusBadge tone={readiness.ready ? "success" : "warning"}>{readiness.label}</StatusBadge>
-              </div>
-              <h1 className="module-intro-title">{model.title}</h1>
-              <p className="module-intro-description">
-                {model.summary ||
-                  "No summary yet. Use this record to document the model setup, linked inputs, and downstream outputs."}
-              </p>
-            </div>
+        <PageTabNav
+          tabs={modelTabs}
+          activeKey={activeTab}
+          basePath={`/models/${model.id}`}
+          searchParams={query}
+          ariaLabel="Model sections"
+        />
 
+        <PageTabPanel tabKey="runs" active={activeTab === "runs"}>
+          <div className="space-y-6">
+            <div id="run-model">
+            <ModelRunManager
+              modelId={model.id}
+              modelTitle={model.title}
+              defaultQueryText={launchTemplate.queryText ?? ""}
+              defaultCorridorText={defaultCorridorText}
+              studyAreaOriginLabel={studyArea.originLabel}
+              scenarioEntries={scenarioEntryOptions}
+              modelRuns={modelRuns}
+              schemaPending={modelRunsSchemaPending}
+              modelingWorkerDeclaration={modelingWorkerDeclaration}
+              modelingWorkerHealth={modelingWorkerHealth}
+              workspaceId={model.workspace_id}
+              transitFeeds={transitFeedOptions}
+              initialEngineKey={guidedEngineKey}
+              initialScenarioEntryId={initialScenarioEntryId}
+            />
+            </div>
+          </div>
+        </PageTabPanel>
+
+        <PageTabPanel tabKey="overview" active={activeTab === "overview"}>
+          <div className="space-y-6">
             <div className="module-summary-grid cols-5">
               {/* All four linkage counts and several readiness checks are
                   computed from the one `model_links` read. When it fails the
@@ -892,78 +967,52 @@ export default async function ModelDetailPage({
                 </p>
               </div>
             </div>
-          </article>
 
-          <article className="module-operator-card">
-            <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-                <ShieldCheck className="h-5 w-5 text-emerald-200" />
-              </span>
-              <div>
-                <p className="module-operator-eyebrow">Model summary</p>
-                <h2 className="module-operator-title">{workflow.label}</h2>
-              </div>
-            </div>
-            <p className="module-operator-copy">{workflow.reason}</p>
-            <div className="module-operator-list">
-              <div className="module-operator-item">
-                {workflow.packageLabel}: {workflow.packageDetail}
-              </div>
-              {workflow.actionItems.length > 0 ? <div className="module-operator-item">{workflow.actionItems[0]}</div> : null}
-              {workflow.reviewNotes[0] ? <div className="module-operator-item">{workflow.reviewNotes[0]}</div> : null}
-            </div>
-          </article>
-        </header>
+            <div className="grid gap-6 xl:grid-cols-2">
+              <article className="module-operator-card">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
+                    <ShieldCheck className="h-5 w-5 text-emerald-200" />
+                  </span>
+                  <div>
+                    <p className="module-operator-eyebrow">Model summary</p>
+                    <h2 className="module-operator-title">{workflow.label}</h2>
+                  </div>
+                </div>
+                <p className="module-operator-copy">{workflow.reason}</p>
+                <div className="module-operator-list">
+                  <div className="module-operator-item">
+                    {workflow.packageLabel}: {workflow.packageDetail}
+                  </div>
+                  {workflow.actionItems.length > 0 ? <div className="module-operator-item">{workflow.actionItems[0]}</div> : null}
+                  {workflow.reviewNotes[0] ? <div className="module-operator-item">{workflow.reviewNotes[0]}</div> : null}
+                </div>
+              </article>
 
-        <div className="grid gap-6 xl:grid-cols-[0.96fr_1.04fr]">
-          <ModelDetailControls
-            model={model}
-            projects={(projectsResult.data ?? []) as Array<{ id: string; name: string }>}
-            scenarioSets={(scenarioOptionsResult.data ?? []) as Array<{ id: string; title: string }>}
-            plans={((plansResult.data ?? []) as Array<{ id: string; title: string | null }>).map((plan) => ({
-              id: plan.id,
-              title: plan.title ?? "Untitled plan",
-            }))}
-            reports={((reportsResult.data ?? []) as Array<{ id: string; title: string | null }>).map((report) => ({
-              id: report.id,
-              title: report.title ?? "Untitled report",
-            }))}
-            datasets={((datasetsResult.data ?? []) as Array<{ id: string; name: string | null }>).map((dataset) => ({
-              id: dataset.id,
-              title: dataset.name ?? "Untitled dataset",
-            }))}
-            runs={((runsResult.data ?? []) as Array<{ id: string; title: string | null }>).map((run) => ({
-              id: run.id,
-              title: run.title ?? "Untitled run",
-            }))}
-            selectedLinks={{
-              scenarios: scenarioLinkIds,
-              plans: planLinkIds,
-              reports: reportLinkIds,
-              datasets: datasetLinkIds,
-              runs: runLinkIds,
-              relatedProjects: projectLinkIds,
-            }}
-          />
+              <article className="module-section-surface">
+                <div className="module-section-header">
+                  <div className="module-section-heading">
+                    <p className="module-section-label">Readiness</p>
+                    <h2 className="module-section-title">Configuration and traceability checks</h2>
+                  </div>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    <FileStack className="h-3.5 w-3.5" />
+                    {readiness.missingCheckCount} gaps
+                  </span>
+                </div>
 
-          <div className="space-y-6">
-            <div id="run-model">
-            <ModelRunManager
-              modelId={model.id}
-              modelTitle={model.title}
-              defaultQueryText={launchTemplate.queryText ?? ""}
-              defaultCorridorText={defaultCorridorText}
-              studyAreaOriginLabel={studyArea.originLabel}
-              scenarioEntries={scenarioEntryOptions}
-              modelRuns={modelRuns}
-              schemaPending={modelRunsSchemaPending}
-              modelingWorkerDeclaration={modelingWorkerDeclaration}
-              modelingWorkerHealth={modelingWorkerHealth}
-              workspaceId={model.workspace_id}
-              transitFeeds={transitFeedOptions}
-              initialEngineKey={guidedEngineKey}
-              initialScenarioEntryId={initialScenarioEntryId}
-            />
+                <div className="mt-5 grid gap-3">
+                  {readiness.checks.map((check) => (
+                    <div key={check.key} className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm font-semibold text-foreground">{check.label}</p>
+                        <StatusBadge tone={check.ready ? "success" : "warning"}>{check.ready ? "Ready" : "Missing"}</StatusBadge>
+                      </div>
+                      <p className="mt-2 text-sm text-muted-foreground">{check.detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </article>
             </div>
 
             <article className="module-section-surface">
@@ -1103,38 +1152,45 @@ export default async function ModelDetailPage({
               </div>
             </article>
 
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Readiness</p>
-                  <h2 className="module-section-title">Configuration and traceability checks</h2>
-                </div>
-                <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  <FileStack className="h-3.5 w-3.5" />
-                  {readiness.missingCheckCount} gaps
-                </span>
-              </div>
-
-              <div className="mt-5 grid gap-3">
-                {readiness.checks.map((check) => (
-                  <div key={check.key} className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold text-foreground">{check.label}</p>
-                      <StatusBadge tone={check.ready ? "success" : "warning"}>{check.ready ? "Ready" : "Missing"}</StatusBadge>
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{check.detail}</p>
-                  </div>
-                ))}
-              </div>
-            </article>
-
             <ModelLinkedRecordsBoard
               sections={linkedRecordSections}
               totalLinkCount={links.length}
               linkSetUnavailable={linkSetUnreadable}
             />
           </div>
-        </div>
+        </PageTabPanel>
+
+        <PageTabPanel tabKey="edit" active={activeTab === "edit"}>
+          <ModelDetailControls
+            model={model}
+            projects={(projectsResult.data ?? []) as Array<{ id: string; name: string }>}
+            scenarioSets={(scenarioOptionsResult.data ?? []) as Array<{ id: string; title: string }>}
+            plans={((plansResult.data ?? []) as Array<{ id: string; title: string | null }>).map((plan) => ({
+              id: plan.id,
+              title: plan.title ?? "Untitled plan",
+            }))}
+            reports={((reportsResult.data ?? []) as Array<{ id: string; title: string | null }>).map((report) => ({
+              id: report.id,
+              title: report.title ?? "Untitled report",
+            }))}
+            datasets={((datasetsResult.data ?? []) as Array<{ id: string; name: string | null }>).map((dataset) => ({
+              id: dataset.id,
+              title: dataset.name ?? "Untitled dataset",
+            }))}
+            runs={((runsResult.data ?? []) as Array<{ id: string; title: string | null }>).map((run) => ({
+              id: run.id,
+              title: run.title ?? "Untitled run",
+            }))}
+            selectedLinks={{
+              scenarios: scenarioLinkIds,
+              plans: planLinkIds,
+              reports: reportLinkIds,
+              datasets: datasetLinkIds,
+              runs: runLinkIds,
+              relatedProjects: projectLinkIds,
+            }}
+          />
+        </PageTabPanel>
       </div>
     </section>
   );

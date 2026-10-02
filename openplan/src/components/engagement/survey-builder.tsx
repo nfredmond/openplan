@@ -225,12 +225,12 @@ function OptionManager({ campaignId, question, onChange }: { campaignId: string;
         ))}
       </ul>
       <form onSubmit={add} className="flex items-center gap-2">
-        <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Add an option label" />
+        <Input aria-label="New option label" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Add an option label" />
         <Button type="submit" variant="outline" size="sm" disabled={busy || !label.trim()}>
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add
         </Button>
       </form>
-      {error ? <p className={ERROR_CLASS}>{error}</p> : null}
+      {error ? <p role="alert" className={ERROR_CLASS}>{error}</p> : null}
     </div>
   );
 }
@@ -527,7 +527,7 @@ function QuestionCard({ campaignId, question, earlier, onUpdate, onRemove }: { c
           <ConfigEditor type={question.question_type} config={config} onChange={setConfig} />
           <ConditionEditor earlier={earlier} config={config} onChange={setConfig} />
           {def.usesOptions ? <OptionManager campaignId={campaignId} question={question} onChange={(options) => onUpdate({ ...question, options })} /> : null}
-          {error ? <p className={ERROR_CLASS}>{error}</p> : null}
+          {error ? <p role="alert" className={ERROR_CLASS}>{error}</p> : null}
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" onClick={() => void save()} disabled={busy}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Save
@@ -668,7 +668,7 @@ export function EngagementSurveyBuilder({
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={required} onChange={(e) => setRequired(e.target.checked)} /> Required
         </label>
-        {error ? <p className={ERROR_CLASS}>{error}</p> : null}
+        {error ? <p role="alert" className={ERROR_CLASS}>{error}</p> : null}
         <Button type="submit" disabled={busy || !prompt.trim()}>
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add question
         </Button>

@@ -55,7 +55,8 @@ describe("SignUpPage", () => {
     expect(screen.queryByText(/establishes the operator account only/i)).not.toBeInTheDocument();
   });
 
-  it("returns new users to sign-in with the intended redirect preserved", async () => {
+  it("takes an invited person with a live session to the invitation, not to a second sign-in", async () => {
+    signUpMock.mockResolvedValue({ data: { user: { id: "u1" }, session: { access_token: "t" } }, error: null });
     searchParamsValue.set("plan", "starter");
     searchParamsValue.set("redirect", "/reports");
     searchParamsValue.set("invite", "invite-token-123");
@@ -73,7 +74,42 @@ describe("SignUpPage", () => {
     });
 
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith("/sign-in?created=1&redirect=%2Freports&invite=invite-token-123");
+      // Creating the account does not accept the invitation. The invitation
+      // page asks.
+      expect(pushMock).toHaveBeenCalledWith("/invitations/invite-token-123");
+    });
+  });
+
+  it("shows the password rule as text on the page, tied to the field", async () => {
+    render(<SignUpPage />);
+
+    const password = await screen.findByLabelText(/^Password$/i);
+    const rule = screen.getByText("Use at least 8 characters.");
+    expect(password).toHaveAttribute("aria-describedby", rule.id);
+    // Not only a placeholder, which disappears at the first keystroke.
+    expect(password).not.toHaveAttribute("placeholder");
+    expect(password).toHaveAttribute("autocomplete", "new-password");
+  });
+
+  it("promises no later step that no longer exists", async () => {
+    render(<SignUpPage />);
+
+    await screen.findByRole("heading", { name: /Create your OpenPlan account/i });
+    expect(screen.queryByText(/Choose your workspace right after signing in/i)).not.toBeInTheDocument();
+  });
+
+  it("does not follow a redirect that leaves this site", async () => {
+    signUpMock.mockResolvedValue({ data: { user: { id: "u1" }, session: { access_token: "t" } }, error: null });
+    searchParamsValue.set("redirect", "//elsewhere.example/path");
+
+    render(<SignUpPage />);
+    fireEvent.change(screen.getByLabelText(/Work email/i), { target: { value: "planner@example.com" } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "OpenPlan!2026" } });
+    fireEvent.change(screen.getByLabelText(/^Organization$/i), { target: { value: "Nevada County TC" } });
+    fireEvent.click(screen.getByRole("button", { name: /Create account/i }));
+
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith("/dashboard");
     });
   });
 
@@ -91,11 +127,11 @@ describe("SignUpPage", () => {
 
     expect(await screen.findByText(/Confirm your email to finish/i)).toBeInTheDocument();
     expect(screen.getByText(/planner@example.com/)).toBeInTheDocument();
-    // It does NOT route to sign-in — the account cannot sign in yet.
+    // It does NOT route anywhere: the account cannot sign in yet.
     expect(pushMock).not.toHaveBeenCalled();
   });
 
-  it("routes to sign-in when a session is returned (confirmations off)", async () => {
+  it("goes straight to the destination when a session is returned (confirmations off)", async () => {
     signUpMock.mockResolvedValue({ data: { user: { id: "u1" }, session: { access_token: "t" } }, error: null });
     searchParamsValue.set("redirect", "/dashboard");
 
@@ -106,8 +142,10 @@ describe("SignUpPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Create account/i }));
 
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith("/sign-in?created=1&redirect=%2Fdashboard");
+      expect(pushMock).toHaveBeenCalledWith("/dashboard");
     });
+    // Never a second login for a person who is already signed in.
+    expect(pushMock).not.toHaveBeenCalledWith(expect.stringContaining("/sign-in"));
     expect(screen.queryByText(/Confirm your email to finish/i)).not.toBeInTheDocument();
   });
 
@@ -126,9 +164,7 @@ describe("SignUpPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Create account/i }));
 
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith(
-        `/sign-in?created=1&redirect=${encodeURIComponent("/dashboard?intent=engagement")}`
-      );
+      expect(pushMock).toHaveBeenCalledWith("/dashboard?intent=engagement");
     });
   });
 
@@ -145,7 +181,7 @@ describe("SignUpPage", () => {
 
     await waitFor(() => {
       // An explicit redirect wins; the intent is not bolted onto /reports.
-      expect(pushMock).toHaveBeenCalledWith("/sign-in?created=1&redirect=%2Freports");
+      expect(pushMock).toHaveBeenCalledWith("/reports");
     });
   });
 });

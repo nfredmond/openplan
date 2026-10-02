@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
-import { AlertTriangle, ArrowRight, FileStack, GitCompareArrows, ShieldCheck } from "lucide-react";
+import { AlertTriangle, ShieldCheck } from "lucide-react";
 import { ScenarioEntryComposer } from "@/components/scenarios/scenario-entry-composer";
 import { ScenarioEntryRegistry } from "@/components/scenarios/scenario-entry-registry";
 import { ScenarioSetControls } from "@/components/scenarios/scenario-set-controls";
@@ -10,16 +10,16 @@ import { TripGenComparisonSaveButton } from "@/components/scenarios/trip-gen-com
 import { GuidedComparisonResultsPanel } from "@/components/scenarios/guided-comparison-results-panel";
 import { GuidedComparisonSavePanel } from "@/components/scenarios/guided-comparison-save-panel";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
+import { PageTabNav } from "@/components/ui/page-tab-nav";
+import { PageTabPanel } from "@/components/ui/page-tab-panel";
+import { RecordHubHeader } from "@/components/ui/record-hub-header";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { resolvePageTab, unreadableLanes, type PageTabDefinition } from "@/lib/ui/page-tabs";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import {
-  formatReportStatusLabel,
-  formatReportTypeLabel,
-  getReportPacketActionLabel,
   getReportPacketFreshness,
   getReportPacketPriority,
-  reportStatusTone,
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
@@ -40,6 +40,7 @@ import {
 } from "@/lib/scenarios/catalog";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
+import { ScenarioLinkedReportsSection } from "./_components/scenario-linked-reports-section";
 
 type ScenarioSetRow = {
   id: string;
@@ -101,6 +102,8 @@ type ScenarioTripGenModelRunRow = {
   status: string;
   engine_key: string;
 };
+
+type ScenarioTabKey = "overview" | "alternatives" | "comparisons" | "edit";
 
 function formatStamp(value: string | null | undefined): string {
   if (!value) return "Unknown";
@@ -211,7 +214,7 @@ export default async function ScenarioSetDetailPage({
 
   const project = projectResult.data;
   const projectUnreadable = reads.check("the parent project", projectResult);
-  reads.check("selectable runs", runsResult);
+  const selectableRunsUnreadable = reads.check("selectable runs", runsResult);
   const modelsUnreadable = reads.check("selectable models", modelsResult);
   const runsData = runsResult.data;
   const modelsData = modelsResult.data;
@@ -494,7 +497,7 @@ export default async function ScenarioSetDetailPage({
   // this scenario set at all. Losing it empties the linked-report list without
   // emptying the reports.
   const reportRunsUnreadable = reads.check("report-to-run linkage", reportRunsResult);
-  reads.check("report packet artifacts", reportArtifactsResult);
+  const reportArtifactsUnreadable = reads.check("report packet artifacts", reportArtifactsResult);
   const reportRunsData = reportRunsResult.data;
   const comparisonBoard = buildScenarioComparisonBoard({
     scenarioSetId: scenarioSet.id,
@@ -598,43 +601,56 @@ export default async function ScenarioSetDetailPage({
   // work rather than about this render.
   const comparisonEvidenceUnreadable =
     entriesUnreadable || attachedRunsUnreadable || attachedModelRunsUnreadable;
+  /*
+    A RECORD HUB: breadcrumb, title, one status line, then tabs. The page used to
+    be one scroll of eight section cards under a two-card header.
+
+    Each failed read is listed under the tab that owns the record it reads. The
+    notice above the tabs still names every failed read on the page, so a tab
+    that only DERIVES from a failed read (the comparison board from entries) is
+    covered there and by its own in-panel sentence.
+  */
+  const scenarioTabs: PageTabDefinition<ScenarioTabKey>[] = [
+    { key: "overview", label: "Overview", unreadable: unreadableLanes([["the parent project", projectUnreadable]]) },
+    {
+      key: "alternatives",
+      label: "Alternatives",
+      unreadable: unreadableLanes([
+        ["entries", entriesUnreadable],
+        ["runs attached to entries", attachedRunsUnreadable],
+        ["model runs attached to entries", attachedModelRunsUnreadable],
+        ["selectable runs", selectableRunsUnreadable],
+        ["attachable model runs", modelRunOptionsUnreadable],
+        ["anchored models", modelsUnreadable],
+      ]),
+    },
+    {
+      key: "comparisons",
+      label: "Comparisons and reports",
+      unreadable: unreadableLanes([
+        ["saved comparisons", comparisonSnapshotsUnreadable],
+        ["indicator deltas", comparisonIndicatorDeltasUnreadable],
+        ["trip-generation runs", tripGenRunsUnreadable],
+        ["guided comparison evidence", guidedEvidence.unreadable],
+        ["reports", reportsUnreadable],
+        ["report-to-run links", reportRunsUnreadable],
+        ["report packet artifacts", reportArtifactsUnreadable],
+      ]),
+    },
+    { key: "edit", label: "Edit scenario set" },
+  ];
+  const activeTab = resolvePageTab(scenarioTabs, query.tab, "overview");
+
   return (
-    <section className="module-page">
+    <section className="module-page space-y-6">
       <CartographicSurfaceWide />
-      <PlanningContextStripForProject requestedProjectId={query.projectId} project={projectResult.data} error={projectResult.error} className="mb-4" />
-      <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/scenarios" className="transition hover:text-foreground">
-          Scenarios
-        </Link>
-        <ArrowRight className="h-3.5 w-3.5" />
-        <span className="text-foreground">{scenarioSet.title}</span>
-      </div>
-
-      {/* Internal page, so the database's own message stays on it — inside the
-          notice's operator disclosure. A public surface would disclose only THAT
-          a read failed. */}
-      <ReadFailureNotice
-        className="mb-4"
-        reads={reads}
-        title="Part of this scenario set could not be read"
-      />
-
-      {modelRunsSchemaPending ? (
-        <StateBlock
-          className="mb-4"
-          tone="warning"
-          title="Model-run evidence is waiting on a migration"
-          description="This deployment has not applied the model-runs migration, so runs attached to these entries, the attach picker, and the trip-generation comparison affordance are unavailable. That is a missing migration, not an absence of model runs."
-        />
-      ) : null}
-
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <GitCompareArrows className="h-3.5 w-3.5" />
-            Scenario set detail
-          </div>
-          <div className="module-record-kicker">
+      <PlanningContextStripForProject requestedProjectId={query.projectId} project={projectResult.data} error={projectResult.error} />
+      <RecordHubHeader
+        parentHref="/scenarios"
+        parentLabel="Scenarios"
+        title={scenarioSet.title}
+        status={
+          <>
             <StatusBadge tone={scenarioStatusTone(scenarioSet.status)}>{titleizeScenarioValue(scenarioSet.status)}</StatusBadge>
             <span className="module-record-chip">
               <span>Baseline</span>
@@ -642,20 +658,42 @@ export default async function ScenarioSetDetailPage({
                   were actually read. */}
               <strong>{entriesUnreadable ? "Unreadable" : baselineEntry ? "Registered" : "Missing"}</strong>
             </span>
-          </div>
+          </>
+        }
+        description={
+          scenarioSet.summary ||
+          "This scenario set is ready to attach a baseline, alternatives, and run-linked evidence without drifting into a separate comparison engine."
+        }
+      />
+
+      {/* Internal page, so the database's own message stays on it — inside the
+          notice's operator disclosure. A public surface would disclose only THAT
+          a read failed. */}
+      <ReadFailureNotice reads={reads} title="Part of this scenario set could not be read" />
+
+      {modelRunsSchemaPending ? (
+        <StateBlock
+          tone="warning"
+          title="Model-run evidence is waiting on a migration"
+          description="This deployment has not applied the model-runs migration, so runs attached to these entries, the attach picker, and the trip-generation comparison affordance are unavailable. That is a missing migration, not an absence of model runs."
+        />
+      ) : null}
+
+      <PageTabNav
+        tabs={scenarioTabs}
+        activeKey={activeTab}
+        basePath={`/scenarios/${scenarioSet.id}`}
+        searchParams={query}
+        ariaLabel="Scenario set sections"
+      />
+
+      <PageTabPanel tabKey="overview" active={activeTab === "overview"}>
+        <div className="space-y-6">
           <p className="text-label text-muted-foreground">
             {entriesUnreadable
               ? "Alternative readiness is unavailable — this set's entries could not be read."
               : `${comparisonSummary.readyAlternatives}/${comparisonSummary.totalAlternatives} alternatives ready`}
           </p>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">{scenarioSet.title}</h1>
-            <p className="module-intro-description">
-              {scenarioSet.summary ||
-                "This scenario set is ready to attach a baseline, alternatives, and run-linked evidence without drifting into a separate comparison engine."}
-            </p>
-          </div>
-
           <div className="module-summary-grid cols-4">
             <div className="module-summary-card">
               <p className="module-summary-label">Project</p>
@@ -710,40 +748,6 @@ export default async function ScenarioSetDetailPage({
               </p>
             </div>
           </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Evidence posture</p>
-              <h2 className="module-operator-title">Run attachment stays explicit</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            Comparison readiness stays lightweight, but it is now explicit about what is attached, what assumptions are
-            recorded, and why a baseline-versus-alternative comparison is or is not ready.
-          </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">Baseline and alternative entries show distinct run-attachment blockers.</div>
-            <div className="module-operator-item">Assumptions stay attached to each entry, not hidden inside prose.</div>
-            <div className="module-operator-item">Project linkage remains visible so this record does not float free from the planning container.</div>
-          </div>
-        </article>
-      </header>
-
-      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <div className="space-y-6">
-          <ScenarioSetControls
-            scenarioSetId={scenarioSet.id}
-            title={scenarioSet.title}
-            summary={scenarioSet.summary}
-            planningQuestion={scenarioSet.planning_question}
-            status={scenarioSet.status}
-          />
-
           <article className="module-section-surface">
             <div className="module-section-heading">
               <p className="module-section-label">Workflow</p>
@@ -824,6 +828,113 @@ export default async function ScenarioSetDetailPage({
             </div>
           </article>
 
+          <div className="grid gap-6 xl:grid-cols-2">
+            <article className="module-operator-card">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
+                  <ShieldCheck className="h-5 w-5 text-emerald-200" />
+                </span>
+                <div>
+                  <p className="module-operator-eyebrow">Evidence posture</p>
+                  <h2 className="module-operator-title">Run attachment stays explicit</h2>
+                </div>
+              </div>
+              <p className="module-operator-copy">
+                Comparison readiness stays lightweight, but it is now explicit about what is attached, what assumptions are
+                recorded, and why a baseline-versus-alternative comparison is or is not ready.
+              </p>
+              <div className="module-operator-list">
+                <div className="module-operator-item">Baseline and alternative entries show distinct run-attachment blockers.</div>
+                <div className="module-operator-item">Assumptions stay attached to each entry, not hidden inside prose.</div>
+                <div className="module-operator-item">Project linkage remains visible so this record does not float free from the planning container.</div>
+              </div>
+            </article>
+            <article className="module-section-surface">
+              <div className="module-section-heading">
+                <p className="module-section-label">Project linkage</p>
+                <h2 className="module-section-title">Source planning container</h2>
+                <p className="module-section-description">
+                  Scenario sets stay subordinate to projects so the registry does not split from the main OpenPlan record.
+                </p>
+              </div>
+
+              <div className="mt-5 module-record-row">
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <h3 className="module-record-title text-[1.05rem]">
+                      {projectUnreadable ? "Project could not be read" : project?.name ?? "Unknown project"}
+                    </h3>
+                    <p className="module-record-summary">
+                      {projectUnreadable
+                        ? "This scenario set is still tied to a project; that project's record could not be read for this render, so nothing below is a statement about it."
+                        : project?.summary ||
+                          "No project summary yet. Use the project record to add fuller planning context."}
+                    </p>
+                  </div>
+                  {project ? (
+                    <Link href={`/projects/${project.id}`} className="text-sm font-medium text-muted-foreground transition hover:text-primary">
+                      Open project
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="alternatives" active={activeTab === "alternatives"}>
+        <div className="space-y-6">
+          {/* The attach picker below offers whatever loaded. An empty picker
+              after a failed read would read as "this workspace has no completed
+              model runs to attach", which is a claim this render cannot make. */}
+          {modelRunOptionsUnreadable ? (
+            <StateBlock
+              tone="warning"
+              compact
+              title="Attachable model runs could not be listed"
+              description="The model runs offered by the attach picker below could not be read. An empty picker is not a statement that this workspace has no completed model runs."
+            />
+          ) : null}
+          <ScenarioEntryComposer scenarioSetId={scenarioSet.id} hasBaseline={Boolean(baselineEntry)} runs={runsData ?? []} />
+          <ScenarioEntryRegistry
+            scenarioSetId={scenarioSet.id}
+            scenarioSetTitle={scenarioSet.title}
+            planningQuestion={scenarioSet.planning_question}
+            projectId={scenarioSet.project_id}
+            entries={entries}
+            runs={runsData ?? []}
+            models={((modelsData ?? []) as Array<{ id: string; title: string | null; status: string | null; last_run_recorded_at: string | null }>).map((model) => ({
+              id: model.id,
+              title: model.title ?? "Untitled model",
+              status: model.status ?? "draft",
+              lastRunRecordedAt: model.last_run_recorded_at,
+            }))}
+            modelRunOptions={modelRunOptionRows.map((run) => ({
+              id: run.id,
+              title: run.run_title,
+              engineKey: run.engine_key,
+              status: run.status,
+              scenarioEntryId: run.scenario_entry_id,
+            }))}
+            baselineEntryId={baselineEntry?.id ?? null}
+            linkedReports={reportLinkage.linkedReports}
+            // The registry renders the SAME entries, reports and models this
+            // page reads, so it makes the same sentences — "No baseline
+            // registered yet", "No alternatives yet", "No linked reports yet",
+            // "No model is anchored". Disclosing only in the left column left
+            // the page contradicting itself, with the actionable half wrong.
+            unreadable={{
+              entries: entriesUnreadable,
+              linkedReports: linkedReportsUnreadable,
+              models: modelsUnreadable,
+            }}
+          />
+        </div>
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="comparisons" active={activeTab === "comparisons"}>
+        <div className="space-y-6">
           <article className="module-section-surface">
             <div className="module-section-heading">
               <p className="module-section-label">Decision surface</p>
@@ -1138,195 +1249,25 @@ export default async function ScenarioSetDetailPage({
             )}
           </article>
 
-          <article className="module-section-surface">
-            <div className="module-section-heading">
-              <p className="module-section-label">Project linkage</p>
-              <h2 className="module-section-title">Source planning container</h2>
-              <p className="module-section-description">
-                Scenario sets stay subordinate to projects so the registry does not split from the main OpenPlan record.
-              </p>
-            </div>
-
-            <div className="mt-5 module-record-row">
-              <div className="module-record-head">
-                <div className="module-record-main">
-                  <h3 className="module-record-title text-[1.05rem]">
-                    {projectUnreadable ? "Project could not be read" : project?.name ?? "Unknown project"}
-                  </h3>
-                  <p className="module-record-summary">
-                    {projectUnreadable
-                      ? "This scenario set is still tied to a project; that project's record could not be read for this render, so nothing below is a statement about it."
-                      : project?.summary ||
-                        "No project summary yet. Use the project record to add fuller planning context."}
-                  </p>
-                </div>
-                {project ? (
-                  <Link href={`/projects/${project.id}`} className="text-sm font-medium text-muted-foreground transition hover:text-primary">
-                    Open project
-                  </Link>
-                ) : null}
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <div className="space-y-6">
-          {/* The attach picker below offers whatever loaded. An empty picker
-              after a failed read would read as "this workspace has no completed
-              model runs to attach", which is a claim this render cannot make. */}
-          {modelRunOptionsUnreadable ? (
-            <StateBlock
-              tone="warning"
-              compact
-              title="Attachable model runs could not be listed"
-              description="The model runs offered by the attach picker below could not be read. An empty picker is not a statement that this workspace has no completed model runs."
-            />
-          ) : null}
-          <ScenarioEntryComposer scenarioSetId={scenarioSet.id} hasBaseline={Boolean(baselineEntry)} runs={runsData ?? []} />
-          <ScenarioEntryRegistry
-            scenarioSetId={scenarioSet.id}
-            scenarioSetTitle={scenarioSet.title}
-            planningQuestion={scenarioSet.planning_question}
-            projectId={scenarioSet.project_id}
-            entries={entries}
-            runs={runsData ?? []}
-            models={((modelsData ?? []) as Array<{ id: string; title: string | null; status: string | null; last_run_recorded_at: string | null }>).map((model) => ({
-              id: model.id,
-              title: model.title ?? "Untitled model",
-              status: model.status ?? "draft",
-              lastRunRecordedAt: model.last_run_recorded_at,
-            }))}
-            modelRunOptions={modelRunOptionRows.map((run) => ({
-              id: run.id,
-              title: run.run_title,
-              engineKey: run.engine_key,
-              status: run.status,
-              scenarioEntryId: run.scenario_entry_id,
-            }))}
-            baselineEntryId={baselineEntry?.id ?? null}
-            linkedReports={reportLinkage.linkedReports}
-            // The registry renders the SAME entries, reports and models this
-            // page reads, so it makes the same sentences — "No baseline
-            // registered yet", "No alternatives yet", "No linked reports yet",
-            // "No model is anchored". Disclosing only in the left column left
-            // the page contradicting itself, with the actionable half wrong.
-            unreadable={{
-              entries: entriesUnreadable,
-              linkedReports: linkedReportsUnreadable,
-              models: modelsUnreadable,
-            }}
+          <ScenarioLinkedReportsSection
+            linkedReportsUnreadable={linkedReportsUnreadable}
+            linkedReportsWithFreshness={linkedReportsWithFreshness}
+            linkedReportAttentionCount={linkedReportAttentionCount}
+            recommendedLinkedReport={recommendedLinkedReport}
+            latestArtifactByReportId={latestArtifactByReportId}
           />
         </div>
-      </div>
+      </PageTabPanel>
 
-      <article className="module-section-surface mt-6">
-        <div className="module-section-header">
-          <div className="module-section-heading">
-            <p className="module-section-label">Reports</p>
-            <h2 className="module-section-title">Scenario-linked report records</h2>
-            <p className="module-section-description">
-              Lightweight linkage only: reports are shown when they already reference this scenario set&apos;s attached runs.
-            </p>
-          </div>
-          <div className="module-record-kicker">
-            <StatusBadge tone={linkedReportsUnreadable ? "warning" : "neutral"}>
-              <FileStack className="h-3.5 w-3.5" />
-              {linkedReportsUnreadable ? "Linkage unreadable" : `${linkedReportsWithFreshness.length} linked`}
-            </StatusBadge>
-            {linkedReportAttentionCount > 0 ? (
-              <StatusBadge tone="warning">
-                <AlertTriangle className="h-3.5 w-3.5" />
-                {linkedReportAttentionCount} need{linkedReportAttentionCount === 1 ? "s" : ""} packet attention
-              </StatusBadge>
-            ) : null}
-          </div>
-        </div>
-
-        {linkedReportsUnreadable ? (
-          <div className="module-empty-state mt-5 text-sm">
-            Report linkage could not be resolved for this render — this project&apos;s reports or their run links could
-            not be read. Nothing is listed below, and that is not a statement that no report uses this scenario
-            set&apos;s runs.
-          </div>
-        ) : linkedReportsWithFreshness.length === 0 ? (
-          <div className="module-empty-state mt-5 text-sm">
-            No linked reports yet. When comparison-ready evidence exists, create an analysis summary report from an alternative card.
-          </div>
-        ) : (
-          <>
-            <div
-              className={`module-note mt-5 ${
-                linkedReportAttentionCount > 0
-                  ? "border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20"
-                  : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
-              }`}
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                Reports built on this scenario set
-              </p>
-              <h3 className="mt-2 text-sm font-semibold text-foreground">
-                {linkedReportAttentionCount > 0 && recommendedLinkedReport
-                  ? `${recommendedLinkedReport.title ?? "Linked report"} needs packet attention`
-                  : "Linked packets look current"}
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {recommendedLinkedReport
-                  ? getReportPacketActionLabel(recommendedLinkedReport.packetFreshness.label)
-                  : "Open reports to create the first packet tied to this scenario evidence."}
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {recommendedLinkedReport?.packetFreshness.detail ??
-                  "No linked reports use this scenario set's runs yet."}
-              </p>
-            </div>
-
-            <div className="mt-5 module-record-list">
-              {linkedReportsWithFreshness.map((report) => (
-                <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <StatusBadge tone={reportStatusTone(report.status ?? "draft")}>
-                          {formatReportStatusLabel(report.status)}
-                        </StatusBadge>
-                        <StatusBadge tone={report.packetFreshness.tone}>
-                          {report.packetFreshness.label}
-                        </StatusBadge>
-                      </div>
-                      <div className="space-y-1.5">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">{report.title ?? "Untitled report"}</h3>
-                          <p className="module-record-stamp">Updated {report.updated_at ?? report.generated_at ?? "Unknown"}</p>
-                        </div>
-                        <p className="module-record-summary line-clamp-2">
-                          {report.comparisonReady
-                            ? `Grounded by baseline + alternative runs from this set: ${report.matchedEntryLabels.join(" · ")}`
-                            : report.matchedBaselineRun
-                              ? `Includes the baseline run from this set, but no comparison-ready alternative yet: ${report.matchedEntryLabels.join(" · ")}`
-                              : `Shares alternative runs with this set, but not enough evidence for a comparison-ready packet: ${report.matchedEntryLabels.join(" · ")}`}
-                        </p>
-                        <p className="text-label text-muted-foreground">{formatReportTypeLabel(report.report_type)} · {report.comparisonReady ? "Comparison-ready" : "Run-linked only"} · {report.packetFreshness.detail}</p>
-                        <p className="text-sm font-medium text-foreground/80">
-                          {getReportPacketActionLabel(report.packetFreshness.label)}
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
-                  </div>
-                  <MetaList>
-                    <MetaItem>{report.matchedRunIds.length} matching runs</MetaItem>
-                    <MetaItem>
-                      {latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at
-                        ? `Generated ${latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at}`
-                        : "Draft packet"}
-                    </MetaItem>
-                  </MetaList>
-                </Link>
-              ))}
-            </div>
-          </>
-        )}
-      </article>
+      <PageTabPanel tabKey="edit" active={activeTab === "edit"}>
+        <ScenarioSetControls
+          scenarioSetId={scenarioSet.id}
+          title={scenarioSet.title}
+          summary={scenarioSet.summary}
+          planningQuestion={scenarioSet.planning_question}
+          status={scenarioSet.status}
+        />
+      </PageTabPanel>
     </section>
   );
 }

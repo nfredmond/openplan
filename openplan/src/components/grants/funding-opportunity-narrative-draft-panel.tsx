@@ -141,7 +141,7 @@ export function FundingOpportunityNarrativeDraftPanel({
         </div>
       ) : null}
 
-      {error ? <p className="mt-3 text-destructive">{error}</p> : null}
+      {error ? <p role="alert" className="mt-3 text-destructive">{error}</p> : null}
 
       {draft ? (
         <div className="mt-3 space-y-2">

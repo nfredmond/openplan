@@ -77,7 +77,7 @@ describe('Live workbench draft custody', () => {
     const { fields, buttons } = await setup();
     const section = fields[1].parentElement!;
     const source = within(section).getByRole('combobox');
-    const url = within(section).getByPlaceholderText('Official evidence URL');
+    const url = within(section).getByLabelText('Official evidence URL');
     fireEvent.change(source, { target: { value: 'document-a' } });
     fireEvent.change(url, { target: { value: 'https://example.org/official-source' } });
     fireEvent.click(buttons[0]);

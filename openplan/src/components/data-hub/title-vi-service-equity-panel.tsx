@@ -334,7 +334,7 @@ export function TitleViServiceEquityPanel({
       </div>
 
       {error ? (
-        <p className="mb-4 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+        <p role="alert" className="mb-4 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
           {error}
         </p>
       ) : null}

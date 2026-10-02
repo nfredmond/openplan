@@ -72,7 +72,14 @@ type DeepLink = { file: string; href: string; anchor: string };
  * real link will.
  */
 function deepLinksInto(prefix: string): DeepLink[] {
-  const pattern = new RegExp("/" + prefix + "/[^\\s\"'`]*?#([a-z][a-z0-9-]*)(\\$\\{)?", "g");
+  // ONE path segment after the prefix, then an optional query, then the
+  // fragment. A link into a sub-route (`/programs/<id>/work-program#actual-work`)
+  // lands on a different page with its own ids; counting it as a link into the
+  // record page reported four work-program anchors as stranded program tabs.
+  const pattern = new RegExp(
+    "/" + prefix + "/[^\\s\"'`/#?]+(?:\\?[^\\s\"'`#]*)?#([a-z][a-z0-9-]*)(\\$\\{)?",
+    "g",
+  );
   const found: DeepLink[] = [];
 
   for (const file of sourceFiles(SRC)) {

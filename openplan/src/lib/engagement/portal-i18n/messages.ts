@@ -132,6 +132,13 @@ export const EN_PORTAL_MESSAGES = {
   "page.defaultDescription":
     "Share your input on this project. Comments are reviewed before they appear publicly.",
 
+  // ------------------------------------------------- comment period has ended
+  // The notice a resident reaches after the campaign is closed, often from a
+  // printed postcard. It is the whole page: nothing from the campaign is shown.
+  "closed.title": "This comment period has ended.",
+  "closed.body":
+    "Comments are no longer being accepted. If you have a question, contact the city, county or agency that sent you this link.",
+
   // --------------------------------------------------------- engagement type
   "engagementType.map_feedback": "Map-based community input",
   "engagementType.comment_collection": "Community feedback",
@@ -484,6 +491,10 @@ export const EN_PORTAL_MESSAGES = {
   "survey.budgetRemaining": "{amount} left to allocate",
   "survey.mapHint": "Tap the map to place your answer.",
   "survey.requiredMissing": "Please answer the required questions before submitting.",
+  // Field labels a screen reader announces. A placeholder is not a label: it
+  // disappears on the first keystroke and many screen readers never read it.
+  "survey.otherAnswerLabel": "Your other answer",
+  "survey.mapNoteLabel": "Note about this location (optional)",
 
   // ------------------------------------------------- survey: save and resume
   // EVERY SENTENCE HERE IS A PROMISE ABOUT A RESIDENT'S OWN ANSWERS, so each one
@@ -623,6 +634,10 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "page.lastUpdated": "Última actualización: {timestamp}",
   "page.defaultDescription":
     "Comparta su opinión sobre este proyecto. Los comentarios se revisan antes de publicarse.",
+
+  "closed.title": "Este período de comentarios ha terminado.",
+  "closed.body":
+    "Ya no se aceptan comentarios. Si tiene alguna pregunta, comuníquese con la ciudad, el condado o la agencia que le envió este enlace.",
 
   "engagementType.map_feedback": "Aportes de la comunidad sobre el mapa",
   "engagementType.comment_collection": "Comentarios de la comunidad",
@@ -853,6 +868,8 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "survey.budgetRemaining": "Queda {amount} por asignar",
   "survey.mapHint": "Toque el mapa para situar su respuesta.",
   "survey.requiredMissing": "Responda las preguntas obligatorias antes de enviar.",
+  "survey.otherAnswerLabel": "Su otra respuesta",
+  "survey.mapNoteLabel": "Nota sobre este lugar (opcional)",
 
   "survey.saveForLater": "Guardar y terminar más tarde",
   "survey.savingDraft": "Guardando…",

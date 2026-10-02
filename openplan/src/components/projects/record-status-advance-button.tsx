@@ -119,8 +119,8 @@ export function RecordStatusAdvanceButton({
           ))}
         </select>
       </div>
-      {message ? <p className="text-xs text-emerald-700 dark:text-emerald-300">{message}</p> : null}
-      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+      {message ? <p role="status" className="text-xs text-emerald-700 dark:text-emerald-300">{message}</p> : null}
+      {error ? <p role="alert" className="text-xs text-destructive">{error}</p> : null}
     </div>
   );
 }

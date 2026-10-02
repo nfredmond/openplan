@@ -6,7 +6,15 @@ vi.mock("@/lib/engagement/public-portal-data", () => ({
   // The page resolves token OR slug through this entry point now
   // (20260810000002); this file tests what the metadata SAYS, not how the
   // value was resolved, so one mock serves both shapes.
-  loadPublicPortalBundleForShareValue: (...args: unknown[]) => loadPublicPortalBundleMock(...args),
+  //
+  // The page now asks for the three-way result so it can tell a closed
+  // campaign from an absent one. The mock still hands back a bundle or null,
+  // and this adapter gives it the result shape.
+  loadPublicPortalResultForShareValue: async (...args: unknown[]) => {
+    const bundle = await loadPublicPortalBundleMock(...args);
+    return bundle ? { status: "ok", bundle } : { status: "absent" };
+  },
+  PortalReadUnavailableError: class PortalReadUnavailableError extends Error {},
 }));
 
 import { generateMetadata } from "@/app/(portal)/engage/[shareToken]/page";

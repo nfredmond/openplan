@@ -321,7 +321,7 @@ export function StudyAreaPicker({
         />
       )}
 
-      {error ? <p className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+      {error ? <p role="alert" className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
 
       {summary.valid ? (
         <div className="rounded-lg border border-emerald-300/60 bg-emerald-50/60 px-3 py-2.5 text-sm dark:border-emerald-900/50 dark:bg-emerald-950/20">

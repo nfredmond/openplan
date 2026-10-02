@@ -1,7 +1,7 @@
 "use client";
 
 import { PortalPriorReceipt, type PriorReceipt, PortalRecoveryCopy } from "./portal-recovery-copy";
-import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { CheckCircle2, Loader2, Save, Send, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -195,8 +195,6 @@ const PENDING_PORTAL_COPY = {
   notRated: "Not rated",
   /** → survey.textPlaceholder */
   textPlaceholder: "Type your response",
-  /** → survey.mapNotePlaceholder */
-  mapNotePlaceholder: "Add a short note about this location (optional)",
   /** → survey.mapZoomHint */
   mapZoomHint: "Zoom to your neighbourhood before dropping a pin.",
   /** → survey.fileRemove */
@@ -580,6 +578,7 @@ function SingleChoiceWidget({ question, translator, initialAnswer, onChange }: W
     typeof saved?.option_id === "string" ? saved.option_id : savedOther ? OTHER_SENTINEL : ""
   );
   const [otherText, setOtherText] = useState(savedOther);
+  const otherInputId = useId();
 
   function emit(nextSelection: string, nextOther: string) {
     if (!nextSelection) return onChange(undefined);
@@ -625,15 +624,21 @@ function SingleChoiceWidget({ question, translator, initialAnswer, onChange }: W
             <PendingCopy>{PENDING_PORTAL_COPY.other}</PendingCopy>
           </label>
           {selection === OTHER_SENTINEL ? (
-            <Input
-              value={otherText}
-              placeholder={PENDING_PORTAL_COPY.otherPlaceholder}
-              maxLength={500}
-              onChange={(event) => {
-                setOtherText(event.target.value);
-                emit(OTHER_SENTINEL, event.target.value);
-              }}
-            />
+            <>
+              <label htmlFor={otherInputId} className="sr-only">
+                <Copy of={portalMessageView(translator, "survey.otherAnswerLabel")} />
+              </label>
+              <Input
+                id={otherInputId}
+                value={otherText}
+                placeholder={PENDING_PORTAL_COPY.otherPlaceholder}
+                maxLength={500}
+                onChange={(event) => {
+                  setOtherText(event.target.value);
+                  emit(OTHER_SENTINEL, event.target.value);
+                }}
+              />
+            </>
           ) : null}
         </div>
       ) : null}
@@ -654,6 +659,7 @@ function MultipleChoiceWidget({ question, translator, initialAnswer, onChange }:
   );
   const [otherChecked, setOtherChecked] = useState(savedOther.length > 0);
   const [otherText, setOtherText] = useState(savedOther);
+  const otherInputId = useId();
 
   function emit(nextSelected: Set<string>, nextOtherChecked: boolean, nextOther: string) {
     const optionIds = [...nextSelected];
@@ -719,15 +725,21 @@ function MultipleChoiceWidget({ question, translator, initialAnswer, onChange }:
             <PendingCopy>{PENDING_PORTAL_COPY.other}</PendingCopy>
           </label>
           {otherChecked ? (
-            <Input
-              value={otherText}
-              placeholder={PENDING_PORTAL_COPY.otherPlaceholder}
-              maxLength={500}
-              onChange={(event) => {
-                setOtherText(event.target.value);
-                emit(selected, otherChecked, event.target.value);
-              }}
-            />
+            <>
+              <label htmlFor={otherInputId} className="sr-only">
+                <Copy of={portalMessageView(translator, "survey.otherAnswerLabel")} />
+              </label>
+              <Input
+                id={otherInputId}
+                value={otherText}
+                placeholder={PENDING_PORTAL_COPY.otherPlaceholder}
+                maxLength={500}
+                onChange={(event) => {
+                  setOtherText(event.target.value);
+                  emit(selected, otherChecked, event.target.value);
+                }}
+              />
+            </>
           ) : null}
         </div>
       ) : null}
@@ -806,6 +818,7 @@ function RatingWidget({ question, translator, initialAnswer, onChange }: WidgetP
     return (
       <select
         className={SELECT_CLASS}
+        aria-label={question.promptText.text}
         value={value === null ? "" : String(value)}
         onChange={(event) => {
           const next = event.target.value === "" ? null : Number(event.target.value);
@@ -966,6 +979,7 @@ function MapPointWidget({ question, translator, initialAnswer, onChange }: Widge
   );
   const [replaced, setReplaced] = useState(false);
   const [note, setNote] = useState(typeof saved?.note === "string" ? saved.note : "");
+  const noteInputId = useId();
 
   const allowedModes = cfg.geometry_types.map((type) => GEO_TYPE_TO_MODE[type]);
   const keptFromDraft = Boolean(saved?.geometry) && !replaced;
@@ -1031,9 +1045,12 @@ function MapPointWidget({ question, translator, initialAnswer, onChange }: Widge
           <Copy of={portalMessageView(translator, "survey.draftLocationKept")} />
         </WidgetHint>
       ) : null}
+      <label htmlFor={noteInputId} className="block text-sm font-medium text-foreground">
+        <Copy of={portalMessageView(translator, "survey.mapNoteLabel")} />
+      </label>
       <Input
+        id={noteInputId}
         value={note}
-        placeholder={PENDING_PORTAL_COPY.mapNotePlaceholder}
         maxLength={500}
         onChange={(event) => {
           setNote(event.target.value);

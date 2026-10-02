@@ -129,6 +129,36 @@ export function reportDetailTabsFromSource(): PageTabDefinition<string>[] {
 
 /** The report header's anchors, read from the same component rather than
  * restated. See `REPORT_HEADER_ANCHORS` there for why they belong to no tab. */
+/**
+ * Tabs declared inline in a record page (`const planTabs: PageTabDefinition…`),
+ * read from source the same way the report page's are. The plan, program, model
+ * and scenario pages build their tabs from values only the page has, so there is
+ * no builder to import; the keys, labels and anchors are literals and are what
+ * these guards check.
+ */
+export function inlineTabsFromSource(file: string, declaration: string): PageTabDefinition<string>[] {
+  const source = pageSource(file);
+  const start = source.indexOf(declaration);
+  if (start === -1) throw new Error(`${file} no longer declares \`${declaration}\``);
+  const end = source.indexOf("\n  ];", start);
+  const block = source.slice(start, end === -1 ? undefined : end);
+
+  const tabs: PageTabDefinition<string>[] = [];
+  for (const match of block.matchAll(/key:\s*"([a-z-]+)"/g)) {
+    const from = match.index ?? 0;
+    const nextKey = block.slice(from + 1).search(/key:\s*"/);
+    const entry = block.slice(from, nextKey === -1 ? undefined : from + 1 + nextKey);
+    tabs.push({
+      key: match[1],
+      label: entry.match(/label:\s*"([^"]+)"/)?.[1] ?? match[1],
+      anchors: stringArrayLiteral(entry, "anchors: [") ?? [],
+      anchorPrefixes: stringArrayLiteral(entry, "anchorPrefixes: [") ?? [],
+    });
+  }
+  if (tabs.length === 0) throw new Error(`${file} declares \`${declaration}\` with no readable tabs`);
+  return tabs;
+}
+
 export function reportHeaderAnchorsFromSource(): string[] {
   const anchors = stringArrayLiteral(pageSource(REPORT_DETAIL_FILE), "const REPORT_HEADER_ANCHORS = [");
   if (!anchors) throw new Error("report-standard-detail no longer declares REPORT_HEADER_ANCHORS");
@@ -168,6 +198,37 @@ export function tabbedPages(): TabbedPage[] {
       linkPrefix: "rtp",
       file: "app/(app)/rtp/[rtpCycleId]/page.tsx",
       tabs: buildRtpCycleTabs(NO_CYCLE_FAILURES),
+      pageAnchors: [],
+    },
+    {
+      label: "plan detail",
+      linkPrefix: "plans",
+      file: "app/(app)/plans/[planId]/page.tsx",
+      tabs: inlineTabsFromSource("app/(app)/plans/[planId]/page.tsx", "const planTabs: PageTabDefinition"),
+      pageAnchors: [],
+    },
+    {
+      label: "program detail",
+      linkPrefix: "programs",
+      file: "app/(app)/programs/[programId]/page.tsx",
+      tabs: inlineTabsFromSource("app/(app)/programs/[programId]/page.tsx", "const programTabs: PageTabDefinition"),
+      pageAnchors: [],
+    },
+    {
+      label: "model detail",
+      linkPrefix: "models",
+      file: "app/(app)/models/[modelId]/page.tsx",
+      tabs: inlineTabsFromSource("app/(app)/models/[modelId]/page.tsx", "const modelTabs: PageTabDefinition"),
+      pageAnchors: [],
+    },
+    {
+      label: "scenario set detail",
+      linkPrefix: "scenarios",
+      file: "app/(app)/scenarios/[scenarioSetId]/page.tsx",
+      tabs: inlineTabsFromSource(
+        "app/(app)/scenarios/[scenarioSetId]/page.tsx",
+        "const scenarioTabs: PageTabDefinition",
+      ),
       pageAnchors: [],
     },
     {

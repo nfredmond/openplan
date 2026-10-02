@@ -145,7 +145,7 @@ vi.mock("@/lib/supabase/server", () => ({
 
 import PublicRtpDocumentPage, {
   generateMetadata,
-} from "@/app/(public)/plan/[shareToken]/document/page";
+} from "@/app/(published)/plan/[shareToken]/document/page";
 import {
   RTP_FINANCIAL_ASSUMPTION_COLUMNS,
   RTP_HORIZON_BAND_COLUMNS,

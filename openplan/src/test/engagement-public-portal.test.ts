@@ -24,6 +24,37 @@ describe("engagement public portal helpers", () => {
     });
   });
 
+  it("tells staff a closed campaign's link shows only an ended notice, and how to switch it off", () => {
+    const state = getPublicPortalState({
+      status: "closed",
+      share_token: "pilotlink123",
+      allow_public_submissions: true,
+      submissions_closed_at: null,
+    });
+
+    expect(state).toMatchObject({
+      visibility: "staged",
+      label: "Closed · notice only",
+      portalPath: "/engage/pilotlink123",
+      // The campaign's page and comments are not reachable. Only a notice is.
+      isPubliclyReachable: false,
+      isAcceptingSubmissions: false,
+    });
+    expect(state.detail).toContain("shows only a notice that the comment period has ended");
+    expect(state.detail).toContain("no comments or campaign details");
+    expect(state.detail).toContain("Archived");
+    // The draft sentence would be false here: the link does answer.
+    expect(state.detail).not.toContain("only resolves when the campaign status is Active");
+  });
+
+  it("keeps the staged wording for a draft and an archived campaign", () => {
+    for (const status of ["draft", "archived"]) {
+      expect(
+        getPublicPortalState({ status, share_token: "pilotlink123", allow_public_submissions: true, submissions_closed_at: null }).detail
+      ).toBe("A share link is saved, but the public page only resolves when the campaign status is Active.");
+    }
+  });
+
   it("reports a live accepting portal only when active with submissions enabled", () => {
     expect(
       getPublicPortalState({

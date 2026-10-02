@@ -66,10 +66,11 @@ export function DashboardViewSwitch({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-            Dashboard view
-          </p>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+          {/* The page's title, matching its rail label. The page used to open
+              on an eyebrow with no title at all; the workspace name below it
+              was the only heading. */}
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Overview</h1>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
             {view === "insights"
               ? "The same workspace read as figures. Nothing here is a forecast."
               : "Current work, recent changes, and the command board."}

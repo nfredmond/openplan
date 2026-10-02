@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="OpenPlan">
+  <rect width="64" height="64" rx="14" fill="#111618"/>
+  <circle cx="32" cy="32" r="17" fill="none" stroke="#ff7a58" stroke-width="8"/>
+  <circle cx="32" cy="32" r="5.5" fill="#6dc6b5"/>
+</svg>

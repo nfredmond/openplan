@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, Compass, FolderKanban } from "lucide-react";
-import { RtpCycleCreator } from "@/components/rtp/rtp-cycle-creator";
 import { RtpRegistryPacketBulkActions } from "@/components/rtp/rtp-registry-packet-bulk-actions";
 import { RtpRegistryPacketBulkGenerateActions } from "@/components/rtp/rtp-registry-packet-bulk-generate-actions";
 import { RtpRegistryPacketBulkRefreshActions } from "@/components/rtp/rtp-registry-packet-bulk-refresh-actions";
@@ -68,10 +67,6 @@ export function RtpQueueOperationsBoard({
           reportCount={packetAttentionCounts.refresh}
         />
       ) : null}
-
-      <div id="create-rtp-cycle">
-        <RtpCycleCreator />
-      </div>
 
       <article className="module-section-surface">
         <div className="module-section-header">

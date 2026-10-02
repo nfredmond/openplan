@@ -115,7 +115,7 @@ export function RtpPublicShareControls({
         </div>
       ) : null}
 
-      {error ? <p className="mt-2 text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+      {error ? <p role="alert" className="mt-2 text-xs text-red-600 dark:text-red-300">{error}</p> : null}
     </div>
   );
 }

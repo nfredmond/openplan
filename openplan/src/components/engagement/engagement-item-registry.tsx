@@ -338,7 +338,7 @@ function ItemRow({
         <span className="module-record-chip">Category {categories.find((category) => category.id === categoryId)?.label ?? "Uncategorized"}</span>
       </div>
 
-      {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
+      {error ? <p role="alert" className="mt-3 text-sm text-destructive">{error}</p> : null}
 
       <div className="mt-4 flex flex-wrap gap-2">
         <Button type="button" size="sm" variant={status === "approved" ? "default" : "outline"} disabled={isSubmitting} onClick={() => handleQuickStatus("approved")}>

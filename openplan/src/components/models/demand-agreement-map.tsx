@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
@@ -269,10 +270,11 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
   );
 
   useEffect(() => {
+    const container = containerRef.current;
     if (
       currentLoadState.status !== "loaded" ||
       currentLoadState.decision.status !== "render_links" ||
-      !containerRef.current ||
+      !container ||
       !MAPBOX_TOKEN
     ) {
       return;
@@ -285,7 +287,7 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
     mapboxgl.accessToken = MAPBOX_TOKEN;
     try {
       map = new mapboxgl.Map({
-        container: containerRef.current,
+        container,
         style: "mapbox://styles/mapbox/dark-v11",
         center: CONTINENTAL_US_CENTER,
         zoom: 3.4,
@@ -299,6 +301,10 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
       });
       return;
     }
+
+    // This map can be built inside a closed tab, where its container has no
+    // size. Re-measure when the tab opens.
+    const stopSizing = keepMapSizedToContainer(map, container);
 
     const failMap = (message: string) => {
       if (!disposed) setLoadState({ status: "failed", geojsonUrl, message });
@@ -323,6 +329,7 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
       map.addControl(new mapboxgl.NavigationControl(), "top-right");
       map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
     } catch (caught) {
+      stopSizing();
       map.remove();
       failMap(
         caught instanceof Error ? caught.message : "Failed to set up agreement map controls",
@@ -441,6 +448,7 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
     return () => {
       disposed = true;
       cycleFeatureRef.current = null;
+      stopSizing();
       map.remove();
     };
   }, [currentLoadState, geojsonUrl]);

@@ -61,7 +61,7 @@ describe("Land Use Plans route boundaries", () => {
     expect(publicSurface).not.toContain("contains_sensitive_locations");
     expect(publicLoader).toContain("published_report_id");
     expect(publicLoader).toContain('.eq("state", "adopted")');
-    const publicPage = readFileSync(path.resolve(__dirname, "../app/(public)/published-plans/[planId]/page.tsx"), "utf8");
+    const publicPage = readFileSync(path.resolve(__dirname, "../app/(published)/published-plans/[planId]/page.tsx"), "utf8");
     expect(publicPage).toContain("loadPublishedLandUsePlanPacket");
     expect(publicPage).toContain("applicableRequirementKeys");
     expect(publicPage).toContain("ContentBranch");

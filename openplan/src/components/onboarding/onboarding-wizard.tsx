@@ -86,7 +86,7 @@ export function OnboardingWizard({ defaultWorkspaceName = "" }: { defaultWorkspa
               />
             </div>
 
-            {error ? <p className="text-sm text-red-600 dark:text-red-300">{error}</p> : null}
+            {error ? <p role="alert" className="text-sm text-red-600 dark:text-red-300">{error}</p> : null}
 
             <Button type="button" onClick={() => void createWorkspace()} disabled={creating || !workspaceName.trim()}>
               {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}

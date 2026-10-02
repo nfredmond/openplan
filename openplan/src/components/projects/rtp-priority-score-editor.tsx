@@ -325,7 +325,7 @@ export function RtpPriorityScoreEditor({
             ))}
           </ul>
 
-          {error ? <p className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+          {error ? <p role="alert" className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
 
           <Button type="button" size="sm" onClick={() => void save()} disabled={saving || !dirty}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}

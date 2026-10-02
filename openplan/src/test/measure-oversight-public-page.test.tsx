@@ -101,7 +101,7 @@ vi.mock("@/lib/supabase/server", () => ({
 
 import PublicMeasureOversightPage, {
   metadata,
-} from "@/app/(public)/measure/[shareToken]/page";
+} from "@/app/(published)/measure/[shareToken]/page";
 
 const SHARE_TOKEN = "measure-share-token-abcdefghijklmnop";
 const FUND_ID = "fund-1";

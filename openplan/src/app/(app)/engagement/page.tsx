@@ -1,7 +1,7 @@
 import { readEveryPage } from "@/lib/supabase/paged-read";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, FolderKanban, MessagesSquare, ShieldCheck } from "lucide-react";
+import { ArrowRight, FolderKanban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 
@@ -13,6 +13,8 @@ const ENGAGEMENT_STATUS_FILTER_OPTIONS = [
 ] as const;
 import { EngagementCampaignCreator } from "@/components/engagement/engagement-campaign-creator";
 import { EngagementPortalStatusChip } from "@/components/engagement/portal-status-chip";
+import { PageHeader } from "@/components/ui/page-header";
+import { navLabel } from "@/components/nav/nav-registry";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
@@ -350,254 +352,216 @@ export default async function EngagementPage({
       */}
       <ReadFailureNotice className="mb-4" reads={reads} />
 
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <MessagesSquare className="h-3.5 w-3.5" />
-            Engagement workspace
+      <PageHeader
+        title={navLabel("/engagement")}
+        description="Run a public comment campaign, tie it to a project if it belongs to one, and keep every comment, category, and reply in one place."
+        actions={
+          // The id stays on this wrapper, which the page owns, so links to
+          // #create-campaign from the empty state still land on the button.
+          <div id="create-campaign" className="scroll-mt-24 text-right">
+            <EngagementCampaignCreator
+              projects={(projectsData ?? []) as Array<{ id: string; name: string }>}
+              initialProjectId={planningContext.status === "active" ? planningContext.project.id : null}
+            />
           </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">Engagement</h1>
-            <p className="module-intro-description">
-              Run a public comment campaign, tie it to a project if it belongs to one, and keep every comment, category, and reply in one place.
-            </p>
-            {projectFilterId ? (
-              // Every tile and every row below belongs to one project, so the
-              // scope has to be stated where the reader cannot miss it and be
-              // reversible in one click. Without this the totals read as the
-              // workspace's.
-              <p className="module-intro-description">
-                Showing only campaigns linked to {projectFilterName ?? `the project with id ${projectFilterId}`}.{" "}
-                <Link href="/engagement" className="underline underline-offset-2 hover:text-foreground">
-                  Show every campaign in this workspace
-                </Link>
-                .
-              </p>
-            ) : null}
-            {projectFilterId && !projectFilterName ? (
-              // Why the project could not be named. A failed read and a project
-              // this workspace does not have produce the same empty catalog, and
-              // only one of them is a statement about the project.
-              <p className="module-intro-description">
-                {projectsUnreadable
-                  ? "Your projects could not be read, so the filter above shows an id instead of a name. An empty list below would not mean that project has no campaigns."
-                  : "No project with that id appears in this workspace's project list, so this filter may match nothing."}
-              </p>
-            ) : null}
-          </div>
-
-          {/* The module's primary action, in the header rather than wherever the
-              section order puts the form. The full creator stays where it is —
-              this jumps to it. */}
-          <div className="module-intro-actions">
-            <a className="module-intro-action" href="#create-campaign">
-              New campaign
-            </a>
-          </div>
-
-          {/*
-            A tile is a number offered as a fact. When the read behind one
-            failed, the honest value is "Unavailable" — a zero here is a claim
-            the query never established.
-          */}
-          <div className="module-summary-grid cols-3">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Campaigns</p>
-              <p className="module-summary-value">{campaignsUnreadable ? "Unavailable" : campaigns.length}</p>
-              <p className="module-summary-detail">
-                {campaignsUnreadable
-                  ? "Your campaigns could not be read, so this is unknown — it is not zero."
-                  : hasActiveFilters
-                    ? "Matching the current filters."
-                    : "Every campaign here, with a history of who changed what."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Status mix</p>
-              <p className="module-summary-value">{campaignsUnreadable ? "Unavailable" : activeCount}</p>
-              <p className="module-summary-detail">
-                {campaignsUnreadable
-                  ? "Status counts come from the campaign list, which could not be read."
-                  : `${draftCount} draft, ${closedCount} closed, ${campaigns.filter((campaign) => campaign.status === "archived").length} archived.`}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Active items</p>
-              <p className="module-summary-value">
-                {campaignsUnreadable || itemsUnreadable ? "Unavailable" : totalItems}
-              </p>
-              <p className="module-summary-detail">
-                {campaignsUnreadable || itemsUnreadable || categoriesUnreadable
-                  ? "Comment and category totals could not be read for these campaigns."
-                  : `${totalCategories} categories and ${recentActivityItems} recently active items across listed campaigns.`}
-              </p>
-            </div>
-          </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Engagement</p>
-              <h2 className="module-operator-title">Keep public input organized and reviewable</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            Sort comments into categories and track where each campaign stands, so writing the response summary later is a reading job, not a rebuilding job.
+        }
+      >
+        {projectFilterId ? (
+          // Every tile and every row below belongs to one project, so the
+          // scope has to be stated where the reader cannot miss it and be
+          // reversible in one click. Without this the totals read as the
+          // workspace's.
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+            Showing only campaigns linked to {projectFilterName ?? `the project with id ${projectFilterId}`}.{" "}
+            <Link href="/engagement" className="underline underline-offset-2 hover:text-foreground">
+              Show every campaign in this workspace
+            </Link>
+            .
           </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">Campaigns can stand alone or connect to a project.</div>
-            <div className="module-operator-item">Categories keep comments organized for review and reporting.</div>
-            <div className="module-operator-item">Each comment keeps its status, where it came from, its spot on the map, and your team&apos;s notes.</div>
-            <div className="module-operator-item">The public link stays off until you open the campaign.</div>
-          </div>
-        </article>
-      </header>
+        ) : null}
+        {projectFilterId && !projectFilterName ? (
+          // Why the project could not be named. A failed read and a project
+          // this workspace does not have produce the same empty catalog, and
+          // only one of them is a statement about the project.
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+            {projectsUnreadable
+              ? "Your projects could not be read, so the filter above shows an id instead of a name. An empty list below would not mean that project has no campaigns."
+              : "No project with that id appears in this workspace's project list, so this filter may match nothing."}
+          </p>
+        ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <div id="create-campaign">
-          <EngagementCampaignCreator
-            projects={(projectsData ?? []) as Array<{ id: string; name: string }>}
-            initialProjectId={planningContext.status === "active" ? planningContext.project.id : null}
-          />
+        {/*
+          A tile is a number offered as a fact. When the read behind one
+          failed, the honest value is "Unavailable" — a zero here is a claim
+          the query never established.
+        */}
+        <div className="module-summary-grid cols-3">
+          <div className="module-summary-card">
+            <p className="module-summary-label">Campaigns</p>
+            <p className="module-summary-value">{campaignsUnreadable ? "Unavailable" : campaigns.length}</p>
+            <p className="module-summary-detail">
+              {campaignsUnreadable
+                ? "Your campaigns could not be read, so this is unknown — it is not zero."
+                : hasActiveFilters
+                  ? "Matching the current filters."
+                  : "Every campaign here, with a history of who changed what."}
+            </p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Status mix</p>
+            <p className="module-summary-value">{campaignsUnreadable ? "Unavailable" : activeCount}</p>
+            <p className="module-summary-detail">
+              {campaignsUnreadable
+                ? "Status counts come from the campaign list, which could not be read."
+                : `${draftCount} draft, ${closedCount} closed, ${campaigns.filter((campaign) => campaign.status === "archived").length} archived.`}
+            </p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Active items</p>
+            <p className="module-summary-value">
+              {campaignsUnreadable || itemsUnreadable ? "Unavailable" : totalItems}
+            </p>
+            <p className="module-summary-detail">
+              {campaignsUnreadable || itemsUnreadable || categoriesUnreadable
+                ? "Comment and category totals could not be read for these campaigns."
+                : `${totalCategories} categories and ${recentActivityItems} recently active items across listed campaigns.`}
+            </p>
+          </div>
+        </div>
+      </PageHeader>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Catalog</p>
+            <h2 className="module-section-title">
+              {/* The heading may not imply workspace scope over a project-scoped list. */}
+              {projectFilterId ? "Campaigns linked to this project" : "Current engagement campaigns"}
+            </h2>
+          </div>
+          <span className="module-record-chip">
+            <FolderKanban className="h-3.5 w-3.5" />
+            <span>Total</span>
+            <strong>{campaignsUnreadable ? "Unavailable" : campaigns.length}</strong>
+          </span>
         </div>
 
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Catalog</p>
-              <h2 className="module-section-title">
-                {/* The heading may not imply workspace scope over a project-scoped list. */}
-                {projectFilterId ? "Campaigns linked to this project" : "Current engagement campaigns"}
-              </h2>
-            </div>
-            <span className="module-record-chip">
-              <FolderKanban className="h-3.5 w-3.5" />
-              <span>Total</span>
-              <strong>{campaignsUnreadable ? "Unavailable" : campaigns.length}</strong>
-            </span>
-          </div>
-
-          {/* Status filter bar */}
-          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-compact">
+        {/* Status filter bar */}
+        <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-compact">
+          <Link
+            href={engagementTabHref(projectFilterId, null)}
+            className={cn("rounded px-2 py-0.5 transition-colors", !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
+          >
+            {/* A tab count is derived from the campaign list; with that list
+                unread every tab would read "(0)", which is a claim. */}
+            All{campaignsUnreadable ? "" : ` (${scopedCampaignCount})`}
+          </Link>
+          {ENGAGEMENT_STATUS_FILTER_OPTIONS.map((option) => (
             <Link
-              href={engagementTabHref(projectFilterId, null)}
-              className={cn("rounded px-2 py-0.5 transition-colors", !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
+              key={option.value}
+              href={engagementTabHref(projectFilterId, option.value)}
+              className={cn("rounded px-2 py-0.5 transition-colors", statusFilter === option.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
             >
-              {/* A tab count is derived from the campaign list; with that list
-                  unread every tab would read "(0)", which is a claim. */}
-              All{campaignsUnreadable ? "" : ` (${scopedCampaignCount})`}
+              {option.label}
+              {campaignsUnreadable ? "" : ` (${statusCountsInScope[option.value] ?? 0})`}
             </Link>
-            {ENGAGEMENT_STATUS_FILTER_OPTIONS.map((option) => (
-              <Link
-                key={option.value}
-                href={engagementTabHref(projectFilterId, option.value)}
-                className={cn("rounded px-2 py-0.5 transition-colors", statusFilter === option.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
-              >
-                {option.label}
-                {campaignsUnreadable ? "" : ` (${statusCountsInScope[option.value] ?? 0})`}
-              </Link>
-            ))}
-            {hasActiveFilters ? (
-              // The one deliberate way to widen. Every tab above narrows within
-              // the scope the page was opened for; only this leaves it.
-              <Link href="/engagement" className="ml-auto rounded px-2 py-0.5 text-muted-foreground/70 hover:text-foreground">
-                Clear filters ×
-              </Link>
-            ) : null}
+          ))}
+          {hasActiveFilters ? (
+            // The one deliberate way to widen. Every tab above narrows within
+            // the scope the page was opened for; only this leaves it.
+            <Link href="/engagement" className="ml-auto rounded px-2 py-0.5 text-muted-foreground/70 hover:text-foreground">
+              Clear filters ×
+            </Link>
+          ) : null}
+        </div>
+
+        {campaigns.length === 0 ? (
+          <div className="mt-5">
+            {campaignsUnreadable ? (
+              // NOT "No engagement campaigns yet". That sentence is a claim
+              // about the agency, and a query that never returned cannot
+              // make it — this render does not know whether any exist.
+              <StateBlock
+                tone="danger"
+                title="Your campaigns could not be listed"
+                description="This list could not be read, so OpenPlan cannot say whether you have any campaigns. This is not a finding that you have none — reload, and if it keeps failing the error is shown at the top of this page."
+              />
+            ) : (
+              <EmptyState
+                title={hasActiveFilters ? "No campaigns match these filters" : "No campaigns yet"}
+                description={
+                  hasActiveFilters
+                    ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every campaign in this workspace — an empty filtered list is not a statement that none exist.`
+                    : "Engagement is where your agency hears from the public: campaigns collect map comments, survey answers, and feedback on draft plans, and nothing a resident writes appears publicly until you approve it. Create your first campaign to open a public comment window."
+                }
+                action={
+                  hasActiveFilters ? undefined : (
+                    <a href="#create-campaign" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                      Create a campaign
+                    </a>
+                  )
+                }
+              />
+            )}
           </div>
-
-          {campaigns.length === 0 ? (
-            <div className="mt-5">
-              {campaignsUnreadable ? (
-                // NOT "No engagement campaigns yet". That sentence is a claim
-                // about the agency, and a query that never returned cannot
-                // make it — this render does not know whether any exist.
-                <StateBlock
-                  tone="danger"
-                  title="Your campaigns could not be listed"
-                  description="This list could not be read, so OpenPlan cannot say whether you have any campaigns. This is not a finding that you have none — reload, and if it keeps failing the error is shown at the top of this page."
-                />
-              ) : (
-                <EmptyState
-                  title={hasActiveFilters ? "No campaigns match these filters" : "No campaigns yet"}
-                  description={
-                    hasActiveFilters
-                      ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every campaign in this workspace — an empty filtered list is not a statement that none exist.`
-                      : "Engagement is where your agency hears from the public: campaigns collect map comments, survey answers, and feedback on draft plans, and nothing a resident writes appears publicly until you approve it. Create your first campaign to open a public comment window."
-                  }
-                  action={
-                    hasActiveFilters ? undefined : (
-                      <a href="#create-campaign" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
-                        Create a campaign
-                      </a>
-                    )
-                  }
-                />
-              )}
-            </div>
-          ) : (
-            <div className="mt-5 module-record-list">
-              {campaigns.map((campaign) => (
-                <CartographicSelectionLink
-                  key={campaign.id}
-                  href={withPlanningContext(
-                    `/engagement/${campaign.id}`,
-                    planningContext.status === "active" ? planningContext.project.id : null
-                  )}
-                  className="module-record-row is-interactive group block"
-                  selection={{
-                    kind: "mission",
-                    title: campaign.title,
-                    kicker: `${titleizeEngagementValue(campaign.engagement_type)} · ${titleizeEngagementValue(campaign.status)}`,
-                    avatarChar: campaign.title[0],
-                    meta: [
-                      ...(campaign.project?.name ? [{ label: "project", value: campaign.project.name }] : []),
-                      ...(campaign.categoryCount > 0 ? [{ label: "categories", value: String(campaign.categoryCount) }] : []),
-                    ],
-                  }}
-                >
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <StatusBadge tone={engagementStatusTone(campaign.status)}>
-                          {titleizeEngagementValue(campaign.status)}
-                        </StatusBadge>
-                        <EngagementPortalStatusChip campaign={campaign} />
-                        <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span>
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <h3 className="module-record-title transition group-hover:text-primary">
-                            {campaign.title}
-                          </h3>
-                          <p className="module-record-stamp shrink-0">Updated {fmtDateTime(campaign.updated_at)}</p>
-                        </div>
-                        <p className="module-record-summary line-clamp-2">
-                          {campaign.summary || "No summary yet."}
-                        </p>
-                        <p className="text-label text-muted-foreground">
-                          {campaign.project?.name ?? "No project linked"}
-                          {campaign.categoryCount > 0 ? ` · ${campaign.categoryCount} categor${campaign.categoryCount === 1 ? "y" : "ies"}` : ""}
-                          {campaign.counts.totalItems > 0 ? ` · ${campaign.counts.totalItems} item${campaign.counts.totalItems === 1 ? "" : "s"}` : ""}
-                          {campaign.counts.statusCounts.flagged > 0 ? ` · ${campaign.counts.statusCounts.flagged} flagged` : ""}
-                          {campaign.counts.geolocatedItems > 0 ? ` · ${campaign.counts.geolocatedItems} geolocated` : ""}
-                        </p>
-                      </div>
+        ) : (
+          <div className="mt-5 module-record-list">
+            {campaigns.map((campaign) => (
+              <CartographicSelectionLink
+                key={campaign.id}
+                href={withPlanningContext(
+                  `/engagement/${campaign.id}`,
+                  planningContext.status === "active" ? planningContext.project.id : null
+                )}
+                className="module-record-row is-interactive group block"
+                selection={{
+                  kind: "mission",
+                  title: campaign.title,
+                  kicker: `${titleizeEngagementValue(campaign.engagement_type)} · ${titleizeEngagementValue(campaign.status)}`,
+                  avatarChar: campaign.title[0],
+                  meta: [
+                    ...(campaign.project?.name ? [{ label: "project", value: campaign.project.name }] : []),
+                    ...(campaign.categoryCount > 0 ? [{ label: "categories", value: String(campaign.categoryCount) }] : []),
+                  ],
+                }}
+              >
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={engagementStatusTone(campaign.status)}>
+                        {titleizeEngagementValue(campaign.status)}
+                      </StatusBadge>
+                      <EngagementPortalStatusChip campaign={campaign} />
+                      <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span>
                     </div>
 
-                    <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h3 className="module-record-title transition group-hover:text-primary">
+                          {campaign.title}
+                        </h3>
+                        <p className="module-record-stamp shrink-0">Updated {fmtDateTime(campaign.updated_at)}</p>
+                      </div>
+                      <p className="module-record-summary line-clamp-2">
+                        {campaign.summary || "No summary yet."}
+                      </p>
+                      <p className="text-label text-muted-foreground">
+                        {campaign.project?.name ?? "No project linked"}
+                        {campaign.categoryCount > 0 ? ` · ${campaign.categoryCount} categor${campaign.categoryCount === 1 ? "y" : "ies"}` : ""}
+                        {campaign.counts.totalItems > 0 ? ` · ${campaign.counts.totalItems} item${campaign.counts.totalItems === 1 ? "" : "s"}` : ""}
+                        {campaign.counts.statusCounts.flagged > 0 ? ` · ${campaign.counts.statusCounts.flagged} flagged` : ""}
+                        {campaign.counts.geolocatedItems > 0 ? ` · ${campaign.counts.geolocatedItems} geolocated` : ""}
+                      </p>
+                    </div>
                   </div>
-                </CartographicSelectionLink>
-              ))}
-            </div>
-          )}
-        </article>
-      </div>
+
+                  <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
+                </div>
+              </CartographicSelectionLink>
+            ))}
+          </div>
+        )}
+      </article>
     </section>
   );
 }

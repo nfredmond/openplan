@@ -612,7 +612,9 @@ export function GuidedFlow<V extends GuidedFlowValues>({
             for. */}
         {isOpen ? (
           <>
-          <header className="flex shrink-0 items-start gap-3 border-b border-border bg-background px-4 py-3.5 sm:px-5">
+          {/* A div, not <header>: this dialog can open from a button inside a page
+              <header>, and a header may not contain another header. */}
+          <div className="flex shrink-0 items-start gap-3 border-b border-border bg-background px-4 py-3.5 sm:px-5">
             <div className="min-w-0 flex-1">
               {mode === "sequence" && steps.length > 1 ? (
                 <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -645,7 +647,7 @@ export function GuidedFlow<V extends GuidedFlowValues>({
             >
               <X className="h-4 w-4" />
             </Button>
-          </header>
+          </div>
 
           {mode === "sections" && steps.length > 1 ? (
             <nav

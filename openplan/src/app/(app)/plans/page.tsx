@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, FileStack, FolderKanban, ShieldCheck } from "lucide-react";
+import { ArrowRight, FolderKanban } from "lucide-react";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { cn } from "@/lib/utils";
 
@@ -12,16 +12,12 @@ function buildFilterHref(params: { projectId?: string; planType?: string; status
   const qs = search.toString();
   return `/plans${qs ? `?${qs}` : ""}`;
 }
-import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
-import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
+import { navLabel } from "@/components/nav/nav-registry";
 import { PlanCreator } from "@/components/plans/plan-creator";
+import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
-import {
-  loadWorkspaceOperationsSummaryForWorkspace,
-  type WorkspaceOperationsSupabaseLike,
-} from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
@@ -255,11 +251,6 @@ export default async function PlansPage({
   const adoptedCount = typedPlans.filter((plan) => plan.status === "adopted").length;
   const readyFoundationCount = typedPlans.filter((plan) => plan.readiness.ready).length;
 
-  const operationsSummary = await loadWorkspaceOperationsSummaryForWorkspace(
-    supabase as unknown as WorkspaceOperationsSupabaseLike,
-    membership.workspace_id
-  );
-
   return (
     <section className="module-page">
       {reads.any ? (
@@ -272,244 +263,197 @@ export default async function PlansPage({
         </div>
       ) : null}
 
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <FileStack className="h-3.5 w-3.5" />
-            Plans registry live
+      <PageHeader
+        title={navLabel("/plans")}
+        description="Organize corridor plans, ATPs, safety plans, and regional plans alongside the rest of your project work."
+        actions={
+          // The id stays on this wrapper, which the page owns, so links to
+          // #create-plan from the empty state still land on the button.
+          <div id="create-plan" className="scroll-mt-24">
+            <PlanCreator projects={projectsData ?? []} />
           </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">Plans</h1>
-            <p className="module-intro-description">
-              Organize corridor plans, ATPs, safety plans, and regional plans alongside the rest of your project work.
+        }
+      >
+        <div className="module-summary-grid cols-3">
+          <div className="module-summary-card">
+            <p className="module-summary-label">Plans</p>
+            <p className="module-summary-value">{plansUnreadable ? "—" : typedPlans.length}</p>
+            <p className="module-summary-detail">
+              {plansUnreadable
+                ? "Your plans could not be read, so this number is unknown — it is not zero."
+                : "The planning documents this account tracks."}
             </p>
           </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Active or adopted</p>
+            <p className="module-summary-value">{plansUnreadable ? "—" : activeCount + adoptedCount}</p>
+            <p className="module-summary-detail">
+              {plansUnreadable
+                ? "Unavailable while your plans cannot be read."
+                : `${adoptedCount} already marked as adopted.`}
+            </p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Foundation ready</p>
+            <p className="module-summary-value">{plansUnreadable || rowBasisUnreadable ? "—" : readyFoundationCount}</p>
+            <p className="module-summary-detail">
+              {plansUnreadable || rowBasisUnreadable
+                ? "This is worked out from linked projects and reports this page could not read, so it is unknown — it is not zero."
+                : "Plans with the core information in place, ready to review."}
+            </p>
+          </div>
+        </div>
+      </PageHeader>
 
-          {/* The module's primary action, in the header rather than wherever the
-              section order puts the form. The full creator stays where it is —
-              this jumps to it. */}
-          <div className="module-intro-actions">
-            <a className="module-intro-action" href="#create-plan">
-              New plan
-            </a>
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Your plans</p>
+            <h2 className="module-section-title">Planning documents</h2>
+            <p className="module-section-description">
+              Filter by project, type, or status to isolate the plans that are ready for attention.
+            </p>
           </div>
-
-          <div className="module-summary-grid cols-3">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Plans</p>
-              <p className="module-summary-value">{plansUnreadable ? "—" : typedPlans.length}</p>
-              <p className="module-summary-detail">
-                {plansUnreadable
-                  ? "Your plans could not be read, so this number is unknown — it is not zero."
-                  : "The planning documents this account tracks."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Active or adopted</p>
-              <p className="module-summary-value">{plansUnreadable ? "—" : activeCount + adoptedCount}</p>
-              <p className="module-summary-detail">
-                {plansUnreadable
-                  ? "Unavailable while your plans cannot be read."
-                  : `${adoptedCount} already marked as adopted.`}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Foundation ready</p>
-              <p className="module-summary-value">{plansUnreadable || rowBasisUnreadable ? "—" : readyFoundationCount}</p>
-              <p className="module-summary-detail">
-                {plansUnreadable || rowBasisUnreadable
-                  ? "This is worked out from linked projects and reports this page could not read, so it is unknown — it is not zero."
-                  : "Plans with the core information in place, ready to review."}
-              </p>
-            </div>
-          </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Planning records</p>
-              <h2 className="module-operator-title">Keep plan information clear and reviewable</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            Keep plan records connected to related projects, scenarios, engagement work, and reports.
-          </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">Plans can link to one primary project and other related projects.</div>
-            <div className="module-operator-item">Scenario, engagement, and report links stay visible from the plan record.</div>
-            <div className="module-operator-item">Review status shows what is complete and what still needs attention.</div>
-          </div>
-          <div className="mt-4">
-            <WorkspaceRuntimeCue summary={operationsSummary} />
-          </div>
-        </article>
-      </header>
-
-      <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
-        <div id="create-plan" className="space-y-6">
-          <PlanCreator projects={projectsData ?? []} />
-          <WorkspaceCommandBoard
-            summary={operationsSummary}
-            label="Across your workspace"
-            title="What needs attention next"
-            description="The most pressing work anywhere in this workspace, kept in view so it does not get lost while you are in here."
-          />
+          <span className="module-record-chip">
+            <FolderKanban className="h-3.5 w-3.5" />
+            <span>Total</span>
+            <strong>{plansUnreadable ? "—" : typedPlans.length}</strong>
+          </span>
         </div>
 
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Your plans</p>
-              <h2 className="module-section-title">Planning documents</h2>
-              <p className="module-section-description">
-                Filter by project, type, or status to isolate the plans that are ready for attention.
-              </p>
-            </div>
-            <span className="module-record-chip">
-              <FolderKanban className="h-3.5 w-3.5" />
-              <span>Total</span>
-              <strong>{plansUnreadable ? "—" : typedPlans.length}</strong>
-            </span>
-          </div>
-
-          {/* Filter rows */}
-          <div className="mt-4 space-y-2 border-b border-border/60 pb-3 text-compact">
-            <div className="flex flex-wrap items-center gap-1">
-              <span className="mr-1 text-muted-foreground/70">Status:</span>
+        {/* Filter rows */}
+        <div className="mt-4 space-y-2 border-b border-border/60 pb-3 text-compact">
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="mr-1 text-muted-foreground/70">Status:</span>
+            <Link
+              href={buildFilterHref({ ...filters, status: undefined })}
+              className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
+            >
+              All
+            </Link>
+            {PLAN_STATUS_OPTIONS.map((option) => (
               <Link
-                href={buildFilterHref({ ...filters, status: undefined })}
-                className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
+                key={option.value}
+                href={buildFilterHref({ ...filters, status: option.value })}
+                className={cn("rounded px-2 py-0.5 transition-colors", filters.status === option.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
               >
-                All
+                {option.label}
               </Link>
-              {PLAN_STATUS_OPTIONS.map((option) => (
-                <Link
-                  key={option.value}
-                  href={buildFilterHref({ ...filters, status: option.value })}
-                  className={cn("rounded px-2 py-0.5 transition-colors", filters.status === option.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
-                >
-                  {option.label}
-                </Link>
-              ))}
-            </div>
-            <div className="flex flex-wrap items-center gap-1">
-              <span className="mr-1 text-muted-foreground/70">Type:</span>
-              <Link
-                href={buildFilterHref({ ...filters, planType: undefined })}
-                className={cn("rounded px-2 py-0.5 transition-colors", !filters.planType ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
-              >
-                All types
-              </Link>
-              {PLAN_TYPE_OPTIONS.map((option) => (
-                <Link
-                  key={option.value}
-                  href={buildFilterHref({ ...filters, planType: option.value })}
-                  className={cn("rounded px-2 py-0.5 transition-colors", filters.planType === option.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
-                >
-                  {option.label}
-                </Link>
-              ))}
-            </div>
+            ))}
           </div>
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="mr-1 text-muted-foreground/70">Type:</span>
+            <Link
+              href={buildFilterHref({ ...filters, planType: undefined })}
+              className={cn("rounded px-2 py-0.5 transition-colors", !filters.planType ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
+            >
+              All types
+            </Link>
+            {PLAN_TYPE_OPTIONS.map((option) => (
+              <Link
+                key={option.value}
+                href={buildFilterHref({ ...filters, planType: option.value })}
+                className={cn("rounded px-2 py-0.5 transition-colors", filters.planType === option.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
+              >
+                {option.label}
+              </Link>
+            ))}
+          </div>
+        </div>
 
-          {plansUnreadable ? (
-            <div className="mt-5">
-              <StateBlock
-                tone="danger"
+        {plansUnreadable ? (
+          <div className="mt-5">
+            <StateBlock
+              tone="danger"
 title="Your plans could not be read"
-                description="This page could not read your plans, so it cannot list them and cannot say whether any exist. This is not a finding that you have none, and nothing has been deleted. Try again, and if it keeps happening tell whoever installed OpenPlan for your agency."
-              />
-            </div>
-          ) : typedPlans.length === 0 ? (
-            <div className="mt-5">
-              <EmptyState
-                title="No plans yet"
-                description="Plans is the list of your agency's planning documents — general plans, corridor plans, active transportation plans — with what each one covers and where it stands, in one place. Add your first plan to connect it to the projects that carry it out."
-                action={
-                  <a href="#create-plan" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
-                    Add a plan
-                  </a>
-                }
-              />
-            </div>
-          ) : (
-            <div className="mt-5 module-record-list">
-              {typedPlans.map((plan) => (
-                <CartographicSelectionLink
-                  key={plan.id}
-                  href={`/plans/${plan.id}`}
-                  className="module-record-row is-interactive group block"
-                  selection={{
-                    kind: "project",
-                    title: plan.title,
-                    kicker: `${formatPlanTypeLabel(plan.plan_type)} · ${formatPlanStatusLabel(plan.status)}`,
-                    avatarChar: plan.title[0],
-                    meta: [
-                      ...(plan.project?.name ? [{ label: "project", value: plan.project.name }] : []),
-                      ...(plan.geography_label ? [{ label: "area", value: plan.geography_label }] : []),
-                      ...(plan.horizon_year ? [{ label: "horizon", value: String(plan.horizon_year) }] : []),
-                    ],
-                  }}
-                >
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <span className="module-record-chip"><span>Status</span><strong>{formatPlanStatusLabel(plan.status)}</strong></span>
-                        <span className="module-record-chip"><span>Type</span><strong>{formatPlanTypeLabel(plan.plan_type)}</strong></span>
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <h3 className="module-record-title transition group-hover:text-primary">
-                            {plan.title}
-                          </h3>
-                          <p className="module-record-stamp shrink-0">Updated {formatPlanDateTime(plan.updated_at)}</p>
-                        </div>
-                        <p className="module-record-summary line-clamp-2">
-                          {plan.summary || "No summary yet."}
-                        </p>
-                        <p className="text-label text-muted-foreground">
-                          {plan.project?.name ?? "No project linked"}
-                          {plan.geography_label ? ` · ${plan.geography_label}` : ""}
-                          {plan.horizon_year ? ` · ${plan.horizon_year}` : ""}
-                          {rowBasisUnreadable
-                            ? " · linkage counts unavailable"
-                            : `${` · ${plan.linkageCounts.scenarios} scenario${plan.linkageCounts.scenarios === 1 ? "" : "s"}`}${` · ${plan.linkageCounts.reports} report${plan.linkageCounts.reports === 1 ? "" : "s"}`}${
-                                plan.readiness.missingCheckCount > 0
-                                  ? ` · ${plan.readiness.missingCheckCount} readiness gap${plan.readiness.missingCheckCount === 1 ? "" : "s"}`
-                                  : ""
-                              }`}
-                        </p>
-                      </div>
+              description="This page could not read your plans, so it cannot list them and cannot say whether any exist. This is not a finding that you have none, and nothing has been deleted. Try again, and if it keeps happening tell whoever installed OpenPlan for your agency."
+            />
+          </div>
+        ) : typedPlans.length === 0 ? (
+          <div className="mt-5">
+            <EmptyState
+              title="No plans yet"
+              description="Plans is the list of your agency's planning documents — general plans, corridor plans, active transportation plans — with what each one covers and where it stands, in one place. Add your first plan to connect it to the projects that carry it out."
+              action={
+                <a href="#create-plan" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                  Add a plan
+                </a>
+              }
+            />
+          </div>
+        ) : (
+          <div className="mt-5 module-record-list">
+            {typedPlans.map((plan) => (
+              <CartographicSelectionLink
+                key={plan.id}
+                href={`/plans/${plan.id}`}
+                className="module-record-row is-interactive group block"
+                selection={{
+                  kind: "project",
+                  title: plan.title,
+                  kicker: `${formatPlanTypeLabel(plan.plan_type)} · ${formatPlanStatusLabel(plan.status)}`,
+                  avatarChar: plan.title[0],
+                  meta: [
+                    ...(plan.project?.name ? [{ label: "project", value: plan.project.name }] : []),
+                    ...(plan.geography_label ? [{ label: "area", value: plan.geography_label }] : []),
+                    ...(plan.horizon_year ? [{ label: "horizon", value: String(plan.horizon_year) }] : []),
+                  ],
+                }}
+              >
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <span className="module-record-chip"><span>Status</span><strong>{formatPlanStatusLabel(plan.status)}</strong></span>
+                      <span className="module-record-chip"><span>Type</span><strong>{formatPlanTypeLabel(plan.plan_type)}</strong></span>
                     </div>
 
-                    <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h3 className="module-record-title transition group-hover:text-primary">
+                          {plan.title}
+                        </h3>
+                        <p className="module-record-stamp shrink-0">Updated {formatPlanDateTime(plan.updated_at)}</p>
+                      </div>
+                      <p className="module-record-summary line-clamp-2">
+                        {plan.summary || "No summary yet."}
+                      </p>
+                      <p className="text-label text-muted-foreground">
+                        {plan.project?.name ?? "No project linked"}
+                        {plan.geography_label ? ` · ${plan.geography_label}` : ""}
+                        {plan.horizon_year ? ` · ${plan.horizon_year}` : ""}
+                        {rowBasisUnreadable
+                          ? " · linkage counts unavailable"
+                          : `${` · ${plan.linkageCounts.scenarios} scenario${plan.linkageCounts.scenarios === 1 ? "" : "s"}`}${` · ${plan.linkageCounts.reports} report${plan.linkageCounts.reports === 1 ? "" : "s"}`}${
+                              plan.readiness.missingCheckCount > 0
+                                ? ` · ${plan.readiness.missingCheckCount} readiness gap${plan.readiness.missingCheckCount === 1 ? "" : "s"}`
+                                : ""
+                            }`}
+                      </p>
+                    </div>
                   </div>
 
-                  {rowBasisUnreadable ? (
-                    // "Missing basis: …" would be a fact about the failed read,
-                    // not about this plan, and it is exactly the sentence that
-                    // sends a planner off to re-link work already linked.
-                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-label text-muted-foreground">
-                      Readiness withheld — the linked records it is computed from could not be read.
-                    </p>
-                  ) : plan.readiness.missingCheckLabels.length > 0 ? (
-                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-label text-muted-foreground">
-                      Missing basis: {plan.readiness.missingCheckLabels.join(", ")}.
-                    </p>
-                  ) : (
-                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-label text-muted-foreground">{plan.workflow.reason}</p>
-                  )}
-                </CartographicSelectionLink>
-              ))}
-            </div>
-          )}
-        </article>
-      </div>
+                  <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
+                </div>
+
+                {rowBasisUnreadable ? (
+                  // "Missing basis: …" would be a fact about the failed read,
+                  // not about this plan, and it is exactly the sentence that
+                  // sends a planner off to re-link work already linked.
+                  <p className="mt-2.5 border-t border-border/50 pt-2.5 text-label text-muted-foreground">
+                    Readiness withheld — the linked records it is computed from could not be read.
+                  </p>
+                ) : plan.readiness.missingCheckLabels.length > 0 ? (
+                  <p className="mt-2.5 border-t border-border/50 pt-2.5 text-label text-muted-foreground">
+                    Missing basis: {plan.readiness.missingCheckLabels.join(", ")}.
+                  </p>
+                ) : (
+                  <p className="mt-2.5 border-t border-border/50 pt-2.5 text-label text-muted-foreground">{plan.workflow.reason}</p>
+                )}
+              </CartographicSelectionLink>
+            ))}
+          </div>
+        )}
+      </article>
     </section>
   );
 }

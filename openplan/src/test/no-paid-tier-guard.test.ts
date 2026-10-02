@@ -204,6 +204,8 @@ describe("the paid-tier subsystem stays deleted", () => {
   it("sells nothing on any visitor-facing surface", () => {
     const surfaces = [
       path.join(SRC, "app", "(public)"),
+      // The agency's own published pages, moved out of `(public)` on 2026-10-01.
+      path.join(SRC, "app", "(published)"),
       path.join(SRC, "app", "(embed)"),
       path.join(SRC, "app", "(auth)"),
       path.join(SRC, "components"),

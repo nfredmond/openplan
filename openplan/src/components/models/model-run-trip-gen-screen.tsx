@@ -284,7 +284,7 @@ export function ModelRunTripGenScreen({ modelId, modelRunId, runTitle }: ModelRu
             Loading stored KPIs…
           </p>
         ) : error ? (
-          <p className="mt-4 text-sm text-destructive">{error}</p>
+          <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>
         ) : kpis !== null ? (
           <TripGenScreenBody kpis={kpis} />
         ) : null

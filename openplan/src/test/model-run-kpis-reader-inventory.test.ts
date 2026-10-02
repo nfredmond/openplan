@@ -71,7 +71,7 @@ function classifyCall(call: KpiCall): string | null {
   }
 
   if (
-    call.filePath === "src/app/(public)/plan/[shareToken]/page.tsx" &&
+    call.filePath === "src/app/(published)/plan/[shareToken]/page.tsx" &&
     chain.includes('.in("run_id"')
   ) {
     // RTP public "why" view: reads a linked run's VMT/GHG KPIs (by run ids) for the
@@ -173,7 +173,7 @@ describe("model_run_kpis reader inventory", () => {
         classification: "rtp-priority-evidence-read-by-run-ids",
       }),
       expect.objectContaining({
-        filePath: "src/app/(public)/plan/[shareToken]/page.tsx",
+        filePath: "src/app/(published)/plan/[shareToken]/page.tsx",
         classification: "rtp-public-evidence-read-by-run-ids",
       }),
       expect.objectContaining({

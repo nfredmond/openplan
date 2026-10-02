@@ -2,9 +2,8 @@
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ClipboardPlus, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -133,7 +132,9 @@ export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
       {
         id: "kind",
         title: "What kind of program, and where is it up to?",
-        hint: "Both can change later.",
+        // The OWP sentence sat under the old "New program" card. It is about
+        // the program type, so it is said beside the program type.
+        hint: "Both can change later. For an OWP or UPWP, choose Other / OWP / UPWP, then open work-program preparation on its page.",
         fields: [
           { name: "programType", label: "a program type" },
           { name: "status", label: "a status" },
@@ -325,30 +326,16 @@ export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
     },
   });
 
+  // Only the trigger and the flow. The programs page mounts this in its page
+  // header, so "New program" opens the questions directly.
   return (
-    <article className="module-section-surface">
-      <div className="module-section-header">
-        <div className="module-section-heading">
-          <p className="module-section-label">Create</p>
-          <h2 className="module-section-title">New program</h2>
-          <p className="module-section-description">
-            Create an agency work cycle or a package of projects in a funding cycle. For an OWP or
-            UPWP, choose Other / OWP / UPWP, then open work-program preparation on its page.
-          </p>
-        </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
-          <ClipboardPlus className="h-5 w-5" />
-        </span>
-      </div>
-
-      <div className="mt-5">
-        <Button type="button" onClick={flow.open} data-testid="program-creator-open">
-          <Plus className="mr-1.5 h-4 w-4" />
-          New program
-        </Button>
-      </div>
+    <>
+      <button type="button" className="module-intro-action" onClick={flow.open} data-testid="program-creator-open">
+        <Plus className="h-4 w-4" aria-hidden="true" />
+        New program
+      </button>
 
       <GuidedFlow flow={flow} />
-    </article>
+    </>
   );
 }

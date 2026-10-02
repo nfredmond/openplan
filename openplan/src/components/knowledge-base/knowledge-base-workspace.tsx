@@ -729,6 +729,7 @@ export function KnowledgeBaseWorkspace({
             <Input
               ref={fileInputRef}
               type="file"
+              aria-label="Upload a file"
               accept={ACCEPTED_EXTENSIONS}
               disabled={busy}
               onChange={(event) => {
@@ -747,6 +748,7 @@ export function KnowledgeBaseWorkspace({
 
           <TabsContent value="paste" className="mt-3 grid gap-2">
             <Textarea
+              aria-label="Paste text"
               value={pasteText}
               onChange={(event) => setPasteText(event.target.value)}
               placeholder="Paste the document text here…"

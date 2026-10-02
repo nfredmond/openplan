@@ -356,6 +356,7 @@ function ManagedRunPromotionControl({
 
       <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center">
         <select
+          aria-label="Scenario entry"
           className="module-select md:max-w-sm"
           value={scenarioEntryId}
           onChange={(event) => setScenarioEntryId(event.target.value)}
@@ -374,7 +375,7 @@ function ManagedRunPromotionControl({
         </Button>
       </div>
 
-      {error ? <p className="mt-2 text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+      {error ? <p role="alert" className="mt-2 text-xs text-red-600 dark:text-red-300">{error}</p> : null}
     </div>
   );
 }
@@ -1067,7 +1068,7 @@ export function ModelRunManager({
           </div>
 
           {error ? (
-            <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+            <p role="alert" className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
               {error}
             </p>
           ) : null}

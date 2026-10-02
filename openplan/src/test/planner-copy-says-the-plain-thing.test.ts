@@ -198,7 +198,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   basis: 23,
   bootstrap: 0,
   cadence: 4,
-  campaign: 70,
+  campaign: 63,
   "claim tier": 1,
   compose: 3,
   deterministic: 0,
@@ -206,9 +206,9 @@ const BASELINE: Readonly<Record<string, number>> = {
   durable: 3,
   entity: 0,
   geometry: 11,
-  "governance hold": 4,
+  "governance hold": 3,
   ingest: 8,
-  input: 42,
+  input: 41,
   intake: 11,
   lane: 54,
   legible: 1,
@@ -217,7 +217,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   "moderation queue": 1,
   operator: 43,
   // M2d.3 uses Nathaniel's requested reimbursement packet terminology for retained funder files.
-  packet: 134,
+  packet: 129,
   payload: 2,
   populate: 1,
   posture: 52,
@@ -225,21 +225,21 @@ const BASELINE: Readonly<Record<string, number>> = {
   provenance: 12,
   readiness: 33,
   // Safety must distinguish crash records from people killed or injured.
-  record: 265,
-  registry: 20,
+  record: 253,
+  registry: 18,
   resolve: 3,
   scaffold: 3,
   schema: 6,
   signal: 8,
   spine: 9,
   "study area": 21,
-  submission: 11,
+  submission: 10,
   surface: 14,
   trace: 19,
   upstream: 0,
   // The cross-workspace package notice uses the real membership object three
   // times: where work waits, what is active, and what the caller can switch.
-  workspace: 158,
+  workspace: 153,
 };
 
 describe("planner copy says the plain thing", () => {

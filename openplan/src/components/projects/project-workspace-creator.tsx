@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -89,7 +88,11 @@ export function ProjectWorkspaceCreator() {
       {
         id: "identity",
         title: "What is the project?",
-        hint: "A name your colleagues would recognise, and what it is in one or two sentences.",
+        // The last two sentences sat under the old "Start a project" card. They
+        // are asked-for knowledge at the moment of creating, so they live on
+        // the first question now. "Workspace" means a tenant everywhere else.
+        hint:
+          "A name your colleagues would recognise, and what it is in one or two sentences. This adds a project to the workspace you are in now, so its analysis, reports, and records all live together. It does not create a new workspace.",
         fields: [
           {
             name: "projectName",
@@ -208,33 +211,21 @@ export function ProjectWorkspaceCreator() {
     },
   });
 
+  // Only the trigger and the flow. The projects page mounts this in its page
+  // header, so "New project" opens the questions directly.
   return (
-    <article className="module-section-surface">
-      <div className="module-section-header">
-        <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-            <Plus className="h-5 w-5" />
-          </span>
-          <div className="module-section-heading">
-            <p className="module-section-label">Create</p>
-            <h2 className="module-section-title">Start a project</h2>
-          </div>
-        </div>
-      </div>
-
-      <p className="module-section-description">
-        This adds a project to the workspace you are in now, so its analysis, reports, and records all live together.
-        It does not create a new workspace.
-      </p>
-
-      <div className="mt-5">
-        <Button type="button" onClick={flow.open} data-testid="project-workspace-creator-open">
-          <Plus className="mr-1.5 h-4 w-4" />
-          Start a project
-        </Button>
-      </div>
+    <>
+      <button
+        type="button"
+        className="module-intro-action"
+        onClick={flow.open}
+        data-testid="project-workspace-creator-open"
+      >
+        <Plus className="h-4 w-4" aria-hidden="true" />
+        New project
+      </button>
 
       <GuidedFlow flow={flow} />
-    </article>
+    </>
   );
 }

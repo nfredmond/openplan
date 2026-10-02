@@ -256,7 +256,7 @@ export function RtpChapterDraftAssist({
         </div>
       ) : null}
 
-      {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
+      {error ? <p role="alert" className="mt-3 text-sm text-destructive">{error}</p> : null}
       {inserted ? (
         <p
           id={`rtp-chapter-draft-inserted-${chapterId}`}

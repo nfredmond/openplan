@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, ReceiptText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ export function ProjectSpendEntryForm({
   deliverableOptions: Array<{ id: string; title: string }>;
 }) {
   const router = useRouter();
+  const fieldId = useId();
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [entryDate, setEntryDate] = useState("");
@@ -92,18 +93,19 @@ export function ProjectSpendEntryForm({
       <form className="mt-4 space-y-3" onSubmit={handleSubmit}>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Amount</label>
-            <Input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="decimal" placeholder="1250.00" required />
+            <label htmlFor={`${fieldId}-amount`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Amount</label>
+            <Input id={`${fieldId}-amount`} value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="decimal" placeholder="1250.00" required />
           </div>
           <div className="space-y-1.5">
-            <label className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Entry date</label>
-            <Input type="date" value={entryDate} onChange={(event) => setEntryDate(event.target.value)} />
+            <label htmlFor={`${fieldId}-entry-date`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Entry date</label>
+            <Input id={`${fieldId}-entry-date`} type="date" value={entryDate} onChange={(event) => setEntryDate(event.target.value)} />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Description</label>
+          <label htmlFor={`${fieldId}-description`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Description</label>
           <Input
+            id={`${fieldId}-description`}
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             placeholder="Traffic counts subconsultant, June progress"
@@ -113,12 +115,13 @@ export function ProjectSpendEntryForm({
 
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Vendor</label>
-            <Input value={vendorLabel} onChange={(event) => setVendorLabel(event.target.value)} placeholder="Optional vendor or subconsultant" />
+            <label htmlFor={`${fieldId}-vendor`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Vendor</label>
+            <Input id={`${fieldId}-vendor`} value={vendorLabel} onChange={(event) => setVendorLabel(event.target.value)} placeholder="Optional vendor or subconsultant" />
           </div>
           <div className="space-y-1.5">
-            <label className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Deliverable</label>
+            <label htmlFor={`${fieldId}-deliverable`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Deliverable</label>
             <select
+              id={`${fieldId}-deliverable`}
               className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
               value={deliverableId}
               onChange={(event) => setDeliverableId(event.target.value)}

@@ -2,9 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import {
-  ArrowLeft,
   Database,
-  FileStack,
   FolderKanban,
   GitBranch,
   MessagesSquare,
@@ -12,17 +10,15 @@ import {
   ScrollText,
   ShieldCheck,
 } from "lucide-react";
-import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
-import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { PlanDetailControls } from "@/components/plans/plan-detail-controls";
+import { PageTabNav } from "@/components/ui/page-tab-nav";
+import { PageTabPanel } from "@/components/ui/page-tab-panel";
+import { RecordHubHeader } from "@/components/ui/record-hub-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { titleizeEngagementValue, engagementStatusTone } from "@/lib/engagement/catalog";
+import { resolvePageTab, type PageTabDefinition } from "@/lib/ui/page-tabs";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
-import {
-  loadWorkspaceOperationsSummaryForWorkspace,
-  type WorkspaceOperationsSupabaseLike,
-} from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildPlanArtifactCoverage,
@@ -185,12 +181,17 @@ function SectionReadFailure({ title, noun }: { title: string; noun: string }) {
 /** A count that cannot be trusted is shown as unknown, never as zero. */
 const UNKNOWN_COUNT = "—";
 
+type PlanTabKey = "overview" | "linked" | "edit";
+
 export default async function PlanDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ planId: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { planId } = await params;
+  const resolvedSearchParams = (await searchParams) ?? {};
   const supabase = await createClient();
   const {
     data: { user },
@@ -666,10 +667,6 @@ export default async function PlanDetailPage({
     geographyLabel: plan.geography_label,
     horizonYear: plan.horizon_year,
   });
-  const operationsSummary = await loadWorkspaceOperationsSummaryForWorkspace(
-    supabase as unknown as WorkspaceOperationsSupabaseLike,
-    plan.workspace_id
-  );
   const artifactCoverage = buildPlanArtifactCoverage({
     scenarioCount: linkedScenarios.length,
     engagementCampaignCount: linkedCampaigns.length,
@@ -707,15 +704,41 @@ export default async function PlanDetailPage({
     reportArtifactCount,
   });
 
+  /*
+    A RECORD HUB: breadcrumb, title, one status line, then tabs. The page used to
+    be one scroll of ten section cards under a two-card header, with the
+    workspace-wide command board repeated beside the plan's own controls.
+  */
+  const unreadableLinks = [
+    linkedScenariosUnreadable ? "scenarios" : null,
+    linkedCampaignsUnreadable ? "engagement campaigns" : null,
+    linkedReportsUnreadable ? "reports" : null,
+  ].filter((label): label is string => label !== null);
+  const planTabs: PageTabDefinition<PlanTabKey>[] = [
+    { key: "overview", label: "Overview" },
+    { key: "linked", label: "Linked work", unreadable: unreadableLinks },
+    { key: "edit", label: "Edit plan" },
+  ];
+  const activeTab = resolvePageTab(planTabs, resolvedSearchParams.tab, "overview");
+
   return (
     <section className="module-page space-y-6">
       <CartographicSurfaceWide />
-      <div className="flex items-center gap-3 text-sm text-muted-foreground">
-        <Link href="/plans" className="inline-flex items-center gap-2 transition hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" />
-          Back to plans
-        </Link>
-      </div>
+      <RecordHubHeader
+        parentHref="/plans"
+        parentLabel="Plans"
+        title={plan.title}
+        status={
+          <>
+            <StatusBadge tone={planStatusTone(plan.status)}>{formatPlanStatusLabel(plan.status)}</StatusBadge>
+            <span className="module-record-chip"><span>Type</span><strong>{formatPlanTypeLabel(plan.plan_type)}</strong></span>
+          </>
+        }
+        description={
+          plan.summary ||
+          "Keep policy intent, linked scenarios, engagement, and report outputs together in one clear record."
+        }
+      />
 
       {reads.any ? (
         <StateBlock
@@ -725,30 +748,21 @@ export default async function PlanDetailPage({
         />
       ) : null}
 
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <FileStack className="h-3.5 w-3.5" />
-            Plan record
-          </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">{plan.title}</h1>
-            <p className="module-intro-description">
-              {plan.summary ||
-                "Keep policy intent, linked scenarios, engagement, and report outputs together in one clear record."}
-            </p>
-          </div>
+      <PageTabNav
+        tabs={planTabs}
+        activeKey={activeTab}
+        basePath={`/plans/${plan.id}`}
+        searchParams={resolvedSearchParams}
+        ariaLabel="Plan sections"
+      />
 
-          <div className="module-intro-kicker">
-            <StatusBadge tone={planStatusTone(plan.status)}>{formatPlanStatusLabel(plan.status)}</StatusBadge>
-            <span className="module-record-chip"><span>Type</span><strong>{formatPlanTypeLabel(plan.plan_type)}</strong></span>
-          </div>
+      <PageTabPanel tabKey="overview" active={activeTab === "overview"}>
+        <div className="space-y-6">
           <p className="text-label text-muted-foreground">
             {readinessBasisUnreadable
               ? "Readiness, coverage and workflow posture are withheld: part of this plan's basis could not be read, so any verdict here would be computed from counts that are not known to be complete."
               : `${readiness.label} · ${artifactCoverage.label} · ${workflow.label}`}
           </p>
-
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Linked scenarios</p>
@@ -786,535 +800,524 @@ export default async function PlanDetailPage({
               </p>
             </div>
           </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Readiness basis</p>
-              <h2 className="module-operator-title">
-                {readinessBasisUnreadable ? "Readiness cannot be assessed right now" : readiness.reason}
-              </h2>
-            </div>
-          </div>
-          {readinessBasisUnreadable ? (
-            <p className="module-operator-copy">
-              Part of this plan&apos;s linked basis could not be read on this page load. The checklist below is derived
-              from those links, so it is withheld rather than shown as gaps you would then go and try to fill.
-            </p>
-          ) : (
-            <>
-              <p className="module-operator-copy">{workflow.reason}</p>
-              <div className="module-operator-list">
-                {readiness.checks.map((check) => (
-                  <div key={check.key} className="module-operator-item">
-                    <strong>{check.label}:</strong> {check.detail}
-                  </div>
-                ))}
+          <div className="grid gap-6 xl:grid-cols-2">
+          <article className="module-operator-card">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
+                <ShieldCheck className="h-5 w-5 text-emerald-200" />
+              </span>
+              <div>
+                <p className="module-operator-eyebrow">Readiness basis</p>
+                <h2 className="module-operator-title">
+                  {readinessBasisUnreadable ? "Readiness cannot be assessed right now" : readiness.reason}
+                </h2>
               </div>
-              <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/30 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  Planning output cue
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <StatusBadge tone={workflow.planningOutputTone}>{workflow.planningOutputLabel}</StatusBadge>
+            </div>
+            {readinessBasisUnreadable ? (
+              <p className="module-operator-copy">
+                Part of this plan&apos;s linked basis could not be read on this page load. The checklist below is derived
+                from those links, so it is withheld rather than shown as gaps you would then go and try to fill.
+              </p>
+            ) : (
+              <>
+                <p className="module-operator-copy">{workflow.reason}</p>
+                <div className="module-operator-list">
+                  {readiness.checks.map((check) => (
+                    <div key={check.key} className="module-operator-item">
+                      <strong>{check.label}:</strong> {check.detail}
+                    </div>
+                  ))}
                 </div>
-                <p className="mt-3 text-sm text-muted-foreground">{workflow.planningOutputDetail}</p>
-              </div>
-            </>
-          )}
-          {!readinessBasisUnreadable && workflow.actionItems.length > 0 ? (
-            <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/30 p-4">
-              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                Next actions
-              </p>
-              <div className="mt-3 space-y-2 text-sm">
-                {workflow.actionItems.map((step) => (
-                  <p key={step}>{step}</p>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </article>
-      </header>
-
-      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <div className="space-y-6">
-          <PlanDetailControls
-            plan={plan}
-            projects={(projectsResult.data ?? []).map((project) => ({ id: project.id, name: project.name }))}
-          />
-          <WorkspaceRuntimeCue summary={operationsSummary} />
-          <WorkspaceCommandBoard
-            summary={operationsSummary}
-            label="Across your workspace"
-            title="What needs attention next"
-            description={`Workspace priorities — packet, funding, and setup pressure — stay visible while you work on ${plan.title}. Use this board to keep local plan work aligned with the rest of the workspace.`}
-          />
-        </div>
-
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Workflow</p>
-              <h2 className="module-section-title">Operator review posture</h2>
-              <p className="module-section-description">
-                Keep this page focused on the formal planning record: what is linked, what is ready, and what still needs operator action.
-              </p>
-            </div>
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
-              <GitBranch className="h-5 w-5" />
-            </span>
-          </div>
-
-          <div className="mt-5 space-y-4">
-            <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-              {readinessBasisUnreadable ? (
-                <p className="text-sm text-muted-foreground">
-                  A review verdict is not available on this page load, because part of the linked basis it is computed
-                  from could not be read. See the disclosure at the top of the page.
-                </p>
-              ) : (
-                <>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <StatusBadge tone={workflow.tone}>{workflow.label}</StatusBadge>
+                <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/30 p-4">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Planning output cue
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <StatusBadge tone={workflow.planningOutputTone}>{workflow.planningOutputLabel}</StatusBadge>
                   </div>
-                  <p className="mt-3 text-sm text-muted-foreground">{workflow.reason}</p>
-                </>
-              )}
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Readiness checklist</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight">
-                  {readinessBasisUnreadable ? UNKNOWN_COUNT : `${readiness.readyCheckCount}/${readiness.totalCheckCount}`}
+                  <p className="mt-3 text-sm text-muted-foreground">{workflow.planningOutputDetail}</p>
+                </div>
+              </>
+            )}
+            {!readinessBasisUnreadable && workflow.actionItems.length > 0 ? (
+              <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/30 p-4">
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  Next actions
                 </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {readinessBasisUnreadable
-                    ? "The checks are computed from linked records this page could not read."
-                    : readiness.missingCheckCount === 0
-                      ? "All explicit basis checks are visible."
-                      : `${readiness.missingCheckCount} checklist gap${readiness.missingCheckCount === 1 ? "" : "s"} remain.`}
-                </p>
-              </div>
-
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Linkage ledger</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight">
-                  {planLinksUnreadable ? UNKNOWN_COUNT : planLinks.length}
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {planLinksUnreadable
-                    ? "The plan's link set could not be read, so the number of stored links is unknown — not zero."
-                    : planLinks.length === 0
-                      ? "No explicit links stored on the plan yet."
-                      : `${explicitProjectCount} project, ${explicitScenarioCount} scenario, ${explicitCampaignCount} campaign, ${explicitReportCount} report links are recorded.`}
-                </p>
-              </div>
-            </div>
-
-            {!readinessBasisUnreadable && workflow.reviewNotes.length > 0 ? (
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Review notes</p>
-                <div className="mt-3 space-y-2 text-sm text-muted-foreground">
-                  {workflow.reviewNotes.map((note) => (
-                    <p key={note}>{note}</p>
+                <div className="mt-3 space-y-2 text-sm">
+                  {workflow.actionItems.map((step) => (
+                    <p key={step}>{step}</p>
                   ))}
                 </div>
               </div>
             ) : null}
-          </div>
-        </article>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Metadata</p>
-              <h2 className="module-section-title">Plan scope and operating context</h2>
-              <p className="module-section-description">What this plan is, where it applies, and how it is currently classified.</p>
-            </div>
-          </div>
-
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Geography</p>
-              <p className="mt-2 text-sm">{plan.geography_label ?? "Not set"}</p>
-            </div>
-            <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Horizon year</p>
-              <p className="mt-2 text-sm">{plan.horizon_year ?? "Not set"}</p>
-            </div>
-            <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Created</p>
-              <p className="mt-2 text-sm">{formatPlanDateTime(plan.created_at)}</p>
-            </div>
-            <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Updated</p>
-              <p className="mt-2 text-sm">{formatPlanDateTime(plan.updated_at)}</p>
-            </div>
-            <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4 md:col-span-2">
-              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Record posture</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Formal planning record only. Use linked scenarios, engagement, and reports to review basis and outputs; do not treat this surface as chapter authoring.
-              </p>
-            </div>
-          </div>
-        </article>
-
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Projects</p>
-              <h2 className="module-section-title">Primary and related project records</h2>
-              <p className="module-section-description">Plans can inherit planning context from a primary project and carry extra project cross-links.</p>
-            </div>
-          </div>
-
-          {linkedProjectsUnreadable ? (
-            <SectionReadFailure title="Project links could not be read" noun="linked project records" />
-          ) : linkedProjects.length === 0 ? (
-            <div className="mt-5">
-              <EmptyState title="No linked projects" description="Attach a primary project or related project record to anchor this plan." compact />
-            </div>
-          ) : (
-            <div className="mt-5 space-y-3">
-              {linkedProjects.map((project) => (
-                <Link
-                  key={project.id}
-                  href={`/projects/${project.id}`}
-                  className="block rounded-[0.5rem] border border-border/80 bg-background/80 p-5 transition hover:border-primary/35"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold tracking-tight">{project.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {project.summary || "No project summary captured yet."}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <StatusBadge tone={project.linkBasis === "project" ? "success" : "neutral"}>
-                        {project.linkBasis === "project" ? "Primary project" : linkBasisLabel(project.linkBasis)}
-                      </StatusBadge>
-                      {project.status ? <StatusBadge tone="info">{project.status}</StatusBadge> : null}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </article>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-3">
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Scenarios</p>
-              <h2 className="module-section-title">Scenario evidence</h2>
-            </div>
-            <Radar className="h-5 w-5 text-muted-foreground" />
-          </div>
-
-          {linkedScenariosUnreadable ? (
-            <SectionReadFailure title="Scenario links could not be read" noun="linked scenario sets" />
-          ) : linkedScenarios.length === 0 ? (
-            <div className="mt-5">
-              <EmptyState title="No scenario sets linked" description="Link scenarios directly or through the primary project." compact />
-            </div>
-          ) : (
-            <div className="mt-5 space-y-3">
-              {linkedScenarios.map((scenario) => (
-                <Link key={scenario.id} href={`/scenarios/${scenario.id}`} className="block rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <div className="flex flex-wrap gap-2">
-                    {scenario.status ? (
-                      <StatusBadge tone={scenarioStatusTone(scenario.status)}>{titleizeScenarioValue(scenario.status)}</StatusBadge>
-                    ) : null}
-                    <span className="module-record-chip"><span>Via</span><strong>{linkBasisLabel(scenario.linkBasis)}</strong></span>
-                  </div>
-                  <h3 className="mt-3 font-semibold tracking-tight">{scenario.title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {scenario.summary || scenario.planning_question || "No scenario summary captured yet."}
-                  </p>
-                  <p className="mt-2 text-label text-muted-foreground">
-                    {scenarioStatsUnreadable
-                      ? "Entry counts unavailable — the scenario entries could not be read"
-                      : `${pluralize(scenario.entryCount, "entry")} · ${pluralize(scenario.readyEntryCount, "ready alternative", "ready alternatives")} · ${pluralize(scenario.attachedRunCount, "attached run")}`}
-                    {" · "}
-                    {scenario.baseline_entry_id ? "Baseline set" : "Baseline missing"}
-                  </p>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {scenario.linkBasis === "project"
-                      ? "Inherited from the primary project."
-                      : scenario.linkBasis === "both"
-                        ? "Visible through both the primary project and an explicit plan link."
-                        : "Stored as an explicit plan link on this record."}
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">Updated {formatPlanDateTime(scenario.updated_at)}</p>
-                </Link>
-              ))}
-            </div>
-          )}
-        </article>
-
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Engagement</p>
-              <h2 className="module-section-title">Input campaigns</h2>
-            </div>
-            <MessagesSquare className="h-5 w-5 text-muted-foreground" />
-          </div>
-
-          {linkedCampaignsUnreadable ? (
-            <SectionReadFailure title="Campaign links could not be read" noun="linked engagement campaigns" />
-          ) : linkedCampaigns.length === 0 ? (
-            <div className="mt-5">
-              <EmptyState title="No campaigns linked" description="Link engagement campaigns to expose intake basis for this plan." compact />
-            </div>
-          ) : (
-            <div className="mt-5 space-y-3">
-              {linkedCampaigns.map((campaign) => (
-                <Link key={campaign.id} href={`/engagement/${campaign.id}`} className="block rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <div className="flex flex-wrap gap-2">
-                    {campaign.status ? (
-                      <StatusBadge tone={engagementStatusTone(campaign.status)}>{titleizeEngagementValue(campaign.status)}</StatusBadge>
-                    ) : null}
-                    {campaign.engagement_type ? <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span> : null}
-                  </div>
-                  <h3 className="mt-3 font-semibold tracking-tight">{campaign.title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{campaign.summary || "No campaign summary captured yet."}</p>
-                  <p className="mt-2 text-label text-muted-foreground">
-                    {campaignStatsUnreadable
-                      ? "Category and item counts unavailable — the engagement records could not be read"
-                      : `${pluralize(campaign.categoryCount, "category", "categories")} · ${pluralize(campaign.itemCount, "item")} · ${campaign.approvedItemCount} approved · ${campaign.pendingItemCount} pending${campaign.flaggedItemCount > 0 ? ` · ${campaign.flaggedItemCount} flagged` : ""}`}
-                    {" · via "}
-                    {linkBasisLabel(campaign.linkBasis)}
-                  </p>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {campaign.linkBasis === "project"
-                      ? "Inherited from the primary project."
-                      : campaign.linkBasis === "both"
-                        ? "Visible through both the primary project and an explicit plan link."
-                        : "Stored as an explicit plan link on this record."}
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">Updated {formatPlanDateTime(campaign.updated_at)}</p>
-                </Link>
-              ))}
-            </div>
-          )}
-        </article>
-
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Reports</p>
-              <h2 className="module-section-title">Output packets</h2>
-            </div>
-            <ScrollText className="h-5 w-5 text-muted-foreground" />
-          </div>
-
-          {linkedReportsUnreadable ? (
-            <SectionReadFailure title="Report links could not be read" noun="linked reports" />
-          ) : linkedReports.length === 0 ? (
-            <div className="mt-5">
-              <EmptyState title="No reports linked" description="Link reports directly or via the primary project to show what outputs already exist." compact />
-            </div>
-          ) : (
-            <div className="mt-5 space-y-3">
-              {linkedReports.map((report) => (
-                <Link key={report.id} href={`/reports/${report.id}`} className="block rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <div className="flex flex-wrap gap-2">
-                    {report.status ? <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge> : null}
-                    {report.report_type ? <span className="module-record-chip"><span>Type</span><strong>{formatReportTypeLabel(report.report_type)}</strong></span> : null}
-                  </div>
-                  <h3 className="mt-3 font-semibold tracking-tight">{report.title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{report.summary || "No report summary captured yet."}</p>
-                  <p className="mt-2 text-label text-muted-foreground">
-                    {reportStatsUnreadable
-                      ? "Run, section and artifact counts unavailable — those records could not be read"
-                      : `${pluralize(report.linkedRunCount, "linked run")} · ${pluralize(report.enabledSectionCount, "enabled section")} · ${pluralize(report.artifactCount, "artifact")}`}
-                    {report.latest_artifact_kind ? ` · ${report.latest_artifact_kind.toUpperCase()}` : ""}
-                    {" · "}
-                    {report.generated_at ? `Generated ${formatPlanDateTime(report.generated_at)}` : "Not generated yet"}
-                    {" · via "}
-                    {linkBasisLabel(report.linkBasis)}
-                  </p>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {report.linkBasis === "project"
-                      ? "Inherited from the primary project."
-                      : report.linkBasis === "both"
-                        ? "Visible through both the primary project and an explicit plan link."
-                        : "Stored as an explicit plan link on this record."}
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">Updated {formatPlanDateTime(report.updated_at)}</p>
-                </Link>
-              ))}
-            </div>
-          )}
-        </article>
-      </div>
-
-      <article className="module-section-surface">
-        <div className="module-section-header">
-          <div className="module-section-heading">
-            <p className="module-section-label">Models</p>
-            <h2 className="module-section-title">Supporting model basis</h2>
-            <p className="module-section-description">
-              Models linked through the primary project or explicitly attached to this plan stay visible here so operator review can trace modeling support without leaving the planning lane.
-            </p>
-          </div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-            <Database className="h-3.5 w-3.5" />
-            {supportingModelsUnreadable
-              ? "Supporting models unavailable"
-              : `${supportingModels.length} supporting model${supportingModels.length === 1 ? "" : "s"}`}
-          </span>
-        </div>
-
-        {supportingModelsUnreadable ? (
-          <SectionReadFailure title="Supporting models could not be read" noun="supporting model records" />
-        ) : supportingModels.length === 0 ? (
-          <div className="mt-5">
-            <EmptyState
-              title="No model support linked yet"
-              description="Attach models to this plan or anchor them to the primary project so the planning record carries an explicit modeling basis."
-              compact
-            />
-          </div>
-        ) : (
-          <div className="mt-5 space-y-4">
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Supporting models</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight">{supportingModels.length}</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {supportingModelLinksUnreadable
-                    ? "How many pass every readiness check is unknown — each model's link set could not be read."
-                    : `${supportingModelReadyCount} currently pass every explicit readiness check.`}
+          </article>
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Workflow</p>
+                <h2 className="module-section-title">Operator review posture</h2>
+                <p className="module-section-description">
+                  Keep this page focused on the formal planning record: what is linked, what is ready, and what still needs operator action.
                 </p>
               </div>
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+                <GitBranch className="h-5 w-5" />
+              </span>
+            </div>
+
+            <div className="mt-5 space-y-4">
               <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">With project basis</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight">{projectBasedModelCount}</p>
-                <p className="mt-2 text-sm text-muted-foreground">Models that arrive through or remain anchored to the primary project context.</p>
+                {readinessBasisUnreadable ? (
+                  <p className="text-sm text-muted-foreground">
+                    A review verdict is not available on this page load, because part of the linked basis it is computed
+                    from could not be read. See the disclosure at the top of the page.
+                  </p>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge tone={workflow.tone}>{workflow.label}</StatusBadge>
+                      <StatusBadge tone={workflow.planningOutputTone}>{workflow.planningOutputLabel}</StatusBadge>
+                    </div>
+                    <p className="mt-3 text-sm text-muted-foreground">{workflow.reason}</p>
+                  </>
+                )}
               </div>
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Explicit plan links</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitModelCount}</p>
-                <p className="mt-2 text-sm text-muted-foreground">Direct model references stored on or uniquely tied to this plan.</p>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Readiness checklist</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight">
+                    {readinessBasisUnreadable ? UNKNOWN_COUNT : `${readiness.readyCheckCount}/${readiness.totalCheckCount}`}
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {readinessBasisUnreadable
+                      ? "The checks are computed from linked records this page could not read."
+                      : readiness.missingCheckCount === 0
+                        ? "All explicit basis checks are visible."
+                        : `${readiness.missingCheckCount} checklist gap${readiness.missingCheckCount === 1 ? "" : "s"} remain.`}
+                  </p>
+                </div>
+
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Linkage ledger</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight">
+                    {planLinksUnreadable ? UNKNOWN_COUNT : planLinks.length}
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {planLinksUnreadable
+                      ? "The plan's link set could not be read, so the number of stored links is unknown — not zero."
+                      : planLinks.length === 0
+                        ? "No explicit links stored on the plan yet."
+                        : `${explicitProjectCount} project, ${explicitScenarioCount} scenario, ${explicitCampaignCount} campaign, ${explicitReportCount} report links are recorded.`}
+                  </p>
+                </div>
+              </div>
+
+              {!readinessBasisUnreadable && workflow.reviewNotes.length > 0 ? (
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Review notes</p>
+                  <div className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    {workflow.reviewNotes.map((note) => (
+                      <p key={note}>{note}</p>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </article>
+          </div>
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Metadata</p>
+                <h2 className="module-section-title">Plan scope and operating context</h2>
+                <p className="module-section-description">What this plan is, where it applies, and how it is currently classified.</p>
               </div>
             </div>
 
-            <div className="module-record-list">
-              {supportingModels.map((model) => (
-                <Link key={model.id} href={`/models/${model.id}`} className="module-record-row is-interactive group block">
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <StatusBadge tone={modelStatusTone(model.status)}>{formatModelStatusLabel(model.status)}</StatusBadge>
-                        <span className="module-record-chip"><span>Family</span><strong>{formatModelFamilyLabel(model.model_family)}</strong></span>
-                      </div>
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Geography</p>
+                <p className="mt-2 text-sm">{plan.geography_label ?? "Not set"}</p>
+              </div>
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Horizon year</p>
+                <p className="mt-2 text-sm">{plan.horizon_year ?? "Not set"}</p>
+              </div>
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Created</p>
+                <p className="mt-2 text-sm">{formatPlanDateTime(plan.created_at)}</p>
+              </div>
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Updated</p>
+                <p className="mt-2 text-sm">{formatPlanDateTime(plan.updated_at)}</p>
+              </div>
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4 md:col-span-2">
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Record posture</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Formal planning record only. Use linked scenarios, engagement, and reports to review basis and outputs; do not treat this surface as chapter authoring.
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </PageTabPanel>
 
-                      <div className="space-y-1.5">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <h3 className="module-record-title text-[1.02rem] transition group-hover:text-primary">{model.title ?? "Untitled model"}</h3>
-                          <p className="module-record-stamp">Updated {formatPlanDateTime(model.updated_at)}</p>
-                        </div>
-                        <p className="module-record-summary line-clamp-2">
-                          {model.summary || "No model summary captured yet. Open the model record to review assumptions, provenance, and outputs."}
+      <PageTabPanel tabKey="linked" active={activeTab === "linked"}>
+        <div className="space-y-6">
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Projects</p>
+                <h2 className="module-section-title">Primary and related project records</h2>
+                <p className="module-section-description">Plans can inherit planning context from a primary project and carry extra project cross-links.</p>
+              </div>
+            </div>
+
+            {linkedProjectsUnreadable ? (
+              <SectionReadFailure title="Project links could not be read" noun="linked project records" />
+            ) : linkedProjects.length === 0 ? (
+              <div className="mt-5">
+                <EmptyState title="No linked projects" description="Attach a primary project or related project record to anchor this plan." compact />
+              </div>
+            ) : (
+              <div className="mt-5 space-y-3">
+                {linkedProjects.map((project) => (
+                  <Link
+                    key={project.id}
+                    href={`/projects/${project.id}`}
+                    className="block rounded-[0.5rem] border border-border/80 bg-background/80 p-5 transition hover:border-primary/35"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-semibold tracking-tight">{project.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {project.summary || "No project summary captured yet."}
                         </p>
                       </div>
+                      <div className="flex flex-wrap gap-2">
+                        <StatusBadge tone={project.linkBasis === "project" ? "success" : "neutral"}>
+                          {project.linkBasis === "project" ? "Primary project" : linkBasisLabel(project.linkBasis)}
+                        </StatusBadge>
+                        {project.status ? <StatusBadge tone="info">{project.status}</StatusBadge> : null}
+                      </div>
                     </div>
-                  </div>
-
-                  <p className="mt-1.5 text-label text-muted-foreground">
-                    {supportingModelLinksUnreadable
-                      ? "Readiness and linkage counts unavailable — this model's link set could not be read"
-                      : `${model.readiness.label} · ${model.linkageCounts.datasets} datasets · ${model.linkageCounts.runs} runs · ${model.linkageCounts.reports} reports`}
-                    {" · "}
-                    {model.config_version ? `Config ${model.config_version}` : "Config pending"}
-                    {" · via "}
-                    {modelLinkBasisLabel(model.linkBasis)}
-                  </p>
-
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    {supportingModelLinksUnreadable
-                      ? "No readiness verdict is shown for this model: it is computed from datasets, runs and reports this page could not read, so any gap listed here would describe the failed read rather than the model."
-                      : model.readiness.missingCheckLabels.length > 0
-                        ? `Missing basis: ${model.readiness.missingCheckLabels.join(", ")}.`
-                        : model.workflow.reason}
-                  </p>
-                </Link>
-              ))}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </article>
+        <div className="grid gap-6 xl:grid-cols-3">
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Scenarios</p>
+                <h2 className="module-section-title">Scenario evidence</h2>
+              </div>
+              <Radar className="h-5 w-5 text-muted-foreground" />
             </div>
-          </div>
-        )}
-      </article>
 
-      <article className="module-section-surface">
-        <div className="module-section-header">
-          <div className="module-section-heading">
-            <p className="module-section-label">Plan links</p>
-            <h2 className="module-section-title">Explicit plan-to-record references</h2>
-            <p className="module-section-description">These are the direct links stored on the plan record itself, separate from anything inherited through the primary project.</p>
-          </div>
-          <FolderKanban className="h-5 w-5 text-muted-foreground" />
+            {linkedScenariosUnreadable ? (
+              <SectionReadFailure title="Scenario links could not be read" noun="linked scenario sets" />
+            ) : linkedScenarios.length === 0 ? (
+              <div className="mt-5">
+                <EmptyState title="No scenario sets linked" description="Link scenarios directly or through the primary project." compact />
+              </div>
+            ) : (
+              <div className="mt-5 space-y-3">
+                {linkedScenarios.map((scenario) => (
+                  <Link key={scenario.id} href={`/scenarios/${scenario.id}`} className="block rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                    <div className="flex flex-wrap gap-2">
+                      {scenario.status ? (
+                        <StatusBadge tone={scenarioStatusTone(scenario.status)}>{titleizeScenarioValue(scenario.status)}</StatusBadge>
+                      ) : null}
+                      <span className="module-record-chip"><span>Via</span><strong>{linkBasisLabel(scenario.linkBasis)}</strong></span>
+                    </div>
+                    <h3 className="mt-3 font-semibold tracking-tight">{scenario.title}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {scenario.summary || scenario.planning_question || "No scenario summary captured yet."}
+                    </p>
+                    <p className="mt-2 text-label text-muted-foreground">
+                      {scenarioStatsUnreadable
+                        ? "Entry counts unavailable — the scenario entries could not be read"
+                        : `${pluralize(scenario.entryCount, "entry")} · ${pluralize(scenario.readyEntryCount, "ready alternative", "ready alternatives")} · ${pluralize(scenario.attachedRunCount, "attached run")}`}
+                      {" · "}
+                      {scenario.baseline_entry_id ? "Baseline set" : "Baseline missing"}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {scenario.linkBasis === "project"
+                        ? "Inherited from the primary project."
+                        : scenario.linkBasis === "both"
+                          ? "Visible through both the primary project and an explicit plan link."
+                          : "Stored as an explicit plan link on this record."}
+                    </p>
+                    <p className="mt-2 text-sm text-muted-foreground">Updated {formatPlanDateTime(scenario.updated_at)}</p>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Engagement</p>
+                <h2 className="module-section-title">Input campaigns</h2>
+              </div>
+              <MessagesSquare className="h-5 w-5 text-muted-foreground" />
+            </div>
+
+            {linkedCampaignsUnreadable ? (
+              <SectionReadFailure title="Campaign links could not be read" noun="linked engagement campaigns" />
+            ) : linkedCampaigns.length === 0 ? (
+              <div className="mt-5">
+                <EmptyState title="No campaigns linked" description="Link engagement campaigns to expose intake basis for this plan." compact />
+              </div>
+            ) : (
+              <div className="mt-5 space-y-3">
+                {linkedCampaigns.map((campaign) => (
+                  <Link key={campaign.id} href={`/engagement/${campaign.id}`} className="block rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                    <div className="flex flex-wrap gap-2">
+                      {campaign.status ? (
+                        <StatusBadge tone={engagementStatusTone(campaign.status)}>{titleizeEngagementValue(campaign.status)}</StatusBadge>
+                      ) : null}
+                      {campaign.engagement_type ? <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span> : null}
+                    </div>
+                    <h3 className="mt-3 font-semibold tracking-tight">{campaign.title}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">{campaign.summary || "No campaign summary captured yet."}</p>
+                    <p className="mt-2 text-label text-muted-foreground">
+                      {campaignStatsUnreadable
+                        ? "Category and item counts unavailable — the engagement records could not be read"
+                        : `${pluralize(campaign.categoryCount, "category", "categories")} · ${pluralize(campaign.itemCount, "item")} · ${campaign.approvedItemCount} approved · ${campaign.pendingItemCount} pending${campaign.flaggedItemCount > 0 ? ` · ${campaign.flaggedItemCount} flagged` : ""}`}
+                      {" · via "}
+                      {linkBasisLabel(campaign.linkBasis)}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {campaign.linkBasis === "project"
+                        ? "Inherited from the primary project."
+                        : campaign.linkBasis === "both"
+                          ? "Visible through both the primary project and an explicit plan link."
+                          : "Stored as an explicit plan link on this record."}
+                    </p>
+                    <p className="mt-2 text-sm text-muted-foreground">Updated {formatPlanDateTime(campaign.updated_at)}</p>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Reports</p>
+                <h2 className="module-section-title">Output packets</h2>
+              </div>
+              <ScrollText className="h-5 w-5 text-muted-foreground" />
+            </div>
+
+            {linkedReportsUnreadable ? (
+              <SectionReadFailure title="Report links could not be read" noun="linked reports" />
+            ) : linkedReports.length === 0 ? (
+              <div className="mt-5">
+                <EmptyState title="No reports linked" description="Link reports directly or via the primary project to show what outputs already exist." compact />
+              </div>
+            ) : (
+              <div className="mt-5 space-y-3">
+                {linkedReports.map((report) => (
+                  <Link key={report.id} href={`/reports/${report.id}`} className="block rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                    <div className="flex flex-wrap gap-2">
+                      {report.status ? <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge> : null}
+                      {report.report_type ? <span className="module-record-chip"><span>Type</span><strong>{formatReportTypeLabel(report.report_type)}</strong></span> : null}
+                    </div>
+                    <h3 className="mt-3 font-semibold tracking-tight">{report.title}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">{report.summary || "No report summary captured yet."}</p>
+                    <p className="mt-2 text-label text-muted-foreground">
+                      {reportStatsUnreadable
+                        ? "Run, section and artifact counts unavailable — those records could not be read"
+                        : `${pluralize(report.linkedRunCount, "linked run")} · ${pluralize(report.enabledSectionCount, "enabled section")} · ${pluralize(report.artifactCount, "artifact")}`}
+                      {report.latest_artifact_kind ? ` · ${report.latest_artifact_kind.toUpperCase()}` : ""}
+                      {" · "}
+                      {report.generated_at ? `Generated ${formatPlanDateTime(report.generated_at)}` : "Not generated yet"}
+                      {" · via "}
+                      {linkBasisLabel(report.linkBasis)}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {report.linkBasis === "project"
+                        ? "Inherited from the primary project."
+                        : report.linkBasis === "both"
+                          ? "Visible through both the primary project and an explicit plan link."
+                          : "Stored as an explicit plan link on this record."}
+                    </p>
+                    <p className="mt-2 text-sm text-muted-foreground">Updated {formatPlanDateTime(report.updated_at)}</p>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </article>
         </div>
-
-        {planLinksUnreadable ? (
-          <SectionReadFailure title="The plan's link set could not be read" noun="explicit plan links" />
-        ) : planLinks.length === 0 ? (
-          <div className="mt-5">
-            <EmptyState title="No explicit links yet" description="Project-derived context is already shown above. Use Linked records in the Plan record workflow panel to attach projects, programs, reports, or scenario sets directly." compact />
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Models</p>
+              <h2 className="module-section-title">Supporting model basis</h2>
+              <p className="module-section-description">
+                Models linked through the primary project or explicitly attached to this plan stay visible here so operator review can trace modeling support without leaving the planning lane.
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <Database className="h-3.5 w-3.5" />
+              {supportingModelsUnreadable
+                ? "Supporting models unavailable"
+                : `${supportingModels.length} supporting model${supportingModels.length === 1 ? "" : "s"}`}
+            </span>
           </div>
-        ) : (
-          <div className="mt-5 space-y-4">
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Projects</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitProjectCount}</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {inheritedProjectCount > 0 ? `${inheritedProjectCount} more inherited from the primary project.` : "No inherited project context."}
-                </p>
+
+          {supportingModelsUnreadable ? (
+            <SectionReadFailure title="Supporting models could not be read" noun="supporting model records" />
+          ) : supportingModels.length === 0 ? (
+            <div className="mt-5">
+              <EmptyState
+                title="No model support linked yet"
+                description="Attach models to this plan or anchor them to the primary project so the planning record carries an explicit modeling basis."
+                compact
+              />
+            </div>
+          ) : (
+            <div className="mt-5 space-y-4">
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Supporting models</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight">{supportingModels.length}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {supportingModelLinksUnreadable
+                      ? "How many pass every readiness check is unknown — each model's link set could not be read."
+                      : `${supportingModelReadyCount} currently pass every explicit readiness check.`}
+                  </p>
+                </div>
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">With project basis</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight">{projectBasedModelCount}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">Models that arrive through or remain anchored to the primary project context.</p>
+                </div>
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Explicit plan links</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitModelCount}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">Direct model references stored on or uniquely tied to this plan.</p>
+                </div>
               </div>
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Scenarios</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitScenarioCount}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{inheritedScenarioCount} inherited from project linkage.</p>
-              </div>
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Campaigns</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitCampaignCount}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{inheritedCampaignCount} inherited from project linkage.</p>
-              </div>
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Reports</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitReportCount}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{inheritedReportCount} inherited from project linkage.</p>
+
+              <div className="module-record-list">
+                {supportingModels.map((model) => (
+                  <Link key={model.id} href={`/models/${model.id}`} className="module-record-row is-interactive group block">
+                    <div className="module-record-head">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
+                          <StatusBadge tone={modelStatusTone(model.status)}>{formatModelStatusLabel(model.status)}</StatusBadge>
+                          <span className="module-record-chip"><span>Family</span><strong>{formatModelFamilyLabel(model.model_family)}</strong></span>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <h3 className="module-record-title text-[1.02rem] transition group-hover:text-primary">{model.title ?? "Untitled model"}</h3>
+                            <p className="module-record-stamp">Updated {formatPlanDateTime(model.updated_at)}</p>
+                          </div>
+                          <p className="module-record-summary line-clamp-2">
+                            {model.summary || "No model summary captured yet. Open the model record to review assumptions, provenance, and outputs."}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="mt-1.5 text-label text-muted-foreground">
+                      {supportingModelLinksUnreadable
+                        ? "Readiness and linkage counts unavailable — this model's link set could not be read"
+                        : `${model.readiness.label} · ${model.linkageCounts.datasets} datasets · ${model.linkageCounts.runs} runs · ${model.linkageCounts.reports} reports`}
+                      {" · "}
+                      {model.config_version ? `Config ${model.config_version}` : "Config pending"}
+                      {" · via "}
+                      {modelLinkBasisLabel(model.linkBasis)}
+                    </p>
+
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      {supportingModelLinksUnreadable
+                        ? "No readiness verdict is shown for this model: it is computed from datasets, runs and reports this page could not read, so any gap listed here would describe the failed read rather than the model."
+                        : model.readiness.missingCheckLabels.length > 0
+                          ? `Missing basis: ${model.readiness.missingCheckLabels.join(", ")}.`
+                          : model.workflow.reason}
+                    </p>
+                  </Link>
+                ))}
               </div>
             </div>
-
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {planLinks.map((link) => (
-              <div key={link.id} className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  {formatPlanLinkTypeLabel(link.link_type)}
-                </p>
-                <p className="mt-2 text-sm font-medium">{link.label || link.linked_id}</p>
-                <p className="mt-2 text-xs text-muted-foreground">Updated {formatPlanDateTime(link.updated_at)}</p>
-              </div>
-            ))}
+          )}
+        </article>
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Plan links</p>
+              <h2 className="module-section-title">Explicit plan-to-record references</h2>
+              <p className="module-section-description">These are the direct links stored on the plan record itself, separate from anything inherited through the primary project.</p>
             </div>
+            <FolderKanban className="h-5 w-5 text-muted-foreground" />
           </div>
-        )}
-      </article>
+
+          {planLinksUnreadable ? (
+            <SectionReadFailure title="The plan's link set could not be read" noun="explicit plan links" />
+          ) : planLinks.length === 0 ? (
+            <div className="mt-5">
+              <EmptyState title="No explicit links yet" description="Project-derived context is already shown above. Use Linked records in the Plan record workflow panel to attach projects, programs, reports, or scenario sets directly." compact />
+            </div>
+          ) : (
+            <div className="mt-5 space-y-4">
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Projects</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitProjectCount}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {inheritedProjectCount > 0 ? `${inheritedProjectCount} more inherited from the primary project.` : "No inherited project context."}
+                  </p>
+                </div>
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Scenarios</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitScenarioCount}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{inheritedScenarioCount} inherited from project linkage.</p>
+                </div>
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Campaigns</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitCampaignCount}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{inheritedCampaignCount} inherited from project linkage.</p>
+                </div>
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Reports</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitReportCount}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{inheritedReportCount} inherited from project linkage.</p>
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {planLinks.map((link) => (
+                <div key={link.id} className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    {formatPlanLinkTypeLabel(link.link_type)}
+                  </p>
+                  <p className="mt-2 text-sm font-medium">{link.label || link.linked_id}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">Updated {formatPlanDateTime(link.updated_at)}</p>
+                </div>
+              ))}
+              </div>
+            </div>
+          )}
+        </article>
+        </div>
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="edit" active={activeTab === "edit"}>
+        <PlanDetailControls
+          plan={plan}
+          projects={(projectsResult.data ?? []).map((project) => ({ id: project.id, name: project.name }))}
+        />
+      </PageTabPanel>
     </section>
   );
 }

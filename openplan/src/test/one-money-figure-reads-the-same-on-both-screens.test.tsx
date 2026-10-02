@@ -126,6 +126,7 @@ describe("one invoice figure, two surfaces", () => {
 
     const { container: plan } = render(
       <RtpRegistryOverview
+        actions={null}
         cycleCount={1}
         draftCount={1}
         publicReviewCount={0}
@@ -167,6 +168,7 @@ describe("one invoice figure, two surfaces", () => {
     const { container: ledger } = render(await InvoicingCashStrip({ workspaceId: "w1" }));
     const { container: plan } = render(
       <RtpRegistryOverview
+        actions={null}
         cycleCount={1}
         draftCount={1}
         publicReviewCount={0}

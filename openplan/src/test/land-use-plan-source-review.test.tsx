@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import PublishedLandUsePlanPage from "@/app/(public)/published-plans/[planId]/page";
+import PublishedLandUsePlanPage from "@/app/(published)/published-plans/[planId]/page";
 import { loadPublishedLandUsePlanPacket, type PublishedLandUsePlanPacket } from "@/lib/land-use-plans/public";
 
 vi.mock("@/lib/land-use-plans/public", () => ({ loadPublishedLandUsePlanPacket: vi.fn() }));

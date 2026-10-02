@@ -2,9 +2,8 @@
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { FilePlus2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -228,31 +227,17 @@ export function PlanCreator({ projects }: { projects: ProjectOption[] }) {
     },
   });
 
+  // Only the trigger and the flow. The plans page mounts this in its page
+  // header, so "New plan" opens the questions directly instead of scrolling to
+  // a card that held a second button.
   return (
-    <article className="module-section-surface">
-      <div className="module-section-header">
-        <div className="module-section-heading">
-          <p className="module-section-label">Create</p>
-          <h2 className="module-section-title">New plan</h2>
-          <p className="module-section-description">
-            A plan record is where one piece of planning work lives: what it covers, what it is
-            attached to, and the scenarios, engagement and reports it gathers. Three short
-            questions — the rest can wait until you are on its page.
-          </p>
-        </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
-          <FilePlus2 className="h-5 w-5" />
-        </span>
-      </div>
-
-      <div className="mt-5">
-        <Button type="button" onClick={flow.open} data-testid="plan-creator-open">
-          <Plus className="mr-1.5 h-4 w-4" />
-          New plan
-        </Button>
-      </div>
+    <>
+      <button type="button" className="module-intro-action" onClick={flow.open} data-testid="plan-creator-open">
+        <Plus className="h-4 w-4" aria-hidden="true" />
+        New plan
+      </button>
 
       <GuidedFlow flow={flow} />
-    </article>
+    </>
   );
 }

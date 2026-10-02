@@ -337,7 +337,7 @@ export function StaffAndRatesPanel({
       </div>
 
       {error ? (
-        <p className="border-l-2 border-red-400 bg-red-50/80 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/20 dark:text-red-200 lg:col-span-2">
+        <p role="alert" className="border-l-2 border-red-400 bg-red-50/80 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/20 dark:text-red-200 lg:col-span-2">
           {error}
         </p>
       ) : null}
@@ -487,7 +487,7 @@ function StaffRowEditor({
         </div>
       ) : null}
 
-      {error ? <p className="mt-1 text-xs text-red-700 dark:text-red-200">{error}</p> : null}
+      {error ? <p role="alert" className="mt-1 text-xs text-red-700 dark:text-red-200">{error}</p> : null}
     </li>
   );
 }
@@ -680,7 +680,7 @@ function RateTableRowEditor({
         </div>
       ) : null}
 
-      {error ? <p className="mt-1 text-xs text-red-700 dark:text-red-200">{error}</p> : null}
+      {error ? <p role="alert" className="mt-1 text-xs text-red-700 dark:text-red-200">{error}</p> : null}
     </li>
   );
 }

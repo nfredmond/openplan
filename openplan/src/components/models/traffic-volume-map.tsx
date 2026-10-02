@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
@@ -68,7 +69,8 @@ export function TrafficVolumeMap({
   } | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current) {
+    const container = containerRef.current;
+    if (!container) {
       return;
     }
 
@@ -87,7 +89,7 @@ export function TrafficVolumeMap({
     mapboxgl.accessToken = MAPBOX_TOKEN;
 
     const map = new mapboxgl.Map({
-      container: containerRef.current,
+      container,
       style: "mapbox://styles/mapbox/dark-v11",
       center: CONTINENTAL_US_CENTER,
       zoom: INITIAL_ZOOM,
@@ -95,6 +97,9 @@ export function TrafficVolumeMap({
     });
 
     mapRef.current = map;
+    // This map can be built inside a closed tab, where its container has no
+    // size. Re-measure when the tab opens.
+    const stopSizing = keepMapSizedToContainer(map, container);
 
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
     map.addControl(
@@ -230,6 +235,7 @@ export function TrafficVolumeMap({
     });
 
     return () => {
+      stopSizing();
       map.remove();
       mapRef.current = null;
     };
@@ -281,7 +287,7 @@ export function TrafficVolumeMap({
       {/* Error state */}
       {error && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-900/80">
-          <p className="text-sm text-red-400">{error}</p>
+          <p role="alert" className="text-sm text-red-400">{error}</p>
         </div>
       )}
 

@@ -21,7 +21,7 @@ export function DashboardWorkspaceIntro({
             <strong>{workspaceRole}</strong>
           </div>
         </div>
-        <h1 className="module-intro-title">{workspaceName}</h1>
+        <h2 className="module-intro-title">{workspaceName}</h2>
         <p className="module-intro-description">
           {description ??
             "Use this overview to see current work, recent activity, and the next planning tasks that need attention."}

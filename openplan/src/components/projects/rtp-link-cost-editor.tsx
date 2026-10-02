@@ -130,7 +130,7 @@ export function RtpLinkCostEditor({
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-[0.5rem] border border-border/60 bg-muted/20 p-3">
       {error ? (
-        <p className="rounded-[0.4rem] border border-red-300/80 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+        <p role="alert" className="rounded-[0.4rem] border border-red-300/80 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
           {error}
         </p>
       ) : null}

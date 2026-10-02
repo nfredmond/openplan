@@ -137,7 +137,7 @@ function CloseLoopCard({ entry, categories, submit, broadcast }: {
             <span className={LABEL_CLASS}>We did</span>
             <Textarea value={weDid} onChange={(e) => setWeDid(e.target.value)} rows={3} placeholder="How the project team responded" />
           </label>
-          {error ? <p className={ERROR_CLASS}>{error}</p> : null}
+          {error ? <p role="alert" className={ERROR_CLASS}>{error}</p> : null}
           <div className="flex flex-wrap gap-2">
             <Button type="button" onClick={() => void save()} disabled={busy || !themeTitle.trim()}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Save
@@ -165,7 +165,7 @@ function CloseLoopCard({ entry, categories, submit, broadcast }: {
               Published with no “we did” response yet — the public sees only what was heard.
             </p>
           ) : null}
-          {error ? <p className={ERROR_CLASS}>{error}</p> : null}
+          {error ? <p role="alert" className={ERROR_CLASS}>{error}</p> : null}
           {broadcast && <ResponseBroadcastNotice key={broadcast.requestId} anchorId={`closeloop-broadcast-notice-${entry.id}`} campaignId={entry.campaign_id} entryId={entry.id} requestId={broadcast.requestId} initialReport={broadcast.report} />}
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="outline" size="sm" onClick={() => setEditing(true)} disabled={busy}>
@@ -362,7 +362,7 @@ export function EngagementCloseLoopBuilder({
               : `AI is offline${draftMeta.fallbackReason ? ` (${draftMeta.fallbackReason})` : ""} — grouped ${draftMeta.itemCount} approved item${draftMeta.itemCount === 1 ? "" : "s"} by theme instead. Review and edit before publishing.`}
           </p>
         ) : null}
-        {draftError ? <p className={ERROR_CLASS}>{draftError}</p> : null}
+        {draftError ? <p role="alert" className={ERROR_CLASS}>{draftError}</p> : null}
         {drafts.length > 0 ? (
           <div className="space-y-2">
             {drafts.map((draft, index) => (
@@ -411,7 +411,7 @@ export function EngagementCloseLoopBuilder({
           </select>
           <span className="text-xs text-muted-foreground">Choose the published contributions this response addresses. Use Ctrl or Command to select more than one.</span>
         </label> : null}
-        {error ? <p className={ERROR_CLASS}>{error}</p> : null}
+        {error ? <p role="alert" className={ERROR_CLASS}>{error}</p> : null}
         <Button type="submit" disabled={busy || !themeTitle.trim()}>
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add entry
         </Button>

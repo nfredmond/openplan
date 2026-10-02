@@ -135,7 +135,7 @@ export function TranscribedChapterDraftCard({
           Copied. Paste it into the chapter editor, edit it as your own text, and save the chapter.
         </p>
       ) : null}
-      {error ? <p className="text-xs text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p role="alert" className="text-xs text-red-600 dark:text-red-400">{error}</p> : null}
 
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" size="sm" variant="outline" onClick={copy} disabled={busy}>
