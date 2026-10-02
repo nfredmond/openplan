@@ -1,5 +1,6 @@
 import type { ExpressionSpecification, LngLatBoundsLike } from "mapbox-gl";
 import { screeningScorePaint } from "@/lib/cartographic/screening-score-ramp";
+import { tractMeasurePaint } from "@/lib/cartographic/tract-measure-classes";
 import {
   titleizeMapViewValue,
   type CrashSeverityFilter,
@@ -199,65 +200,16 @@ export function canRenderDatasetThematicOverlay(
   );
 }
 
-/**
- * The colour for a feature whose value is missing.
- *
- * These ramps used to wrap every value in `["coalesce", ..., 0]`, so a tract
- * with no reported income drew in the colour for the lowest income class and a
- * tract with no poverty estimate drew as the least-poor class. Missing is not
- * zero. A value that is absent now draws in one neutral grey that no ramp uses.
- */
-export const NO_DATA_FILL_COLOR = "#64748b";
-
-/** Paint `ramp` only where `property` holds a value; otherwise the no-data grey. */
-export function paintWhereMeasured(property: string, ramp: ExpressionSpecification): ExpressionSpecification {
-  return [
-    "case",
-    [
-      "any",
-      ["==", ["typeof", ["get", property]], "number"],
-      ["==", ["typeof", ["get", property]], "string"],
-    ],
-    ramp,
-    NO_DATA_FILL_COLOR,
-  ];
-}
+// Defined with the tract classes so the map and the legend share them.
+export { NO_DATA_FILL_COLOR, paintWhereMeasured } from "@/lib/cartographic/tract-measure-classes";
 
 export function buildThematicOverlayPaintExpression(metricKey: string | null | undefined): ExpressionSpecification {
   if (metricKey === "pctBelowPoverty") {
-    return paintWhereMeasured("pctBelowPoverty", [
-      "interpolate",
-      ["linear"],
-      ["to-number", ["get", "pctBelowPoverty"]],
-      0,
-      "#0b3b2e",
-      10,
-      "#15803d",
-      20,
-      "#65a30d",
-      30,
-      "#ca8a04",
-      45,
-      "#b91c1c",
-    ]);
+    return tractMeasurePaint("pctBelowPoverty");
   }
 
   if (metricKey === "medianIncome") {
-    return paintWhereMeasured("medianIncome", [
-      "interpolate",
-      ["linear"],
-      ["to-number", ["get", "medianIncome"]],
-      0,
-      "#7f1d1d",
-      45000,
-      "#b45309",
-      70000,
-      "#0f766e",
-      100000,
-      "#0ea5e9",
-      150000,
-      "#e0f2fe",
-    ]);
+    return tractMeasurePaint("medianIncome");
   }
 
   if (metricKey === "isDisadvantaged") {
@@ -270,60 +222,18 @@ export function buildThematicOverlayPaintExpression(metricKey: string | null | u
   }
 
   if (metricKey === "zeroVehiclePct") {
-    return paintWhereMeasured("zeroVehiclePct", [
-      "interpolate",
-      ["linear"],
-      ["to-number", ["get", "zeroVehiclePct"]],
-      0,
-      "#172554",
-      4,
-      "#1d4ed8",
-      8,
-      "#0f766e",
-      12,
-      "#f59e0b",
-      18,
-      "#dc2626",
-    ]);
+    return tractMeasurePaint("zeroVehiclePct");
   }
 
   if (metricKey === "transitCommutePct") {
-    return paintWhereMeasured("transitCommutePct", [
-      "interpolate",
-      ["linear"],
-      ["to-number", ["get", "transitCommutePct"]],
-      0,
-      "#1f2937",
-      2,
-      "#2563eb",
-      5,
-      "#0ea5e9",
-      8,
-      "#10b981",
-      12,
-      "#f59e0b",
-    ]);
+    return tractMeasurePaint("transitCommutePct");
   }
 
   if (metricKey === "overallScore" || metricKey === "accessibilityScore" || metricKey === "safetyScore" || metricKey === "equityScore") {
     return screeningScorePaint(metricKey);
   }
 
-  return paintWhereMeasured("pctMinority", [
-    "interpolate",
-    ["linear"],
-    ["to-number", ["get", "pctMinority"]],
-    0,
-    "#123047",
-    30,
-    "#1d4ed8",
-    55,
-    "#2563eb",
-    75,
-    "#0f766e",
-    100,
-    "#34d399",
-  ]);
+  return tractMeasurePaint("pctMinority");
 }
 
 export function buildPointThematicOverlayColorExpression(metricKey: string | null | undefined): ExpressionSpecification {

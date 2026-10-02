@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { ManagedRunModeKey } from "@/lib/models/run-modes";
+import { scoreValueForPresentation, type HeadlineScoreKey } from "@/lib/analysis/score-presentation";
 
 const positionSchema = z.tuple([z.number(), z.number()]);
 const ringSchema = z.array(positionSchema).min(4);
@@ -125,6 +126,19 @@ function transitProvenanceFrom(metrics: Record<string, unknown>): Record<string,
   return { transit: { source: source ?? null, method: method ?? null } };
 }
 
+function summaryScorePresentation(metrics: Record<string, unknown>) {
+  const entry = (key: HeadlineScoreKey) => {
+    const value = scoreValueForPresentation(metrics, key);
+    return { value, eligible: value !== null };
+  };
+  return {
+    overall: entry("overallScore"),
+    accessibility: entry("accessibilityScore"),
+    safety: entry("safetyScore"),
+    equity: entry("equityScore"),
+  };
+}
+
 export function buildModelRunResultSummary(payload: {
   runId: string;
   metrics?: Record<string, unknown> | null | undefined;
@@ -140,6 +154,11 @@ export function buildModelRunResultSummary(payload: {
     safetyScore: typeof metrics.safetyScore === "number" ? metrics.safetyScore : null,
     equityScore: typeof metrics.equityScore === "number" ? metrics.equityScore : null,
     confidence: typeof metrics.confidence === "string" ? metrics.confidence : null,
+    // Whether each score may be shown, judged from the full run metrics while
+    // they are at hand. The summary drops the evidence flags the rule needs, so
+    // without this a reader of the summary alone could not withhold a
+    // composite whose inputs were missing. The raw numbers above are kept.
+    scorePresentation: summaryScorePresentation(metrics),
     summary: payload.summary ?? null,
     ...(sourceSnapshots ? { sourceSnapshots } : {}),
   };

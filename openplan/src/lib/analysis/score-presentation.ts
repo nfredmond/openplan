@@ -101,6 +101,27 @@ export function scoreValueForPresentation(
   return eligible && typeof metrics[key] === "number" ? metrics[key] as number : null;
 }
 
+/**
+ * A copy of `metrics` whose four headline scores follow the presentation rule:
+ * a score that is not eligible is null.
+ *
+ * For display only, never for writing back. Runs saved before the rule existed
+ * (August 2026) store the raw composite with no presentation record, so a page
+ * that read `metrics.overallScore` directly showed "Overall 32" for a run with
+ * no crash or transit evidence. `scoreValueForPresentation` already knows how
+ * to judge those runs from their data-quality flags; this applies it once at
+ * the point a result enters a page.
+ */
+export function withPresentedHeadlineScores<T extends Record<string, unknown>>(metrics: T): T {
+  return {
+    ...metrics,
+    overallScore: scoreValueForPresentation(metrics, "overallScore"),
+    accessibilityScore: scoreValueForPresentation(metrics, "accessibilityScore"),
+    safetyScore: scoreValueForPresentation(metrics, "safetyScore"),
+    equityScore: scoreValueForPresentation(metrics, "equityScore"),
+  };
+}
+
 export function scoreWithheldReason(
   metrics: Record<string, unknown> | null | undefined,
   key: HeadlineScoreKey

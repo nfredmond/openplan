@@ -20,11 +20,13 @@ describe("ExploreHoverInspector", () => {
       isDisadvantaged: true,
     };
 
-    expect(getActiveTractLegendLabel(tract, "poverty")).toBe("10-20%");
-    expect(getActiveTractLegendLabel(tract, "income")).toBe("$45k-$70k");
-    expect(getActiveTractLegendLabel(tract, "minority")).toBe("75-100%");
+    expect(getActiveTractLegendLabel(tract, "poverty")).toBe("10% to 20%");
+    expect(getActiveTractLegendLabel(tract, "income")).toBe("$45,000 to $70,000");
+    expect(getActiveTractLegendLabel(tract, "minority")).toBe("75% to 90%");
     expect(getActiveTractLegendLabel(tract, "disadvantaged")).toBe("Flagged");
     expect(getActiveTractLegendLabel(null, "poverty")).toBeNull();
+    // A hovered tract with no value marks the No data row, the colour it is drawn in.
+    expect(getActiveTractLegendLabel({ ...tract, medianIncome: null }, "income")).toBe("No data");
   });
 
   it("renders nothing when tract and crash layers are unavailable", () => {
@@ -73,7 +75,7 @@ describe("ExploreHoverInspector", () => {
     expect(screen.getByText("12,345")).toBeInTheDocument();
     expect(screen.getByText("$56,000")).toBeInTheDocument();
     expect(screen.getAllByText("18%").length).toBeGreaterThan(0);
-    expect(screen.getByText("10-20%")).toBeInTheDocument();
+    expect(screen.getByText("10% to 20%")).toBeInTheDocument();
     expect(screen.getByText("hovered")).toBeInTheDocument();
   });
 

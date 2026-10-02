@@ -176,14 +176,35 @@ Checks: 17,525 tests passed, typecheck, lint and dead-code check clean. Producti
 | The volume route reports how many links existed before it kept the busiest 5,000, and the map says "The busiest 5,000 of 130,685 road links ... Quieter roads are not drawn." Without it, a map of only the busiest links read as a region where every road carries 30,000 or more | Chrome, on the test workspace's run. No route unit test exists; the route's database and storage reads were not mocked for this |
 | Model-agreement map uses Okabe-Ito blue, orange and vermillion with its existing line patterns. Green on "agree" read as "correct", and agreement is not evidence of accuracy | Agreement map tests updated to the new colours and pass. Chrome: classes distinct on the dark basemap |
 
-Not done from M7: the census tract ramps (poverty, minority, zero-vehicle, income) still mix hues, some red with green. They carry the independent review's availability fixes and their own pinned tests, and are the next map item.
+## Tract colours and withheld scores on Corridor Analysis, October 2, 2026
+
+Checks: 17,542 tests passed, typecheck, lint and dead-code check clean. Production build of this worktree on port 3211, Chrome at 1440.
+
+| Change | How it was checked |
+|---|---|
+| Census tract measures (minority share, poverty, median income, zero-vehicle households, transit commuting) are defined once in `lib/cartographic/tract-measure-classes.ts`: five classes each, one purple from dim to bright, painted with `step`. The map paint, the legend and the inspector's "hovered" row all read it. Before, each measure had its own multi-hue ramp (poverty ran green to red), the map blended between stops while the legend listed classes, and the inspector carried a third copy of the breaks | New `tract-measure-classes.test.ts` evaluates every class at both edges with Mapbox's expression engine; switching the paint back to blending fails 10 of 12. The independent review's zero-versus-missing test (`census-overlay-availability.test.ts`) passes unchanged. Not seen on screen: the test workspace has no saved run with tract data |
+| Corridor Analysis applies the score presentation rule when it loads a result. A run saved on 2026-08-20, with crash and transit data unavailable, showed "Overall 32" and "Accessibility 45"; both are withheld under the rule adopted 2026-08-24. New `withPresentedHeadlineScores` (display copy only; the page writes back only map view state) | New unit test built from that run's real shape. Chrome: no 32 or 45 anywhere on the page |
+| Its saved prose summary and saved interpretation, which both said "Overall: 32/100", are withheld with the same notice reports already use (`presentRunSummary`) | Chrome: the notice names the three conflicts; the raw score text is gone |
+
+## Withheld scores everywhere else they appear, October 2, 2026
+
+Checks: 66 targeted tests in 7 files, run on one worker, and lint on the changed files. The full suite was not run for this batch: two attempts pushed this machine to 7 of 7 GB swap and crashed it while other sessions were running. GitHub CI runs the full gate after the push.
+
+| Change | How it was checked |
+|---|---|
+| The dashboard chart "Composite score by run" read the raw overall score. It now reads `scoreValueForPresentation`, so a run whose crash or transit data was unavailable drops out of the chart instead of plotting a composite the rule withholds | New test in `dashboard-insights.test.ts` built from a legacy run (raw 32, crash and transit unavailable). Reverting the reader fails it |
+| A managed model run's result summary now records, for each headline score, the presented value and whether it is eligible (`scorePresentation`). The raw numbers stay in the record | New `screening-scores-carry-their-eligibility.test.ts`, 3 tests. Removing the record from the comparison metrics fails 1 |
+| The scenario comparison board coloured a higher overall, accessibility, safety or equity score green and a lower one red. The four scores are now neutral, because the rule allows no good or bad reading of a score. The board reads the eligibility record when a summary carries one | `scenario-comparison-board.test.ts` asserts the four tones. Restoring the green tone fails it |
+
+Limit: managed run summaries written before this change carry no eligibility record, so the board still shows their raw numbers. Not checked in the browser for this batch.
 
 ## What is next
 
-1. Finish record hubs: the same header on campaign, RTP cycle and report pages; closed tabs unmount; the command board leaves the remaining record pages.
-2. One `PageHeader` component for the index pages, with the "New" button opening the wizard directly.
-3. Corridor Analysis and Aerial onto one map shell.
+1. Closed tabs unmount. 134 tests in 11 files open the tab content directly and must render the tab first.
+2. Aerial onto the map-first frame.
+3. Number formatting (review finding M10) and charts (M9).
 4. Copy pass. This waits on Nathaniel's vocabulary answers (decision D6).
-5. Chart and map ramps, legends and number formatting.
-6. Public pages: wordmark, screenshots, favicon and social image, closed-campaign page, print stylesheet.
-7. Keyboard and screen-reader walk; refresh the browser audits against the new frame.
+5. Keyboard and screen-reader walk.
+6. The four remaining palettes.
+7. A hosted smoke script for the public pages.
+8. Spanish strings reviewed by a speaker; the footer credit is Nathaniel's call.

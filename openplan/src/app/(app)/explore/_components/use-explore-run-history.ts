@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { withPresentedHeadlineScores } from "@/lib/analysis/score-presentation";
+import { presentRunSummary } from "@/lib/analysis/run-summary-presentation";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Run } from "@/components/runs/RunHistory";
 import {
@@ -75,7 +77,11 @@ export function useExploreRunHistory({
       setComparisonRun((current) => (current?.id === run.id ? null : current));
       setError("");
 
-      const runMetrics = run.metrics as AnalysisResult["metrics"];
+      // Withheld scores are null here, as they are in reports. The stored run
+      // is not changed; only map view state is ever written back.
+      const runMetrics = withPresentedHeadlineScores(
+        run.metrics as AnalysisResult["metrics"] & Record<string, unknown>,
+      ) as AnalysisResult["metrics"];
       const persistedMapViewState = normalizeMapViewState(runMetrics?.mapViewState);
 
       if (persistedMapViewState?.tractMetric) setTractMetric(persistedMapViewState.tractMetric);
@@ -94,8 +100,16 @@ export function useExploreRunHistory({
         createdAt: run.created_at,
         metrics: runMetrics,
         geojson: run.result_geojson,
-        summary: run.summary_text,
-        aiInterpretation: run.ai_interpretation ? stripFactCitationTokens(run.ai_interpretation) : undefined,
+        // Saved prose that states a score the rule withholds is withheld with
+        // a reason, as it is in reports. Judged on the stored metrics.
+        summary: presentRunSummary(run.summary_text, run.metrics as Record<string, unknown>).text,
+        // Withheld with the summary when it states a score the rule withholds;
+        // the summary's notice says why.
+        aiInterpretation:
+          run.ai_interpretation &&
+          !presentRunSummary(run.ai_interpretation, run.metrics as Record<string, unknown>).withheld
+            ? stripFactCitationTokens(run.ai_interpretation)
+            : undefined,
         aiInterpretationSource:
           (typeof runMetrics.aiInterpretationSource === "string" && runMetrics.aiInterpretationSource) ||
           (typeof runMetrics.dataQuality?.aiInterpretationSource === "string" && runMetrics.dataQuality?.aiInterpretationSource) ||

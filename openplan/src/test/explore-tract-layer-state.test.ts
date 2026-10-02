@@ -1,3 +1,4 @@
+import { tractMeasurePaint } from "@/lib/cartographic/tract-measure-classes";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -6,59 +7,10 @@ import {
 } from "@/app/(app)/explore/_components/explore-tract-layer-state";
 import type { TractMetric } from "@/app/(app)/explore/_components/_types";
 
-const measured = (property: string, ramp: unknown[]): unknown[] => [
-  "case",
-  ["any", ["==", ["typeof", ["get", property]], "number"], ["==", ["typeof", ["get", property]], "string"]],
-  ramp,
-  "#64748b",
-];
-
 const expectedPaintExpressions: Record<TractMetric, unknown[]> = {
-  minority: measured("pctMinority", [
-    "interpolate",
-    ["linear"],
-    ["to-number", ["get", "pctMinority"]],
-    0,
-    "#123047",
-    30,
-    "#1d4ed8",
-    55,
-    "#2563eb",
-    75,
-    "#0f766e",
-    100,
-    "#34d399",
-  ]),
-  poverty: measured("pctBelowPoverty", [
-    "interpolate",
-    ["linear"],
-    ["to-number", ["get", "pctBelowPoverty"]],
-    0,
-    "#0b3b2e",
-    10,
-    "#15803d",
-    20,
-    "#65a30d",
-    30,
-    "#ca8a04",
-    45,
-    "#b91c1c",
-  ]),
-  income: measured("medianIncome", [
-    "interpolate",
-    ["linear"],
-    ["to-number", ["get", "medianIncome"]],
-    0,
-    "#7f1d1d",
-    45000,
-    "#b45309",
-    70000,
-    "#0f766e",
-    100000,
-    "#0ea5e9",
-    150000,
-    "#e0f2fe",
-  ]),
+  minority: tractMeasurePaint("pctMinority"),
+  poverty: tractMeasurePaint("pctBelowPoverty"),
+  income: tractMeasurePaint("medianIncome"),
   disadvantaged: [
     "case",
     ["==", ["coalesce", ["to-number", ["get", "isDisadvantaged"]], 0], 1],
