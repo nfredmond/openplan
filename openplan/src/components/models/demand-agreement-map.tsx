@@ -348,15 +348,19 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
           type: "line",
           source: "demand-agreement",
           paint: {
+            // Okabe-Ito sky blue, orange and vermillion: distinguishable with
+            // the common forms of colour blindness, and no green, because
+            // agreement between the two methods is not evidence that either is
+            // correct. The dash patterns below carry the classes as well.
             "line-color": [
               "match",
               ["get", "agreement"],
               "agree",
-              "#22c55e",
+              "#56b4e9",
               "marginal",
-              "#f59e0b",
+              "#e69f00",
               "diverge",
-              "#ef4444",
+              "#d55e00",
               "#64748b",
             ],
             "line-dasharray": [
@@ -500,11 +504,11 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
         </div>
         <ul
           aria-label="Demand-method sensitivity classes"
-          className="absolute bottom-4 left-3 z-10 flex flex-wrap gap-x-3 gap-y-1 rounded-xl border border-white/10 bg-zinc-900/90 px-4 py-2 text-xs text-zinc-300"
+          className="absolute bottom-4 left-3 z-10 flex flex-wrap gap-x-3 gap-y-1 rounded-xl border border-white/10 bg-zinc-900/90 px-4 py-2 text-label text-zinc-300"
         >
-          <li><span className="mr-1 inline-block w-5 border-t-2 border-solid border-green-500 align-middle" aria-hidden="true" /> Agree</li>
-          <li><span className="mr-1 inline-block w-5 border-t-2 border-dashed border-amber-500 align-middle" aria-hidden="true" /> Marginal</li>
-          <li><span className="mr-1 inline-block w-5 border-t-2 border-dotted border-red-500 align-middle" aria-hidden="true" /> Diverge</li>
+          <li><span className="mr-1 inline-block w-5 border-t-2 border-solid border-[#56b4e9] align-middle" aria-hidden="true" /> Agree</li>
+          <li><span className="mr-1 inline-block w-5 border-t-2 border-dashed border-[#e69f00] align-middle" aria-hidden="true" /> Marginal</li>
+          <li><span className="mr-1 inline-block w-5 border-t-2 border-dotted border-[#d55e00] align-middle" aria-hidden="true" /> Diverge</li>
         </ul>
         {mapWarning ? (
           <div className="absolute right-3 top-16 z-10 max-w-sm rounded-lg border border-amber-400/40 bg-zinc-950/95 px-3 py-2 text-xs text-amber-100" role="alert">

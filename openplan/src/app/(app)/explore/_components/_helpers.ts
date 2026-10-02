@@ -1,4 +1,5 @@
 import type { ExpressionSpecification, LngLatBoundsLike } from "mapbox-gl";
+import { screeningScorePaint } from "@/lib/cartographic/screening-score-ramp";
 import {
   titleizeMapViewValue,
   type CrashSeverityFilter,
@@ -305,26 +306,7 @@ export function buildThematicOverlayPaintExpression(metricKey: string | null | u
   }
 
   if (metricKey === "overallScore" || metricKey === "accessibilityScore" || metricKey === "safetyScore" || metricKey === "equityScore") {
-    return [
-      "case",
-      ["==", ["typeof", ["get", metricKey]], "number"],
-      [
-        "interpolate",
-        ["linear"],
-        ["to-number", ["get", metricKey]],
-        0,
-        "#7f1d1d",
-        40,
-        "#b45309",
-        60,
-        "#f59e0b",
-        75,
-        "#10b981",
-      90,
-      "#0ea5e9",
-      ],
-      "#64748b",
-    ];
+    return screeningScorePaint(metricKey);
   }
 
   return paintWhereMeasured("pctMinority", [

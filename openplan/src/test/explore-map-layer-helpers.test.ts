@@ -14,6 +14,7 @@ import {
   getComparisonNarrativeLead,
   prioritizeMapComparisonRows,
 } from "@/app/(app)/explore/_components/_helpers";
+import { screeningScorePaint } from "@/lib/cartographic/screening-score-ramp";
 import { buildAnalysisCorridorFillExpression } from "@/app/(app)/explore/_components/explore-analysis-layer-install";
 import type { AnalysisContextResponse } from "@/app/(app)/explore/_components/_types";
 
@@ -169,26 +170,7 @@ describe("explore map layer helpers", () => {
   });
 
   it("builds thematic paint expressions for score and point overlay metrics", () => {
-    expect(buildThematicOverlayPaintExpression("overallScore")).toEqual([
-      "case",
-      ["==", ["typeof", ["get", "overallScore"]], "number"],
-      [
-        "interpolate",
-        ["linear"],
-        ["to-number", ["get", "overallScore"]],
-        0,
-        "#7f1d1d",
-        40,
-        "#b45309",
-        60,
-        "#f59e0b",
-        75,
-        "#10b981",
-        90,
-        "#0ea5e9",
-      ],
-      "#64748b",
-    ]);
+    expect(buildThematicOverlayPaintExpression("overallScore")).toEqual(screeningScorePaint("overallScore"));
 
     expect(buildThematicOverlayPaintExpression(undefined)).toEqual(measured("pctMinority", [
       "interpolate",

@@ -2,6 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
+import {
+  TRAFFIC_VOLUME_CLASSES,
+  trafficVolumeClass,
+  trafficVolumeColor,
+  trafficVolumeWidth,
+} from "@/lib/cartographic/traffic-volume-classes";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
@@ -65,6 +71,8 @@ export function TrafficVolumeMap({
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<{
     totalLinks: number;
+    /** Links that existed before the route kept only the busiest ones. */
+    linksAvailable: number | null;
     maxVolume: number;
   } | null>(null);
 
@@ -114,8 +122,10 @@ export function TrafficVolumeMap({
         const geojson = await res.json();
 
         const maxVol = geojson.metadata?.maxVolume ?? 5000;
+        const available = Number(geojson.metadata?.linksAvailable);
         setStats({
           totalLinks: geojson.features?.length ?? 0,
+          linksAvailable: Number.isFinite(available) ? available : null,
           maxVolume: maxVol,
         });
 
@@ -143,15 +153,8 @@ export function TrafficVolumeMap({
           source: "traffic-volumes",
           paint: {
             "line-color": "#000",
-            "line-width": [
-              "interpolate",
-              ["linear"],
-              ["get", "pce_tot"],
-              0, 3,
-              maxVol * 0.25, 5,
-              maxVol * 0.5, 8,
-              maxVol, 12,
-            ],
+            // Two pixels wider than the line, at every class.
+            "line-width": ["+", trafficVolumeWidth(), 2],
             "line-opacity": 0.3,
             "line-blur": 3,
           },
@@ -163,26 +166,8 @@ export function TrafficVolumeMap({
           type: "line",
           source: "traffic-volumes",
           paint: {
-            "line-color": [
-              "interpolate",
-              ["linear"],
-              ["get", "pce_tot"],
-              0, "#2dd4bf",          // teal (very low)
-              maxVol * 0.15, "#22c55e", // green
-              maxVol * 0.3, "#eab308",  // yellow
-              maxVol * 0.5, "#f97316",  // orange
-              maxVol * 0.75, "#ef4444", // red
-              maxVol, "#dc2626",        // dark red
-            ],
-            "line-width": [
-              "interpolate",
-              ["linear"],
-              ["get", "pce_tot"],
-              0, 1.5,
-              maxVol * 0.25, 3,
-              maxVol * 0.5, 5,
-              maxVol, 8,
-            ],
+            "line-color": trafficVolumeColor(),
+            "line-width": trafficVolumeWidth(),
             "line-opacity": 0.85,
           },
           layout: {
@@ -217,7 +202,7 @@ export function TrafficVolumeMap({
             .setHTML(
               `<div style="font-family:system-ui;font-size:13px;line-height:1.5">
                 <strong>${name}</strong><br/>
-                <span style="color:#22c55e">●</span> Volume: <strong>${Number(props.pce_tot).toLocaleString()}</strong> PCE/day<br/>
+                <span style="color:${trafficVolumeClass(Number(props.pce_tot)).color}">●</span> Volume: <strong>${Number(props.pce_tot).toLocaleString()}</strong> PCE/day<br/>
                 <span style="font-size:11px;color:#888">
                   AB: ${Number(props.pce_ab).toLocaleString()} · BA: ${Number(props.pce_ba).toLocaleString()}<br/>
                   V/C: ${props.voc_max} · Delay: ${props.delay_factor}x
@@ -245,33 +230,42 @@ export function TrafficVolumeMap({
     <div className="relative rounded-[0.5rem] border border-border/70 overflow-hidden bg-zinc-900">
       {/* Header */}
       <div className="absolute top-3 left-3 z-10 rounded-xl bg-zinc-900/90 backdrop-blur px-4 py-2.5 shadow-lg border border-white/10">
-        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-          Traffic Assignment Results
+        <p className="text-label font-semibold uppercase tracking-wider text-zinc-400">
+          Traffic assignment results
         </p>
         {stats && (
-          <p className="text-xs text-zinc-500 mt-0.5">
-            {stats.totalLinks.toLocaleString()} links · Peak {stats.maxVolume.toLocaleString()} PCE/day
-          </p>
+          <>
+            <p className="mt-0.5 text-label text-zinc-300">
+              {stats.linksAvailable !== null && stats.linksAvailable > stats.totalLinks
+                ? `The busiest ${stats.totalLinks.toLocaleString("en-US")} of ${stats.linksAvailable.toLocaleString("en-US")} road links`
+                : `${stats.totalLinks.toLocaleString("en-US")} road links`}
+              {" · "}Peak {stats.maxVolume.toLocaleString("en-US")} PCE/day
+            </p>
+            {/* Without this, a map of only the busiest links reads as a region
+                where every road is busy. */}
+            {stats.linksAvailable !== null && stats.linksAvailable > stats.totalLinks ? (
+              <p className="mt-0.5 text-label text-zinc-400">Quieter roads are not drawn.</p>
+            ) : null}
+          </>
         )}
       </div>
 
-      {/* Legend */}
+      {/* Legend: the same fixed classes the lines are drawn with. */}
       <div className="absolute bottom-4 left-3 z-10 rounded-xl bg-zinc-900/90 backdrop-blur px-4 py-3 shadow-lg border border-white/10">
-        <p className="text-label font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
-          Daily Volume (PCE)
-        </p>
-        <div className="flex items-center gap-1">
-          <div className="h-2.5 w-8 rounded-sm" style={{ background: "#2dd4bf" }} />
-          <div className="h-2.5 w-8 rounded-sm" style={{ background: "#22c55e" }} />
-          <div className="h-2.5 w-8 rounded-sm" style={{ background: "#eab308" }} />
-          <div className="h-2.5 w-8 rounded-sm" style={{ background: "#f97316" }} />
-          <div className="h-2.5 w-8 rounded-sm" style={{ background: "#ef4444" }} />
-          <div className="h-2.5 w-8 rounded-sm" style={{ background: "#dc2626" }} />
-        </div>
-        <div className="flex justify-between text-label text-zinc-500 mt-0.5">
-          <span>Low</span>
-          <span>High</span>
-        </div>
+        <p className="mb-1.5 text-label font-semibold text-zinc-300">Daily volume, passenger-car equivalents</p>
+        <ul className="space-y-1">
+          {TRAFFIC_VOLUME_CLASSES.map((entry) => (
+            <li key={entry.from} className="flex items-center gap-2 text-label text-zinc-300">
+              <span
+                aria-hidden="true"
+                className="inline-block w-6 rounded-full"
+                style={{ background: entry.color, height: Math.max(3, entry.width) }}
+              />
+              {entry.label}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-1.5 text-label text-zinc-400">Same classes on every run.</p>
       </div>
 
       {/* Loading state */}
