@@ -369,7 +369,7 @@ export function ProjectFundingAwardCreator({
           <BadgeDollarSign className="h-4 w-4" />
         </span>
         <div>
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Funding award
           </p>
           <h3 className="text-sm font-semibold text-foreground">{titleLabel}</h3>

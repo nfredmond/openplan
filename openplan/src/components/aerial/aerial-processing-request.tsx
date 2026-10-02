@@ -260,7 +260,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
       ) : (
         <div className="space-y-1.5">
           <label
-            className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+            className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
             htmlFor="aerial-imagery-zip-url"
           >
             Imagery ZIP URL
@@ -272,7 +272,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
             placeholder="https://…/mission-imagery.zip"
             required
           />
-          <p className="text-[0.68rem] text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             A link the worker itself can fetch — https, or plain http only for a worker on the
             same machine. The link is passed through to the worker as-is.
             {stored?.status === "counted" && stored.count === 0
@@ -289,7 +289,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
       <div className={`grid gap-3 ${usingStoredPhotos ? "sm:grid-cols-1" : "sm:grid-cols-3"}`}>
         <div className="space-y-1.5">
           <label
-            className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+            className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
             htmlFor="aerial-preset"
           >
             Preset
@@ -311,7 +311,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
           <>
             <div className="space-y-1.5">
               <label
-                className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
                 htmlFor="aerial-image-count"
               >
                 Image count (optional)
@@ -326,7 +326,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
             </div>
             <div className="space-y-1.5">
               <label
-                className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
                 htmlFor="aerial-size-bytes"
               >
                 ZIP size in bytes (optional)
@@ -345,7 +345,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
 
       <div className="space-y-1.5">
         <label
-          className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+          className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
           htmlFor="aerial-processing-notes"
         >
           Notes for the worker (optional)

@@ -93,7 +93,7 @@ export function DemographicsPanel({ source }: { source: SelfReportedDemographics
         })}
       </div>
 
-      <p className="text-[0.7rem] leading-relaxed text-muted-foreground">{summary.caveat}</p>
+      <p className="text-label leading-relaxed text-muted-foreground">{summary.caveat}</p>
     </div>
   );
 }

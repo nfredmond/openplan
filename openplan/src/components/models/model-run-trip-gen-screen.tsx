@@ -134,7 +134,7 @@ export function TripGenScreenBody({ kpis }: { kpis: TripGenKpiRow[] }) {
   return (
     <div className="mt-5 space-y-4">
       <div className="rounded-[0.75rem] border border-border/70 bg-background/60 px-5 py-4 text-sm">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Program totals (stored KPIs)
         </p>
         <ul className="mt-1 divide-y divide-border/50">
@@ -156,7 +156,7 @@ export function TripGenScreenBody({ kpis }: { kpis: TripGenKpiRow[] }) {
         <div className="overflow-x-auto rounded-[0.75rem] border border-border/70 bg-background/60">
           <table className="w-full min-w-[640px] text-sm" data-testid="trip-gen-line-items">
             <thead>
-              <tr className="border-b border-border/60 text-left text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <tr className="border-b border-border/60 text-left text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 <th className="px-4 py-2.5 font-semibold">Land use</th>
                 <th className="px-4 py-2.5 font-semibold">Unit basis</th>
                 <th className="px-4 py-2.5 text-right font-semibold">Quantity</th>

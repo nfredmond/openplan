@@ -115,7 +115,7 @@ export function ModelRunEmissionsPanel({ modelId, modelRunId }: Props) {
                   </p>
                 </div>
               </div>
-              <p className="text-[0.7rem] leading-relaxed text-muted-foreground">
+              <p className="text-label leading-relaxed text-muted-foreground">
                 {screen.provenance ?? EMISSIONS_SCREENING_CAVEAT}
               </p>
             </div>

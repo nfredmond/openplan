@@ -24,7 +24,7 @@ function ContentBranch({ node, nodes, depth = 0, ancestors = new Set<string>() }
   if (id) nextAncestors.add(id);
   const children = id ? nodes.filter((candidate) => candidate.parent_node_id === id) : [];
   const Heading = depth === 0 ? "h3" : depth === 1 ? "h4" : "h5";
-  return <article className={depth ? "ml-4 mt-5 border-l pl-4" : ""}><Heading className={depth === 0 ? "text-2xl font-semibold" : "text-xl font-semibold"}>{node.title ?? "Untitled plan content"}</Heading>{node.body ? <p className="mt-3 whitespace-pre-wrap text-[1.0625rem] leading-relaxed">{node.body}</p> : null}{children.map((child, index) => <ContentBranch key={child.id ?? index} node={child} nodes={nodes} depth={depth + 1} ancestors={nextAncestors}/>)}</article>;
+  return <article className={depth ? "ml-4 mt-5 border-l pl-4" : ""}><Heading className={depth === 0 ? "text-2xl font-semibold" : "text-xl font-semibold"}>{node.title ?? "Untitled plan content"}</Heading>{node.body ? <p className="mt-3 whitespace-pre-wrap text-reading leading-relaxed">{node.body}</p> : null}{children.map((child, index) => <ContentBranch key={child.id ?? index} node={child} nodes={nodes} depth={depth + 1} ancestors={nextAncestors}/>)}</article>;
 }
 
 export default async function PublishedLandUsePlanPage({ params }: { params: Promise<{ planId: string }> }) {

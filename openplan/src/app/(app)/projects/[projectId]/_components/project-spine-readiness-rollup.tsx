@@ -44,7 +44,7 @@ export function ProjectSpineReadinessRollup({
               <ActivitySquare className="h-4 w-4" />
             </span>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Where this project stands</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Where this project stands</p>
               <h3 className="mt-1 text-base font-semibold text-foreground">{rollup.headline}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{rollup.detail}</p>
             </div>
@@ -52,15 +52,15 @@ export function ProjectSpineReadinessRollup({
 
           <dl className="mt-5 grid grid-cols-3 gap-3 text-sm">
             <div className="border-l border-emerald-500/35 pl-3">
-              <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Current</dt>
+              <dt className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Current</dt>
               <dd className="mt-1 text-xl font-semibold text-foreground">{rollup.readyCount}</dd>
             </div>
             <div className="border-l border-amber-500/45 pl-3">
-              <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Review</dt>
+              <dt className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Review</dt>
               <dd className="mt-1 text-xl font-semibold text-foreground">{rollup.staleCount}</dd>
             </div>
             <div className="border-l border-slate-300 pl-3 dark:border-slate-700">
-              <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Missing</dt>
+              <dt className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Missing</dt>
               <dd className="mt-1 text-xl font-semibold text-foreground">{rollup.missingCount}</dd>
             </div>
           </dl>
@@ -71,7 +71,7 @@ export function ProjectSpineReadinessRollup({
           </p>
           {firstOperatorCheck ? (
             <div className="mt-4 rounded-[0.55rem] border border-border/70 bg-card/70 p-3 text-sm leading-relaxed">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 First operator check
               </p>
               <p className="mt-1 font-semibold text-foreground">{firstOperatorCheck.label}</p>
@@ -81,7 +81,7 @@ export function ProjectSpineReadinessRollup({
         </div>
 
         <div className="overflow-hidden rounded-[0.75rem] border border-border/70 bg-card/70">
-          <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-border/70 px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground md:grid-cols-[0.62fr_0.4fr_1.1fr]">
+          <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-border/70 px-4 py-3 text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground md:grid-cols-[0.62fr_0.4fr_1.1fr]">
             <span>Lane</span>
             <span>Status</span>
             <span className="hidden md:block">Operator note</span>
@@ -101,7 +101,7 @@ export function ProjectSpineReadinessRollup({
                 <div className="text-sm leading-relaxed">
                   <p className="font-medium text-foreground/90">{lane.headline}</p>
                   <p className="mt-1 text-muted-foreground">{lane.detail}</p>
-                  <p className="mt-1 text-[0.72rem] text-muted-foreground/85">
+                  <p className="mt-1 text-label text-muted-foreground/85">
                     Source {lane.latestSourceUpdatedAt ? fmtDateTime(lane.latestSourceUpdatedAt) : "not recorded"}
                     {lane.reviewedAgainstAt ? ` · Baseline ${fmtDateTime(lane.reviewedAgainstAt)}` : " · No packet baseline"}
                   </p>

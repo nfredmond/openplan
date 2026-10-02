@@ -344,7 +344,7 @@ function ManagedRunPromotionControl({
     <div className="mt-3 rounded-[0.5rem] border border-border/70 bg-background/70 p-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Promotion / reassignment</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Promotion / reassignment</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {currentLabel
               ? `Currently attached to ${currentLabel}. Reassign if the evidence belongs to a different scenario entry.`
@@ -774,7 +774,7 @@ export function ModelRunManager({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="managed-run-engine" className="text-[0.82rem] font-semibold">
+            <label htmlFor="managed-run-engine" className="text-compact font-semibold">
               Run mode
             </label>
             <select
@@ -842,7 +842,7 @@ export function ModelRunManager({
 
           {engineKey === "aequilibrae" ? (
             <div className="space-y-1.5">
-              <label htmlFor="managed-run-zone-geography" className="text-[0.82rem] font-semibold">
+              <label htmlFor="managed-run-zone-geography" className="text-compact font-semibold">
                 Zone geography (TAZ resolution)
               </label>
               <select
@@ -864,7 +864,7 @@ export function ModelRunManager({
 
           {supportsTransitFeed && workspaceId ? (
             <div className="space-y-1.5" data-testid="managed-run-transit-feed">
-              <label htmlFor="managed-run-transit-feed" className="text-[0.82rem] font-semibold">
+              <label htmlFor="managed-run-transit-feed" className="text-compact font-semibold">
                 Transit feed (optional)
               </label>
               {transitFeeds.length === 0 ? (
@@ -981,14 +981,14 @@ export function ModelRunManager({
           ) : null}
 
           <div className="space-y-1.5">
-            <label htmlFor="managed-run-title" className="text-[0.82rem] font-semibold">
+            <label htmlFor="managed-run-title" className="text-compact font-semibold">
               Run title
             </label>
             <Input id="managed-run-title" value={title} onChange={(event) => setTitle(event.target.value)} />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="managed-run-scenario" className="text-[0.82rem] font-semibold">
+            <label htmlFor="managed-run-scenario" className="text-compact font-semibold">
               Scenario entry (optional)
             </label>
             <select
@@ -1023,7 +1023,7 @@ export function ModelRunManager({
           </label>
 
           <div className="space-y-1.5">
-            <label htmlFor="managed-run-query" className="text-[0.82rem] font-semibold">
+            <label htmlFor="managed-run-query" className="text-compact font-semibold">
               Query text
             </label>
             <Textarea
@@ -1036,7 +1036,7 @@ export function ModelRunManager({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[0.82rem] font-semibold">Study area</label>
+            <label className="text-compact font-semibold">Study area</label>
             <StudyAreaPicker
               corridorText={corridorText}
               onCorridorChange={setCorridorText}
@@ -1538,7 +1538,7 @@ function RunAccuracyByClass({
             className="overflow-x-auto rounded-[12px] border border-border/60"
             dangerouslySetInnerHTML={{ __html: scatter }}
           />
-          <p className="mt-1 text-[11px] text-muted-foreground">
+          <p className="mt-1 text-label text-muted-foreground">
             Points above the line are roads the model gives more traffic than the count recorded;
             below it, less. The dashed lines are twice and half the observed volume. Red points are
             outside that band.
@@ -1586,7 +1586,7 @@ function RunAccuracyByClass({
           ))}
         </tbody>
       </table>
-      <p className="mt-2 text-[11px] text-muted-foreground">
+      <p className="mt-2 text-label text-muted-foreground">
         A road type with only a handful of stations is shown faded. Its figure is not evidence about
         that road type however good it looks — a 1% error over one station is one station.
       </p>
@@ -1638,7 +1638,7 @@ function RunProgressBar({ stages }: { stages: ModelRunStage[] }) {
         />
       </div>
       {elapsed || convergence ? (
-        <p className="mt-1 text-[11px] text-muted-foreground" data-testid="run-progress-detail">
+        <p className="mt-1 text-label text-muted-foreground" data-testid="run-progress-detail">
           {elapsed ? `${elapsed} in this stage` : null}
           {elapsed && convergence ? " · " : null}
           {convergence
@@ -1689,12 +1689,12 @@ function StageLogView({ log, isRunning }: { log: string; isRunning: boolean }) {
         onScroll={handleScroll}
         data-testid="stage-log-output"
         data-following={isFollowing ? "true" : "false"}
-        className={`${isRunning ? "max-h-64" : "max-h-32"} overflow-auto rounded-[12px] bg-zinc-950/90 p-2 text-[11px] leading-5 text-zinc-100`}
+        className={`${isRunning ? "max-h-64" : "max-h-32"} overflow-auto rounded-[12px] bg-zinc-950/90 p-2 text-label leading-5 text-zinc-100`}
       >
         {log}
       </pre>
       {isRunning && !isFollowing ? (
-        <p className="mt-1 text-[11px] text-muted-foreground" data-testid="stage-log-paused">
+        <p className="mt-1 text-label text-muted-foreground" data-testid="stage-log-paused">
           Paused following — scroll to the bottom to keep up with new output.
         </p>
       ) : null}
@@ -1904,7 +1904,7 @@ function ModelRunStagingAndArtifacts({
                       return (
                         <div className="mt-2" data-testid="stage-log">
                           {shown.isPartial ? (
-                            <p className="mb-1 text-[11px] text-muted-foreground">
+                            <p className="mb-1 text-label text-muted-foreground">
                               Log up to the point of failure — the stage did not finish, so it stops
                               here rather than at the end.
                             </p>

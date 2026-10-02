@@ -113,7 +113,7 @@ export function RecordAssigneeControl({
 
   return (
     <div className="mt-3 flex flex-col gap-1">
-      <p className="text-[0.72rem] font-medium text-muted-foreground">Assignee</p>
+      <p className="text-label font-medium text-muted-foreground">Assignee</p>
       <div className="max-w-[18rem]">
         <AssigneePicker
           id={`record-assignee-${recordId}`}

@@ -391,7 +391,7 @@ export default async function DashboardPage({
         dismissible={homeGeographyIsSet}
       >
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 dark:bg-primary/10">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Get started</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">Get started</p>
           <h2 className="mt-1 text-lg font-semibold text-foreground">
             {/* `workspaceName` carries a generic fallback for the intro card;
                 reading "Set up Your workspace" would be worse than reading

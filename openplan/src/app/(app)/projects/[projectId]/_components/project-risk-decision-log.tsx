@@ -120,7 +120,7 @@ export function ProjectRiskAndDecisionLog({
                       <p className="module-record-summary">{risk.description || "No description yet."}</p>
                     </div>
                     {risk.mitigation ? (
-                      <p className="mt-1.5 text-[0.73rem] text-muted-foreground">{risk.mitigation}</p>
+                      <p className="mt-1.5 text-label text-muted-foreground">{risk.mitigation}</p>
                     ) : null}
                     <div className="mt-3">
                       <RecordStatusAdvanceButton
@@ -229,7 +229,7 @@ export function ProjectRiskAndDecisionLog({
                       <p className="module-record-summary">{decision.rationale}</p>
                     </div>
                     {decision.impact_summary ? (
-                      <p className="mt-1.5 text-[0.73rem] text-muted-foreground">{decision.impact_summary}</p>
+                      <p className="mt-1.5 text-label text-muted-foreground">{decision.impact_summary}</p>
                     ) : null}
                   </div>
                 </div>

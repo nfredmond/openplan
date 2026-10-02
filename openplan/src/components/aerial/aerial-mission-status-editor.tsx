@@ -49,7 +49,7 @@ export function AerialMissionStatusEditor({
           {formatAerialMissionStatusLabel(status)}
         </StatusBadge>
         <select
-          className="h-6 rounded-[0.25rem] border border-border/60 bg-background px-1.5 text-[0.7rem] text-muted-foreground outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
+          className="h-6 rounded-[0.25rem] border border-border/60 bg-background px-1.5 text-label text-muted-foreground outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
           value={status}
           disabled={isPending}
           onChange={(e) => handleChange(e.target.value as AerialMissionStatus)}
@@ -60,7 +60,7 @@ export function AerialMissionStatusEditor({
           ))}
         </select>
       </div>
-      {error ? <p className="text-[0.7rem] text-destructive">{error}</p> : null}
+      {error ? <p className="text-label text-destructive">{error}</p> : null}
     </div>
   );
 }

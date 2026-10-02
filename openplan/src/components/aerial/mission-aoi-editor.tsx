@@ -461,7 +461,7 @@ export function MissionAoiEditor({
             </Button>
           </div>
           {selectedSeed?.kind === "corridor" ? (
-            <p className="text-[0.72rem] text-muted-foreground">
+            <p className="text-label text-muted-foreground">
               The corridor line is widened into a polygon covering this distance on each side of
               it. Starts at {DEFAULT_CORRIDOR_BUFFER_METERS} m; change it to match the flight.
             </p>

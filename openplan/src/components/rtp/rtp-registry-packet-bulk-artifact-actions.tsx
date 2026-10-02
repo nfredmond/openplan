@@ -71,7 +71,7 @@ export function RtpRegistryPacketBulkArtifactActions({
 
       <div className="mt-5 space-y-4">
         <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Queued packets</p>
+          <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Queued packets</p>
           <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{reportCount}</p>
           <p className="mt-1 text-sm text-muted-foreground">{queuedDetail}</p>
         </div>

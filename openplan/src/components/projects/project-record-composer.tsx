@@ -121,7 +121,7 @@ function AssigneeRow({
         value={value}
         onChange={onChange}
       />
-      <p className="text-[0.78rem] text-muted-foreground">
+      <p className="text-compact text-muted-foreground">
         Someone on your team in this workspace. Optional, and separate from the owner name above.
       </p>
     </div>

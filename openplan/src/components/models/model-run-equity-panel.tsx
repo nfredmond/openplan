@@ -149,7 +149,7 @@ export function ModelRunEquityPanel({ modelId, modelRunId }: Props) {
                   population={screen.rest?.population ?? null}
                 />
               </div>
-              <p className="text-[0.7rem] leading-relaxed text-muted-foreground">
+              <p className="text-label leading-relaxed text-muted-foreground">
                 {screen.provenance ?? EQUITY_SCREENING_CAVEAT}{" "}
                 {/*
                   The caveat itself is a plain string shared with the report and

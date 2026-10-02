@@ -34,9 +34,9 @@ const PROJECT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WORKSPACE_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 
 /** The tone classes StatusBadge paints, by the CSS variable each one names. */
-const SUCCESS_TONE = "--pine";
-const INFO_TONE = "--accent";
-const WARNING_TONE = "--copper";
+const SUCCESS_TONE = "status-ok";
+const INFO_TONE = "status-info";
+const WARNING_TONE = "status-warn";
 
 type ClosureColumns = {
   closure_basis?: string | null;

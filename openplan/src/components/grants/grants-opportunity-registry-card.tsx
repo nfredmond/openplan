@@ -160,15 +160,15 @@ export function GrantsOpportunityRegistryCard({
 
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Fit notes</p>
+            <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground">Fit notes</p>
             <p className="mt-2">{opportunity.fit_notes || "No fit notes recorded yet."}</p>
           </div>
           <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Readiness notes</p>
+            <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground">Readiness notes</p>
             <p className="mt-2">{opportunity.readiness_notes || "No readiness notes recorded yet."}</p>
           </div>
           <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Decision rationale</p>
+            <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground">Decision rationale</p>
             <p className="mt-2">{opportunity.decision_rationale || "No decision rationale recorded yet."}</p>
           </div>
         </div>
@@ -242,7 +242,7 @@ export function GrantsOpportunityRegistryCard({
                   <StatusBadge tone={cue.tone}>{formatEvidenceCueStatusLabel(cue.tone)}</StatusBadge>
                 </div>
                 <p className="mt-1 text-muted-foreground">{cue.detail}</p>
-                <p className="mt-2 text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-foreground/70">
+                <p className="mt-2 text-compact font-semibold uppercase tracking-[0.14em] text-foreground/70">
                   Next: <span className="normal-case tracking-normal text-muted-foreground">{cue.nextAction}</span>
                 </p>
               </div>

@@ -643,7 +643,7 @@ export default async function ScenarioSetDetailPage({
               <strong>{entriesUnreadable ? "Unreadable" : baselineEntry ? "Registered" : "Missing"}</strong>
             </span>
           </div>
-          <p className="text-[0.73rem] text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             {entriesUnreadable
               ? "Alternative readiness is unavailable — this set's entries could not be read."
               : `${comparisonSummary.readyAlternatives}/${comparisonSummary.totalAlternatives} alternatives ready`}
@@ -877,7 +877,7 @@ export default async function ScenarioSetDetailPage({
                     </div>
 
                     <div className="module-note mt-4 border-sky-400/35 bg-sky-50/70 dark:border-sky-900 dark:bg-sky-950/20">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                         Caveat and source context
                       </p>
                       <h4 className="mt-2 text-sm font-semibold text-foreground">{card.sourceContext.pairingLabel}</h4>
@@ -894,7 +894,7 @@ export default async function ScenarioSetDetailPage({
                       {card.headlineMetrics.map((metric) => (
                         <div key={`${card.entryId}-${metric.key}`} className="rounded-[0.5rem] border border-border/70 bg-background/75 p-4">
                           <div className="flex items-center justify-between gap-3">
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{metric.label}</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{metric.label}</p>
                             <StatusBadge tone={metric.tone}>{metric.deltaLabel}</StatusBadge>
                           </div>
                           <div className="mt-3 space-y-1">
@@ -1078,7 +1078,7 @@ export default async function ScenarioSetDetailPage({
                       <div className="module-note mt-4 border-sky-400/35 bg-sky-50/70 dark:border-sky-900 dark:bg-sky-950/20">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                               Saved source context
                             </p>
                             <h4 className="mt-2 text-sm font-semibold text-foreground">
@@ -1099,7 +1099,7 @@ export default async function ScenarioSetDetailPage({
                       <div className="module-note mt-4 border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                               Source context review
                             </p>
                             <h4 className="mt-2 text-sm font-semibold text-foreground">
@@ -1261,7 +1261,7 @@ export default async function ScenarioSetDetailPage({
                   : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
               }`}
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 Reports built on this scenario set
               </p>
               <h3 className="mt-2 text-sm font-semibold text-foreground">
@@ -1305,7 +1305,7 @@ export default async function ScenarioSetDetailPage({
                               ? `Includes the baseline run from this set, but no comparison-ready alternative yet: ${report.matchedEntryLabels.join(" · ")}`
                               : `Shares alternative runs with this set, but not enough evidence for a comparison-ready packet: ${report.matchedEntryLabels.join(" · ")}`}
                         </p>
-                        <p className="text-[0.73rem] text-muted-foreground">{formatReportTypeLabel(report.report_type)} · {report.comparisonReady ? "Comparison-ready" : "Run-linked only"} · {report.packetFreshness.detail}</p>
+                        <p className="text-label text-muted-foreground">{formatReportTypeLabel(report.report_type)} · {report.comparisonReady ? "Comparison-ready" : "Run-linked only"} · {report.packetFreshness.detail}</p>
                         <p className="text-sm font-medium text-foreground/80">
                           {getReportPacketActionLabel(report.packetFreshness.label)}
                         </p>

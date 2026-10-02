@@ -490,13 +490,13 @@ describe("DataHubPage — the transit feed card", () => {
      * AND THE BADGE MAY NOT BE GREEN OVER IT.
      *
      * Tone is only visible from this page as the class `StatusBadge` picks —
-     * `--pine` is the success tone and `--copper` the warning one. The card
+     * `status-ok` is the success tone and `status-warn` the warning one. The card
      * carries the feed's `status = 'loaded'`, which is exactly what would make
      * this badge read as success while the sentence beside it describes an
      * unanswered question.
      */
     const badge = screen.getByText("Transit feeds (GTFS)");
-    expect(badge.className).toContain("copper");
-    expect(badge.className).not.toContain("pine");
+    expect(badge.className).toContain("status-warn");
+    expect(badge.className).not.toContain("status-ok");
   });
 });

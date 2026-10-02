@@ -64,7 +64,7 @@ export const PALETTES: readonly PaletteDefinition[] = [
     label: "Cartographic",
     description: "The OpenPlan default — parchment and ink, with copper and pine accents.",
     swatch: {
-      light: { bg: "#f4f1ec", panel: "#ffffff", accent: "#e45635", accent2: "#1f6b5e" },
+      light: { bg: "#f4f1ec", panel: "#ffffff", accent: "#c03f1c", accent2: "#1f6b5e" },
       dark: { bg: "#111618", panel: "#1c2225", accent: "#ff7a58", accent2: "#6dc6b5" },
     },
   },

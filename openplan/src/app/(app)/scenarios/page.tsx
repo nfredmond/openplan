@@ -366,7 +366,7 @@ export default async function ScenariosPage({
                   : "Filter by status to narrow the catalog to the records that need attention."}
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               <FolderKanban className="h-3.5 w-3.5" />
               {/* "0 total" beside "this catalog could not be read" is the same
                   lie the empty state was fixed for, wearing a number. */}
@@ -374,7 +374,7 @@ export default async function ScenariosPage({
             </span>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-[0.78rem]">
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-compact">
             <Link href={scenariosTabHref(projectFilterId, null)} className={cn("rounded px-2 py-0.5 transition-colors", !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
               {/* Every tab count is derived from the list read. When it failed
                   they would all read "(0)" — four separate statements that no
@@ -489,7 +489,7 @@ title="Your scenario sets could not be read"
                     <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
                   </div>
 
-                  <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                  <p className="mt-1.5 text-label text-muted-foreground">
                     {scenarioSet.project?.name ?? "No project"} ·{" "}
                     {entriesUnreadable ? "alternatives unreadable" : `${scenarioSet.counts.alternativeCount} alternatives`} · {scenarioSet.planning_question ? "Planning question captured" : "Planning question pending"} · Updated {fmtDateTime(scenarioSet.updated_at)}
                   </p>

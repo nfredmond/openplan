@@ -117,7 +117,7 @@ export function FundingOpportunityDecisionControls({
       <div className="space-y-3">
         <div className="grid gap-3 md:grid-cols-[180px_220px_minmax(0,1fr)] md:items-start">
           <div className="space-y-1.5">
-            <label htmlFor={`funding-decision-${opportunityId}`} className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <label htmlFor={`funding-decision-${opportunityId}`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Decision state
             </label>
             <select
@@ -137,7 +137,7 @@ export function FundingOpportunityDecisionControls({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor={`funding-expected-award-${opportunityId}`} className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <label htmlFor={`funding-expected-award-${opportunityId}`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Likely award amount
             </label>
             <Input
@@ -157,7 +157,7 @@ export function FundingOpportunityDecisionControls({
             <div className="space-y-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="space-y-1.5 text-sky-950 dark:text-sky-100">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-sky-700 dark:text-sky-300">
+                  <p className="text-label font-semibold uppercase tracking-[0.14em] text-sky-700 dark:text-sky-300">
                     Modeling-aware decision support
                   </p>
                   <p className="font-semibold">{modelingSupport.title}</p>
@@ -195,7 +195,7 @@ export function FundingOpportunityDecisionControls({
               <div className="rounded-2xl border border-sky-200/80 bg-background/80 px-3 py-3 dark:border-sky-900/70 dark:bg-sky-950/40">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-1.5 text-sky-950 dark:text-sky-100">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-sky-700 dark:text-sky-300">
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-sky-700 dark:text-sky-300">
                       Recommended next action
                     </p>
                     <p className="font-semibold">{modelingSupport.recommendedNextActionTitle}</p>
@@ -228,7 +228,7 @@ export function FundingOpportunityDecisionControls({
 
         <div className="grid gap-3 md:grid-cols-3">
           <div className="space-y-1.5">
-            <label htmlFor={`funding-fit-notes-${opportunityId}`} className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <label htmlFor={`funding-fit-notes-${opportunityId}`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Fit notes
             </label>
             <Textarea
@@ -240,7 +240,7 @@ export function FundingOpportunityDecisionControls({
             />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor={`funding-readiness-notes-${opportunityId}`} className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <label htmlFor={`funding-readiness-notes-${opportunityId}`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Readiness notes
             </label>
             <Textarea
@@ -252,7 +252,7 @@ export function FundingOpportunityDecisionControls({
             />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor={`funding-decision-rationale-${opportunityId}`} className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <label htmlFor={`funding-decision-rationale-${opportunityId}`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Decision rationale
             </label>
             <Textarea

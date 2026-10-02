@@ -341,7 +341,7 @@ export function ModelRunCeqaVmtScreen({
             ) : null}
             {screenState.screenings.length > 0 ? (
               <div className="mt-5" data-testid="model-run-ceqa-vmt-history">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Saved determinations for this run
                 </p>
                 <ul className="mt-2 space-y-2">

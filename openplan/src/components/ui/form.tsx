@@ -23,10 +23,10 @@ type FormLabelProps = React.LabelHTMLAttributes<HTMLLabelElement> & {
 
 export function FormLabel({ children, optional, className, ...props }: FormLabelProps) {
   return (
-    <label className={cn("form-label text-[0.82rem] font-semibold", className)} {...props}>
+    <label className={cn("form-label text-compact font-semibold", className)} {...props}>
       {children}
       {optional ? (
-        <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+        <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
       ) : null}
     </label>
   );

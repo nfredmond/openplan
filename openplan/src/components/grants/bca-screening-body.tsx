@@ -652,7 +652,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
           className="rounded-[0.75rem] border border-border/70 bg-background/60 px-5 py-4"
           data-testid="bca-crash-evidence"
         >
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Observed crash evidence (linked acquisition)
           </p>
           <p className="mt-2 text-sm text-foreground/90" data-testid="bca-crash-evidence-citation">
@@ -706,7 +706,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
       ) : null}
 
       <div className="rounded-[0.75rem] border border-border/70 bg-background/60 px-5 py-4">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Annual benefits (operator-supplied)
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -764,7 +764,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
       </div>
 
       <details className="rounded-[0.75rem] border border-border/70 bg-background/60 px-5 py-4">
-        <summary className="cursor-pointer text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <summary className="cursor-pointer text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Derive VMT reduction from TDM strategies
         </summary>
         <div className="mt-3 space-y-3">
@@ -966,7 +966,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
       ) : null}
 
       <details className="rounded-[0.75rem] border border-border/60 bg-background/60 px-5 py-3 text-sm">
-        <summary className="cursor-pointer text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <summary className="cursor-pointer text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Monetization defaults and sources
         </summary>
         <dl className="mt-3 space-y-1.5 text-xs text-muted-foreground">

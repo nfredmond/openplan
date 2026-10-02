@@ -119,7 +119,7 @@ export function JurisdictionReadinessPanel({
               {report.sources.map((source) => (
                 <li key={source.id} className="min-w-0">
                   <span className="block break-all text-foreground">{source.path}</span>
-                  <code className="block break-all font-mono text-[0.68rem]">sha256:{source.sha256}</code>
+                  <code className="block break-all font-mono text-label">sha256:{source.sha256}</code>
                 </li>
               ))}
             </ul>
@@ -153,7 +153,7 @@ export function JurisdictionReadinessPanel({
         <div className="min-w-0">
           <span className="block">Registry {report.registryVersion}</span>
           {report.registrySha256 ? (
-            <code className="mt-1 block break-all font-mono text-[0.68rem]">sha256:{report.registrySha256}</code>
+            <code className="mt-1 block break-all font-mono text-label">sha256:{report.registrySha256}</code>
           ) : null}
         </div>
         {downloadHref ? (

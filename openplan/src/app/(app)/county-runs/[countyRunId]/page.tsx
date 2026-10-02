@@ -80,7 +80,7 @@ export default async function CountyRunDetailPage({ params, searchParams }: Coun
             role="alert"
           >
             <p>{reads.describe()}</p>
-            <p className="mt-1.5 text-[0.75rem] text-muted-foreground">{reads.messages().join(" · ")}</p>
+            <p className="mt-1.5 text-label text-muted-foreground">{reads.messages().join(" · ")}</p>
           </div>
         </section>
       ) : null}

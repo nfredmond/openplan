@@ -205,14 +205,14 @@ function ItemRow({
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label className="text-[0.78rem] font-semibold" htmlFor={`engagement-item-title-${item.id}`}>
+          <label className="text-compact font-semibold" htmlFor={`engagement-item-title-${item.id}`}>
             Title
           </label>
           <Input id={`engagement-item-title-${item.id}`} value={title} onChange={(event) => setTitle(event.target.value)} />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[0.78rem] font-semibold" htmlFor={`engagement-item-submitter-${item.id}`}>
+          <label className="text-compact font-semibold" htmlFor={`engagement-item-submitter-${item.id}`}>
             Submitter/source label
           </label>
           <Input
@@ -224,7 +224,7 @@ function ItemRow({
       </div>
 
       <div className="mt-4 space-y-1.5">
-        <label className="text-[0.78rem] font-semibold" htmlFor={`engagement-item-body-${item.id}`}>
+        <label className="text-compact font-semibold" htmlFor={`engagement-item-body-${item.id}`}>
           Body
         </label>
         <Textarea
@@ -237,7 +237,7 @@ function ItemRow({
 
       <div className="mt-4 grid gap-4 md:grid-cols-[0.95fr_0.95fr_1.1fr]">
         <div className="space-y-1.5">
-          <label className="text-[0.78rem] font-semibold" htmlFor={`engagement-item-category-${item.id}`}>
+          <label className="text-compact font-semibold" htmlFor={`engagement-item-category-${item.id}`}>
             Category
           </label>
           <select
@@ -256,7 +256,7 @@ function ItemRow({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[0.78rem] font-semibold" htmlFor={`engagement-item-status-${item.id}`}>
+          <label className="text-compact font-semibold" htmlFor={`engagement-item-status-${item.id}`}>
             Status
           </label>
           <select
@@ -274,7 +274,7 @@ function ItemRow({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[0.78rem] font-semibold" htmlFor={`engagement-item-source-${item.id}`}>
+          <label className="text-compact font-semibold" htmlFor={`engagement-item-source-${item.id}`}>
             Source type
           </label>
           <select
@@ -294,7 +294,7 @@ function ItemRow({
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label className="text-[0.78rem] font-semibold" htmlFor={`engagement-item-latitude-${item.id}`}>
+          <label className="text-compact font-semibold" htmlFor={`engagement-item-latitude-${item.id}`}>
             Latitude
           </label>
           <Input
@@ -307,7 +307,7 @@ function ItemRow({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[0.78rem] font-semibold" htmlFor={`engagement-item-longitude-${item.id}`}>
+          <label className="text-compact font-semibold" htmlFor={`engagement-item-longitude-${item.id}`}>
             Longitude
           </label>
           <Input
@@ -321,7 +321,7 @@ function ItemRow({
       </div>
 
       <div className="mt-4 space-y-1.5">
-        <label className="text-[0.78rem] font-semibold" htmlFor={`engagement-item-notes-${item.id}`}>
+        <label className="text-compact font-semibold" htmlFor={`engagement-item-notes-${item.id}`}>
           Moderation notes
         </label>
         <Textarea
@@ -451,7 +451,7 @@ export function EngagementItemRegistry({
 
       <div className="mt-5 grid gap-3 xl:grid-cols-[1.1fr_repeat(4,minmax(0,0.8fr))]">
         <label className="space-y-1.5">
-          <span className="text-[0.78rem] font-semibold">Search</span>
+          <span className="text-compact font-semibold">Search</span>
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input className="pl-9" placeholder="Title, body, submitter, source" value={query} onChange={(event) => setQuery(event.target.value)} />
@@ -459,7 +459,7 @@ export function EngagementItemRegistry({
         </label>
 
         <label className="space-y-1.5">
-          <span className="text-[0.78rem] font-semibold">Status</span>
+          <span className="text-compact font-semibold">Status</span>
           <select
             className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
             value={statusFilter}
@@ -475,7 +475,7 @@ export function EngagementItemRegistry({
         </label>
 
         <label className="space-y-1.5">
-          <span className="text-[0.78rem] font-semibold">Source</span>
+          <span className="text-compact font-semibold">Source</span>
           <select
             className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
             value={sourceFilter}
@@ -491,7 +491,7 @@ export function EngagementItemRegistry({
         </label>
 
         <label className="space-y-1.5">
-          <span className="text-[0.78rem] font-semibold">Category</span>
+          <span className="text-compact font-semibold">Category</span>
           <select
             className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
             value={categoryFilter}
@@ -508,7 +508,7 @@ export function EngagementItemRegistry({
         </label>
 
         <label className="space-y-1.5">
-          <span className="text-[0.78rem] font-semibold">Review focus</span>
+          <span className="text-compact font-semibold">Review focus</span>
           <select
             className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
             value={reviewFilter}

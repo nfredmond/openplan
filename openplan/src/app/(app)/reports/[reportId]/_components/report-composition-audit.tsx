@@ -31,7 +31,7 @@ export function ReportCompositionAudit({
             <Sparkles className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               Composition
             </p>
             <h2 className="text-xl font-semibold tracking-tight">
@@ -49,14 +49,14 @@ export function ReportCompositionAudit({
               key={section.id}
               className="flex items-center gap-3 rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 transition-colors"
             >
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-card text-[0.7rem] font-semibold tabular-nums text-muted-foreground">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-card text-label font-semibold tabular-nums text-muted-foreground">
                 {index + 1}
               </span>
               <div className="min-w-0 flex-1">
                 <h3 className="truncate text-sm font-semibold tracking-tight">
                   {section.title}
                 </h3>
-                <p className="text-[0.68rem] uppercase tracking-[0.1em] text-muted-foreground">
+                <p className="text-label uppercase tracking-[0.1em] text-muted-foreground">
                   {titleize(section.section_key)}
                 </p>
               </div>
@@ -78,7 +78,7 @@ export function ReportCompositionAudit({
             <Hash className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               Source data
             </p>
             <h2 className="text-xl font-semibold tracking-tight">Linked runs</h2>
@@ -103,10 +103,10 @@ export function ReportCompositionAudit({
                   <h4 className="text-sm font-semibold tracking-tight">
                     {run.title}
                   </h4>
-                  <p className={`mt-1 text-[0.82rem] leading-relaxed text-muted-foreground${summary.withheld ? "" : " line-clamp-2"}`}>
+                  <p className={`mt-1 text-compact leading-relaxed text-muted-foreground${summary.withheld ? "" : " line-clamp-2"}`}>
                     {summary.text}
                   </p>
-                  <p className="mt-2 text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="mt-2 text-label uppercase tracking-[0.12em] text-muted-foreground">
                     Created {formatDateTime(run.created_at)}
                   </p>
                 </div>
@@ -135,11 +135,11 @@ export function ReportCompositionAudit({
                    * it already distinguishes "no tier recorded" from "the tier
                    * could not be read".
                    */}
-                  <p className="mt-2 text-[0.72rem] leading-relaxed text-muted-foreground">
+                  <p className="mt-2 text-label leading-relaxed text-muted-foreground">
                     {citation.disclosureLine}
                   </p>
                   {citation.warnings.length > 0 && (
-                    <ul className="mt-2 space-y-1 text-[0.72rem] leading-relaxed text-amber-700 dark:text-amber-300">
+                    <ul className="mt-2 space-y-1 text-label leading-relaxed text-amber-700 dark:text-amber-300">
                       {citation.warnings.map((warning) => (
                         <li key={warning}>{warning}</li>
                       ))}
@@ -159,7 +159,7 @@ export function ReportCompositionAudit({
             <Clock3 className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               History
             </p>
             <h2 className="text-xl font-semibold tracking-tight">
@@ -185,7 +185,7 @@ export function ReportCompositionAudit({
                   <h4 className="text-sm font-semibold tracking-tight">
                     {artifact.artifact_kind.toUpperCase()} artifact
                   </h4>
-                  <p className="text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-label uppercase tracking-[0.12em] text-muted-foreground">
                     Generated {formatDateTime(artifact.generated_at)}
                   </p>
                 </div>

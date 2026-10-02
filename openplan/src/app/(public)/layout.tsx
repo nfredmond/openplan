@@ -13,7 +13,7 @@ export default function PublicLayout({
       <footer className="border-t border-border/60 bg-background/90 backdrop-blur-sm">
         <div className="mx-auto grid w-full max-w-[88rem] gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:px-8">
           <div className="grid gap-2 border-l-2 border-[color:var(--pine)]/50 pl-4">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">OpenPlan · Nat Ford Planning</p>
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">OpenPlan · Nat Ford Planning</p>
             <p className="max-w-2xl text-sm text-muted-foreground">
               Maps, projects, engagement, and report-ready planning work in one connected planning workspace.
             </p>

@@ -333,7 +333,7 @@ function HorizonBandForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-[0.5rem] border border-border/60 bg-muted/20 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{heading}</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{heading}</p>
 
       {shownError ? (
         <p
@@ -356,7 +356,7 @@ function HorizonBandForm({
           maxLength={LABEL_MAX_LENGTH}
           required
         />
-        <p className="text-[0.7rem] text-muted-foreground">
+        <p className="text-label text-muted-foreground">
           Your agency&apos;s own name for the period — &ldquo;First ten years&rdquo;, &ldquo;2035&ndash;2050&rdquo;,
           &ldquo;Phase 2&rdquo;. It appears on every financial table in this plan.
         </p>
@@ -410,7 +410,7 @@ function HorizonBandForm({
           placeholder={previewMidpoint === null ? "Leave blank to use the middle of the period" : String(previewMidpoint)}
           aria-describedby={`${idPrefix}-escalation-help`}
         />
-        <p id={`${idPrefix}-escalation-help`} className="text-[0.7rem] text-muted-foreground">
+        <p id={`${idPrefix}-escalation-help`} className="text-label text-muted-foreground">
           {escalationTargetYear !== null ? (
             <>Costs and revenue in this period will be escalated to {escalationTargetYear} dollars.</>
           ) : previewMidpoint !== null ? (
@@ -440,7 +440,7 @@ function HorizonBandForm({
             </option>
           ))}
         </select>
-        {selectedBasis ? <p className="text-[0.7rem] text-muted-foreground">{selectedBasis.hint}</p> : null}
+        {selectedBasis ? <p className="text-label text-muted-foreground">{selectedBasis.hint}</p> : null}
       </div>
 
       <div className="flex items-center gap-2">
@@ -766,7 +766,7 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
                       : String(previewMidpoint)
                   }
                 />
-                <p className="text-[0.78rem] text-muted-foreground">
+                <p className="text-compact text-muted-foreground">
                   {target !== null ? (
                     <>Costs and revenue in this period will be escalated to {target} dollars.</>
                   ) : previewMidpoint !== null ? (
@@ -789,7 +789,7 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
                   ))}
                 </select>
                 {selectedBasis ? (
-                  <p className="text-[0.78rem] text-muted-foreground">{selectedBasis.hint}</p>
+                  <p className="text-compact text-muted-foreground">{selectedBasis.hint}</p>
                 ) : null}
               </GuidedFlowRow>
             </>

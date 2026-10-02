@@ -148,9 +148,9 @@ export function RtpCycleCreator() {
         render: (flow) => (
           <>
             <div className="space-y-1.5">
-              <p className="text-[0.82rem] font-semibold">
+              <p className="text-compact font-semibold">
                 Find the plan area
-                <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">
+                <span className="ml-1.5 text-label font-normal text-muted-foreground">
                   optional — fills the label and pin below
                 </span>
               </p>

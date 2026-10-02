@@ -19,7 +19,7 @@ import {
 
 const SELECT_CLASS =
   "flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
-const LABEL_CLASS = "text-[0.82rem] font-semibold text-foreground";
+const LABEL_CLASS = "text-compact font-semibold text-foreground";
 const ERROR_CLASS =
   "rounded-[0.5rem] border border-red-300/80 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200";
 

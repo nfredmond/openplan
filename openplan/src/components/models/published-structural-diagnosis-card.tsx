@@ -86,7 +86,7 @@ export function PublishedStructuralDiagnosisCard({
               href={`/api/models/validation-structural-diagnosis/${record.geographyId}/${record.method}/structural-diagnosis.json`}
             >
               <span className="font-semibold">{record.geographyId} · {record.method}</span>
-              <span className="mt-1 block break-all font-mono text-[10px] text-muted-foreground">{record.diagnosisSha256}</span>
+              <span className="mt-1 block break-all font-mono text-label text-muted-foreground">{record.diagnosisSha256}</span>
             </a>
           ))}
         </div>

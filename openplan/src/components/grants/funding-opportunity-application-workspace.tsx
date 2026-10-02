@@ -624,7 +624,7 @@ export function FundingOpportunityApplicationWorkspace({
               ) : null}
 
               <div className="space-y-2" data-testid="application-sections">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground/70">
+                <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground/70">
                   Sections
                 </p>
                 {sections.length === 0 ? (
@@ -693,7 +693,7 @@ export function FundingOpportunityApplicationWorkspace({
               </div>
 
               <div className="space-y-2" data-testid="application-attachments">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground/70">
+                <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground/70">
                   Attachment checklist
                 </p>
                 {attachSourcesDegraded ? (
@@ -1066,7 +1066,7 @@ function SectionDetailView({
 
       {section.final_markdown ? (
         <div className="space-y-1.5">
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground/70">
+          <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground/70">
             {section.status === "final" ? "Final text" : "Previously approved text"}
           </p>
           <div
@@ -1084,7 +1084,7 @@ function SectionDetailView({
         <div className="space-y-2" data-testid="section-draft-panel">
           {latestDraft ? (
             <div className="space-y-2">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground/70">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground/70">
                 AI draft{latestDraft.model ? ` · ${latestDraft.model}` : ""} ·{" "}
                 {formatDate(latestDraft.created_at)} — review before use
               </p>

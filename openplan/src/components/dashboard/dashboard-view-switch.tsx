@@ -66,7 +66,7 @@ export function DashboardViewSwitch({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             Dashboard view
           </p>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">

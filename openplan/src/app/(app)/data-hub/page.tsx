@@ -973,7 +973,7 @@ export default async function DataHubPage() {
                               className="module-inline-item transition hover:text-primary"
                             >
                               <strong>{link.project.name}</strong>
-                              <span className="text-[0.64rem] text-slate-400">{titleize(link.relationshipType)}</span>
+                              <span className="text-label text-slate-400">{titleize(link.relationshipType)}</span>
                             </Link>
                           ))}
                         </div>

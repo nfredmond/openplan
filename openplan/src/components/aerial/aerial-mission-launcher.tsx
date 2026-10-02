@@ -84,7 +84,7 @@ export function AerialMissionLauncher({
       <div className="max-w-md space-y-1.5">
         <label
           htmlFor="aerial-mission-launcher-project"
-          className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+          className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
         >
           Project this mission is for
         </label>
@@ -102,7 +102,7 @@ export function AerialMissionLauncher({
           ))}
         </select>
         {projectListTruncatedAt ? (
-          <p className="text-[0.72rem] text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             Only the {projectListTruncatedAt} most recently created projects are listed here. A
             project older than these can still get a mission from its own page.
           </p>

@@ -306,7 +306,7 @@ export function EngagementCampaignControls({
 
       <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
         <div className="space-y-1.5">
-          <label htmlFor="campaign-control-title" className="text-[0.82rem] font-semibold">
+          <label htmlFor="campaign-control-title" className="text-compact font-semibold">
             Title
           </label>
           <Input id="campaign-control-title" value={title} onChange={(event) => setTitle(event.target.value)} required />
@@ -314,7 +314,7 @@ export function EngagementCampaignControls({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="campaign-control-status" className="text-[0.82rem] font-semibold">
+            <label htmlFor="campaign-control-status" className="text-compact font-semibold">
               Status
             </label>
             <select
@@ -332,7 +332,7 @@ export function EngagementCampaignControls({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="campaign-control-type" className="text-[0.82rem] font-semibold">
+            <label htmlFor="campaign-control-type" className="text-compact font-semibold">
               Engagement type
             </label>
             <select
@@ -351,7 +351,7 @@ export function EngagementCampaignControls({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="campaign-control-project" className="text-[0.82rem] font-semibold">
+          <label htmlFor="campaign-control-project" className="text-compact font-semibold">
             Lead project
           </label>
           <select
@@ -383,9 +383,9 @@ export function EngagementCampaignControls({
         </div>
 
         <div className="space-y-1.5">
-          <p className="text-[0.82rem] font-semibold">
+          <p className="text-compact font-semibold">
             Projects this campaign covers
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
           </p>
           {linkedProjects.state === "ready" ? (
             projects.length === 0 ? (
@@ -422,14 +422,14 @@ export function EngagementCampaignControls({
                         <span>
                           {project.name}
                           {isLead ? (
-                            <span className="ml-1.5 text-[0.72rem] text-muted-foreground">lead — always covered</span>
+                            <span className="ml-1.5 text-label text-muted-foreground">lead — always covered</span>
                           ) : null}
                         </span>
                       </label>
                     );
                   })}
                 </div>
-                <p className="text-[0.72rem] text-muted-foreground">
+                <p className="text-label text-muted-foreground">
                   A corridor-wide comment window is often about several projects at once. Every
                   checked project shows this campaign in its engagement lane and in the project
                   filter on the engagement catalog. Reports and RTP comment records still follow the
@@ -448,9 +448,9 @@ export function EngagementCampaignControls({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="campaign-control-rtp-cycle" className="text-[0.82rem] font-semibold">
+          <label htmlFor="campaign-control-rtp-cycle" className="text-compact font-semibold">
             RTP attachment
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
           </label>
           {rtpTargets.state === "ready" ? (
             <div className="space-y-2">
@@ -483,9 +483,9 @@ export function EngagementCampaignControls({
               </select>
               {rtpCycleId ? (
                 <div className="space-y-1.5">
-                  <label htmlFor="campaign-control-rtp-chapter" className="text-[0.82rem] font-semibold">
+                  <label htmlFor="campaign-control-rtp-chapter" className="text-compact font-semibold">
                     Plan chapter
-                    <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+                    <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
                   </label>
                   <select
                     id="campaign-control-rtp-chapter"
@@ -508,7 +508,7 @@ export function EngagementCampaignControls({
                   </select>
                 </div>
               ) : null}
-              <p className="text-[0.72rem] text-muted-foreground">
+              <p className="text-label text-muted-foreground">
                 Attaching this campaign to a Regional Transportation Plan cycle files its comments
                 against that plan&apos;s record. Pointing at a chapter files them against that
                 section; otherwise they land on the whole plan.
@@ -526,7 +526,7 @@ export function EngagementCampaignControls({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="campaign-control-summary" className="text-[0.82rem] font-semibold">
+          <label htmlFor="campaign-control-summary" className="text-compact font-semibold">
             Summary
           </label>
           <Textarea

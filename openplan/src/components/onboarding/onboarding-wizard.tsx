@@ -54,7 +54,7 @@ export function OnboardingWizard({ defaultWorkspaceName = "" }: { defaultWorkspa
   return (
     <div className="mx-auto w-full max-w-2xl">
       <div className="rounded-xl border border-border bg-background/85 p-6 shadow-sm backdrop-blur-sm sm:p-8">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           <Sparkles className="h-3.5 w-3.5" />
           Welcome to OpenPlan
         </div>
@@ -70,7 +70,7 @@ export function OnboardingWizard({ defaultWorkspaceName = "" }: { defaultWorkspa
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="onboarding-workspace-name" className="text-[0.82rem] font-semibold">
+              <label htmlFor="onboarding-workspace-name" className="text-compact font-semibold">
                 Workspace or agency name
               </label>
               <Input

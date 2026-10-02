@@ -778,7 +778,7 @@ export function FlightPlanEditor({
             </label>
           </div>
 
-          <p className="text-[0.72rem] text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             Overlaps start at 75% front / 65% side — the common photogrammetric starting point; adjust
             for your terrain and processing software. Speed and battery minutes belong to your
             aircraft, so they have no default.

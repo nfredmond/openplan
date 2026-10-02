@@ -249,7 +249,7 @@ export function RtpProgrammeLists({
                           plan's cost. They answer different questions and a
                           reader who merges them will think the plan is funded.
                         */}
-                        <span className="text-[0.7rem] text-muted-foreground">
+                        <span className="text-label text-muted-foreground">
                           Project funding: {formatMoney(entry.funding.committedFundingAmount, { precision: "whole" })} committed ·{" "}
                           {formatMoney(entry.funding.unfundedAfterLikelyAmount, { precision: "whole" })} still to raise
                         </span>

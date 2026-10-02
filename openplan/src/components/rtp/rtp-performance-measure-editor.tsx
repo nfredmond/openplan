@@ -350,16 +350,16 @@ function MeasurePoint({
 }) {
   return (
     <div className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-2">
-      <p className="text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{caption}</p>
+      <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">{caption}</p>
       {valueText === null ? (
         <>
           <p className="text-sm text-muted-foreground">{emptyText}</p>
-          {year !== null ? <p className="text-[0.72rem] text-muted-foreground">Year recorded: {year}</p> : null}
+          {year !== null ? <p className="text-label text-muted-foreground">Year recorded: {year}</p> : null}
         </>
       ) : (
         <>
           <p className="text-sm font-semibold text-foreground">{valueText}</p>
-          <p className="text-[0.72rem] text-muted-foreground">{year !== null ? year : "Year not recorded"}</p>
+          <p className="text-label text-muted-foreground">{year !== null ? year : "Year not recorded"}</p>
         </>
       )}
     </div>
@@ -396,7 +396,7 @@ function MeasureFields({
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
-        <label htmlFor={`${idPrefix}-label`} className="text-[0.82rem] font-semibold">
+        <label htmlFor={`${idPrefix}-label`} className="text-compact font-semibold">
           Measure name
         </label>
         <Input
@@ -411,7 +411,7 @@ function MeasureFields({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor={`${idPrefix}-key`} className="text-[0.82rem] font-semibold">
+          <label htmlFor={`${idPrefix}-key`} className="text-compact font-semibold">
             Measure key
           </label>
           <Input
@@ -422,16 +422,16 @@ function MeasureFields({
             placeholder="fatalities-per-100m-vmt"
             required
           />
-          <p className="text-[0.72rem] text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             A short, stable id for this measure. Reports and exports address it by this key, so keep it the same
             across plan updates. It must be unique within this plan.
           </p>
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor={`${idPrefix}-unit`} className="text-[0.82rem] font-semibold">
+          <label htmlFor={`${idPrefix}-unit`} className="text-compact font-semibold">
             Unit
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
           </label>
           <Input
             id={`${idPrefix}-unit`}
@@ -440,7 +440,7 @@ function MeasureFields({
             disabled={disabled}
             placeholder="percent of lane miles in good condition"
           />
-          <p className="text-[0.72rem] text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             Without a unit, a baseline and a target are two bare numbers.
           </p>
         </div>
@@ -448,7 +448,7 @@ function MeasureFields({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor={`${idPrefix}-baseline-value`} className="text-[0.82rem] font-semibold">
+          <label htmlFor={`${idPrefix}-baseline-value`} className="text-compact font-semibold">
             Baseline value
           </label>
           <Input
@@ -461,7 +461,7 @@ function MeasureFields({
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor={`${idPrefix}-baseline-year`} className="text-[0.82rem] font-semibold">
+          <label htmlFor={`${idPrefix}-baseline-year`} className="text-compact font-semibold">
             Baseline year
           </label>
           <Input
@@ -478,9 +478,9 @@ function MeasureFields({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor={`${idPrefix}-target-value`} className="text-[0.82rem] font-semibold">
+          <label htmlFor={`${idPrefix}-target-value`} className="text-compact font-semibold">
             Target value
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
           </label>
           <Input
             id={`${idPrefix}-target-value`}
@@ -492,9 +492,9 @@ function MeasureFields({
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor={`${idPrefix}-target-year`} className="text-[0.82rem] font-semibold">
+          <label htmlFor={`${idPrefix}-target-year`} className="text-compact font-semibold">
             Target year
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
           </label>
           <Input
             id={`${idPrefix}-target-year`}
@@ -509,7 +509,7 @@ function MeasureFields({
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor={`${idPrefix}-data-source`} className="text-[0.82rem] font-semibold">
+        <label htmlFor={`${idPrefix}-data-source`} className="text-compact font-semibold">
           Data source
         </label>
         <Input
@@ -519,16 +519,16 @@ function MeasureFields({
           disabled={disabled}
           placeholder="Where these numbers come from, and which year of it"
         />
-        <p className="text-[0.72rem] text-muted-foreground">
+        <p className="text-label text-muted-foreground">
           This is what makes the measure evidence instead of an assertion. Name the dataset, the agency that
           publishes it, and the vintage you read.
         </p>
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor={`${idPrefix}-notes`} className="text-[0.82rem] font-semibold">
+        <label htmlFor={`${idPrefix}-notes`} className="text-compact font-semibold">
           Notes
-          <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+          <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
         </label>
         <Textarea
           id={`${idPrefix}-notes`}
@@ -541,7 +541,7 @@ function MeasureFields({
       </div>
 
       <div className="space-y-1.5 md:max-w-[12rem]">
-        <label htmlFor={`${idPrefix}-sort-order`} className="text-[0.82rem] font-semibold">
+        <label htmlFor={`${idPrefix}-sort-order`} className="text-compact font-semibold">
           Display order
         </label>
         <Input
@@ -797,14 +797,14 @@ export function RtpPerformanceMeasureEditor({
                     />
                   </div>
 
-                  {direction ? <p className="text-[0.8rem] text-muted-foreground">{direction}</p> : null}
+                  {direction ? <p className="text-compact text-muted-foreground">{direction}</p> : null}
 
                   {dataSource ? (
-                    <p className="text-[0.8rem] text-muted-foreground">
+                    <p className="text-compact text-muted-foreground">
                       <span className="font-semibold text-foreground">Data source:</span> {dataSource}
                     </p>
                   ) : (
-                    <p className="text-[0.8rem] text-amber-700 dark:text-amber-300">
+                    <p className="text-compact text-amber-700 dark:text-amber-300">
                       No data source recorded — until one is named, this measure is an assertion rather than
                       evidence.
                     </p>
@@ -814,7 +814,7 @@ export function RtpPerformanceMeasureEditor({
 
                   {canWrite && isEditing ? (
                     <form className="space-y-4 rounded-[0.5rem] border border-border/70 bg-muted/20 p-4" onSubmit={handleSubmit}>
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                         Edit performance measure
                       </p>
                       <MeasureFields
@@ -844,7 +844,7 @@ export function RtpPerformanceMeasureEditor({
         {canWrite ? (
           openForm === "create" ? (
             <form className="space-y-4 rounded-[0.5rem] border border-border/70 bg-muted/20 p-4" onSubmit={handleSubmit}>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 Add performance measure
               </p>
               <MeasureFields

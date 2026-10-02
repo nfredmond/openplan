@@ -139,7 +139,7 @@ export function ParticipationDashboard({
             sharePct={total > 0 ? (geo.nonGeolocatedItems / total) * 100 : 0}
             colorClass="bg-slate-400/50"
           />
-          <p className="text-[0.7rem] leading-relaxed text-muted-foreground">
+          <p className="text-label leading-relaxed text-muted-foreground">
             Only geolocated, approved comments feed the heatmap and the spatial hotspot test.
           </p>
         </div>
@@ -220,7 +220,7 @@ export function ParticipationDashboard({
           </div>
         )}
 
-        <p className="text-[0.7rem] leading-relaxed text-muted-foreground">{hotspots.caveat}</p>
+        <p className="text-label leading-relaxed text-muted-foreground">{hotspots.caveat}</p>
       </div>
     </div>
   );

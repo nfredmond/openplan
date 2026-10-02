@@ -45,18 +45,18 @@ export function NearDuplicatesPanel({
                   if (!item) return null;
                   return (
                     <li key={id} className="text-xs leading-relaxed text-muted-foreground">
-                      “{item.snippet}” <span className="text-[0.68rem]">· {item.status}</span>
+                      “{item.snippet}” <span className="text-label">· {item.status}</span>
                     </li>
                   );
                 })}
               </ul>
-              {hidden > 0 ? <p className="mt-0.5 text-[0.68rem] text-muted-foreground">+{hidden} more similar comment{hidden === 1 ? "" : "s"}</p> : null}
+              {hidden > 0 ? <p className="mt-0.5 text-label text-muted-foreground">+{hidden} more similar comment{hidden === 1 ? "" : "s"}</p> : null}
             </div>
           );
         })}
       </div>
 
-      <p className="text-[0.7rem] leading-relaxed text-muted-foreground">{analysis.caveat}</p>
+      <p className="text-label leading-relaxed text-muted-foreground">{analysis.caveat}</p>
     </div>
   );
 }

@@ -160,7 +160,7 @@ export function RtpPriorityScoreEditor({
           type="button"
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
-          className="inline-flex items-center gap-1.5 text-left text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex items-center gap-1.5 text-left text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
           Priority scoring — the &ldquo;why&rdquo;
@@ -178,7 +178,7 @@ export function RtpPriorityScoreEditor({
             {RTP_PRIORITY_LEVELS.map((level) => (
               <span
                 key={level}
-                className="inline-flex items-center gap-1 rounded border border-border/60 bg-muted/30 px-2 py-0.5 text-[0.7rem] text-muted-foreground"
+                className="inline-flex items-center gap-1 rounded border border-border/60 bg-muted/30 px-2 py-0.5 text-label text-muted-foreground"
               >
                 {RTP_PRIORITY_LEVEL_LABEL[level]}
                 <strong className="text-foreground">{rationale.summary.byLevel[level]}/100</strong>
@@ -189,7 +189,7 @@ export function RtpPriorityScoreEditor({
           <div className="rounded-md border border-border/60 bg-muted/20 p-2.5">
             <label
               htmlFor={`evidence-run-${linkId}`}
-              className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+              className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
             >
               Representative model run (VMT/GHG evidence)
             </label>
@@ -232,7 +232,7 @@ export function RtpPriorityScoreEditor({
                 {formatRtpModelingEvidenceLine(modelingEvidence)}
               </p>
             ) : (
-              <p className="mt-1.5 text-[0.7rem] text-muted-foreground">
+              <p className="mt-1.5 text-label text-muted-foreground">
                 Link a run to show its screening-grade VMT/GHG next to those criteria. The run is named with its numbers — it informs the score, it doesn&apos;t set it.
               </p>
             )}
@@ -265,7 +265,7 @@ export function RtpPriorityScoreEditor({
                     {criterion.label}
                     <span className="ml-1.5 font-normal text-muted-foreground">· {RTP_PRIORITY_LEVEL_LABEL[criterion.level]}</span>
                   </p>
-                  <p className="text-[0.7rem] text-muted-foreground">
+                  <p className="text-label text-muted-foreground">
                     {criterion.description}
                     {criterion.policyBasis ? <span className="italic"> ({criterion.policyBasis})</span> : null}
                   </p>
@@ -281,14 +281,14 @@ export function RtpPriorityScoreEditor({
                     <div className="mt-1.5 rounded border border-border/60 bg-muted/20 px-2 py-1.5">
                       {safetyEvidence ? (
                         <>
-                          <p className="text-[0.7rem] text-foreground">
+                          <p className="text-label text-foreground">
                             {formatRtpSafetyEvidenceLine(safetyEvidence)}
                           </p>
-                          <p className="mt-1 text-[0.7rem] text-muted-foreground">
+                          <p className="mt-1 text-label text-muted-foreground">
                             {safetyEvidence.citationText}
                           </p>
                           {safetyEvidence.warnings.map((warning) => (
-                            <p key={warning} className="mt-1 text-[0.7rem] text-muted-foreground">
+                            <p key={warning} className="mt-1 text-label text-muted-foreground">
                               {warning}
                             </p>
                           ))}
@@ -296,14 +296,14 @@ export function RtpPriorityScoreEditor({
                       ) : (
                         // NOT a blank, and not "no crashes". A project nobody has
                         // retrieved crash data for is a project nobody has looked at.
-                        <p className="text-[0.7rem] text-muted-foreground">
+                        <p className="text-label text-muted-foreground">
                           {RTP_SAFETY_NO_ACQUISITION_LINE}{" "}
                           <Link href="/safety" className="underline underline-offset-2">
                             Retrieve crash data
                           </Link>
                         </p>
                       )}
-                      <p className="mt-1 text-[0.7rem] italic text-muted-foreground">
+                      <p className="mt-1 text-label italic text-muted-foreground">
                         {RTP_SAFETY_EVIDENCE_INFORMS_ONLY}
                       </p>
                     </div>

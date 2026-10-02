@@ -258,20 +258,20 @@ export default async function AssistantActivityPage() {
                             {formatExecutionTimestamp(execution.completed_at)}
                           </p>
                         </div>
-                        <p className="text-[0.73rem] text-muted-foreground">
+                        <p className="text-label text-muted-foreground">
                           {workspaceName}
                           {" · input hash "}
-                          <code className="rounded border border-border/60 bg-muted/40 px-1 py-0.5 text-[0.7rem]">
+                          <code className="rounded border border-border/60 bg-muted/40 px-1 py-0.5 text-label">
                             {formatInputHash(execution.input_hash)}
                           </code>
                           {execution.execution_source ? ` · ${execution.execution_source}` : ""}
                         </p>
-                        <p className="text-[0.73rem] text-muted-foreground">
+                        <p className="text-label text-muted-foreground">
                           {describeRowAuthorship(execution) ??
                             "Authorship not recorded — this row predates the agent-principal columns, so it cannot say whether a person or the Planner Agent composed it."}
                         </p>
                         {execution.outcome === "failed" && execution.error_message ? (
-                          <p className="text-[0.73rem] text-destructive">Failed with: {execution.error_message}</p>
+                          <p className="text-label text-destructive">Failed with: {execution.error_message}</p>
                         ) : null}
                       </div>
                     </div>

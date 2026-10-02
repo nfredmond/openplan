@@ -144,7 +144,7 @@ export function ProjectStageGateBoard({
           <div className="flex items-center gap-3">
             <FileClock className="h-5 w-5 text-amber-500" />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Blocking condition</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Blocking condition</p>
               <h3 className="text-sm font-semibold text-foreground">
                 {stageGateSummary.blockedGate?.name ??
                   (decisionsUnreadable
@@ -171,7 +171,7 @@ export function ProjectStageGateBoard({
           <div className="flex items-center gap-3">
             <Clock3 className="h-5 w-5 text-sky-500" />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Readiness cue</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Readiness cue</p>
               {/*
                 Guarded on the same fact as the "Next gate" card above, and for
                 the same reason: this cue is derived ENTIRELY from which gates
@@ -226,7 +226,7 @@ export function ProjectStageGateBoard({
                 <p className="module-record-summary">{gate.rationale}</p>
               </div>
 
-              <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+              <p className="mt-1.5 text-label text-muted-foreground">
                 {[
                   ...gate.lapmMappings.slice(0, 2).map((item) => `LAPM ${item}`),
                   ...gate.ceqaVmtMappings.slice(0, 2).map((item) => `CEQA/VMT ${item}`),

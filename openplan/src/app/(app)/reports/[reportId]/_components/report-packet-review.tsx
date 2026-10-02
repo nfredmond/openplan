@@ -57,7 +57,7 @@ export function ReportPacketReview({
     <article id="packet-release-review" className="module-section-surface">
       {report.rtp_basis_stale ? (
         <div className="mb-4 rounded-[18px] border border-amber-400/60 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-100">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em]">
+          <p className="text-label font-semibold uppercase tracking-[0.12em]">
             What this report was built from has changed
           </p>
           <p className="mt-1 font-semibold">
@@ -73,7 +73,7 @@ export function ReportPacketReview({
       ) : null}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+          <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             Release review
           </p>
           <h2 className="text-xl font-semibold tracking-tight">Packet release review</h2>
@@ -106,7 +106,7 @@ export function ReportPacketReview({
 
       <div className="mt-5 grid gap-3 lg:grid-cols-3">
         <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             How current the generated file is
           </p>
           <p className="mt-1 text-sm font-semibold text-foreground">
@@ -117,7 +117,7 @@ export function ReportPacketReview({
           </p>
         </div>
         <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Analysis behind a grant case
           </p>
           <p className="mt-1 text-sm font-semibold text-foreground">
@@ -128,7 +128,7 @@ export function ReportPacketReview({
           </p>
         </div>
         <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             What the modeling says
           </p>
           <p className="mt-1 text-sm font-semibold text-foreground">
@@ -144,7 +144,7 @@ export function ReportPacketReview({
       <div className="mt-4 rounded-[20px] border border-border/80 bg-background/80 px-4 py-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Pre-generation readiness
             </p>
             <p className="mt-1 text-sm font-semibold text-foreground">
@@ -163,7 +163,7 @@ export function ReportPacketReview({
             <div key={check.id} className="border-b border-border/70 py-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     {check.label}
                   </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
@@ -189,7 +189,7 @@ export function ReportPacketReview({
       </div>
 
       <div className="mt-4 rounded-[20px] border border-border/80 bg-background/80 px-4 py-4">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Recommended next action
         </p>
         <p className="mt-1 text-sm font-semibold text-foreground">

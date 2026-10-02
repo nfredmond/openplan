@@ -63,7 +63,7 @@
   background: var(--panel-solid);
   color: var(--ink);
   font-family: inherit;
-  font-size: 12.5px;
+  font-size: var(--fs-compact);
   font-weight: 500;
   display: inline-flex;
   gap: 6px;
@@ -90,7 +90,7 @@
 
 .op-cart-kbd {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-label);
   color: var(--muted);
   border: 1px solid var(--line);
   padding: 1px 5px;
@@ -164,7 +164,7 @@
 }
 .op-cart-rail__group-title {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: var(--fs-label);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
@@ -209,7 +209,7 @@
   position: relative;
   cursor: pointer;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--fs-compact);
   text-align: left;
   white-space: nowrap;
   text-decoration: none;
@@ -245,7 +245,7 @@ html.dark .op-cart-rail__btn:hover {
   background: var(--accent);
   color: var(--accent-foreground);
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: var(--fs-label);
   font-weight: 700;
   padding: 0 4px;
   display: grid;
@@ -267,7 +267,7 @@ html.dark .op-cart-rail__btn:hover {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.16s;
-  font-size: 13px;
+  font-size: var(--fs-compact);
   color: inherit;
 }
 .op-cart-rail:hover .op-cart-rail__tip,
@@ -344,7 +344,7 @@ html.dark .op-cart-rail__btn:hover {
 }
 .op-cart-ws-name {
   font-weight: 600;
-  font-size: 13px;
+  font-size: var(--fs-compact);
   letter-spacing: -0.005em;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -353,7 +353,7 @@ html.dark .op-cart-rail__btn:hover {
 }
 .op-cart-ws-meta {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--fs-label);
   color: var(--muted);
   letter-spacing: 0.02em;
 }
@@ -370,7 +370,7 @@ html.dark .op-cart-rail__btn:hover {
 }
 .op-cart-search__placeholder {
   flex: 1;
-  font-size: 13px;
+  font-size: var(--fs-compact);
   color: var(--muted);
   min-width: 0;
   text-align: left;
@@ -450,7 +450,7 @@ html.dark .op-cart-rail__btn:hover {
 }
 .op-cart-surface__kicker {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--fs-label);
   letter-spacing: 0.08em;
   color: var(--muted);
   text-transform: uppercase;
@@ -464,7 +464,7 @@ html.dark .op-cart-rail__btn:hover {
   color: var(--ink);
 }
 .op-cart-surface__sub {
-  font-size: 12px;
+  font-size: var(--fs-label);
   color: var(--ink-2);
   line-height: 1.5;
   margin: 0;
@@ -540,7 +540,7 @@ html.dark .op-cart-rail__btn:hover {
   padding: 12px 14px 8px;
   border-bottom: 1px solid var(--line);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-label);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--muted);
@@ -555,7 +555,7 @@ html.dark .op-cart-rail__btn:hover {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 12.5px;
+  font-size: var(--fs-compact);
   cursor: pointer;
   color: var(--ink);
 }
@@ -575,7 +575,7 @@ html.dark .op-cart-layer-item:hover {
 .op-cart-layer-item__chip {
   margin-left: auto;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-label);
   color: var(--muted);
 }
 /*
@@ -608,7 +608,7 @@ html.dark .op-cart-layer-item__swatch {
 .op-cart-layer-item__note {
   margin: 0;
   padding: 0 14px 8px 46px;
-  font-size: 10.5px;
+  font-size: var(--fs-label);
   line-height: 1.45;
   color: var(--muted);
 }
@@ -621,7 +621,7 @@ html.dark .op-cart-layer-item__swatch {
 .op-cart-layers__notes {
   padding: 8px 14px 10px;
   border-top: 1px solid var(--line);
-  font-size: 10.5px;
+  font-size: var(--fs-label);
   line-height: 1.45;
   color: var(--muted);
 }
@@ -632,7 +632,7 @@ html.dark .op-cart-layer-item__swatch {
 .op-cart-layers__ft {
   padding: 10px 14px 12px;
   border-top: 1px solid var(--line);
-  font-size: 11px;
+  font-size: var(--fs-label);
   color: var(--muted);
 }
 .op-cart-layers__ft strong {
@@ -663,7 +663,7 @@ html.dark .op-cart-layer-item__swatch {
   align-items: center;
   justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-label);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--muted);
@@ -674,7 +674,7 @@ html.dark .op-cart-layer-item__swatch {
   color: var(--ink);
 }
 .op-cart-legend__caret {
-  font-size: 10px;
+  font-size: var(--fs-label);
   color: var(--muted);
 }
 .op-cart-legend__list {
@@ -690,7 +690,7 @@ html.dark .op-cart-layer-item__swatch {
   grid-template-columns: auto 1fr;
   align-items: center;
   gap: 10px;
-  font-size: 12px;
+  font-size: var(--fs-label);
   color: var(--ink);
 }
 .op-cart-legend__swatch {
@@ -722,7 +722,7 @@ html.dark .op-cart-layer-item__swatch {
   display: flex;
   justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: var(--fs-label);
   color: var(--muted);
   letter-spacing: 0.04em;
   padding: 0 2px;
@@ -775,7 +775,7 @@ html.dark .op-cart-layer-item__swatch {
 }
 .op-cart-inspector__kicker {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--fs-label);
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -790,7 +790,7 @@ html.dark .op-cart-layer-item__swatch {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   color: var(--ink-2);
 }
 .op-cart-inspector__meta-item strong {
@@ -924,7 +924,7 @@ html.dark .op-cart-zoom button:hover {
   min-width: 0;
 }
 .op-cart-account__email {
-  font-size: 12px;
+  font-size: var(--fs-label);
   color: var(--ink);
   font-weight: 500;
   white-space: nowrap;
@@ -934,13 +934,13 @@ html.dark .op-cart-zoom button:hover {
 }
 .op-cart-account__role {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-label);
   color: var(--muted);
   letter-spacing: 0.02em;
 }
 .op-cart-account__signout {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-label);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -976,12 +976,12 @@ html.dark .op-cart-zoom button:hover {
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  font-size: 12.5px;
+  font-size: var(--fs-compact);
   color: var(--warn);
 }
 .op-cart-alert__body {
   margin: 4px 0 0;
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   line-height: 1.5;
   color: var(--ink-2);
 }
@@ -989,7 +989,7 @@ html.dark .op-cart-zoom button:hover {
   display: inline-block;
   margin-top: 8px;
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--fs-label);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: 700;
@@ -1538,7 +1538,7 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
 .op-cart-layers__notes-summary {
   cursor: pointer;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: var(--fs-label);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
@@ -1692,7 +1692,7 @@ body[data-map-reading="true"] .op-cart-surface {
   background: var(--panel-solid);
   color: var(--ink);
   font-family: inherit;
-  font-size: 12.5px;
+  font-size: var(--fs-compact);
   font-weight: 600;
   cursor: pointer;
   text-align: left;
@@ -1717,7 +1717,7 @@ body[data-map-reading="true"] .op-cart-surface {
 
 .op-cart-mapread__state {
   margin: 0;
-  font-size: 11px;
+  font-size: var(--fs-label);
   line-height: 1.45;
   /* `--ink-2`, not `--muted`. This sentence is the only text telling a planner
      how to get their page back, and `--muted` measures 3.75:1 on solid white in
@@ -1828,14 +1828,14 @@ body[data-map-reading="true"] .op-cart-surface {
 .op-map-popup__kicker {
   order: -1;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
 .op-map-popup__line {
-  font-size: 12.5px;
+  font-size: var(--fs-compact);
   line-height: 1.45;
   color: var(--ink-2);
 }
@@ -1847,7 +1847,7 @@ body[data-map-reading="true"] .op-cart-surface {
   margin-top: 4px;
   padding-top: 7px;
   border-top: 1px solid var(--line);
-  font-size: 11px;
+  font-size: var(--fs-label);
   line-height: 1.45;
   color: var(--ink-2);
 }

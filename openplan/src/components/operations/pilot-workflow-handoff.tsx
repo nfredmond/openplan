@@ -151,7 +151,7 @@ export function PilotWorkflowHandoff({
           const stepContent = (
             <>
               <div className="module-record-kicker">
-                <span className="flex h-6 w-6 items-center justify-center rounded border border-emerald-600/25 bg-emerald-500/10 text-[0.72rem] font-bold text-emerald-800 dark:text-emerald-300">
+                <span className="flex h-6 w-6 items-center justify-center rounded border border-emerald-600/25 bg-emerald-500/10 text-label font-bold text-emerald-800 dark:text-emerald-300">
                   {step.label}
                 </span>
                 {isComplete ? (
@@ -159,14 +159,14 @@ export function PilotWorkflowHandoff({
                 ) : (
                   <Icon className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
                 )}
-                <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <span className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   {statusLabel}
                 </span>
               </div>
               <div className="space-y-1.5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <h3 className="module-record-title">{step.title}</h3>
-                  <span className="inline-flex items-center gap-1 text-[0.74rem] font-semibold text-emerald-800 dark:text-emerald-300">
+                  <span className="inline-flex items-center gap-1 text-label font-semibold text-emerald-800 dark:text-emerald-300">
                     {step.cta}
                     <ArrowRight className="h-3.5 w-3.5" />
                   </span>

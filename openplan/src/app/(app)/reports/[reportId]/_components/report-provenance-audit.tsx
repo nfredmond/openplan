@@ -93,7 +93,7 @@ export function ReportProvenanceAudit({
           <ShieldCheck className="h-5 w-5" />
         </span>
         <div>
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+          <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             Provenance
           </p>
           <h2 className="text-xl font-semibold tracking-tight">Audit trail</h2>
@@ -126,7 +126,7 @@ export function ReportProvenanceAudit({
                   <h3 className="text-sm font-semibold tracking-tight">
                     {runTitleById.get(item.runId) ?? `Run ${item.runId.slice(0, 8)}`}
                   </h3>
-                  <p className="text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-label uppercase tracking-[0.12em] text-muted-foreground">
                     Gate decision: {item.gate.decision}
                   </p>
                 </div>
@@ -159,7 +159,7 @@ export function ReportProvenanceAudit({
       {sourceContext || engagementCampaign || aerialEvidenceSourceContext ? (
         <div id="evidence-chain-summary" className="mt-4 space-y-3">
           <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Evidence chain summary
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -168,7 +168,7 @@ export function ReportProvenanceAudit({
           </div>
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Linked runs
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
@@ -176,7 +176,7 @@ export function ReportProvenanceAudit({
               </p>
             </div>
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Scenario basis
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
@@ -185,7 +185,7 @@ export function ReportProvenanceAudit({
               </p>
             </div>
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Scenario spine
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
@@ -196,7 +196,7 @@ export function ReportProvenanceAudit({
               </p>
             </div>
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Project records
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
@@ -206,7 +206,7 @@ export function ReportProvenanceAudit({
               </p>
             </div>
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Governance
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
@@ -216,7 +216,7 @@ export function ReportProvenanceAudit({
               </p>
             </div>
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-2">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Public input
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
@@ -235,7 +235,7 @@ export function ReportProvenanceAudit({
               <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-2">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Scenario comparison source context
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
@@ -256,7 +256,7 @@ export function ReportProvenanceAudit({
           </div>
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Linked evidence
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
@@ -266,7 +266,7 @@ export function ReportProvenanceAudit({
               </p>
             </div>
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Source snapshot
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
@@ -279,7 +279,7 @@ export function ReportProvenanceAudit({
             </div>
             {engagementCampaign ? (
               <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-1">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Engagement source
                 </p>
                 <p className="mt-1 text-sm font-semibold text-foreground">
@@ -298,7 +298,7 @@ export function ReportProvenanceAudit({
                 ) : null}
                 {reportOrigin ? (
                   <div className="mt-3 rounded-xl border border-border/60 bg-muted/35 p-3">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Report origin
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
@@ -341,7 +341,7 @@ export function ReportProvenanceAudit({
               <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-1">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Aerial evidence
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
@@ -388,7 +388,7 @@ export function ReportProvenanceAudit({
                 {aerialEvidenceDisplayState.missionHref ? (
                   <Link
                     href={aerialEvidenceDisplayState.missionHref}
-                    className="mt-3 inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-[0.72rem] font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
+                    className="mt-3 inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-label font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
                   >
                     <Link2 className="h-3.5 w-3.5" />
                     Open aerial mission
@@ -402,7 +402,7 @@ export function ReportProvenanceAudit({
       {driftItems.length > 0 ? (
         <div id="drift-since-generation" className="mt-4 space-y-3">
           <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Drift since generation
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -434,7 +434,7 @@ export function ReportProvenanceAudit({
                   {driftAction ? (
                     <Link
                       href={driftAction.href}
-                      className="inline-flex items-center gap-1 self-start rounded-full border border-border/70 bg-background px-3 py-1 text-[0.72rem] font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
+                      className="inline-flex items-center gap-1 self-start rounded-full border border-border/70 bg-background px-3 py-1 text-label font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
                     >
                       <Link2 className="h-3.5 w-3.5" />
                       {driftAction.label}
@@ -449,7 +449,7 @@ export function ReportProvenanceAudit({
       {stageGateSnapshot ? (
         <div className="mt-4 space-y-3">
           <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Governance and stage-gate provenance
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -460,7 +460,7 @@ export function ReportProvenanceAudit({
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Template
                   </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
@@ -470,7 +470,7 @@ export function ReportProvenanceAudit({
                 {projectId ? (
                   <Link
                     href={`/projects/${projectId}#project-governance`}
-                    className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-[0.72rem] font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
+                    className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-label font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
                   >
                     <Link2 className="h-3.5 w-3.5" />
                     Open project settings
@@ -484,7 +484,7 @@ export function ReportProvenanceAudit({
               </p>
             </div>
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Control health
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
@@ -496,7 +496,7 @@ export function ReportProvenanceAudit({
               </p>
             </div>
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Blocked gate
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
@@ -515,7 +515,7 @@ export function ReportProvenanceAudit({
               </p>
             </div>
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Next gate
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
@@ -539,7 +539,7 @@ export function ReportProvenanceAudit({
       {projectRecordsSnapshot.length > 0 ? (
         <div className="mt-4 space-y-3">
           <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Project records provenance
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -554,7 +554,7 @@ export function ReportProvenanceAudit({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       {item.label}
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
@@ -564,7 +564,7 @@ export function ReportProvenanceAudit({
                   {projectId ? (
                     <Link
                       href={`/projects/${projectId}#${item.anchor}`}
-                      className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-[0.72rem] font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
+                      className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-label font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
                     >
                       <Link2 className="h-3.5 w-3.5" />
                       Open {item.label.toLowerCase()}
@@ -588,7 +588,7 @@ export function ReportProvenanceAudit({
       {scenarioSetLinks.length > 0 ? (
         <div className="mt-4 space-y-3">
           <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Scenario basis
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -626,7 +626,7 @@ export function ReportProvenanceAudit({
                     <h3 className="text-sm font-semibold tracking-tight text-foreground">
                       {link.scenarioSetTitle}
                     </h3>
-                    <p className="mt-1 text-[0.75rem] uppercase tracking-[0.12em] text-muted-foreground">
+                    <p className="mt-1 text-label uppercase tracking-[0.12em] text-muted-foreground">
                       {link.comparisonSummary.label} · {link.matchedEntries.length} matched entr
                       {link.matchedEntries.length === 1 ? "y" : "ies"}
                     </p>
@@ -717,7 +717,7 @@ export function ReportProvenanceAudit({
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Link
                     href={`/scenarios/${link.scenarioSetId}`}
-                    className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-[0.72rem] font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
+                    className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-label font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
                   >
                     <Link2 className="h-3.5 w-3.5" />
                     Open scenario set

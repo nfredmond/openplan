@@ -411,7 +411,7 @@ function ProvenanceBadge({ text, translator }: { text: PortalText; translator: P
       dir={disclosure?.dir ?? translator.direction}
       className={cn(
         "ms-2 inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 align-middle",
-        "text-[0.65rem] font-medium normal-case tracking-wide",
+        "text-label font-medium normal-case tracking-wide",
         "border-amber-400/60 bg-amber-50 text-amber-900",
         "dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100"
       )}
@@ -777,7 +777,7 @@ function LikertWidget({ question, translator, initialAnswer, onChange }: WidgetP
               string's own first strong character is the only available fact.
             */}
             {label ? (
-              <span dir="auto" className="max-w-[7rem] text-center text-[0.65rem] font-medium leading-tight">
+              <span dir="auto" className="max-w-[7rem] text-center text-label font-medium leading-tight">
                 {label}
               </span>
             ) : null}

@@ -81,7 +81,7 @@ export function ProjectSpendEntryForm({
           <ReceiptText className="h-4 w-4" />
         </span>
         <div>
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Spend ledger</p>
+          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Spend ledger</p>
           <h3 className="text-sm font-semibold text-foreground">Record project spend</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Direct costs such as subconsultant charges or expenses. Attributing a deliverable is optional.
@@ -92,17 +92,17 @@ export function ProjectSpendEntryForm({
       <form className="mt-4 space-y-3" onSubmit={handleSubmit}>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Amount</label>
+            <label className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Amount</label>
             <Input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="decimal" placeholder="1250.00" required />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Entry date</label>
+            <label className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Entry date</label>
             <Input type="date" value={entryDate} onChange={(event) => setEntryDate(event.target.value)} />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Description</label>
+          <label className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Description</label>
           <Input
             value={description}
             onChange={(event) => setDescription(event.target.value)}
@@ -113,11 +113,11 @@ export function ProjectSpendEntryForm({
 
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Vendor</label>
+            <label className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Vendor</label>
             <Input value={vendorLabel} onChange={(event) => setVendorLabel(event.target.value)} placeholder="Optional vendor or subconsultant" />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Deliverable</label>
+            <label className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Deliverable</label>
             <select
               className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
               value={deliverableId}

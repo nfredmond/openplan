@@ -113,7 +113,7 @@ export function RtpCyclePhaseControls({
 
       <form className="mt-5 space-y-4" onSubmit={handleSave}>
         <div className="space-y-1.5">
-          <label htmlFor={`rtp-cycle-phase-${cycle.id}`} className="text-[0.82rem] font-semibold">
+          <label htmlFor={`rtp-cycle-phase-${cycle.id}`} className="text-compact font-semibold">
             Cycle phase
           </label>
           <select
@@ -132,7 +132,7 @@ export function RtpCyclePhaseControls({
         </div>
 
         <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Recommended packet preset</p>
+          <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Recommended packet preset</p>
           <p className="mt-2 text-sm font-semibold text-foreground">{describeRtpPacketPresetStage(presetStage)}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {linkedPacketReports.length > 0

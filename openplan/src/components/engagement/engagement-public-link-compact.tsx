@@ -41,7 +41,7 @@ export function EngagementPublicLinkCompact({ campaign }: { campaign: PublicPort
   return (
     <div className="rounded-xl border border-border/70 bg-background/70 p-3 text-sm">
       <div className="flex flex-wrap items-center gap-2">
-        <p className="text-[0.82rem] font-semibold">Public link</p>
+        <p className="text-compact font-semibold">Public link</p>
         <EngagementPortalStatusChip campaign={campaign} />
         <a
           href="#public-share-controls"

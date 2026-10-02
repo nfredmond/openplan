@@ -251,7 +251,7 @@ export function TrafficVolumeMap({
 
       {/* Legend */}
       <div className="absolute bottom-4 left-3 z-10 rounded-xl bg-zinc-900/90 backdrop-blur px-4 py-3 shadow-lg border border-white/10">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
+        <p className="text-label font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
           Daily Volume (PCE)
         </p>
         <div className="flex items-center gap-1">
@@ -262,7 +262,7 @@ export function TrafficVolumeMap({
           <div className="h-2.5 w-8 rounded-sm" style={{ background: "#ef4444" }} />
           <div className="h-2.5 w-8 rounded-sm" style={{ background: "#dc2626" }} />
         </div>
-        <div className="flex justify-between text-[10px] text-zinc-500 mt-0.5">
+        <div className="flex justify-between text-label text-zinc-500 mt-0.5">
           <span>Low</span>
           <span>High</span>
         </div>

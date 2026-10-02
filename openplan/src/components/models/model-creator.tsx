@@ -146,7 +146,7 @@ export function ModelCreator({
               </select>
               {projectsReadFailed ? (
                 <p
-                  className="text-[0.72rem] text-amber-700 dark:text-amber-300"
+                  className="text-label text-amber-700 dark:text-amber-300"
                   data-testid="model-creator-projects-unreadable"
                 >
                   This workspace&apos;s project list could not be read, so this picker may be
@@ -166,7 +166,7 @@ export function ModelCreator({
               </select>
               {scenarioSetsReadFailed ? (
                 <p
-                  className="text-[0.72rem] text-amber-700 dark:text-amber-300"
+                  className="text-label text-amber-700 dark:text-amber-300"
                   data-testid="model-creator-scenario-sets-unreadable"
                 >
                   This workspace&apos;s scenario sets could not be read, so this picker may be

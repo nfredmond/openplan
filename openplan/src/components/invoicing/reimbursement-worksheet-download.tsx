@@ -160,7 +160,7 @@ export function ReimbursementWorksheetDownload({
 
   return (
     <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-4">
-      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         Reimbursement worksheet
       </p>
       <p className="mt-1 text-sm text-muted-foreground">

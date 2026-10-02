@@ -220,7 +220,7 @@ export function ChartFigure({
               type="button"
               onClick={() => setShowTable((open) => !open)}
               aria-expanded={showTable}
-              className="rounded-lg border border-border/70 px-2 py-1 text-[0.68rem] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-lg border border-border/70 px-2 py-1 text-label font-semibold text-muted-foreground transition-colors hover:text-foreground"
             >
               {showTable ? "Hide numbers" : "Numbers"}
             </button>
@@ -237,7 +237,7 @@ export function ChartFigure({
       </div>
 
       {series.footnote ? (
-        <p className="mt-3 text-[0.7rem] leading-5 text-muted-foreground">{series.footnote}</p>
+        <p className="mt-3 text-label leading-5 text-muted-foreground">{series.footnote}</p>
       ) : null}
 
       {showTable && drawable ? <TableView series={series} valueLabel={valueLabel} /> : null}
@@ -345,13 +345,13 @@ export function ChartAreaPlot({
               x={c.x}
               y={PLOT_HEIGHT - 8}
               textAnchor={index === 0 ? "start" : index === coords.length - 1 ? "end" : "middle"}
-              className="fill-[color:var(--muted-foreground)] text-[10px]"
+              className="fill-[color:var(--muted-foreground)] text-label"
             >
               {c.label}
             </text>
           ) : null
         )}
-        <text x={2} y={PADDING.top + 8} className="fill-[color:var(--muted-foreground)] text-[10px]">
+        <text x={2} y={PADDING.top + 8} className="fill-[color:var(--muted-foreground)] text-label">
           {max}
         </text>
       </svg>
@@ -408,7 +408,7 @@ export function ChartBarPlot({
                   x={x + barW / 2}
                   y={PLOT_HEIGHT - 8}
                   textAnchor="middle"
-                  className="fill-[color:var(--muted-foreground)] text-[10px]"
+                  className="fill-[color:var(--muted-foreground)] text-label"
                 >
                   {point.label}
                 </text>
@@ -416,7 +416,7 @@ export function ChartBarPlot({
             </g>
           );
         })}
-        <text x={2} y={PADDING.top + 8} className="fill-[color:var(--muted-foreground)] text-[10px]">
+        <text x={2} y={PADDING.top + 8} className="fill-[color:var(--muted-foreground)] text-label">
           {max}
         </text>
       </svg>
@@ -513,7 +513,7 @@ export function ChartMeterRows({ series }: { series: InsightSeries }) {
                 }}
               />
             </div>
-            <p className="mt-1 text-[0.7rem] leading-5 text-muted-foreground">
+            <p className="mt-1 text-label leading-5 text-muted-foreground">
               {over ? (
                 <span className="inline-flex items-center gap-1 font-semibold text-[color:var(--warn)]">
                   <AlertTriangle className="h-3 w-3" aria-hidden="true" />

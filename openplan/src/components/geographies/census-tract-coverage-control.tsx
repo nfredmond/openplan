@@ -101,7 +101,7 @@ function CoverageShell({ notes, children }: { notes: string[]; children?: React.
     <div className="mt-3 space-y-2 rounded-[0.5rem] border border-border/60 bg-background/60 p-3">
       <div className="flex items-center gap-2">
         <MapPinned className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Equity layer coverage
         </p>
       </div>
@@ -315,7 +315,7 @@ function CountyCoverage({
                 : "Load census tracts"}
           </Button>
           {isReload ? (
-            <p className="text-[0.72rem] text-muted-foreground">
+            <p className="text-label text-muted-foreground">
               Reloading re-fetches boundaries and the latest ACS values and overwrites what is stored for
               this county. It never deletes tracts.
             </p>

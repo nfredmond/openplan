@@ -31,7 +31,7 @@ export function EngagementAppendixReadinessNote({
 }) {
   return (
     <div className="module-note border-amber-300/40 bg-amber-50/70 dark:border-amber-900 dark:bg-amber-950/20">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Report appendix readiness</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Report appendix readiness</p>
       <h3 className="mt-2 text-sm font-semibold text-foreground">
         {appendixReadiness.appendixReadyCount} approved public comment{appendixReadiness.appendixReadyCount === 1 ? "" : "s"} ready for appendix review
       </h3>
@@ -49,7 +49,7 @@ export function EngagementAppendixReadinessNote({
       <div className="mt-5 rounded-[0.5rem] border border-amber-200/70 bg-background/75 p-4 dark:border-amber-900/70">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Comment matrix export preview</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Comment matrix export preview</p>
             <h4 className="mt-1 text-sm font-semibold text-foreground">
               {commentMatrixPreview.counts.includedCount} included · {commentMatrixPreview.counts.heldDuplicateReviewCount} held · {commentMatrixPreview.counts.excludedInternalPrivateCount} internal/private excluded
             </h4>

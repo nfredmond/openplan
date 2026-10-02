@@ -226,12 +226,12 @@ export function EngagementReportCreateButton({
                 <p className="font-semibold">
                   This project already has {existingReportGuidance.reportCount} report record{existingReportGuidance.reportCount === 1 ? "" : "s"}.
                 </p>
-                <p className="text-[0.72rem] leading-relaxed text-current/80">
+                <p className="text-label leading-relaxed text-current/80">
                   {existingReportGuidance.recommendedAction} {existingReportGuidance.recommendedDetail}
                 </p>
                 <Link
                   href={`/reports/${existingReportGuidance.recommendedReportId}`}
-                  className="inline-flex items-center gap-1 rounded-full border border-current/20 bg-background/70 px-2.5 py-1 text-[0.68rem] font-medium text-current transition-colors hover:border-current/35"
+                  className="inline-flex items-center gap-1 rounded-full border border-current/20 bg-background/70 px-2.5 py-1 text-label font-medium text-current transition-colors hover:border-current/35"
                 >
                   Open {existingReportGuidance.recommendedReportTitle}
                 </Link>

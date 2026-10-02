@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode, useSyncExternalStore } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   DEFAULT_PALETTE,
   PALETTES,
@@ -204,27 +204,4 @@ export function ThemeProvider({
 
 export function useTheme() {
   return useContext(ThemeContext);
-}
-
-function subscribeToModeClass(onChange: () => void) {
-  const observer = new MutationObserver(onChange);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-  return () => observer.disconnect();
-}
-
-/**
- * Whether the page is in light mode, safe to use in rendered attributes.
- *
- * The server always renders the dark default because the reader's choice is in
- * localStorage. Reading `useTheme()` during hydration therefore disagrees with
- * the server markup for a light-mode reader, and React does not repair a
- * mismatched attribute. This reads the class the pre-paint script already set,
- * reports the server default while hydrating, and updates right after.
- */
-export function useIsLightMode(): boolean {
-  return useSyncExternalStore(
-    subscribeToModeClass,
-    () => !document.documentElement.classList.contains("dark"),
-    () => false
-  );
 }

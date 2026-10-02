@@ -171,7 +171,7 @@ export function ProjectPostureHeader({
             <StatusBadge tone={toneForStatus(project.status)}>{titleize(project.status)}</StatusBadge>
             <span className="module-record-chip"><span>Type</span><strong>{titleize(project.plan_type)}</strong></span>
           </div>
-          <p className="text-[0.73rem] text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             {titleize(project.delivery_phase)} · Delivery {titleize(projectControlsSummary.controlHealth)}{linkedRtpCycleCount > 0 ? ` · RTP ${linkedRtpCycleCount} linked` : ""} · {workspaceData?.name ?? "Unknown workspace"} · Updated {fmtDateTime(project.updated_at)}
           </p>
           {/*
@@ -426,7 +426,7 @@ export function ProjectPostureHeader({
                   : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
               }`}
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 Reporting
               </p>
               <h3 className="mt-2 text-sm font-semibold text-foreground">
@@ -442,7 +442,7 @@ export function ProjectPostureHeader({
               </p>
               {recommendedReport?.comparisonDigest ? (
                 <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-2.5">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     Comparison
                   </p>
                   <p className="mt-1 text-xs font-medium leading-relaxed text-foreground/90">
@@ -458,7 +458,7 @@ export function ProjectPostureHeader({
                   id="project-packet-release-review"
                   className="mt-3 rounded-2xl border border-border/60 bg-background/70 px-3 py-2.5"
                 >
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     Packet release review
                   </p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
@@ -518,7 +518,7 @@ export function ProjectPostureHeader({
             <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     Recent report records
                   </p>
                   <h3 className="mt-1 text-sm font-semibold text-foreground">
@@ -562,13 +562,13 @@ export function ProjectPostureHeader({
                         {formatReportTypeLabel(report.report_type)}
                       </StatusBadge>
                     </div>
-                    <p className="mt-1.5 text-[0.73rem] text-muted-foreground">{report.packetFreshness.label} · {report.packetFreshness.detail}</p>
+                    <p className="mt-1.5 text-label text-muted-foreground">{report.packetFreshness.label} · {report.packetFreshness.detail}</p>
                     <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
                       {report.packetFreshness.detail}
                     </p>
                     {report.evidenceChainDigest ? (
                       <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-2.5">
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                           Evidence
                         </p>
                         <p className="mt-1 text-xs font-medium leading-relaxed text-foreground/90">
@@ -586,7 +586,7 @@ export function ProjectPostureHeader({
                     ) : null}
                     {report.comparisonDigest ? (
                       <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-2.5">
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                           Comparison
                         </p>
                         <p className="mt-1 text-xs font-medium leading-relaxed text-foreground/90">

@@ -270,7 +270,7 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
 
       <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
         <div className="space-y-1.5">
-          <label htmlFor="plan-control-title" className="text-[0.82rem] font-semibold">
+          <label htmlFor="plan-control-title" className="text-compact font-semibold">
             Title
           </label>
           <Input id="plan-control-title" value={title} onChange={(event) => setTitle(event.target.value)} required />
@@ -278,7 +278,7 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="plan-control-status" className="text-[0.82rem] font-semibold">
+            <label htmlFor="plan-control-status" className="text-compact font-semibold">
               Status
             </label>
             <select
@@ -296,7 +296,7 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="plan-control-type" className="text-[0.82rem] font-semibold">
+            <label htmlFor="plan-control-type" className="text-compact font-semibold">
               Plan type
             </label>
             <select
@@ -315,7 +315,7 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="plan-control-project" className="text-[0.82rem] font-semibold">
+          <label htmlFor="plan-control-project" className="text-compact font-semibold">
             Primary project
           </label>
           <select
@@ -335,7 +335,7 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="plan-control-geography" className="text-[0.82rem] font-semibold">
+            <label htmlFor="plan-control-geography" className="text-compact font-semibold">
               Geography label
             </label>
             <Input
@@ -347,7 +347,7 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="plan-control-horizon" className="text-[0.82rem] font-semibold">
+            <label htmlFor="plan-control-horizon" className="text-compact font-semibold">
               Horizon year
             </label>
             <Input
@@ -363,7 +363,7 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="plan-control-summary" className="text-[0.82rem] font-semibold">
+          <label htmlFor="plan-control-summary" className="text-compact font-semibold">
             Summary
           </label>
           <Textarea
@@ -377,7 +377,7 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
 
         <div className="space-y-3 rounded-[0.5rem] border border-border/70 bg-background/40 p-4">
           <div className="space-y-1">
-            <p className="text-[0.82rem] font-semibold">Linked records</p>
+            <p className="text-compact font-semibold">Linked records</p>
             <p className="text-xs text-muted-foreground">
               Attach scenario sets, engagement campaigns, reports and other project records directly to this plan. These
               are separate from anything the plan already inherits through its primary project.
@@ -404,7 +404,7 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
                   if (!optionSet || optionSet.unreadable) {
                     return (
                       <div key={linkType} className="space-y-1.5">
-                        <p className="text-[0.82rem] font-semibold">{linkFieldLabel(linkType)}</p>
+                        <p className="text-compact font-semibold">{linkFieldLabel(linkType)}</p>
                         <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
                           This list could not be read, so these links cannot be edited on this page load — it does not
                           mean there are none. Any {formatPlanLinkTypeLabel(linkType).toLowerCase()} links already stored
@@ -416,7 +416,7 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
 
                   return (
                     <div key={linkType} className="space-y-1.5">
-                      <label htmlFor={fieldId} className="text-[0.82rem] font-semibold">
+                      <label htmlFor={fieldId} className="text-compact font-semibold">
                         {linkFieldLabel(linkType)}
                       </label>
                       <select

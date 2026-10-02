@@ -265,7 +265,7 @@ export function EngagementShareControls({
 
       <div className="mt-5 space-y-4">
         <div className="space-y-1.5">
-          <p className="text-[0.82rem] font-semibold">Share link</p>
+          <p className="text-compact font-semibold">Share link</p>
           <p className="text-xs text-muted-foreground">
             Links are minted server-side and saved in one step — there is nothing to type or guess.
           </p>
@@ -327,9 +327,9 @@ export function EngagementShareControls({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="public-slug" className="text-[0.82rem] font-semibold">
+          <label htmlFor="public-slug" className="text-compact font-semibold">
             Easy link name
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
           </label>
           <p className="text-xs text-muted-foreground">
             Give the portal a short name to make a printable address people can read off a flyer,
@@ -399,9 +399,9 @@ export function EngagementShareControls({
         </p>
 
         <div className="space-y-1.5">
-          <label htmlFor="public-description" className="text-[0.82rem] font-semibold">
+          <label htmlFor="public-description" className="text-compact font-semibold">
             Public-facing description
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">shown on portal page</span>
+            <span className="ml-1.5 text-label font-normal text-muted-foreground">shown on portal page</span>
           </label>
           <Textarea
             id="public-description"
@@ -493,7 +493,7 @@ export function EngagementShareControls({
           not have to open it to find out.
         */}
         <div className="space-y-2 border-t pt-4">
-          <p className="text-[0.82rem] font-semibold">Survey responses</p>
+          <p className="text-compact font-semibold">Survey responses</p>
           <p className="text-xs text-muted-foreground">
             One row per survey response received — when it arrived, through what channel, and its
             moderation status. It leaves out respondent names and contact details, device

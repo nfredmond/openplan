@@ -119,7 +119,7 @@ export function ModelRunEngagementPanel({ modelId, modelRunId }: Props) {
                 {summary.nearest.map((n) => (
                   <div key={n.id} className="border-l-2 border-border/60 pl-3">
                     <p className="text-xs leading-relaxed text-foreground">{n.snippet || "(no text)"}</p>
-                    <p className="text-[0.68rem] text-muted-foreground">
+                    <p className="text-label text-muted-foreground">
                       {n.categoryLabel ? `${n.categoryLabel} · ` : ""}
                       <span className={SENTIMENT_TONE[n.sentiment]}>{n.sentiment}</span>
                       {n.distanceMeters !== null ? ` · ${n.distanceMeters} m` : ""}
@@ -129,7 +129,7 @@ export function ModelRunEngagementPanel({ modelId, modelRunId }: Props) {
                 ))}
               </div>
 
-              <p className="text-[0.7rem] leading-relaxed text-muted-foreground">
+              <p className="text-label leading-relaxed text-muted-foreground">
                 Approved public comments spatially joined to this run&apos;s corridor (PostGIS). Sentiment is from
                 the campaign&apos;s AI synthesis; unclassified comments are counted separately.{" "}
                 <ScreeningGradeLink>Screening-grade</ScreeningGradeLink>.

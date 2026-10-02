@@ -28,14 +28,14 @@
 .op-gis-delete__error,
 .op-crs-picker__error {
   margin: 0;
-  font-size: 12.5px;
+  font-size: var(--fs-compact);
   color: var(--danger, #b3261e);
 }
 
 .op-gis-manager__empty,
 .op-gis-manager__readonly {
   margin: 0;
-  font-size: 12.5px;
+  font-size: var(--fs-compact);
   color: var(--muted);
 }
 
@@ -79,7 +79,7 @@ html.dark .op-gis-layer__swatch {
   flex: 1;
 }
 .op-gis-layer__sub {
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   color: var(--muted);
 }
 /* Says where "Show on the map" goes, before it is clicked. `--ink-2` rather
@@ -87,7 +87,7 @@ html.dark .op-gis-layer__swatch {
    `--muted` is under the 4.5:1 body floor on the light palette's own panel. */
 .op-gis-layer__where {
   margin: 6px 0 0;
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   line-height: 1.45;
   color: var(--ink-2);
 }
@@ -100,7 +100,7 @@ html.dark .op-gis-layer__swatch {
 .op-gis-layer__notes {
   margin: 8px 0 0;
   padding-left: 18px;
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   line-height: 1.5;
   color: var(--muted);
 }
@@ -127,7 +127,7 @@ html.dark .op-gis-layer__swatch {
 .op-gis-style legend,
 .op-gis-versions h5 {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-label);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
@@ -138,7 +138,7 @@ html.dark .op-gis-layer__swatch {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--fs-label);
 }
 .op-gis-style label > span {
   color: var(--muted);
@@ -146,7 +146,7 @@ html.dark .op-gis-layer__swatch {
 .op-gis-style__note {
   grid-column: 1 / -1;
   margin: 0;
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   color: var(--muted);
 }
 
@@ -159,7 +159,7 @@ html.dark .op-gis-layer__swatch {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--fs-label);
 }
 .op-gis-versions li {
   display: flex;
@@ -189,7 +189,7 @@ html.dark .op-gis-layer__swatch {
   border-radius: 8px;
   background: var(--map-1);
   color: var(--ink);
-  font-size: 12.5px;
+  font-size: var(--fs-compact);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -220,17 +220,17 @@ html.dark .op-gis-delete__dialog {
 }
 .op-gis-wizard__drop-title {
   font-weight: 600;
-  font-size: 13.5px;
+  font-size: var(--fs-compact);
 }
 .op-gis-wizard__drop-hint,
 .op-gis-wizard__hint {
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   line-height: 1.5;
   color: var(--muted);
 }
 .op-gis-wizard__status {
   margin: 0;
-  font-size: 12.5px;
+  font-size: var(--fs-compact);
   color: var(--muted);
 }
 /*
@@ -247,7 +247,7 @@ html.dark .op-gis-delete__dialog {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  font-size: 12.5px;
+  font-size: var(--fs-compact);
   line-height: 1.55;
   color: var(--ink);
 }
@@ -255,7 +255,7 @@ html.dark .op-gis-delete__dialog {
 .op-gis-wizard__confirm h4,
 .op-gis-wizard__ask h4 {
   margin: 0;
-  font-size: 13.5px;
+  font-size: var(--fs-compact);
 }
 .op-gis-wizard__refusal p,
 .op-gis-wizard__confirm p,
@@ -266,7 +266,7 @@ html.dark .op-gis-delete__dialog {
 }
 .op-gis-wizard__export {
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   color: var(--muted);
 }
 .op-gis-wizard__field {
@@ -275,14 +275,14 @@ html.dark .op-gis-delete__dialog {
   gap: 4px;
 }
 .op-gis-wizard__field > span {
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   color: var(--muted);
 }
 .op-gis-wizard__ack {
   display: flex;
   gap: 8px;
   align-items: flex-start;
-  font-size: 12px;
+  font-size: var(--fs-label);
   line-height: 1.5;
   padding: 10px 12px;
   border: 1px solid var(--line);
@@ -317,18 +317,18 @@ html.dark .op-gis-wizard__ack {
 }
 .op-gis-preview__no-map {
   margin: 0;
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   color: var(--muted);
 }
 .op-gis-preview__facts {
   margin: 0;
   display: grid;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--fs-label);
 }
 .op-gis-preview__facts dt {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--fs-label);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
@@ -352,13 +352,13 @@ html.dark .op-gis-wizard__ack {
 .op-gis-preview__warnings {
   margin: 0;
   padding-left: 18px;
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   line-height: 1.5;
   color: var(--muted);
 }
 .op-gis-preview__datum {
   margin: 0;
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   color: var(--muted);
 }
 
@@ -368,13 +368,13 @@ html.dark .op-gis-wizard__ack {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 12.5px;
+  font-size: var(--fs-compact);
   color: var(--ink);
 }
 .op-crs-picker__scope,
 .op-crs-picker__empty {
   margin: 0;
-  font-size: 11.5px;
+  font-size: var(--fs-label);
   line-height: 1.5;
   color: var(--muted);
 }
@@ -418,7 +418,7 @@ html.dark .op-crs-picker__option:hover:not(:disabled) {
 .op-crs-picker__meta,
 .op-crs-picker__area,
 .op-crs-picker__caveat {
-  font-size: 11px;
+  font-size: var(--fs-label);
   color: var(--muted);
 }
 .op-crs-picker__meta {

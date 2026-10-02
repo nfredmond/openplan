@@ -510,7 +510,7 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
                           failureReason: run.failure_reason,
                         })}
                       </p>
-                      <p className="text-[0.7rem] text-muted-foreground">
+                      <p className="text-label text-muted-foreground">
                         Read {new Date(run.created_at).toLocaleString()}
                         {run.extraction_source === "ocr" ? " · text recognised from a scan" : ""}
                         {saved > 0 ? ` · ${saved} saved into the plan` : ""}
@@ -546,7 +546,7 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
 
                           return (
                             <div key={candidate.id} className="space-y-1">
-                              <p className="text-[0.7rem] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                              <p className="text-label font-medium uppercase tracking-[0.14em] text-muted-foreground">
                                 {TARGET_KIND_HEADINGS[candidate.target_kind] ?? candidate.target_kind}
                               </p>
                               <ExtractionCandidateCard

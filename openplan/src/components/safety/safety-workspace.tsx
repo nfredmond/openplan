@@ -1115,7 +1115,7 @@ export function SafetyWorkspace({
               z-30), and the key would have been half underneath it. The right
               side of the map is the sidebar's edge and is otherwise empty;
               `bottom-8` keeps it clear of Mapbox's attribution strip. */}
-          <CrashSeverityKey className="pointer-events-none absolute bottom-8 right-3 z-10 hidden max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border/60 bg-background/90 px-2.5 py-1.5 text-[11px] text-muted-foreground shadow-sm backdrop-blur-sm lg:flex" />
+          <CrashSeverityKey className="pointer-events-none absolute bottom-8 right-3 z-10 hidden max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border/60 bg-background/90 px-2.5 py-1.5 text-label text-muted-foreground shadow-sm backdrop-blur-sm lg:flex" />
         </div>
 
         {/* THE SIDEBAR. Everything a planner does to the map, in the order they
@@ -1211,7 +1211,7 @@ export function SafetyWorkspace({
               the one page scroll, and a nested scroll region inside it is how a
               panel ends up with a 24px window. */}
           <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 lg:overflow-y-auto">
-            <CrashSeverityKey className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground lg:hidden" />
+            <CrashSeverityKey className="flex flex-wrap items-center gap-x-3 gap-y-1 text-label text-muted-foreground lg:hidden" />
 
             {selectedCollisionCard}
 

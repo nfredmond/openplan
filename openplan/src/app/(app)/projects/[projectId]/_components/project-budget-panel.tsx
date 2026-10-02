@@ -151,7 +151,7 @@ export function ProjectBudgetPanel({
                       <h3 className="module-record-title">{summary.title ?? "Untitled deliverable"}</h3>
                       <p className="module-record-summary">{summary.paceDetail}</p>
                     </div>
-                    <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                    <p className="mt-1.5 text-label text-muted-foreground">
                       Billed {fmtCurrency(summary.billedToDate)} · Spend {fmtCurrency(summary.spendToDate)}
                       {summary.remaining !== null ? ` · Remaining ${fmtCurrency(summary.remaining)}` : ""}
                       {summary.draftedAmount > 0 ? ` · Drafted (not billed) ${fmtCurrency(summary.draftedAmount)}` : ""}
@@ -166,7 +166,7 @@ export function ProjectBudgetPanel({
         <ProjectSpendEntryForm projectId={projectId} deliverableOptions={deliverableOptions} />
       </div>
 
-      <p className="mt-4 text-[0.73rem] text-muted-foreground">
+      <p className="mt-4 text-label text-muted-foreground">
         Draft client invoices are disclosed separately and never counted as billed.
       </p>
     </article>

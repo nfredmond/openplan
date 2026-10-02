@@ -738,7 +738,7 @@ export default async function ProjectsPage({
           </div>
 
           {/* Status filter bar */}
-          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-[0.78rem]">
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-compact">
             <Link
               href="/projects"
               className={cn(
@@ -918,7 +918,7 @@ export default async function ProjectsPage({
                     </div>
 
                     <div className="mt-3 border-t border-border/70 pt-3">
-                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                         What this project needs next
                       </p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
@@ -959,7 +959,7 @@ export default async function ProjectsPage({
                                without boxing it, and no background tint stands in for
                                the border. */
                             <div className="mt-3 border-t border-border/60 pt-2.5">
-                              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                                 Grant release review
                               </p>
                               <div className="mt-2 flex flex-wrap gap-1.5">

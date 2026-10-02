@@ -416,7 +416,7 @@ export function ClientInvoiceComposer({
               <FileSpreadsheet className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Client invoice</p>
+              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Client invoice</p>
               <h2 className="text-lg font-semibold tracking-tight text-foreground">Compose a client invoice</h2>
             </div>
           </div>
@@ -547,7 +547,7 @@ export function ClientInvoiceComposer({
 
             <div className="space-y-3 border border-border/60 bg-background/70 px-4 py-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Line items</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Line items</p>
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
@@ -730,7 +730,7 @@ export function ClientInvoiceComposer({
             ) : null}
 
             <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
                 Saves as a draft; send it from the register when it is ready.
               </p>
               <Button type="submit" disabled={isSaving} className="sm:min-w-44">
@@ -748,7 +748,7 @@ export function ClientInvoiceComposer({
         </div>
 
         <aside className="border border-border/60 bg-background/70 px-4 py-4" aria-live="polite">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Invoice totals</p>
+          <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoice totals</p>
           <p className="mt-2 text-sm text-muted-foreground">
             Live from the line items and retention — the server recomputes the same math on save.
           </p>
@@ -762,7 +762,7 @@ export function ClientInvoiceComposer({
               <dd className="font-semibold text-foreground">{formatInvoiceMoney(totals.retentionAmount, currencyCode)}</dd>
             </div>
             <div className="space-y-1 pt-1">
-              <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Invoice total</dt>
+              <dt className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoice total</dt>
               <dd className="text-2xl font-semibold tracking-tight text-foreground">{formatInvoiceMoney(totals.totalAmount, currencyCode)}</dd>
             </div>
           </dl>

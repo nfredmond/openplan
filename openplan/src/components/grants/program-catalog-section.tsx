@@ -137,7 +137,7 @@ export function GrantsProgramCatalogSection({
                 <p className="text-sm text-muted-foreground">{program.summary}</p>
                 {/* One column of label and value rows. Two columns inside this half-width
                     card left each value about 50px wide, one word per line. */}
-                <dl className="grid gap-y-1 text-[0.8rem] text-muted-foreground">
+                <dl className="grid gap-y-1 text-compact text-muted-foreground">
                   <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2">
                     <dt className="shrink-0 font-semibold text-foreground/70">Agency</dt>
                     <dd>{program.administeringAgency}</dd>
@@ -169,7 +169,7 @@ export function GrantsProgramCatalogSection({
                   href={program.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[0.8rem] font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+                  className="inline-flex items-center gap-1.5 text-compact font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
                 >
                   Official program page
                   <ExternalLink className="h-3.5 w-3.5" />

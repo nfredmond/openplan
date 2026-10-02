@@ -53,7 +53,7 @@ export function ExtractionProvenanceChip({
   return (
     <span
       className={[
-        "inline-flex max-w-full items-center gap-1 rounded border px-1.5 py-0.5 text-[0.7rem] leading-tight",
+        "inline-flex max-w-full items-center gap-1 rounded border px-1.5 py-0.5 text-label leading-tight",
         chip.edited
           ? "border-amber-300/70 bg-amber-50/60 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
           : "border-border/70 bg-muted/30 text-muted-foreground",

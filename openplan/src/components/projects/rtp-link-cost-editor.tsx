@@ -148,7 +148,7 @@ export function RtpLinkCostEditor({
             value={estimatedCost}
             onChange={(event) => setEstimatedCost(event.target.value)}
           />
-          <p className="text-[0.7rem] text-muted-foreground">Leave blank if the cost is not known yet.</p>
+          <p className="text-label text-muted-foreground">Leave blank if the cost is not known yet.</p>
         </div>
         <div className="space-y-1">
           <label htmlFor={`rtp-cost-year-${linkId}`} className="text-xs font-medium text-foreground">
@@ -168,7 +168,7 @@ export function RtpLinkCostEditor({
           Period of the plan that pays for it
         </label>
         {bands.length === 0 ? (
-          <p className="text-[0.7rem] text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             This plan has no periods declared yet, so a cost cannot be assigned to one. Add the plan&apos;s
             horizon periods on the plan page first.
           </p>

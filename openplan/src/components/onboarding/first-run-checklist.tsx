@@ -110,7 +110,7 @@ function FirstRunStep({
       <div className="flex items-start gap-3">
         <span
           className={[
-            "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[0.75rem] font-bold",
+            "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-label font-bold",
             done
               ? "border-emerald-600/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
               : emphasis
@@ -130,7 +130,7 @@ function FirstRunStep({
             </h3>
             <span
               className={[
-                "rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.12em]",
+                "rounded-full border px-2 py-0.5 text-label font-semibold uppercase tracking-[0.12em]",
                 done
                   ? "border-emerald-600/30 text-emerald-700 dark:text-emerald-300"
                   : emphasis
