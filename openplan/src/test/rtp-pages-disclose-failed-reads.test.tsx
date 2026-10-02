@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -171,8 +171,23 @@ import RtpCycleDetailPage from "@/app/(app)/rtp/[rtpCycleId]/page";
 import RtpCycleDocumentPage from "@/app/(app)/rtp/[rtpCycleId]/document/page";
 import RtpRegistryPage from "@/app/(app)/rtp/page";
 
-async function renderDetail() {
-  render(await RtpCycleDetailPage({ params: Promise.resolve({ rtpCycleId: "rtp-1" }) }));
+/**
+ * The cycle page is a record hub with URL tabs, and a closed tab is not
+ * rendered at all. So every assertion about a panel names the tab that holds
+ * it: "overview" (the default), "projects", "financial", "document" or
+ * "comments". The header and the "Part of this cycle could not be read" notice
+ * sit above the tab strip and render on every tab.
+ */
+type RtpCycleTabKey = "overview" | "projects" | "financial" | "document" | "comments";
+const RTP_CYCLE_TABS: readonly RtpCycleTabKey[] = ["overview", "projects", "financial", "document", "comments"];
+
+async function renderDetail(tab?: RtpCycleTabKey) {
+  render(
+    await RtpCycleDetailPage({
+      params: Promise.resolve({ rtpCycleId: "rtp-1" }),
+      searchParams: Promise.resolve(tab ? { tab } : {}),
+    }),
+  );
 }
 
 async function renderDocument() {
@@ -222,9 +237,15 @@ describe("the publish control is reachable for every state of the project list",
   it("renders the publish control when the cycle has no linked projects yet", async () => {
     tableResults.project_rtp_cycle_links = { data: [], error: null };
 
-    await renderDetail();
+    // The publish control lives on the Document tab; the project list it was
+    // once trapped inside lives on the Projects tab.
+    await renderDetail("document");
 
     expect(screen.getByTestId("rtp-public-share-controls")).toBeInTheDocument();
+
+    cleanup();
+    await renderDetail("projects");
+
     // The ordinary empty state still appears — this must not have been fixed
     // by making the page pretend it has a portfolio.
     expect(screen.getByText("No linked projects yet")).toBeInTheDocument();
@@ -233,9 +254,13 @@ describe("the publish control is reachable for every state of the project list",
   it("renders the publish control when the linked-projects read FAILS", async () => {
     tableResults.project_rtp_cycle_links = { data: null, error: { message: "permission denied" } };
 
-    await renderDetail();
+    await renderDetail("document");
 
     expect(screen.getByTestId("rtp-public-share-controls")).toBeInTheDocument();
+
+    cleanup();
+    await renderDetail("projects");
+
     expect(screen.getByText("Linked projects could not be read")).toBeInTheDocument();
   });
 
@@ -262,7 +287,7 @@ describe("the publish control is reachable for every state of the project list",
       error: null,
     };
 
-    await renderDetail();
+    await renderDetail("document");
 
     expect(screen.getByTestId("rtp-public-share-controls")).toBeInTheDocument();
   });
@@ -357,7 +382,7 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
     tableResults.rtp_financial_assumptions = { data: [revenueLine(100_000_000)], error: null };
     tableResults.project_rtp_cycle_links = { data: [link("a", 40_000_000)], error: null };
 
-    await renderDetail();
+    await renderDetail("financial");
 
     expect(screen.getByText("Fiscally constrained")).toBeInTheDocument();
     expect(screen.getByText(/reasonably available revenue/i)).toBeInTheDocument();
@@ -371,7 +396,7 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
       error: null,
     };
 
-    await renderDetail();
+    await renderDetail("financial");
 
     // Same revenue, same priced cost, and the arithmetic alone would still say
     // "constrained". The page must not.
@@ -389,7 +414,7 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
     tableResults.rtp_financial_assumptions = { data: [revenueLine(10_000_000)], error: null };
     tableResults.project_rtp_cycle_links = { data: [link("a", 90_000_000)], error: null };
 
-    await renderDetail();
+    await renderDetail("financial");
 
     expect(screen.getByText("Costs exceed revenue")).toBeInTheDocument();
   });
@@ -399,7 +424,7 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
     tableResults.rtp_financial_assumptions = { data: [revenueLine(100_000_000)], error: null };
     tableResults.project_rtp_cycle_links = { data: [link("a", 40_000_000)], error: null };
 
-    await renderDetail();
+    await renderDetail("financial");
 
     // CYCLE_ROW records no inflation rate, so these are constant dollars and
     // the page has to say so — presenting them as YOE is the misstatement.
@@ -417,7 +442,7 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
     tableResults.rtp_financial_assumptions = { data: [revenueLine(100_000_000)], error: null };
     tableResults.project_rtp_cycle_links = { data: [link("a", 40_000_000)], error: null };
 
-    await renderDetail();
+    await renderDetail("financial");
 
     expect(screen.getByText("Not determined")).toBeInTheDocument();
     expect(screen.queryByText("Fiscally constrained")).toBeNull();
@@ -431,7 +456,7 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
       error: null,
     };
 
-    await renderDetail();
+    await renderDetail("projects");
 
     expect(screen.getByText("What this plan commits to, and when")).toBeInTheDocument();
     expect(screen.getAllByText(/Whole plan/).length).toBeGreaterThan(0);
@@ -440,7 +465,7 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
   });
 
   it("mounts all three financial editors, so the ledger can actually be filled in", async () => {
-    await renderDetail();
+    await renderDetail("financial");
 
     expect(screen.getByTestId("rtp-horizon-band-editor")).toBeInTheDocument();
     expect(screen.getByTestId("rtp-financial-ledger-editor")).toBeInTheDocument();
@@ -465,7 +490,7 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
   it("does not present a finding when the financial reads FAILED", async () => {
     tableResults.rtp_horizon_bands = { data: null, error: { message: "permission denied" } };
 
-    await renderDetail();
+    await renderDetail("financial");
 
     expect(screen.getByText("The financial element could not be fully read")).toBeInTheDocument();
     expect(screen.queryByText("Fiscally constrained")).not.toBeInTheDocument();
@@ -482,19 +507,19 @@ describe("the map and the comment-response record are reachable on the cycle pag
    * agency claiming a silence it never heard.
    */
   it("mounts the per-cycle project map", async () => {
-    await renderDetail();
+    await renderDetail("projects");
     expect(screen.getByTestId("rtp-cycle-project-map")).toBeInTheDocument();
   });
 
   it("renders the comment-response record", async () => {
-    await renderDetail();
+    await renderDetail("comments");
     expect(screen.getByText("What the public said, and what we said back")).toBeInTheDocument();
   });
 
   it("does NOT report an empty comment record when the consultations could not be read", async () => {
     tableResults.engagement_campaigns = { data: null, error: { message: "permission denied" } };
 
-    await renderDetail();
+    await renderDetail("comments");
 
     expect(
       screen.getByText("The public engagement on this plan could not be read")
@@ -529,7 +554,8 @@ describe("the RTP cycle detail page separates a failed read from an absence", ()
       error: { message: "permission denied for table project_rtp_cycle_links" },
     };
 
-    await renderDetail();
+    // The project list is on the Projects tab.
+    await renderDetail("projects");
 
     // (a) the false absence is gone
     expect(screen.queryByText("No linked projects yet")).not.toBeInTheDocument();
@@ -539,6 +565,12 @@ describe("the RTP cycle detail page separates a failed read from an absence", ()
     expect(
       screen.getByText(/could not read the projects linked to this cycle/i)
     ).toBeInTheDocument();
+
+    // The linked-project count is on the Overview tab's summary.
+    cleanup();
+    await renderDetail("overview");
+
+    expect(screen.getByText("Part of this cycle could not be read")).toBeInTheDocument();
     // and the count is withheld rather than shown as zero
     expect(screen.getByText(/this is not a count of zero/i)).toBeInTheDocument();
   });
@@ -549,10 +581,16 @@ describe("the RTP cycle detail page separates a failed read from an absence", ()
       error: { message: "permission denied for table rtp_cycle_chapters" },
     };
 
-    await renderDetail();
+    // The chapter shell is on the Document tab.
+    await renderDetail("document");
 
     expect(screen.queryByText("No chapter shell yet")).not.toBeInTheDocument();
     expect(screen.getByText("Chapter sections could not be read")).toBeInTheDocument();
+
+    // The adoption-record proof block is on the Comments tab.
+    cleanup();
+    await renderDetail("comments");
+
     // The adoption-record proof block is computed from this read, so it must say
     // that a "Needs operator" verdict may only mean OpenPlan could not look.
     expect(screen.getByText(/may\s+only mean OpenPlan could not look/i)).toBeInTheDocument();
@@ -575,7 +613,7 @@ describe("the RTP cycle detail page separates a failed read from an absence", ()
       error: { message: "permission denied for table engagement_campaigns" },
     };
 
-    await renderDetail();
+    await renderDetail("comments");
 
     expect(screen.getByText("Pending comments")).toBeInTheDocument();
     expect(
@@ -590,7 +628,7 @@ describe("the RTP cycle detail page separates a failed read from an absence", ()
       error: { message: "permission denied for table reports" },
     };
 
-    await renderDetail();
+    await renderDetail("comments");
 
     expect(
       screen.getByText(/Do not act on a recommendation to create a campaign or a packet from this page/i)
@@ -600,21 +638,34 @@ describe("the RTP cycle detail page separates a failed read from an absence", ()
   });
 
   it("(c) still shows the ordinary empty states when every read SUCCEEDS and there is nothing", async () => {
-    await renderDetail();
+    // Every tab, because the withheld-count sentence this test rules out is
+    // printed on more than one of them (the Overview summary and the Comments
+    // count grid). A negative checked on one tab says nothing about the others.
+    for (const tab of RTP_CYCLE_TABS) {
+      await renderDetail(tab);
 
-    expect(screen.getByText("No linked projects yet")).toBeInTheDocument();
-    expect(screen.getByText("No whole-cycle campaigns yet")).toBeInTheDocument();
-    expect(screen.queryByText("Part of this cycle could not be read")).not.toBeInTheDocument();
-    expect(screen.queryByText(/this is not a count of zero/i)).not.toBeInTheDocument();
-    // (c) for the public-review block: the real counts and the real
-    // recommendations still render when nothing failed.
-    expect(screen.queryByText(/Do not act on a recommendation to create a campaign or a packet/i)).not.toBeInTheDocument();
-    expect(
-      screen.getByText("Current rendered packet artifacts available for review and export.")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Items still waiting for operator review before packet closeout.")
-    ).toBeInTheDocument();
+      expect(screen.queryByText("Part of this cycle could not be read")).not.toBeInTheDocument();
+      expect(screen.queryByText(/this is not a count of zero/i)).not.toBeInTheDocument();
+
+      if (tab === "projects") {
+        expect(screen.getByText("No linked projects yet")).toBeInTheDocument();
+      }
+
+      if (tab === "comments") {
+        expect(screen.getByText("No whole-cycle campaigns yet")).toBeInTheDocument();
+        // (c) for the public-review block: the real counts and the real
+        // recommendations still render when nothing failed.
+        expect(screen.queryByText(/Do not act on a recommendation to create a campaign or a packet/i)).not.toBeInTheDocument();
+        expect(
+          screen.getByText("Current rendered packet artifacts available for review and export.")
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText("Items still waiting for operator review before packet closeout.")
+        ).toBeInTheDocument();
+      }
+
+      cleanup();
+    }
   });
 });
 

@@ -198,9 +198,28 @@ Checks: 66 targeted tests in 7 files, run on one worker, and lint on the changed
 
 Limit: managed run summaries written before this change carry no eligibility record, so the board still shows their raw numbers. Not checked in the browser for this batch.
 
+## Closed tabs, October 2, 2026
+
+Checks: 743 tests in 48 files (every page test that renders a tabbed record page, plus the tab, copy and class-name guards), run on one worker; lint on the changed files; production build of this worktree with its type check, on port 3211; Chrome at 1440 and 390. The full suite was not run locally, for the reason given in the previous section.
+
+| Change | How it was checked |
+|---|---|
+| Each record-page tab is wrapped in React's `Activity` (`components/ui/page-tab-panel.tsx`). The server leaves closed tabs out of the HTML; once the page runs, React renders them hidden and keeps their state. Before, every tab was in the HTML and hidden with a class. The project overview page drops from 576 KB on main to 454 KB. The page's data payload still carries every tab, so that is the whole saving | `page-tabs-nav-and-panels.test.tsx`: the closed panel is hidden, it is absent from server HTML, and a typed draft survives closing and reopening its tab. Returning nothing for a closed tab fails 2; leaving it visible fails 2. Chrome: sizes measured on port 3000 (main 32dbc44b) and 3211 |
+| A draft survives a tab switch. Unmounting closed tabs, the plan in the review, would have lost it; the engagement page relied on this | Chrome at both widths: text typed in the project's RTP rationale field on Overview is still there after Delivery and back |
+| A map in a closed tab is not started. The engagement Responses maps start when that tab opens and are removed when it closes | Chrome: no map elements on Record, two drawn on Responses, none after moving to Setup, two again on return; no page errors |
+| 230 page tests in 11 files now open the tab that holds what they check. Before, they found content in closed tabs. Negative checks that passed only because their tab was closed now run on the tab where the text would appear, or on every tab. Two order checks on the engagement page became per-tab placement checks, because those sections are never on screen together | Each file was mutated by pointing a changed test at a wrong tab; each failed on the missing content and passed after a harmless edit |
+| "Open invoice lane" on a project's Delivery tab pointed at the invoice list on the Funding tab and went nowhere. It now reads "Open invoices" and opens the Funding tab at the list | Chrome at both widths: lands on `?tab=funding#project-invoices`, list at the top of the window. The jargon count for "lane" fell from 54 to 53 and the baseline was lowered |
+| The engagement banner for comments awaiting review told the reader to use "the moderation sections below", which are on the Responses tab. It now has a "Review comments" link to Responses, shown on every other tab. Its title no longer uses a dash | Two new tests; showing the link on Responses fails one, pointing it at Setup fails the other. Not seen on screen: no live campaign in the test workspace has comments waiting |
+
+Found while doing this, not fixed yet:
+
+- Plan page: the "Linked work" tab is marked unreadable only for scenarios, campaigns and reports, not for linked projects or supporting models. The banner above the tabs still names every failed read.
+- Plan page: "No explicit links yet" points to the "Plan record workflow panel", which is now the "Edit plan" tab.
+- Report page: when the stage-gate log cannot be read, the History tab drops the stage-gate row without saying why; the explanation is only on Packet.
+
 ## What is next
 
-1. Closed tabs unmount. 134 tests in 11 files open the tab content directly and must render the tab first.
+1. The three page findings listed under "Closed tabs".
 2. Aerial onto the map-first frame.
 3. Number formatting (review finding M10) and charts (M9).
 4. Copy pass. This waits on Nathaniel's vocabulary answers (decision D6).

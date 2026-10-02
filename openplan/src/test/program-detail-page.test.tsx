@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -229,10 +229,21 @@ vi.mock("@/components/operations/workspace-command-board", () => ({
 
 import ProgramDetailPage from "@/app/(app)/programs/[programId]/page";
 
-async function renderPage() {
+/**
+ * The page is URL-tabbed and a closed tab is not rendered at all, so every
+ * render names the tab whose content it asserts on. "overview" holds the
+ * readiness verdict; "funding" holds the funding opportunities and their dollar
+ * total; "linked" holds projects, plans, supporting models, the report packet
+ * queue and engagement evidence. The page-level disclosure sits above the tab
+ * strip and shows on every tab.
+ */
+type ProgramTab = "overview" | "funding" | "linked" | "edit";
+
+async function renderPage(tab?: ProgramTab) {
   render(
     await ProgramDetailPage({
       params: Promise.resolve({ programId: "program-1" }),
+      searchParams: Promise.resolve(tab ? { tab } : {}),
     })
   );
 }
@@ -353,7 +364,7 @@ describe("ProgramDetailPage", () => {
   });
 
   it("keeps artifact-backed linked reports in refresh posture when report generated_at is null", async () => {
-    await renderPage();
+    await renderPage("linked");
 
     const reportLinks = screen.getAllByRole("link");
     expect(
@@ -380,15 +391,19 @@ describe("ProgramDetailPage", () => {
    */
   describe("a failed read may not be rendered as an answer", () => {
     it("still shows the ordinary empty states when every read SUCCEEDS and there is genuinely nothing", async () => {
-      await renderPage();
+      await renderPage("linked");
 
       expect(screen.getByText("No plan basis linked")).toBeInTheDocument();
       expect(screen.getByText("No engagement evidence linked")).toBeInTheDocument();
-      expect(screen.getByText("No funding opportunities linked yet")).toBeInTheDocument();
       expect(screen.getByText("No supporting models visible")).toBeInTheDocument();
 
       expect(screen.queryByText("Part of this page could not be read")).not.toBeInTheDocument();
       expect(screen.queryByText("Plan links could not be read")).not.toBeInTheDocument();
+
+      cleanup();
+      await renderPage("funding");
+
+      expect(screen.getByText("No funding opportunities linked yet")).toBeInTheDocument();
     });
 
     it("replaces the plan empty state with a disclosure when the plan read fails, and leaves the other sections alone", async () => {
@@ -397,7 +412,7 @@ describe("ProgramDetailPage", () => {
         error: { message: "column plans.horizon_year does not exist" },
       });
 
-      await renderPage();
+      await renderPage("linked");
 
       // (a) the false absence sentence is gone
       expect(screen.queryByText("No plan basis linked")).not.toBeInTheDocument();
@@ -412,6 +427,9 @@ describe("ProgramDetailPage", () => {
 
       // (c) the sections whose reads SUCCEEDED still say what is true about them
       expect(screen.getByText("No engagement evidence linked")).toBeInTheDocument();
+
+      cleanup();
+      await renderPage("funding");
       expect(screen.getByText("No funding opportunities linked yet")).toBeInTheDocument();
     });
 
@@ -421,14 +439,17 @@ describe("ProgramDetailPage", () => {
         error: { message: "permission denied for table funding_opportunities" },
       });
 
-      await renderPage();
+      await renderPage("funding");
 
       expect(screen.queryByText("No funding opportunities linked yet")).not.toBeInTheDocument();
       expect(screen.getByText("Funding opportunities could not be read")).toBeInTheDocument();
       // A dollar total is the most quotable number on the page; $0 from a failed
       // read would read as a finding about the cycle.
       expect(screen.queryByText("$0")).not.toBeInTheDocument();
+
       // The plan lane is untouched, so it still states its real emptiness.
+      cleanup();
+      await renderPage("linked");
       expect(screen.getByText("No plan basis linked")).toBeInTheDocument();
     });
 
@@ -438,9 +459,14 @@ describe("ProgramDetailPage", () => {
         error: { message: "relation program_links does not exist" },
       });
 
-      await renderPage();
-
+      // The readiness verdict lives on the "overview" tab.
+      await renderPage("overview");
       expect(screen.getByText("Readiness cannot be assessed right now")).toBeInTheDocument();
+
+      // The empty states that a lost link set would falsely produce live on the
+      // "linked" tab, so that is where their absence has to be checked.
+      cleanup();
+      await renderPage("linked");
       expect(screen.queryByText("No plan basis linked")).not.toBeInTheDocument();
       expect(screen.queryByText("No engagement evidence linked")).not.toBeInTheDocument();
       expect(screen.queryByText("No project links yet")).not.toBeInTheDocument();
@@ -497,7 +523,7 @@ describe("ProgramDetailPage", () => {
         error: { message: "permission denied for table model_links" },
       });
 
-      await renderPage();
+      await renderPage("linked");
 
       // The model record itself read fine, so it is still shown.
       expect(screen.getByText("Cycle screening model")).toBeInTheDocument();
@@ -514,7 +540,7 @@ describe("ProgramDetailPage", () => {
       modelsProjectOrderMock.mockResolvedValue({ data: [SUPPORTING_MODEL], error: null });
       supportingModelLinksInMock.mockResolvedValue({ data: [], error: null });
 
-      await renderPage();
+      await renderPage("linked");
 
       expect(screen.getByText("Cycle screening model")).toBeInTheDocument();
       expect(screen.getByText("0 runs")).toBeInTheDocument();

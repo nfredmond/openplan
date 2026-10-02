@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
@@ -363,8 +363,18 @@ function installRouteBackedFetch() {
   );
 }
 
-async function renderPlanDetailPage() {
-  render(await PlanDetailPage({ params: Promise.resolve({ planId: PLAN_ID }) }));
+/**
+ * The plan page is URL-tabbed and a closed tab is not rendered at all. The link
+ * editor (`PlanDetailControls`) lives on the "edit" tab, so that is the default
+ * here; the explicit-links empty state lives on the "linked" tab.
+ */
+async function renderPlanDetailPage(tab: "overview" | "linked" | "edit" = "edit") {
+  render(
+    await PlanDetailPage({
+      params: Promise.resolve({ planId: PLAN_ID }),
+      searchParams: Promise.resolve({ tab }),
+    })
+  );
 }
 
 function selectFor(labelText: string): HTMLSelectElement {
@@ -693,9 +703,17 @@ describe("plan links reach a planner", () => {
     store.plan_links = [];
     createClientMock.mockResolvedValue(createSupabaseDouble(store).client);
 
-    await renderPlanDetailPage();
+    // The empty state that carried the stale copy is on the "linked" tab.
+    await renderPlanDetailPage("linked");
 
     expect(screen.queryByText(/added through the API/i)).not.toBeInTheDocument();
     expect(screen.getByText(/No explicit links yet/i)).toBeInTheDocument();
+
+    // And the editor itself, on the "edit" tab, does not send the planner to the
+    // API either.
+    cleanup();
+    await renderPlanDetailPage("edit");
+    await waitFor(() => expect(selectFor("Linked reports")).toBeInTheDocument());
+    expect(screen.queryByText(/added through the API/i)).not.toBeInTheDocument();
   });
 });

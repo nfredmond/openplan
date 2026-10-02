@@ -1,5 +1,5 @@
 import { historical } from "./fixtures/engagement/legacy-synthesis";
-import { render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { pagingFake } from "./helpers/paging-fake";
@@ -463,6 +463,31 @@ async function renderPage(searchParams?: { created?: string; tab?: string }) {
   );
 }
 
+/**
+ * The console's four URL tabs, in the order the strip shows them. A closed tab
+ * is not rendered at all, so an assertion only means something on the tab that
+ * holds the content it names.
+ */
+const CAMPAIGN_TABS = ["setup", "responses", "analysis", "record"] as const;
+type CampaignTab = (typeof CAMPAIGN_TABS)[number];
+
+/**
+ * Render one tab from a clean slate, for tests that read more than one tab.
+ *
+ * `arrange` re-arms any one-shot fixture before the render, and the paging
+ * caches are dropped first, so every tab is rendered from the SAME failure (or
+ * success) rather than the first tab consuming it and the rest reading the
+ * defaults. A negative assertion checked on a tab rendered from the defaults
+ * would pass for the wrong reason.
+ */
+async function renderTabAfresh(tab: CampaignTab, arrange?: () => void) {
+  cleanup();
+  itemsPaging.reset();
+  categoriesPaging.reset();
+  arrange?.();
+  await renderPage({ tab });
+}
+
 describe("EngagementCampaignDetailPage", () => {
   it("mounts retained sources for an empty consultation with exact staff scope", async () => {
     itemsOrderMock.mockResolvedValueOnce({ data: [], error: null });
@@ -485,7 +510,7 @@ describe("EngagementCampaignDetailPage", () => {
 
   it("shows a retry instead of an empty staff-response builder when the read fails", async () => {
     closeLoopReadError = { message: "SYNTHETIC connection lost" };
-    await renderPage();
+    await renderPage({ tab: "setup" });
     expect(snapshotRpcMock).toHaveBeenCalledWith("read_engagement_response_snapshot", { p_campaign: "50000000-0000-4000-8000-000000000001", p_published_only: false });
     expect(snapshotRpcMock).toHaveBeenCalledWith("read_engagement_translation_snapshot", { p_campaign: "50000000-0000-4000-8000-000000000001" });
     expect(screen.getByRole("button", { name: "Retry loading responses" })).toBeEnabled();
@@ -692,7 +717,7 @@ describe("EngagementCampaignDetailPage", () => {
   });
 
   it("surfaces campaign-linked packet freshness guidance and handoff readiness", async () => {
-    await renderPage();
+    await renderPage({ tab: "record" });
 
     expect(screen.getByText(/Campaign handoff decision/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Nearly ready/i).length).toBeGreaterThan(0);
@@ -738,7 +763,7 @@ describe("EngagementCampaignDetailPage", () => {
       error: null,
     });
 
-    await renderPage();
+    await renderPage({ tab: "record" });
 
     expect(screen.getAllByText(/Packet current/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/Refresh recommended/i)).not.toBeInTheDocument();
@@ -803,7 +828,7 @@ describe("EngagementCampaignDetailPage", () => {
       error: null,
     });
 
-    await renderPage();
+    await renderPage({ tab: "record" });
 
     expect(screen.getByText(/1 included · 1 held · 1 internal\/private excluded/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Held for duplicate review/i).length).toBeGreaterThan(0);
@@ -864,7 +889,7 @@ describe("EngagementCampaignDetailPage", () => {
   it("shows the empty report state when no reports exist for the linked project", async () => {
     reportsOrderMock.mockResolvedValueOnce({ data: [], error: null });
 
-    await renderPage();
+    await renderPage({ tab: "record" });
 
     expect(
       screen.getByText(/No reports linked through this project yet/i)
@@ -883,7 +908,7 @@ describe("EngagementCampaignDetailPage", () => {
    */
   describe("the campaign's GIS context layers", () => {
     it("puts the upload panel on the console a planner actually opens", async () => {
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.getByText(/Put your project on the map/i)).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /add layer/i })).toBeInTheDocument();
@@ -896,13 +921,18 @@ describe("EngagementCampaignDetailPage", () => {
         contextLayerRow({ id: "layer-2", name: "Draft parcels", visible_to_participants: false }),
       ];
 
-      await renderPage();
+      // The layer list lives on Setup…
+      await renderTabAfresh("setup");
 
       // Both layers are the operator's business…
       expect(screen.getByText("Proposed alignment")).toBeInTheDocument();
       expect(screen.getByText("Draft parcels")).toBeInTheDocument();
       expect(screen.getByText("Public")).toBeInTheDocument();
       expect(screen.getByText("Hidden")).toBeInTheDocument();
+
+      // …the review map on Responses, so the negative below is checked on the
+      // tab where unpublished geometry would be drawn if it leaked.
+      await renderTabAfresh("responses");
 
       // …but only the published one reaches a map, and it reaches it by name.
       expect(screen.getByText(/drawn under review: Proposed alignment/)).toBeInTheDocument();
@@ -918,7 +948,7 @@ describe("EngagementCampaignDetailPage", () => {
       });
       contextLayerRows = [contextLayerRow()];
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.getByText("Proposed alignment")).toBeInTheDocument();
       expect(screen.queryByRole("button", { name: /add layer/i })).not.toBeInTheDocument();
@@ -929,7 +959,7 @@ describe("EngagementCampaignDetailPage", () => {
     it("says the layer list could not be read instead of showing a campaign with none", async () => {
       contextLayerReadError = { message: "connection reset" };
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.getByText(/could not be read/i)).toBeInTheDocument();
       expect(screen.getByText(/not a finding/i)).toBeInTheDocument();
@@ -954,7 +984,7 @@ describe("EngagementCampaignDetailPage", () => {
    */
   describe("the campaign's translations", () => {
     it("puts the translation panel on the console an operator actually opens", async () => {
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(
         screen.getByRole("heading", { name: /publish this campaign in your community.s languages/i })
@@ -962,7 +992,7 @@ describe("EngagementCampaignDetailPage", () => {
     });
 
     it("hands the panel this campaign's own strings, not an empty inventory", async () => {
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       // The seam: these strings exist inside the panel only because the page
       // built the inventory and passed it. A panel handed `undefined` renders
@@ -980,7 +1010,7 @@ describe("EngagementCampaignDetailPage", () => {
     });
 
     it("gives every editor the target language's own direction and language tag", async () => {
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       // Arabic and Farsi are two of the eleven. An editor that reads
       // left-to-right is unusable for them, and a screen reader told the wrong
@@ -1006,7 +1036,7 @@ describe("EngagementCampaignDetailPage", () => {
         },
       ];
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       // One of four strings translated is PARTLY translated, and the panel says
       // so rather than rounding up to a language the agency has published in.
@@ -1029,7 +1059,7 @@ describe("EngagementCampaignDetailPage", () => {
         },
       ];
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.getByText(/Machine translation — participants are told/)).toBeInTheDocument();
       // The consequence, before the click: accepting removes the caveat a
@@ -1044,7 +1074,7 @@ describe("EngagementCampaignDetailPage", () => {
         error: null,
       });
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       // A viewer still sees coverage — "what have we published in Spanish" is a
       // question they are entitled to answer — and gets no way to change it.
@@ -1063,7 +1093,7 @@ describe("EngagementCampaignDetailPage", () => {
       // The live state of any deployment that has not applied 20260729000004.
       translationReadError = { message: 'relation "engagement_content_translations" does not exist' };
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.getByText(/does not have the translation storage yet/i)).toBeInTheDocument();
       expect(screen.getByText(/That is not the same as none/)).toBeInTheDocument();
@@ -1084,7 +1114,7 @@ describe("EngagementCampaignDetailPage", () => {
         error: { message: "column engagement_campaigns.default_content_locale does not exist" },
       };
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.queryByText(/Nobody has recorded which language/)).not.toBeInTheDocument();
       expect(screen.getByText(/could not be read, so OpenPlan is falling back/)).toBeInTheDocument();
@@ -1099,7 +1129,7 @@ describe("EngagementCampaignDetailPage", () => {
       // cannot make, because "we published in Spanish" is said out loud from it.
       surveyQuestionsReadError = { message: "connection reset" };
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(
         screen.getByText(/That is not the same as none/)
@@ -1154,22 +1184,33 @@ describe("EngagementCampaignDetailPage", () => {
     });
 
     it("does not tell a moderator nobody commented when the comments could not be read", async () => {
-      itemsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "statement timeout" } });
+      const failItems = () =>
+        itemsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "statement timeout" } });
 
-      await renderPage();
+      // The false empties checked on EVERY tab: "No intake items yet" is drawn
+      // on Responses and Record, "Pending: 0" on Responses, and a single tab
+      // would leave the others unwatched.
+      for (const tab of CAMPAIGN_TABS) {
+        await renderTabAfresh(tab, failItems);
+        // Proof this tab was rendered from the failure, not from the defaults.
+        expect(screen.getByText(/Part of this campaign could not be read/i)).toBeInTheDocument();
+        expect(screen.queryByText("No intake items yet")).not.toBeInTheDocument();
+        expect(screen.queryByText("No flagged items")).not.toBeInTheDocument();
+        expect(screen.queryByText("Pending: 0")).not.toBeInTheDocument();
+      }
 
-      expect(screen.queryByText("No intake items yet")).not.toBeInTheDocument();
-      expect(screen.queryByText("No flagged items")).not.toBeInTheDocument();
+      await renderTabAfresh("responses", failItems);
       expect(screen.getByText(/Part of this campaign could not be read/i)).toBeInTheDocument();
       // Named in the top-of-page disclosure and again where the list would be.
       expect(screen.getAllByText(/the comments on this campaign/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/statement timeout/)).toBeInTheDocument();
       expect(screen.getByText(/This campaign's comments could not be read/i)).toBeInTheDocument();
-      // The verdict above is computed over those comments, so it says so.
-      expect(screen.getByText(/incomplete rather than a finding/i)).toBeInTheDocument();
       // …and the moderation workload is withheld rather than reported as zero.
       expect(screen.getByText(/Moderation workload unavailable/i)).toBeInTheDocument();
-      expect(screen.queryByText("Pending: 0")).not.toBeInTheDocument();
+
+      await renderTabAfresh("record", failItems);
+      // The verdict above is computed over those comments, so it says so.
+      expect(screen.getByText(/incomplete rather than a finding/i)).toBeInTheDocument();
     });
 
     /**
@@ -1186,18 +1227,27 @@ describe("EngagementCampaignDetailPage", () => {
      * query reaches one.
      */
     it("withholds every comment-derived figure in the handoff section, not just the header tiles", async () => {
-      itemsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "statement timeout" } });
+      const failItems = () =>
+        itemsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "statement timeout" } });
 
-      await renderPage();
+      // Checked on every tab, as it was when every tab was in the document: the
+      // handoff section is on Record, but "uncategorized" and "0%" are drawn by
+      // panels on other tabs too.
+      for (const tab of CAMPAIGN_TABS) {
+        await renderTabAfresh(tab, failItems);
+        // Proof this tab was rendered from the failure, not from the defaults.
+        expect(screen.getByText(/Part of this campaign could not be read/i)).toBeInTheDocument();
+        // The green "clean backlog" verdict, and the coverage/export figures.
+        expect(screen.queryByText(/0 uncategorized/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/0 handoff-ready/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/still need classification/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/ready for GIS\/map export/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/0 approved total/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/0 total items/)).not.toBeInTheDocument();
+        expect(screen.queryByText("0%")).not.toBeInTheDocument();
+      }
 
-      // The green "clean backlog" verdict, and the coverage/export figures.
-      expect(screen.queryByText(/0 uncategorized/)).not.toBeInTheDocument();
-      expect(screen.queryByText(/0 handoff-ready/)).not.toBeInTheDocument();
-      expect(screen.queryByText(/still need classification/)).not.toBeInTheDocument();
-      expect(screen.queryByText(/ready for GIS\/map export/)).not.toBeInTheDocument();
-      expect(screen.queryByText(/0 approved total/)).not.toBeInTheDocument();
-      expect(screen.queryByText(/0 total items/)).not.toBeInTheDocument();
-      expect(screen.queryByText("0%")).not.toBeInTheDocument();
+      await renderTabAfresh("record", failItems);
       // Withheld as a block, and said once rather than left to be inferred.
       expect(screen.getByText(/coverage and workload figures could not be computed/i)).toBeInTheDocument();
     });
@@ -1213,7 +1263,7 @@ describe("EngagementCampaignDetailPage", () => {
     it("does not offer to seed a packet whose provenance would record unread counts as zero", async () => {
       itemsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "statement timeout" } });
 
-      await renderPage();
+      await renderPage({ tab: "record" });
 
       expect(screen.queryByTestId("engagement-report-create-button")).not.toBeInTheDocument();
       expect(screen.getByText(/Packet creation is unavailable until the comments can be read/i)).toBeInTheDocument();
@@ -1225,7 +1275,7 @@ describe("EngagementCampaignDetailPage", () => {
       // and withholding a planner's own data is its own defect.
       itemsOrderMock.mockResolvedValueOnce({ data: [], error: null });
 
-      await renderPage();
+      await renderPage({ tab: "record" });
 
       expect(screen.getByTestId("engagement-report-create-button")).toBeInTheDocument();
       expect(screen.queryByText(/Packet creation is unavailable/i)).not.toBeInTheDocument();
@@ -1254,7 +1304,7 @@ describe("EngagementCampaignDetailPage", () => {
         error: { message: "connection reset" },
       });
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.queryByText("No categories yet")).not.toBeInTheDocument();
       expect(screen.getByText(/This campaign's categories could not be read/i)).toBeInTheDocument();
@@ -1266,23 +1316,31 @@ describe("EngagementCampaignDetailPage", () => {
     it("still shows the ordinary empty category state when the read succeeds", async () => {
       categoriesOrderCreatedMock.mockResolvedValueOnce({ data: [], error: null });
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.getByText("No categories yet")).toBeInTheDocument();
       expect(screen.queryByText(/This campaign's categories could not be read/i)).not.toBeInTheDocument();
     });
 
     it("does not call a linked campaign unlinked because the project could not be read", async () => {
-      projectMaybeSingleMock.mockResolvedValueOnce({
-        data: null,
-        error: { message: "connection reset" },
-      });
+      const failProject = () =>
+        projectMaybeSingleMock.mockResolvedValueOnce({
+          data: null,
+          error: { message: "connection reset" },
+        });
 
-      await renderPage();
+      // "Unlinked" is drawn by the moderation summary on Responses as well as
+      // the handoff section on Record, so every tab is checked.
+      for (const tab of CAMPAIGN_TABS) {
+        await renderTabAfresh(tab, failProject);
+        // Proof this tab was rendered from the failure, not from the defaults.
+        expect(screen.getByText(/Part of this campaign could not be read/i)).toBeInTheDocument();
+        expect(screen.queryByText("Unlinked")).not.toBeInTheDocument();
+        expect(screen.queryByText("No project linked yet")).not.toBeInTheDocument();
+        expect(screen.queryByText("Unlinked project")).not.toBeInTheDocument();
+      }
 
-      expect(screen.queryByText("Unlinked")).not.toBeInTheDocument();
-      expect(screen.queryByText("No project linked yet")).not.toBeInTheDocument();
-      expect(screen.queryByText("Unlinked project")).not.toBeInTheDocument();
+      await renderTabAfresh("record", failProject);
       // Said where the project would be named, and again where its reports
       // would have been listed.
       expect(screen.getAllByText(/The linked project could not be read/i).length).toBeGreaterThan(1);
@@ -1292,7 +1350,7 @@ describe("EngagementCampaignDetailPage", () => {
     it("does not say a project has no reports when the report list could not be read", async () => {
       reportsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "statement timeout" } });
 
-      await renderPage();
+      await renderPage({ tab: "record" });
 
       expect(screen.queryByText(/No reports linked through this project yet/i)).not.toBeInTheDocument();
       expect(screen.getByText(/Reports on this project could not be listed/i)).toBeInTheDocument();
@@ -1302,7 +1360,7 @@ describe("EngagementCampaignDetailPage", () => {
     it("does not label every report project-linked-only out of a failed section read", async () => {
       reportSectionsInMock.mockResolvedValueOnce({ data: null, error: { message: "connection reset" } });
 
-      await renderPage();
+      await renderPage({ tab: "record" });
 
       expect(screen.getByText(/Which reports source this campaign could not be read/i)).toBeInTheDocument();
       expect(screen.getByText(/That is the fallback label, not a finding/i)).toBeInTheDocument();
@@ -1356,7 +1414,7 @@ describe("EngagementCampaignDetailPage", () => {
     });
 
     it("says when the campaign is attached to no plan, and where to attach one", async () => {
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.getByText(/RTP attachment/)).toBeInTheDocument();
       expect(screen.getByText(/not attached to an RTP cycle/i)).toBeInTheDocument();
@@ -1369,7 +1427,7 @@ describe("EngagementCampaignDetailPage", () => {
         error: null,
       });
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.getByText("2050 Regional Transportation Plan")).toBeInTheDocument();
       expect(screen.getByText(/Comments land on the whole plan/i)).toBeInTheDocument();
@@ -1391,7 +1449,7 @@ describe("EngagementCampaignDetailPage", () => {
         error: null,
       });
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.getByText(/Targeted chapter: Financial element/)).toBeInTheDocument();
       expect(screen.queryByText(/Comments land on the whole plan/i)).not.toBeInTheDocument();
@@ -1404,7 +1462,7 @@ describe("EngagementCampaignDetailPage", () => {
         error: { message: "statement timeout" },
       });
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.getByText(/The attached RTP cycle could not be read/i)).toBeInTheDocument();
       expect(screen.getByText(/failed read, not a missing attachment/i)).toBeInTheDocument();
@@ -1447,7 +1505,7 @@ describe("EngagementCampaignDetailPage", () => {
 
     it("collapses to a live summary when the portal is already reachable", async () => {
       // The default fixture is active with a token → live.
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       const flow = screen.getByTestId("campaign-publish-flow");
       expect(within(flow).getByText(/This campaign is live/i)).toBeInTheDocument();
@@ -1515,7 +1573,7 @@ describe("EngagementCampaignDetailPage", () => {
         error: null,
       };
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       expect(screen.getByTestId("publish-area-advisory")).toHaveTextContent(
         /Campaign area on record: Franklin County, Ohio/
@@ -1524,7 +1582,7 @@ describe("EngagementCampaignDetailPage", () => {
     });
 
     it("states the consequences of publishing without a campaign area", async () => {
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       const advisory = screen.getByTestId("publish-area-advisory");
       expect(advisory).toHaveTextContent(/No campaign area is set/i);
@@ -1534,7 +1592,7 @@ describe("EngagementCampaignDetailPage", () => {
     it("does not render a failed area read as a missing area", async () => {
       campaignPlaceResult = { data: null, error: { message: "statement timeout" } };
 
-      await renderPage();
+      await renderPage({ tab: "setup" });
 
       const advisory = screen.getByTestId("publish-area-advisory");
       expect(advisory).toHaveTextContent(/could not be read/i);
@@ -1550,7 +1608,7 @@ describe("EngagementCampaignDetailPage", () => {
    * so out of a failed read, a dead portal, or a queue that has published work.
    */
   describe("the moderation honesty banner", () => {
-    const BANNER_PATTERN = /waiting for review — residents currently see none of them/i;
+    const BANNER_PATTERN = /waiting for review\. Residents currently see none of them/i;
 
     function pendingItem(id: string, status = "pending") {
       return {
@@ -1581,7 +1639,22 @@ describe("EngagementCampaignDetailPage", () => {
 
       const banner = screen.getByTestId("moderation-honesty-banner");
       expect(banner).toHaveTextContent(/2 submissions are waiting for review/);
-      expect(banner).toHaveTextContent(/residents currently see none of them/);
+      expect(banner).toHaveTextContent(/Residents currently see none of them/);
+      // A live campaign opens on Responses, where the queue already is.
+      expect(within(banner).queryByRole("link", { name: "Review comments" })).toBeNull();
+    });
+
+    it("links to the Responses tab from a tab that does not hold the queue", async () => {
+      itemsOrderMock.mockResolvedValueOnce({ data: [pendingItem("item-1")], error: null });
+
+      await renderPage({ tab: "record" });
+
+      const banner = screen.getByTestId("moderation-honesty-banner");
+      expect(banner).toHaveTextContent(/1 submission is waiting for review/);
+      expect(within(banner).getByRole("link", { name: "Review comments" })).toHaveAttribute(
+        "href",
+        "/engagement/50000000-0000-4000-8000-000000000001?tab=responses"
+      );
     });
 
     it("uses the singular for a single waiting submission", async () => {
@@ -1681,52 +1754,81 @@ describe("EngagementCampaignDetailPage", () => {
       expect(earlier.compareDocumentPosition(later) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     }
 
-    it("keeps every key section mounted after the reorder", async () => {
-      await renderPage();
+    /** The open panel an element was rendered in, by its tab key. */
+    function panelOf(element: Element) {
+      return element.closest("[data-page-tab-panel]")?.getAttribute("data-page-tab-panel");
+    }
 
+    /** The tab strip's link for a tab, which every tab renders. */
+    function tabLink(tab: CampaignTab) {
+      const link = screen.getByTestId("page-tabs-nav").querySelector(`[data-page-tab="${tab}"]`);
+      expect(link).not.toBeNull();
+      return link!;
+    }
+
+    it("keeps every key section mounted after the reorder", async () => {
+      await renderTabAfresh("setup");
       // Setup surfaces.
       expect(screen.getByTestId("campaign-publish-flow")).toBeInTheDocument();
       expect(screen.getByRole("heading", { name: /Survey & form questions/i })).toBeInTheDocument();
       expect(screen.getByRole("heading", { name: /You said \/ We did/i })).toBeInTheDocument();
-      // Full-width readiness/report sections.
-      expect(screen.getByText(/Campaign handoff decision/i)).toBeInTheDocument();
-      expect(screen.getByText(/Reports built on this campaign/i)).toBeInTheDocument();
       expect(screen.getByText(/RTP attachment/)).toBeInTheDocument();
-      // Left column.
       expect(screen.getByText(/Current categories/i)).toBeInTheDocument();
-      expect(screen.getByText(/Source and geography breakdown/i)).toBeInTheDocument();
-      // Right column: portal surfaces, intake, moderation, analysis.
+      // Portal surfaces and intake.
       expect(screen.getByText(/Put your project on the map/i)).toBeInTheDocument();
       expect(screen.getByText(/Comments that did not come through the portal/i)).toBeInTheDocument();
       expect(screen.getByText(/If a resident cannot use the portal/i)).toBeInTheDocument();
       expect(
         screen.getByRole("heading", { name: /publish this campaign in your community.s languages/i })
       ).toBeInTheDocument();
-      expect(screen.getByTestId("engagement-bulk-moderation")).toBeInTheDocument();
-      expect(screen.getByTestId("engagement-item-registry")).toBeInTheDocument();
-      expect(screen.getByTestId("synthesis-source-scope")).toBeInTheDocument();
-      expect(screen.getByTestId("representativeness-panel")).toBeInTheDocument();
       // Operator Actions footer.
       expect(screen.getByTestId("engagement-campaign-controls")).toBeInTheDocument();
       expect(screen.getByTestId("engagement-share-controls")).toBeInTheDocument();
       expect(screen.getByTestId("engagement-item-composer")).toBeInTheDocument();
+
+      await renderTabAfresh("responses");
+      // Moderation.
+      expect(screen.getByTestId("engagement-bulk-moderation")).toBeInTheDocument();
+      expect(screen.getByTestId("engagement-item-registry")).toBeInTheDocument();
+
+      await renderTabAfresh("analysis");
+      // Analysis.
+      expect(screen.getByText(/Source and geography breakdown/i)).toBeInTheDocument();
+      expect(screen.getByTestId("synthesis-source-scope")).toBeInTheDocument();
+      expect(screen.getByTestId("representativeness-panel")).toBeInTheDocument();
+
+      await renderTabAfresh("record");
+      // Full-width readiness/report sections.
+      expect(screen.getByText(/Campaign handoff decision/i)).toBeInTheDocument();
+      expect(screen.getByText(/Reports built on this campaign/i)).toBeInTheDocument();
     });
 
+    /*
+     * The two order tests below compared DOM positions in one render when every
+     * tab was in the document. With closed tabs unmounted the sections being
+     * compared are never in the same render, so the order is now the order of
+     * their TABS: each section is pinned to its tab's open panel, and the tab
+     * links are compared in the strip.
+     */
     it("puts the publish flow and both builders above the analysis panels", async () => {
-      await renderPage();
+      await renderTabAfresh("analysis");
+      expect(panelOf(screen.getByTestId("synthesis-source-scope"))).toBe("analysis");
 
-      const synthesis = screen.getByTestId("synthesis-source-scope");
-      assertPrecedes(screen.getByTestId("campaign-publish-flow"), synthesis);
-      assertPrecedes(screen.getByRole("heading", { name: /Survey & form questions/i }), synthesis);
-      assertPrecedes(screen.getByRole("heading", { name: /You said \/ We did/i }), synthesis);
+      await renderTabAfresh("setup");
+      expect(panelOf(screen.getByTestId("campaign-publish-flow"))).toBe("setup");
+      expect(panelOf(screen.getByRole("heading", { name: /Survey & form questions/i }))).toBe("setup");
+      expect(panelOf(screen.getByRole("heading", { name: /You said \/ We did/i }))).toBe("setup");
+      assertPrecedes(tabLink("setup"), tabLink("analysis"));
     });
 
     it("keeps moderation above the analysis panels in the working column", async () => {
-      await renderPage();
+      await renderTabAfresh("analysis");
+      expect(panelOf(screen.getByTestId("synthesis-source-scope"))).toBe("analysis");
 
-      const synthesis = screen.getByTestId("synthesis-source-scope");
-      assertPrecedes(screen.getByTestId("engagement-bulk-moderation"), synthesis);
-      assertPrecedes(screen.getByTestId("engagement-item-registry"), synthesis);
+      await renderTabAfresh("responses");
+      expect(panelOf(screen.getByTestId("engagement-bulk-moderation"))).toBe("responses");
+      expect(panelOf(screen.getByTestId("engagement-item-registry"))).toBe("responses");
+      assertPrecedes(tabLink("responses"), tabLink("analysis"));
     });
   });
 });

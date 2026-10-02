@@ -1,5 +1,7 @@
+import * as React from "react";
 import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 
 import { PageTabNav } from "@/components/ui/page-tab-nav";
 import { PageTabPanel } from "@/components/ui/page-tab-panel";
@@ -9,11 +11,11 @@ import { buildProjectTabs } from "@/app/(app)/projects/[projectId]/_components/_
  * The tab strip as it is actually rendered, against the project page's real tab
  * definitions.
  *
- * NOTHING HERE CLAIMS TO CHECK VISIBILITY. jsdom applies no stylesheet, so a
- * `hidden` utility class means nothing to it; what is asserted is the DOM the
- * browser is given — the href each trigger points at, and the state each panel
- * is marked with. The visibility follows from `display: none` in a browser, and
- * a test that pretended to have verified that would be worse than no test.
+ * jsdom applies no stylesheet, so the strip's checks are about the DOM the
+ * browser is given: the href each trigger points at and the state each panel
+ * is marked with. A closed panel is hidden by React's `Activity` with an inline
+ * `display: none`, which jsdom does read, so the panel checks can ask whether
+ * the closed body is visible.
  */
 
 const NO_FAILURES = {
@@ -114,7 +116,7 @@ describe("a failed read behind a closed tab announces itself", () => {
 });
 
 describe("panels are marked open or closed", () => {
-  it("gives the browser display:none for the closed panel and nothing for the open one", () => {
+  it("shows the open panel and hides the closed one", () => {
     render(
       <>
         <PageTabPanel tabKey="overview" active>
@@ -126,13 +128,46 @@ describe("panels are marked open or closed", () => {
       </>
     );
 
-    const open = document.querySelector('[data-page-tab-panel="overview"]');
-    const closed = document.querySelector('[data-page-tab-panel="funding"]');
+    expect(document.querySelector('[data-page-tab-panel="overview"]')?.getAttribute("data-page-tab-panel-state")).toBe("open");
+    expect(screen.getByText("open panel body")).toBeVisible();
+    expect(document.querySelector('[data-page-tab-panel="funding"]')?.getAttribute("data-page-tab-panel-state")).toBe("closed");
+    expect(screen.getByText("closed panel body")).not.toBeVisible();
+  });
 
-    expect(open?.getAttribute("data-page-tab-panel-state")).toBe("open");
-    expect(open?.className).not.toContain("hidden");
-    expect(closed?.getAttribute("data-page-tab-panel-state")).toBe("closed");
-    expect(closed?.className.split(/\s+/)).toContain("hidden");
+  it("leaves the closed panel out of the server's HTML", () => {
+    const html = renderToString(
+      <>
+        <PageTabPanel tabKey="overview" active>
+          <p>open panel body</p>
+        </PageTabPanel>
+        <PageTabPanel tabKey="funding" active={false}>
+          <p>closed panel body</p>
+        </PageTabPanel>
+      </>
+    );
+
+    expect(html).toContain("open panel body");
+    expect(html).not.toContain("closed panel body");
+  });
+
+  it("keeps what a planner typed when they leave a tab and come back", () => {
+    function Draft() {
+      const [text, setText] = React.useState("");
+      return <input aria-label="Draft note" value={text} onChange={(event) => setText(event.target.value)} />;
+    }
+    const page = (active: boolean) => (
+      <PageTabPanel tabKey="edit" active={active}>
+        <Draft />
+      </PageTabPanel>
+    );
+
+    const { rerender } = render(page(true));
+    fireEvent.change(screen.getByLabelText("Draft note"), { target: { value: "Bike lane on Main" } });
+
+    rerender(page(false));
+    rerender(page(true));
+
+    expect(screen.getByLabelText("Draft note")).toHaveValue("Bike lane on Main");
   });
 
   it("uses the layout the page asked for on the open panel", () => {

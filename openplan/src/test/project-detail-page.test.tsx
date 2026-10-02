@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { REPORT_EVIDENCE_CASES } from "./helpers/report-evidence-cases";
@@ -577,12 +577,44 @@ vi.mock("@/lib/operations/workspace-summary", async () => {
 
 import ProjectDetailPage from "@/app/(app)/projects/[projectId]/page";
 
-async function renderPage() {
+/**
+ * The page is URL-tabbed and a closed tab is not rendered at all, so a test
+ * names the tab whose content it asserts on. With no tab the page opens
+ * "overview": the posture header, report freshness, the crosslink board, the
+ * readiness rollup and stage gates. "delivery" holds milestones, submittals and
+ * deliverables; "funding" holds awards, opportunities, reimbursement invoices
+ * and the budget panel; "evidence" holds datasets, runs, aerial evidence and
+ * documents; "record" holds risks, issues, decisions and meetings. The page
+ * banner ("Part of this page could not be read") sits above the tab strip and
+ * shows on every tab.
+ */
+type ProjectTab = "overview" | "delivery" | "funding" | "evidence" | "record";
+const PROJECT_TABS: readonly ProjectTab[] = ["overview", "delivery", "funding", "evidence", "record"];
+
+async function renderPage(tab?: ProjectTab) {
   render(
     await ProjectDetailPage({
       params: Promise.resolve({ projectId: "project-1" }),
+      searchParams: Promise.resolve(tab ? { tab } : {}),
     })
   );
+}
+
+/** Unmount whatever is rendered and render the page again on `tab`. */
+async function rerenderOnTab(tab: ProjectTab) {
+  cleanup();
+  await renderPage(tab);
+}
+
+/**
+ * For an absence the old single-scroll page asserted across EVERY panel: render
+ * each tab in turn, so the claim still covers the whole record.
+ */
+async function expectOnEveryTab(assertion: (tab: ProjectTab) => void) {
+  for (const tab of PROJECT_TABS) {
+    await rerenderOnTab(tab);
+    assertion(tab);
+  }
 }
 
 function expectLinkByHref(name: RegExp, href: string) {
@@ -1156,7 +1188,7 @@ describe("ProjectDetailPage", () => {
       error: null,
     });
 
-    await renderPage();
+    await renderPage("funding");
 
     // The registered profile's own label for the recorded posture — the fix
     // for every new invoice showing the DB default's vocabulary instead.
@@ -1169,7 +1201,7 @@ describe("ProjectDetailPage", () => {
   });
 
   it("surfaces project-linked report freshness guidance", async () => {
-    await renderPage();
+    await renderPage("overview");
 
     expect(screen.getByText(/Are this project’s reports up to date\?/i)).toBeInTheDocument();
     expect(screen.getByText(/Downtown Safety Packet needs attention/i)).toBeInTheDocument();
@@ -1183,11 +1215,6 @@ describe("ProjectDetailPage", () => {
     expect(screen.getAllByText(/Evidence-backed/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Governance holds/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Blocked gate: G02/i).length).toBeGreaterThan(0);
-    expect(
-      screen.getByText(
-        /Saved comparison context from Downtown Safety Packet can support grant planning language or prioritization framing for this funding stack\./i
-      )
-    ).toBeInTheDocument();
     expect(screen.getByText(/Packet release review/i)).toBeInTheDocument();
     expect(screen.getByText(/Linked outputs across this project/i)).toBeInTheDocument();
     expect(screen.getByText(/RTP links, project reports, scenario sets/i)).toBeInTheDocument();
@@ -1236,6 +1263,14 @@ describe("ProjectDetailPage", () => {
       "/reports/report-1#drift-since-generation"
     );
     expectLinkByHref(/Downtown Safety Packet/i, "/reports/report-1#drift-since-generation");
+
+    // The funding stack, which cites the same packet, is on the "funding" tab.
+    await rerenderOnTab("funding");
+    expect(
+      screen.getByText(
+        /Saved comparison context from Downtown Safety Packet can support grant planning language or prioritization framing for this funding stack\./i
+      )
+    ).toBeInTheDocument();
   });
 
   it.each(REPORT_EVIDENCE_CASES)("counts actual report evidence in project detail: $label", async ({ metadata, supported }) => {
@@ -1434,7 +1469,7 @@ describe("ProjectDetailPage", () => {
       error: null,
     });
 
-    await renderPage();
+    await renderPage("funding");
 
     // Chip on the deliverable row AND the budget panel row: burn 50% at 50%
     // complete is on pace; the unbudgeted deliverable gets the honest refusal.
@@ -1455,7 +1490,7 @@ describe("ProjectDetailPage", () => {
    * the screen. These anchors are rendered only by the board.
    */
   it("mounts the delivery board, which is the only surface carrying the record write controls", async () => {
-    await renderPage();
+    await renderPage("delivery");
 
     expect(document.querySelector("#project-deliverables")).not.toBeNull();
     expect(document.querySelector("#project-milestones")).not.toBeNull();
@@ -1508,7 +1543,7 @@ describe("ProjectDetailPage", () => {
       error: null,
     });
 
-    await renderPage();
+    await renderPage("funding");
 
     const [awardColumns] = fundingAwardsSelectMock.mock.calls[0];
     for (const column of ["closure_basis", "closed_at", "closure_note", "reopened_at"]) {
@@ -1557,7 +1592,7 @@ describe("ProjectDetailPage", () => {
       error: null,
     });
 
-    await renderPage();
+    await renderPage("funding");
 
     expect(screen.getByText("Closure basis not loaded")).toBeInTheDocument();
     expect(screen.getByText(/is not recorded in what was loaded here/i)).toBeInTheDocument();
@@ -1577,7 +1612,7 @@ describe("ProjectDetailPage", () => {
       error: { message: "column funding_awards.closure_basis does not exist" },
     });
 
-    await renderPage();
+    await renderPage("funding");
 
     expect(
       screen.getByText(/award records will appear after the funding award migrations are applied/i)
@@ -1631,12 +1666,15 @@ describe("ProjectDetailPage", () => {
     });
 
     it("says the risk register could not be read instead of 'No risks recorded yet.'", async () => {
-      risksLimitMock.mockResolvedValueOnce({
-        data: null,
-        error: { message: "permission denied for table project_risks" },
-      });
+      const failRisksRead = () =>
+        risksLimitMock.mockResolvedValueOnce({
+          data: null,
+          error: { message: "permission denied for table project_risks" },
+        });
+      failRisksRead();
 
-      await renderPage();
+      // The risk register is on the "record" tab.
+      await renderPage("record");
 
       expect(screen.queryByText(/No risks recorded yet\./i)).toBeNull();
       expect(screen.getByText(/Project risks could not be read/i)).toBeInTheDocument();
@@ -1645,6 +1683,11 @@ describe("ProjectDetailPage", () => {
       expect(
         screen.getByText(/permission denied for table project_risks/i)
       ).toBeInTheDocument();
+
+      // The header count is on the "overview" tab; the failure is armed again
+      // because each render reads the register once.
+      failRisksRead();
+      await rerenderOnTab("overview");
       // And the header count is unknown, not zero — a 0 here reads as "no open
       // risks on this project", which is the reassuring direction of the error.
       const openRisks = screen.getByText("Open risks").closest("div") as HTMLElement;
@@ -1654,15 +1697,22 @@ describe("ProjectDetailPage", () => {
     });
 
     it("says the issue log could not be read instead of 'No issues logged yet.'", async () => {
-      issuesLimitMock.mockResolvedValueOnce({
-        data: null,
-        error: { message: "permission denied for table project_issues" },
-      });
+      const failIssuesRead = () =>
+        issuesLimitMock.mockResolvedValueOnce({
+          data: null,
+          error: { message: "permission denied for table project_issues" },
+        });
+      failIssuesRead();
 
-      await renderPage();
+      // The issue log is on the "record" tab.
+      await renderPage("record");
 
       expect(screen.queryByText(/No issues logged yet\./i)).toBeNull();
       expect(screen.getByText(/Project issues could not be read/i)).toBeInTheDocument();
+
+      // The header count is on the "overview" tab.
+      failIssuesRead();
+      await rerenderOnTab("overview");
       const openIssues = screen.getByText("Open issues").closest("div") as HTMLElement;
       expect(within(openIssues).getByText("—")).toBeInTheDocument();
       expect(within(openIssues).getByText(/Issue count unavailable/i)).toBeInTheDocument();
@@ -1678,7 +1728,8 @@ describe("ProjectDetailPage", () => {
         error: { message: "permission denied for table project_meetings" },
       });
 
-      await renderPage();
+      // Both logs are on the "record" tab.
+      await renderPage("record");
 
       expect(screen.queryByText(/No decisions logged yet\./i)).toBeNull();
       expect(screen.queryByText(/No meetings logged yet\./i)).toBeNull();
@@ -1710,7 +1761,8 @@ describe("ProjectDetailPage", () => {
         error: { code: "42501", message: "permission denied for table funding_awards" },
       });
 
-      await renderPage();
+      // The award lane, where the false empty state would appear, is on "funding".
+      await renderPage("funding");
 
       expect(
         screen.queryByText(/No funding awards are recorded for this project yet\./i)
@@ -1720,15 +1772,21 @@ describe("ProjectDetailPage", () => {
 
     it("keeps the ordinary empty states when the reads SUCCEED and there is genuinely nothing", async () => {
       // The default harness returns `{ data: [], error: null }` for all four.
-      await renderPage();
+      // The four logs are on the "record" tab.
+      await renderPage("record");
 
       expect(screen.getByText(/No risks recorded yet\./i)).toBeInTheDocument();
       expect(screen.getByText(/No issues logged yet\./i)).toBeInTheDocument();
       expect(screen.getByText(/No decisions logged yet\./i)).toBeInTheDocument();
       expect(screen.getByText(/No meetings logged yet\./i)).toBeInTheDocument();
-      // And no disclosure at all — otherwise the banner proves nothing.
-      expect(screen.queryByText(/Part of this page could not be read/i)).toBeNull();
-      expect(screen.queryByText(/could not be read, so this panel is unavailable/i)).toBeNull();
+      // And no disclosure at all — otherwise the banner proves nothing. Checked
+      // on every tab, as the single-scroll page did.
+      await expectOnEveryTab(() => {
+        expect(screen.queryByText(/Part of this page could not be read/i)).toBeNull();
+        expect(screen.queryByText(/could not be read, so this panel is unavailable/i)).toBeNull();
+      });
+      // The header count is on the "overview" tab.
+      await rerenderOnTab("overview");
       const openRisks = screen.getByText("Open risks").closest("div") as HTMLElement;
       expect(within(openRisks).getByText("0")).toBeInTheDocument();
     });
@@ -1750,7 +1808,7 @@ describe("ProjectDetailPage", () => {
       error: { message: "permission denied for table project_milestones" },
     });
 
-    await renderPage();
+    await renderPage("delivery");
 
     expect(screen.queryByText("No milestones recorded yet.")).toBeNull();
     expect(screen.getByText(/Milestones could not be read/i)).toBeInTheDocument();
@@ -1764,7 +1822,7 @@ describe("ProjectDetailPage", () => {
       error: { message: "permission denied for table project_submittals" },
     });
 
-    await renderPage();
+    await renderPage("delivery");
 
     expect(screen.queryByText("No submittals recorded yet.")).toBeNull();
     expect(screen.getByText(/Submittals could not be read/i)).toBeInTheDocument();
@@ -1776,7 +1834,7 @@ describe("ProjectDetailPage", () => {
       error: { message: "permission denied for table funding_opportunities" },
     });
 
-    await renderPage();
+    await renderPage("funding");
 
     expect(screen.queryByText("No funding opportunities are linked to this project yet.")).toBeNull();
     expect(screen.getByText(/Linked funding opportunities could not be read/i)).toBeInTheDocument();
@@ -1794,11 +1852,14 @@ describe("ProjectDetailPage", () => {
   });
 
   it("keeps the ordinary empty states when the reads succeeded and there is nothing", async () => {
-    await renderPage();
+    await renderPage("delivery");
 
     expect(screen.getByText("No milestones recorded yet.")).toBeInTheDocument();
     expect(screen.getByText("No submittals recorded yet.")).toBeInTheDocument();
-    expect(screen.queryByText(/could not be read/i)).toBeNull();
+    // No disclosure anywhere on the record, checked on every tab.
+    await expectOnEveryTab(() => {
+      expect(screen.queryByText(/could not be read/i)).toBeNull();
+    });
   });
 
   /**
@@ -1890,11 +1951,12 @@ describe("ProjectDetailPage", () => {
         error: { code: "42501", message: "permission denied for table aerial_missions" },
       });
 
-      await renderPage();
+      // The banner, the crosslink board and the readiness rollup are on
+      // "overview"; the evidence panel is on "evidence" and is checked below.
+      await renderPage("overview");
 
       // THE THREE SENTENCES THAT WERE ON SCREEN, asserted absent first so an
       // unwired surface fails as what it is.
-      expect(screen.queryByText(/No aerial missions linked yet\./i)).toBeNull();
       expect(screen.queryByText("No aerial mission or evidence package is linked.")).toBeNull();
       expect(screen.queryByText("No aerial evidence")).toBeNull();
 
@@ -1915,6 +1977,8 @@ describe("ProjectDetailPage", () => {
       // "could not be read" is the same claim being refused an inch to its left.
       expect(within(rollup).queryByText("0 missions · 0 packages")).toBeNull();
 
+      await rerenderOnTab("evidence");
+      expect(screen.queryByText(/No aerial missions linked yet\./i)).toBeNull();
       expect(
         screen.getByText(/Aerial missions and evidence packages could not be read/i)
       ).toBeInTheDocument();
@@ -1980,7 +2044,8 @@ describe("ProjectDetailPage", () => {
         error: { code: "42501", message: "permission denied for table client_invoices" },
       });
 
-      await renderPage();
+      // The budget panel, which would carry the migration sentence, is on "funding".
+      await renderPage("funding");
 
       expect(
         screen.getByText(/could not read client invoices billed to this project/i)
@@ -1998,7 +2063,8 @@ describe("ProjectDetailPage", () => {
         error: { code: "42501", message: "permission denied for table project_spend_entries" },
       });
 
-      await renderPage();
+      // The budget panel, which would carry the migration sentence, is on "funding".
+      await renderPage("funding");
 
       expect(
         screen.getByText(/could not read this project's direct spend ledger/i)
@@ -2021,14 +2087,14 @@ describe("ProjectDetailPage", () => {
         error: { code: "42501", message: "permission denied for table projects" },
       });
 
-      await renderPage();
+      await renderPage("funding");
 
       expect(screen.getByText(/could not read this project's stated budget/i)).toBeInTheDocument();
       expect(screen.getByText(/permission denied for table projects/i)).toBeInTheDocument();
     });
 
     it("discloses nothing about the budget when all four reads answer", async () => {
-      await renderPage();
+      await renderPage("funding");
 
       expect(screen.queryByText(/could not read client invoices billed to this project/i)).toBeNull();
       expect(screen.queryByText(/could not read this project's direct spend ledger/i)).toBeNull();
@@ -2041,7 +2107,7 @@ describe("ProjectDetailPage", () => {
     // The negative control for the three panels rewritten above: without it,
     // every assertion there passes on a page that always cries failure and the
     // honest empty state — the common case — would be gone.
-    await renderPage();
+    await renderPage("evidence");
 
     expect(screen.getByText(/No aerial missions linked yet\./i)).toBeInTheDocument();
     expect(screen.getByText(/No datasets linked yet\./i)).toBeInTheDocument();
@@ -2055,7 +2121,7 @@ describe("ProjectDetailPage", () => {
       error: { code: "42501", message: "permission denied for table data_dataset_project_links" },
     });
 
-    await renderPage();
+    await renderPage("evidence");
 
     expect(screen.queryByText(/No datasets linked yet\./i)).toBeNull();
     expect(screen.getByText(/Linked datasets could not be read, so this panel is unavailable/i)).toBeInTheDocument();
@@ -2066,7 +2132,8 @@ describe("ProjectDetailPage", () => {
     it("feeds the posture header the exact head-count and scopes every documents read to THIS project", async () => {
       kbHeadCountEqMock.mockResolvedValue({ count: 3, error: null });
 
-      await renderPage();
+      // The posture header's Knowledge Base card is on "overview".
+      await renderPage("overview");
 
       // The head-count and the library read both bind the fixture's own ids —
       // the binding is asserted, not just the render, so a loader hardcoding a
@@ -2080,6 +2147,8 @@ describe("ProjectDetailPage", () => {
         .closest(".module-summary-card") as HTMLElement;
       expect(within(kbCard).getByText("3")).toBeInTheDocument();
 
+      // The documents panel is on "evidence".
+      await rerenderOnTab("evidence");
       // The panel mounts, and with every source answering zero it says so
       // honestly instead of rendering seven empty groups.
       const panel = document.getElementById("project-documents") as HTMLElement;
@@ -2106,7 +2175,7 @@ describe("ProjectDetailPage", () => {
         error: null,
       });
 
-      await renderPage();
+      await renderPage("evidence");
 
       const panel = document.getElementById("project-documents") as HTMLElement;
       const link = within(panel).getByRole("link", { name: "Corridor letter scan" });
@@ -2124,7 +2193,7 @@ describe("ProjectDetailPage", () => {
         error: { message: "permission denied for table report_artifacts" },
       });
 
-      await renderPage();
+      await renderPage("evidence");
 
       const panel = document.getElementById("project-documents") as HTMLElement;
       expect(
@@ -2140,7 +2209,7 @@ describe("ProjectDetailPage", () => {
         error: { message: "Could not find the table 'public.kb_documents' in the schema cache" },
       });
 
-      await renderPage();
+      await renderPage("evidence");
 
       const panel = document.getElementById("project-documents") as HTMLElement;
       expect(
@@ -2232,7 +2301,8 @@ describe("ProjectDetailPage", () => {
         error: null,
       });
 
-      await renderPage();
+      // Milestones and deliverables are on "delivery".
+      await renderPage("delivery");
 
       const milestones = document.getElementById("project-milestones") as HTMLElement;
       expect(within(milestones).getByText("priya@example.gov")).toBeInTheDocument();
@@ -2265,10 +2335,12 @@ describe("ProjectDetailPage", () => {
         error: null,
       });
 
-      await renderPage();
+      // Milestones are on "delivery"; the issue log is on "record".
+      await renderPage("delivery");
 
       const milestones = document.getElementById("project-milestones") as HTMLElement;
       expect(within(milestones).getByText("Unassigned — previously a member")).toBeInTheDocument();
+      await rerenderOnTab("record");
       const issues = document.getElementById("project-issues") as HTMLElement;
       expect(within(issues).getByText("Unassigned — previously a member")).toBeInTheDocument();
     });
@@ -2282,7 +2354,7 @@ describe("ProjectDetailPage", () => {
       });
       milestonesLimitMock.mockResolvedValue({ data: [ASSIGNED_MILESTONE], error: null });
 
-      await renderPage();
+      await renderPage("delivery");
 
       const milestones = document.getElementById("project-milestones") as HTMLElement;
       expect(
@@ -2302,7 +2374,7 @@ describe("ProjectDetailPage", () => {
         error: null,
       });
 
-      await renderPage();
+      await renderPage("delivery");
 
       const milestones = document.getElementById("project-milestones") as HTMLElement;
       expect(within(milestones).queryByText("priya@example.gov")).toBeNull();

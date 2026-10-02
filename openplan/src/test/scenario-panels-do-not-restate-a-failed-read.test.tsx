@@ -162,8 +162,19 @@ const ALTERNATIVE_ENTRY_ROW = {
   updated_at: "2026-03-28T18:05:00.000Z",
 };
 
-async function renderDetailPage() {
-  render(await ScenarioSetDetailPage({ params: Promise.resolve({ scenarioSetId: SCENARIO_SET_ID }) }));
+/**
+ * The detail page is tabbed, and a closed tab is not rendered at all. The
+ * registry under test lives on the "alternatives" tab, so a negative assertion
+ * made on any other tab would pass because the panel is absent, not because it
+ * behaved. Each test names its tab.
+ */
+async function renderDetailPage(tab: "overview" | "alternatives" | "comparisons" | "edit") {
+  render(
+    await ScenarioSetDetailPage({
+      params: Promise.resolve({ scenarioSetId: SCENARIO_SET_ID }),
+      searchParams: Promise.resolve({ tab }),
+    }),
+  );
 }
 
 async function renderCatalogPage() {
@@ -196,7 +207,7 @@ describe("the scenario entry registry, rendered for real, never restates a faile
       error: { message: "permission denied for table scenario_entries" },
     });
 
-    await renderDetailPage();
+    await renderDetailPage("alternatives");
 
     // The sentences a failed entries read cannot support — each one both a
     // finding and an instruction the planner would act on.
@@ -220,7 +231,7 @@ describe("the scenario entry registry, rendered for real, never restates a faile
     setTable("scenario_entries", { data: [ALTERNATIVE_ENTRY_ROW], error: null });
     setTable("models", { data: null, error: { message: "permission denied for table models" } });
 
-    await renderDetailPage();
+    await renderDetailPage("alternatives");
 
     expect(screen.queryByText(/No model is anchored to this scenario set yet/i)).not.toBeInTheDocument();
     expect(
@@ -232,7 +243,7 @@ describe("the scenario entry registry, rendered for real, never restates a faile
     setTable("scenario_entries", { data: [ALTERNATIVE_ENTRY_ROW], error: null });
     setTable("reports", { data: null, error: { message: "permission denied for table reports" } });
 
-    await renderDetailPage();
+    await renderDetailPage("alternatives");
 
     expect(screen.queryByText(/^No linked reports yet$/)).not.toBeInTheDocument();
     expect(screen.getByText(/^Report linkage could not be read$/)).toBeInTheDocument();
@@ -248,13 +259,21 @@ describe("the scenario entry registry, rendered for real, never restates a faile
     setTable("models", { data: [], error: null });
     setTable("reports", { data: [], error: null });
 
-    await renderDetailPage();
+    await renderDetailPage("alternatives");
 
     expect(screen.queryByText(/Part of this scenario set could not be read/i)).not.toBeInTheDocument();
     expect(screen.getByText(/No baseline registered yet/i)).toBeInTheDocument();
     expect(screen.getByText(/No alternatives yet\. Register one/i)).toBeInTheDocument();
     expect(screen.getByText(/No alternatives are registered yet/i)).toBeInTheDocument();
     expect(screen.getByText(/^Missing baseline$/)).toBeInTheDocument();
+    expect(screen.queryByText(/whether a baseline is registered is unknown/i)).not.toBeInTheDocument();
+
+    // The page's own overview tile carries the same disclosure sentence, so it
+    // too must stay silent when the read succeeded.
+    cleanup();
+    await renderDetailPage("overview");
+
+    expect(screen.queryByText(/Part of this scenario set could not be read/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/whether a baseline is registered is unknown/i)).not.toBeInTheDocument();
   });
 });
