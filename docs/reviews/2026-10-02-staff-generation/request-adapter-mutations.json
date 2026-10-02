@@ -1,0 +1,247 @@
+{
+  "sourceSha256": "6d2c4a7f0f9d8fd02d9953251698916c6b01644b442f522e6aff9a036029ba95",
+  "results": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "expectedSurvivor": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-harmless.log",
+      "sha256": "1537eda7b7b1bafdde845cec6a51df53e1cdfbe48d94c8fece905dd5d44ddc40",
+      "assertionFailure": false
+    },
+    {
+      "name": "campaign",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-campaign.log",
+      "sha256": "cc2a8f213efd30dc402b108a1f5fcfb19b1b96ca9ec104e45da9e0d38033257d",
+      "assertionFailure": true
+    },
+    {
+      "name": "workspace",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-workspace.log",
+      "sha256": "3934f8a7517f78a8689b6ecee762c54bb51ce14ae9cfa5e470dc02ee0b621fbd",
+      "assertionFailure": true
+    },
+    {
+      "name": "empty",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-empty.log",
+      "sha256": "550e1848f1a2979f124dcd82fb7b5b2ff2eb04859cc2f3b8ff078ee99aa553ae",
+      "assertionFailure": true
+    },
+    {
+      "name": "request-id",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-request-id.log",
+      "sha256": "655d65ce6a49ac75c40c68d2164b6e6ac8c6e43dda2e822edaa84661dc9c0639",
+      "assertionFailure": true
+    },
+    {
+      "name": "request-hash",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-request-hash.log",
+      "sha256": "97ae47eb37b01b4d2807ffc0157aa41dce70c6a13cccc4f8b2ac1765f0261d4d",
+      "assertionFailure": true
+    },
+    {
+      "name": "request-byte-limit",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-request-byte-limit.log",
+      "sha256": "198e3306faa94b3baf625683ddbd206133b39f75705f6d03a873924271a0b5bb",
+      "assertionFailure": true
+    },
+    {
+      "name": "intent-shape",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-intent-shape.log",
+      "sha256": "6a149d86537957af8912480a52e10de37121b7370560dd8d8fe276a7a342ecb7",
+      "assertionFailure": true
+    },
+    {
+      "name": "cancellation-hash",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-cancellation-hash.log",
+      "sha256": "e84cba334ec82ace61f301abdca7dcc06a01be063eb0f244dd712bdb924caea3",
+      "assertionFailure": true
+    },
+    {
+      "name": "cancellation-id",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-cancellation-id.log",
+      "sha256": "086806a571d2d0023553678a3017f7fadade028b0d82b1d1173167ce7e6bbbb4",
+      "assertionFailure": true
+    },
+    {
+      "name": "cancellation-request",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-cancellation-request.log",
+      "sha256": "cbd4ee8b4cbfd1e7f31e772eb26d5d522391da90d64b92e81f45c9a3f51ce485",
+      "assertionFailure": true
+    },
+    {
+      "name": "cancellation-campaign",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-cancellation-campaign.log",
+      "sha256": "0fd9521135c2c701d9abd0f575812569ed6d2bbf1fa52c8075b064aab3fd5960",
+      "assertionFailure": true
+    },
+    {
+      "name": "cancellation-workspace",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-cancellation-workspace.log",
+      "sha256": "f0f6a6ce3b01d2c282cc2d3ba797e06b2d71a5525527f6b55c922dab0721ef14",
+      "assertionFailure": true
+    },
+    {
+      "name": "cancellation-existed",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-cancellation-existed.log",
+      "sha256": "11fb52894359e9b77a917f177d098fea0cb140b8f0ce79f2874f1f35c3909465",
+      "assertionFailure": true
+    },
+    {
+      "name": "cancellation-actor",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-cancellation-actor.log",
+      "sha256": "87d83a42bb361e10183b7f71669e61145cbed2b19e722db3621738dcc36ebcdb",
+      "assertionFailure": true
+    },
+    {
+      "name": "create-actor",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-create-actor.log",
+      "sha256": "2e0df55f713881234a02e4e3ed0b807ea7bcfc256428deb6aa58c07f92f23b99",
+      "assertionFailure": true
+    },
+    {
+      "name": "create-intent",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-create-intent.log",
+      "sha256": "c1df11b57eb2ddc8da32e2476e8f3cff44884b4e3425d92df1ac777f17521db1",
+      "assertionFailure": true
+    },
+    {
+      "name": "replay-ack",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-replay-ack.log",
+      "sha256": "2661bb20f2ec0217889428d0e17fbcfaeda5d8b8fd89b6e740d4b63907e8e887",
+      "assertionFailure": true
+    },
+    {
+      "name": "cancel-ack-id",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-cancel-ack-id.log",
+      "sha256": "31518c26441bf2e49d045d20b7439b9061988353d57c8febfb2a44f2e72ae76b",
+      "assertionFailure": true
+    },
+    {
+      "name": "cancel-ack-actor",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-cancel-ack-actor.log",
+      "sha256": "e650503c2b3bc26e332fde1b617c19c43da07191b54bf2192335281571939a06",
+      "assertionFailure": true
+    },
+    {
+      "name": "cancel-ack-reason",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-cancel-ack-reason.log",
+      "sha256": "beca37af5f45700ae962973e8689c6ff14bd3526835374e9011951445c564e59",
+      "assertionFailure": true
+    },
+    {
+      "name": "create-byte-limit",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-create-byte-limit.log",
+      "sha256": "dff6b1657942496ba6b4d184553a7f6a0a39eeb080bb9bf61a45fe7d9332f0a5",
+      "assertionFailure": true
+    },
+    {
+      "name": "cancel-reason",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-cancel-reason.log",
+      "sha256": "d1991c5d824eccbc8c071a1daea1037aa8954b02ac926c072e5d745e5f1f71e6",
+      "assertionFailure": true
+    },
+    {
+      "name": "error-mapping",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-error-mapping.log",
+      "sha256": "e3a7a57898f28a2cb4add125bb0108996a0ada01c665ea38fb5bc60fd6097776",
+      "assertionFailure": true
+    },
+    {
+      "name": "malformed-native",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-malformed-native.log",
+      "sha256": "4e9f6dad8cf1fd051552cb8d8d156e0bb8a3d58f446c0caefe9aaf41615cddb6",
+      "assertionFailure": true
+    },
+    {
+      "name": "abort-before",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-abort-before.log",
+      "sha256": "ded9eb90b030ade75f187af13b6a8af21a2a7f3789660d5f881cd6c849bed399",
+      "assertionFailure": true
+    },
+    {
+      "name": "abort-after",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-abort-after.log",
+      "sha256": "e3d6670896e5173ef164c456d798621d0b8ec6a018c254b81ca7fed15cd477a0",
+      "assertionFailure": true
+    },
+    {
+      "name": "exact-write-bytes",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-exact-write-bytes.log",
+      "sha256": "df133d8bcc6f85912bc128009ecab8592a64e8f93a941d9f2ba79d03cbc2371c",
+      "assertionFailure": true
+    },
+    {
+      "name": "read-command",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-read-command.log",
+      "sha256": "4136d5453218a9acbf61fab0440d1e624c0bd250cace0f33836782833440ec4c",
+      "assertionFailure": true
+    },
+    {
+      "name": "cancel-command",
+      "exit": 1,
+      "expectedSurvivor": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-mutation-cancel-command.log",
+      "sha256": "c58815ea935ecd1bb2de055a237b223a5fefca6105d6255d324498615a91f152",
+      "assertionFailure": true
+    }
+  ],
+  "restored": true,
+  "blindCategory": "Mocked RPC transport only. Does not prove native RLS, queue execution, HTTP identity or browser recovery."
+}
