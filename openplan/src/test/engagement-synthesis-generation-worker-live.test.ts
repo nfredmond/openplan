@@ -7,6 +7,7 @@ import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { loadSynthesisThematicHistory } from "@/lib/engagement/synthesis-thematic-history-server";
 import { prepareProviderApiRevision } from "@/lib/integrations/provider-api-credentials";
 import { createSynthesisGenerationPlan, synthesisGenerationPlanBatch, verifySynthesisGenerationPlanState } from "@/lib/engagement/synthesis-generation-plan";
 import { LIVE_RLS, getLocalSupabaseEnv, liveClient, type LocalSupabaseEnv } from "./local-supabase-env";
@@ -217,6 +218,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     checked(await staff.client.rpc("authorize_engagement_synthesis_context", { p_request: args.requestId, p_authorization: authorizationId, p_intent_text: JSON.stringify(grant) }));
     let dropped = false, deliveries = 0, thematicFrameDropped = false, thematicOutputDropped = false;
     let thematicFinalIndex = -1, thematicFinalAttempt: string | null = null;
+    let revokeThematicReviewer: (() => void) | null = null;
     const proxyErrors: string[] = [];
     const target = await listen(createServer(async (req, res) => {
       try {
@@ -226,6 +228,11 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
         const body = Buffer.concat(parts), response = await fetch(`${environment.API_URL}${req.url}`, {
           method: req.method, headers, body: body.length ? body : undefined, redirect: "manual" });
         const bytes = Buffer.from(await response.arrayBuffer());
+        const requested = new URL(req.url ?? "/", environment.API_URL);
+        if (response.ok && revokeThematicReviewer && requested.pathname.endsWith("/engagement_synthesis_generation_outputs")
+          && requested.searchParams.get("attempt_id") === `eq.${thematicFinalAttempt}`) {
+          const revoke = revokeThematicReviewer; revokeThematicReviewer = null; revoke();
+        }
         if (response.ok && !thematicFrameDropped && req.url?.endsWith("/stage_engagement_synthesis_thematic_frames")) {
           thematicFrameDropped = true; res.destroy(); return;
         }
@@ -461,6 +468,24 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(JSON.parse(await readFile(join(thematicDirectory,"schedule/pending.json"),"utf8"))).toEqual(savedThematicSchedule);
     const thematicFinalJournal=JSON.parse(await readFile(join(thematicDirectory,String(thematicFinalIndex),"pending.json"),"utf8"));
     expect(thematicFinalJournal.phase).toBe("delivered");expect(thematicFinalJournal.captureSha256).toBe(thematicPriorCapture);
+    expect(f.calls).toHaveLength(completedCallCount);expect(proxyErrors).toEqual([]);
+    const reviewer=await f.staffHistoryClient();
+    const thematicHistory=await loadSynthesisThematicHistory(reviewer.client,service,preparationRequest,signal);
+    expect(thematicHistory.manifest.status).toBe("proposal_complete");
+    expect(thematicHistory.manifest.verifiedTaskCount).toBe(resumedThematic.plan.header.taskCount);
+    expect(thematicHistory.entries.at(-1)?.captureSha256).toBe(thematicPriorCapture);
+    const originalProposal=thematicReplay.next();if(originalProposal.status!=="proposal_complete")throw new Error("SYNTHETIC expected proposal absent");
+    expect(thematicHistory.proposal).toEqual(originalProposal.proposal);
+    expect(thematicHistory.interpretation).toBe("machine_unreviewed");
+    expect(thematicHistory.request.state.cancellation).not.toBeNull();
+    expect(f.calls).toHaveLength(completedCallCount);
+    let reviewerRevokedDuringRead=false;
+    revokeThematicReviewer=()=>{reviewer.revoke();reviewerRevokedDuringRead=true;};
+    const afterRevocation=await loadSynthesisThematicHistory(reviewer.client,thematicProxy,preparationRequest,signal).then(()=>null,(error:unknown)=>error);
+    expect(reviewerRevokedDuringRead).toBe(true);
+    expect(checked(await service.from("workspace_members").select("role").eq("workspace_id",scope.workspaceId).eq("user_id",reviewer.userId).single())).toEqual({role:"viewer"});
+    expect(afterRevocation).toBeInstanceOf(Error);
+    expect((afterRevocation as Error).message).toContain("Thematic request unavailable");
     expect(f.calls).toHaveLength(completedCallCount);expect(proxyErrors).toEqual([]);
     await expect(readSynthesisThematicPlanState(service, preparationRequest, signal)).rejects.toThrow("custody unavailable");
     await expect(prepareInput(preparationTarget, signal)).rejects.toThrow("preparation access unavailable");

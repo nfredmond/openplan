@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Internal thematic history now reconstructs the complete selected proposal under
+current staff permission after earlier requesters depart or cancel their work.
+Original task, dispatch and capture checks preserve incomplete states and machine
+authorship. Fresh execution still requires its own authority. No new migration is
+required. [History evidence](docs/reviews/2026-10-01-context-history/THEMATIC_HISTORY.md)
+records the boundary; explicit staff import and the connected Analysis workflow
+remain unfinished.
+
 Internal thematic execution now supports `--all-tasks --thematic` for one explicit
 authorization. Its saved schedule includes the final proposal, preserves original
 attempts, stops at unresolved predecessors and recovers observed output without

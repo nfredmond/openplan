@@ -22,10 +22,18 @@ const outputSchema = z.object({ notes: z.array(z.object({ id: z.number().int().n
  * in typed field fragments. Frames and originals are still memory resident.
  */
 export function createSynthesisThematicContent(prepared: SynthesisThematicPreparedInputs) {
+  if (prepared.request.state.cancellation !== null) throw new Error("Thematic content preparation was cancelled");
+  return reconstructSynthesisThematicContent(prepared);
+}
+
+/** Reconstruct immutable content for historical inspection, retaining cancellation.
+ * The caller must establish current staff access. This pure replay grants no
+ * preparation, dispatch or resource authority.
+ */
+export function reconstructSynthesisThematicContent(prepared: SynthesisThematicPreparedInputs) {
   const scope = { campaignId: prepared.request.state.campaignId, workspaceId: prepared.request.state.workspaceId,
     requestId: prepared.request.state.request.id };
   const request = verifySynthesisThematicRequest(prepared.request.state, scope);
-  if (request.state.cancellation !== null) throw new Error("Thematic content preparation was cancelled");
   const metadata = prepared.originals.map(row => ({ targetRecordId: row.targetRecordId, proofText: row.proofText,
     proofSha256: digest(row.proofText), outputSha256: digest(row.outputText), outputBytes: Buffer.byteLength(row.outputText, "utf8") }));
   const plan = createSynthesisThematicInputManifest(request.state, scope, prepared.source, metadata);

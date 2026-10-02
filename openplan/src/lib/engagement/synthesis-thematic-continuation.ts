@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import { z } from "zod";
 import frozenRecipe from "./synthesis-generation-thematic-v1.json";
-import { createSynthesisThematicContent, type SynthesisThematicPart, type SynthesisThematicPreparedInputs } from "./synthesis-thematic-content";
+import { createSynthesisThematicContent, reconstructSynthesisThematicContent, type SynthesisThematicPart, type SynthesisThematicPreparedInputs } from "./synthesis-thematic-content";
 import { createSynthesisThematicProposal, SynthesisThematicOutputError } from "./synthesis-thematic-proposal";
 
 const digest = (text: string) => createHash("sha256").update(text, "utf8").digest("hex");
@@ -26,7 +26,16 @@ export function synthesisThematicRecipe() { return { ...structuredClone(frozenRe
  * separate native staging/execution grant. This pure plan authorizes no calls.
  */
 export function createSynthesisThematicPlan(prepared: SynthesisThematicPreparedInputs) {
-  const content = createSynthesisThematicContent(prepared), recipe = synthesisThematicRecipe(), request = content.request;
+  return planForContent(createSynthesisThematicContent(prepared));
+}
+
+/** Reconstruct the frozen historical plan without clearing cancellation. */
+export function reconstructSynthesisThematicPlan(prepared: SynthesisThematicPreparedInputs) {
+  return planForContent(reconstructSynthesisThematicContent(prepared));
+}
+
+function planForContent(content: ReturnType<typeof createSynthesisThematicContent>) {
+  const recipe = synthesisThematicRecipe(), request = content.request;
   const header = { schemaVersion: 1, purpose: "private_synthesis_thematic_continuation_plan", requestId: request.state.request.id,
     actorId: request.state.request.actorId, intentSha256: request.state.request.intentSha256,
     thematicRequestSha256: request.state.thematic.thematicSha256, inputManifestSha256: content.manifest.inputManifestSha256,
@@ -43,7 +52,16 @@ export function createSynthesisThematicPlan(prepared: SynthesisThematicPreparedI
  * original-response custody and current execution authority remain separate.
  */
 export function createSynthesisThematicContinuation(prepared: SynthesisThematicPreparedInputs, retainedSteps: readonly unknown[] = []) {
-  const plan = createSynthesisThematicPlan(prepared), recipe = synthesisThematicRecipe();
+  return continuePlan(createSynthesisThematicPlan(prepared), retainedSteps);
+}
+
+/** Inspect original historical responses without authorizing new work. */
+export function replaySynthesisThematicContinuation(prepared: SynthesisThematicPreparedInputs, retainedSteps: readonly unknown[] = []) {
+  return continuePlan(reconstructSynthesisThematicPlan(prepared), retainedSteps);
+}
+
+function continuePlan(plan: ReturnType<typeof createSynthesisThematicPlan>, retainedSteps: readonly unknown[]) {
+  const recipe = synthesisThematicRecipe();
   const frames = plan.content.frames.map(frame => ({ ...frame, parts: (JSON.parse(frame.canonical) as { parts: SynthesisThematicPart[] }).parts }));
   const saved: Retained[] = [], seenParts = new Map<string, SynthesisThematicPart>();
   let previousOutput: z.infer<typeof outputSchema> | null = null, previousOutputText: string | null = null;

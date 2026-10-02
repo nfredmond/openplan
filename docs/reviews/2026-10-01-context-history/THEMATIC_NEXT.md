@@ -197,3 +197,21 @@ retain the final access recheck. Inspect whether original task/capture custody
 plus a derived replay manifest satisfies proposal history before introducing
 redundant proposal storage. Explicit import still needs retained lineage and an
 exact expected review parent.
+
+October 2 historical replay continuation: [current-staff proposal history](THEMATIC_HISTORY.md)
+uses existing authenticated native reads and immutable captures to reconstruct the
+complete machine proposal after original requester departure. No new proposal
+storage table is required for this read. The selected next boundary is explicit
+staff import into a new review revision, with source/proposal/history hashes,
+original authorship and an exact expected parent. It must preserve old approvals.
+
+The current receiving path is `synthesis-review.ts`, `synthesis-review-records.ts`
+and `synthesis-review-server.ts`. `loadSynthesisReview` replays every retained
+create/correct command and currently accepts only the authenticated RPC client.
+The native `retain_engagement_synthesis_review` function rejects other operations.
+Design the import's immutable custody and historical verification together; do
+not merely add a UI operation or copy proposal groups into category creation.
+Check all existing review/approval consumers and use the action registry for any
+agent write, or retain an executable refusal. Coordinate UI ownership before
+connecting the new operation to Analysis. Large-history performance and final-task
+byte limits remain explicit work after this bounded replay checkpoint.
