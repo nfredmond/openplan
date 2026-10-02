@@ -14,12 +14,12 @@ Browser checks ran against a dev server started from the worktree on port 3210 (
 | 2 | Auth callback keeps a query string on `next` | New `auth-callback-destination.test.ts`; fails with `/dashboard%3Fintent=modeling` when the old assignment is restored. Not exercised through a real confirmation email |
 | 3 | Portal name hint says the name appears publicly once approved (English and Spanish) | Read in source. Spanish wording was written by the model and has not been reviewed by a Spanish speaker |
 | 4 | Attribution control on the seven maps that had none | Chrome: one attribution control on the dashboard backdrop, Corridor Analysis, Aerial and the portal. On non-map pages the backdrop's control sits under the rail; Phase 2 removes that backdrop |
-| 5 | Missing tract values draw in a no-data grey, with a legend entry | Three pinned tests updated and one added. Not checked on screen against a tract with a missing value |
+| 5 | The tract paint expressions draw a null value in a no-data grey, with a legend entry | Three pinned tests updated and one added. Not checked on screen against a tract with a missing value. **Corrected October 2:** this row first claimed that missing tract values now draw grey. That was broader than the evidence. The paint expression was fixed, but the data layer still turned a suppressed or absent Census value into zero before it reached the map. The independent review fixed that for the four rate overlays and recorded the remaining limits in `docs/reviews/2026-10-01-independent-fixes/MAP_DATA_FIXES.md` |
 | 6 | Corridor Analysis rail readable in light mode | Chrome, light mode: tile values, heading and select compute rgb(240,237,230) |
 | 7 | Stat tile grids size to their container; grants catalog uses one column | Chrome at 1440: grants 7 tiles in 3 columns, project page 4 tiles in one row |
 | 8 | Sign-in form before the marketing text on phones | Chrome at 390 by 844: email field at 425 pixels, submit button ends at 662 |
 | 9 | Skip link and one `main` landmark per page | Chrome: first Tab focuses "Skip to main content"; Enter moves focus to `#main-content`; one `main` on the dashboard and the portal |
-| 10 | Portal error and loading pages | Compiles and builds. The error page was not triggered in a browser |
+| 10 | Portal error and loading pages | Compiles and builds. The error page was not triggered in a browser. **Corrected October 2:** my first wording told the resident that the problem was on our side and that anything already sent was received. The page has no evidence for either statement. The independent review removed both and made the retry button reload the page, because resetting the boundary alone kept a failed server response (`docs/reviews/2026-10-01-independent-fixes/UI_RECOVERY_FIXES.md`) |
 | 12 | Language picker is one row that opens to 44-pixel links | Chrome at 1440 and 390: closed row reads "Language English"; 22 links, 44 pixels tall |
 
 ## Still open from Phase 0
