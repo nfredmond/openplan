@@ -1,0 +1,25 @@
+{
+  "commit": "93df976fa853b388b5648eb77ece7fabe2354cb1",
+  "exit": 0,
+  "application": {
+    "pass": 17570,
+    "skip": 1469,
+    "filesPass": 1411,
+    "filesSkip": 82,
+    "durationSeconds": 497.64
+  },
+  "connector": {
+    "pass": 387,
+    "skip": 4
+  },
+  "otherChecks": [
+    "lint",
+    "configured deadcode",
+    "dependency audit zero",
+    "webpack build",
+    "TypeScript"
+  ],
+  "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-thematic-combined-qa.log",
+  "sha256": "b73ebd4feba9e090d60e5cb8e3a7984fef04a54f0c407a3a676459fac6696aff",
+  "boundary": "Includes main 5da40ef5 UI integration. Live RLS remains separate. Later map changes on main b8551e4e are not included."
+}

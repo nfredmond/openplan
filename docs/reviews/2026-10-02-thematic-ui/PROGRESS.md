@@ -9,7 +9,8 @@ correction separately passes 51 focused tests, a harmless control, five detected
 faults, strict lint and a production build. Production-browser focus and busy-read
 checks pass after the subsequent bounded-read correction described below.
 Actual saved browser downloads now pass in a separate Chrome session, as
-documented below. The newer main UI integration still needs combined checks.
+documented below. The main 5da40ef5 UI integration passes combined local QA and Chrome checks below.
+Later map changes on main b8551e4e remain outside this evidence.
 This is a development candidate, not a release or completed v1 acceptance.
 
 The current implementation adds private request browsing for a saved source,
@@ -304,3 +305,29 @@ Main has advanced separately to5da40ef5 with the UI agent's page/header, dialog,
 frame and browser-audit fixes. The existing candidate checks do not cover that
 combined tree. The owned server is stopped before merging those committed changes
 into this branch. Fresh combined QA and identified-browser checks precede landing.
+
+## Combined UI build and repeated Chrome downloads
+
+The combined 93df976f source includes main 5da40ef5. Full local QA exits 0 with
+17,570 application passes, 1,469 skips, 387 connector passes, four skips, lint,
+configured deadcode, dependency audit zero, webpack and TypeScript. The
+[combined QA record](combined-source-qa.json) preserves the completed log hash.
+Ordinary QA still skips native database writes; GitHub isolation and restore
+checks remain separate and active at this checkpoint.
+
+A fresh temporary Chrome profile repeats real navigation from sign-in through
+Engagement, campaign Analysis, saved source, staff review and original proposal.
+The served build reports 93df976fa853 and the owned process cwd matches this
+worktree. Both saved downloads again match the retained originals byte-for-byte
+and by SHA256. Proposal is 3,726 bytes; history is 3,289 bytes. Corrupted copied
+bytes fail the comparison. Keyboard proposal opening and 390px contribution
+focus/complete final text pass. Desktop/mobile screenshots are visually inspected;
+no console warnings/errors or page errors occur during the journey. The
+[combined Chrome record](combined-chrome-thematic-downloads.json) retains source
+identity and artifact hashes. Earlier Chrome evidence remains separate.
+
+Chrome closes after the check and the owned port 3477 production process stops before
+further integration. Main has separately advanced to b8551e4e with map changes;
+this record does not claim to test that later tree. PR114 remains a development
+candidate. No release tag, demo update, semantic-quality finding, capacity result
+or complete M9b/v1 claim follows from this download check.
