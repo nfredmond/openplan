@@ -331,3 +331,28 @@ further integration. Main has separately advanced to b8551e4e with map changes;
 this record does not claim to test that later tree. PR114 remains a development
 candidate. No release tag, demo update, semantic-quality finding, capacity result
 or complete M9b/v1 claim follows from this download check.
+
+## Shuffled storage-refresh assertion correction
+
+Candidate c64d87a8 includes main b8551e4e. Its 123 focused integration tests,
+production build, TypeScript and repeated identified Chrome journey pass;
+[the source-specific record](map-integration-evidence.json) preserves them.
+GitHub normal QA passes, but shuffled seed 993126 fails one storage-refresh
+assertion while isolation and restore remain active. The failed run is retained
+in [timing checks](storage-refresh-timing-checks.json).
+
+The test assumed inspection became enabled immediately after an obsolete read
+completed. Storage refresh now restores the selected inspection and starts a
+replacement read. The replacement may still be verifying original evidence when
+the obsolete read finishes. A controlled delayed replacement reproduces the
+exact assertion failure. An initial local command used the repository root
+instead of the app package and failed import resolution; that is preserved as
+a harness failure, not product evidence.
+
+The corrected test holds both replies. It verifies that refresh starts the
+replacement, the late obsolete denial does not revoke access or clear its loading
+state, and inspection becomes enabled after the replacement finishes. It then
+performs another inspection. Production code is unchanged. A harmless control
+survives and four consequential faults fail in [mutation evidence](storage-refresh-timing-mutations.json).
+The restored four-file suite passes all 65 tests with the failing seed; strict
+lint passes. Fresh whole-suite CI remains separate from this focused correction.

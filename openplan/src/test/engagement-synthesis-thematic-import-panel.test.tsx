@@ -150,19 +150,28 @@ describe("explicit thematic import panel", () => {
   });
   it("abandons a superseded preview on storage refresh and permits another inspection", async () => {
     const x = await fixture(), originalTransport = x.transport.getMockImplementation()!;
-    let finish: (() => void) | undefined, intercepted = false;
+    let finish: (() => void) | undefined, finishRefresh: (() => void) | undefined, previews = 0;
     const held = new Promise<void>(resolve => { finish = resolve; });
+    const refreshed = new Promise<void>(resolve => { finishRefresh = resolve; });
     x.transport.mockImplementation(async (url, init) => {
-      if (!intercepted && String(url).includes("mode=preview")) { intercepted = true; await held; return json({}, 403); }
+      if (String(url).includes("mode=preview")) {
+        previews++;
+        if (previews === 1) { await held; return json({}, 403); }
+        if (previews === 2) await refreshed;
+      }
       return originalTransport(url, init);
     });
     render(<SynthesisThematicImportPanel {...x.props} />);
     fireEvent.click(await screen.findByRole("button", { name: `Inspect proposal ${x.f.scope.requestId.slice(0,8)}` }));
     await act(async () => window.dispatchEvent(new StorageEvent("storage")));
+    await waitFor(() => expect(previews).toBe(2));
     await act(async () => { finish!(); await held; });
     expect(x.props.onAccessLost).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: `Inspect proposal ${x.f.scope.requestId.slice(0,8)}` })).toBeEnabled();
+    expect(screen.getByRole("button", { name: `Inspect proposal ${x.f.scope.requestId.slice(0,8)}` })).toBeDisabled();
+    await act(async () => { finishRefresh!(); await refreshed; });
+    await waitFor(() => expect(screen.getByRole("button", { name: `Inspect proposal ${x.f.scope.requestId.slice(0,8)}` })).toBeEnabled());
     await x.inspect();
+    expect(previews).toBe(3);
   });
   it("does not offer import for incomplete outputs or retain a preview after a failed read", async () => {
     const x = await fixture(); x.options.preview = { ...x.preview, status: "incomplete", origin: null };
