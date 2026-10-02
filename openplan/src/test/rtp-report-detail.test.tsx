@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import type { AnchorHTMLAttributes } from "react";
 import { describe, expect, it, vi } from "vitest";
-import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 
 vi.mock("next/link", () => ({
   default: ({ children, href, ...props }: AnchorHTMLAttributes<HTMLAnchorElement>) => (
@@ -17,10 +16,6 @@ vi.mock("@/components/reports/report-detail-controls", () => ({
 
 vi.mock("@/components/reports/rtp-report-section-controls", () => ({
   RtpReportSectionControls: () => <div data-testid="rtp-report-section-controls" />,
-}));
-
-vi.mock("@/components/operations/workspace-command-board", () => ({
-  WorkspaceCommandBoard: () => <div data-testid="workspace-command-board" />,
 }));
 
 import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
@@ -152,7 +147,6 @@ describe("RtpReportDetail", () => {
           approvedCommentCount: 2,
           readyCommentCount: 2,
         }}
-        operationsSummary={{} as WorkspaceOperationsSummary}
       />
     );
     const frame = screen.getByTitle("Latest report artifact preview");
@@ -275,7 +269,6 @@ describe("RtpReportDetail", () => {
           approvedCommentCount: 2,
           readyCommentCount: 2,
         }}
-        operationsSummary={{} as WorkspaceOperationsSummary}
       />
     );
 

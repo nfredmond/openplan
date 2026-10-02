@@ -48,7 +48,10 @@ const datePart = new Date().toISOString().slice(0, 10);
 const outputDir = getOutputDir(datePart);
 
 /** The route the map-reading control lives on. Overridable for /aerial. */
-const MAP_SURFACE = process.env.OPENPLAN_MAP_SURFACE || '/safety';
+// The Aerial index is the one route that reads the shared map and carries the
+// "Read the map" control. Safety builds its own map and has not had the control
+// since it moved to its own full-bleed layout.
+const MAP_SURFACE = process.env.OPENPLAN_MAP_SURFACE || '/aerial';
 
 /**
  * The floor the mode has to clear. The design target is most of the window;

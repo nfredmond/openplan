@@ -14,12 +14,12 @@ Browser checks ran against a dev server started from the worktree on port 3210 (
 | 2 | Auth callback keeps a query string on `next` | New `auth-callback-destination.test.ts`; fails with `/dashboard%3Fintent=modeling` when the old assignment is restored. Not exercised through a real confirmation email |
 | 3 | Portal name hint says the name appears publicly once approved (English and Spanish) | Read in source. Spanish wording was written by the model and has not been reviewed by a Spanish speaker |
 | 4 | Attribution control on the seven maps that had none | Chrome: one attribution control on the dashboard backdrop, Corridor Analysis, Aerial and the portal. On non-map pages the backdrop's control sits under the rail; Phase 2 removes that backdrop |
-| 5 | Missing tract values draw in a no-data grey, with a legend entry | Three pinned tests updated and one added. Not checked on screen against a tract with a missing value |
+| 5 | The tract paint expressions draw a null value in a no-data grey, with a legend entry | Three pinned tests updated and one added. Not checked on screen against a tract with a missing value. **Corrected October 2:** this row first claimed that missing tract values now draw grey. That was broader than the evidence. The paint expression was fixed, but the data layer still turned a suppressed or absent Census value into zero before it reached the map. The independent review fixed that for the four rate overlays and recorded the remaining limits in `docs/reviews/2026-10-01-independent-fixes/MAP_DATA_FIXES.md` |
 | 6 | Corridor Analysis rail readable in light mode | Chrome, light mode: tile values, heading and select compute rgb(240,237,230) |
 | 7 | Stat tile grids size to their container; grants catalog uses one column | Chrome at 1440: grants 7 tiles in 3 columns, project page 4 tiles in one row |
 | 8 | Sign-in form before the marketing text on phones | Chrome at 390 by 844: email field at 425 pixels, submit button ends at 662 |
 | 9 | Skip link and one `main` landmark per page | Chrome: first Tab focuses "Skip to main content"; Enter moves focus to `#main-content`; one `main` on the dashboard and the portal |
-| 10 | Portal error and loading pages | Compiles and builds. The error page was not triggered in a browser |
+| 10 | Portal error and loading pages | Compiles and builds. The error page was not triggered in a browser. **Corrected October 2:** my first wording told the resident that the problem was on our side and that anything already sent was received. The page has no evidence for either statement. The independent review removed both and made the retry button reload the page, because resetting the boundary alone kept a failed server response (`docs/reviews/2026-10-01-independent-fixes/UI_RECOVERY_FIXES.md`) |
 | 12 | Language picker is one row that opens to 44-pixel links | Chrome at 1440 and 390: closed row reads "Language English"; 22 links, 44 pixels tall |
 
 ## Still open from Phase 0
@@ -131,6 +131,38 @@ Known gaps from this batch:
 - Aerial was not rebuilt as a map-first page.
 - Closed tabs still mount. Flipping the flag fails 134 tests in 11 page test files that look for content in closed tabs; they need to render the right tab first.
 - The remaining index pages (Grants, Data Hub, Model Validation, Documents, Invoices, Land Use Plans, Aerial, My Work) keep their older headers.
+
+## Remaining headers and widget accessibility, October 2, 2026
+
+Two helper agents converted pages in the worktree; four earlier helpers were cut off by a usage limit with no edits left behind (checked: the tree was clean when work resumed). The session then moved from Fable 5.1 to Opus 5.5 at Nathaniel's request to save Fable usage. Checks on the combined tree: 17,514 tests passed, typecheck clean, lint clean, dead-code check exit 0, production build exit 0. Browser checks on port 3210 from the worktree.
+
+| Change | How it was checked |
+|---|---|
+| `RecordHubHeader` on the engagement campaign, RTP cycle and both report detail pages. The campaign's share-link state stays above the tabs; the moderation tiles moved into Responses. The report's generate control stays above the tabs | Page and `page-tabs-*` tests pass. Chrome at 1440: campaign page header, chips and tabs |
+| `PageHeader` on Grants, Data Hub, Invoices & Reimbursements, Land Use Plans (primary link to its form), Model Validation, Documents, My Work, Workspace setup & health and Planner Agent Activity. My Work puts the queue first and reminder settings in a closed disclosure | Page tests pass; header-action guard has a new `page-header-link` row for Land Use Plans. Chrome at 1440 on all nine: no overflow, no console errors |
+| The workspace command board is off every record page and the project overview | Read in source; tests pass |
+| Data Hub build notes removed ("automation theater", "Why this slice matters", "Visible system component", "policy diffing ... later"); the LODES card that became empty is removed rather than given a sentence I could not verify | Chrome at 1440 |
+| Planner Agent drawer and command palette render through the shared `ModalDialog`. The palette is a combobox with a listbox and announces the highlighted option. Both close on a backdrop press; the drawer will not close while an approval is pending | Chrome at 1440 and 390: drawer docked right at full height, focus held through 40 Tab presses, Escape closes and focus returns to the launcher. Palette: Ctrl+K focuses the input, arrows move `aria-activedescendant`, typing and Enter navigated to /grants. New `command-palette.test.tsx` fails when `aria-activedescendant` or the backdrop close is removed |
+| Workspace switcher is a plain disclosure list (it claimed listbox roles with buttons inside options); Escape closes it and returns focus; the current workspace has `aria-current` | New test fails when the focus return is removed |
+| Layer delete answer is a focused named group instead of a `role="dialog"` that never took focus | Existing tests pass |
+| Loading skeleton announces "Loading" in a status outside the hidden placeholder; data table scroll area is a keyboard-reachable region; selectable rows select from a real button | Tests updated; the row test now presses the button |
+
+Not done in this batch: closed tabs still mount; Aerial is not map-first; the hosted-only smoke script `openplan-prod-rtp-release-review-smoke.js` still expects the removed command board.
+
+## Browser audits against the new frame, October 2, 2026
+
+Nathaniel refreshed the walkthrough instance on port 3000 to `32dbc44b`; `which-openplan.sh` from this worktree confirmed the match. The four `qa-harness` browser audits ran for the first time against the new page frame: first on port 3000, then, after fixes, on a production build of this worktree served on port 3211. The dev server was not usable for this, because Safety never reaches network idle under `next dev`.
+
+| Audit | First run | Change | Final run |
+|---|---|---|---|
+| Control hit-test (dashboard, Safety, projects at 1440 and 390) | 5 covered | Three were slivers: controls with under a pixel showing at a scroll panel's edge, whose aim point the browser rounded onto the neighbor. The audit now skips a control with less than 8px showing (`tooThinToJudge`, unit checked; the check fails if the threshold swallows a fully shown, covered control). The other two were Safety's Mapbox logo, under the rail and then under the account card. It now sits past the rail and above the bottom chrome strip. Mapbox requires it visible | 0 covered, exit 0 |
+| Escape hatch (Safety, Corridor Analysis, Overview, Projects, a resident portal) | Pass | None | Pass |
+| Map reading | Failed: no "Read the map" control on Safety | The audit's default route was stale; Safety has owned its map since August and the control lives on the Aerial index. Default changed to `/aerial` | Pass: 10.4% of the window is map with the page showing, 70.4% in map-reading mode |
+| Card nesting | 19 findings: 15 better than budget, Grants 5 deep with 16 boxes past the limit, Help 207 characters per line | Grants opportunity notes became labeled rows and its evidence boxes became ruled sections; the modeling decision box, the reports funding follow-through box and the RTP registry's queue boxes became rules. Help became a reading column (38rem, 16px body). Budget re-seeded; no route got worse | Every route matches its budget, exit 0 |
+
+Re-seeded budget, before and after: RTP depth 6 to 3 and deep boxes 26 to 0; Reports deep 4 to 0; Overview deep 1 to 0; Help depth 3 to 0. Part of every route's drop is the plain frame no longer drawing a box; the budget's note says so.
+
+Not covered by these audits: keyboard order through every page, screen readers, the other four palettes, and real data volumes.
 
 ## What is next
 

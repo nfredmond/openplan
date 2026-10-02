@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { navLabel } from "@/components/nav/nav-registry";
+import { PageHeader } from "@/components/ui/page-header";
 import { StateBlock } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
@@ -34,10 +36,14 @@ const DIRECTION_TABS: Array<{ value: InvoicingDirection; label: string }> = [
 
 const DIRECTION_DESCRIPTIONS: Record<InvoicingDirection, string> = {
   reimbursement:
-    "Reimbursement invoices this agency submits against its funding awards — the draw cycle from draft through submitted, approved for payment, and paid. Reads are workspace-wide; writes are owner/admin only. Nothing here bills you: OpenPlan is free and open source.",
+    "Reimbursement invoices this agency submits against its funding awards — the draw cycle from draft through submitted, approved for payment, and paid.",
   receivables:
-    "Invoices this workspace sends its own clients — the receivable cycle from draft through sent and paid, backed by engagements, rate tables, and the time ledger. Reads are workspace-wide; writes are owner/admin only. Nothing here bills you: OpenPlan is free and open source.",
+    "Invoices this workspace sends its own clients — the receivable cycle from draft through sent and paid, backed by engagements, rate tables, and the time ledger.",
 };
+
+/** Who can read and write here, and that none of it is a bill from OpenPlan. Same in both directions. */
+const ACCESS_NOTE =
+  "Reads are workspace-wide; writes are owner/admin only. Nothing here bills you: OpenPlan is free and open source.";
 
 export default async function InvoicingPage({
   searchParams,
@@ -169,24 +175,13 @@ export default async function InvoicingPage({
 
   return (
     <section className="space-y-6">
-      <header className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-end">
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoices &amp; Reimbursements</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Invoices &amp; Reimbursements</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">{DIRECTION_DESCRIPTIONS[direction]}</p>
-        </div>
-
-        <div className={`${insetClass()} grid gap-px bg-border/80`}>
-          <div className="bg-background/70 px-4 py-3 text-sm">
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Role</p>
-            <p className="mt-1 font-semibold text-foreground">{titleCase(membership.role)}</p>
-          </div>
-          <div className="bg-background/70 px-4 py-3 text-sm">
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Workspace ID</p>
-            <p className="mt-1 font-semibold text-foreground">{formatWorkspaceIdSnippet(workspaceId)}</p>
-          </div>
-        </div>
-      </header>
+      <PageHeader title={navLabel("/invoicing")} description={DIRECTION_DESCRIPTIONS[direction]}>
+        <p className="text-sm text-muted-foreground">
+          {ACCESS_NOTE} Your role: <strong className="font-semibold text-foreground">{titleCase(membership.role)}</strong>.
+          Workspace ID{" "}
+          <strong className="font-semibold text-foreground">{formatWorkspaceIdSnippet(workspaceId)}</strong>.
+        </p>
+      </PageHeader>
 
       <InvoicingCashStrip workspaceId={workspaceId} />
 

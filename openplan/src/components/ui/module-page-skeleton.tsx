@@ -17,7 +17,14 @@ function Bar({ className }: { className: string }) {
  */
 export function ModulePageSkeleton({ sections = 3, rowsPerSection = 4 }: ModulePageSkeletonProps) {
   return (
-    <section className="module-page" aria-busy="true" aria-hidden="true" data-testid="module-page-skeleton">
+    <>
+      {/* The placeholder blocks are decoration and stay hidden from assistive
+          technology. They used to carry `aria-busy` on the same hidden element,
+          so a screen reader user was told nothing at all while a page loaded. */}
+      <p role="status" className="sr-only">
+        Loading
+      </p>
+    <section className="module-page" aria-hidden="true" data-testid="module-page-skeleton">
       <div className="module-page-backdrop" />
 
       <header className="module-header-grid">
@@ -70,5 +77,6 @@ export function ModulePageSkeleton({ sections = 3, rowsPerSection = 4 }: ModuleP
         </div>
       ))}
     </section>
+    </>
   );
 }

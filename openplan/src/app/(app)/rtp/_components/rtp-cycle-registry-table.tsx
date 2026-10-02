@@ -580,7 +580,7 @@ export function RtpCycleRegistryTable({
                       </p>
                     </div>
                   </div>
-                  <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
+                  <div className="mt-3 border-t border-border/60 pt-3">
                     <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                       Last queue action
                     </p>
@@ -599,7 +599,7 @@ export function RtpCycleRegistryTable({
                         {cycle.packetQueueTrace.isRecent ? <StatusBadge tone="info">Recent</StatusBadge> : null}
                       </div>
                     </div>
-                    <div className="mt-3 flex flex-wrap items-start justify-between gap-3 rounded-[0.5rem] border border-border/50 bg-background px-3 py-3">
+                    <div className="mt-3 flex flex-wrap items-start justify-between gap-3 border-t border-border/50 pt-3">
                       <div>
                         <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                           Queue trace freshness

@@ -6,7 +6,7 @@ import { readEveryPage } from "@/lib/supabase/paged-read";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
-import { ArrowRight, MapPinned, MessageSquareText, ShieldCheck } from "lucide-react";
+import { MapPinned } from "lucide-react";
 import { EngagementOperatorActions } from "@/components/engagement/engagement-operator-actions";
 import { CampaignPublishFlow } from "@/components/engagement/campaign-publish-flow";
 import { EngagementSurveyBuilder } from "@/components/engagement/survey-builder";
@@ -44,6 +44,8 @@ import {
 import { PageTabPanel } from "@/components/ui/page-tab-panel";
 import { PAGE_TAB_QUERY_KEY, resolvePageTab } from "@/lib/ui/page-tabs";
 import { buildCampaignTabs } from "./_tabs";
+import { CampaignModerationSummary } from "./_components/campaign-moderation-summary";
+import { RecordHubHeader } from "@/components/ui/record-hub-header";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { buildEngagementCommentMatrixPreview } from "@/lib/engagement/comment-matrix";
@@ -612,23 +614,39 @@ export default async function EngagementCampaignDetailPage({
   );
   return (
     <section className="module-page grid-cols-[minmax(0,1fr)]">
-      <CartographicSurfaceWide /><PlanningContextStripForProject requestedProjectId={query.projectId} project={project} error={projectResult.error} className="mb-4" />
-      <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/engagement" className="transition hover:text-foreground">
-          Engagement
-        </Link>
-        <ArrowRight className="h-3.5 w-3.5" />
-        <span className="text-foreground">{campaign.title}</span>
-      </div>
+      <CartographicSurfaceWide /><PlanningContextStripForProject requestedProjectId={query.projectId} project={project} error={projectResult.error} />
+      <RecordHubHeader
+        parentHref="/engagement"
+        parentLabel="Engagement"
+        title={campaign.title}
+        status={
+          <>
+            <StatusBadge tone={engagementStatusTone(campaign.status)}>
+              {titleizeEngagementValue(campaign.status)}
+            </StatusBadge>
+            <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span>
+            <span className="text-label text-muted-foreground">
+              {itemsUnreadable
+                ? "Flagged count unavailable — the comments could not be read"
+                : counts.statusCounts.flagged > 0
+                  ? `${counts.statusCounts.flagged} flagged`
+                  : "No flagged items"}
+            </span>
+          </>
+        }
+        description={
+          campaign.summary ||
+          "This campaign is ready for categories, incoming comments, and moderation."
+        }
+      />
 
       <ReadFailureNotice
-        className="mb-4"
         reads={reads}
         title="Part of this campaign could not be read"
       />
 
       {showModerationHonestyBanner ? (
-        <div className="mb-4" data-testid="moderation-honesty-banner">
+        <div data-testid="moderation-honesty-banner">
           <StateBlock
             tone="warning"
             title={`${awaitingReviewCount} ${
@@ -641,103 +659,9 @@ export default async function EngagementCampaignDetailPage({
 
       {query.created ? <EngagementCampaignCreatedNotice campaign={campaign} /> : null}
 
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <MessageSquareText className="h-3.5 w-3.5" />
-            Campaign detail
-          </div>
-          <div className="module-record-kicker">
-            <StatusBadge tone={engagementStatusTone(campaign.status)}>
-              {titleizeEngagementValue(campaign.status)}
-            </StatusBadge>
-            <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span>
-          </div>
-          <p className="text-label text-muted-foreground">
-            {itemsUnreadable
-              ? "Flagged count unavailable — the comments could not be read"
-              : counts.statusCounts.flagged > 0
-                ? `${counts.statusCounts.flagged} flagged`
-                : "No flagged items"}
-          </p>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">{campaign.title}</h1>
-            <p className="module-intro-description">
-              {campaign.summary ||
-                "This campaign is ready for categories, incoming comments, and moderation."}
-            </p>
-          </div>
-
-          <EngagementPublicLinkCompact campaign={campaign} />
-
-          <div className="module-summary-grid cols-3">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Linked project</p>
-              <p className="module-summary-value text-lg">
-                {projectUnreadable ? "Unavailable" : project?.name ?? "Unlinked"}
-              </p>
-              <p className="module-summary-detail">
-                {projectUnreadable
-                  ? "This campaign names a project, but that record could not be read — it is not unlinked."
-                  : "Project context stays visible so engagement does not float free."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Review queue</p>
-              <p className="module-summary-value">
-                {itemsUnreadable ? "Unavailable" : counts.moderationQueue.actionableCount}
-              </p>
-              <p className="module-summary-detail">
-                {itemsUnreadable
-                  ? "The comments could not be read, so the queue depth is unknown rather than empty."
-                  : `${counts.statusCounts.pending} pending, ${counts.statusCounts.flagged} flagged for operator review.`}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Report status</p>
-              <p className="module-summary-value">{handoffReadiness.completeCount}/{handoffReadiness.totalChecks}</p>
-              <p className="module-summary-detail">
-                {handoffReadiness.label}. {counts.statusCounts.approved} approved, {counts.uncategorizedItems} still need category assignment.
-              </p>
-            </div>
-          </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Moderation Summary</p>
-              <h2 className="module-operator-title">What still needs a moderator&apos;s decision</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            Comments waiting on review, and comments someone flagged. Work through these before
-            generating a report — anything still pending is left out of it.
-          </p>
-          <div className="module-operator-list">
-            {itemsUnreadable ? (
-              <div className="module-operator-item">
-                Moderation workload unavailable — the comments could not be read, so these are not counts of zero.
-              </div>
-            ) : (
-              <>
-                <div className="module-operator-item">Pending: {counts.moderationQueue.pendingCount}</div>
-                <div className="module-operator-item">Flagged: {counts.moderationQueue.flaggedCount}</div>
-                <div className="module-operator-item">Triaged: {counts.moderationQueue.triagedCount} ({fmtPercent(counts.moderationQueue.triagedShare)})</div>
-                <div className="module-operator-item">Recent activity: {counts.recentActivity.count} items in the last 7 days</div>
-                <div className="module-operator-item">Moderation notes present on {counts.moderationQueue.itemsWithNotesCount} items</div>
-              </>
-            )}
-            <div className="module-operator-item">
-              Linked reports: {reportsUnreadable || projectUnreadable ? "unavailable" : reportRecords.length}
-            </div>
-            <div className="module-operator-item">Last updated {fmtDateTime(campaign.updated_at)}</div>
-          </div>
-        </article>
-      </header>
+      {/* Above the tab strip on purpose: whether residents can reach this
+          campaign, and the link they use, matters on every tab. */}
+      <EngagementPublicLinkCompact campaign={campaign} />
 
       <PageTabNav
         tabs={campaignTabs}
@@ -1025,6 +949,16 @@ export default async function EngagementCampaignDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="responses" active={activeTab === "responses"}>
+        <CampaignModerationSummary
+          projectName={project?.name ?? null}
+          projectUnreadable={projectUnreadable}
+          itemsUnreadable={itemsUnreadable}
+          reportsUnreadable={reportsUnreadable}
+          counts={counts}
+          handoffReadiness={handoffReadiness}
+          reportCount={reportRecords.length}
+          updatedAt={campaign.updated_at}
+        />
         {canManageContextLayers ? <SurveyReviewQueue campaignId={campaign.id} /> : null}
         <div className="mt-6 min-w-0 space-y-6">
         {/* Refresh Activity on opening its tab; other hidden panels retain their drafts. */}

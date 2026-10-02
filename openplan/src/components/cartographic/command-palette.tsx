@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
+
+import { ModalDialog } from "@/components/ui/modal-dialog";
 
 import {
   buildPaletteCommands,
@@ -20,6 +22,8 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   const [activeIndex, setActiveIndex] = useState(0);
   const [prevOpen, setPrevOpen] = useState(open);
   const inputRef = useRef<HTMLInputElement>(null);
+  const titleId = useId();
+  const listId = useId();
 
   // Reset when the palette transitions to open — the adjust-state-during-render
   // pattern (not an effect), so query/selection are fresh on each open.
@@ -44,11 +48,6 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   }, [onOpenChange]);
 
   // Focus the input when open (DOM side effect only — no setState here).
-  useEffect(() => {
-    if (!open) return;
-    const id = window.setTimeout(() => inputRef.current?.focus(), 0);
-    return () => window.clearTimeout(id);
-  }, [open]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -71,10 +70,8 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   }
 
   function onKeyDown(event: React.KeyboardEvent) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onOpenChange(false);
-    } else if (event.key === "ArrowDown") {
+    // Escape is the dialog's own: `ModalDialog` closes on it and returns focus.
+    if (event.key === "ArrowDown") {
       event.preventDefault();
       setActiveIndex(Math.min(active + 1, results.length - 1));
     } else if (event.key === "ArrowUp") {
@@ -86,55 +83,71 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
     }
   }
 
+  const optionId = (index: number) => `${listId}-option-${index}`;
+
+  /*
+    A real modal with a combobox inside. It used to be a hand-built overlay:
+    focus could leave it, closing did not return focus, and moving the highlight
+    with the arrow keys was silent because the list had no roles. The input now
+    owns a listbox and names the highlighted option.
+  */
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-start justify-center bg-black/40 p-4 pt-[12vh] backdrop-blur-sm"
-      role="presentation"
-      onClick={() => onOpenChange(false)}
+    <ModalDialog
+      titleId={titleId}
+      onRequestClose={() => onOpenChange(false)}
+      initialFocusRef={inputRef}
+      closeOnBackdropPress
+      className="mt-[12vh] w-[calc(100%-2rem)] max-w-lg rounded-xl shadow-2xl"
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Jump to a module"
-        className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
-        onClick={(event) => event.stopPropagation()}
-        onKeyDown={onKeyDown}
-      >
+      <div onKeyDown={onKeyDown}>
+        <h2 id={titleId} className="sr-only">
+          Jump to a module
+        </h2>
         <div className="flex items-center gap-2 border-b border-border px-3">
-          <Search className="h-4 w-4 text-muted-foreground" />
+          <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <input
             ref={inputRef}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Jump to a module…"
             aria-label="Jump to a module"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls={listId}
+            aria-autocomplete="list"
+            aria-activedescendant={results.length > 0 ? optionId(active) : undefined}
             className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
           />
           <span className="rounded border border-border px-1.5 py-0.5 text-label text-muted-foreground">esc</span>
         </div>
 
-        <ul className="max-h-80 overflow-auto py-1">
+        <ul id={listId} role="listbox" aria-label="Modules" className="max-h-80 overflow-auto py-1">
           {results.length === 0 ? (
-            <li className="px-3 py-6 text-center text-sm text-muted-foreground">No matching module.</li>
+            <li role="presentation" className="px-3 py-6 text-center text-sm text-muted-foreground">
+              No matching module.
+            </li>
           ) : (
             results.map((item, index) => (
-              <li key={item.href}>
-                <button
-                  type="button"
-                  onClick={() => go(item)}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm ${
-                    index === active ? "bg-muted/60 text-foreground" : "text-foreground/90"
-                  }`}
-                >
-                  <span className="font-medium">{item.label}</span>
-                  <span className="text-xs text-muted-foreground">{item.group}</span>
-                </button>
+              // An option, not a button inside one: focus stays in the input and
+              // `aria-activedescendant` says which row is highlighted.
+              <li
+                key={item.href}
+                id={optionId(index)}
+                role="option"
+                aria-selected={index === active}
+                onClick={() => go(item)}
+                onMouseEnter={() => setActiveIndex(index)}
+                className={`flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm ${
+                  index === active ? "bg-muted/60 text-foreground" : "text-foreground/90"
+                }`}
+              >
+                <span className="font-medium">{item.label}</span>
+                <span className="text-xs text-muted-foreground">{item.group}</span>
               </li>
             ))
           )}
         </ul>
       </div>
-    </div>
+    </ModalDialog>
   );
 }

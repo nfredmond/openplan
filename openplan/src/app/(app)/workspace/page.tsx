@@ -8,6 +8,8 @@ import { WorkspaceIntegrationKeysPanel } from "@/components/workspaces/workspace
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { WorkspaceStageGatePanel } from "@/components/workspaces/workspace-stage-gate-panel";
 import { WorkspaceTeamPanel } from "@/components/workspaces/workspace-team-panel";
+import { navLabel } from "@/components/nav/nav-registry";
+import { PageHeader } from "@/components/ui/page-header";
 import { JurisdictionReadinessPanel } from "@/components/jurisdiction-readiness/jurisdiction-readiness-panel";
 import { evaluateDeploymentHealth } from "@/lib/config/deployment-health";
 import {
@@ -89,24 +91,21 @@ export default async function WorkspacePage() {
 
   return (
     <section className="module-page">
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">Workspace setup & health</div>
-          <div className="module-intro-body">
-            <div className="flex flex-wrap gap-2">
-              <div className="module-record-chip">
-                <span>Role</span>
-                <strong>{membership.role}</strong>
-              </div>
-            </div>
-            <h1 className="module-intro-title">{workspace.name || "Your workspace"}</h1>
-            <p className="module-intro-description">
-              Configure the facts and services every project shares. This page is also where an
-              owner checks whether the deployment and both modeling workers can do their jobs.
-            </p>
+      <PageHeader
+        title={navLabel("/workspace")}
+        description="Configure the facts and services every project shares. This page is also where an owner checks whether the deployment and both modeling workers can do their jobs."
+      >
+        <div className="flex flex-wrap gap-2">
+          <div className="module-record-chip">
+            <span>Workspace</span>
+            <strong>{workspace.name || "Your workspace"}</strong>
           </div>
-        </article>
-      </header>
+          <div className="module-record-chip">
+            <span>Role</span>
+            <strong>{membership.role}</strong>
+          </div>
+        </div>
+      </PageHeader>
 
       {deploymentHealth ? (
         <DeploymentHealthPanel health={deploymentHealth} workerHealth={modelingWorkerHealth} />

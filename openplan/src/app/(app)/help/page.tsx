@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BookOpen, ExternalLink, Gauge, LifeBuoy, Wrench } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 
 import { APP_NAV_ENTRIES, buildRailGroups } from "@/components/nav/nav-registry";
 import { MODULE_DESCRIPTIONS } from "@/lib/help/module-descriptions";
@@ -53,26 +54,20 @@ export default function HelpPage() {
   const specialistPages = APP_NAV_ENTRIES.filter((entry) => entry.railHidden);
 
   return (
-    <section className="module-page">
-      <header className="module-header-grid">
-        <div className="module-intro-card">
-          <div className="module-intro-kicker">Help</div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">What OpenPlan is, and how it fits together</h1>
-            <p className="module-intro-description">
-              OpenPlan is a free, open-source workbench for the people who plan communities —
-              regional agencies, cities, counties, tribes, consultancies, and independent planners.
-              It brings transportation analysis, community engagement, and project and grant
-              management into one place, so a piece of work moves between them without being
-              re-entered. Everything in it is free: there is no paid tier and no payment step.
-            </p>
-          </div>
-        </div>
-      </header>
+    /*
+      A READING PAGE. Plain headed sections in one column 38rem wide, with body
+      text at 16px, so a line holds about 75 characters. It was a stack of full-width section
+      cards; the card-nesting audit measured a 207-character line here.
+    */
+    <section className="module-page mx-auto w-full max-w-[38rem]">
+      <PageHeader
+        title="Help"
+        description="What OpenPlan is, and how it fits together. OpenPlan is a free, open-source workbench for the people who plan communities: regional agencies, cities, counties, tribes, consultancies, and independent planners. It brings transportation analysis, community engagement, and project and grant management into one place, so a piece of work moves between them without being re-entered. Everything in it is free: there is no paid tier and no payment step."
+      />
 
       {/* Getting started: the same list the workspace bootstrap API returns,
           rendered where a person can actually read it. */}
-      <article className="mt-6 module-section-surface">
+      <article className="mt-8 border-t border-border/60 pt-8">
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">Getting started</p>
@@ -82,7 +77,7 @@ export default function HelpPage() {
             </p>
           </div>
         </div>
-        <ol className="mt-4 list-decimal space-y-2 pl-6 text-sm text-foreground/90">
+        <ol className="mt-4 list-decimal space-y-2 pl-6 text-base text-foreground/90">
           {NEW_WORKSPACE_GETTING_STARTED_STEPS.map((step) => (
             <li key={step}>{step}</li>
           ))}
@@ -97,7 +92,7 @@ export default function HelpPage() {
         new validation example updates this page and /legal together — and no
         page can quietly keep quoting an old ceiling.
       */}
-      <article id="screening-grade" className="mt-6 module-section-surface scroll-mt-24">
+      <article id="screening-grade" className="mt-8 border-t border-border/60 pt-8 scroll-mt-24">
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">
@@ -109,12 +104,12 @@ export default function HelpPage() {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-6 lg:grid-cols-2">
+        <div className="mt-4 grid gap-6">
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               What you can conclude from it
             </h3>
-            <ul className="mt-2 list-disc space-y-1.5 pl-6 text-sm leading-6 text-foreground/90">
+            <ul className="mt-2 list-disc space-y-1.5 pl-6 text-base leading-6 text-foreground/90">
               {SCREENING_GRADE_SAFE_TO_CONCLUDE.map((item) => (
                 <li key={item}>{item}</li>
               ))}
@@ -124,7 +119,7 @@ export default function HelpPage() {
             <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               What it is not
             </h3>
-            <ul className="mt-2 list-disc space-y-1.5 pl-6 text-sm leading-6 text-foreground/90">
+            <ul className="mt-2 list-disc space-y-1.5 pl-6 text-base leading-6 text-foreground/90">
               {SCREENING_GRADE_NOT_SAFE_TO_CONCLUDE.map((item) => (
                 <li key={item}>{item}</li>
               ))}
@@ -132,19 +127,19 @@ export default function HelpPage() {
           </div>
         </div>
 
-        <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3">
+        <div className="mt-5 border-l-2 border-border pl-4">
           <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             How far off it can be
           </h3>
-          <p className="mt-2 text-sm leading-6 text-foreground/90">
+          <p className="mt-2 text-base leading-6 text-foreground/90">
             {describePublishedErrorEnvelope()}
           </p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          <p className="mt-2 text-base leading-6 text-muted-foreground">
             {SCREENING_GRADE_YOUR_RUN_NOTE}
           </p>
         </div>
 
-        <p className="mt-4 text-sm leading-6 text-muted-foreground">
+        <p className="mt-4 text-base leading-6 text-muted-foreground">
           The formal version of this boundary — what an agency is agreeing to when it publishes
           something OpenPlan produced — is in the{" "}
           <a
@@ -160,7 +155,7 @@ export default function HelpPage() {
       {/* Which features run on an AI key. The list mirrors the workspace setup
           checklist's "Turn on your AI assistant" step — two different accounts
           of the same boundary would be two things to keep true. */}
-      <article className="mt-6 module-section-surface">
+      <article className="mt-8 border-t border-border/60 pt-8">
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">AI features</p>
@@ -172,16 +167,16 @@ export default function HelpPage() {
             </p>
           </div>
         </div>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        <p className="mt-3 text-base leading-6 text-muted-foreground">
           Engagement source capture and staff synthesis reviews work without an AI key. The earlier AI
           synthesis generator is retired; new AI theme generation is not yet available.
         </p>
-        <ul className="mt-4 list-disc space-y-1.5 pl-6 text-sm text-foreground/90">
+        <ul className="mt-4 list-disc space-y-1.5 pl-6 text-base text-foreground/90">
           <li>The Planner Agent — the in-app assistant that answers from your workspace&apos;s own records.</li>
           <li>Narrative drafting for reports and grant applications.</li>
           <li>Comment translation on public engagement portals.</li>
         </ul>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        <p className="mt-3 text-base leading-6 text-muted-foreground">
           Everything else works without a key, and pages say plainly when an AI feature is
           unavailable rather than sitting silent. A workspace owner or admin adds the key on the{" "}
           <Link
@@ -197,7 +192,7 @@ export default function HelpPage() {
 
       {/* The modules, using the nav's own labels and groups so this page can
           never disagree with the rail about what a module is called. */}
-      <article className="mt-6 module-section-surface">
+      <article className="mt-8 border-t border-border/60 pt-8">
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">The modules</p>
@@ -218,11 +213,11 @@ export default function HelpPage() {
                   <li key={item.href} className="py-3">
                     <Link
                       href={item.href}
-                      className="text-sm font-semibold text-foreground hover:underline"
+                      className="text-base font-semibold text-foreground hover:underline"
                     >
                       {item.label}
                     </Link>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    <p className="mt-1 text-base leading-6 text-muted-foreground">
                       {MODULE_DESCRIPTIONS[item.href] ??
                         "No description has been written for this module yet."}
                     </p>
@@ -236,16 +231,16 @@ export default function HelpPage() {
               <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Specialist modeling pages
               </h3>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+              <p className="mt-1 text-base leading-6 text-muted-foreground">
                 These pages are part of Travel modeling and remain available from the command palette without adding a second rail.
               </p>
               <ul className="mt-2 divide-y divide-border/60">
                 {specialistPages.map((item) => (
                   <li key={item.href} className="py-3">
-                    <Link href={item.href} className="text-sm font-semibold text-foreground hover:underline">
+                    <Link href={item.href} className="text-base font-semibold text-foreground hover:underline">
                       {item.label}
                     </Link>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">{MODULE_DESCRIPTIONS[item.href]}</p>
+                    <p className="mt-1 text-base leading-6 text-muted-foreground">{MODULE_DESCRIPTIONS[item.href]}</p>
                   </li>
                 ))}
               </ul>
@@ -256,7 +251,7 @@ export default function HelpPage() {
 
       {/* Who fixes what. Worded so a planner knows which problems are theirs
           to solve and which belong to whoever runs the deployment. */}
-      <article className="mt-6 module-section-surface">
+      <article className="mt-8 border-t border-border/60 pt-8">
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">
@@ -268,7 +263,7 @@ export default function HelpPage() {
             </h2>
           </div>
         </div>
-        <div className="mt-3 space-y-3 text-sm leading-6 text-muted-foreground">
+        <div className="mt-3 space-y-3 text-base leading-6 text-muted-foreground">
           <p>
             OpenPlan is software your organization (or a host acting for it) runs on a server. A
             few capabilities — maps, AI assistance, Census-backed equity data, the modeling worker
@@ -290,7 +285,7 @@ export default function HelpPage() {
 
       {/* The operator guides, linked from inside the app so a planner can hand
           the right document to the right person. */}
-      <article className="mt-6 module-section-surface">
+      <article className="mt-8 border-t border-border/60 pt-8">
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">
@@ -311,16 +306,16 @@ export default function HelpPage() {
                 href={doc.href}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground hover:underline"
+                className="inline-flex items-center gap-1.5 text-base font-semibold text-foreground hover:underline"
               >
                 {doc.label}
                 <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               </a>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">{doc.description}</p>
+              <p className="mt-1 text-base leading-6 text-muted-foreground">{doc.description}</p>
             </li>
           ))}
         </ul>
-        <p className="mt-4 flex items-start gap-2 border-t border-border/60 pt-4 text-xs leading-5 text-muted-foreground">
+        <p className="mt-4 flex items-start gap-2 border-t border-border/60 pt-4 text-base leading-7 text-muted-foreground">
           <LifeBuoy className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span>
             Found something wrong, or something this page does not answer? OpenPlan is open

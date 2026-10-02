@@ -176,6 +176,7 @@ export function CartographicRail({ groups, accountControl }: CartographicRailPro
           <ModalDialog
             titleId="nav-sheet-title"
             onRequestClose={() => setSheetOpen(false)}
+            closeOnBackdropPress
             className="op-cart-navsheet"
           >
             <div className="op-cart-navsheet__panel">

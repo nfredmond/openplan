@@ -99,7 +99,10 @@ describe("WorkspacePage", () => {
   it("puts shared setup and deployment health on one workspace-scoped page", async () => {
     render(await WorkspacePage());
 
-    expect(screen.getByRole("heading", { name: "OpenPlan QA" })).toBeInTheDocument();
+    // The page is named for its rail label; the workspace it describes is
+    // stated under that name.
+    expect(screen.getByRole("heading", { level: 1, name: "Workspace setup & health" })).toBeInTheDocument();
+    expect(screen.getByText("OpenPlan QA")).toBeInTheDocument();
     expect(screen.getByTestId("workspace-geography")).toHaveAttribute("data-workspace-id", "workspace-1");
     expect(screen.getByTestId("workspace-team")).toHaveAttribute("data-can-manage", "true");
     expect(screen.getByTestId("workspace-integrations")).toHaveAttribute("data-can-manage", "true");

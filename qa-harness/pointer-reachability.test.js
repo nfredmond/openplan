@@ -18,7 +18,7 @@
  */
 
 const assert = require('node:assert');
-const { classify, MIN_OPACITY, MIN_SIZE } = require('./pointer-reachability');
+const { classify, tooThinToJudge, MIN_OPACITY, MIN_SIZE } = require('./pointer-reachability');
 
 /** A perfectly ordinary rail link, as measured in Chrome at 1600x900. */
 function ok(overrides = {}) {
@@ -147,6 +147,26 @@ check('a control too small to aim at is not reachable', () => {
 check('a click landing on the link’s own icon counts as landing on the link', () => {
   const verdict = classify(ok({ hitTopIsSelfOrDescendant: true, hitTopDescription: 'svg.lucide' }));
   assert.strictEqual(verdict.reachable, true);
+});
+
+/** The sliver at a panel's edge, measured 2026-10-02. */
+check('a sliver at the edge of a scrolling panel is too thin to judge', () => {
+  // Safety's "Not reported (0)" chip: 26px tall, 0.2px of it inside the panel.
+  assert.strictEqual(tooThinToJudge(ok({ visibleWidth: 120, visibleHeight: 0.2 })), true);
+  assert.strictEqual(tooThinToJudge(ok({ visibleWidth: 3, visibleHeight: 26 })), true);
+});
+
+check('a control fully shown under an overlay is still judged', () => {
+  // The defect class the audit exists for: whole inside its panel, covered.
+  const sample = ok({ visibleWidth: 120, visibleHeight: 26, hitTopIsSelfOrDescendant: false });
+  assert.strictEqual(tooThinToJudge(sample), false);
+  assert.strictEqual(classify(sample).reachable, false);
+  // Exactly at the floor is judged, not skipped.
+  assert.strictEqual(tooThinToJudge(ok({ visibleWidth: MIN_SIZE, visibleHeight: MIN_SIZE })), false);
+});
+
+check('a sample measured before this rule existed is judged as before', () => {
+  assert.strictEqual(tooThinToJudge(ok()), false);
 });
 
 if (failures > 0) {

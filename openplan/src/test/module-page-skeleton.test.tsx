@@ -10,7 +10,11 @@ describe("ModulePageSkeleton", () => {
     const root = container.querySelector('[data-testid="module-page-skeleton"]');
     expect(root).not.toBeNull();
     expect(root).toHaveClass("module-page");
-    expect(root?.getAttribute("aria-busy")).toBe("true");
+    // The placeholder is decoration; the announcement is a separate status.
+    expect(root?.getAttribute("aria-hidden")).toBe("true");
+    const status = container.querySelector('[role="status"]');
+    expect(status?.textContent).toBe("Loading");
+    expect(root?.contains(status)).toBe(false);
     expect(container.querySelector(".module-header-grid")).not.toBeNull();
     expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
   });

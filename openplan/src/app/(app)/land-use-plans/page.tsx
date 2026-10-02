@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LandUsePlanCreator } from "@/components/land-use-plans/land-use-plan-creator";
+import { navLabel } from "@/components/nav/nav-registry";
+import { PageHeader } from "@/components/ui/page-header";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import {
   getJurisdictionPlanDescriptor,
@@ -50,11 +52,17 @@ export default async function LandUsePlansPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 p-4 md:p-8">
-      <header>
-        <p className="text-sm font-semibold uppercase tracking-wide text-primary">Plans and programming</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight">Land Use Plans</h1>
-        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Author a plan, freeze what the public reviewed, save the exact adoption decision, publish the frozen plan, and keep implementation reporting tied to it.</p>
-      </header>
+      <PageHeader
+        title={navLabel("/land-use-plans")}
+        description="Author a plan, freeze what the public reviewed, save the exact adoption decision, publish the frozen plan, and keep implementation reporting tied to it."
+        actions={
+          // The setup form stays open at the bottom of the page. This link is
+          // how a planner with a long list of plans reaches it.
+          <a className="module-intro-action" href="#create-land-use-plan">
+            New land use plan
+          </a>
+        }
+      />
       <div className="rounded-lg border border-blue-300 bg-blue-50 p-4 text-sm text-blue-950 dark:border-blue-900 dark:bg-blue-950/20 dark:text-blue-100">
         OpenPlan tracks requirements and evidence. It does not certify legal sufficiency, perform environmental review, or replace counsel and qualified planning review.
       </div>
@@ -77,12 +85,14 @@ export default async function LandUsePlansPage() {
           })}
         </section>
       ) : !unreadable ? <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">No land use plans yet. The setup below creates the first working version and its requirements checklist.</p> : null}
-      <LandUsePlanCreator
-        recommendedDescriptorId={recommendation.descriptor.id}
-        recommendationKind={
-          jurisdictionUnreadable ? "workspace_jurisdiction_unreadable" : recommendation.kind
-        }
-      />
+      <div id="create-land-use-plan" className="scroll-mt-24">
+        <LandUsePlanCreator
+          recommendedDescriptorId={recommendation.descriptor.id}
+          recommendationKind={
+            jurisdictionUnreadable ? "workspace_jurisdiction_unreadable" : recommendation.kind
+          }
+        />
+      </div>
     </div>
   );
 }

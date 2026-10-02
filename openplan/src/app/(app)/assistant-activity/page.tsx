@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { ApprovedHoldRecovery, ApprovedSubmittalRecovery } from "@/components/assistant/approved-hold-recovery";
-import { Activity, ShieldCheck } from "lucide-react";
+import { navLabel } from "@/components/nav/nav-registry";
+import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, ErrorState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -133,67 +134,44 @@ export default async function AssistantActivityPage() {
 
   return (
     <section className="module-page grid-cols-1">
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <Activity className="h-3.5 w-3.5" />
-            Action audit ledger
-          </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">Planner Agent Activity</h1>
-            <p className="module-intro-description">
-              Recorded Planner Agent executions in this workspace, including their reported outcomes.
-              This list can be incomplete if an audit write fails; check the affected record when confirming a change.
-            </p>
-            {authorshipAvailable ? null : (
-              <p className="module-intro-description text-amber-600 dark:text-amber-300">
-                This deployment has not applied the agent-principal migration, so these rows cannot say
-                whether a person or the Planner Agent composed each action. They are shown without that
-                attribution rather than defaulted to one.
-              </p>
-            )}
-          </div>
-
-          <div className="module-summary-grid cols-3">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Actions recorded</p>
-              <p className="module-summary-value">{summary.total}</p>
-              <p className="module-summary-detail">Most recent {ACTIVITY_LIMIT} audit rows for {workspaceName}.</p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Approval-gated</p>
-              <p className="module-summary-value">{summary.approvalGated}</p>
-              <p className="module-summary-detail">Executed only after a single-use operator approval.</p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Failed</p>
-              <p className="module-summary-value">{summary.failed}</p>
-              <p className="module-summary-detail">Failed executions among these retained audit rows.</p>
-            </div>
-          </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">AI governance</p>
-              <h2 className="module-operator-title">Hash-verified, single-use approvals</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            The Planner Agent cannot take an approval-gated action silently. Each approval is bound to a
-            server-computed input hash, expires on a timer, and is consumed on first use.
+      <PageHeader
+        title={navLabel("/assistant-activity")}
+        description="Recorded Planner Agent executions in this workspace, including their reported outcomes."
+      >
+        <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+          This list can be incomplete if an audit write fails; check the affected record when confirming a change.
+        </p>
+        {authorshipAvailable ? null : (
+          <p className="max-w-3xl text-sm leading-6 text-amber-600 dark:text-amber-300">
+            This deployment has not applied the agent-principal migration, so these rows cannot say
+            whether a person or the Planner Agent composed each action. They are shown without that
+            attribution rather than defaulted to one.
           </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">Retained entries show the reported outcome of each audited execution.</div>
-            <div className="module-operator-item">Approval-gated actions verify the input hash before running.</div>
-            <div className="module-operator-item">Only members of this workspace can see these records.</div>
+        )}
+
+        <div className="module-summary-grid cols-3">
+          <div className="module-summary-card">
+            <p className="module-summary-label">Actions recorded</p>
+            <p className="module-summary-value">{summary.total}</p>
+            <p className="module-summary-detail">Most recent {ACTIVITY_LIMIT} audit rows for {workspaceName}.</p>
           </div>
-        </article>
-      </header>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Approval-gated</p>
+            <p className="module-summary-value">{summary.approvalGated}</p>
+            <p className="module-summary-detail">Executed only after a single-use operator approval.</p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Failed</p>
+            <p className="module-summary-value">{summary.failed}</p>
+            <p className="module-summary-detail">Failed executions among these retained audit rows.</p>
+          </div>
+        </div>
+        <p className="module-note text-sm leading-relaxed text-muted-foreground">
+          The Planner Agent cannot take an action that needs approval without one. Each approval covers
+          one specific action, expires, and works once. Only members of this workspace can see these
+          records.
+        </p>
+      </PageHeader>
 
       <ApprovedHoldRecovery key={`holds-${membership.workspace_id}`} workspaceId={membership.workspace_id} />
       <ApprovedSubmittalRecovery key={`submittals-${membership.workspace_id}`} workspaceId={membership.workspace_id} />
@@ -228,7 +206,7 @@ export default async function AssistantActivityPage() {
         ) : executions.length === 0 ? (
           <div className="mt-5">
             <EmptyState
-              title="No retained Planner Agent executions"
+              title="No Planner Agent actions to show"
               description="No execution entries are available in this view. An empty list does not establish that no actions ran; check the affected project or document to confirm its state."
             />
           </div>

@@ -3,6 +3,8 @@ import type {ParticipantWork} from "@/lib/invoicing/contracts/participant-work";
 import Link from "next/link";
 
 import { RecordAssigneeChip, type ProjectAssigneeRoster } from "@/components/projects/record-assignee";
+import { navLabel } from "@/components/nav/nav-registry";
+import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { MyWorkScopeToggles } from "@/components/my-work/my-work-scope-toggles";
 import {
@@ -185,16 +187,10 @@ export function MyWorkBoard({
 
   return (
     <section className="module-page">
-      {participantWork&&<ContractParticipantWork work={participantWork}/>}
-      <article className="module-intro-card">
-        <div className="module-intro-kicker">Workspace</div>
-        <div className="module-intro-body">
-          <h1 className="module-intro-title">My work</h1>
-          <p className="module-intro-description">
-            Assignments and deadlines across this workspace, including plan actions without a
-            due date, unassigned work, held stage gates, and shared grant and invoice deadlines.
-          </p>
-        </div>
+      <PageHeader
+        title={navLabel("/my-work")}
+        description="Assignments and deadlines across this workspace, including plan actions without a due date, unassigned work, held stage gates, and shared grant and invoice deadlines."
+      >
         <p className="module-note">{describeMyWorkOrdering(limitPerSource)}</p>
         {readFailureSummary ? (
           <p className="module-alert" role="status">
@@ -241,7 +237,9 @@ export function MyWorkBoard({
             {MY_WORK_SCOPE_LABELS.all_projects} to see it.
           </p>
         ) : null}
-      </article>
+      </PageHeader>
+
+      {participantWork&&<ContractParticipantWork work={participantWork}/>}
 
       <MyWorkScopeToggles scope={scope} />
 

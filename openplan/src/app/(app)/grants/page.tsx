@@ -836,7 +836,7 @@ export default async function GrantsPage({
         operationsSummary={operationsSummary}
         workspaceCommandCallout={
           leadGrantsCommand ? (
-            <GrantsQueueCallout kind="workspace" command={leadGrantsCommand} className="mt-4" variant="hero" />
+            <GrantsQueueCallout kind="workspace" command={leadGrantsCommand} className="" />
           ) : null
         }
       />

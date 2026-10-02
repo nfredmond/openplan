@@ -3,10 +3,6 @@ import { ReportReadFailureDisclosure, ReportUnreadableShell } from "@/components
 import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
-  loadWorkspaceOperationsSummaryForWorkspace,
-  type WorkspaceOperationsSupabaseLike,
-} from "@/lib/operations/workspace-summary";
-import {
   buildPortfolioFundingSnapshot,
   buildProjectFundingSnapshot,
 } from "@/lib/projects/funding";
@@ -149,7 +145,6 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     rtpChaptersResult,
     rtpProjectLinksResult,
     rtpCampaignsResult,
-    operationsSummary,
   ] = await Promise.all([
     supabase
       .from("projects")
@@ -206,10 +201,6 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
           .eq("workspace_id", report.workspace_id)
           .eq("rtp_cycle_id", report.rtp_cycle_id)
       : Promise.resolve({ data: [], error: null }),
-    loadWorkspaceOperationsSummaryForWorkspace(
-      supabase as unknown as WorkspaceOperationsSupabaseLike,
-      report.workspace_id
-    ),
   ]);
 
   const {
@@ -692,7 +683,6 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
             ? null
             : currentRtpEngagementCounts.moderationQueue.readyForHandoffCount,
         }}
-        operationsSummary={operationsSummary}
       />
       </>
     );
@@ -1295,7 +1285,6 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
       runs={runs}
       latestArtifact={latestArtifact}
       fundingSnapshot={fundingSnapshot}
-      operationsSummary={operationsSummary}
       driftItems={driftItems}
       driftedItems={driftedItems}
       evidenceSummaryDigest={evidenceSummaryDigest}

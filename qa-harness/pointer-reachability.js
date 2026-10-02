@@ -61,6 +61,26 @@ const MIN_SIZE = 8;
 const MIN_OPACITY = 0.1;
 
 /**
+ * TOO THIN TO JUDGE: less than `MIN_SIZE` of the control is showing.
+ *
+ * A control scrolled almost out of a panel leaves a sliver at the panel's edge.
+ * Its aim point is then a fraction of a pixel inside the panel, and the browser
+ * rounds that point onto whatever sits just past the edge: a footer, the phone
+ * navigation bar. Measured on 2026-10-02: Safety's filter chips with 0.2px
+ * showing were reported "covered by" the sidebar footer, and two dashboard
+ * buttons with about 1px showing "covered by" the phone bar. Nobody can aim at
+ * a sliver, and the same control is measured whole at another scroll position.
+ *
+ * This does not excuse a control that sits under an overlay: such a control is
+ * shown at full size inside its own panel, so the visible box is large and the
+ * coverage is judged. Only the clipped remainder is skipped.
+ */
+function tooThinToJudge(sample) {
+  if (typeof sample.visibleWidth !== 'number' || typeof sample.visibleHeight !== 'number') return false;
+  return sample.visibleWidth < MIN_SIZE || sample.visibleHeight < MIN_SIZE;
+}
+
+/**
  * ONE ELEMENT'S MEASUREMENTS → A VERDICT. Pure; no DOM, no browser.
  *
  * The order matters for the reason string only — a sample can fail several ways
@@ -266,6 +286,8 @@ async function sampleControls(
         rect,
         aim,
         visibleFraction: Math.round(visibleFraction * 1000) / 1000,
+        visibleWidth: Math.round(visibleWidth * 10) / 10,
+        visibleHeight: Math.round(visibleHeight * 10) / 10,
         display: style.display,
         visibility: style.visibility,
         pointerEvents: style.pointerEvents,
@@ -332,6 +354,7 @@ module.exports = {
   MIN_SIZE,
   MIN_OPACITY,
   classify,
+  tooThinToJudge,
   sampleControls,
   inspectControls,
   findWaysOut,

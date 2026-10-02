@@ -85,7 +85,10 @@ describe("a tabbed page names itself on every tab", () => {
       const stripAt = source.indexOf("<PageTabNav");
       expect(stripAt, `${page.label} no longer renders a tab strip`).toBeGreaterThan(-1);
 
-      const headings = [...source.matchAll(/<h1[\s>]/g)].map((match) => match.index ?? -1);
+      // `<RecordHubHeader>` renders the page's one h1 (see
+      // components/ui/record-hub-header.tsx), so a page that uses it carries
+      // its heading wherever that element sits.
+      const headings = [...source.matchAll(/<(?:h1|RecordHubHeader)[\s>]/g)].map((match) => match.index ?? -1);
       expect(headings, `${page.label} renders no h1 at all`).not.toEqual([]);
 
       for (const at of headings) {

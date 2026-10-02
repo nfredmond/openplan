@@ -45,7 +45,14 @@ export function DataTable<T>({
   }
 
   return (
-    <div className={cn("data-table-wrapper overflow-x-auto rounded-[14px] border border-border/60", className)}>
+    <div
+      className={cn("data-table-wrapper overflow-x-auto rounded-[14px] border border-border/60", className)}
+      // A scroll container must be reachable by keyboard, or a wide table cannot
+      // be read without a pointer.
+      role="region"
+      aria-label={typeof caption === "string" ? caption : "Table"}
+      tabIndex={0}
+    >
       <table className="data-table w-full border-collapse">
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead className="data-table-head bg-muted/40">
@@ -77,12 +84,11 @@ export function DataTable<T>({
                 aria-selected={isInteractive ? isSelected : undefined}
                 className={cn(
                   "data-table-row border-b border-border/40 last:border-b-0 transition-colors",
-                  isInteractive && "cursor-pointer hover:bg-muted/40",
+                  isInteractive && "hover:bg-muted/40",
                   isSelected && "bg-sky-500/10"
                 )}
-                onClick={isInteractive ? () => onRowSelect?.(row, index) : undefined}
               >
-                {columns.map((column) => (
+                {columns.map((column, columnIndex) => (
                   <td
                     key={column.id}
                     className={cn(
@@ -91,7 +97,21 @@ export function DataTable<T>({
                       alignClass(column.align)
                     )}
                   >
-                    {column.cell(row, index)}
+                    {/* A selectable row is selected from a real button in its
+                        first cell. A click handler on the row itself had no
+                        keyboard path. */}
+                    {isInteractive && columnIndex === 0 ? (
+                      <button
+                        type="button"
+                        className="w-full text-left"
+                        aria-pressed={isSelected}
+                        onClick={() => onRowSelect?.(row, index)}
+                      >
+                        {column.cell(row, index)}
+                      </button>
+                    ) : (
+                      column.cell(row, index)
+                    )}
                   </td>
                 ))}
               </tr>

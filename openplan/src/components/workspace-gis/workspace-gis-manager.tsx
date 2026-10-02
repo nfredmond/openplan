@@ -27,7 +27,7 @@
  */
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { navLabel } from "@/components/nav/nav-registry";
 import { MAP_SURFACE_ROUTES } from "@/lib/navigation/map-surfaces";
@@ -441,6 +441,13 @@ function LayerDeleteControl({
   const [references, setReferences] = useState<WorkspaceGisLayerReferencesResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [asking, setAsking] = useState(false);
+  const answerRef = useRef<HTMLDivElement>(null);
+
+  // Move focus to the answer when it appears, so the next thing a keyboard or
+  // screen reader user meets is what the delete would do.
+  useEffect(() => {
+    if (references) answerRef.current?.focus();
+  }, [references]);
 
   const ask = async () => {
     setAsking(true);
@@ -493,7 +500,17 @@ function LayerDeleteControl({
       ) : null}
 
       {references ? (
-        <div className="op-gis-delete__dialog" role="dialog" aria-label="Delete this layer?">
+        // An inline answer, not a modal: it opens in place under the button
+        // and the page stays usable. It was labelled `role="dialog"` with no
+        // focus move, so a keyboard user was told a dialog had opened and left
+        // outside it. A named group that takes focus says what is true.
+        <div
+          ref={answerRef}
+          tabIndex={-1}
+          className="op-gis-delete__dialog"
+          role="group"
+          aria-label="Delete this layer?"
+        >
           {references.deletable ? (
             <>
               <p>

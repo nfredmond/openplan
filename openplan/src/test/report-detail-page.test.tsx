@@ -1618,7 +1618,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     it("reads the shared fixture, not the previous test's leftover", async () => {
       render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
 
-      expect(screen.getByText("Downtown Safety Packet")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 1, name: "Downtown Safety Packet" })).toBeInTheDocument();
       expect(notFoundMock).not.toHaveBeenCalled();
       expect(screen.queryByText(/The report record could not be read/i)).not.toBeInTheDocument();
     });

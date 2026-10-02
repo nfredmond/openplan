@@ -21,6 +21,7 @@ export function ModalDialog({
   onRequestClose,
   closeBlocked = false,
   initialFocusRef,
+  closeOnBackdropPress = false,
   className,
 }: {
   children: ReactNode;
@@ -29,6 +30,12 @@ export function ModalDialog({
   onRequestClose: () => void;
   closeBlocked?: boolean;
   initialFocusRef?: RefObject<HTMLElement | null>;
+  /**
+   * Close when the dimmed area outside the panel is pressed. Off by default: a
+   * form or a destructive question should not vanish on a stray click. On for
+   * light pickers (the command palette, the phone navigation sheet).
+   */
+  closeOnBackdropPress?: boolean;
   className?: string;
 }) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
@@ -52,6 +59,11 @@ export function ModalDialog({
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
+      // A press on the backdrop lands on the dialog element itself; a press
+      // inside the panel lands on a descendant.
+      onClick={(event) => {
+        if (closeOnBackdropPress && !closeBlocked && event.target === event.currentTarget) onRequestClose();
+      }}
       onCancel={(event) => {
         event.preventDefault();
         if (!closeBlocked) onRequestClose();

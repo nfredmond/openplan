@@ -1130,7 +1130,7 @@ export default async function ReportsPage({
                         <p className="mt-1">{report.fundingDigest.detail}</p>
                         {report.fundingDigest.timingDetail ? <p className="mt-1">{report.fundingDigest.timingDetail}</p> : null}
                         {report.grantsFollowThrough ? (
-                          <div className="mt-3 rounded-[0.5rem] border border-amber-400/30 bg-amber-500/[0.08] px-3 py-3">
+                          <div className="mt-3 border-l-2 border-amber-400/60 pl-3">
                             <p className="text-xs font-medium text-foreground">Grants follow-through</p>
                             <p className="mt-1 text-xs text-muted-foreground">{report.grantsFollowThrough.title}</p>
                             <p className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-[color:var(--pine)]">

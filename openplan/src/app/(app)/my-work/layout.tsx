@@ -14,7 +14,7 @@ import { loadWorkspaceReminderPreference } from "@/lib/notifications/reminder-pr
 import { ReminderPreferencesPanel } from "@/components/my-work/reminder-preferences";
 
 /**
- * The reminder panel, above the work queue.
+ * The reminder panels, below the work queue.
  *
  * WHY A LAYOUT AND NOT A LINE IN page.tsx — recorded, because it is a trade and
  * not an obvious call. `page.tsx` returns a SINGLE element (`MyWorkBoard`, or
@@ -69,23 +69,33 @@ export default async function MyWorkLayout({ children }: { children: ReactNode }
     )
   );
 
-  // `grid gap-6` matches `.module-page`'s own 1.5rem gap, so the panel sits in
-  // the same rhythm as the sections the page renders below it rather than
-  // flush against them.
+  // `grid gap-6` matches `.module-page`'s own 1.5rem gap, so the panels sit in
+  // the same rhythm as the sections the page renders above them.
+  //
+  // ORDER: the queue first, because it is what a planner opened this page for.
+  // Reminders follow it. The reminder settings are changed rarely, so they wait
+  // closed at the bottom with every sentence and control still inside.
   return (
     <div className="grid gap-6">
+      {children}
       <WorkNotificationInboxPanel
         inbox={inbox}
         sweepFreshness={sweepFreshness}
         advanceDays={reminderPreference?.preference.advanceDays ?? 7}
       />
       {reminderPreference ? (
-        <ReminderPreferencesPanel
-          preference={reminderPreference.preference}
-          canManage={canAccessWorkspaceAction("workspace.configure", membership?.role)}
-        />
+        <details data-testid="reminder-settings">
+          <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
+            Reminder settings
+          </summary>
+          <div className="mt-3">
+            <ReminderPreferencesPanel
+              preference={reminderPreference.preference}
+              canManage={canAccessWorkspaceAction("workspace.configure", membership?.role)}
+            />
+          </div>
+        </details>
       ) : null}
-      {children}
     </div>
   );
 }
