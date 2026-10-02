@@ -29,7 +29,7 @@ type SelectionArgs = {
   request: unknown; saved: unknown; scope: SynthesisSourceScope; actorId: string; throughSequence?: number;
 };
 async function readSelections(service: Pick<SupabaseClient, "rpc">, args: SelectionArgs, signal?: AbortSignal,
-  mode: "current" | "historical" | { contextRequestId: string } = "current",
+  mode: "current" | "historical" | { contextRequestId: string } | { thematicRequestId: string; targetRecordId: string } = "current",
 ) {
   signal?.throwIfAborted();
   const actor = id.parse(args.actorId);
@@ -39,10 +39,12 @@ async function readSelections(service: Pick<SupabaseClient, "rpc">, args: Select
   let throughSequence: number | null = args.throughSequence === undefined ? null : natural.parse(args.throughSequence), afterTaskIndex = -1;
   for (;;) {
     signal?.throwIfAborted();
-    const contextRequestId = typeof mode === "object" ? id.parse(mode.contextRequestId) : null;
-    const command = contextRequestId ? "read_engagement_synthesis_context_parent_selections"
+    const contextRequestId = typeof mode === "object" && "contextRequestId" in mode ? id.parse(mode.contextRequestId) : null;
+    const thematic = typeof mode === "object" && "thematicRequestId" in mode ? mode : null;
+    const command = thematic ? "read_engagement_synthesis_thematic_preparation_selections" : contextRequestId ? "read_engagement_synthesis_context_parent_selections"
       : mode === "historical" ? "read_engagement_synthesis_generation_selection_history" : "read_engagement_synthesis_generation_selections";
-    const parameters = contextRequestId ? { p_request: contextRequestId, p_after_task_index: afterTaskIndex, p_limit: 128 }
+    const parameters = thematic ? { p_request: id.parse(thematic.thematicRequestId), p_target: thematic.targetRecordId,
+      p_stage: "parent", p_after_task_index: afterTaskIndex, p_limit: 128 } : contextRequestId ? { p_request: contextRequestId, p_after_task_index: afterTaskIndex, p_limit: 128 }
       : { ...(mode === "historical" ? { p_campaign: args.scope.campaignId } : {}), p_request: plan.header.requestId,
         p_through_sequence: throughSequence, p_after_task_index: afterTaskIndex, p_limit: 128 };
     const { data, error } = await service.rpc(command, parameters)
@@ -90,4 +92,11 @@ export function readSynthesisContextParentSelections(service: Pick<SupabaseClien
   contextRequestId: string, args: SelectionArgs, signal?: AbortSignal,
 ) {
   return readSelections(service, args, signal, { contextRequestId });
+}
+
+/** Native thematic delegation fixes the selected parent and its sequence. */
+export function readSynthesisThematicParentSelections(service: Pick<SupabaseClient, "rpc">,
+  thematicRequestId: string, targetRecordId: string, args: SelectionArgs, signal?: AbortSignal,
+) {
+  return readSelections(service, args, signal, { thematicRequestId, targetRecordId });
 }

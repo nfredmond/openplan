@@ -8,7 +8,7 @@ import { createSynthesisGenerationRecords } from "./synthesis-generation-records
 import { synthesisGenerationRequestIntentSchema } from "./synthesis-generation-plan";
 import { assembleSynthesisGenerationResults, synthesisGenerationAttemptBindingSchema,
   type SynthesisGenerationResult } from "./synthesis-generation-results";
-import { readSynthesisGenerationSelections, readSynthesisGenerationHistoricalSelections, readSynthesisContextParentSelections } from "./synthesis-generation-selections-server";
+import { readSynthesisGenerationSelections, readSynthesisGenerationHistoricalSelections, readSynthesisContextParentSelections, readSynthesisThematicParentSelections } from "./synthesis-generation-selections-server";
 import { verifySynthesisSource } from "./synthesis-sources-server";
 import { loadSynthesisWorkerAuthorization, synthesisWorkerRequestSignal } from "./synthesis-generation-worker-load";
 
@@ -163,4 +163,14 @@ export async function loadSynthesisGenerationHistory(client: Pick<SupabaseClient
   const result = await readSelectedResults(service, args, signal, () => readSynthesisGenerationHistoricalSelections(client, args, signal));
   if (!isDeepStrictEqual(request, await readRequest())) differs();
   return { campaignId: scope.campaignId, workspaceId: scope.workspaceId, requesterId: request.actorId, ...result };
+}
+
+/** Replay original parent results through the new thematic requester's native
+ * delegation. This does not revive parent execution or impersonate its author.
+ */
+export function readSynthesisThematicParentResults(service: Pick<SupabaseClient, "from" | "rpc">,
+  thematicRequestId: string, targetRecordId: string, args: Parameters<typeof readSynthesisGenerationSelections>[1], signal: AbortSignal,
+) {
+  return readSelectedResults(service, args, signal,
+    () => readSynthesisThematicParentSelections(service, thematicRequestId, targetRecordId, args, signal));
 }

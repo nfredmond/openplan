@@ -1,0 +1,440 @@
+{
+  "initial": {
+    "probes": [
+      {
+        "name": "harmless-comment",
+        "before": "Replay one chosen context",
+        "after": "Replay one retained chosen context",
+        "exitCode": 0,
+        "expectedDiagnostic": null,
+        "expectedFailure": false,
+        "diagnostics": [],
+        "outcome": "survived"
+      },
+      {
+        "name": "native-binding-1",
+        "before": "thematic.state.cancellation !== null",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-2",
+        "before": "choice.record.createdBy !== thematic.state.request.actorId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-3",
+        "before": "parent.campaignId !== scope.campaignId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-4",
+        "before": "parent.workspaceId !== scope.workspaceId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-5",
+        "before": "parent.request.id !== thematic.binding.parentRequestId",
+        "after": "false",
+        "exitCode": 0,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": false,
+        "diagnostics": [],
+        "outcome": "survived"
+      },
+      {
+        "name": "native-binding-6",
+        "before": "digest(parent.request.intentText) !== parent.request.intentSha256",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-7",
+        "before": "source.requestId !== thematic.intent.sourceId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-8",
+        "before": "source.campaignId !== scope.campaignId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-9",
+        "before": "source.workspaceId !== scope.workspaceId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-10",
+        "before": "source.snapshotSha256 !== thematic.intent.sourceSha256",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-11",
+        "before": "parentIntent.sourceId !== source.requestId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-12",
+        "before": "parentIntent.sourceSha256 !== source.snapshotSha256",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-13",
+        "before": "context.intent.sourceId !== source.requestId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-14",
+        "before": "context.intent.sourceSha256 !== source.snapshotSha256",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-15",
+        "before": "context.binding.parentRequestId !== parent.request.id",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-16",
+        "before": "context.binding.selectionSequence !== thematic.binding.selectionSequence",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-17",
+        "before": "context.binding.segmentResultsManifestSha256 !== thematic.binding.segmentResultsManifestSha256",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-18",
+        "before": "context.binding.contextManifestSha256 !== thematic.binding.contextManifestSha256",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-binding-19",
+        "before": "context.binding.targetRecordId !== scope.targetRecordId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "private-source-1",
+        "before": "row.id !== delegation.source.requestId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw error including 'Thematic preparation differs' but got 'Saved synthesis source scope differs'"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "private-source-2",
+        "before": "row.campaign_id !== scope.campaignId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw error including 'Thematic preparation differs' but got 'Saved synthesis source scope differs'"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "private-source-3",
+        "before": "row.workspace_id !== scope.workspaceId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw error including 'Thematic preparation differs' but got 'Saved synthesis source scope differs'"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "private-source-4",
+        "before": "row.snapshot_sha256 !== delegation.source.snapshotSha256",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw error including 'Thematic preparation differs' but got 'Saved synthesis source checksum diffe\u2026'"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "private-source-5",
+        "before": "Date.parse(row.created_at) !== Date.parse(delegation.source.createdAt)",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: promise resolved \"{ delegation: { \u2026(6) }, \u2026(3) }\" instead of rejecting"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "native-read-error",
+        "before": "if (response.error) throw new Error(\"Thematic preparation access unavailable\");",
+        "after": "",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: promise resolved \"{ delegation: { \u2026(6) }, \u2026(3) }\" instead of rejecting"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "private-read-error",
+        "before": "if (sourceResponse.error) throw new Error(\"Thematic preparation source unavailable\");",
+        "after": "",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw error including 'preparation source unavailable' but got 'Synthesis worker retained row unavail\u2026'"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "final-choice-identity",
+        "before": "!isDeepStrictEqual(current.choice, choice)",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: promise resolved \"{ delegation: { \u2026(6) }, \u2026(3) }\" instead of rejecting"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "history-hash",
+        "before": "history.sha256 !== choice.choice.historyManifestSha256",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: promise resolved \"{ delegation: { \u2026(6) }, \u2026(3) }\" instead of rejecting"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "capture-hash",
+        "before": "last?.captureSha256 !== choice.choice.finalCaptureSha256",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: promise resolved \"{ delegation: { \u2026(6) }, \u2026(3) }\" instead of rejecting"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "result-hash",
+        "before": "last?.resultSha256 !== choice.choice.finalResultSha256",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: promise resolved \"{ delegation: { \u2026(6) }, \u2026(3) }\" instead of rejecting"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "final-access-read",
+        "before": "const current = await readDelegation(service, scope, signal);",
+        "after": "const current = delegation;",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: promise resolved \"{ delegation: { \u2026(6) }, \u2026(3) }\" instead of rejecting"
+        ],
+        "outcome": "failed"
+      },
+      {
+        "name": "abort-checks",
+        "before": "signal.throwIfAborted();",
+        "after": "",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [ { \u2026(3) } ] to deeply equal []"
+        ],
+        "outcome": "failed"
+      }
+    ],
+    "restoration": {
+      "restored": true,
+      "sha256": "80a03f9abe21bcc31af555dce5e1f247f7317364629879c5f29448b33fe705e0"
+    }
+  },
+  "isolatedParentRerun": {
+    "probes": [
+      {
+        "name": "harmless-comment",
+        "before": "Replay one chosen context",
+        "after": "Replay one retained chosen context",
+        "exitCode": 0,
+        "expectedDiagnostic": null,
+        "expectedFailure": false,
+        "diagnostics": [],
+        "outcome": "survived"
+      },
+      {
+        "name": "native-binding-5",
+        "before": "parent.request.id !== thematic.binding.parentRequestId",
+        "after": "false",
+        "exitCode": 1,
+        "expectedDiagnostic": "AssertionError",
+        "expectedFailure": true,
+        "diagnostics": [
+          "AssertionError: expected [Function] to throw an error"
+        ],
+        "outcome": "failed"
+      }
+    ],
+    "restoration": {
+      "restored": true,
+      "sha256": "80a03f9abe21bcc31af555dce5e1f247f7317364629879c5f29448b33fe705e0"
+    }
+  },
+  "verifiedFileSha256": {
+    "openplan/src/lib/engagement/synthesis-thematic-preparation-server.ts": "80a03f9abe21bcc31af555dce5e1f247f7317364629879c5f29448b33fe705e0",
+    "openplan/src/lib/engagement/synthesis-context-history-inputs.ts": "22fd370365da7cf2eca5d188daa1eb0519b2660e67cee4a2b357e591a0c9c693",
+    "openplan/src/lib/engagement/synthesis-context-history-server.ts": "c24c5470c8b8daca19d5cd64754cbbf19dd8dd46d48e0e98c02e07417b53d24f",
+    "openplan/src/lib/engagement/synthesis-generation-selections-server.ts": "d6eb9d9e700206ca20be49d793579de488cf60aa7efa5b791897cffcd6d8107c",
+    "openplan/src/lib/engagement/synthesis-generation-selected-results-server.ts": "5d60167e9dfa7f87b91e0dec3a4c3773936ba126bb19d65d62bf8564e3be605b",
+    "openplan/supabase/migrations/20261015000005_engagement_synthesis_thematic_preparation.sql": "6931c34a959d3d96b864741a2298027f191933547cae18c53d565f7eea4e9ea2"
+  }
+}

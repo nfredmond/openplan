@@ -30,6 +30,15 @@ internal commands. These migrations add private tables and preserve existing
 records. [Verification](docs/reviews/2026-10-01-context-history/THEMATIC_INPUTS.md)
 records the checks and remaining limits.
 
+The internal thematic worker reader now reconstructs a chosen historical input
+under the new requester's current access. It checks the original source,
+selection anchors, provider captures and pinned context hashes. Cancelled or
+departed earlier authors retain their original attribution. Apply
+`20261015000005_engagement_synthesis_thematic_preparation.sql` for its named
+service authorization commands. Durable input seals and thematic execution remain
+unfinished. [Preparation checks](docs/reviews/2026-10-01-context-history/THEMATIC_PREPARATION.md)
+record this boundary.
+
 ## 0.66.0 (2026-09-30)
 
 [Verification](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_RELEASE.md) records release scope and candidate checks. [Publication](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_PUBLICATION.md) records final checks, tagging and local handoff.

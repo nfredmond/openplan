@@ -48,7 +48,26 @@ export async function loadSynthesisContextHistory(client: Pick<SupabaseClient, "
 ) {
   signal.throwIfAborted();
   const args = scopeSchema.parse(rawScope), scope = { campaignId: args.campaignId, workspaceId: args.workspaceId, requestId: args.requestId };
-  const inputs = await loadSynthesisContextHistoryInputs(client, service, scope, signal), { plan, request } = inputs;
+  const inputs = await loadSynthesisContextHistoryInputs(client, service, scope, signal);
+  return replaySynthesisContextHistory(service, args, inputs, async (throughSequence, afterTaskIndex) => {
+    return await client.rpc("read_engagement_synthesis_generation_selection_history", { p_campaign: scope.campaignId,
+      p_request: scope.requestId, p_through_sequence: throughSequence, p_after_task_index: afterTaskIndex, p_limit: 128 })
+      .abortSignal(synthesisWorkerRequestSignal(signal));
+  }, () => recheckSynthesisContextHistoryAccess(client, inputs.request, scope, signal), signal);
+}
+
+/** Internal historical replay after explicit native scope has been established.
+ * Both callers retain separate access and pagination functions. Provider bytes,
+ * task reconstruction and predecessor checks use the same implementation.
+ */
+export async function replaySynthesisContextHistory(service: Pick<SupabaseClient, "from" | "rpc">,
+  rawScope: z.infer<typeof scopeSchema>, inputs: Awaited<ReturnType<typeof loadSynthesisContextHistoryInputs>>,
+  readPage: (throughSequence: number | null, afterTaskIndex: number) => Promise<{ data: unknown; error: unknown }>,
+  recheck: () => Promise<typeof inputs.request>, signal: AbortSignal,
+) {
+  signal.throwIfAborted();
+  const args = scopeSchema.parse(rawScope), scope = { campaignId: args.campaignId, workspaceId: args.workspaceId, requestId: args.requestId };
+  const { plan, request } = inputs;
   const entries: Entry[] = [], selections = new Map<number, Selection>();
   let throughSequence: number | null = args.throughSequence ?? null;
   if (inputs.preparationStatus === "sealed") {
@@ -56,9 +75,7 @@ export async function loadSynthesisContextHistory(client: Pick<SupabaseClient, "
     const seenIds = new Set<string>(), seenSequences = new Set<number>(), seenAttempts = new Set<string>();
     for (;;) {
       signal.throwIfAborted();
-      const response = await client.rpc("read_engagement_synthesis_generation_selection_history", { p_campaign: scope.campaignId,
-        p_request: scope.requestId, p_through_sequence: throughSequence, p_after_task_index: afterTaskIndex, p_limit: 128 })
-        .abortSignal(synthesisWorkerRequestSignal(signal));
+      const response = await readPage(throughSequence, afterTaskIndex);
       signal.throwIfAborted();
       if (response.error) throw new Error("Historical context selections unavailable");
       const page = pageSchema.parse(response.data);
@@ -163,7 +180,7 @@ export async function loadSynthesisContextHistory(client: Pick<SupabaseClient, "
     entry.status = "verified"; entry.resultSha256 = entry.result.sha256; replayed++;
     predecessor = { attemptId: attempt.id, selectionId: selected!.receipt.id, captureSha256: output.capture_sha256, resultSha256: entry.result.sha256 };
   }
-  const current = await recheckSynthesisContextHistoryAccess(client, request, scope, signal);
+  const current = await recheck();
   const status = inputs.preparationStatus !== "sealed" ? inputs.preparationStatus : replayed === plan.entries.length ? "frames_complete" : "incomplete";
   const manifest = { schemaVersion: 1, purpose: "private_synthesis_context_history", ...scope, contextRequestSha256: request.state.context.contextSha256,
     headerSha256: plan.headerSha256, throughSequence, status, storedFrameCount: inputs.storedFrameCount, verifiedFrameCount: replayed,

@@ -17,7 +17,10 @@ execution path before exposing those checks to a browser or worker.
 [Authenticated input custody](THEMATIC_INPUTS.md) subsequently adds the new
 thematic request and per-contribution choices. Continue the sealed preparation
 and worker path described below. These retained choices do not supply that seal
-or execution authority.
+or execution authority. The subsequent [worker reader](THEMATIC_PREPARATION.md)
+adds explicit native delegation and original-history replay for each chosen input.
+Durable retained proofs, complete source membership and the input seal remain the
+next preparation work.
 
 ## Freeze complete inputs and preserve interpretation limits
 
