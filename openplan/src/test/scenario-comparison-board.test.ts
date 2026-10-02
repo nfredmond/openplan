@@ -87,6 +87,13 @@ describe("buildScenarioComparisonBoard", () => {
     expect(cards[0]?.candidateModelRun).toBeNull();
     expect(cards[0]?.changedMetricCount).toBeGreaterThan(0);
     expect(cards[0]?.headlineMetrics[0]?.deltaLabel).toBe("+11");
+    // A higher screening score is not "better": no validated bands exist, so a
+    // score change carries no success or warning tone.
+    for (const metric of cards[0]?.headlineMetrics ?? []) {
+      if (["overallScore", "accessibilityScore", "safetyScore", "equityScore"].includes(metric.key)) {
+        expect(metric.tone, metric.key).toBe("neutral");
+      }
+    }
     expect(cards[0]?.analysisHref).toContain("runId=run-alt");
     expect(cards[0]?.analysisHref).toContain("baselineRunId=run-baseline");
   });

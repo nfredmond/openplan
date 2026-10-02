@@ -76,10 +76,12 @@ export type ScenarioComparisonBoardCard = {
 };
 
 const METRIC_TONES: Record<string, { positive: "success" | "warning" | "neutral"; negative: "success" | "warning" | "neutral" }> = {
-  overallScore: { positive: "success", negative: "warning" },
-  accessibilityScore: { positive: "success", negative: "warning" },
-  safetyScore: { positive: "success", negative: "warning" },
-  equityScore: { positive: "success", negative: "warning" },
+  // Neutral both ways. A screening score has no validated bands, so a rise is
+  // not "better" and a fall is not "worse" (CORRIDOR_SCORE_PRESENTATION_RESEARCH).
+  overallScore: { positive: "neutral", negative: "neutral" },
+  accessibilityScore: { positive: "neutral", negative: "neutral" },
+  safetyScore: { positive: "neutral", negative: "neutral" },
+  equityScore: { positive: "neutral", negative: "neutral" },
   totalTransitStops: { positive: "success", negative: "warning" },
   totalFatalCrashes: { positive: "warning", negative: "success" },
   pctDisadvantaged: { positive: "neutral", negative: "neutral" },
@@ -136,6 +138,13 @@ export function modelRunComparisonMetrics(
   const snapshots = resultSummary.sourceSnapshots;
   if (snapshots && typeof snapshots === "object" && !Array.isArray(snapshots)) {
     metrics.sourceSnapshots = snapshots;
+  }
+
+  // The eligibility record rides along too, so the delta builder withholds a
+  // score the run could not support instead of comparing it.
+  const presentation = resultSummary.scorePresentation;
+  if (presentation && typeof presentation === "object" && !Array.isArray(presentation)) {
+    metrics.scorePresentation = presentation;
   }
 
   return metrics;

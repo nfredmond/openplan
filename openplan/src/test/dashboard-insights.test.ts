@@ -96,6 +96,20 @@ describe("composite score by run", () => {
     expect(series.points.some((p) => p.value === 0)).toBe(false);
   });
 
+  it("drops a composite the presentation rule withholds", () => {
+    // A run saved before the rule: a raw 32 with crash and transit evidence
+    // missing. The composite needs all three inputs, so it is not plotted.
+    const withheld = {
+      ...RUN("2026-05-04T00:00:00Z"),
+      metrics: {
+        overallScore: 32,
+        dataQuality: { censusAvailable: true, crashDataAvailable: false, transitDataAvailable: false },
+      },
+    };
+    const series = recentOverallScores(READ([RUN("2026-05-01T00:00:00Z", 62), withheld]));
+    expect(series.points.map((p) => p.value)).toEqual([62]);
+  });
+
   it("says nothing has scored rather than drawing an empty axis", () => {
     const series = recentOverallScores(READ([RUN("2026-05-02T00:00:00Z")]));
     expect(series.points).toEqual([]);

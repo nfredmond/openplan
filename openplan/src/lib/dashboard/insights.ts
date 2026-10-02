@@ -1,3 +1,4 @@
+import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
 /**
  * The figures behind the dashboard's Insights view.
  *
@@ -162,9 +163,10 @@ export function series(points: InsightPoint[], footnote?: string): InsightSeries
   };
 }
 
+/** The composite as the presentation rule allows it: null when withheld. */
 function readOverallScore(metrics: unknown): number | null {
   if (!metrics || typeof metrics !== "object") return null;
-  const value = (metrics as { overallScore?: unknown }).overallScore;
+  const value = scoreValueForPresentation(metrics as Record<string, unknown>, "overallScore");
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
