@@ -1,0 +1,35 @@
+{
+  "tests": {
+    "pass": 72,
+    "files": 2,
+    "workers": 1
+  },
+  "lint": "pass",
+  "typescript": {
+    "exit": 0,
+    "memoryMaxGiB": 8,
+    "swapMax": 0,
+    "cpuCores": 2,
+    "peakGiB": 1.7,
+    "initialFailure": "Test header union inferred undefined properties; explicit string-record generic fixes it."
+  },
+  "logs": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-final.log",
+      "sha256": "8152bd7fce6a1ae4be466e267c902bd3e33ee7f5799d77ef4ae214ef6becb192"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-route-final-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-types-bounded.log",
+      "sha256": "4c816ac78453ad5a6ee705cb25c25b0358989e8713c9ffa43f71843029a64fc7"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-request-types-bounded-fixed.log",
+      "sha256": "26bdbdddc0bbf38d0c7013efb9e6e96e01d915b4433c8aba12c0508e5c68f448"
+    }
+  ],
+  "boundary": "Mocked authenticated transport. Native RLS, full QA and browser/worker continuation remain separate."
+}

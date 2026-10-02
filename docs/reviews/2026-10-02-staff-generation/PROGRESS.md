@@ -24,3 +24,31 @@ No new HTTP route, worker pickup, browser control or migration exists here yet.
 Native RLS, actual HTTP recovery, browser usability, installed CLI provider choice,
 large-history capacity and semantic quality require separate evidence. The full
 v1 contract and roadmap remain unchanged.
+
+## Authenticated request HTTP entry point
+
+The new synthesis/generation GET and POST handlers read, create and cancel exact
+requests through the authenticated client. Actor and workspace come from current
+access checks. Both expected-account headers are required. Writes require same
+origin, a streamed 24 KiB body limit and strict commands, and refuse every marked
+unregistered Planner Agent execution. Responses remain private and uncached.
+Audit records omit intent text, cancellation reasons and native error messages.
+No handler prepares a plan or dispatches a provider.
+
+The route and adapter pass 72 tests with one worker. Strict lint passes. The
+[route mutation record](request-route-mutations.json) contains a surviving harmless
+control and 22 detected faults. Explicit malformed UTF-8 inside an otherwise
+valid JSON command exercises fatal decoding; a standalone invalid byte alone
+would also fail JSON parsing and would not distinguish that behavior.
+
+The interrupted whole-package TypeScript check is repeated in a user service
+with an 8 GiB memory ceiling, zero swap and two-core CPU quota. Its first result
+finds a test header union that permits undefined values; the test now declares
+a string-record generic. The corrected check exits 0, peaks at 1.7 GiB and uses
+no swap. [Check records](request-route-checks.json) retain both logs.
+
+This checkpoint has no browser controls or queue pickup yet. Native access,
+request cancellation before creation, lost HTTP acknowledgements and stale
+identity recovery still need an installed-stack journey through these handlers.
+Continue durable preparation and explicit execution authorization before
+claiming a usable staff generation workflow.
