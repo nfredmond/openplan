@@ -47,3 +47,25 @@ Known gaps from this batch:
 - The generated model charts (`src/lib/models/charts/`) still set 10 and 11px text inside fixed-width SVG. The floor guard does not read SVG attributes. Phase 5 covers charts.
 - The other four palettes were not looked at after the accent and status changes.
 - One hydration warning appears on a model page in light mode. It was not traced, and I did not establish whether it predates this work.
+
+## Phase 2, the page frame, October 1, 2026
+
+Decision D1 as approved: ordinary pages no longer float over a wallpaper map.
+
+Checks in the worktree: lint clean, typecheck clean, dead-code check exit 0, production build exit 0, 16,771 tests passed with one guard failure fixed afterward (a dialog `id` that the class-name guard read as an unstyled class; renamed and re-run green). Browser checks on port 3210 from the worktree at 1440, 1024, 800 and 390 pixels wide, dark and light.
+
+| Change | How it was checked |
+|---|---|
+| The shared background map mounts only on the route that reads it (the Aerial index). Every other page has no map instance, tiles or feature requests behind it | `safety-owns-the-only-map` and three backdrop tests updated to the route where the map now mounts. Chrome: no Mapbox attribution or canvas on the dashboard |
+| Plain shell: rail and header attach to the window edges; the page is solid, edge to edge, centered at 92rem. The rail opens over the page on hover and no longer pushes it sideways | Chrome at 1440, 1024 and 800 |
+| The Planner Agent button sits in the header. The account card sits at the foot of the open rail; with a collapsed rail, sign-out is in the header | Chrome at 1440 and 1024 |
+| Phone frame on every route: one 56px header row (workspace, search, Planner Agent), a bar with up to four named destinations and More, and a More sheet that lists all 20 destinations by name with appearance and sign-out | Chrome at 390 by 844: page area 390 by 732, 87 percent of the screen (was 358 by 568, 62 percent). Bar buttons 89 by 52 (were 48 by 23). A real tap on More, then Grants, reached `/grants` and closed the sheet with no console errors |
+| Rail rows have a 24px floor | Read in source |
+
+Known gaps from this batch:
+
+- Safety and the Aerial index keep their own desktop layouts. The Aerial index on a phone starts its page 244px down to clear the map dock. Both change when those pages move to the shared map shell in Phase 3.
+- Corridor Analysis still draws its own bordered shell inside the page.
+- `qa-harness/openplan-local-control-hit-test-audit.js`, `-escape-hatch-audit.js` and `-card-nesting-audit.js` were not run against the new frame.
+- The workspace clock under the workspace name is hidden in the plain shell.
+- Keyboard order through the new header and the More sheet was not walked by hand.

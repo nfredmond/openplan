@@ -87,10 +87,6 @@ const NOT_A_CLASS_NAME: Record<string, string> = {
  * be a second source of truth that drifts.
  */
 const STYLED_INLINE: Record<string, string> = {
-  "op-map-backdrop":
-    "the fixed full-viewport map region in cartographic-map-backdrop.tsx; its " +
-    "background is chosen at runtime (Mapbox vs the parchment gradient fallback) " +
-    "and every other property is on the same inline style object",
   "op-map-backdrop__canvas":
     "the Mapbox container inside it; opacity and filter animate with load state " +
     "and with map-reading mode, so the whole style object is inline. Also the " +

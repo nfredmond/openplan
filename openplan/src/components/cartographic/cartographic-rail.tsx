@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, type ReactNode } from "react";
 import {
   BarChart3,
   BookOpen,
@@ -17,6 +18,7 @@ import {
   LifeBuoy,
   ListChecks,
   Map as MapIcon,
+  Menu,
   MessageSquareShare,
   PlaneTakeoff,
   Receipt,
@@ -24,9 +26,12 @@ import {
   ScrollText,
   Settings2,
   ShieldAlert,
+  X,
   type LucideIcon,
 } from "lucide-react";
+import { ThemeControls } from "@/components/theme-controls";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ModalDialog } from "@/components/ui/modal-dialog";
 import { cn } from "@/lib/utils";
 
 const ICONS = {
@@ -80,14 +85,26 @@ export type CartographicRailGroup = {
 
 type CartographicRailProps = {
   groups: CartographicRailGroup[];
+  /** Sign out (or sign in), shown in the phone "More" sheet. */
+  accountControl?: ReactNode;
 };
+
+/**
+ * The destinations the phone bar shows by name. Everything else is one tap
+ * away in the "More" sheet, with its label. The bar used to be twenty icons
+ * with no labels in a strip that scrolled sideways, each 23px tall.
+ */
+const PHONE_BAR_HREFS = new Set(["/dashboard", "/my-work", "/projects"]);
 
 function isActivePath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function CartographicRail({ groups }: CartographicRailProps) {
+export function CartographicRail({ groups, accountControl }: CartographicRailProps) {
   const pathname = usePathname();
+  // The sheet is the shared modal primitive: focus is trapped, Escape closes
+  // it, and focus returns to the More button.
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   /**
    * How many button-height rows the rail draws: every nav item, plus the theme
@@ -132,6 +149,7 @@ export function CartographicRail({ groups }: CartographicRailProps) {
                     href={item.href}
                     className={cn("op-cart-rail__btn", active && "is-active")}
                     aria-current={active ? "page" : undefined}
+                    data-phone-bar={PHONE_BAR_HREFS.has(item.href) || active ? "true" : undefined}
                   >
                     <Icon size={16} strokeWidth={1.8} />
                     {item.badge != null ? (
@@ -144,6 +162,65 @@ export function CartographicRail({ groups }: CartographicRailProps) {
             </div>
           ))}
         </nav>
+        {/* Phone only (CSS). Opens every destination, by name. */}
+        <button
+          type="button"
+          className="op-cart-rail__btn op-cart-rail__more"
+          aria-haspopup="dialog"
+          onClick={() => setSheetOpen(true)}
+        >
+          <Menu size={16} strokeWidth={1.8} />
+          <span className="op-cart-rail__tip">More</span>
+        </button>
+        {sheetOpen ? (
+          <ModalDialog
+            titleId="nav-sheet-title"
+            onRequestClose={() => setSheetOpen(false)}
+            className="op-cart-navsheet"
+          >
+            <div className="op-cart-navsheet__panel">
+              <div className="op-cart-navsheet__hd">
+                <h2 id="nav-sheet-title" className="op-cart-navsheet__title">All sections</h2>
+                <button
+                  type="button"
+                  className="op-cart-navsheet__close"
+                  aria-label="Close"
+                  onClick={() => setSheetOpen(false)}
+                >
+                  <X size={18} strokeWidth={1.8} />
+                </button>
+              </div>
+              {groups.map((group) => (
+                <section key={group.title} className="op-cart-navsheet__group">
+                  <h3 className="op-cart-navsheet__group-title">{group.title}</h3>
+                  <ul>
+                    {group.items.map((item) => {
+                      const Icon = ICONS[item.icon];
+                      const active = isActivePath(pathname, item.href);
+                      return (
+                        <li key={item.href}>
+                          <Link
+                            href={item.href}
+                            className={cn("op-cart-navsheet__link", active && "is-active")}
+                            aria-current={active ? "page" : undefined}
+                            onClick={() => setSheetOpen(false)}
+                          >
+                            <Icon size={18} strokeWidth={1.8} />
+                            {item.label}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              ))}
+              <div className="op-cart-navsheet__ft">
+                <ThemeControls />
+                {accountControl}
+              </div>
+            </div>
+          </ModalDialog>
+        ) : null}
         <div className="op-cart-rail__flex" />
         <div className="op-cart-rail__foot">
           <div className="op-cart-rail__btn op-cart-rail__btn--ghost" aria-hidden={false}>

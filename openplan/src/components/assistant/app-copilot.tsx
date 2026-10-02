@@ -2152,6 +2152,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         type="button"
         variant="outline"
         size="sm"
+        aria-label="Planner Agent"
         className="op-cart-copilot-launch rounded-full border-emerald-300/30 bg-[rgba(7,14,20,0.92)] px-4 text-slate-100 shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl hover:border-emerald-300/50 hover:bg-emerald-400/12 hover:text-white"
         onClick={() => setOpen(true)}
       >

@@ -196,7 +196,9 @@
      the nav overflowed by a few pixels and showed a scrollbar (measured: at a
      1000px-tall window the nav wanted 857px and had 850px, because 1000 clears
      the 980px breakpoint). A continuous function has no such band. */
-  height: clamp(18px, calc((100dvh - var(--op-rail-chrome, 268px)) / var(--op-rail-rows, 20) - 4px), 40px);
+  /* 24px floor (WCAG 2.5.8). Below that the nav scrolls instead of shrinking. */
+  height: clamp(24px, calc((100dvh - var(--op-rail-chrome, 268px)) / var(--op-rail-rows, 20) - 4px), 40px);
+  flex-shrink: 0;
   border-radius: 9px;
   border: none;
   background: transparent;
@@ -1868,4 +1870,407 @@ body[data-map-reading="true"] .op-cart-surface {
   .op-cart-mapread__btn {
     transition: none;
   }
+}
+
+/* =========================================================================
+   THE PLAIN SHELL (October 2026 UI review, decision D1)
+
+   Ordinary pages no longer float over a wallpaper map. On a route with no
+   shared map (every route except the Aerial index) and no full-bleed map of
+   its own (Safety), the rail and header attach to the window edges and the
+   page gets everything else. Measured before this change at 390 by 844: the
+   content window was 358 by 568, 62 percent of the screen, under a 160px
+   header.
+
+   Appended, not woven in. Several guards read the rules above in source order
+   (`safety-map-runs-to-the-edge`, `reading-the-map-uncovers-it`), and the two
+   map layouts they protect are untouched. Every selector here carries the same
+   prefix, so nothing below applies while a shared or full-bleed map is on
+   screen.
+   ========================================================================= */
+
+.op-cart-rail__more {
+  display: none;
+}
+
+body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) {
+  background: var(--bg);
+  --op-cart-rail-inset: 0px;
+}
+
+@media (min-width: 721px) {
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    border: 0;
+    border-right: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--panel-solid);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail:hover,
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail:focus-within {
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.14);
+  }
+
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-hdr {
+    top: 0;
+    left: var(--op-cart-rail-width);
+    right: var(--cp-reserved, 0px);
+    height: 64px;
+    /* The right padding is the Planner Agent button's seat. */
+    padding: 0 196px 0 24px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-hdr .op-cart-pill {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+  /* The clock under the workspace name made the pill taller than the header. */
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-ws-meta {
+    display: none;
+  }
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-hdr {
+    align-items: center;
+  }
+
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-surface {
+    top: 64px;
+    left: var(--op-cart-rail-width);
+    right: var(--cp-reserved, 0px);
+    bottom: 0;
+    border: 0;
+    border-radius: 0;
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  /* The rail opens OVER the page on hover. It used to push the header and the
+     page 180px to the right, so everything moved whenever the pointer crossed
+     the rail. */
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail:hover ~ .op-cart-hdr,
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail:focus-within ~ .op-cart-hdr,
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail:hover ~ .op-cart-surface,
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail:focus-within ~ .op-cart-surface {
+    left: var(--op-cart-rail-width);
+  }
+
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-surface__body {
+    /* Centered at 92rem so a wide monitor does not stretch every row. */
+    padding: 28px max(32px, calc((100% - 92rem) / 2)) 56px;
+    scrollbar-gutter: stable;
+  }
+
+  /* The Planner Agent button sits in the header. Floating in the bottom corner
+     it needed a reserved strip under every page so it could not cover a
+     control; in the header nothing scrolls beneath it. */
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-copilot-launch {
+    top: 10px;
+    bottom: auto;
+    right: calc(16px + var(--cp-reserved, 0px));
+  }
+
+  /* Collapsed rail: no room for the account card, so sign-out moves to the
+     header (the control built for narrow screens). */
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-account {
+    display: none;
+  }
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-mobile-account {
+    display: block;
+  }
+}
+
+@media (min-width: 1200px) {
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-hdr,
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-surface,
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail:hover ~ .op-cart-hdr,
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail:focus-within ~ .op-cart-hdr,
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail:hover ~ .op-cart-surface,
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail:focus-within ~ .op-cart-surface {
+    left: 240px;
+  }
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail:hover,
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail:focus-within {
+    box-shadow: none;
+  }
+
+  /* Open rail: the account card sits at its foot. */
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-rail__inner {
+    padding-bottom: 84px;
+  }
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-account {
+    left: 12px;
+    bottom: 12px;
+    width: 216px;
+    max-width: 216px;
+    z-index: 41;
+    /* Email on its own line, then role and sign-out side by side. */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 0;
+    padding: 8px 10px;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-account__who {
+    display: contents;
+  }
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-account__email {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-account__signout {
+    padding: 2px 0 2px 6px;
+    white-space: nowrap;
+  }
+  body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-mobile-account {
+    display: none;
+  }
+}
+
+/*
+  THE PHONE FRAME APPLIES TO EVERY ROUTE, map pages included: one header row,
+  the named bar, and a page that runs edge to edge. The doubled class only
+  raises specificity to match the full-bleed map rules above, which this block
+  follows in source order.
+*/
+@media (max-width: 720px) {
+  body .op-cart-shell.op-cart-shell {
+    --op-cart-safe-bottom: calc(var(--op-cart-rail-bar-height) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ONE ROW: workspace, search, Planner Agent. Appearance and sign-out live in
+     the More sheet. The header used to take the first 160px of the screen. */
+  body .op-cart-shell.op-cart-shell .op-cart-hdr {
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    padding: 0 64px 0 12px;
+    display: grid;
+    align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-hdr__spacer,
+  body .op-cart-shell.op-cart-shell .op-cart-hdr__actions,
+  body .op-cart-shell.op-cart-shell .op-cart-ws-meta,
+  body .op-cart-shell.op-cart-shell .op-cart-search__placeholder,
+  body .op-cart-shell.op-cart-shell .op-cart-search .op-cart-kbd {
+    display: none;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-hdr > .op-cart-pill:first-child {
+    /* An older rule spans this pill across the whole row under 480px, which
+       dropped the search button onto the page below the header. */
+    grid-column: auto;
+    max-width: none;
+    border: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+    padding-left: 0;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-search {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-copilot-launch {
+    top: 6px;
+    bottom: auto;
+    right: 12px;
+    width: 44px;
+    padding: 0;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-copilot-launch > span {
+    display: none;
+  }
+
+  body .op-cart-shell.op-cart-shell .op-cart-surface,
+  body .op-cart-shell.op-cart-shell .op-cart-rail:hover ~ .op-cart-surface,
+  body .op-cart-shell.op-cart-shell .op-cart-rail:focus-within ~ .op-cart-surface {
+    top: 56px;
+    left: 0;
+    right: 0;
+    border: 0;
+    border-radius: 0;
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-surface__body {
+    padding: 16px 16px 32px;
+    scrollbar-gutter: auto;
+  }
+
+  /* THE BAR: up to four named destinations and More. */
+  body .op-cart-shell.op-cart-shell .op-cart-rail {
+    height: calc(var(--op-cart-rail-bar-height) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--panel-solid);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-rail__inner {
+    padding: 0 4px;
+    gap: 2px;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-rail__nav {
+    display: contents;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-rail__group {
+    display: contents;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-rail__foot,
+  body .op-cart-shell.op-cart-shell .op-cart-rail__flex,
+  body .op-cart-shell.op-cart-shell .op-cart-rail__btn:not([data-phone-bar]):not(.op-cart-rail__more) {
+    display: none;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-rail__btn {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 52px;
+    margin: 0;
+    padding: 0 2px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    border-radius: 10px;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-rail__more {
+    display: flex;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-rail__btn .op-cart-rail__tip {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 1;
+    font-size: var(--fs-label);
+    line-height: 1.1;
+  }
+  body .op-cart-shell.op-cart-shell .op-cart-rail__btn.is-active {
+    background: transparent;
+    color: var(--accent);
+    font-weight: 600;
+  }
+}
+
+/*
+  The one route that still reads the shared map (the Aerial index) keeps its
+  map dock under the header on a phone, so its page starts below the dock. This
+  goes away when Aerial becomes a map-first page with its own sidebar.
+*/
+@media (max-width: 720px) {
+  body .op-cart-shell.op-cart-shell:has(.op-cart-mapdock) .op-cart-surface {
+    top: 244px;
+  }
+}
+
+/* ---------- The phone "More" sheet: every destination, by name ---------- */
+
+.op-cart-navsheet {
+  position: fixed;
+  inset: auto 0 0 0;
+  width: 100%;
+  max-width: 100%;
+  max-height: 86dvh;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 16px 16px 0 0;
+  background: var(--panel-solid);
+  color: var(--ink);
+}
+.op-cart-navsheet::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+.op-cart-navsheet__panel {
+  padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+}
+.op-cart-navsheet__hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.op-cart-navsheet__title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.op-cart-navsheet__close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.op-cart-navsheet__group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.op-cart-navsheet__group-title {
+  margin: 12px 0 2px;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.op-cart-navsheet__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: var(--ink);
+  font-size: 1rem;
+  text-decoration: none;
+}
+.op-cart-navsheet__link.is-active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.op-cart-navsheet__ft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
 }
