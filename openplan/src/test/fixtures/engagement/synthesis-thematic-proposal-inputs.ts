@@ -9,8 +9,12 @@ import { sourceHash as hash } from "./synthesis-source";
 /** Transport-only fixture with actual source, context replay, input retention
  * and complete manifest construction. Native permissions are tested separately.
  */
-export async function thematicProposalInputsFixture() {
+export async function thematicProposalInputsFixture(intentPatch: { connectionId?: string; configurationRevisionId?: string; configurationHash?: string; modelId?: string } = {}) {
   const f = await synthesisThematicPreparationFixture(), snapshot = JSON.parse(f.sourceRow.snapshot_text);
+  if (Object.keys(intentPatch).length) {
+    f.bundle.thematic.request.intentText=JSON.stringify({...JSON.parse(f.bundle.thematic.request.intentText),...intentPatch});
+    f.bundle.thematic.request.intentSha256=hash(f.bundle.thematic.request.intentText);
+  }
   const otherTarget = f.scope.targetRecordId.startsWith("answer:") ? `item:${snapshot.items[0].id}` : `answer:${snapshot.answers[0].id}`;
   const other = await addThematicPreparationContext(f, otherTarget, true);
   const { targetRecordId: _target, ...scope } = f.scope;

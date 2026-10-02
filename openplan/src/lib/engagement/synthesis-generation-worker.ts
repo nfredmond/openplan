@@ -9,15 +9,16 @@ import { readPrivateJson } from "../../../../workers/planner_agent_connector/con
 import { providerApiWorkerTarget } from "@/lib/assistant/provider-api-worker";
 import { verifyProviderApiResponseReceipt } from "@/lib/assistant/provider-api-response-receipt";
 import { checkedSynthesisWorkerJob, loadSynthesisWorkerJob, loadSynthesisWorkerCredential, synthesisWorkerRequestSignal } from "./synthesis-generation-worker-load";
-import { createSynthesisGenerationApiAttempt, createSynthesisContextApiAttempt, verifySynthesisGenerationApiDispatch } from "./synthesis-generation-api";
+import { createSynthesisGenerationApiAttempt, createSynthesisContextApiAttempt, createSynthesisThematicApiAttempt, verifySynthesisGenerationApiDispatch } from "./synthesis-generation-api";
 import { loadSynthesisContextWorkerJob } from "./synthesis-context-worker-job";
+import { loadSynthesisThematicWorkerJob } from "./synthesis-thematic-worker-job";
 import { createSynthesisGenerationApiResult, verifySynthesisGenerationApiResult } from "./synthesis-generation-api-result";
 import { retainSynthesisGenerationOutput } from "./synthesis-generation-delivery";
 
 const id = z.string().uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/), timestamp = z.string().datetime({ offset: true });
 const natural = z.number().int().nonnegative().safe();
 const base = z.object({ version: z.literal(1), target: z.string(), authorizationId: id, taskIndex: natural, workerId: id, attemptId: id,
-  context: z.literal(true).optional() });
+  context: z.literal(true).optional(), thematic: z.literal(true).optional() });
 const assigned = base.extend({ job: z.unknown() });
 const dispatched = assigned.extend({ dispatch: z.unknown() });
 const observationSchema = z.object({ receipt: z.unknown(), startedAt: timestamp, finishedAt: timestamp, dispatchSha256: hash }).strict();
@@ -50,6 +51,7 @@ function mismatch(): never { throw new Error("Synthesis worker journal or acknow
  */
 function checkedJournal(raw: unknown): Journal {
   const value = journalSchema.parse(raw);
+  if (value.context && value.thematic) mismatch();
   if (value.phase === "prepared") return value;
   const { job, intent } = checkedSynthesisWorkerJob(value.job);
   if (job.authorizationId !== value.authorizationId || job.taskIndex !== value.taskIndex || job.binding.attemptId !== value.attemptId) mismatch();
@@ -84,22 +86,29 @@ type WorkerArgs = {
   generate?: typeof createSynthesisGenerationApiAttempt; statusIntervalMs?: number;
 };
 export function runSynthesisGenerationWorkerAttempt(args: WorkerArgs): Promise<SynthesisWorkerOutcome> {
-  return runAttempt(args, false);
+  return runAttempt(args, "segment");
 }
 
 /** Context shares original-receipt recovery with segment execution. The journal
  * records its mode before any claim, including a claim with an unknown receipt.
  */
 export function runSynthesisContextWorkerAttempt(args: WorkerArgs): Promise<SynthesisWorkerOutcome> {
-  return runAttempt(args, true);
+  return runAttempt(args, "context");
 }
 
-async function runAttempt(args: WorkerArgs, contextual: boolean): Promise<SynthesisWorkerOutcome> {
+/** Thematic tasks retain their mode through the same original-output journal.
+ * A recovered dispatch never permits another provider call.
+ */
+export function runSynthesisThematicWorkerAttempt(args: WorkerArgs): Promise<SynthesisWorkerOutcome> {
+  return runAttempt(args, "thematic");
+}
+
+async function runAttempt(args: WorkerArgs, stage: "segment" | "context" | "thematic"): Promise<SynthesisWorkerOutcome> {
   const target = providerApiWorkerTarget(args.target), authorizationId = id.parse(args.authorizationId), taskIndex = natural.parse(args.taskIndex);
   const statusIntervalMs = z.number().int().min(10).max(2000).parse(args.statusIntervalMs ?? 2000);
   const lock = await acquireConnectorLock(args.directory), signal = AbortSignal.any([args.signal, lock.signal]);
   const service = args.service;
-  const mode = contextual ? { context: true as const } : {};
+  const mode = stage === "thematic" ? { thematic: true as const } : stage === "context" ? { context: true as const } : {};
   async function persist(value: Journal) {
     lock.signal.throwIfAborted();
     checkedJournal(value);
@@ -130,7 +139,7 @@ async function runAttempt(args: WorkerArgs, contextual: boolean): Promise<Synthe
       if (error instanceof Error && "code" in error && error.code === "ENOENT") pending = null;
       else throw error;
     }
-    if (pending && (pending.target !== target || pending.authorizationId !== authorizationId || pending.taskIndex !== taskIndex || Boolean(pending.context) !== contextual)) mismatch();
+    if (pending && (pending.target !== target || pending.authorizationId !== authorizationId || pending.taskIndex !== taskIndex || Boolean(pending.context) !== (stage === "context") || Boolean(pending.thematic) !== (stage === "thematic"))) mismatch();
     // A process can stop after syncing a receipt temporary but before renaming
     // it. Recover only checked observations of this same attempt. A partial
     // temporary proves nothing and remains on disk; conflicting originals stop.
@@ -143,7 +152,7 @@ async function runAttempt(args: WorkerArgs, contextual: boolean): Promise<Synthe
       catch (error) { if (error instanceof SyntaxError) continue; throw error; }
       if (candidate.phase !== "observed" && candidate.phase !== "delivered") continue;
       if (candidate.phase === "delivered") retainedResult(candidate);
-      if (candidate.target !== target || candidate.authorizationId !== authorizationId || candidate.taskIndex !== taskIndex || Boolean(candidate.context) !== contextual ||
+      if (candidate.target !== target || candidate.authorizationId !== authorizationId || candidate.taskIndex !== taskIndex || Boolean(candidate.context) !== (stage === "context") || Boolean(candidate.thematic) !== (stage === "thematic") ||
         (pending && (candidate.attemptId !== pending.attemptId || candidate.workerId !== pending.workerId))) mismatch();
       if (recovered && (!isDeepStrictEqual(candidate.job, recovered.job) || !isDeepStrictEqual(candidate.dispatch, recovered.dispatch) ||
         !isDeepStrictEqual(candidate.observation, recovered.observation))) throw new Error("Synthesis worker has conflicting retained observations");
@@ -164,10 +173,11 @@ async function runAttempt(args: WorkerArgs, contextual: boolean): Promise<Synthe
     const identity = { ...mode, version: 1 as const, target, authorizationId, taskIndex, workerId: pending.workerId, attemptId: pending.attemptId };
     if (pending.phase === "prepared") {
       const selected = { authorizationId, taskIndex, attemptId: pending.attemptId };
-      const loaded = contextual ? await loadSynthesisContextWorkerJob(service, selected, signal)
+      const loaded = stage === "thematic" ? await loadSynthesisThematicWorkerJob(service, selected, signal)
+        : stage === "context" ? await loadSynthesisContextWorkerJob(service, selected, signal)
         : { job: await loadSynthesisWorkerJob(service, selected, signal), claim: {} };
       const { job } = loaded;
-      const claim = claimSchema.parse(await rpc(contextual ? "claim_engagement_synthesis_context_attempt" : "claim_engagement_synthesis_generation_attempt", {
+      const claim = claimSchema.parse(await rpc(`claim_engagement_synthesis_${stage === "segment" ? "generation" : stage}_attempt`, {
         p_authorization: authorizationId, p_task_index: taskIndex, p_attempt: pending.attemptId, p_worker: pending.workerId, ...loaded.claim }));
       const { intent } = checkedSynthesisWorkerJob(job);
       if (claim.attemptId !== pending.attemptId || claim.workerId !== pending.workerId || claim.authorizationId !== authorizationId ||
@@ -180,7 +190,7 @@ async function runAttempt(args: WorkerArgs, contextual: boolean): Promise<Synthe
     const { job } = checkedSynthesisWorkerJob(pending.job);
     const revision = await loadSynthesisWorkerCredential(service, job, signal);
     await persist({ ...identity, phase: "dispatching", job });
-    const dispatch = dispatchAck.parse(await rpc(contextual ? "dispatch_engagement_synthesis_context_attempt" : "dispatch_engagement_synthesis_generation_attempt",
+    const dispatch = dispatchAck.parse(await rpc(`dispatch_engagement_synthesis_${stage === "segment" ? "generation" : stage}_attempt`,
       { p_attempt: identity.attemptId, p_worker: identity.workerId }));
     if (!dispatch.authorizedNow) {
       await persist({ ...identity, phase: "unobserved", job });
@@ -196,7 +206,7 @@ async function runAttempt(args: WorkerArgs, contextual: boolean): Promise<Synthe
       workerId: identity.workerId, authorizationId });
     async function observe() {
       try {
-        const response = await service.rpc(contextual ? "read_engagement_synthesis_context_execution_status" : "read_engagement_synthesis_generation_execution_status",
+        const response = await service.rpc(`read_engagement_synthesis_${stage === "segment" ? "generation" : stage}_execution_status`,
           { p_attempt: identity.attemptId, p_worker: identity.workerId })
           .abortSignal(synthesisWorkerRequestSignal(AbortSignal.any([runningSignal, watching.signal])));
         if (response.error) mismatch();
@@ -209,7 +219,7 @@ async function runAttempt(args: WorkerArgs, contextual: boolean): Promise<Synthe
     }
     try {
       await observe(); runningSignal.throwIfAborted();
-      const invoke = (args.generate ?? (contextual ? createSynthesisContextApiAttempt : createSynthesisGenerationApiAttempt))({ binding: job.binding, taskCanonical: job.taskCanonical,
+      const invoke = (args.generate ?? (stage === "thematic" ? createSynthesisThematicApiAttempt : stage === "context" ? createSynthesisContextApiAttempt : createSynthesisGenerationApiAttempt))({ binding: job.binding, taskCanonical: job.taskCanonical,
         dispatch, workerId: identity.workerId, authorizationId, workspaceId: job.workspaceId, connectionId: job.connectionId,
         credentialSha256: job.credentialSha256, revision, signal: runningSignal,
         retainReceipt: async raw => {

@@ -520,10 +520,12 @@ const EXPECTED = {
   // Installed isolated catalog: 275 application RLS tables and 14 views.
   // 20261015000008 adds one private thematic frame table, with RLS and no policies.
   // Installed isolated catalog confirms 276 application RLS tables and 14 views.
-  relations: 290,
-  tables: 276,
+  // 20261015000009 adds private thematic dynamic attempt inputs.
+  // Installed isolated catalog confirms 277 application RLS tables and 14 views.
+  relations: 291,
+  tables: 277,
   views: 14,
-  rlsEnabledTables: 276,
+  rlsEnabledTables: 277,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

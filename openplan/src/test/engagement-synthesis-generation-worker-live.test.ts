@@ -16,6 +16,7 @@ import { readSynthesisGenerationSelectedResults, loadSynthesisGenerationHistory 
 
 import { createSynthesisContextRequest, readSynthesisContextRequest } from "@/lib/engagement/synthesis-context-requests-server";
 import { retainSynthesisContextPlan } from "@/lib/engagement/synthesis-context-plan-server";
+import { createSynthesisThematicContinuation } from "@/lib/engagement/synthesis-thematic-continuation";
 import { createSynthesisContextContinuation } from "@/lib/engagement/synthesis-context-continuation";
 import { loadSynthesisContextHistory } from "@/lib/engagement/synthesis-context-history-server";
 import { createSynthesisThematicRequest, readSynthesisThematicRequest } from "@/lib/engagement/synthesis-thematic-requests-server";
@@ -81,7 +82,12 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       if (options.validOutputs) {
         const task = JSON.parse(body.messages.find((message: { role: string }) => message.role === "user").content);
         const previous = task.input.previous ? JSON.parse(task.input.previous.outputText) : { notes: [], uncertainties: [] };
-        const content = task.input.purpose === "private_synthesis_context_continuation"
+        const content = task.input.purpose === "private_synthesis_thematic_continuation"
+          ? JSON.stringify(task.input.stage === "frame" ? { status:"complete",coveredPartIds:task.input.frame.parts.map((part:{id:string})=>part.id),notes:previous.notes,
+              uncertainties:previous.uncertainties.length?previous.uncertainties:["SYNTHETIC thematic coverage; no semantic inference"] }
+            : { status:"complete",title:"SYNTHETIC unassigned contributions",notes:"SYNTHETIC structural proposal",groups:[],
+              unassigned:task.input.contexts.map((context:{sourceId:string})=>({sourceId:context.sourceId,reason:"SYNTHETIC no retained contextual note",citations:[]})),uncertainties:previous.uncertainties })
+          : task.input.purpose === "private_synthesis_context_continuation"
           ? JSON.stringify({ status: "complete", coveredPartIds: task.input.frame.parts.map((part: { id: string }) => part.id),
             notes: previous.notes, uncertainties: [...previous.uncertainties, "SYNTHETIC context coverage only\u0000\ud800 é 😀"] })
           : JSON.stringify({ status: "complete", coveredPartIds: task.input.parts.map((part: { id: string }) => part.id),
@@ -209,10 +215,13 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       maxOutputTokens: 8192, responseByteLimit: 65536, expiresAt: new Date(Date.now() + 3600000).toISOString(),
       chargesAcknowledged: true, retryTaskIndex: null, retryOfAttemptId: null };
     checked(await staff.client.rpc("authorize_engagement_synthesis_context", { p_request: args.requestId, p_authorization: authorizationId, p_intent_text: JSON.stringify(grant) }));
-    let dropped = false, deliveries = 0, thematicFrameDropped = false;
+    let dropped = false, deliveries = 0, thematicFrameDropped = false, thematicOutputDropped = false;
+    let thematicFinalIndex = -1, thematicFinalAttempt: string | null = null;
+    let thematicSchedulerCalls = 0, checkingThematicScheduler = false;
     const proxyErrors: string[] = [];
     const target = await listen(createServer(async (req, res) => {
       try {
+        if (checkingThematicScheduler) thematicSchedulerCalls++;
         const parts: Buffer[] = []; for await (const chunk of req) parts.push(Buffer.from(chunk));
         const headers = new Headers();
         for (const [name, value] of Object.entries(req.headers)) if (typeof value === "string" && !["host", "connection", "content-length", "transfer-encoding"].includes(name)) headers.set(name, value);
@@ -225,8 +234,14 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
         if (loss === "dispatch" && response.ok && !dropped && req.url?.endsWith("/dispatch_engagement_synthesis_context_attempt")) {
           dropped = true; res.destroy(); return;
         }
+        if (response.ok && req.url?.endsWith("/claim_engagement_synthesis_thematic_attempt") && JSON.parse(body.toString()).p_task_index === thematicFinalIndex) {
+          thematicFinalAttempt = JSON.parse(bytes.toString()).attemptId;
+        }
         if (req.url?.endsWith("/retain_engagement_synthesis_generation_output")) {
           deliveries++;
+          if (response.ok && !thematicOutputDropped && thematicFinalAttempt !== null && JSON.parse(body.toString()).p_attempt === thematicFinalAttempt) {
+            thematicOutputDropped=true;res.destroy();return;
+          }
           if (loss === "output" && response.ok && !dropped) { dropped = true; res.destroy(); return; }
         }
         res.statusCode = response.status;
@@ -319,7 +334,8 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(JSON.parse(retained.request.cancellation!.receiptText).reason).toBe(cancellationReason);
     expect(retained.sha256).toBe(hash(retained.canonical));
     const thematicArgs = { ...f.contextArgs, requestId: randomUUID(), actorId: reader.userId,
-      throughSequence: retained.request.binding.selectionSequence, frameByteLimit: 4096 };
+      throughSequence: retained.request.binding.selectionSequence, frameByteLimit: 4096,
+      intentText: JSON.stringify({...JSON.parse(f.contextArgs.intentText),taskByteLimit:65536}) };
     await createSynthesisThematicRequest(reader.client, service, thematicArgs, signal);
     const choiceArgs = { campaignId: scope.campaignId, workspaceId: scope.workspaceId, requestId: thematicArgs.requestId,
       actorId: reader.userId, contextRequestId: scope.requestId, throughSequence: retained.manifest.throughSequence!,
@@ -385,6 +401,40 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(checked(await service.rpc("prepare_engagement_synthesis_thematic_plan", { p_request: preparationRequest.requestId,
       p_header_text: resumedThematic.plan.headerText }))).toEqual(resumedThematic.state);
     expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length);
+    const thematicAuthorizationId=randomUUID(),thematicGrant={...grant,headerSha256:resumedThematic.plan.headerSha256,maxAttempts:resumedThematic.plan.header.taskCount};
+    checked(await reader.client.rpc("authorize_engagement_synthesis_thematic",{p_request:preparationRequest.requestId,p_authorization:thematicAuthorizationId,p_intent_text:JSON.stringify(thematicGrant)}));
+    const thematicDirectory=join(root,hash(target),thematicAuthorizationId);
+    thematicFinalIndex=resumedThematic.plan.header.frameCount;
+    async function runThematic(index:number|"all"){
+      const child=spawn(process.execPath,["--import","tsx","scripts/workers/synthesis-generation.ts","--authorization",thematicAuthorizationId,...(index==="all"?["--all-tasks"]:["--task-index",String(index)]),"--thematic"],{
+        cwd:process.cwd(),stdio:["ignore","pipe","pipe"],env:{...process.env,NEXT_PUBLIC_SUPABASE_URL:target,SUPABASE_SERVICE_ROLE_KEY:environment.SERVICE_ROLE_KEY,
+          OPENPLAN_SYNTHESIS_GENERATION_WORK_DIR:root,OPENPLAN_INTEGRATION_KEY_SECRET:"SYNTHETIC-SYNTHESIS-WORKER-SECRET",OPENPLAN_AI_LOCAL_ENDPOINTS:JSON.stringify([f.endpoint]),NODE_DEBUG:""}});
+      let stderr="",stdout="";child.stderr.on("data",chunk=>{stderr+=String(chunk);});child.stdout.on("data",chunk=>{stdout+=String(chunk);});
+      const ended=new Promise<{code:number|null;stderr:string;stdout:string}>((resolve,reject)=>{child.once("error",reject);child.once("close",code=>resolve({code,stderr,stdout}));});
+      cleanup.push(async()=>{if(child.exitCode===null&&child.signalCode===null)child.kill("SIGKILL");await ended;});return ended;
+    }
+    checkingThematicScheduler=true;
+    const refusedSchedule=await runThematic("all");checkingThematicScheduler=false;
+    expect(refusedSchedule.code).toBe(1);expect(thematicSchedulerCalls).toBe(0);
+    const thematicReplay=createSynthesisThematicContinuation(proposalInputs);
+    let thematicPriorAttempt:string|null=null,thematicPriorCapture:string|null=null;
+    for(let index=0;index<resumedThematic.plan.header.taskCount;index++){
+      const next=thematicReplay.next();if(next.status!=="ready")throw new Error("Native thematic task unavailable");
+      const run=await runThematic(index);expect(run.code,run.stderr).toBe(index===thematicFinalIndex?1:0);
+      const journal=JSON.parse(await readFile(join(thematicDirectory,String(index),"pending.json"),"utf8"));
+      expect(journal.thematic).toBe(true);expect(journal.context).toBeUndefined();expect(journal.phase).toBe(index===thematicFinalIndex?"observed":"delivered");
+      const originalTask=checked(await service.from("engagement_synthesis_thematic_attempt_inputs").select("task_text,task_sha256,predecessor_attempt_id,predecessor_capture_sha256,previous_result_sha256").eq("attempt_id",journal.attemptId).single());
+      expect(originalTask).toEqual({task_text:next.task.canonical,task_sha256:next.task.sha256,predecessor_attempt_id:thematicPriorAttempt,predecessor_capture_sha256:thematicPriorCapture,previous_result_sha256:next.previousResultSha256});
+      const originalOutput=checked(await service.from("engagement_synthesis_generation_outputs").select("capture_text,capture_sha256").eq("attempt_id",journal.attemptId).single());
+      if(!originalOutput)throw new Error("Native thematic original output is absent");
+      const captured=verifySynthesisGenerationApiResult(journal.job.binding,{canonical:originalOutput.capture_text,sha256:originalOutput.capture_sha256},{dispatchSha256:journal.dispatch.receiptSha256,responseByteLimit:thematicGrant.responseByteLimit}).capture;
+      thematicReplay.accept({taskSha256:next.task.sha256,outputText:captured.outputText,finishReason:captured.finishReason});
+      thematicPriorAttempt=journal.attemptId;thematicPriorCapture=originalOutput.capture_sha256;
+    }
+    expect(thematicReplay.next()).toMatchObject({status:"proposal_complete",interpretation:"machine_unreviewed"});
+    expect(thematicOutputDropped).toBe(true);
+    const completedCallCount=f.plan.entries.length+staged.plan.entries.length+resumedThematic.plan.header.taskCount;
+    expect(f.calls).toHaveLength(completedCallCount);
     checked(await reader.client.rpc("cancel_engagement_synthesis_generation_request", { p_campaign: scope.campaignId,
       p_request: thematicArgs.requestId, p_cancellation: randomUUID(), p_reason: "SYNTHETIC thematic input cancellation" }));
     expect(await readSynthesisThematicPlanState(service, preparationRequest, signal)).toEqual({ ...resumedThematic.state, cancelled: true });
@@ -400,8 +450,12 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(retryInput).toEqual({ ...savedInput.record, replayed: true });
     const recoveredChoice = await retainSynthesisThematicChoice(reader.client, service, choiceArgs, signal);
     expect(recoveredChoice.record.replayed).toBe(true); expect(recoveredChoice.choice).toEqual(choice.choice);
-    expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length);
+    expect(f.calls).toHaveLength(completedCallCount);
     reader.revoke();
+    const recoveredThematic=await runThematic(thematicFinalIndex);expect(recoveredThematic.code,recoveredThematic.stderr).toBe(0);
+    const thematicFinalJournal=JSON.parse(await readFile(join(thematicDirectory,String(thematicFinalIndex),"pending.json"),"utf8"));
+    expect(thematicFinalJournal.phase).toBe("delivered");expect(thematicFinalJournal.captureSha256).toBe(thematicPriorCapture);
+    expect(f.calls).toHaveLength(completedCallCount);expect(proxyErrors).toEqual([]);
     await expect(readSynthesisThematicPlanState(service, preparationRequest, signal)).rejects.toThrow("custody unavailable");
     await expect(prepareInput(preparationTarget, signal)).rejects.toThrow("preparation access unavailable");
     await expect(loadSynthesisThematicProposalInputs(service, preparationRequest, signal)).rejects.toThrow("inventory unavailable");
@@ -409,7 +463,9 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     await expect(readSynthesisThematicInputHistory(reader.client, preparationScope, signal)).rejects.toThrow("input unavailable");
     await expect(loadSynthesisContextHistory(reader.client, service, scope, signal)).rejects.toThrow("Context request unavailable");
     await expect(readSynthesisThematicChoice(reader.client, { ...scope, requestId: thematicArgs.requestId }, choiceArgs.targetRecordId, signal)).rejects.toThrow("Thematic request unavailable");
-  }, 300000);
+  // The full context-to-thematic replay reached 299 seconds alongside full QA.
+  // Allow shared-host overhead without changing any worker or provider deadline.
+  }, 600000);
 
   it("retains a fresh thematic request through authenticated HTTP after original requester departure", async () => {
     const f = await fixture({ allTasks: true, validOutputs: true }), staff = await f.staffHistoryClient();

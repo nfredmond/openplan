@@ -151,3 +151,26 @@ adds bounded original-frame custody, exact-prefix recovery and an atomic final
 proposal reference. It grants no execution permission. Resource authorization,
 original-response execution custody, retained proposals, staff import and the
 large final-task scaling gap remain open under the roadmap's existing M9b lane.
+
+October 2 execution continuation: [native thematic execution](THEMATIC_EXECUTION.md)
+adds resource authorization, original-response custody and single-task CLI
+recovery for evidence frames and the final proposal. The next connected work is
+a durable thematic scheduler, original proposal replay and retained derived
+proposal history, then explicit staff import and identified-build user journeys.
+Preserve the full source and uncertainty when addressing large final-task limits.
+This checkpoint does not close M9b or change the roadmap's whole-product queue.
+
+The existing `synthesis-context-scheduler.ts` and its authority reader provide the
+next implementation reference. Thematic scheduling must use `taskCount`, including
+the proposal, rather than `frameCount`. Keep the saved schedule and exact initial
+attempt identities stable across retries. Historical authority reconstruction must
+permit recovery of already observed responses after cancellation; creating a new
+schedule still requires current original-input replay and permission. A scheduler
+must stop at an unresolved predecessor, never select a retry automatically, and
+keep thematic journals separate from segment and context journals. Preserve the
+current single-task mode and test mixed prior attempts, grant exhaustion, changed
+ancestors, interrupted journal writes and final-task recovery on the owned stack.
+
+Keep new native reads explicit about table names and column projections. Generic
+projection parameters exceeded the existing static coverage limit during the
+execution checkpoint; explicit selects restored coverage without loosening it.

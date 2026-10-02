@@ -20,6 +20,16 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Internal thematic execution now supports an explicitly authorized frame or final
+proposal task, exact original-response custody and recovery without a second
+provider call. Apply `20261015000009_engagement_synthesis_thematic_execution.sql`
+before using `--task-index INTEGER --thematic` with an authorization. Automatic
+thematic scheduling, derived proposal history and staff import remain unfinished.
+[Execution evidence and limits](docs/reviews/2026-10-01-context-history/THEMATIC_EXECUTION.md)
+record the current boundary. Earlier checkpoint notes below retain their dated
+scope; this execution increment supersedes their unfinished single-task execution
+statements.
+
 Internal thematic staging now retains exact evidence frames with bounded batches,
 recoverable retries and a separate final proposal reference. Preparation replays
 original inputs; cancellation stops fresh writes while preserving exact recovery.

@@ -5,8 +5,9 @@ import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { prepareProviderApiRevision } from "@/lib/integrations/provider-api-credentials";
 import { createSynthesisGenerationPlan } from "@/lib/engagement/synthesis-generation-plan";
-import { createSynthesisGenerationApiAttempt, createSynthesisContextApiAttempt, type SynthesisGenerationApiObservation } from "@/lib/engagement/synthesis-generation-api";
+import { createSynthesisGenerationApiAttempt, createSynthesisContextApiAttempt, createSynthesisThematicApiAttempt, type SynthesisGenerationApiObservation } from "@/lib/engagement/synthesis-generation-api";
 import { createSynthesisContextContinuation } from "@/lib/engagement/synthesis-context-continuation";
+import { thematicContinuationFixture, thematicSyntheticResponse } from "./fixtures/engagement/synthesis-thematic-continuation";
 import { contextInputFixture } from "./fixtures/engagement/synthesis-context";
 import { verifySynthesisGenerationApiResult } from "@/lib/engagement/synthesis-generation-api-result";
 import { type SynthesisGenerationAttemptBinding } from "@/lib/engagement/synthesis-generation-results";
@@ -61,6 +62,38 @@ async function fixture(authMode: "api_key" | "none" = "api_key", reply?: (res: S
     reseal: () => { dispatch.receiptText = JSON.stringify(receipt); dispatch.receiptSha256 = sha(dispatch.receiptText); } };
 }
 describe("one native-dispatched synthesis API attempt", () => {
+  async function thematicFixture(stage: "frame" | "proposal" = "frame") {
+    const f=await fixture(), thematic=thematicContinuationFixture(),processor=thematic.create();let next=processor.next();
+    while(stage==="proposal"&&next.status==="ready"&&next.stage==="frame"){
+      processor.accept({taskSha256:next.task.sha256,outputText:JSON.stringify(thematicSyntheticResponse(next)),finishReason:"stop"});next=processor.next();
+    }
+    if(next.status!=="ready")throw new Error("SYNTHETIC thematic task unavailable");
+    f.args.taskCanonical=next.task.canonical;const input=JSON.parse(next.task.canonical).input;
+    Object.assign(f.args.binding,{jobId:input.requestId,planSha256:input.headerSha256,taskSha256:next.task.sha256});f.reseal();return f;
+  }
+  it.each(["frame","proposal"] as const)("sends the separately frozen thematic %s task once",async stage=>{
+    const f=await thematicFixture(stage),invoke=createSynthesisThematicApiAttempt(f.args),result=await invoke(),task=JSON.parse(f.args.taskCanonical);
+    expect(JSON.parse(f.calls[0].body)).toEqual({model:f.args.binding.modelId,max_tokens:f.receipt.maxOutputTokens,
+      messages:[{role:"system",content:task.instructions},{role:"user",content:f.args.taskCanonical}],
+      response_format:{type:"json_schema",json_schema:{name:`synthesis_thematic_${stage}_v1`,strict:true,schema:task.outputSchema}}});
+    expect(f.observations).toHaveLength(1);expect(verifySynthesisGenerationApiResult(f.args.binding,result,{dispatchSha256:f.args.dispatch.receiptSha256,responseByteLimit:f.receipt.responseByteLimit}).capture.outputText).toBe("SYNTHETIC\n\u0000\ud800🌉");
+    await expect(invoke()).rejects.toThrow("already consumed");expect(f.calls).toHaveLength(1);
+  });
+  it.each(["purpose","requestId","headerSha256","stage"])("refuses rehashed thematic identity %s",async field=>{
+    const f=await thematicFixture(),task=JSON.parse(f.args.taskCanonical);task.input[field]="wrong";f.args.taskCanonical=JSON.stringify(task);f.args.binding.taskSha256=sha(f.args.taskCanonical);f.reseal();
+    expect(()=>createSynthesisThematicApiAttempt(f.args)).toThrow(/thematic (identity|stage) differs/);expect(f.calls).toHaveLength(0);
+  });
+  it.each(["instructions","outputSchema"])("refuses rehashed thematic recipe %s",async field=>{
+    const f=await thematicFixture("proposal"),task=JSON.parse(f.args.taskCanonical);task[field]=field==="instructions"?"wrong":{type:"string"};f.args.taskCanonical=JSON.stringify(task);f.args.binding.taskSha256=sha(f.args.taskCanonical);f.reseal();
+    expect(()=>createSynthesisThematicApiAttempt(f.args)).toThrow("recipe differs");expect(f.calls).toHaveLength(0);
+  });
+  it("keeps thematic tasks separate from segment and context dispatch",async()=>{
+    const thematic=await thematicFixture(),segment=await fixture(),context=await contextFixture();
+    expect(()=>createSynthesisGenerationApiAttempt(thematic.args)).toThrow();expect(()=>createSynthesisContextApiAttempt(thematic.args)).toThrow();
+    expect(()=>createSynthesisThematicApiAttempt(segment.args)).toThrow();expect(()=>createSynthesisThematicApiAttempt(context.args)).toThrow();
+    thematic.args.dispatch.authorizedNow=false;expect(()=>createSynthesisThematicApiAttempt(thematic.args)).toThrow();
+    expect([...thematic.calls,...segment.calls,...context.calls]).toHaveLength(0);
+  });
   async function contextFixture() {
     const f = await fixture(), context = contextInputFixture();
     const continuation = createSynthesisContextContinuation(context.request, context.scope, context.args), next = continuation.next();

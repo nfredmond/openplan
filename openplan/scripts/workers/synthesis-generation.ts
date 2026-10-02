@@ -6,19 +6,21 @@ import { createServiceRoleClient } from "../../src/lib/supabase/server";
 import { providerApiWorkerTarget } from "../../src/lib/assistant/provider-api-worker";
 import { runSynthesisGenerationSchedule } from "../../src/lib/engagement/synthesis-generation-scheduler";
 import { runSynthesisContextSchedule } from "../../src/lib/engagement/synthesis-context-scheduler";
-import { runSynthesisGenerationWorkerAttempt, runSynthesisContextWorkerAttempt } from "../../src/lib/engagement/synthesis-generation-worker";
+import { runSynthesisGenerationWorkerAttempt, runSynthesisContextWorkerAttempt, runSynthesisThematicWorkerAttempt } from "../../src/lib/engagement/synthesis-generation-worker";
 
 // Operate one task or drain the retained authorization. Repeating either command
 // recovers the same journals; new provider attempts require native authorization.
 async function main() {
   const options = process.argv.slice(2);
   const context = options.at(-1) === "--context";
-  if (context) options.pop();
+  const thematic = options.at(-1) === "--thematic";
+  if (context || thematic) options.pop();
   const allTasks = options.length === 3 && options[2] === "--all-tasks";
   if (options[0] !== "--authorization" || (!allTasks &&
     (options.length !== 4 || options[2] !== "--task-index" || !/^(0|[1-9][0-9]*)$/.test(options[3])))) {
     throw new Error("synthesis_worker_options_invalid");
   }
+  if (thematic && allTasks) throw new Error("thematic_schedule_not_yet_available");
   const authorizationId = z.string().uuid().parse(options[1]);
   const taskIndex = allTasks ? null : z.number().int().nonnegative().safe().parse(Number(options[3]));
   const target = providerApiWorkerTarget(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");
@@ -35,13 +37,13 @@ async function main() {
       console.log(`Synthesis grant: ${result.outcomes.length - unobserved} outputs retained; ${unobserved} dispatches unobserved; ${unprocessed} scheduled tasks not processed; ${result.outsideScheduleCount} tasks outside this schedule. Output still needs complete analysis and review.`);
       if (unobserved > 0 || result.outsideScheduleCount > 0) process.exitCode = 2;
     } else {
-      const result = await (context ? runSynthesisContextWorkerAttempt : runSynthesisGenerationWorkerAttempt)({ ...shared, directory: join(directory, String(taskIndex)), taskIndex });
+      const result = await (thematic ? runSynthesisThematicWorkerAttempt : context ? runSynthesisContextWorkerAttempt : runSynthesisGenerationWorkerAttempt)({ ...shared, directory: join(directory, String(taskIndex)), taskIndex });
       console.log(`Synthesis worker attempt: ${result.state}`);
       if (result.state === "unobserved") process.exitCode = 2;
     }
   } finally { process.off("SIGINT", stop); process.off("SIGTERM", stop); }
 }
 void main().catch(() => {
-  console.error("Synthesis worker could not finish. Retain its private journal and retry the same command. Use --authorization UUID with --task-index INTEGER or --all-tasks. Append --context for a context authorization.");
+  console.error("Synthesis worker could not finish. Retain its private journal and retry the same command. Use --authorization UUID with --task-index INTEGER or --all-tasks. Append --context for a context authorization, or --thematic for a single thematic task.");
   process.exitCode = 1;
 });
