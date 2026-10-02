@@ -20,7 +20,29 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes recorded.
+Independent review corrections tighten Storage object paths, artifact upload
+roles and exact Planner Agent approval fields. Retained invalid native-provider
+results finish without authorizing a replacement call. Agent profile creation
+refuses to overwrite a profile saved after approval preparation.
+
+Apply `20261015000001_measure_period_fund_integrity.sql` and
+`20261015000002_security_artifact_storage_writes.sql` before deploying these
+corrections. Financial children now enforce their period/fund/workspace parent.
+Existing mismatches are preserved and flagged for reconciliation, with no
+automatic reassignment or deletion. See the
+[correction record](docs/reviews/2026-10-01-independent-fixes/FINANCE_AND_READS.md).
+
+Recipient rounding stays nonnegative. OWP histories and generated project
+evidence read through capped responses or refuse an incomplete result. The
+dashboard reads project submittals through their actual project relationship.
+
+The optional ActivitySim HTTP wrapper now requires a token and operator-owned
+bundle/output roots. Request-level execution configuration is refused; follow
+its updated deployment guide. County cancellation terminates its owned POSIX
+process group with bounded waits. A successor observation matcher refuses
+unproven directional comparisons on bidirectional links. Frozen studies and
+published metrics remain unchanged. These corrections do not claim full
+engine recovery or new scientific validation.
 
 ## 0.66.0 (2026-09-30)
 

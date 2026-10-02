@@ -56,7 +56,7 @@ describe("immutable source and revision loading", () => {
         lte: (column: string, value: unknown) => { call.filters.push([`lte:${column}`, value]); return query; },
         order: () => query, limit: () => query,
         maybeSingle: async () => ({ data: latest, error: null }),
-        range: async (from: number, to: number) => { call.range = [from, to]; return { error: null, data: table.endsWith("sources") ? from === 0 ? Array.from({ length: 100 }, (_, index) => source(index)) : [source(100)] : [latest] }; },
+        range: async (from: number, to: number) => { call.range = [from, to]; return { error: null, data: table.endsWith("sources") ? Array.from({ length: 101 }, (_, index) => source(index)).slice(from, Math.min(to + 1, from + 50)) : table.endsWith("extractions") ? [] : from === 0 ? [latest] : [] }; },
       }; return query;
     } };
     const result = await loadWorkProgramPreparation(client as unknown as Parameters<typeof loadWorkProgramPreparation>[0], programId);
@@ -71,7 +71,7 @@ describe("immutable source and revision loading", () => {
       expect(call.projection).toBe("id, source_id, document_extraction_id, extraction_json, content_sha256, page_count, created_at");
       expect(call.range).toEqual([0,99]);
     }
-    expect(calls.filter((call) => call.table.endsWith("sources")).map((call) => call.range)).toEqual([[0, 99], [100, 199]]);
+    expect(calls.filter((call) => call.table.endsWith("sources")).map((call) => call.range)).toEqual([[0, 99], [50, 149], [100, 199], [101, 200]]);
     expect(calls[1].projection).toBe("id, document_id, document_checksum, source_role, source_url, page_count, extraction_json, created_at, kb_documents(title)");
     expect(calls.at(-1)?.filters).toContainEqual(["lte:revision", 2]);
   });

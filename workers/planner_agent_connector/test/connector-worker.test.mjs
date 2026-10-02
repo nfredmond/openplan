@@ -253,3 +253,79 @@ test("changing the provider cannot replay a saved Claude journal through a Codex
   await assert.rejects(connectorCycle(config, f.directory, f.options), /connector_job_invalid/);
   assert.equal(f.generates, 0); assert.equal(f.calls.length, 0);
 });
+
+test("a rejected completed result is retained while a same-attempt failure is synced before delivery", async () => {
+  const f = await fixture(), originalRequest = f.options.request;
+  let rejected;
+  f.options.request = async (scope, body) => {
+    if (body.operation !== "finish") return originalRequest(scope, body);
+    if (body.failureCode === null) { rejected = structuredClone(body); throw new ConnectorError("connector_request_refused", 400); }
+    const pending = await readPrivateJson(join(f.directory, "pending.json"));
+    assert.deepEqual(pending.rejectedDelivery, rejected);
+    assert.deepEqual(pending.delivery, body);
+    assert.equal(pending.phase, "completed");
+    assert.equal(body.failureCode, "native_result_rejected");
+    assert.equal(body.answer, null); assert.equal(body.receipt, null);
+    return { id, attemptId, state: "failed" };
+  };
+  assert.equal((await connectorCycle(config, f.directory, f.options)).state, "failed");
+  assert.equal(f.generates, 1); assert.equal(f.inspections, 1);
+  assert.deepEqual((await readPrivateJson(join(f.directory, "pending.json"))).rejectedDelivery, rejected);
+});
+
+test("invalid result recovery never adopts another attempt or overwrites a refused failure", async () => {
+  for (const current of [{ id, attemptId: workspaceId, state: "running" }, { id: workspaceId, attemptId, state: "cancelled" }, { id, attemptId, state: "queued" }]) {
+    const f = await fixture(), originalRequest = f.options.request; let finishing = false, deliveries = 0;
+    f.options.request = async (scope, body) => {
+      if (body.operation === "finish") { finishing = true; deliveries++; throw new ConnectorError("connector_request_refused", 400); }
+      return finishing ? current : originalRequest(scope, body);
+    };
+    await assert.rejects(connectorCycle(config, f.directory, f.options), error => error.status === 400);
+    const pending = await readPrivateJson(join(f.directory, "pending.json"));
+    assert.equal(pending.phase, "completed"); assert.equal(pending.delivery.answer, generated().answer);
+    assert.equal(pending.rejectedDelivery, undefined); assert.equal(deliveries, 1); assert.equal(f.generates, 1);
+  }
+  const f = await fixture(), originalRequest = f.options.request;
+  await writeConnectorJournal(f.directory, { version: 1, connectionId, appUrl: setup.appUrl, phase: "running", job: job() });
+  f.options.request = async (scope, body) => { if (body.operation === "finish") throw new ConnectorError("connector_request_refused", 400); return originalRequest(scope, body); };
+  await assert.rejects(connectorCycle(config, f.directory, f.options), error => error.status === 400);
+  assert.equal((await readPrivateJson(join(f.directory, "pending.json"))).delivery.failureCode, "native_connector_interrupted");
+  assert.equal(f.generates, 0);
+});
+
+test("unauthorized, unavailable and unknown delivery outcomes never become replacement failure calls", async () => {
+  for (const status of [403, 429, 500, null]) {
+    const f = await fixture(), originalRequest = f.options.request; let deliveries = 0;
+    f.options.request = async (scope, body) => {
+      if (body.operation === "finish") { deliveries++; throw new ConnectorError("connector_request_refused", status); }
+      return originalRequest(scope, body);
+    };
+    for (let retry = 0; retry < 2; retry++) await assert.rejects(connectorCycle(config, f.directory, f.options), error => error.status === status);
+    const pending = await readPrivateJson(join(f.directory, "pending.json"));
+    assert.equal(pending.phase, "completed"); assert.equal(pending.delivery.answer, generated().answer);
+    assert.equal(pending.rejectedDelivery, undefined); assert.equal(deliveries, 2); assert.equal(f.generates, 1);
+  }
+});
+
+test("a rejected result acknowledges only its already-terminal attempt", async () => {
+  for (const state of ["succeeded", "failed", "cancelled", "interrupted"]) {
+    const f = await fixture(), originalRequest = f.options.request; let finishing = false;
+    f.options.request = async (scope, body) => {
+      if (body.operation === "finish") { finishing = true; throw new ConnectorError("connector_request_refused", 400); }
+      if (finishing) return { id, attemptId, state };
+      return originalRequest(scope, body);
+    };
+    assert.equal((await connectorCycle(config, f.directory, f.options)).state, state);
+    assert.equal((await readPrivateJson(join(f.directory, "pending.json"))).acknowledgedState, state);
+    assert.equal(f.generates, 1);
+  }
+});
+
+test("a changed connection cannot recover or discard the old completed journal", async () => {
+  const f = await fixture();
+  await writeConnectorJournal(f.directory, { version: 1, connectionId, appUrl: setup.appUrl, phase: "completed", job: job(), delivery: { operation: "finish", turnId: id, attemptId, answer: generated().answer, receipt: null, failureCode: null } });
+  const changedSetup = { ...setup, connectionId: workspaceId, token: `op_pc_${workspaceId}.${"s".repeat(43)}` };
+  await assert.rejects(connectorCycle({ ...config, setup: changedSetup }, f.directory, f.options), /connector_journal_mismatch/);
+  assert.equal(f.generates, 0); assert.equal(f.calls.length, 0);
+  assert.equal((await readPrivateJson(join(f.directory, "pending.json"))).phase, "completed");
+});

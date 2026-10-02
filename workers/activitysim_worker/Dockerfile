@@ -12,4 +12,4 @@ COPY . /app
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "gunicorn --chdir workers/activitysim_worker --bind 0.0.0.0:${PORT:-8080} main:app"]
+CMD ["sh", "-c", "python workers/activitysim_worker/main.py --check-http-config && exec gunicorn --chdir workers/activitysim_worker --bind 0.0.0.0:${PORT:-8080} main:app"]

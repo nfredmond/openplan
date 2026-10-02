@@ -53,9 +53,23 @@ export async function POST(request: NextRequest) {
     const { turn, packet } = checkedProviderTurn(data);
     if (turn.connection_id !== connectionId || turn.id !== body.turnId || turn.attempt_id !== body.attemptId || !["codex", "claude", "opencode"].includes(turn.provider)) throw new ProviderRequestError("provider_attempt_mismatch", 403);
     if (body.receipt && (body.receipt.provider !== turn.provider || body.receipt.model !== turn.model_id || body.receipt.authMode !== turn.auth_mode)) throw new ProviderRequestError("provider_receipt_mismatch", 409);
-    const result = body.answer === null ? null : parseProviderProjectAnswer(packet, JSON.parse(body.answer));
+    let result = null;
+    let receipt = body.receipt;
+    let failureCode = body.failureCode;
+    if (body.answer !== null) {
+      try {
+        result = parseProviderProjectAnswer(packet, JSON.parse(body.answer));
+      } catch (error) {
+        if (!(error instanceof SyntaxError) && !(error instanceof z.ZodError)) throw error;
+        // A completed provider call with invalid output is a terminal failure,
+        // not permission to call it again. The locked finish RPC retains this
+        // same result on replay and still enforces cancellation and ownership.
+        receipt = null;
+        failureCode = "native_invalid_output";
+      }
+    }
     const finished = await service.rpc("finish_assistant_provider_turn", { p_turn_id: body.turnId, p_attempt_id: body.attemptId,
-      p_user_id: null, p_connection_id: connectionId, p_token_hash: tokenHash, p_result: result, p_provider_receipt: body.receipt, p_failure_code: body.failureCode });
+      p_user_id: null, p_connection_id: connectionId, p_token_hash: tokenHash, p_result: result, p_provider_receipt: receipt, p_failure_code: failureCode });
     providerRpcError(finished.error);
     const saved = checkedProviderTurn(finished.data).turn;
     audit.info("delivery_retained", { turnId: saved.id, state: saved.state });

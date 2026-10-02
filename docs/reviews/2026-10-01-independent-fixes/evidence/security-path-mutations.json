@@ -1,0 +1,60 @@
+{
+  "sourceRestoredSha256": "ff0d133202382bee7bca8b2f63f4d9f9aa520e896daa80149edd0aacc532d122",
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "passed": 25,
+      "failed": 0,
+      "classification": "SURVIVED",
+      "failedAssertions": []
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "passed": 25,
+      "failed": 0,
+      "classification": "SURVIVED",
+      "failedAssertions": []
+    },
+    {
+      "case": "missing-canonical-path-check",
+      "exitCode": 1,
+      "passed": 5,
+      "failed": 20,
+      "classification": "KILLED",
+      "failedAssertions": [
+        "canonical Storage references refuses \"../other/file.json\" before a privileged request",
+        "canonical Storage references refuses \"%2e%2e/other/file.json\" before a privileged request",
+        "canonical Storage references refuses \"%2E%2E/other/file.json\" before a privileged request",
+        "canonical Storage references refuses \".%2e/other/file.json\" before a privileged request",
+        "canonical Storage references refuses \"%252e%252e/other/file.json\" before a privileged request",
+        "canonical Storage references refuses \"%2fother/file.json\" before a privileged request",
+        "canonical Storage references refuses \"%5cother/file.json\" before a privileged request",
+        "canonical Storage references refuses \"..\\\\other\\\\file.json\" before a privileged request",
+        "canonical Storage references refuses \"file.json?download=other\" before a privileged request",
+        "canonical Storage references refuses \"file.json#other\" before a privileged request",
+        "canonical Storage references refuses \"./file.json\" before a privileged request",
+        "canonical Storage references refuses \"nested//file.json\" before a privileged request",
+        "canonical Storage references refuses \"file.json/\" before a privileged request",
+        "canonical Storage references refuses \"file\\t.json\" before a privileged request",
+        "canonical Storage references refuses \"file\\n.json\" before a privileged request",
+        "canonical Storage references refuses \"file\\r.json\" before a privileged request",
+        "canonical Storage references refuses \"file\\u0000.json\" before a privileged request",
+        "canonical Storage references refuses \"file\u007f.json\" before a privileged request",
+        "canonical Storage references refuses \" file.json\" before a privileged request",
+        "canonical Storage references refuses \"file.json \" before a privileged request"
+      ]
+    },
+    {
+      "case": "resolver-trims-object-name",
+      "exitCode": 1,
+      "passed": 24,
+      "failed": 1,
+      "classification": "KILLED",
+      "failedAssertions": [
+        "canonical Storage references refuses \"file.json \" before a privileged request"
+      ]
+    }
+  ]
+}

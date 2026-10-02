@@ -1,4 +1,5 @@
 import "server-only";
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient, type createClient } from "@/lib/supabase/server";
@@ -9,16 +10,14 @@ import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-se
 type Client = Awaited<ReturnType<typeof createClient>>;
 /** Stable pagination over an explicitly bounded immutable history; query failures never become empty ledgers. */
 export async function reportingRows(client: Client, table: string, columns: string, filter: [string, string], cutoff?: string, cutoffColumn = "created_at") {
- const rows: Record<string, unknown>[] = [];
- for (let offset = 0; ; offset += 200) {
-  let query = client.from(table).select(columns).eq(...filter).order("id").range(offset, offset + 199);
+ const read = await readEveryPage<Record<string, unknown>>(async (from, to) => {
+  let query = client.from(table).select(columns).eq(...filter).order("id").range(from, to);
   if (cutoff) query = query.lte(cutoffColumn, cutoff);
   const result = await query;
-  if (result.error) throw new Error(`Could not read ${table}`);
-  const page = result.data as unknown as Record<string, unknown>[];
-  rows.push(...page);
-  if (page.length < 200) return rows;
- }
+  return { data: result.data as unknown as Record<string, unknown>[] | null, error: result.error };
+ }, { pageSize: 200 });
+ if (!read.complete) throw new Error(`Could not read ${table}`);
+ return read.rows;
 }
 export function reportingError(error: { code?: string; message: string }) {
  const status = error.code === "42501" ? 403 : error.code === "PT409" || error.code === "23505" ? 409 : ["22023", "23514", "22007", "22008", "22P02", "23502"].includes(error.code ?? "") ? 400 : 503;

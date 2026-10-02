@@ -13,11 +13,15 @@ The worker does not fabricate a successful behavioral run when the CLI or config
 ## Required Environment Variables
 
 ```bash
-# Optional shared bearer token for HTTP requests to POST /run or /jobs.
+# Required shared bearer token for every HTTP execution endpoint.
 OPENPLAN_ACTIVITYSIM_WORKER_TOKEN=<shared-bearer-token>
 
+# Required existing directories owned by the operator.
+OPENPLAN_ACTIVITYSIM_BUNDLE_ROOT=/path/to/prepared-bundles
+OPENPLAN_ACTIVITYSIM_RUNTIME_ROOT=/path/to/runtime-outputs
+
 # Optional host overrides.
-OPENPLAN_ACTIVITYSIM_WORKER_HOST=0.0.0.0
+OPENPLAN_ACTIVITYSIM_WORKER_HOST=127.0.0.1
 OPENPLAN_ACTIVITYSIM_WORKER_PORT=8080
 PORT=8080
 ```
@@ -90,22 +94,24 @@ Example payload:
 ```json
 {
   "bundlePath": "data/activitysim-bundles/nevada-county-prototype",
-  "runLabel": "nevada-county-preflight",
-  "force": true
+  "runLabel": "nevada-county-preflight"
 }
 ```
 
-Optional payload fields:
+HTTP payloads accept only `bundlePath` or `manifestPath`, plus `runLabel`.
+Paths resolve inside `OPENPLAN_ACTIVITYSIM_BUNDLE_ROOT`. Each request receives
+an independent UUID directory under `OPENPLAN_ACTIVITYSIM_RUNTIME_ROOT`.
+Requests cannot replace existing outputs or choose execution commands.
 
-- `manifestPath`
-- `runtimeOutputDir`
-- `configDir`
-- `activitysimCli`
-- `activitysimCliTemplate`
-- `activitysimContainerImage`
-- `containerEngineCli`
-- `activitysimContainerCliTemplate`
-- `containerNetworkMode`
+Configure execution on the worker host with `ACTIVITYSIM_CLI`,
+`ACTIVITYSIM_CLI_TEMPLATE`, `ACTIVITYSIM_CONFIG_DIR`, or the container settings
+`ACTIVITYSIM_CONTAINER_IMAGE`, `ACTIVITYSIM_CONTAINER_ENGINE_CLI`,
+`ACTIVITYSIM_CONTAINER_CLI_TEMPLATE` and `ACTIVITYSIM_CONTAINER_NETWORK_MODE`.
+The CLI entrypoint retains its explicit local options. HTTP credentials grant
+access to the configured worker, so keep the endpoint private and protect its
+bearer token. The worker rejects missing or incorrect credentials before it
+reads a bundle or creates output. Both `--serve` and the Docker entrypoint
+check required configuration before listening.
 
 ## Runtime Output Structure
 
@@ -137,7 +143,14 @@ Build from the repo root:
 
 ```bash
 docker build -f workers/activitysim_worker/Dockerfile -t openplan-activitysim-worker .
-docker run --rm -p 8080:8080 openplan-activitysim-worker
+# Create and populate the two host directories first. Supply the token privately.
+docker run --rm -p 127.0.0.1:8080:8080 \
+  -e OPENPLAN_ACTIVITYSIM_WORKER_TOKEN \
+  -e OPENPLAN_ACTIVITYSIM_BUNDLE_ROOT=/bundles \
+  -e OPENPLAN_ACTIVITYSIM_RUNTIME_ROOT=/runtime-outputs \
+  -v /path/to/prepared-bundles:/bundles:ro \
+  -v /path/to/runtime-outputs:/runtime-outputs \
+  openplan-activitysim-worker
 ```
 
 ---
