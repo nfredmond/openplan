@@ -1,0 +1,75 @@
+{
+  "sourceSha256": "42f5d65738ba913731f67995febaec01bda386963e55e3ebb89958b272303706",
+  "cases": [
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "expected": "survived",
+      "observed": "survived",
+      "logSha256": "23beb68b54b4d4d7081f453f0507ff860ea6205bbe8734093bce8f190d3a73e5"
+    },
+    {
+      "name": "no-transport-signal",
+      "exitCode": 1,
+      "expected": "detected",
+      "observed": "detected",
+      "logSha256": "f28218272307f3655cab7df9216dda36ae0b7098fd63bb1c00a7bab0e5e7a629"
+    },
+    {
+      "name": "wrong-deadline",
+      "exitCode": 1,
+      "expected": "detected",
+      "observed": "detected",
+      "logSha256": "d5d73c32960788a8bc6297a6477ef3bdbabeee33b31b499a03cbc2aad59af11e"
+    },
+    {
+      "name": "ignore-worker-signal",
+      "exitCode": 1,
+      "expected": "detected",
+      "observed": "detected",
+      "logSha256": "2d38d3412fc703e4ae108a36c60db19591016f6c8682cdc968fc9a7bea84b970"
+    },
+    {
+      "name": "late-acknowledgement",
+      "exitCode": 1,
+      "expected": "detected",
+      "observed": "detected",
+      "logSha256": "1f75884cbe4e930a5e49ac6cc018bc022992ee6df989d3d595ce3df9b481a4df"
+    },
+    {
+      "name": "no-stop-before-write",
+      "exitCode": 1,
+      "expected": "detected",
+      "observed": "detected",
+      "logSha256": "215424c9e50c265da8e39300dd71b697ab50c205f4b7b9661a630cda67190c88"
+    }
+  ],
+  "restored": true,
+  "nativeFault": {
+    "mutation": "Send native batch with p_start one task ahead",
+    "exitCode": 1,
+    "expectedFailure": "Synthesis task batch is out of sequence",
+    "detected": true,
+    "logSha256": "9673189c2464e1d63dfbfb07cf78a0830fd59a11b066cbeb012c4561af3b81a3"
+  },
+  "checks": {
+    "unitTests": 11,
+    "nativeTests": 3,
+    "nativeSkippedByFilter": 50,
+    "lint": "passed",
+    "typecheck": "passed",
+    "typecheckMemoryPeak": "4.8 GiB",
+    "typecheckSwapBytes": 0,
+    "nativeMemoryPeak": "610.3 MiB",
+    "nativeSwapBytes": 0
+  },
+  "logs": {
+    "staff-plan-interruption-native.log": "c52cb1956780d7fd90f329a32b3bfa54b8c79c46b634a6cf915481a18163db95",
+    "staff-plan-interruption-types.log": "279fd8b5da1f8af91698072afbb774c5bda182a25496f6052aeb09ea5bec0a23"
+  },
+  "limitations": [
+    "Mock transport proves signal forwarding and late-response refusal, not interrupted native socket timing",
+    "Native SQL bridge proves retained batches and recovery, not HTTP abort propagation",
+    "No queue pickup, user interface, provider execution or large-consultation capacity evidence"
+  ]
+}

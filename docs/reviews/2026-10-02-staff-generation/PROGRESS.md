@@ -69,3 +69,59 @@ with no swap use; port 3478 has no remaining listener. This closes the earlier
 HTTP-check boundary, not queue preparation, browser usability, provider execution,
 role-transition coverage, semantic accuracy or large-consultation capacity.
 The full workflow remains unfinished.
+
+
+## Preparation interruption correction
+
+Investigation before queue pickup finds that segment preparation does not pass a
+stop signal to its database calls. It also accepts a late cancelled or sealed
+response after a worker stop. Context and thematic preparation already forward
+signals and check after responses.
+
+Segment preparation now forwards the worker signal and a fresh ten-second deadline
+to each call. It checks the combined signal before accepting an acknowledgement,
+including the final seal. Unknown outcomes still stop the invocation. A later
+invocation reconstructs the same plan and recovers its retained prefix or seal.
+No automatic write retry or new execution authority is added.
+
+Eleven focused tests pass. A harmless control survives and five deliberate faults
+fail: omitted transport signal, wrong deadline, omitted worker signal, late
+acknowledgement acceptance and omitted stop checks. The installed SQL bridge also
+passes its three existing source/batch/recovery cases, including the harmless and
+large-packet controls. Sending a task start one position ahead produces the native
+out-of-sequence failure. All source mutations are restored. Fifty other native
+cases are excluded by this focused filter; no full native gate is claimed here.
+
+Strict lint and whole-package TypeScript pass. The type check uses an 8 GiB memory
+ceiling, zero swap and two-core CPU quota, peaks at 4.8 GiB and exits successfully.
+The native checks peak at 610.3 MiB and use no swap. The first unit invocation uses
+an unsupported minWorkers option and exits before running tests; the corrected
+one-worker invocation supplies the actual evidence. The
+[check record](preparation-interruption-checks.json) retains controls, fault
+results, source and log hashes, resource measurements and blind categories.
+
+These tests establish signal forwarding and refusal of late responses. The SQL
+bridge does not exercise an interrupted HTTP socket. Queue ownership/status,
+worker pickup, user controls and provider execution remain unfinished.
+
+## Next preparation connection
+
+Existing generation/context/thematic staging helpers retain and verify exact
+prefixes. The CLI currently requires an execution authorization and provides no
+preparation queue. Reuse those helpers and the execution scheduler. Preserve the
+separate plan review and provider authorization step.
+
+The existing contract-calculation queue supplies a lease-token, renewal and
+requester-only retry pattern. Its contract-specific source and completion rules
+do not fit synthesis directly. Work-program exports run through document jobs;
+translation fields couple leases to generation reservations and spending. Neither
+is a substitute for synthesis preparation and its distinct stage identities.
+
+The next bounded change should retain an explicit preparation enqueue command,
+with authenticated status/retry, service-only leases and stale-token refusal.
+Do not discover all historical requests as implicitly queued work. Reconstruct
+saved sources, distinguish segment/context/thematic requests, and let existing
+native staging commands recheck current requester authority. Keep durable failure
+and retry status so one invalid request cannot starve others. Preserve cancellation
+and original receipts; a sealed preparation plan still needs separate provider
+execution approval. This is implementation guidance under M9b, not a new roadmap.
