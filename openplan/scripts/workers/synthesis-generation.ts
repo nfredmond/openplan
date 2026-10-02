@@ -6,6 +6,7 @@ import { createServiceRoleClient } from "../../src/lib/supabase/server";
 import { providerApiWorkerTarget } from "../../src/lib/assistant/provider-api-worker";
 import { runSynthesisGenerationSchedule } from "../../src/lib/engagement/synthesis-generation-scheduler";
 import { runSynthesisContextSchedule } from "../../src/lib/engagement/synthesis-context-scheduler";
+import { runSynthesisThematicSchedule } from "../../src/lib/engagement/synthesis-thematic-scheduler";
 import { runSynthesisGenerationWorkerAttempt, runSynthesisContextWorkerAttempt, runSynthesisThematicWorkerAttempt } from "../../src/lib/engagement/synthesis-generation-worker";
 
 // Operate one task or drain the retained authorization. Repeating either command
@@ -20,7 +21,6 @@ async function main() {
     (options.length !== 4 || options[2] !== "--task-index" || !/^(0|[1-9][0-9]*)$/.test(options[3])))) {
     throw new Error("synthesis_worker_options_invalid");
   }
-  if (thematic && allTasks) throw new Error("thematic_schedule_not_yet_available");
   const authorizationId = z.string().uuid().parse(options[1]);
   const taskIndex = allTasks ? null : z.number().int().nonnegative().safe().parse(Number(options[3]));
   const target = providerApiWorkerTarget(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");
@@ -31,7 +31,7 @@ async function main() {
   try {
     const shared = { service: createServiceRoleClient(), target, authorizationId, signal: stopping.signal };
     if (taskIndex === null) {
-      const result = await (context ? runSynthesisContextSchedule : runSynthesisGenerationSchedule)({ ...shared, directory });
+      const result = await (thematic ? runSynthesisThematicSchedule : context ? runSynthesisContextSchedule : runSynthesisGenerationSchedule)({ ...shared, directory });
       const unobserved = result.outcomes.filter(outcome => outcome.state === "unobserved").length;
       const unprocessed = result.scheduledCount - result.outcomes.length;
       console.log(`Synthesis grant: ${result.outcomes.length - unobserved} outputs retained; ${unobserved} dispatches unobserved; ${unprocessed} scheduled tasks not processed; ${result.outsideScheduleCount} tasks outside this schedule. Output still needs complete analysis and review.`);
@@ -44,6 +44,6 @@ async function main() {
   } finally { process.off("SIGINT", stop); process.off("SIGTERM", stop); }
 }
 void main().catch(() => {
-  console.error("Synthesis worker could not finish. Retain its private journal and retry the same command. Use --authorization UUID with --task-index INTEGER or --all-tasks. Append --context for a context authorization, or --thematic for a single thematic task.");
+  console.error("Synthesis worker could not finish. Retain its private journal and retry the same command. Use --authorization UUID with --task-index INTEGER or --all-tasks. Append --context for a context authorization, or --thematic for a thematic authorization.");
   process.exitCode = 1;
 });

@@ -1,0 +1,941 @@
+{
+  "date": "2026-10-02",
+  "baseline": "04d8be79ea52b7712b350260f6c849365573e518",
+  "scope": "Saved complete-grant thematic scheduling and historical metadata identity. No provider authority or semantic quality follows from historical metadata alone.",
+  "application": {
+    "t3-thematic-schedule-authority-mutations.json": {
+      "cases": [
+        {
+          "name": "control",
+          "edits": [
+            "Inspect immutable scheduling identity"
+          ],
+          "testPattern": "reads immutable",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-control.log"
+        },
+        {
+          "name": "grant-id",
+          "edits": [
+            "grant.id !== authorizationId"
+          ],
+          "testPattern": "wrong returned engagement_synthesis_generation_authorizations id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-grant-id.log"
+        },
+        {
+          "name": "grant-hash",
+          "edits": [
+            "digest(grant.intent_text) !== grant.intent_sha256"
+          ],
+          "testPattern": "corrupt original grant",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-grant-hash.log"
+        },
+        {
+          "name": "request-id",
+          "edits": [
+            "row.id !== grant.request_id"
+          ],
+          "testPattern": "wrong returned engagement_synthesis_generation_requests id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-request-id.log"
+        },
+        {
+          "name": "thematic-id",
+          "edits": [
+            "thematic.request_id !== grant.request_id"
+          ],
+          "testPattern": "wrong returned engagement_synthesis_thematic_requests request_id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-thematic-id.log"
+        },
+        {
+          "name": "source-id",
+          "edits": [
+            "intent.sourceId !== row.source_id"
+          ],
+          "testPattern": "wrong returned engagement_synthesis_generation_requests source_id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-source-id.log"
+        },
+        {
+          "name": "revision-id",
+          "edits": [
+            "intent.configurationRevisionId !== row.configuration_revision_id"
+          ],
+          "testPattern": "wrong returned engagement_synthesis_generation_requests configuration_revision_id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-revision-id.log"
+        },
+        {
+          "name": "input-request",
+          "edits": [
+            "inputSeal.request_id !== row.id"
+          ],
+          "testPattern": "wrong returned engagement_synthesis_thematic_input_seals request_id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-input-request.log"
+        },
+        {
+          "name": "input-manifest-hash",
+          "edits": [
+            "digest(inputSeal.manifest_text) !== inputSeal.manifest_sha256"
+          ],
+          "testPattern": "corrupt original input-manifest",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-input-manifest-hash.log"
+        },
+        {
+          "name": "input-seal-hash",
+          "edits": [
+            "digest(inputSeal.receipt_text) !== inputSeal.receipt_sha256"
+          ],
+          "testPattern": "corrupt original input-seal",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-input-seal-hash.log"
+        },
+        {
+          "name": "input-manifest-original",
+          "edits": [
+            "inputSeal.manifest_text !== JSON.stringify(manifest)"
+          ],
+          "testPattern": "rehashed original input manifest drift",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-input-manifest-original.log"
+        },
+        {
+          "name": "plan-request",
+          "edits": [
+            "plan.request_id !== row.id"
+          ],
+          "testPattern": "wrong returned engagement_synthesis_generation_plans request_id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-plan-request.log"
+        },
+        {
+          "name": "plan-hash",
+          "edits": [
+            "digest(plan.header_text) !== plan.header_sha256"
+          ],
+          "testPattern": "corrupt original plan",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-plan-hash.log"
+        },
+        {
+          "name": "header-original",
+          "edits": [
+            "plan.header_text !== JSON.stringify(header)"
+          ],
+          "testPattern": "internally hashed header drift",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-header-original.log"
+        },
+        {
+          "name": "seal-request",
+          "edits": [
+            "seal.request_id !== row.id"
+          ],
+          "testPattern": "wrong returned engagement_synthesis_generation_plan_seals request_id",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-seal-request.log"
+        },
+        {
+          "name": "seal-hash",
+          "edits": [
+            "digest(seal.receipt_text) !== seal.receipt_sha256"
+          ],
+          "testPattern": "corrupt original seal",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-seal-hash.log"
+        },
+        {
+          "name": "proposal-reference-hash",
+          "edits": [
+            "digest(receipt.proposalReferenceText) !== receipt.proposalReferenceSha256"
+          ],
+          "testPattern": "reference bytes independently",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-proposal-reference-hash.log"
+        },
+        {
+          "name": "grant-header",
+          "edits": [
+            "authorization.headerSha256 !== plan.header_sha256"
+          ],
+          "testPattern": "invalid grant header",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-grant-header.log"
+        },
+        {
+          "name": "grant-allowance",
+          "edits": [
+            "authorization.maxAttempts > header.taskCount"
+          ],
+          "testPattern": "invalid grant allowance",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-grant-allowance.log"
+        },
+        {
+          "name": "retry-pair",
+          "edits": [
+            "(authorization.retryTaskIndex === null) !== (authorization.retryOfAttemptId === null)"
+          ],
+          "testPattern": "invalid grant missing-retry",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-retry-pair.log"
+        },
+        {
+          "name": "retry-index",
+          "edits": [
+            "authorization.retryTaskIndex >= header.taskCount"
+          ],
+          "testPattern": "invalid grant retry-index",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-retry-index.log"
+        },
+        {
+          "name": "retry-budget",
+          "edits": [
+            "authorization.maxAttempts !== 1"
+          ],
+          "testPattern": "invalid grant retry-budget",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-retry-budget.log"
+        },
+        {
+          "name": "input-seal-envelope",
+          "edits": [
+            "  z.object({ schemaVersion: z.literal(1), purpose: z.literal(\"private_synthesis_thematic_input_seal\"),\n    requestId: z.literal(row.id), manifestSha256: z.literal(inputSeal.manifest_sha256), sealedAt: date })\n    .strict().parse(JSON.parse(inputSeal.receipt_text));"
+          ],
+          "testPattern": "rehashed original input seal drift",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-input-seal-envelope.log"
+        },
+        {
+          "name": "plan-seal-envelope",
+          "edits": [
+            "  const receipt = z.object({ schemaVersion: z.literal(1), requestId: z.literal(row.id), headerSha256: z.literal(plan.header_sha256),\n    frameCount: z.literal(header.frameCount), taskCount: z.literal(header.taskCount), frameBytes: z.literal(header.frameBytes), tailSha256: z.literal(header.tailSha256),\n    proposalReferenceText: z.string(), proposalReferenceSha256: hash, sealedAt: date }).strict().parse(JSON.parse(seal.receipt_text));"
+          ],
+          "testPattern": "rehashed seal drift",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-plan-seal-envelope.log"
+        },
+        {
+          "name": "proposal-reference-envelope",
+          "edits": [
+            "  z.object({ schemaVersion: z.literal(1), purpose: z.literal(\"private_synthesis_thematic_proposal_reference\"), taskIndex: z.literal(header.frameCount),\n    inputManifestSha256: z.literal(header.inputManifestSha256), inputSealSha256: z.literal(header.inputSealSha256),\n    continuationHeaderSha256: z.literal(header.continuationHeaderSha256), contentManifestSha256: z.literal(header.contentManifestSha256),\n    frameTailSha256: z.literal(header.tailSha256) }).strict().parse(JSON.parse(receipt.proposalReferenceText));"
+          ],
+          "testPattern": "rehashed final proposal reference drift",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-proposal-reference-envelope.log"
+        },
+        {
+          "name": "input-count",
+          "edits": [
+            "inputCount: natural.positive()"
+          ],
+          "testPattern": "empty historical input inputCount",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-input-count.log"
+        },
+        {
+          "name": "input-bytes",
+          "edits": [
+            "outputBytes: natural.positive()"
+          ],
+          "testPattern": "empty historical input outputBytes",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-input-bytes.log"
+        },
+        {
+          "name": "final-task-count",
+          "edits": [
+            "counts.frameCount + 1"
+          ],
+          "testPattern": "reads immutable|final-proposal retry",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-final-task-count.log"
+        },
+        {
+          "name": "read-error",
+          "edits": [
+            "if (response.error) throw new Error(\"Thematic schedule retained authority unavailable\");"
+          ],
+          "testPattern": "failed reads",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-read-error.log"
+        },
+        {
+          "name": "abort",
+          "edits": [
+            "signal.throwIfAborted();"
+          ],
+          "testPattern": "interrupted immutable",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-abort.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sha256": "2b826c1c6a932ef20b0eba24fb7430495722f8e6e48e66453274755959f38a0a"
+    },
+    "t3-thematic-schedule-authority-corrected-mutations.json": {
+      "cases": [
+        {
+          "name": "control",
+          "edits": [
+            "Inspect immutable scheduling identity"
+          ],
+          "testPattern": "reads immutable",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-corrected-control.log"
+        },
+        {
+          "name": "header-original-isolated",
+          "edits": [
+            "plan.header_text !== JSON.stringify(header)"
+          ],
+          "testPattern": "header drift contentManifestSha256",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-schedule-authority-corrected-header-original-isolated.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sha256": "2b826c1c6a932ef20b0eba24fb7430495722f8e6e48e66453274755959f38a0a"
+    },
+    "t3-thematic-scheduler-mutations.json": {
+      "cases": [
+        {
+          "name": "control",
+          "edits": [
+            "Drain dependent thematic tasks"
+          ],
+          "exit": 0,
+          "expectedFailure": false,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-control.log"
+        },
+        {
+          "name": "retry-inventory",
+          "edits": [
+            "if (initial.length) differs();"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-retry-inventory.log"
+        },
+        {
+          "name": "own-allowance",
+          "edits": [
+            "own.length > authority.authorization.maxAttempts"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-own-allowance.log"
+        },
+        {
+          "name": "request-id",
+          "edits": [
+            "attempt.request_id !== authority.scope.requestId"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-request-id.log"
+        },
+        {
+          "name": "input-id",
+          "edits": [
+            "input.attempt_id !== attempt.id"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-input-id.log"
+        },
+        {
+          "name": "input-hash",
+          "edits": [
+            "digest(input.task_text) !== input.task_sha256"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-input-hash.log"
+        },
+        {
+          "name": "input-bytes",
+          "edits": [
+            "Buffer.byteLength(input.task_text, \"utf8\") !== input.task_bytes"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-input-bytes.log"
+        },
+        {
+          "name": "input-budget",
+          "edits": [
+            "input.task_bytes > authority.intent.taskByteLimit"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-input-budget.log"
+        },
+        {
+          "name": "binding",
+          "edits": [
+            "!isDeepStrictEqual(JSON.parse(attempt.binding_text), expected)"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-binding.log"
+        },
+        {
+          "name": "fresh-expiry",
+          "edits": [
+            "Date.parse(authority.authorization.expiresAt) <= Date.now()"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-fresh-expiry.log"
+        },
+        {
+          "name": "target",
+          "edits": [
+            "schedule.target !== target"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-target.log"
+        },
+        {
+          "name": "authorization",
+          "edits": [
+            "schedule.authorizationId !== authorizationId"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-authorization.log"
+        },
+        {
+          "name": "request",
+          "edits": [
+            "schedule.requestId !== authority.scope.requestId"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-request.log"
+        },
+        {
+          "name": "header",
+          "edits": [
+            "schedule.headerSha256 !== authority.headerSha256"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-header.log"
+        },
+        {
+          "name": "grant",
+          "edits": [
+            "schedule.authorizationIntentSha256 !== authority.grant.intent_sha256"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-grant.log"
+        },
+        {
+          "name": "indices",
+          "edits": [
+            "!isDeepStrictEqual(schedule.taskIndices, selectedTasks(authority, schedule.initialAttempts))"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-indices.log"
+        },
+        {
+          "name": "stop-unknown",
+          "edits": [
+            "result.state === \"unobserved\""
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-stop-unknown.log"
+        },
+        {
+          "name": "input-error",
+          "edits": [
+            "if (saved.error) throw new Error(\"Thematic initial attempt input unavailable\");"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-input-error.log"
+        },
+        {
+          "name": "inventory-error",
+          "edits": [
+            "if (response.error) throw new Error(\"Thematic initial attempt inventory unavailable\");"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-inventory-error.log"
+        },
+        {
+          "name": "frame-range",
+          "edits": [
+            "attempt.task_index >= authority.header.taskCount",
+            "row.taskIndex >= authority.header.taskCount"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-frame-range.log"
+        },
+        {
+          "name": "saved-duplicate",
+          "edits": [
+            "seen.has(row.attemptId)"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-saved-duplicate.log"
+        },
+        {
+          "name": "native-duplicate",
+          "edits": [
+            "seen.has(row.attemptId)",
+            "seen.has(attempt.id)"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-native-duplicate.log"
+        },
+        {
+          "name": "repeated-page",
+          "edits": [
+            "seen.has(row.attemptId)",
+            "seen.has(attempt.id)",
+            "attempt.task_index <= cursor",
+            "row.taskIndex <= previous"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-repeated-page.log"
+        },
+        {
+          "name": "current-inputs",
+          "edits": [
+            "const inputs = await loadSynthesisThematicWorkerInputs(args.service, authority.scope.requestId, signal);"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-current-inputs.log"
+        },
+        {
+          "name": "exclude-proposal",
+          "edits": [
+            "index < authority.header.taskCount"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-exclude-proposal.log"
+        },
+        {
+          "name": "report-total",
+          "edits": [
+            "taskCount: authority.header.taskCount"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-report-total.log"
+        },
+        {
+          "name": "historical-fresh-check",
+          "edits": [
+            "if (!schedule) {"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": false,
+          "log": "t3-thematic-scheduler-mutation-historical-fresh-check.log"
+        },
+        {
+          "name": "mode-journal",
+          "edits": [
+            "thematic: true"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-mutation-mode-journal.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sha256": "5be83eb6e4415e5283e13ed0aa9db2a828acb7c1cc7d528fb2a539aba0fbd897"
+    },
+    "t3-thematic-scheduler-query-mutations.json": {
+      "cases": [
+        {
+          "name": "control",
+          "edits": [
+            "Drain dependent thematic tasks"
+          ],
+          "exit": 0,
+          "expectedFailure": false,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-query-mutation-control.log"
+        },
+        {
+          "name": "historical-fresh-check",
+          "edits": [
+            "if (!schedule) {"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-query-mutation-historical-fresh-check.log"
+        },
+        {
+          "name": "inventory-request-filter",
+          "edits": [
+            ".eq(\"request_id\", authority.scope.requestId)"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-query-mutation-inventory-request-filter.log"
+        },
+        {
+          "name": "inventory-initial-filter",
+          "edits": [
+            ".is(\"previous_attempt_id\", null)"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-query-mutation-inventory-initial-filter.log"
+        },
+        {
+          "name": "inventory-order",
+          "edits": [
+            ".order(\"task_index\", { ascending: true })"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-query-mutation-inventory-order.log"
+        },
+        {
+          "name": "inventory-limit",
+          "edits": [
+            ".limit(128)"
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-query-mutation-inventory-limit.log"
+        },
+        {
+          "name": "inventory-projection",
+          "edits": [
+            "\"id,request_id,authorization_id,task_index,previous_attempt_id,binding_text\""
+          ],
+          "exit": 1,
+          "expectedFailure": true,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-query-mutation-inventory-projection.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sha256": "5be83eb6e4415e5283e13ed0aa9db2a828acb7c1cc7d528fb2a539aba0fbd897"
+    },
+    "t3-thematic-scheduler-temporary-mutations.json": {
+      "cases": [
+        {
+          "name": "control",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-temporary-control.log"
+        },
+        {
+          "name": "skip-scan",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-temporary-skip-scan.log"
+        },
+        {
+          "name": "skip-promotion",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-temporary-skip-promotion.log"
+        },
+        {
+          "name": "unchecked-temporary",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-temporary-unchecked-temporary.log"
+        },
+        {
+          "name": "ignore-conflict",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-temporary-ignore-conflict.log"
+        },
+        {
+          "name": "partial-fatal",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-temporary-partial-fatal.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sha256": "0b640959cdab8ac325b0cf50c15203eefb86e9b8bb8341d54a4f11cf863898ba"
+    },
+    "t3-thematic-scheduler-schema-mutations.json": {
+      "cases": [
+        {
+          "name": "control",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-schema-control.log"
+        },
+        {
+          "name": "stale-0",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-schema-stale-0.log"
+        },
+        {
+          "name": "stale-1",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-schema-stale-1.log"
+        },
+        {
+          "name": "stale-2",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "log": "t3-thematic-scheduler-schema-stale-2.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sha256": "2b0a79ba9e0429cb8f396748bf4f42a337e0136aae415cc0e4c90b6fff354497"
+    }
+  },
+  "diagnosticReview": [
+    {
+      "case": "header-original contentManifestSha256",
+      "initial": "The grouped mutation fails, but this one subcase rejects through the later reference schema instead of accepting; expected error-message mismatch is insufficient isolation.",
+      "correction": "Keep downstream content/continuation references consistent; the isolated mutation now resolves the invalid header and fails the intended rejects assertion.",
+      "correctedLog": "t3-thematic-schedule-authority-corrected-header-original-isolated.log"
+    },
+    {
+      "case": "historical-fresh-check",
+      "initial": "The intended positive recovery case failed with current-scope-unavailable, but the matcher accepted only AssertionError. Original validOutcome false is preserved.",
+      "correction": "The recovery test now explicitly asserts promise resolution. The same fault produces an assertion failure; original code and harmless control pass.",
+      "correctedLog": "t3-thematic-scheduler-query-mutation-historical-fresh-check.log"
+    }
+  ],
+  "baselineNativeHttp": {
+    "tests": 1,
+    "seconds": 174.44,
+    "log": "t3-thematic-scheduler-http-first.log"
+  },
+  "focused": {
+    "tests": 125,
+    "seconds": 77.87,
+    "log": "t3-thematic-scheduler-expanded.log"
+  },
+  "nativeHttpMutations": {
+    "t3-thematic-scheduler-http-mutations.json": {
+      "cases": [
+        {
+          "name": "harmless",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "seconds": 169.39,
+          "log": "t3-thematic-scheduler-http-harmless.log"
+        },
+        {
+          "name": "omitted-final-proposal",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 165.58,
+          "log": "t3-thematic-scheduler-http-omitted-final-proposal.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sha256": "5be83eb6e4415e5283e13ed0aa9db2a828acb7c1cc7d528fb2a539aba0fbd897"
+    },
+    "t3-thematic-scheduler-temporary-http-mutations.json": {
+      "cases": [
+        {
+          "name": "harmless",
+          "expectedFailure": false,
+          "exit": 0,
+          "validOutcome": true,
+          "seconds": 169.5,
+          "log": "t3-thematic-scheduler-temporary-http-harmless.log"
+        },
+        {
+          "name": "skip-temporary",
+          "expectedFailure": true,
+          "exit": 1,
+          "validOutcome": true,
+          "seconds": 169.79,
+          "log": "t3-thematic-scheduler-temporary-http-skip-temporary.log"
+        }
+      ],
+      "sourceRestored": true,
+      "sha256": "0b640959cdab8ac325b0cf50c15203eefb86e9b8bb8341d54a4f11cf863898ba"
+    }
+  },
+  "fullQA": {
+    "log": "t3-thematic-scheduler-qa-final.log",
+    "exit": 0,
+    "applicationPassed": 17227,
+    "applicationSkipped": 1429,
+    "connectorPassed": 382,
+    "connectorSkipped": 4,
+    "lint": "pass",
+    "configuredDeadcode": "pass, configured nonblocking inventory retained",
+    "dependencyVulnerabilities": 0,
+    "webpackBuild": "pass",
+    "typescript": "pass",
+    "broadLiveRLS": "skipped in qa:gate; native HTTP control/fault run separately on owned stack"
+  },
+  "localLogs": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27",
+  "blindCategories": [
+    "Historical metadata checks do not independently reconstruct source membership or provider output.",
+    "Mocked transport and substitute worker callbacks do not prove native RLS or real provider dispatch.",
+    "The native HTTP scenario uses one synthetic original contribution and a synthetic provider.",
+    "No semantic quality, external billing, UI or practitioner acceptance claim."
+  ],
+  "temporaryFocused": {
+    "tests": 128,
+    "seconds": 74.29,
+    "log": "t3-thematic-scheduler-temporaries.log"
+  },
+  "sourceHashes": {
+    "openplan/src/lib/engagement/synthesis-thematic-scheduler.ts": "0b640959cdab8ac325b0cf50c15203eefb86e9b8bb8341d54a4f11cf863898ba",
+    "openplan/src/lib/engagement/synthesis-thematic-worker-authority.ts": "2b826c1c6a932ef20b0eba24fb7430495722f8e6e48e66453274755959f38a0a",
+    "openplan/src/test/engagement-synthesis-thematic-scheduler.test.ts": "26f8b1558717ee9091712f1a7c65b313c7b129bdf68280ca95f9c9c8fc8ecf35",
+    "openplan/src/test/engagement-synthesis-thematic-worker-authority.test.ts": "1da958c8f2e7eb860b5dfc06bc4403ccb82f3f13876b29db26b4ce78fc331d78",
+    "openplan/src/test/fixtures/engagement/synthesis-thematic-authority.ts": "24e01d477328615fe5b38a6a880aefd701e57e03ed4a2ae46e3ec240d42697ef",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "138aaa179b1bc0da1c8968840e36211e9d2c7deb4df247f991ba783d1ac1513a",
+    "openplan/scripts/workers/synthesis-generation.ts": "44bb29001c8f01aa5a8bc1dc204175c785667a9a945198db1117a05100c240a8",
+    "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "2b0a79ba9e0429cb8f396748bf4f42a337e0136aae415cc0e4c90b6fff354497"
+  },
+  "initialQA": {
+    "log": "t3-thematic-scheduler-qa.log",
+    "applicationPassed": 17226,
+    "applicationFailed": 1,
+    "applicationSkipped": 1429,
+    "failure": "Three obsolete unread-column entries now have explicit readers; removed entries without changing assertions or thresholds."
+  },
+  "keyLogHashes": {
+    "t3-thematic-scheduler-qa.log": "3bdc406c042a5af3878fe43681398b13ea6df155f610fb9c089c44d0c250f9d9",
+    "t3-thematic-scheduler-qa-final.log": "8c7098dcc89ce67fdda776451adb0bf265672045a085572301d49e219feba330",
+    "t3-thematic-scheduler-temporary-http-harmless.log": "466aebf29b477d6abeb81f13054e43d46678eec64218bf78dda3bf174bb609e3",
+    "t3-thematic-scheduler-temporary-http-skip-temporary.log": "9773211d4ad9a9e91800b59c4722916f6de6b4cc4745fbab3c0684601cdca3ed",
+    "t3-thematic-scheduler-http-harmless.log": "49453bdea6c7ebd7ffd97ab950b2455ce4a2fa614081edf0c3c4bc3b6f0a165c",
+    "t3-thematic-scheduler-http-omitted-final-proposal.log": "deda883e42645590e4a8b52c4ee2f35acefb24fe0117468651ed07a159557160"
+  }
+}

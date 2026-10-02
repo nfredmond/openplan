@@ -174,3 +174,26 @@ ancestors, interrupted journal writes and final-task recovery on the owned stack
 Keep new native reads explicit about table names and column projections. Generic
 projection parameters exceeded the existing static coverage limit during the
 execution checkpoint; explicit selects restored coverage without loosening it.
+
+October 2 scheduler continuation: [durable thematic scheduling](THEMATIC_SCHEDULER.md)
+adds a saved task inventory through the final proposal and historical authority
+reconstruction for original-output recovery. Continue with an exact selected
+final-proposal reader and immutable derived proposal custody/history, then an
+explicit import into a new staff review revision. Replay original tasks and
+captures, bind every selected predecessor and retain machine authorship. Preserve
+old approvals, current-staff history after an earlier requester leaves, and the
+complete-source/uncertainty requirements. Scheduling does not close the connected
+staff workflow or the large final-task scaling gap.
+
+The next reader can start from existing authenticated request, choice, input and
+input-seal history RPCs. The generic selection-history RPC in migration
+`20261014000036` also reads the generation request's fixed selection sequence;
+the thematic execution tables reuse that selection inventory. Verify this path
+on the installed stack before adding another native reader or storage table.
+`loadSynthesisThematicProposalInputs` remains a current-worker preparation path
+and rejects cancellation. It cannot serve as staff history after requester
+departure. Reconstruct the same originals under current staff permission and
+retain the final access recheck. Inspect whether original task/capture custody
+plus a derived replay manifest satisfies proposal history before introducing
+redundant proposal storage. Explicit import still needs retained lineage and an
+exact expected review parent.

@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { execFileSync, spawn } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rename, rm } from "node:fs/promises";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
@@ -217,11 +217,9 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     checked(await staff.client.rpc("authorize_engagement_synthesis_context", { p_request: args.requestId, p_authorization: authorizationId, p_intent_text: JSON.stringify(grant) }));
     let dropped = false, deliveries = 0, thematicFrameDropped = false, thematicOutputDropped = false;
     let thematicFinalIndex = -1, thematicFinalAttempt: string | null = null;
-    let thematicSchedulerCalls = 0, checkingThematicScheduler = false;
     const proxyErrors: string[] = [];
     const target = await listen(createServer(async (req, res) => {
       try {
-        if (checkingThematicScheduler) thematicSchedulerCalls++;
         const parts: Buffer[] = []; for await (const chunk of req) parts.push(Buffer.from(chunk));
         const headers = new Headers();
         for (const [name, value] of Object.entries(req.headers)) if (typeof value === "string" && !["host", "connection", "content-length", "transfer-encoding"].includes(name)) headers.set(name, value);
@@ -413,14 +411,17 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       const ended=new Promise<{code:number|null;stderr:string;stdout:string}>((resolve,reject)=>{child.once("error",reject);child.once("close",code=>resolve({code,stderr,stdout}));});
       cleanup.push(async()=>{if(child.exitCode===null&&child.signalCode===null)child.kill("SIGKILL");await ended;});return ended;
     }
-    checkingThematicScheduler=true;
-    const refusedSchedule=await runThematic("all");checkingThematicScheduler=false;
-    expect(refusedSchedule.code).toBe(1);expect(thematicSchedulerCalls).toBe(0);
+    const firstThematic=await runThematic(0);expect(firstThematic.code,firstThematic.stderr).toBe(0);
+    const thematicSchedule=await runThematic("all");
+    const savedThematicSchedule=JSON.parse(await readFile(join(thematicDirectory,"schedule/pending.json"),"utf8"));
+    expect(savedThematicSchedule.thematic).toBe(true);expect(savedThematicSchedule.context).toBeUndefined();
+    expect(savedThematicSchedule.taskIndices).toEqual(Array.from({length:resumedThematic.plan.header.taskCount},(_,index)=>index));
+    expect(thematicSchedule.code,thematicSchedule.stderr).toBe(1);
+    expect(savedThematicSchedule.initialAttempts).toHaveLength(1);
     const thematicReplay=createSynthesisThematicContinuation(proposalInputs);
     let thematicPriorAttempt:string|null=null,thematicPriorCapture:string|null=null;
     for(let index=0;index<resumedThematic.plan.header.taskCount;index++){
       const next=thematicReplay.next();if(next.status!=="ready")throw new Error("Native thematic task unavailable");
-      const run=await runThematic(index);expect(run.code,run.stderr).toBe(index===thematicFinalIndex?1:0);
       const journal=JSON.parse(await readFile(join(thematicDirectory,String(index),"pending.json"),"utf8"));
       expect(journal.thematic).toBe(true);expect(journal.context).toBeUndefined();expect(journal.phase).toBe(index===thematicFinalIndex?"observed":"delivered");
       const originalTask=checked(await service.from("engagement_synthesis_thematic_attempt_inputs").select("task_text,task_sha256,predecessor_attempt_id,predecessor_capture_sha256,previous_result_sha256").eq("attempt_id",journal.attemptId).single());
@@ -452,7 +453,12 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(recoveredChoice.record.replayed).toBe(true); expect(recoveredChoice.choice).toEqual(choice.choice);
     expect(f.calls).toHaveLength(completedCallCount);
     reader.revoke();
-    const recoveredThematic=await runThematic(thematicFinalIndex);expect(recoveredThematic.code,recoveredThematic.stderr).toBe(0);
+    const temporaryThematicSchedule=join(thematicDirectory,"schedule",`pending-${randomUUID()}.tmp`);
+    await rename(join(thematicDirectory,"schedule/pending.json"),temporaryThematicSchedule);
+    const recoveredThematic=await runThematic("all");
+    expect(recoveredThematic.code,recoveredThematic.stderr).toBe(0);
+    expect(JSON.parse(await readFile(temporaryThematicSchedule,"utf8"))).toEqual(savedThematicSchedule);
+    expect(JSON.parse(await readFile(join(thematicDirectory,"schedule/pending.json"),"utf8"))).toEqual(savedThematicSchedule);
     const thematicFinalJournal=JSON.parse(await readFile(join(thematicDirectory,String(thematicFinalIndex),"pending.json"),"utf8"));
     expect(thematicFinalJournal.phase).toBe("delivered");expect(thematicFinalJournal.captureSha256).toBe(thematicPriorCapture);
     expect(f.calls).toHaveLength(completedCallCount);expect(proxyErrors).toEqual([]);

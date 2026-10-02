@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Internal thematic execution now supports `--all-tasks --thematic` for one explicit
+authorization. Its saved schedule includes the final proposal, preserves original
+attempts, stops at unresolved predecessors and recovers observed output without
+new provider calls. Recovery also preserves and checks complete temporary
+schedules left before rename. No additional migration is required. [Scheduling evidence](docs/reviews/2026-10-01-context-history/THEMATIC_SCHEDULER.md)
+records the current boundary; derived proposal history and staff import remain
+unfinished. This supersedes the automatic-scheduling gap in the earlier execution
+checkpoint below.
+
 Internal thematic execution now supports an explicitly authorized frame or final
 proposal task, exact original-response custody and recovery without a second
 provider call. Apply `20261015000009_engagement_synthesis_thematic_execution.sql`
