@@ -29,7 +29,11 @@ export function resolveSiteOrigin(): URL | undefined {
     return undefined;
   }
 }
-export const OPENPLAN_OG_IMAGE_PATH = "/openplan-og.svg";
+/**
+ * A PNG, because link-preview crawlers do not render SVG. It is rendered from
+ * `public/openplan-og.svg`, which stays in the repo as the readable source.
+ */
+export const OPENPLAN_OG_IMAGE_PATH = "/openplan-og.png";
 export const OPENPLAN_SITE_NAME = "OpenPlan";
 
 const defaultOgAlt =

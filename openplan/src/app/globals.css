@@ -495,7 +495,8 @@
     whole column past the phone screen and everything in that column was cut off
     at the right edge. In the base layer, so `min-w-*` utilities still win.
   */
-  .grid > * {
+  .grid > *,
+  .module-page > * {
     min-width: 0;
   }
 

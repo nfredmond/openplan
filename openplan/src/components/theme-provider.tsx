@@ -120,20 +120,47 @@ export function ThemeProvider({
   paletteStorageKey = DEFAULT_PALETTE_STORAGE_KEY,
 }: ThemeProviderProps) {
   const fallbackTheme = normalizeTheme(defaultTheme, DEFAULT_THEME);
-  const [theme, setThemeState] = useState<OpenPlanTheme>(() => storedTheme(storageKey, fallbackTheme));
-  const [palette, setPaletteState] = useState<PaletteId>(() => storedPalette(paletteStorageKey));
+  /*
+    THE FIRST RENDER MATCHES THE SERVER; THE STORED CHOICE ARRIVES RIGHT AFTER.
+
+    State used to start from localStorage. The server cannot read that, so for a
+    light-mode reader every component that rendered from `useTheme()` produced
+    different markup on the client than the server sent, and React reported a
+    hydration mismatch it does not repair (seen on the model page's charts).
+    The document itself is already correct before any of this runs: the script
+    in <head> set the class and the palette attribute before first paint. So
+    nothing is applied to the document until the stored values are adopted,
+    which keeps the first effect from flashing the default over them.
+  */
+  const [theme, setThemeState] = useState<OpenPlanTheme>(fallbackTheme);
+  const [palette, setPaletteState] = useState<PaletteId>(DEFAULT_PALETTE);
+  const [adopted, setAdopted] = useState(false);
   const themeRef = useRef(theme);
   const paletteRef = useRef(palette);
 
   useEffect(() => {
-    themeRef.current = theme;
-    applyTheme(theme);
-  }, [theme]);
+    const nextTheme = storedTheme(storageKey, fallbackTheme);
+    const nextPalette = storedPalette(paletteStorageKey);
+    themeRef.current = nextTheme;
+    paletteRef.current = nextPalette;
+    // One-shot adoption of the reader's stored choice after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setThemeState(nextTheme);
+    setPaletteState(nextPalette);
+    setAdopted(true);
+  }, [fallbackTheme, paletteStorageKey, storageKey]);
 
   useEffect(() => {
+    if (!adopted) return;
+    themeRef.current = theme;
+    applyTheme(theme);
+  }, [adopted, theme]);
+
+  useEffect(() => {
+    if (!adopted) return;
     paletteRef.current = palette;
     applyPalette(palette);
-  }, [palette]);
+  }, [adopted, palette]);
 
   useEffect(() => {
     function handleStorage(event: StorageEvent) {

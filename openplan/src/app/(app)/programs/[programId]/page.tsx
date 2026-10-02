@@ -2,24 +2,25 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import {
-  ArrowLeft,
   CalendarClock,
   ClipboardList,
   Database,
   FileStack,
   FolderKanban,
   MessagesSquare,
-  ShieldCheck,
 } from "lucide-react";
-import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
-import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { ProgramDetailControls } from "@/components/programs/program-detail-controls";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
+import { PageTabNav } from "@/components/ui/page-tab-nav";
+import { PageTabPanel } from "@/components/ui/page-tab-panel";
+import { RecordHubHeader } from "@/components/ui/record-hub-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { createClient } from "@/lib/supabase/server";
+import { ProgramCycleMetadataCard, ProgramReadinessCard } from "./_components/program-overview-cards";
+import { resolvePageTab, unreadableLanes, type PageTabDefinition } from "@/lib/ui/page-tabs";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import {
   buildProgramReadiness,
@@ -28,7 +29,6 @@ import {
   formatFundingOpportunityStatusLabel,
   formatFiscalWindow,
   formatProgramDateTime,
-  formatProgramFundingClassificationLabel,
   formatProgramStatusLabel,
   formatProgramTypeLabel,
   fundingOpportunityDecisionTone,
@@ -36,10 +36,6 @@ import {
   programStatusTone,
   titleizeProgramValue,
 } from "@/lib/programs/catalog";
-import {
-  loadWorkspaceOperationsSummaryForWorkspace,
-  type WorkspaceOperationsSupabaseLike,
-} from "@/lib/operations/workspace-summary";
 import {
   buildModelWorkspaceSummary,
   formatModelFamilyLabel,
@@ -191,12 +187,17 @@ function SectionReadFailure({ title, noun, compact = true }: { title: string; no
 /** A count that cannot be trusted is shown as unknown, never as zero. */
 const UNKNOWN_COUNT = "—";
 
+type ProgramTabKey = "overview" | "funding" | "linked" | "edit";
+
 export default async function ProgramDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ programId: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { programId } = await params;
+  const resolvedSearchParams = (await searchParams) ?? {};
   const supabase = await createClient();
   const {
     data: { user },
@@ -280,7 +281,7 @@ export default async function ProgramDetailPage({
         .order("updated_at", { ascending: false }),
     ]);
 
-  reads.check("selectable projects", projectsResult);
+  const selectableProjectsUnreadable = reads.check("selectable projects", projectsResult);
   const primaryProjectUnreadable = reads.check("this program's primary project", primaryProjectResult);
   const linksUnreadable = reads.check("this program's link set", linksResult);
   const projectPlansUnreadable = reads.check("plans on the primary project", projectPlansResult);
@@ -344,9 +345,9 @@ export default async function ProgramDetailPage({
         : Promise.resolve({ data: [], error: null }),
     ]);
 
-  reads.check("selectable plans", allPlansResult);
-  reads.check("selectable reports", allReportsResult);
-  reads.check("selectable engagement campaigns", allCampaignsResult);
+  const selectablePlansUnreadable = reads.check("selectable plans", allPlansResult);
+  const selectableReportsUnreadable = reads.check("selectable reports", allReportsResult);
+  const selectableCampaignsUnreadable = reads.check("selectable engagement campaigns", allCampaignsResult);
   const explicitPlansUnreadable = reads.check("plans linked to this program", explicitPlansResult);
   const explicitReportsUnreadable = reads.check("reports linked to this program", explicitReportsResult);
   const explicitCampaignsUnreadable = reads.check("engagement campaigns linked to this program", explicitCampaignsResult);
@@ -671,11 +672,6 @@ export default async function ProgramDetailPage({
     adoptionTargetAt: program.adoption_target_at,
   });
 
-  const operationsSummary = await loadWorkspaceOperationsSummaryForWorkspace(
-    supabase as unknown as WorkspaceOperationsSupabaseLike,
-    program.workspace_id
-  );
-
   const supportingModelReadyCount = supportingModels.filter((model) => model.readiness.ready).length;
   const projectBasedModelCount = supportingModels.filter((model) => model.supportBasis !== "plan").length;
   const planBasedModelCount = supportingModels.filter((model) => model.supportBasis !== "project").length;
@@ -710,16 +706,81 @@ export default async function ProgramDetailPage({
     };
   });
 
+  /*
+    A RECORD HUB: breadcrumb, title, one status line, then tabs. The page used to
+    be one scroll of section cards under a two-card header, with the
+    workspace-wide command board repeated beside the program's own controls.
+
+    Each tab names the reads that failed behind it, so a failure inside a closed
+    tab is announced above the strip. A sub-read (artifacts, engagement items,
+    a model's own link set) is listed under its own name: the records it
+    belongs to can load while the counts drawn from it do not.
+  */
+  const programTabs: PageTabDefinition<ProgramTabKey>[] = [
+    {
+      key: "overview",
+      label: "Overview",
+      unreadable: unreadableLanes([
+        ["readiness checks", readinessBasisUnreadable],
+        ["linked basis count", readinessBasisUnreadable || supportingModelsUnreadable],
+      ]),
+    },
+    {
+      key: "funding",
+      label: "Funding",
+      // Assistant quick links, the grants registry and the workspace summary all
+      // deep-link to this section by fragment.
+      anchors: ["program-funding-opportunities"],
+      unreadable: unreadableLanes([
+        ["funding opportunities", fundingOpportunitiesUnreadable],
+        ["project choices", selectableProjectsUnreadable],
+      ]),
+    },
+    {
+      key: "linked",
+      label: "Linked work",
+      unreadable: unreadableLanes([
+        ["projects", linkedProjectsUnreadable],
+        ["plans", linkedPlansUnreadable],
+        ["supporting models", supportingModelsUnreadable],
+        ["supporting model link sets", supportingModelLinksUnreadable],
+        ["reports", linkedReportsUnreadable],
+        ["stored report artifacts", reportArtifactsUnreadable],
+        ["engagement campaigns", linkedCampaignsUnreadable],
+        ["engagement items", engagementItemsUnreadable],
+      ]),
+    },
+    {
+      key: "edit",
+      label: "Edit program",
+      unreadable: unreadableLanes([
+        ["project choices", selectableProjectsUnreadable],
+        ["plan choices", selectablePlansUnreadable],
+        ["report choices", selectableReportsUnreadable],
+        ["engagement campaign choices", selectableCampaignsUnreadable],
+      ]),
+    },
+  ];
+  const activeTab = resolvePageTab(programTabs, resolvedSearchParams.tab, "overview");
+
   return (
-    <section className="space-y-6">
+    <section className="module-page space-y-6">
       <CartographicSurfaceWide />
-      <Link
-        href="/programs"
-        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Programs
-      </Link>
+      <RecordHubHeader
+        parentHref="/programs"
+        parentLabel="Programming Cycles"
+        title={program.title}
+        status={
+          <>
+            <StatusBadge tone={programStatusTone(program.status)}>{formatProgramStatusLabel(program.status)}</StatusBadge>
+            <span className="module-record-chip"><span>Type</span><strong>{formatProgramTypeLabel(program.program_type)}</strong></span>
+          </>
+        }
+        description={
+          program.summary ||
+          "Track scope, timing, delivery relationships, and linked work in a single record for the program."
+        }
+      />
 
       {reads.any ? (
         <StateBlock
@@ -729,20 +790,25 @@ export default async function ProgramDetailPage({
         />
       ) : null}
 
-      <header className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <ClipboardList className="h-3.5 w-3.5" />
-            Program record
-          </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">{program.title}</h1>
-            <p className="module-intro-description">{program.summary || "Track scope, timing, delivery relationships, and linked work in a single record for the program."}</p>
-          </div>
+      <PageTabNav
+        tabs={programTabs}
+        activeKey={activeTab}
+        basePath={`/programs/${program.id}`}
+        searchParams={resolvedSearchParams}
+        ariaLabel="Program sections"
+      />
 
-          <div className="module-intro-kicker">
-            <StatusBadge tone={programStatusTone(program.status)}>{formatProgramStatusLabel(program.status)}</StatusBadge>
-            <span className="module-record-chip"><span>Type</span><strong>{formatProgramTypeLabel(program.program_type)}</strong></span>
+      <PageTabPanel tabKey="overview" active={activeTab === "overview"}>
+        <div className="space-y-6">
+          <p className="text-label text-muted-foreground">
+            {readinessBasisUnreadable
+              ? "Readiness is withheld: part of this package's linked basis could not be read, so any verdict here would be computed from counts that are not known to be complete."
+              : readiness.label}
+          </p>
+
+          {/* The doors to this record's sub-routes. They sat in the old header and
+              stay on the default tab so a planner still reaches them in one click. */}
+          <div className="flex flex-wrap items-center gap-2">
             <Link href={`/programs/${programId}/work-program`} className="module-record-chip">
               <span>Work program</span><strong>Prepare OWP / UPWP</strong>
             </Link>
@@ -755,13 +821,8 @@ export default async function ProgramDetailPage({
               </Link>
             ) : null}
           </div>
-          <p className="text-label text-muted-foreground">
-            {readinessBasisUnreadable
-              ? "Readiness is withheld: part of this package's linked basis could not be read, so any verdict here would be computed from counts that are not known to be complete."
-              : readiness.label}
-          </p>
 
-          <div className="module-summary-grid cols-3 mt-6">
+          <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Cycle</p>
               <p className="module-summary-value text-xl">{program.cycle_name}</p>
@@ -790,152 +851,16 @@ export default async function ProgramDetailPage({
               </p>
             </div>
           </div>
-        </article>
-
-        <div className="space-y-6">
-          <ProgramDetailControls
-            program={program}
-            projects={(projectsResult.data ?? []) as Array<{ id: string; name: string }>}
-            plans={(allPlansResult.data ?? []) as Array<{ id: string; title: string }>}
-            reports={(allReportsResult.data ?? []) as Array<{ id: string; title: string }>}
-            engagementCampaigns={(allCampaignsResult.data ?? []) as Array<{ id: string; title: string }>}
-            selectedLinks={{
-              plans: planLinkIds,
-              reports: reportLinkIds,
-              engagementCampaigns: campaignLinkIds,
-              relatedProjects: projectLinkIds,
-            }}
-          />
-          <WorkspaceRuntimeCue summary={operationsSummary} />
-          <WorkspaceCommandBoard
-            summary={operationsSummary}
-            label="Across your workspace"
-            title="What needs attention next"
-            description={`Workspace priorities — packet, funding-window, and setup pressure — stay visible while you work on ${program.title}. Use this board to keep the package aligned with the rest of the workspace.`}
-          />
-        </div>
-      </header>
 
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Readiness</p>
-              <h2 className="module-section-title">Package basis and timing</h2>
-              <p className="module-section-description">
-                {readinessBasisUnreadable
-                  ? "Package posture is withheld on this page load — see the disclosure at the top of the page."
-                  : workflow.packageDetail}
-              </p>
-            </div>
-            <span className="module-inline-item">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              {readinessBasisUnreadable ? "Readiness unavailable" : readiness.label}
-            </span>
-          </div>
+        <ProgramReadinessCard readiness={readiness} workflow={workflow} basisUnreadable={readinessBasisUnreadable} />
+        <ProgramCycleMetadataCard program={program} linkedProjectCount={linkedProjects.length} />
+      </div>
+        </div>
+      </PageTabPanel>
 
-          {readinessBasisUnreadable ? (
-            <div className="mt-5">
-              <StateBlock
-                tone="danger"
-                title="Readiness cannot be assessed right now"
-                description="Part of this program's linked basis could not be read, and every check below is derived from those links. They are withheld rather than shown as gaps you would then go and try to fill — a missing check here would be a fact about the failed read, not about the package."
-                compact
-              />
-            </div>
-          ) : (
-            <>
-              <div className="mt-5 space-y-3">
-                {readiness.checks.map((check) => (
-                  <div key={check.key} className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{check.label}</p>
-                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{check.detail}</p>
-                      </div>
-                      <StatusBadge tone={check.ready ? "success" : "warning"}>{check.ready ? "Ready" : "Missing"}</StatusBadge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Workflow summary</p>
-                <p className="mt-2 text-base font-semibold text-foreground">{workflow.label}</p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{workflow.reason}</p>
-                <div className="mt-4 space-y-2">
-                  {workflow.actionItems.length > 0 ? (
-                    workflow.actionItems.map((item) => (
-                      <div key={item} className="rounded-xl border border-border/60 bg-card px-3 py-2 text-sm text-muted-foreground">
-                        {item}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="rounded-xl border border-border/60 bg-card px-3 py-2 text-sm text-muted-foreground">
-                      No immediate action items surfaced by the current metadata and linked records.
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </article>
-
+      <PageTabPanel tabKey="funding" active={activeTab === "funding"}>
         <div className="space-y-6">
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Identity</p>
-                <h2 className="module-section-title">Cycle metadata</h2>
-                <p className="module-section-description">Timing and package posture that should travel with the funding record.</p>
-              </div>
-              <span className="module-inline-item">
-                <FolderKanban className="h-3.5 w-3.5" />
-                <strong>{linkedProjects.length}</strong> project link{linkedProjects.length === 1 ? "" : "s"}
-              </span>
-            </div>
-
-            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Funding classification</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">
-                  {formatProgramFundingClassificationLabel(program.funding_classification)}
-                </p>
-              </div>
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Sponsor</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">{program.sponsor_agency || "Not set"}</p>
-              </div>
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Owner</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">{program.owner_label || "Unassigned"}</p>
-              </div>
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Cadence</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">{program.cadence_label || "Not set"}</p>
-              </div>
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Fiscal window</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">
-                  {formatFiscalWindow(program.fiscal_year_start, program.fiscal_year_end)}
-                </p>
-              </div>
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Nomination due</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">{formatProgramDateTime(program.nomination_due_at)}</p>
-              </div>
-              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Adoption target</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">{formatProgramDateTime(program.adoption_target_at)}</p>
-              </div>
-            </div>
-
-            <div className="module-inline-list mt-5">
-              <span className="module-inline-item">Created {formatProgramDateTime(program.created_at)}</span>
-              <span className="module-inline-item">Updated {formatProgramDateTime(program.updated_at)}</span>
-            </div>
-          </article>
-
           <article id="program-funding-opportunities" className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
@@ -1035,7 +960,11 @@ export default async function ProgramDetailPage({
               )}
             </div>
           </article>
+        </div>
+      </PageTabPanel>
 
+      <PageTabPanel tabKey="linked" active={activeTab === "linked"}>
+        <div className="space-y-6">
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
@@ -1316,7 +1245,23 @@ export default async function ProgramDetailPage({
             </div>
           </article>
         </div>
-      </div>
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="edit" active={activeTab === "edit"}>
+        <ProgramDetailControls
+          program={program}
+          projects={(projectsResult.data ?? []) as Array<{ id: string; name: string }>}
+          plans={(allPlansResult.data ?? []) as Array<{ id: string; title: string }>}
+          reports={(allReportsResult.data ?? []) as Array<{ id: string; title: string }>}
+          engagementCampaigns={(allCampaignsResult.data ?? []) as Array<{ id: string; title: string }>}
+          selectedLinks={{
+            plans: planLinkIds,
+            reports: reportLinkIds,
+            engagementCampaigns: campaignLinkIds,
+            relatedProjects: projectLinkIds,
+          }}
+        />
+      </PageTabPanel>
     </section>
   );
 }

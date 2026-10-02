@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { Metadata } from "next";
 import { describe, expect, it } from "vitest";
@@ -96,7 +96,11 @@ describe("public route metadata", () => {
     const svg = readFileSync(path.join(process.cwd(), "public/openplan-og.svg"), "utf8");
 
     expect(svg).toContain("free, open-source Apache-2.0 planning software");
-    expect(svg).toContain("that is free to use");
+    expect(svg).toContain("Free, open-source planning software");
+    // The SVG is the readable source; the PNG beside it is what link previews
+    // fetch, because preview crawlers do not render SVG.
+    expect(OPENPLAN_OG_IMAGE_PATH).toBe("/openplan-og.png");
+    expect(existsSync(path.join(process.cwd(), "public/openplan-og.png"))).toBe(true);
     expect(svg).not.toMatch(/SaaS|autonomous|validated forecasting/i);
     // The image renders on every shared link — it must not sell a tier.
     expect(svg).not.toMatch(/managed (hosting|services)|pricing|retainer/i);
