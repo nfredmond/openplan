@@ -8,7 +8,8 @@ Current checkpoint: full QA passes before the final focus correction. That
 correction separately passes 51 focused tests, a harmless control, five detected
 faults, strict lint and a production build. Production-browser focus and busy-read
 checks pass after the subsequent bounded-read correction described below.
-Confirmation of actual saved browser downloads remains open.
+Actual saved browser downloads now pass in a separate Chrome session, as
+documented below. The newer main UI integration still needs combined checks.
 This is a development candidate, not a release or completed v1 acceptance.
 
 The current implementation adds private request browsing for a saved source,
@@ -269,3 +270,37 @@ Activating the original-proposal download still yields no matching file in the
 checked Downloads, T3 data or tmp locations. Actual saved-download acceptance
 remains open. The owned server is stopped before final full QA to avoid build
 contention. No new tag, main merge or complete M9b/v1 claim is made.
+
+## Completed candidate checks and separate Chrome downloads
+
+The final local QA gate on ebf4013d exits0:17,563 application passes,1,469 skips,
+387 connector passes,four skips, lint, configured deadcode, dependency audit zero,
+webpack and TypeScript. [The source-specific record](final-source-qa.json) retains
+the log hash. Native isolation remains separate from ordinary QA.
+
+Nathaniel explicitly selected a separate Chrome session for the remaining download
+check. Installed Chrome runs in a fresh temporary profile, using only the synthetic
+account on the owned3477 build. Navigation goes through sign-in, dashboard,
+Engagement, the campaign, Analysis, saved source and saved staff review. Two
+harness assumptions initially fail: the sign-in label is Work email, and a fresh
+profile must explicitly open its staff review. Those failures remain in
+[initial login evidence](initial-chrome-thematic-downloads.json) and
+[fresh-profile evidence](fresh-review-chrome-thematic-downloads.json). No product
+code is changed to bypass them.
+
+The corrected [Chrome journey](chrome-thematic-downloads.json) passes. Both actual
+browser download events save parseable JSON files. The3,726-byte proposal and
+3,289-byte history match their retained originals byte-for-byte and by SHA256;
+corrupting a copied buffer fails the same comparison. Tab from the import toggle
+reaches Refresh proposal history, then Inspect proposal; Enter opens the original.
+At390px, selecting comment1 focuses its evidence region and retains the final
+sentence of the complete multilingual contribution. Desktop and mobile captures
+are inspected. The Chrome journey records no console warning/error or page error.
+This establishes the exercised controls and files, not whole-product accessibility,
+semantic accuracy or large-campaign capacity. The T3 download-host behavior remains
+unexplained; it is no longer the only browser evidence for these controls.
+
+Main has advanced separately to5da40ef5 with the UI agent's page/header, dialog,
+frame and browser-audit fixes. The existing candidate checks do not cover that
+combined tree. The owned server is stopped before merging those committed changes
+into this branch. Fresh combined QA and identified-browser checks precede landing.
