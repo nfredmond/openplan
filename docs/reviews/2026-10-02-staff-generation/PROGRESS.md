@@ -499,3 +499,33 @@ Build `2debaf9b` includes the vendor runner correction. The production webpack b
 The real authenticated endpoint reads all 40 retained requests across two pages: 34 segment, three context and three thematic. IDs, authors, intent hashes and cancellation flags match the owned database. Wrong source/hash, incomplete/unknown query, changed account/workspace and anonymous access fail as expected. No generation request, queue entry or execution is created. The installed native baseline also passes after migration013.
 
 See `request-history-installed-http.json` for the12 HTTP/inventory checks, initial identity refusal and log hashes. This closes the earlier installed-HTTP/build boundary. The staff creation/preparation controls, client recovery, full branch QA, semantic quality and wider v1 obligations remain unfinished.
+
+## Browser preparation command recovery
+
+The browser recovery module retains an exact enqueue or observed-attempt retry
+before transport. Recovery stays bound to the original account, workspace,
+campaign, source, request, intent hash and stage. It refuses replacement of an
+unconfirmed command, reads back browser storage, and retains custody after lost
+responses, access refusals or cancellation. Confirmed replies must match the
+original actor, stage and intent. A retry may report the same or a later native
+attempt. Failed cleanup remains separate from the confirmed native outcome.
+Unreadable originals and newer in-memory copies can be archived before the
+active slot is cleared.
+
+The existing preparation-state verifier moves unchanged to a browser-compatible
+module. The server reexports it for existing callers. No database function or
+HTTP authority changes. The original source-preparation module remains unchanged.
+
+The final run passes 36 recovery tests and 132 combined tests. A harmless control
+survives; 39 targeted custody faults fail assertions. Whole-package TypeScript,
+strict changed-file lint and configured deadcode pass. Browser-target bundling
+passes, including a harmless control; an injected Node crypto import is refused.
+The initial archive-fixture failure, redundant integer-guard mutation survivor
+and corrected extraction filename remain recorded in
+`preparation-browser-recovery-checks.json`.
+
+These checks use mocked browser storage and transport. They do not establish a
+real browser journey, cross-tab atomicity, native acceptance of the new client,
+or host power-loss recovery. Request creation/cancellation recovery, visible
+staff controls and explicit provider execution authorization remain unfinished.
+This checkpoint does not release an increment or close M9b or v1.
