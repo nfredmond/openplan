@@ -1191,7 +1191,7 @@ function inflateFailureRefusal(name: string, uncompressedSize: number): SpatialF
   return refuse(
     "unreadable",
     `The archive entry "${name}" could not be decompressed, so the zip is damaged — its contents do not match ` +
-      `the ${uncompressedSize.toLocaleString()} bytes its own directory declares.`
+      `the ${uncompressedSize.toLocaleString("en-US")} bytes its own directory declares.`
   );
 }
 
@@ -1339,8 +1339,8 @@ function readShapefileUpload(files: ZipFile[], decision: SpatialFileCrsDecision 
       // labels every parcel with a neighbour's owner. Dropping the attributes
       // and saying so is the only honest option — the geometry is still right.
       attributesUnavailableReason =
-        `The .dbf attribute table holds ${table.rows.length.toLocaleString()} rows but the .shp holds ` +
-        `${geometry.recordCount.toLocaleString()} shapes. A shapefile matches the two by position and nothing ` +
+        `The .dbf attribute table holds ${table.rows.length.toLocaleString("en-US")} rows but the .shp holds ` +
+        `${geometry.recordCount.toLocaleString("en-US")} shapes. A shapefile matches the two by position and nothing ` +
         `else, so OpenPlan cannot tell which attributes belong to which shape and has left them off rather than ` +
         `attach them to the wrong ones. The geometry is unaffected. Re-export the layer from your GIS.`;
     } else {
@@ -1807,7 +1807,7 @@ function readShpGeometry(bytes: Uint8Array): ShpResult {
     return refuse(
       "no_drawable_features",
       undrawableCount > 0
-        ? `The .shp file in this archive holds ${undrawableCount.toLocaleString()} ` +
+        ? `The .shp file in this archive holds ${undrawableCount.toLocaleString("en-US")} ` +
           `${undrawableCount === 1 ? "record" : "records"} of a shape type OpenPlan does not draw — usually ` +
           `MultiPatch, the 3D surface type ArcGIS writes for buildings and TINs — and no point, line, or area ` +
           `records at all. OpenPlan will not flatten a 3D surface onto a guess. Re-export the layer as points, ` +

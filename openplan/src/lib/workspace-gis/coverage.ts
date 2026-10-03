@@ -72,15 +72,15 @@ export function describeWorkspaceLayerCoverage(input: WorkspaceGisCoverageInput)
 
   if (input.tooDenseToDraw) {
     notes.push(
-      `${name}: ${input.matchedCount.toLocaleString()} shapes in this view — more than OpenPlan draws at once ` +
-        `(${input.limit.toLocaleString()}). None of them are drawn, because drawing some of a fabric looks like ` +
+      `${name}: ${input.matchedCount.toLocaleString("en-US")} shapes in this view — more than OpenPlan draws at once ` +
+        `(${input.limit.toLocaleString("en-US")}). None of them are drawn, because drawing some of a fabric looks like ` +
         `holes in the fabric. Zoom in and they appear.`
     );
   } else if (input.returnedCount < input.matchedCount) {
     // The platform truncated the response below the cap this route asked for.
     // Disclosed rather than presented as the whole view.
     notes.push(
-      `${name}: showing ${input.returnedCount.toLocaleString()} of ${input.matchedCount.toLocaleString()} shapes in this ` +
+      `${name}: showing ${input.returnedCount.toLocaleString("en-US")} of ${input.matchedCount.toLocaleString("en-US")} shapes in this ` +
         `view. The rest are not drawn, which is not a finding that they are not there.`
     );
   }
@@ -88,7 +88,7 @@ export function describeWorkspaceLayerCoverage(input: WorkspaceGisCoverageInput)
   if (input.droppedCount > 0) {
     const count = input.droppedCount;
     notes.push(
-      `${name}: ${count.toLocaleString()} ${count === 1 ? "shape" : "shapes"} in this view could not be drawn because ` +
+      `${name}: ${count.toLocaleString("en-US")} ${count === 1 ? "shape" : "shapes"} in this view could not be drawn because ` +
         `the stored geometry was unusable, so ${count === 1 ? "it is" : "they are"} missing from the map rather than ` +
         `absent from the file.`
     );
@@ -153,8 +153,8 @@ export function describeWorkspaceLayerVersion(
   }
 
   if (version.truncated) {
-    const kept = version.declaredFeatureCount.toLocaleString();
-    const held = version.sourceFeatureCount.toLocaleString();
+    const kept = version.declaredFeatureCount.toLocaleString("en-US");
+    const held = version.sourceFeatureCount.toLocaleString("en-US");
     notes.push(
       `This upload stored ${kept} of the ${held} shapes in the file. What is missing is the tail of the file, not a ` +
         `selection — the layer is incomplete in a way the map cannot show you.`
@@ -163,7 +163,7 @@ export function describeWorkspaceLayerVersion(
 
   if (version.droppedFeatureCount > 0) {
     notes.push(
-      `${version.droppedFeatureCount.toLocaleString()} shapes in the file could not be placed and were not stored, so ` +
+      `${version.droppedFeatureCount.toLocaleString("en-US")} shapes in the file could not be placed and were not stored, so ` +
         `they are missing from the map rather than absent from the file.`
     );
   }

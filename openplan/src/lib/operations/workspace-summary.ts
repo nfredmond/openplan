@@ -2155,7 +2155,10 @@ export function buildWorkspaceOperationsSummary({
         {
           label: "Lead awarded",
           value: firstFundingAwardRecordProject
-            ? formatCurrency(Number(firstFundingAwardRecordProject.awardedOpportunity.expectedAwardAmount ?? 0))
+            ? formatMoney(firstFundingAwardRecordProject.awardedOpportunity.expectedAwardAmount, {
+                precision: "whole",
+                absent: "Not set",
+              })
             : null,
         },
       ],

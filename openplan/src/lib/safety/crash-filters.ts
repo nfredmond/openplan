@@ -724,7 +724,7 @@ export function facetAvailability(
 
   const unmappedNote =
     unmapped !== null && unmapped > 0
-      ? ` ${unmapped.toLocaleString()} ${unmapped === 1 ? "value was" : "values were"} supplied in a spelling OpenPlan does not recognise and ${unmapped === 1 ? "is" : "are"} not classified here.`
+      ? ` ${unmapped.toLocaleString("en-US")} ${unmapped === 1 ? "value was" : "values were"} supplied in a spelling OpenPlan does not recognise and ${unmapped === 1 ? "is" : "are"} not classified here.`
       : "";
 
   if (state === "partial") {

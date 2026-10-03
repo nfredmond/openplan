@@ -428,7 +428,7 @@ export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPane
                       {invitation.expires_at ? (
                         <span className="text-muted-foreground">
                           {" "}
-                          · expires {new Date(invitation.expires_at).toLocaleDateString()}
+                          · expires {new Date(invitation.expires_at).toLocaleDateString("en-US")}
                         </span>
                       ) : null}
                     </span>

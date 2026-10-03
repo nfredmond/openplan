@@ -333,7 +333,7 @@ export function StudyAreaPicker({
                   {selectedLabel ?? externalLabel ?? "Custom study area"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {summary.areaKm2 !== null ? `≈ ${summary.areaKm2.toLocaleString()} km² bounding extent` : "Study area set"}
+                  {summary.areaKm2 !== null ? `≈ ${summary.areaKm2.toLocaleString("en-US")} km² bounding extent` : "Study area set"}
                 </p>
               </div>
             </div>

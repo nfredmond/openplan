@@ -97,9 +97,9 @@ function renderBody(q: SurveyQuestionAggregation) {
       const a = q.aggregation as { rows: { option_id: string; label: string; totalAllocated: number; pctOfPool: number }[]; pool: number; unit: string };
       return (
         <>
-          <p className="text-xs text-muted-foreground">{a.pool.toLocaleString()} {a.unit} allocated across all responses.</p>
+          <p className="text-xs text-muted-foreground">{a.pool.toLocaleString("en-US")} {a.unit} allocated across all responses.</p>
           {a.rows.map((r) => (
-            <Bar key={r.option_id} label={r.label} value={`${r.totalAllocated.toLocaleString()} · ${pctText(r.pctOfPool)}`} pct={r.pctOfPool} muted={r.totalAllocated === 0} />
+            <Bar key={r.option_id} label={r.label} value={`${r.totalAllocated.toLocaleString("en-US")} · ${pctText(r.pctOfPool)}`} pct={r.pctOfPool} muted={r.totalAllocated === 0} />
           ))}
         </>
       );

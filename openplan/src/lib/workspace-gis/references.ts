@@ -41,7 +41,7 @@ export function describeDeletionRefusal(
   const remainder = references.length - named.length;
   const list =
     remainder > 0
-      ? `${named.join(", ")}, and ${remainder.toLocaleString()} more`
+      ? `${named.join(", ")}, and ${remainder.toLocaleString("en-US")} more`
       : named.join(", ");
 
   return (

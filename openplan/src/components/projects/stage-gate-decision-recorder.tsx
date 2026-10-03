@@ -61,7 +61,7 @@ function runOptionLabel(option: StageGateRunOption): string {
   if (option.status) parts.push(option.status);
   if (option.createdAt) {
     const parsed = new Date(option.createdAt);
-    if (!Number.isNaN(parsed.getTime())) parts.push(parsed.toLocaleDateString());
+    if (!Number.isNaN(parsed.getTime())) parts.push(parsed.toLocaleDateString("en-US"));
   }
   // The short id tail lets a planner match the choice against a run id they
   // have in hand (a report citation, a colleague's note) without pasting it.

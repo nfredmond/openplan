@@ -66,7 +66,7 @@ export function ReportPacketReview({
           </p>
           <p className="mt-1 text-xs text-amber-800/90 dark:text-amber-200/90">
             {report.rtp_basis_stale_marked_at
-              ? `Flagged on ${new Date(report.rtp_basis_stale_marked_at).toLocaleString()}. Generate the report again so its figures come from the new run.`
+              ? `Flagged on ${new Date(report.rtp_basis_stale_marked_at).toLocaleString("en-US")}. Generate the report again so its figures come from the new run.`
               : "Generate the report again so its figures come from the new run."}
           </p>
         </div>

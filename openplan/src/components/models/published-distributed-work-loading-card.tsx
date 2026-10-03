@@ -48,10 +48,10 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
         {selected ? <div className="mt-3 min-w-0" aria-live="polite" data-testid="selected-distributed-work-loading">
           <p className="text-sm font-semibold">{selected.geographyName} · {selected.method}</p>
           <dl className="mt-2 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-            <div><dt className="text-muted-foreground">Road access points</dt><dd className="font-semibold">{selected.accessPointCount.toLocaleString()}</dd></div>
-            <div><dt className="text-muted-foreground">Retained points</dt><dd className="font-semibold">{selected.retainedAccessPointCount.toLocaleString()}</dd></div>
-            <div><dt className="text-muted-foreground">Work trips distributed</dt><dd className="font-semibold">{selected.distributedWorkTrips.toLocaleString(undefined, { maximumFractionDigits: 0 })}</dd></div>
-            <div><dt className="text-muted-foreground">Work trips retained</dt><dd className="font-semibold">{selected.retainedWorkTrips.toLocaleString(undefined, { maximumFractionDigits: 0 })}</dd></div>
+            <div><dt className="text-muted-foreground">Road access points</dt><dd className="font-semibold">{selected.accessPointCount.toLocaleString("en-US")}</dd></div>
+            <div><dt className="text-muted-foreground">Retained points</dt><dd className="font-semibold">{selected.retainedAccessPointCount.toLocaleString("en-US")}</dd></div>
+            <div><dt className="text-muted-foreground">Work trips distributed</dt><dd className="font-semibold">{selected.distributedWorkTrips.toLocaleString("en-US", { maximumFractionDigits: 0 })}</dd></div>
+            <div><dt className="text-muted-foreground">Work trips retained</dt><dd className="font-semibold">{selected.retainedWorkTrips.toLocaleString("en-US", { maximumFractionDigits: 0 })}</dd></div>
           </dl>
           <p className="mt-3 text-xs text-muted-foreground">Observed links loaded: {selected.baselineCoverage.loaded ?? 0} before, {selected.candidateCoverage.loaded ?? 0} after. {selected.advanced ? "Development gate met; no default changed." : "County-method candidate failed and was retired."}</p>
           <dl className="mt-3 min-w-0 space-y-2 text-xs">

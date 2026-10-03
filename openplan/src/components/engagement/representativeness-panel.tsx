@@ -146,7 +146,7 @@ export function RepresentativenessPanel({
                 ? "buffered project corridor"
                 : "buffered respondent footprint"}
             </span>
-            <span>Computed {new Date(result.computedAt).toLocaleString()}</span>
+            <span>Computed {new Date(result.computedAt).toLocaleString("en-US")}</span>
           </div>
 
           <div className="space-y-3">

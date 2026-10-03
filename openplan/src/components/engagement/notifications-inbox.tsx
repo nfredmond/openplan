@@ -27,7 +27,7 @@ const TYPE_TONE: Record<EngagementNotificationType, "info" | "warning" | "neutra
 
 function fmt(value: string): string {
   const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? value : d.toLocaleString();
+  return Number.isNaN(d.getTime()) ? value : d.toLocaleString("en-US");
 }
 
 // ── Email delivery ────────────────────────────────────────────────────────────

@@ -175,8 +175,8 @@ export function describeCensusTractCoverage(input: CensusTractCoverageInput): st
   const drawn = input.returnedCount;
   if (drawn + input.droppedCount < input.matchedCount) {
     notes.push(
-      `Showing ${drawn.toLocaleString()} of ${input.matchedCount.toLocaleString()} census tracts in ` +
-        `${placeName(input.scopeLabel)} — the first ${input.limit.toLocaleString()} by tract ID, not the ` +
+      `Showing ${drawn.toLocaleString("en-US")} of ${input.matchedCount.toLocaleString("en-US")} census tracts in ` +
+        `${placeName(input.scopeLabel)} — the first ${input.limit.toLocaleString("en-US")} by tract ID, not the ` +
         `tracts nearest you. The rest of the county is not drawn, which is not a finding that it has no tracts.`
     );
   } else {
@@ -187,7 +187,7 @@ export function describeCensusTractCoverage(input: CensusTractCoverageInput): st
 
   if (input.droppedCount > 0) {
     notes.push(
-      `${input.droppedCount.toLocaleString()} tract${input.droppedCount === 1 ? "" : "s"} could not be ` +
+      `${input.droppedCount.toLocaleString("en-US")} tract${input.droppedCount === 1 ? "" : "s"} could not be ` +
         `drawn because the stored boundary was unusable, so ${input.droppedCount === 1 ? "it is" : "they are"} ` +
         `missing from the map rather than absent from the county.`
     );

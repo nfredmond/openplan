@@ -420,12 +420,12 @@ export function CountyRunsPageClient({
                   <p className="mt-1 text-muted-foreground">{enqueueHelp}</p>
                   {item.lastEnqueuedAt ? (
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Last handoff attempt {new Date(item.lastEnqueuedAt).toLocaleString()}
+                      Last handoff attempt {new Date(item.lastEnqueuedAt).toLocaleString("en-US")}
                     </p>
                   ) : null}
                 </div>
                 <div className="flex items-center justify-between gap-3 pt-2">
-                  <span className="text-xs text-muted-foreground">Updated {new Date(item.updatedAt).toLocaleString()}</span>
+                  <span className="text-xs text-muted-foreground">Updated {new Date(item.updatedAt).toLocaleString("en-US")}</span>
                   <Button asChild variant="outline" size="sm">
                     <Link href={buildCountyRunDetailHref(item.id, currentViewHref)}>Open detail</Link>
                   </Button>

@@ -149,8 +149,8 @@ export function describeRtpCycleProjectMapCoverage(
    * cap bit, the number says what it is a count of.
    */
   const ofFetched = collection.truncated
-    ? `of the ${fetched.toLocaleString()} loaded for this map`
-    : `of ${fetched.toLocaleString()}`;
+    ? `of the ${fetched.toLocaleString("en-US")} loaded for this map`
+    : `of ${fetched.toLocaleString("en-US")}`;
 
   if (collection.withoutGeometry > 0) {
     const n = collection.withoutGeometry;
@@ -173,8 +173,8 @@ export function describeRtpCycleProjectMapCoverage(
 
   if (collection.truncated) {
     notes.push(
-      `Showing ${drawn.toLocaleString()} of ${collection.matchedCount.toLocaleString()} programmed ` +
-        `projects — the map draws at most ${collection.limit.toLocaleString()}. The rest are not ` +
+      `Showing ${drawn.toLocaleString("en-US")} of ${collection.matchedCount.toLocaleString("en-US")} programmed ` +
+        `projects — the map draws at most ${collection.limit.toLocaleString("en-US")}. The rest are not ` +
         `drawn, which is not a finding that they are not in the plan.`
     );
   }
@@ -479,8 +479,8 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
               </p>
               {drawnCount > 0 ? (
                 <p className="mt-1.5">
-                  {drawnCount.toLocaleString()} of the{" "}
-                  {(drawnCount + (collection?.droppedCount ?? 0)).toLocaleString()} projects loaded for this
+                  {drawnCount.toLocaleString("en-US")} of the{" "}
+                  {(drawnCount + (collection?.droppedCount ?? 0)).toLocaleString("en-US")} projects loaded for this
                   plan {drawnCount === 1 ? "has" : "have"} a location recorded and would be drawn. Nothing
                   about the plan is missing — only the basemap.
                 </p>
@@ -514,7 +514,7 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
             <div className="rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
               <p className="font-medium text-foreground">The map could not start in this browser</p>
               <p className="mt-1.5">
-                Mapbox needs WebGL. The {drawnCount.toLocaleString()} located{" "}
+                Mapbox needs WebGL. The {drawnCount.toLocaleString("en-US")} located{" "}
                 {drawnCount === 1 ? "project" : "projects"} in this plan are still listed above.
               </p>
             </div>

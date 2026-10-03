@@ -230,7 +230,7 @@ const ACQUISITION_REMEDY = "Run a crash acquisition from the Safety workbench to
 function acquisitionSubject(count: number, areaCount: number): string {
   if (areaCount === 1) return "the completed acquisition on record here";
   return (
-    `${count.toLocaleString()} of the ${areaCount.toLocaleString()} completed acquisitions on record here`
+    `${count.toLocaleString("en-US")} of the ${areaCount.toLocaleString("en-US")} completed acquisitions on record here`
   );
 }
 
@@ -263,7 +263,7 @@ export function describeCrashLayerCoverage(input: CrashLayerCoverageInput): stri
   const recordHoldsCrashes = input.matchedCount > 0;
   if (recordHoldsCrashes) {
     notes.push(
-      `Crashes: this layer draws only what this workspace has acquired — ${input.matchedCount.toLocaleString()} ` +
+      `Crashes: this layer draws only what this workspace has acquired — ${input.matchedCount.toLocaleString("en-US")} ` +
         `stored ${input.matchedCount === 1 ? "collision" : "collisions"}, covering the areas and years its ` +
         `completed acquisitions asked for. Ground no acquisition asked about is blank because nothing was ` +
         `requested there, not because no crashes occurred there.`
@@ -360,8 +360,8 @@ export function describeCrashLayerCoverage(input: CrashLayerCoverageInput): stri
 
   if (input.returnedCount + input.droppedCount < input.matchedCount) {
     notes.push(
-      `Crashes: showing ${input.returnedCount.toLocaleString()} of ${input.matchedCount.toLocaleString()} ` +
-        `acquired collisions — the ${input.limit.toLocaleString()} most recent by collision date, not the ` +
+      `Crashes: showing ${input.returnedCount.toLocaleString("en-US")} of ${input.matchedCount.toLocaleString("en-US")} ` +
+        `acquired collisions — the ${input.limit.toLocaleString("en-US")} most recent by collision date, not the ` +
         `ones nearest you. The rest are not drawn, which is not a finding that they do not exist. The ` +
         `Safety workbench queries the full record.`
     );
@@ -375,7 +375,7 @@ export function describeCrashLayerCoverage(input: CrashLayerCoverageInput): stri
     // wrong for the severity case, and a refusal that misidentifies its own
     // cause is the defect this module exists to prevent, not a rounding of it.
     notes.push(
-      `Crashes: ${count.toLocaleString()} acquired ${count === 1 ? "collision" : "collisions"} could not be ` +
+      `Crashes: ${count.toLocaleString("en-US")} acquired ${count === 1 ? "collision" : "collisions"} could not be ` +
         `drawn because the stored coordinates or severity value were unusable, so ` +
         `${count === 1 ? "it is" : "they are"} missing from the map rather than absent from the record.`
     );
@@ -384,7 +384,7 @@ export function describeCrashLayerCoverage(input: CrashLayerCoverageInput): stri
   if (input.unclassifiedCount > 0) {
     const count = input.unclassifiedCount;
     notes.push(
-      `Crashes: ${count.toLocaleString()} of the ${count === 1 ? "collision" : "collisions"} drawn here ` +
+      `Crashes: ${count.toLocaleString("en-US")} of the ${count === 1 ? "collision" : "collisions"} drawn here ` +
         `${count === 1 ? "carries" : "carry"} no casualty count from the source, so ` +
         `${count === 1 ? "it is" : "they are"} in no severity band. ` +
         SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT

@@ -64,7 +64,7 @@ export function EngagementSynthesisPanel({ initialSynthesis: synthesis, initialS
                 <ShieldAlert className="h-3.5 w-3.5" /> Historical category grouping; neutral labels were not a sentiment assessment
               </span>
             ) : null}
-            {synthesizedAt ? <span>Recorded {new Date(synthesizedAt).toLocaleString()}</span> : null}
+            {synthesizedAt ? <span>Recorded {new Date(synthesizedAt).toLocaleString("en-US")}</span> : null}
           </div>
 
           <p className="text-xs text-muted-foreground">

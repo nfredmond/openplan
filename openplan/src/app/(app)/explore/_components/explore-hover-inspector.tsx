@@ -180,7 +180,7 @@ export function ExploreHoverInspector({
                   <div className="analysis-sidepanel-stat-grid cols-2">
                     <div className="analysis-sidepanel-stat">
                       <p className="analysis-sidepanel-label">Population</p>
-                      <p className="analysis-sidepanel-value">{hoveredTract.population?.toLocaleString() ?? "N/A"}</p>
+                      <p className="analysis-sidepanel-value">{hoveredTract.population?.toLocaleString("en-US") ?? "N/A"}</p>
                     </div>
                     <div className="analysis-sidepanel-stat">
                       <p className="analysis-sidepanel-label">Median income</p>

@@ -118,7 +118,7 @@ function titleize(value: string | null | undefined): string {
 function fmtDate(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString("en-US");
 }
 
 function getProjectPacketCommandPriority(project: {

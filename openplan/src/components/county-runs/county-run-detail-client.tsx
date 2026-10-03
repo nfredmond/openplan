@@ -271,7 +271,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
               : enqueueStatus === "running"
                 ? "The modeling worker is running this attempt"
                 : "Waiting for the worker to confirm cancellation"}
-            {data.workerHeartbeatAt ? `; last heartbeat ${new Date(data.workerHeartbeatAt).toLocaleString()}` : ""}.
+            {data.workerHeartbeatAt ? `; last heartbeat ${new Date(data.workerHeartbeatAt).toLocaleString("en-US")}` : ""}.
             Auto-refresh pauses while this tab is hidden.
           </p>
         ) : null}

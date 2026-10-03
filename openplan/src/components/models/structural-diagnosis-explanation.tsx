@@ -53,7 +53,7 @@ export function StructuralDiagnosisExplanation({ diagnosis, sha256, downloadHref
       <h6 className="text-xs font-semibold">{CATEGORY_LABELS[category] ?? category.replaceAll("_", " ")}</h6>
       <ul className="mt-1 list-disc space-y-1 pl-5 text-xs">
         {findings.filter((finding) => finding.category === category).map((finding, index) => <li key={`${category}-${index}`}>
-          {finding.count === null ? "Count unavailable · " : `${finding.count.toLocaleString()} · `}{finding.statement}
+          {finding.count === null ? "Count unavailable · " : `${finding.count.toLocaleString("en-US")} · `}{finding.statement}
         </li>)}
       </ul>
     </div>) : <p className="mt-3 text-xs">No finding statements were recorded here. Review the exact diagnosis below; missing findings are not zero findings.</p>}

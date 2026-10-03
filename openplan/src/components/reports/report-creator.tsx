@@ -503,7 +503,7 @@ export function ReportCreator({
                               {run.title}
                             </span>
                             <span className="block text-label uppercase tracking-[0.12em] text-muted-foreground">
-                              {new Date(run.created_at).toLocaleString()}
+                              {new Date(run.created_at).toLocaleString("en-US")}
                             </span>
                           </span>
                         </label>

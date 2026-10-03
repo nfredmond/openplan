@@ -18,7 +18,7 @@ type CountyRunBehavioralKpisProps = {
 function formatKpiValue(value: number | null, unit: string): string {
   if (value === null || Number.isNaN(value)) return "—";
   if (unit === "ratio") return value.toFixed(4);
-  return value.toLocaleString();
+  return value.toLocaleString("en-US");
 }
 
 export function CountyRunBehavioralKpisSection({

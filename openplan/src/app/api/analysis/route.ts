@@ -131,7 +131,7 @@ function generateSummary(
       `population: ${
         reported.totalPopulation === null
           ? "not measured"
-          : reported.totalPopulation.toLocaleString()
+          : reported.totalPopulation.toLocaleString("en-US")
       })`
   );
   // The corridor centroid-clip can be unavailable (a TIGERweb hiccup) or match no
@@ -177,7 +177,7 @@ function generateSummary(
 
   // Employment
   lines.push(
-    `**Employment:** ~${lodes.totalJobs.toLocaleString()} jobs in the corridor area ` +
+    `**Employment:** ~${lodes.totalJobs.toLocaleString("en-US")} jobs in the corridor area ` +
       `(${lodes.jobsPerResident} jobs per resident). Source: ${lodes.source}.`
   );
 

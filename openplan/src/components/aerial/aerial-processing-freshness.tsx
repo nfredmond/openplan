@@ -35,7 +35,7 @@ const AUTO_REFRESH_INTERVAL_MS = 20_000;
 function formatClock(iso: string): string {
   const parsed = new Date(iso);
   if (Number.isNaN(parsed.getTime())) return "an unknown time";
-  return parsed.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
+  return parsed.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit" });
 }
 
 export function AerialProcessingFreshness({

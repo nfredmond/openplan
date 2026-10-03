@@ -55,8 +55,8 @@ function sameSelections(left: AgreementCorridorSelection[], right: AgreementCorr
 function formatAgreementNumber(value: number | null, style: "percent" | "number" = "number") {
   if (value === null) return "Not available";
   return style === "percent"
-    ? new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 1 }).format(value)
-    : new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value);
+    ? new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 1 }).format(value)
+    : new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value);
 }
 
 function sameIdSet(left: string[], right: string[]) {
@@ -409,7 +409,7 @@ export function ReportDetailControls({
               <option value="">Do not include crash evidence</option>
               {safetyIngestOptions.map((option) => (
                 <option key={option.id} value={option.id}>
-                  {option.sourceLabel} · {option.crashCount.toLocaleString()} reported · {new Date(option.createdAt).toLocaleDateString()}
+                  {option.sourceLabel} · {option.crashCount.toLocaleString("en-US")} reported · {new Date(option.createdAt).toLocaleDateString("en-US")}
                 </option>
               ))}
             </select>
@@ -580,8 +580,8 @@ export function ReportDetailControls({
                 <span className="min-w-0 text-xs">
                   <span className="block font-semibold text-foreground">{layer.missionTitle}</span>
                   <span className="block text-muted-foreground">
-                    {layer.collectedAt ? `Captured ${new Date(layer.collectedAt).toLocaleDateString()} · ` : "Capture date not recorded · "}
-                    {layer.pixelSizeM ? `${layer.pixelSizeM.toLocaleString()} m/pixel · ` : "Resolution not recorded · "}
+                    {layer.collectedAt ? `Captured ${new Date(layer.collectedAt).toLocaleDateString("en-US")} · ` : "Capture date not recorded · "}
+                    {layer.pixelSizeM ? `${layer.pixelSizeM.toLocaleString("en-US")} m/pixel · ` : "Resolution not recorded · "}
                     SHA-256 {layer.checksumSha256.slice(0, 12)}…
                   </span>
                 </span>

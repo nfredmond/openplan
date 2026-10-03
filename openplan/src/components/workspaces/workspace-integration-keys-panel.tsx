@@ -293,7 +293,7 @@ export function WorkspaceIntegrationKeysPanel({
         );
       }
       const saved = provider.storedKey.updatedAt
-        ? ` · saved ${new Date(provider.storedKey.updatedAt).toLocaleDateString()}`
+        ? ` · saved ${new Date(provider.storedKey.updatedAt).toLocaleDateString("en-US")}`
         : "";
       return (
         <p className="mt-2 text-sm text-muted-foreground">

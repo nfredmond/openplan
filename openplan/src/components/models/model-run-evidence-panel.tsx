@@ -75,7 +75,7 @@ function evidenceMetric(value: unknown, suffix = ""): string {
   const number = evidenceNumber(value);
   return number === null
     ? "Not recorded"
-    : `${number.toLocaleString(undefined, { maximumFractionDigits: 4 })}${suffix}`;
+    : `${number.toLocaleString("en-US", { maximumFractionDigits: 4 })}${suffix}`;
 }
 
 function evidenceStringList(value: unknown): string {
@@ -419,11 +419,11 @@ function formatServiceFound(provenance: TransitFeedProvenance): string | null {
   if (provenance.routeCount === null && provenance.servedStopCount === null) return null;
   const parts: string[] = [];
   if (provenance.routeCount !== null) {
-    parts.push(`${provenance.routeCount.toLocaleString()} route${provenance.routeCount === 1 ? "" : "s"}`);
+    parts.push(`${provenance.routeCount.toLocaleString("en-US")} route${provenance.routeCount === 1 ? "" : "s"}`);
   }
   if (provenance.servedStopCount !== null) {
     parts.push(
-      `${provenance.servedStopCount.toLocaleString()} served stop${provenance.servedStopCount === 1 ? "" : "s"}`
+      `${provenance.servedStopCount.toLocaleString("en-US")} served stop${provenance.servedStopCount === 1 ? "" : "s"}`
     );
   }
   return parts.join(" · ");
@@ -902,17 +902,17 @@ export function ModelRunEvidencePanel({
                   <div className="flex items-start justify-between gap-3">
                     <dt className="text-amber-900/70 dark:text-amber-200/70">Zones</dt>
                     <dd className="text-right font-medium">
-                      {evidence.inputs.zone_count !== null ? evidence.inputs.zone_count.toLocaleString() : "—"}
+                      {evidence.inputs.zone_count !== null ? evidence.inputs.zone_count.toLocaleString("en-US") : "—"}
                     </dd>
                   </div>
                   <div className="flex items-start justify-between gap-3">
                     <dt className="text-amber-900/70 dark:text-amber-200/70">Run window</dt>
                     <dd className="text-right font-medium">
                       {evidence.provenance.run_started_at
-                        ? new Date(evidence.provenance.run_started_at).toLocaleString()
+                        ? new Date(evidence.provenance.run_started_at).toLocaleString("en-US")
                         : "—"}
                       {evidence.provenance.run_completed_at
-                        ? ` → ${new Date(evidence.provenance.run_completed_at).toLocaleString()}`
+                        ? ` → ${new Date(evidence.provenance.run_completed_at).toLocaleString("en-US")}`
                         : ""}
                     </dd>
                   </div>
@@ -1121,7 +1121,7 @@ export function ModelRunEvidencePanel({
                       >
                         When the transit skim ran
                         {transitProvenance.feedExpiryEvaluatedAt
-                          ? ` (${new Date(transitProvenance.feedExpiryEvaluatedAt).toLocaleString()})`
+                          ? ` (${new Date(transitProvenance.feedExpiryEvaluatedAt).toLocaleString("en-US")})`
                           : ""}
                         , this feed&apos;s published schedule had already ended. The service modeled here
                         is that schedule.
@@ -1143,7 +1143,7 @@ export function ModelRunEvidencePanel({
                       >
                         This feed&apos;s published schedule was still current when the transit skim ran
                         {transitProvenance.feedExpiryEvaluatedAt
-                          ? ` (${new Date(transitProvenance.feedExpiryEvaluatedAt).toLocaleString()})`
+                          ? ` (${new Date(transitProvenance.feedExpiryEvaluatedAt).toLocaleString("en-US")})`
                           : ""}
                         .
                       </p>
@@ -1358,7 +1358,7 @@ export function ModelRunEvidencePanel({
                   <dl className="mt-3 space-y-2 text-sm text-muted-foreground">
                     <div className="flex items-start justify-between gap-3">
                       <dt>Generated</dt>
-                      <dd className="text-right text-foreground">{new Date(evidence.generated_at).toLocaleString()}</dd>
+                      <dd className="text-right text-foreground">{new Date(evidence.generated_at).toLocaleString("en-US")}</dd>
                     </div>
                     <div className="flex items-start justify-between gap-3">
                       <dt>Run status</dt>
@@ -1538,7 +1538,7 @@ export function ModelRunEvidencePanel({
 
                       {evidence.scenario_basis.shared_spine?.latest_indicator_snapshot_at ? (
                         <p className="mt-3 text-xs text-muted-foreground">
-                          Latest indicator snapshot {new Date(evidence.scenario_basis.shared_spine.latest_indicator_snapshot_at).toLocaleString()}.
+                          Latest indicator snapshot {new Date(evidence.scenario_basis.shared_spine.latest_indicator_snapshot_at).toLocaleString("en-US")}.
                         </p>
                       ) : null}
                     </div>
@@ -1643,7 +1643,7 @@ export function ModelRunEvidencePanel({
                         {selectedBaselineRun?.completedAt ? (
                           <p className="mt-2 text-xs text-muted-foreground">
                             Comparing <span className="text-foreground">{runTitle}</span> against baseline run from{" "}
-                            <span className="text-foreground">{new Date(selectedBaselineRun.completedAt).toLocaleString()}</span>.
+                            <span className="text-foreground">{new Date(selectedBaselineRun.completedAt).toLocaleString("en-US")}</span>.
                           </p>
                         ) : null}
 

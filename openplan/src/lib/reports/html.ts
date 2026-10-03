@@ -1090,7 +1090,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
             (figure) => `<div><dt>${esc(figure.label)}</dt><dd>${
               figure.value === null
                 ? `Not available — ${esc(figure.absentBecause ?? "no reason recorded")}`
-                : esc(figure.value.toLocaleString())
+                : esc(figure.value.toLocaleString("en-US"))
             }</dd></div>`
           )
           .join("")}
@@ -1116,7 +1116,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
     : concentrations.length > 0
       ? `<h3>Highest observed KSI concentrations</h3>
         <p>These ranks use every mapped fatal and serious-injury crash in the project-linked acquisitions. A concentration is two or more records within 150 meters. These are screening locations, not named intersections, corridors, rates, causal findings, or a High Injury Network.</p>
-        <ol>${concentrations.map((item) => `<li><strong>${esc(item.crashCount.toLocaleString())} KSI crashes</strong> (${esc(item.fatalCrashCount.toLocaleString())} fatal; ${esc(item.seriousInjuryCrashCount.toLocaleString())} serious injury) near ${esc(item.latitude.toFixed(5))}, ${esc(item.longitude.toFixed(5))}. ${item.roadIdentity?.status === "matched" ? `Nearest named road: <strong>${esc(item.roadIdentity.name)}</strong>; ${esc(item.roadIdentity.matchQuality)} match at ${esc(item.roadIdentity.distanceMeters.toLocaleString())} m; ${esc(item.roadIdentity.sourceLabel)} ${esc(item.roadIdentity.vintage)}.` : "Road identity unavailable; the coordinates remain the source location."}</li>`).join("")}</ol>`
+        <ol>${concentrations.map((item) => `<li><strong>${esc(item.crashCount.toLocaleString("en-US"))} KSI crashes</strong> (${esc(item.fatalCrashCount.toLocaleString("en-US"))} fatal; ${esc(item.seriousInjuryCrashCount.toLocaleString("en-US"))} serious injury) near ${esc(item.latitude.toFixed(5))}, ${esc(item.longitude.toFixed(5))}. ${item.roadIdentity?.status === "matched" ? `Nearest named road: <strong>${esc(item.roadIdentity.name)}</strong>; ${esc(item.roadIdentity.matchQuality)} match at ${esc(item.roadIdentity.distanceMeters.toLocaleString("en-US"))} m; ${esc(item.roadIdentity.sourceLabel)} ${esc(item.roadIdentity.vintage)}.` : "Road identity unavailable; the coordinates remain the source location."}</li>`).join("")}</ol>`
       : `<h3>Highest observed KSI concentrations</h3><p>No pair of mapped fatal or serious-injury crash records fell within the 150-meter screening radius. That is not a finding that the project area is safe.</p>`;
 
   const equityTracts = data.safetyKsiEquityTracts;
@@ -1131,7 +1131,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
         ? `<h3>Community burden screen</h3><p>No loaded Census tract demographics overlap the mapped KSI records, so community burden is not determined in this packet.</p>`
         : `<h3>Community burden screen</h3>
           <p>Mapped KSI records are grouped by Census tract and ranked by observed count. Demographics come from ${esc(equitySource?.label ?? "the loaded demographic source")} ${esc(equitySource?.vintage ?? "vintage not recorded")}. Counts per 100,000 residents are not adjusted for roadway exposure, travel, or time. This is screening context, not a causal, protected-class, or legal disparity finding.</p>
-          <ol>${equityTracts.slice(0, 5).map((tract) => `<li><strong>${esc(tract.tractName ?? `Census tract ${tract.geoid}`)}: ${esc(tract.ksiCrashCount.toLocaleString())} KSI crashes</strong>; poverty ${tract.pctPoverty === null ? "not available" : `${esc(tract.pctPoverty.toFixed(1))}%`}${tract.areaMedianPctPoverty === null ? "" : ` vs area median ${esc(tract.areaMedianPctPoverty.toFixed(1))}%`}; nonwhite population ${tract.pctNonwhite === null ? "not available" : `${esc(tract.pctNonwhite.toFixed(1))}%`}; zero-vehicle households ${tract.pctZeroVehicle === null ? "not available" : `${esc(tract.pctZeroVehicle.toFixed(1))}%`}.</li>`).join("")}</ol>`;
+          <ol>${equityTracts.slice(0, 5).map((tract) => `<li><strong>${esc(tract.tractName ?? `Census tract ${tract.geoid}`)}: ${esc(tract.ksiCrashCount.toLocaleString("en-US"))} KSI crashes</strong>; poverty ${tract.pctPoverty === null ? "not available" : `${esc(tract.pctPoverty.toFixed(1))}%`}${tract.areaMedianPctPoverty === null ? "" : ` vs area median ${esc(tract.areaMedianPctPoverty.toFixed(1))}%`}; nonwhite population ${tract.pctNonwhite === null ? "not available" : `${esc(tract.pctNonwhite.toFixed(1))}%`}; zero-vehicle households ${tract.pctZeroVehicle === null ? "not available" : `${esc(tract.pctZeroVehicle.toFixed(1))}%`}.</li>`).join("")}</ol>`;
 
   const roadContext = data.safetyRoadContext;
   const parsedProjectGeometry = corridorGeojsonSchema.safeParse(data.geography?.studyArea?.geometry);
@@ -1428,7 +1428,7 @@ function aerialOrthoMarkup(preview: ReportGenerationData["aerialOrthoPreview"]):
       <div><dt>Captured</dt><dd>${esc(snapshot.collectedAt ? formatDateTime(snapshot.collectedAt) : "Not recorded")}</dd></div>
       <div><dt>Held</dt><dd>${esc(snapshot.heldAt ? formatDateTime(snapshot.heldAt) : "Not recorded")}</dd></div>
       <div><dt>Frozen into packet</dt><dd>${esc(formatDateTime(snapshot.frozenAt))}</dd></div>
-      <div><dt>Resolution</dt><dd>${snapshot.pixelSizeM === null ? "Not recorded" : `${esc(snapshot.pixelSizeM.toLocaleString())} m/pixel`}</dd></div>
+      <div><dt>Resolution</dt><dd>${snapshot.pixelSizeM === null ? "Not recorded" : `${esc(snapshot.pixelSizeM.toLocaleString("en-US"))} m/pixel`}</dd></div>
       <div><dt>Map placement</dt><dd>${esc(`${west}, ${south}, ${east}, ${north}`)}</dd></div>
       <div><dt>Native CRS</dt><dd>${esc(snapshot.nativeCrs ?? "Not recorded")}</dd></div>
       <div><dt>Source SHA-256</dt><dd style="overflow-wrap:anywhere;font-size:12px">${esc(snapshot.sourceChecksumSha256)}</dd></div>

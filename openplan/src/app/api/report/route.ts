@@ -280,8 +280,8 @@ function buildHtml(
   const m = (run.metrics ?? {}) as Record<string, unknown>;
   const templateMeta = getTemplateMeta(template);
   const createdAtValue = typeof run.created_at === "string" ? run.created_at : null;
-  const timestamp = createdAtValue ? new Date(createdAtValue).toLocaleString() : "Unknown";
-  const generatedAt = new Date().toLocaleString();
+  const timestamp = createdAtValue ? new Date(createdAtValue).toLocaleString("en-US") : "Unknown";
+  const generatedAt = new Date().toLocaleString("en-US");
   const title = typeof run.title === "string" ? run.title : "Corridor Analysis Report";
   const queryText = typeof run.query_text === "string" ? run.query_text : "";
   const aiInterpretation =
@@ -324,7 +324,7 @@ function buildHtml(
     typeof m.frequentServiceShare === "number"
       ? `${Math.round(m.frequentServiceShare * 1000) / 10}%` +
         (typeof m.totalTransitStops === "number"
-          ? ` of all ${m.totalTransitStops.toLocaleString()} stops counted`
+          ? ` of all ${m.totalTransitStops.toLocaleString("en-US")} stops counted`
           : "")
       : "Not measured";
   /**

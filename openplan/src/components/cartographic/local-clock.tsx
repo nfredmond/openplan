@@ -54,7 +54,7 @@ export function LocalClock({ className = "" }: { className?: string }) {
 
   return (
     <time className={className} dateTime={now.toISOString()} suppressHydrationWarning>
-      {now.toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}
+      {now.toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" })}
     </time>
   );
 }

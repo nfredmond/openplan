@@ -174,7 +174,7 @@ function LayerRow({
           <strong>{layer.name}</strong>
           <span className="op-gis-layer__sub">
             {version
-              ? `${version.featureCount.toLocaleString()} shapes · version ${version.versionNumber} · ${version.srs.name}`
+              ? `${version.featureCount.toLocaleString("en-US")} shapes · version ${version.versionNumber} · ${version.srs.name}`
               : "No finished upload — nothing is drawn for this layer"}
           </span>
         </div>
@@ -408,7 +408,7 @@ function LayerVersionHistory({
               <li key={version.id}>
                 <span>
                   Version {version.versionNumber} · {version.sourceFilename} ·{" "}
-                  {version.featureCount.toLocaleString()} shapes
+                  {version.featureCount.toLocaleString("en-US")} shapes
                   {version.ingestStatus !== "ready" ? ` · ${version.ingestStatus}` : ""}
                 </span>
                 {isCurrent ? (

@@ -98,7 +98,7 @@ export function InvitationDecision({
   const expiry = new Date(expiresAt);
   const expiryLabel = Number.isNaN(expiry.getTime())
     ? null
-    : expiry.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+    : expiry.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
   return (
     <section className="rounded-lg border border-border/70 bg-background/60 px-6 py-6">

@@ -239,7 +239,7 @@ type ModelRunManagerProps = {
 function fmtDateTime(value: string | null | undefined) {
   if (!value) return "Unknown";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
 }
 
 const NON_TERMINAL_RUN_STATUSES = new Set(["queued", "running"]);
@@ -912,12 +912,12 @@ export function ModelRunManager({
                       className="text-xs text-amber-700 dark:text-amber-300"
                       data-testid="managed-run-transit-feed-frequencies"
                     >
-                      {selectedTransitFeed.frequencyTripCount.toLocaleString()} of this feed&apos;s
+                      {selectedTransitFeed.frequencyTripCount.toLocaleString("en-US")} of this feed&apos;s
                       trips are published as a headway range (<code>frequencies.txt</code>) rather
                       than individual departures. The modeling worker leaves those out of the transit
                       skim and says how many it left out
                       {selectedTransitFeed.scheduledTripCount
-                        ? `, so this run's transit comes from the other ${selectedTransitFeed.scheduledTripCount.toLocaleString()} scheduled trip(s)`
+                        ? `, so this run's transit comes from the other ${selectedTransitFeed.scheduledTripCount.toLocaleString("en-US")} scheduled trip(s)`
                         : ""}
                       . The feed is still handed over. Re-ingesting will not change the split; it is
                       how the agency publishes.
@@ -1556,8 +1556,8 @@ function RunAccuracyByClass({
                 {worst.map((row) => (
                   <li key={row.label} className="text-muted-foreground">
                     <span className="text-foreground">{row.label}</span>: observed{" "}
-                    {Math.round(row.observed).toLocaleString()}, modelled{" "}
-                    {Math.round(row.modelled).toLocaleString()} ({row.ratio.toFixed(2)}×)
+                    {Math.round(row.observed).toLocaleString("en-US")}, modelled{" "}
+                    {Math.round(row.modelled).toLocaleString("en-US")} ({row.ratio.toFixed(2)}×)
                   </li>
                 ))}
               </ul>
