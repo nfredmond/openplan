@@ -1,0 +1,33 @@
+{
+  "capturedAt": "2026-10-02T21:22:43.336927+00:00",
+  "checkout": "/home/nathaniel/.local/state/openplan/thematic-import-ui-2026-10-02",
+  "head": "a8f7183090378f8b7d124299da31f3c9eeb75958",
+  "files": {
+    "openplan/package.json": "ec21fe8fb5efc581570bf6e0bfdbbf90da683bd83cc3551acc6127d0b0aca963",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/proposals/route.ts": "1158b1c0130993341e6c919f6fd636c20726430f02598a3ba2dcfaed6ebf772b",
+    "openplan/src/components/engagement/engagement-synthesis-sources.tsx": "a18a1bd6e66dc5504c070ebd39ec4c0c7edb2cc7ecdc3be5db0fbd1d895ea8a6",
+    "openplan/src/components/engagement/synthesis-approval-panel.tsx": "1f2d7f3b3634856258d192f11ba7153a1d98686c2c3738c4bfc69142dc3c4357",
+    "openplan/src/components/engagement/synthesis-review-editor.tsx": "682cf12fac517972ec0fe1ff4376fd9f2cb1a73f0acfc49a4bec21a7844a6091",
+    "openplan/src/components/engagement/synthesis-thematic-evidence.tsx": "624c1dd588401afae91d5f49d7ef42293b86593503c3e1a5010219efa3c7d5d8",
+    "openplan/src/components/engagement/synthesis-thematic-import-panel.tsx": "5ad66152ff37c97affb1d418f0446be33c207f7a61d4ce6bbbfdd4397cd5c9b9",
+    "openplan/src/lib/engagement/synthesis-generation-records.ts": "309a0f41dae87aea76daca4843748b924ecac3958303e88385d2455d35334901",
+    "openplan/src/lib/engagement/synthesis-thematic-browser.ts": "17d0f87991e240f2bdfb3443ff69e7c5fe932fe975e343ee5ad623beebbcc4fd",
+    "openplan/src/lib/engagement/synthesis-thematic-import-recovery.ts": "89dfd3f34f930dbae3c0add831b1fb0aa041a450fa9f9e5f9749570ae47816a7",
+    "openplan/src/test/engagement-synthesis-approval-panel.test.tsx": "32b6937165683045ee35880ecd03828ccdb63c113ef14c325808fe156c4f00f5",
+    "openplan/src/test/engagement-synthesis-generation-plan.test.ts": "b7fb2591daa4fdc90e03f4405593a441eb30ecd224bb380599df9385dad217eb",
+    "openplan/src/test/engagement-synthesis-review-editor.test.tsx": "f5e512d420756cfe736c1da6f560ba493cbb5f84bfc7abfd385b2b3106b1174e",
+    "openplan/src/test/engagement-synthesis-thematic-browser.test.ts": "be584539458c837427186e14c87b0aaeda537421e184b82f661b94f9a3a7977f",
+    "openplan/src/test/engagement-synthesis-thematic-discovery-rls.test.ts": "b219a682702caa3430bce50c3d3bb14ad25782d3ba1cac3af25181eddd03525d",
+    "openplan/src/test/engagement-synthesis-thematic-import-panel.test.tsx": "ebef0b62a4bc6987e3d1d655f4231e771cf928a63e3fc96c38c07b20ea94d216",
+    "openplan/src/test/engagement-synthesis-thematic-import-recovery.test.ts": "08a6e4ade5a3526d6e589d571f11057af2495b02192fe798e1c157a464d72a1d",
+    "openplan/src/test/fixtures/engagement/synthesis-thematic-discovery.sql": "48063e8baab4edc0732bbe49881ad59dbcf19b944df6e4f414d435d60ed08968",
+    "openplan/supabase/migrations/20261015000011_engagement_synthesis_thematic_discovery.sql": "f55fdca30ffa6a834f64f2166fe8b26254fdea32dadaaebb1a67ae813671f01d"
+  },
+  "qaSession": 41073,
+  "browser": {
+    "origin": "http://thematic-20261002.localhost:3477",
+    "identityCommand": "bash scripts/ops/which-openplan.sh http://127.0.0.1:3477",
+    "identityOutcome": "owned next dev launch verified after restart",
+    "devStoppedBeforeQa": true
+  }
+}

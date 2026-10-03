@@ -1,0 +1,27 @@
+{
+  "base": "d494a7b8cd84aa9196f57965cf493a81a8fa7c37",
+  "failure": "CI normal and shuffled Vitest discover the Node test file and fail No test suite found. Local targeted reproduction fails identically.",
+  "correction": "Rename braces-vendor.test.mjs to braces-vendor-checks.mjs; npm test:braces-vendor continues to execute it explicitly through node --test before npm audit. No Vitest exclusion or assertion removed.",
+  "checks": {
+    "nodeTests": 18,
+    "audit": "zero known registry advisories",
+    "vitestFiles": 1501,
+    "vendorFileNotInVitest": true,
+    "focusedShuffledLocaleTests": 2,
+    "seed": 594165,
+    "lint": "pass",
+    "configuredDeadcode": "pass",
+    "peakMemory": "610.2MiB",
+    "swap": 0
+  },
+  "limits": "Full CI on corrected source is pending. No application implementation or vendored bytes change; existing compatibility and build evidence stays attributable to d494.",
+  "logs": {
+    "pr114-d494-ci-failures.log": "88ca9a3886321f33a94543489f6ceded20a0fb1be3a9c7533abe8460c36bdd04",
+    "runner-collision-reproduction.log": "b488a6e0313049efc142ab1ef9d4cb5890a39174247ffbabd154014f2be0ce85",
+    "runner-correction-audit.log": "009f47ffdc0e84cbfed7f6498570f8e30527d249226a3d42bd68a8ed2cacfb84",
+    "vitest-collected-files.log": "c83e1b11fbcb36a6ccff82fe47e7b6c4c885f351757c7ac85fa504e717f1b705",
+    "runner-correction-vitest.log": "12d737d6c9800db52a4dac0f33ec22b1362cff8d413ba2ac8d8bc8cde88f2b6b",
+    "runner-correction-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner-correction-deadcode.log": "7025e432418e7de94ec53f15af491b5469ea3af0343d336b8c8f17df31485d26"
+  }
+}

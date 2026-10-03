@@ -1,0 +1,20 @@
+{
+  "cases": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "validOutcome": true,
+      "log": "t3-source-order-harmless.log",
+      "logSha256": "7ffaf76c18494ef3c90159463c33efb1bb9860022823ea936a280d96c3ba8391"
+    },
+    {
+      "name": "source-order",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-source-order-source-order.log",
+      "logSha256": "1657609a5b64b9313947569ac22887b76f92198b2ec59cfd8c01fcbf01f61886"
+    }
+  ],
+  "sourceRestored": true,
+  "sourceSha256": "309a0f41dae87aea76daca4843748b924ecac3958303e88385d2455d35334901"
+}

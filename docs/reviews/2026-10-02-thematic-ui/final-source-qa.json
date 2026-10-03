@@ -1,0 +1,25 @@
+{
+  "commit": "ebf4013dd51106bb96765424c4c29c423dbe8fdb",
+  "exit": 0,
+  "application": {
+    "pass": 17563,
+    "skip": 1469,
+    "filesPass": 1410,
+    "filesSkip": 82,
+    "durationSeconds": 482.49
+  },
+  "connector": {
+    "pass": 387,
+    "skip": 4
+  },
+  "otherChecks": [
+    "lint",
+    "configured deadcode",
+    "dependency audit zero",
+    "webpack build",
+    "TypeScript"
+  ],
+  "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-final-qa.log",
+  "sha256": "21b3efd51b4741e9f47ddd9303b616881df6473c35a9b0dc2dc840c74c1e0899",
+  "boundary": "Live RLS skipped by ordinary QA. Installed discovery and GitHub native suites are separate. This source predates the next main UI integration."
+}

@@ -1,0 +1,34 @@
+{
+  "cases": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-tightened-harmless.log",
+      "sha256": "48d47890495de17cd91eb57f2b97fd3eca43e7b63db574d8b21fac2c8c0cd3ce"
+    },
+    {
+      "name": "late-stop",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-tightened-late-stop.log",
+      "sha256": "d949013baa9a8f51643c2a6f9164a1120a09156999139ffbeba701724afca5ea"
+    },
+    {
+      "name": "retry-denied",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-tightened-retry-denied.log",
+      "sha256": "c9da0fb975a8fd90703af34cea96e1d4754851a6fa0108cf1114b027cf8a58e4"
+    },
+    {
+      "name": "uncancelled-backoff",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-tightened-uncancelled-backoff.log",
+      "sha256": "761d7dfe782aaecce24866485f65effc3075dab1a943b6bd46404890acebf48c"
+    }
+  ],
+  "sourceRestored": true,
+  "blindCategory": "Synthetic transport and component checks do not prove native lock behavior, live authorization, browser downloads or scale."
+}

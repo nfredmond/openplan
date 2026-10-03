@@ -1,0 +1,173 @@
+{
+  "beforeFocus": {
+    "readCount": 11,
+    "text": "Inspect and import a machine proposal\n\nImport replaces this draft’s title, notes and groups with the selected machine proposal. Earlier revisions and their approvals remain unchanged. Import does not approve, publish or run a model.\n\nRefresh proposal history\n\nRequested 10/2/2026, 10:11:13 AM. Inspect retained outputs to determine whether a complete proposal is available.\n\nInspect proposal dd741df4\n\nComplete original proposal available for inspection.\n\nOriginal machine proposal\n\nMachine-generated, unreviewed wording. Citations identify retained evidence; they do not establish that the interpretation is accurate. Counts describe contributions, not distinct people or representative support.\n\nSYNTHETIC machine proposal for browser inspection\n\nSYNTHETIC retained worker output. Staff have not reviewed this interpretation.\n\n0 assigned contributions; 2 unassigned; 0 appear in more than one group.\n\nThematic uncertainty\nSYNTHETIC structural browser exercise; no semantic inference\n\nEarlier contextual uncertainty remains with each contribution below.\n\nUnassigned contributions and machine reasons (2)\nOriginal contributions and retained context\nFind a contribution\n\n2 matching contributions. Page 1 of 1.\n\nPrevious contributions\nNext contributions\nInspect comment 1\nInspect comment 2\nDownload original proposal JSON\nDownload original history JSON\nOriginal evidence references and bytes\n\nReplacement preview: revision 2, “SYNTHETIC machine proposal for browser inspection”, has 0 groups. The proposed draft has 0 groups. Complete earlier wording remains in revision history.\n\nSelect this proposal for the current draft\nPreserved import recovery copies\nPreserved selection for revision 1\nPreserved selection for revision 1\nPreserved selection for revision 1"
+  },
+  "console": [],
+  "focusResult": {
+    "alerts": [
+      "Proposal history could not be read. Keep any saved request and retry after checking access."
+    ],
+    "console": [],
+    "open": false,
+    "reads": [
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "method": "GET",
+        "status": 503,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      }
+    ]
+  },
+  "reads": [
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+    },
+    {
+      "method": "GET",
+      "status": 503,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+    }
+  ]
+}

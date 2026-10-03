@@ -1,0 +1,97 @@
+{
+  "cases": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-harmless.log",
+      "sha256": "6d830c071d9ab4772b54aa07a2d70a38780bfe1ffa0994c6d2cd0a6f8623f00f"
+    },
+    {
+      "name": "no-retry",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-no-retry.log",
+      "sha256": "c52b9b21037f9a6fb79ff55fc50996aabf2d87c89f1a0dc16f961f148f6b28bd"
+    },
+    {
+      "name": "early-stop",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-early-stop.log",
+      "sha256": "7e8f99de8cb4d726f619f0528fd0f190ea74043721e3745e9180922db5763048"
+    },
+    {
+      "name": "late-stop",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-late-stop.log",
+      "sha256": "525b5d59dc2781877a092fb5b82a76604c95df2fbe08c6dbdca0ebe73275cc6b"
+    },
+    {
+      "name": "retry-denied",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-retry-denied.log",
+      "sha256": "7dba5d3b0fb63235a51ca71fb8a18f0dfc884edb652d52d1170a08756fec272b"
+    },
+    {
+      "name": "no-backoff",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-no-backoff.log",
+      "sha256": "6ac899bfbe9aa122436811b82f49d59a5b4951c7532f8f5c4df471ab64a157f8"
+    },
+    {
+      "name": "wrong-scope",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-wrong-scope.log",
+      "sha256": "2eeee88646b361435ff23bd727751d0b403d1077bbe5557480224f7281bb4a9c"
+    },
+    {
+      "name": "write-method",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-write-method.log",
+      "sha256": "4ffe8fb58c3964bf5b252a0dc8085f7a6615954a3f03e5433af46ffe122049ac"
+    },
+    {
+      "name": "stale-request",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-stale-request.log",
+      "sha256": "1a07207030c42a0cf2748ab0515d9f49a6e20b866a9a63ddbe7aedc4d44afd86"
+    },
+    {
+      "name": "stale-response",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-stale-response.log",
+      "sha256": "2efeb892d01677d96a4328a20dbfa98d2f28b6158a325e9eade4d3c6ac8f1fc1"
+    },
+    {
+      "name": "uncancelled-backoff",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-uncancelled-backoff.log",
+      "sha256": "0dcb9d34d356d7d9cb4ddcb524ec9a13119141f6b47ca853fbaa3ff837bfd117"
+    },
+    {
+      "name": "stale-approval-error",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-stale-approval-error.log",
+      "sha256": "85b7f0fc578d84b3dfd2c942c657b4d764bbb2016c521e67df144438490671ba"
+    },
+    {
+      "name": "cleared-write-error",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-cleared-write-error.log",
+      "sha256": "38eea8c6f6a22eb86c88379440ac7fd629fafaf391fc005e4701aff2ce9aa017"
+    }
+  ],
+  "sourceRestored": true,
+  "blindCategory": "Synthetic transport and component checks do not prove native lock behavior, live authorization, browser downloads or scale."
+}

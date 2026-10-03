@@ -95,7 +95,9 @@ export function createSynthesisGenerationRecords(input: unknown, saved: unknown,
   for (const record of records) for (const reference of record.references) reference.retained = retainedIds.has(reference.id);
   const value = {
     schemaVersion: 1 as const, purpose: "private_synthesis_semantic_records" as const, interpretation: "not_assessed" as const,
-    source: { ...scope, sha256: verified.manifest.source.sha256 }, inputManifestSha256: verified.manifestSha256,
+    // Retained task hashes use the original worker field order, not caller object insertion order.
+    source: { requestId: scope.requestId, campaignId: scope.campaignId, workspaceId: scope.workspaceId,
+      sha256: verified.manifest.source.sha256 }, inputManifestSha256: verified.manifestSha256,
     contributionIds: verified.manifest.coverage.sourceIds, records,
   };
   // Bind references and ordered membership as well as each complete record.

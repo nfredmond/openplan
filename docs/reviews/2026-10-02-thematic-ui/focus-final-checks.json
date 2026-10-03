@@ -1,0 +1,17 @@
+{
+  "boundary": "Focused controls, lint and webpack/TypeScript build after focus correction. Not full QA of this final tree or production browser acceptance.",
+  "logs": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-focus-final-controls.log",
+      "sha256": "9570139089e60f6fc2aae320f3d71afd86b51ec54d5725ff1abbb240420be213"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-focus-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-focus-production-build.log",
+      "sha256": "d30fca802442f6e763b903ad8738ef55b341356fddf1ef7e88f59e4b578687fa"
+    }
+  ]
+}

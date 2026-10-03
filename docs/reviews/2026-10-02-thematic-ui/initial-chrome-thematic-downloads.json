@@ -1,0 +1,26 @@
+{
+  "startedAt": "2026-10-02T22:18:03.063Z",
+  "browser": "installed Chrome, fresh temporary profile and context",
+  "navigation": [],
+  "downloads": [],
+  "console": [],
+  "pageErrors": [],
+  "requests": [],
+  "screenshots": [],
+  "identity": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-02T22:18:04.284Z",
+    "deployment": {
+      "commit": "ebf4013dd511",
+      "version": "0.66.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  },
+  "status": "failed",
+  "error": "TimeoutError: locator.fill: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Email', { exact: true })\u001b[22m\n",
+  "finishedAt": "2026-10-02T22:18:24.488Z"
+}

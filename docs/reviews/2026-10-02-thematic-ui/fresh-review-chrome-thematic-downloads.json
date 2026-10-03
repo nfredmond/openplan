@@ -1,0 +1,48 @@
+{
+  "startedAt": "2026-10-02T22:18:56.128Z",
+  "browser": "installed Chrome, fresh temporary profile and context",
+  "navigation": [
+    "/sign-in",
+    "/dashboard",
+    "/engagement",
+    "/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+    "?tab=analysis"
+  ],
+  "downloads": [],
+  "console": [],
+  "pageErrors": [],
+  "requests": [
+    {
+      "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+      "status": 200,
+      "method": "GET"
+    }
+  ],
+  "screenshots": [],
+  "identity": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-02T22:18:57.026Z",
+    "deployment": {
+      "commit": "ebf4013dd511",
+      "version": "0.66.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  },
+  "status": "failed",
+  "error": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('region', { name: 'Retained staff reviews', exact: true }).getByText('Revision 2 is unapproved.', { exact: true }) to be visible\u001b[22m\n",
+  "finishedAt": "2026-10-02T22:19:19.299Z"
+}

@@ -4,6 +4,7 @@ import { SynthesisReviewEditor } from "@/components/engagement/synthesis-review-
 import { EngagementSynthesisSources } from "@/components/engagement/engagement-synthesis-sources";
 import { applySynthesisReviewChange, createSynthesisReviewContent, synthesisReviewIntentSchema } from "@/lib/engagement/synthesis-review";
 import type { SynthesisReviewRecord } from "@/lib/engagement/synthesis-review-records";
+import { emptyThematicImportCopy, writeThematicImportCopy, freezeThematicImport } from "@/lib/engagement/synthesis-thematic-import-recovery";
 import { listPreservedReviewCopies, readReviewWorkingCopy } from "@/lib/engagement/synthesis-review-recovery";
 import { fixture as responseLinkFixture } from "./fixtures/engagement/synthesis-response-link";
 import { listPreservedResponseLinkCopies } from "@/lib/engagement/synthesis-response-link-recovery";
@@ -40,6 +41,9 @@ async function server(url: RequestInfo | URL, options?: RequestInit) {
     const meta = { requestId: source.requestId, campaignId: scope.campaignId, workspaceId: scope.workspaceId, createdAt: sourceDate, snapshotSha256: source.snapshotSha256, counts: snapshot.counts, selection: snapshot.selection };
     return json(path.searchParams.has("requestId") ? { ...meta, snapshot } : { campaignId: scope.campaignId, workspaceId: scope.workspaceId, pageSize: 25, entries: [meta], nextCursor: null });
   }
+  if (path.pathname.endsWith("/proposals")) return json(path.searchParams.get("mode") === "list"
+    ? { schemaVersion: 1, campaignId: scope.campaignId, workspaceId: scope.workspaceId, sourceId: scope.sourceId, sourceSha256: scope.sourceSha256, pageSize: 25, entries: [], nextCursor: null }
+    : {}, path.searchParams.get("mode") === "list" ? 200 : 503);
   if (path.pathname.endsWith("/response-links")) {
     if (options?.method === "POST") throw new Error("This review fixture does not simulate response-link writes");
     const record = records.get(head)!;
@@ -99,6 +103,34 @@ async function openSeeded() {
 }
 async function waitRevision(number: number) { await screen.findByRole("heading", { name: new RegExp(`revision ${number}$`), level: 4 }); }
 describe("retained staff review editor", () => {
+  it("recovers a busy retained review read without changing its revision", async () => {
+    let attempts = 0;
+    transport.mockImplementation(async (url, init) => {
+      if (String(url).includes("mode=read") && attempts++ === 0) return json({}, 503);
+      return server(url, init);
+    });
+    await openSeeded();
+    expect(attempts).toBe(2); expect(head).toBe(reviewId); expect(records.size).toBe(1);
+    expect(transport.mock.calls.some(([, init]) => init?.method === "POST")).toBe(false);
+    expect(screen.queryByText(/The saved review could not be opened/)).toBeNull();
+  });
+  it("opens retained import recovery and blocks a competing correction or approval", async () => {
+    seed(); const record = records.get(reviewId)!;
+    const importScope = { ...scope, reviewId, preparationSha256: record.preparationSha256 };
+    const empty = emptyThematicImportCopy(importScope);
+    const draft = writeThematicImportCopy(localStorage, empty, { ...empty, draft: { parentId: reviewId, parentSha256: record.revision.contentSha256,
+      parentNumber: 1, reason: "SYNTHETIC retained import", proposal: { requestId: "f0000000-0000-4000-8000-000000000123", selectionSequence: 3,
+        historyManifestSha256: "a".repeat(64), proposalSha256: "b".repeat(64), finalCaptureSha256: "c".repeat(64) } } });
+    freezeThematicImport(localStorage, draft, "f0000000-0000-4000-8000-000000000124");
+    render(<SynthesisReviewEditor {...props} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Open staff review/ }));
+    await screen.findByRole("button", { name: "Retry retained import" });
+    expect(screen.getByLabelText("Staff review notes")).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("Reason for approval or withdrawal"), { target: { value: "SYNTHETIC approval reason" } });
+    expect(screen.getByRole("button", { name: "Approve revision 1" })).toBeDisabled();
+    expect(screen.getByText(/proposal import is unfinished/)).toBeVisible();
+    expect(transport.mock.calls.some(([, init]) => init?.method === "POST")).toBe(false);
+  });
   it("creates a retained review from the real saved-source panel and keeps its complete membership", async () => {
     render(<EngagementSynthesisSources userId={scope.userId} workspaceId={scope.workspaceId} campaignId={scope.campaignId} categories={[]} />);
     fireEvent.click(await screen.findByRole("button", { name: /Open saved source/ }));
@@ -200,6 +232,32 @@ describe("retained staff review editor", () => {
     const recovery = screen.getByLabelText("Preserved review recovery copies");
     fireEvent.click(within(recovery).getAllByRole("button", { name: "Restore preserved edit" }).at(-1)!);
     expect(await screen.findByDisplayValue("SYNTHETIC unsaved newest text")).toBeTruthy();
+  });
+  it("restores an unselected proposal inspection across source focus refresh and respects explicit closure", async () => {
+    seed();
+    const requestId = "f0000000-0000-4000-8000-000000000321";
+    const proposalScope = { campaignId: scope.campaignId, workspaceId: scope.workspaceId, sourceId: scope.sourceId, sourceSha256: scope.sourceSha256 };
+    transport.mockImplementation(async (url, init) => {
+      const path = new URL(String(url), "http://localhost");
+      if (!path.pathname.endsWith("/proposals")) return server(url, init);
+      return json(path.searchParams.get("mode") === "list"
+        ? { schemaVersion: 1, ...proposalScope, pageSize: 25, entries: [{ requestId, createdAt: sourceDate, actorId: sourceActor, parentRequestId: scope.sourceId, cancelled: false }], nextCursor: null }
+        : { ...proposalScope, requestId, status: "not_prepared", selectionSequence: null, cancelled: false, origin: null });
+    });
+    render(<EngagementSynthesisSources userId={scope.userId} workspaceId={scope.workspaceId} campaignId={scope.campaignId} categories={[]} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Open saved source/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /Open staff review/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect machine proposals for this review" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect proposal f0000000" }));
+    await screen.findByText("Thematic tasks have not been prepared.");
+    const before = transport.mock.calls.filter(([url]) => String(url).includes("mode=preview")).length;
+    await act(async () => { window.dispatchEvent(new Event("focus")); });
+    await screen.findByText("Thematic tasks have not been prepared.");
+    expect(transport.mock.calls.filter(([url]) => String(url).includes("mode=preview")).length).toBeGreaterThan(before);
+    fireEvent.click(screen.getByRole("button", { name: "Hide proposal import" }));
+    await act(async () => { window.dispatchEvent(new Event("focus")); });
+    await screen.findByLabelText("Saved staff review");
+    expect(screen.queryByLabelText("Import a machine proposal")).toBeNull();
   });
   it("reopens the selected source after focus without losing the retained correction", async () => {
     seed(); render(<EngagementSynthesisSources userId={scope.userId} workspaceId={scope.workspaceId} campaignId={scope.campaignId} categories={[]} />);

@@ -1,0 +1,298 @@
+{
+  "sourceCommit": "04539c6da8fb585e7014a6fc17b4c95b9f1835a0",
+  "restoreRun": 37081724998,
+  "conclusion": "cancelled",
+  "archive": "330 tables and one storage file restored; sign-in and relationships verified before RLS",
+  "timelineUtc": {
+    "jobStart": "2026-10-03T00:21:34Z",
+    "restoredRlsStart": "2026-10-03T00:26:50Z",
+    "cancelled": "2026-10-03T01:06:46Z",
+    "parallelRlsStart": "2026-10-03T00:24:13Z",
+    "parallelRlsEnd": "2026-10-03T01:06:28Z"
+  },
+  "change": "90-minute job timeout; preserve visible native test output and original exit status; full test list unchanged",
+  "checks": {
+    "bashSyntax": "pass",
+    "diffWhitespace": "pass",
+    "restoreUnitTests": 28,
+    "mutationResults": [
+      {
+        "name": "harmless comment",
+        "module": "full_restore.py",
+        "result": "survived"
+      },
+      {
+        "name": "project name",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "container label",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "service images",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "nonempty target",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "existing recovery names",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "scheduled jobs",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "role mismatch",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "missing discovered table",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "missing source consistency call",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "missing storage comparison",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "pgsodium excluded",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "large objects omitted",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "sequence positions omitted",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "unhealthy service accepted",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "database properties omitted",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "wrong database owner",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "missing property restoration call",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "private settings error ignored",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "database settings hash ignored",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "missing target comparison call",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "failed snapshot process",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "ignored inventory differences",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "unsafe storage entries",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "duplicate storage paths",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "ignored storage contents",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "ignored schema changes",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "delegated grantor",
+        "module": "full_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "harmless comment",
+        "module": "reconstruct_owp_restore.py",
+        "result": "survived"
+      },
+      {
+        "name": "changed cost accepted",
+        "module": "reconstruct_owp_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "duplicate entry accepted",
+        "module": "reconstruct_owp_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "duplicate source accepted",
+        "module": "reconstruct_owp_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "old approval changed",
+        "module": "reconstruct_owp_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "cash overmatch accepted",
+        "module": "reconstruct_owp_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "lost authorship accepted",
+        "module": "reconstruct_owp_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "mixed currency accepted",
+        "module": "reconstruct_owp_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "truncated query accepted",
+        "module": "reconstruct_owp_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "optimized Python accepted",
+        "module": "reconstruct_owp_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "refund subtraction reversed",
+        "module": "reconstruct_owp_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "receipt subtraction reversed",
+        "module": "reconstruct_owp_restore.py",
+        "result": "targeted failure"
+      },
+      {
+        "name": "harmless comment",
+        "module": "disposable-restore-drill.sh",
+        "result": "survived"
+      },
+      {
+        "name": "existing project guard",
+        "module": "disposable-restore-drill.sh",
+        "result": "targeted failure"
+      },
+      {
+        "name": "cleanup ownership",
+        "module": "disposable-restore-drill.sh",
+        "result": "targeted failure"
+      },
+      {
+        "name": "unknown argument refusal",
+        "module": "disposable-restore-drill.sh",
+        "result": "targeted failure"
+      },
+      {
+        "name": "keep ignored",
+        "module": "disposable-restore-drill.sh",
+        "result": "targeted failure"
+      }
+    ],
+    "tailProbes": {
+      "cases": [
+        {
+          "case": "baseline success",
+          "exitCode": 0,
+          "progressVisible": true,
+          "passPrinted": true
+        },
+        {
+          "case": "harmless comment",
+          "exitCode": 0,
+          "progressVisible": true,
+          "passPrinted": true
+        },
+        {
+          "case": "native failure preserved",
+          "exitCode": 37,
+          "progressVisible": true,
+          "passPrinted": false
+        },
+        {
+          "case": "suppressed output fault",
+          "exitCode": 0,
+          "progressVisible": false,
+          "passPrinted": true
+        },
+        {
+          "case": "ignored native failure fault",
+          "exitCode": 0,
+          "progressVisible": true,
+          "passPrinted": true
+        }
+      ],
+      "measuredSeconds": {
+        "restoreSetupUntilRls": 316,
+        "parallelNativeSuite": 2535,
+        "parallelCleanup": 25,
+        "sum": 2876
+      },
+      "limits": "Tail-only shell probe with fake npm proves output and exit propagation, not database recovery. Timeline arithmetic cannot guarantee future runtime. Full native restore rerun remains required."
+    }
+  },
+  "limits": [
+    "Cancelled full restore is not accepted. A fresh GitHub run must complete.",
+    "Parallel native duration supports timeout headroom but does not establish where the suppressed restore run stopped.",
+    "Local shell probes do not test GitHub timeout enforcement or real database recovery.",
+    "No new browser journey is needed for this operational-only correction; prior browser evidence remains bound to 04539."
+  ],
+  "sourceHashes": {
+    ".github/workflows/restore-drill.yml": "655286c858d4d051d41186060090884e91c5ea14b26d5c39338969ca66540cd5",
+    "openplan/scripts/ops/disposable-restore-drill.sh": "18b85d0117b0438693c1e919d14aaf59c41363dc0a926fbb046965e289bec5f5"
+  },
+  "privateLogSha256": "ab672210b439eacf76b830bfafe03029551fc52b1113af206702ac6d08d8bf08"
+}

@@ -1,0 +1,72 @@
+{
+  "approval": "Staff approval of revision 2\n\nStaff approval applies to this exact saved version. It does not publish findings, establish representative support or change unassessed interpretation.\n\nApproval status is unavailable until its history is verified.\n\nApproval history is unavailable. Keep any pending request and retry this read.\n\nReason for approval or withdrawal\nApprove revision 2\nWithdraw approval of revision 2\nRefresh approval history",
+  "receipts": [
+    {
+      "body": {
+        "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+        "createdAt": "2026-10-02T21:12:36.472283+00:00",
+        "preparationSha256": "2b6e28c2c227644aa7e68bc63c20abbacbe6117f253c0c909d2d6b38d9dbd1a1",
+        "replayed": false,
+        "requestId": "d7022f14-a6a3-4016-bdb8-2ba1570fdf50",
+        "reviewId": "17b5a959-800f-4774-873d-dfa6a4644c09",
+        "revisionNo": 2,
+        "revisionSha256": "789b57874190ca41ad926784d32db8e02fbe20ecf15affe5a9f55154f8f3631f",
+        "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+        "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+        "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+      },
+      "request": {
+        "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+        "expectedRevisionId": "17b5a959-800f-4774-873d-dfa6a4644c09",
+        "expectedRevisionSha256": "79a0155646504d6bffa4b46ee6a1fc5f011e389984eaeec60c4999e733f8bb55",
+        "operation": "import_thematic",
+        "proposal": {
+          "finalCaptureSha256": "9a153b71fc7fb862213eadfabe0963b1693c3bc6c954cdf6488ef345bb1b8a89",
+          "historyManifestSha256": "9bfea03a34175c062ff77de0cba5de2885f5ed6322665445cff9a55e7299f0fb",
+          "proposalSha256": "3ac8cb7761019a4b8d3e90406f236e10fcfb19e4bde4a56cbbecb03379d872be",
+          "requestId": "dd741df4-7b58-4313-877e-55490ca40346",
+          "selectionSequence": 5
+        },
+        "reason": "SYNTHETIC quota recovery text. Preserve the original proposal and earlier approval.",
+        "requestId": "d7022f14-a6a3-4016-bdb8-2ba1570fdf50",
+        "reviewId": "17b5a959-800f-4774-873d-dfa6a4644c09",
+        "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+      },
+      "status": 201
+    },
+    {
+      "body": {
+        "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+        "createdAt": "2026-10-02T21:12:36.472283+00:00",
+        "preparationSha256": "2b6e28c2c227644aa7e68bc63c20abbacbe6117f253c0c909d2d6b38d9dbd1a1",
+        "replayed": true,
+        "requestId": "d7022f14-a6a3-4016-bdb8-2ba1570fdf50",
+        "reviewId": "17b5a959-800f-4774-873d-dfa6a4644c09",
+        "revisionNo": 2,
+        "revisionSha256": "789b57874190ca41ad926784d32db8e02fbe20ecf15affe5a9f55154f8f3631f",
+        "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+        "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+        "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+      },
+      "request": {
+        "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+        "expectedRevisionId": "17b5a959-800f-4774-873d-dfa6a4644c09",
+        "expectedRevisionSha256": "79a0155646504d6bffa4b46ee6a1fc5f011e389984eaeec60c4999e733f8bb55",
+        "operation": "import_thematic",
+        "proposal": {
+          "finalCaptureSha256": "9a153b71fc7fb862213eadfabe0963b1693c3bc6c954cdf6488ef345bb1b8a89",
+          "historyManifestSha256": "9bfea03a34175c062ff77de0cba5de2885f5ed6322665445cff9a55e7299f0fb",
+          "proposalSha256": "3ac8cb7761019a4b8d3e90406f236e10fcfb19e4bde4a56cbbecb03379d872be",
+          "requestId": "dd741df4-7b58-4313-877e-55490ca40346",
+          "selectionSequence": 5
+        },
+        "reason": "SYNTHETIC quota recovery text. Preserve the original proposal and earlier approval.",
+        "requestId": "d7022f14-a6a3-4016-bdb8-2ba1570fdf50",
+        "reviewId": "17b5a959-800f-4774-873d-dfa6a4644c09",
+        "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+      },
+      "status": 200
+    }
+  ],
+  "review": "SYNTHETIC machine proposal for browser inspection · revision 2\n\n0 assigned contributions; 2 unassigned; 0 appear in more than one group.\n\nSYNTHETIC retained worker output. Staff have not reviewed this interpretation.\n\nRevision SHA256: 789b57874190ca41ad926784d32db8e02fbe20ecf15affe5a9f55154f8f3631f\n\nCorrection reason: SYNTHETIC quota recovery text. Preserve the original proposal and earlier approval.\n\nOriginal preparation and unassigned membership\n\nThis revision retains an imported machine proposal. Later staff corrections and approvals remain separate from the original wording below.\n\nOriginal machine proposal\n\nMachine-generated, unreviewed wording. Citations identify retained evidence; they do not establish that the interpretation is accurate. Counts describe contributions, not distinct people or representative support.\n\nSYNTHETIC machine proposal for browser inspection\n\nSYNTHETIC retained worker output. Staff have not reviewed this interpretation.\n\n0 assigned contributions; 2 unassigned; 0 appear in more than one group.\n\nThematic uncertainty\nSYNTHETIC structural browser exercise; no semantic inference\n\nEarlier contextual uncertainty remains with each contribution below.\n\nUnassigned contributions and machine reasons (2)\nOriginal contributions and retained context\nFind a contribution\n\n2 matching contributions. Page 1 of 1.\n\nPrevious contributions\nNext contributions\nInspect comment 1\nInspect comment 2\nDownload original proposal JSON\nDownload original history JSON\nOriginal evi"
+}

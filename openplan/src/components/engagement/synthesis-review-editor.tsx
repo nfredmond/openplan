@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
+import { readSynthesisHistory } from "@/lib/engagement/synthesis-history-read";
 import { Button } from "@/components/ui/button";
 import { applySynthesisReviewChange, synthesisReviewIntentSchema, verifySynthesisReviewContent, type SynthesisReviewContent, type SynthesisReviewIntent } from "@/lib/engagement/synthesis-review";
 import { synthesisReviewListSchema, synthesisReviewRecordSchema, synthesisReviewRevisionListSchema, type SynthesisReviewRecord } from "@/lib/engagement/synthesis-review-records";
@@ -10,12 +11,15 @@ import { SynthesisResponseLinksPanel } from "./synthesis-response-links-panel";
 import { readResponseLinkWorkingCopy, type ResponseLinkWorkingCopy } from "@/lib/engagement/synthesis-response-link-recovery";
 import { SynthesisApprovalPanel } from "./synthesis-approval-panel";
 import type { ApprovalWorkingCopy } from "@/lib/engagement/synthesis-approval-recovery";
+import { SynthesisThematicImportPanel } from "./synthesis-thematic-import-panel";
+import { RetainedThematicEvidence } from "./synthesis-thematic-evidence";
+import { readThematicImportCopy, type ThematicImportMemory } from "@/lib/engagement/synthesis-thematic-import-recovery";
 import type { SynthesisSourceSnapshot } from "@/lib/engagement/synthesis-sources";
 
 type SavedReview = SynthesisReviewRecord & { content: SynthesisReviewContent };
 type ReviewPage = z.infer<typeof synthesisReviewListSchema>;
 type RevisionPage = z.infer<typeof synthesisReviewRevisionListSchema>;
-type Props = ReviewClientScope & { snapshot: SynthesisSourceSnapshot; onAccessLost: () => void; recoveryMemory?: { current: ReviewWorkingCopy | null }; approvalMemories?: Map<string, { current: ApprovalWorkingCopy | null }>; responseLinkMemories?: Map<string, { current: ResponseLinkWorkingCopy | null }> };
+type Props = ReviewClientScope & { snapshot: SynthesisSourceSnapshot; onAccessLost: () => void; recoveryMemory?: { current: ReviewWorkingCopy | null }; approvalMemories?: Map<string, { current: ApprovalWorkingCopy | null }>; responseLinkMemories?: Map<string, { current: ResponseLinkWorkingCopy | null }>; importMemories?: Map<string, ThematicImportMemory> };
 const errorText = (cause: unknown) => cause instanceof Error ? cause.message : "The saved review is unavailable. Keep your recovery copy.";
 
 /** The parent owns campaign authentication; scope changes remount every private editor state. */
@@ -23,7 +27,7 @@ export function SynthesisReviewEditor(props: Props) {
   return <ReviewPanel key={`${props.userId}:${props.workspaceId}:${props.campaignId}:${props.sourceId}`} {...props} />;
 }
 
-function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, approvalMemories: sourceApprovalMemories, responseLinkMemories: sourceResponseLinkMemories, ...scope }: Props) {
+function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, approvalMemories: sourceApprovalMemories, responseLinkMemories: sourceResponseLinkMemories, importMemories: sourceImportMemories, ...scope }: Props) {
   const { userId, workspaceId, campaignId, sourceId, sourceSha256 } = scope;
   const localMemory = useRef<ReviewWorkingCopy | null>(null);
   const recoveryMemory = sourceMemory ?? localMemory;
@@ -51,6 +55,15 @@ function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, app
       return retained.draft || retained.pending ? "Unfinished response link in this browser" : null;
     } catch { return "Response-link recovery needs attention"; }
   }
+  const localImportMemories = useRef(new Map<string, ThematicImportMemory>());
+  const importMemories = sourceImportMemories ?? localImportMemories.current;
+  const [importOpen, setImportOpen] = useState(false), [importPending, setImportPending] = useState(false);
+  function importMemory(review: SavedReview) {
+    const key = `${sourceId}:${sourceSha256}:${review.reviewId}:${review.preparationSha256}`;
+    let memory = importMemories.get(key);
+    if (!memory) { memory = { current: null }; importMemories.set(key, memory); }
+    return memory;
+  }
   const [working, setWorking] = useState(() => emptyReviewWorkingCopy(scope));
   const workingRef = useRef(working), epoch = useRef(0), reading = useRef(0), listing = useRef(0), sending = useRef(false);
   const [ready, setReady] = useState(false), [blocked, setBlocked] = useState(false), [busy, setBusy] = useState(false);
@@ -58,11 +71,25 @@ function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, app
   const [saved, setSaved] = useState<SavedReview | null>(null), [page, setPage] = useState<ReviewPage | null>(null), [history, setHistory] = useState<RevisionPage | null>(null);
   const [error, setError] = useState<string | null>(null), [notice, setNotice] = useState<string | null>(null);
   const [copies, setCopies] = useState<ReturnType<typeof listPreservedReviewCopies>>([]);
+  useEffect(() => {
+    if (!saved) { setImportOpen(false); setImportPending(false); return; }
+    try {
+      const memory = importMemories.get(`${sourceId}:${sourceSha256}:${saved.reviewId}:${saved.preparationSha256}`);
+      const pending = memory?.current
+        ?? readThematicImportCopy(localStorage, { userId, workspaceId, campaignId, sourceId, sourceSha256,
+          reviewId: saved.reviewId, preparationSha256: saved.preparationSha256 });
+      const unfinished = Boolean(pending.draft || pending.pending);
+      setImportPending(unfinished); setImportOpen(unfinished || Boolean(memory?.inspection?.open));
+    } catch { setImportPending(true); setImportOpen(true); }
+  }, [saved, importMemories, userId, workspaceId, campaignId, sourceId, sourceSha256]);
   const endpoint = `/api/engagement/campaigns/${campaignId}/synthesis/reviews`;
   const adopt = (value: ReviewWorkingCopy) => { workingRef.current = value; setWorking(value); };
 
   const read = useCallback(async (query: Record<string, string>) => {
-    const response = await fetch(`${endpoint}?${new URLSearchParams(query)}`, { cache: "no-store", headers: { "x-openplan-expected-user": userId, "x-openplan-expected-workspace": workspaceId } });
+    const current = epoch.current;
+    const response = await readSynthesisHistory(`${endpoint}?${new URLSearchParams(query)}`, {
+      userId, workspaceId, isCurrent: () => current === epoch.current,
+    });
     if (response.status === 401 || response.status === 403) { epoch.current++; setAccessLost(true); onAccessLost(); }
     if (!response.ok) throw new Error(response.status === 404 ? "This review revision has not been confirmed. Keep its request for retry." : "The saved review could not be opened. Any earlier confirmed save remains retained.");
     return response.json() as Promise<unknown>;
@@ -198,16 +225,26 @@ function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, app
       <p className="text-sm break-words">{saved.revision.reason ? `Correction reason: ${saved.revision.reason}` : "Original draft from historical source preparation."}</p>
       {saved.content.groups.map(group => <details key={group.id} className="rounded border p-3"><summary className="break-words">{group.label} · {group.sourceIds.length} contributions · {group.sentiment.replaceAll("_", " ")}</summary><p className="mt-2 whitespace-pre-wrap break-words">{group.summary || "No staff summary."}</p><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{group.sourceIds.join("\n")}</pre></details>)}
       <details><summary>Original preparation and unassigned membership</summary><p className="mt-2 text-xs break-all">Preparation SHA256: {saved.preparationSha256}</p><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{saved.preparationText}</pre><pre className="mt-2 whitespace-pre-wrap break-all text-xs">Unassigned: {saved.content.unassignedSourceIds.join(", ") || "none"}</pre></details>
+      {saved.content.machineOrigin ? <RetainedThematicEvidence key={`${saved.revision.requestId}:original-machine-evidence`} origin={saved.content.machineOrigin}
+        scope={{ campaignId, workspaceId, sourceId, sourceSha256 }} snapshot={snapshot} /> : null}
+      <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" disabled={importPending}
+        onClick={() => { const memory = importMemory(saved); memory.inspection = { open: !importOpen, requestId: memory.inspection?.requestId ?? null }; setImportOpen(!importOpen); }}>{importOpen ? "Hide proposal import" : "Inspect machine proposals for this review"}</Button>
+      {importOpen ? <SynthesisThematicImportPanel key={saved.reviewId}
+        scope={{ userId, workspaceId, campaignId, sourceId, sourceSha256, reviewId: saved.reviewId, preparationSha256: saved.preparationSha256 }}
+        snapshot={snapshot} revision={{ id: saved.revision.requestId, sha256: saved.revision.contentSha256, number: saved.revision.revisionNo,
+          current: !oldRevision, title: saved.content.title, groupCount: saved.content.groups.length }}
+        disabled={!ready || blocked || busy || Boolean(working.draft || working.pending)} memory={importMemory(saved)}
+        onAccessLost={onAccessLost} onPendingChange={setImportPending} onSaved={revisionId => { importMemory(saved).inspection = undefined; void list(); void open(saved.reviewId, revisionId); }} /> : null}
       {oldRevision ? <div><p>This is an earlier revision. Open the current review before editing.</p><Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={() => void open(saved.reviewId)}>Open current review</Button></div> : null}
       <SynthesisApprovalPanel key={`${saved.reviewId}:${saved.preparationSha256}`} scope={{ ...scope, reviewId: saved.reviewId, preparationSha256: saved.preparationSha256 }}
         revision={{ campaignId, workspaceId, sourceId, sourceSha256, reviewId: saved.reviewId, preparationSha256: saved.preparationSha256,
           revisionId: saved.revision.requestId, revisionNo: saved.revision.revisionNo, revisionSha256: saved.revision.contentSha256 }}
-        memory={approvalMemory(saved)} hasUnsavedReview={Boolean(working.draft || working.pending)} onAccessLost={onAccessLost} />
+        memory={approvalMemory(saved)} hasUnsavedReview={Boolean(working.draft || working.pending || importPending)} onAccessLost={onAccessLost} />
       <SynthesisResponseLinksPanel scope={{ userId, workspaceId, campaignId, reviewId: saved.reviewId }}
         revision={{ id: saved.revision.requestId, number: saved.revision.revisionNo, sha256: saved.revision.contentSha256 }}
-        groups={saved.content.groups} memory={responseLinkMemory(saved)} hasUnsavedReview={Boolean(working.draft || working.pending)} onAccessLost={onAccessLost} />
+        groups={saved.content.groups} memory={responseLinkMemory(saved)} hasUnsavedReview={Boolean(working.draft || working.pending || importPending)} onAccessLost={onAccessLost} />
       <ReviewCorrectionForm key={`${saved.reviewId}:${saved.revision.requestId}`} saved={saved} snapshot={snapshot} draft={draft?.reviewId === saved.reviewId && draft.parentId === saved.revision.requestId ? draft : null}
-        disabled={!ready || blocked || busy || Boolean(working.pending) || Boolean(oldRevision) || Boolean(draft && (draft.reviewId !== saved.reviewId || draft.parentId !== saved.revision.requestId))}
+        disabled={!ready || blocked || busy || importPending || Boolean(working.pending) || Boolean(oldRevision) || Boolean(draft && (draft.reviewId !== saved.reviewId || draft.parentId !== saved.revision.requestId))}
         onChange={value => update({ ...workingRef.current, activeReviewId: saved.reviewId, draft: value })} onSave={correct} />
       {draft && (draft.reviewId !== saved.reviewId || draft.parentId !== saved.revision.requestId) ? <p>A different parent has an unfinished correction. Preserve that edit before starting another.</p> : null}
       <h5 className="font-semibold">Revision history</h5><ul className="space-y-2">{history?.entries.map(row => <li key={row.requestId}><Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={() => void open(saved.reviewId, row.requestId)}>Open revision {row.revisionNo}</Button><p className="text-sm break-words">{row.reason ?? "Original staff draft"}</p></li>)}</ul>

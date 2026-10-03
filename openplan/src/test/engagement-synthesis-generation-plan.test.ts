@@ -22,6 +22,19 @@ const seal = () => {
 };
 
 describe("durable synthesis plan protocol", () => {
+  it("keeps original task bytes when source scope fields arrive in another order", () => {
+    const scopes = [
+      { campaignId: sourceScope.campaignId, workspaceId: sourceScope.workspaceId, requestId: sourceScope.requestId },
+      { workspaceId: sourceScope.workspaceId, requestId: sourceScope.requestId, campaignId: sourceScope.campaignId },
+      { requestId: sourceScope.requestId, workspaceId: sourceScope.workspaceId, campaignId: sourceScope.campaignId },
+    ];
+    for (const scope of scopes) {
+      const reordered = createSynthesisGenerationPlan(request(), saved, scope);
+      expect(reordered.headerText).toBe(plan.headerText);
+      expect(reordered.entries.map(entry => entry.canonical)).toEqual(plan.entries.map(entry => entry.canonical));
+      expect(verifySynthesisGenerationPlanState(reordered, { ...state(plan.entries.length), seal: seal() }).seal).toEqual(seal());
+    }
+  });
   it("binds every task byte in order and reconstructs every retained prefix", () => {
     expect(plan).toEqual(createSynthesisGenerationPlan(request(), saved, sourceScope));
     expect(plan.header.contributionCount).toBe(3);

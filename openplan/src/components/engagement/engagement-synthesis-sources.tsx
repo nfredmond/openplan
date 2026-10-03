@@ -16,6 +16,7 @@ import { SynthesisSourceInspection } from "./synthesis-source-inspection";
 import type { ResponseLinkWorkingCopy } from "@/lib/engagement/synthesis-response-link-recovery";
 import type { ApprovalWorkingCopy } from "@/lib/engagement/synthesis-approval-recovery";
 import { SynthesisReviewEditor } from "./synthesis-review-editor";
+import type { ThematicImportMemory } from "@/lib/engagement/synthesis-thematic-import-recovery";
 import { readReviewWorkingCopy, type ReviewWorkingCopy } from "@/lib/engagement/synthesis-review-recovery";
 
 const inspectionSchema = z.object({
@@ -52,6 +53,7 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
   // Revalidation unmounts private inspectors. Keep quota-failed edits within this account/campaign until the user can preserve them.
   const responseLinkMemories = useRef(new Map<string, { current: ResponseLinkWorkingCopy | null }>());
   const approvalMemories = useRef(new Map<string, { current: ApprovalWorkingCopy | null }>());
+  const importMemories = useRef(new Map<string, ThematicImportMemory>());
   const reviewMemories = useRef(new Map<string, { current: ReviewWorkingCopy | null }>());
   function reviewMemory(saved: Inspection) {
     const key = `${saved.requestId}:${saved.snapshotSha256}`;
@@ -60,7 +62,7 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     return memory;
   }
   const openIdRef = useRef<string | null>(null);
-  const loseReviewAccess = useCallback(() => { reviewMemories.current.clear(); approvalMemories.current.clear(); responseLinkMemories.current.clear(); setAccessLost(true); setInspection(null); setEntries(null); setPending(null); setNotice(null); }, []);
+  const loseReviewAccess = useCallback(() => { reviewMemories.current.clear(); approvalMemories.current.clear(); responseLinkMemories.current.clear(); importMemories.current.clear(); setAccessLost(true); setInspection(null); setEntries(null); setPending(null); setNotice(null); }, []);
   const epoch = useRef(0), readSequence = useRef(0), listSequence = useRef(0), sending = useRef(false);
   const endpoint = `/api/engagement/campaigns/${campaignId}/synthesis/sources`;
 
@@ -109,7 +111,7 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     const client = createClient();
     const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
       if (session?.user.id !== userId) {
-        reviewMemories.current.clear(); approvalMemories.current.clear(); responseLinkMemories.current.clear();
+        reviewMemories.current.clear(); approvalMemories.current.clear(); responseLinkMemories.current.clear(); importMemories.current.clear();
         epoch.current++; setAccessLost(true); setInspection(null); setEntries(null); setPending(null); setNotice(null);
       }
     });
@@ -178,6 +180,6 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     <ul className="space-y-3">{entries?.map(entry => <li key={entry.requestId} className="rounded border p-3 space-y-2"><p>{new Date(entry.createdAt).toLocaleString("en-US")} · {entry.counts.items} comments · {entry.counts.sessions} survey responses · {entry.counts.answers} answers</p><p className="text-xs">Statuses: {entry.selection.statuses.join(", ")}</p><p className="text-sm font-medium">{reviewRecoveryLabel(entry)}</p><Button type="button" variant="outline" onClick={() => void inspect(entry.requestId)}>Open saved source {entry.requestId.slice(0, 8)}</Button></li>)}</ul>
     {cursor ? <Button type="button" variant="outline" disabled={listing} onClick={() => void list(cursor)}>Load older sources</Button> : null}
     {reading ? <p role="status">Opening retained source…</p> : null}{readError ? <div><p role="alert">{readError}</p>{openId ? <Button type="button" variant="outline" onClick={() => void inspect(openId)}>Retry opening saved source</Button> : null}</div> : null}
-    {inspection ? <div key={inspection.requestId} className="space-y-4"><SynthesisSourceInspection snapshot={inspection.snapshot} sha256={inspection.snapshotSha256} /><SynthesisReviewEditor userId={userId} workspaceId={workspaceId} campaignId={campaignId} sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} snapshot={inspection.snapshot} onAccessLost={loseReviewAccess} recoveryMemory={reviewMemory(inspection)} approvalMemories={approvalMemories.current} responseLinkMemories={responseLinkMemories.current} /></div> : null}
+    {inspection ? <div key={inspection.requestId} className="space-y-4"><SynthesisSourceInspection snapshot={inspection.snapshot} sha256={inspection.snapshotSha256} /><SynthesisReviewEditor userId={userId} workspaceId={workspaceId} campaignId={campaignId} sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} snapshot={inspection.snapshot} onAccessLost={loseReviewAccess} recoveryMemory={reviewMemory(inspection)} approvalMemories={approvalMemories.current} responseLinkMemories={responseLinkMemories.current} importMemories={importMemories.current} /></div> : null}
   </section>;
 }

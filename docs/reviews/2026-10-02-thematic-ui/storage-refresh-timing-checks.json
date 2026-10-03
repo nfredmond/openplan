@@ -1,0 +1,39 @@
+{
+  "failedCI": {
+    "run": 37073831943,
+    "job": 111059159753,
+    "seed": 993126,
+    "failure": "Inspection button checked while replacement preview still loading"
+  },
+  "controlledReproduction": "Same assertion fails with replacement response deliberately held.",
+  "corrected": {
+    "files": 4,
+    "pass": 65,
+    "seconds": 33.69,
+    "seed": 993126
+  },
+  "productionCodeChanged": false,
+  "logs": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-c64-shuffled.log",
+      "sha256": "6cbcf737614155fd2d2d211483c2cd816cc845fb82cb97506ea28eaba321a153"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-shuffle-reproduction.log",
+      "sha256": "f5ca0a4d55432bf50ecb62fb501ec8531251532f82944f644b153c29f03c598d"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-storage-controlled-initial.log",
+      "sha256": "2b5614130d75ff8028e740acc7e48101eb10f4df0619bf9bf835de1563290fe5"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-storage-controlled-assertion.log",
+      "sha256": "692e9af92c9528c73b34d8a5fdf2a564f2afb4e8664450785030167362b180f2"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-shuffle-corrected.log",
+      "sha256": "dab19db3d797e0b8e209a059a64abdd63eacc520f05bf5a9cd5a9381d4186f44"
+    }
+  ],
+  "boundary": "Controlled transport proves timing assertions, not native shared-read capacity."
+}

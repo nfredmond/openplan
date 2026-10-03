@@ -40,6 +40,31 @@ async function approve() {
   fireEvent.click(screen.getByRole("button", { name: "Approve revision 1" })); await screen.findByText("Revision 1 is approved.");
 }
 describe("exact revision approval panel", () => {
+  it("recovers a busy approval read without sending an approval", async () => {
+    transport.mockResolvedValueOnce(json({}, 503));
+    render(<SynthesisApprovalPanel {...props()} />); await ready();
+    expect(transport).toHaveBeenCalledTimes(2);
+    expect(events.size).toBe(0); expect(screen.queryByRole("alert")).toBeNull();
+    expect(transport.mock.calls.every(([, init]) => init?.method === "GET")).toBe(true);
+  });
+  it("clears a recovered history error without clearing a pending save failure", async () => {
+    transport.mockResolvedValueOnce(json({}, 503)).mockResolvedValueOnce(json({}, 503)).mockResolvedValueOnce(json({}, 503));
+    render(<SynthesisApprovalPanel {...props()} />);
+    await screen.findByText("Approval history is unavailable. Keep any pending request and retry this read.");
+    expect(screen.getByRole("button", { name: "Approve revision 1" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Refresh approval history" }));
+    await ready();
+    expect(screen.queryByText("Approval history is unavailable. Keep any pending request and retry this read.")).toBeNull();
+    loseAck = true;
+    fireEvent.change(reason(), { target: { value: "SYNTHETIC save remains unconfirmed" } });
+    fireEvent.click(screen.getByRole("button", { name: "Approve revision 1" }));
+    await screen.findByText("SYNTHETIC lost acknowledgement");
+    fireEvent.click(screen.getByRole("button", { name: "Refresh approval history" }));
+    await screen.findByText("Revision 1 is approved.");
+    expect(screen.getByText("SYNTHETIC lost acknowledgement")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Retry retained approval request" })).toBeEnabled();
+    expect(readApprovalWorkingCopy(localStorage, scope).pending).not.toBeNull();
+  });
   it("requires a reason, approves exact bytes and shows private history without altering the revision", async () => {
     const unchanged = JSON.stringify(original); render(<SynthesisApprovalPanel {...props()} />); await ready();
     fireEvent.click(screen.getByRole("button", { name: "Approve revision 1" }));
@@ -93,7 +118,7 @@ describe("exact revision approval panel", () => {
   it("does not approve an unfinished review correction", async () => {
     render(<SynthesisApprovalPanel {...props()} hasUnsavedReview />); await ready();
     expect(screen.getByRole("button", { name: "Approve revision 1" })).toBeDisabled();
-    expect(screen.getByText(/A review correction is unfinished/)).toBeTruthy(); expect(events.size).toBe(0);
+    expect(screen.getByText(/A review correction or proposal import is unfinished/)).toBeTruthy(); expect(events.size).toBe(0);
   });
   it.each([401, 403])("clears private history after current access fails with %s", async status => {
     render(<SynthesisApprovalPanel {...props()} />); await approve();

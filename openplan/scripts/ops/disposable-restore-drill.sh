@@ -318,5 +318,5 @@ RESTORED_V032=$(docker exec "$TARGET_DB" psql -U postgres -d postgres -tA -v ON_
 test "$RESTORED_V032" = "1:1:1"
 
 echo "[restore-drill] hashes and relationships restored; running live RLS against the target"
-OPENPLAN_SUPABASE_WORKDIR="$TARGET_ROOT" npm run test:rls-live >/dev/null
+OPENPLAN_SUPABASE_WORKDIR="$TARGET_ROOT" npm run test:rls-live
 echo "[restore-drill] PASS database rows, evidence custody, storage bytes, relationships, and live RLS"

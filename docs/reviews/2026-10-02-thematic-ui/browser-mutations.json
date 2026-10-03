@@ -1,0 +1,209 @@
+{
+  "cases": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-harmless.log",
+      "seconds": 2.37,
+      "logSha256": "b300f61529e6e1c0b2006ab92a4c0894a307feb8285fd35118347a38dbfaa588"
+    },
+    {
+      "name": "staff",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-staff.log",
+      "seconds": 2.62,
+      "logSha256": "13adde76638a45bd4f44730d72f553f06e5b2e407e6dbc27a10ea56f1ccdbe15"
+    },
+    {
+      "name": "expected-user",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-expected-user.log",
+      "seconds": 2.72,
+      "logSha256": "6babc2ffd66428bf46a634723434f7cdea1fd87c648ede651c7c9ecd7afe1711"
+    },
+    {
+      "name": "expected-workspace",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-expected-workspace.log",
+      "seconds": 2.72,
+      "logSha256": "dcc08afc3044062d0980c692f7858b15e0b2d7eedbb0ba910a375e18652bca96"
+    },
+    {
+      "name": "query-duplicate",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-query-duplicate.log",
+      "seconds": 2.62,
+      "logSha256": "964029633d116bb99d30af4329e6a5e8e5be73b7222c820e0981ef6bfd92e90a"
+    },
+    {
+      "name": "cursor-pair",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-cursor-pair.log",
+      "seconds": 2.42,
+      "logSha256": "68dadc37b185c809f3c23e6159e719f0dad67f9f4a60c82b03d7565434c03fe8"
+    },
+    {
+      "name": "page-scope",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-page-scope.log",
+      "seconds": 2.42,
+      "logSha256": "6c624b7e8037c813d7643132e728c1ffa8bd629b1a7976cc15ea6dbf2e08b24c"
+    },
+    {
+      "name": "page-duplicate",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-page-duplicate.log",
+      "seconds": 2.47,
+      "logSha256": "b92da0c9e47024be8a27de2fad522bdcb3851dd532ccb345fea49ebd054c3dbd"
+    },
+    {
+      "name": "page-cursor-id",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-page-cursor-id.log",
+      "seconds": 2.37,
+      "logSha256": "130b622710273de8af210b0acbcd45cfb90a22d19e7d288e297c3553c7f0b348"
+    },
+    {
+      "name": "page-cursor-date",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-page-cursor-date.log",
+      "seconds": 2.37,
+      "logSha256": "7fc16253c0cb8384cf25fcf83e083e92cc76b651836de709c20a1a15341be6a1"
+    },
+    {
+      "name": "preview-source",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-preview-source.log",
+      "seconds": 2.67,
+      "logSha256": "75c59930565810fd56d74ef0aae6150042078c1a1ab707c24fbf1c6d8a8b7bc0"
+    },
+    {
+      "name": "preview-source-hash",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-preview-source-hash.log",
+      "seconds": 2.97,
+      "logSha256": "ff9be7b9fe8400f83d479fa791f8c61782902ef9c9501b63b4dd87d514410d4b"
+    },
+    {
+      "name": "browser-scope",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-browser-scope.log",
+      "seconds": 2.62,
+      "logSha256": "1a5f17c44e60e4dbb9b30bbe5dfc781696ffc719e12290eb53e8278562b38b85"
+    },
+    {
+      "name": "request",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-request.log",
+      "seconds": 2.67,
+      "logSha256": "c73e30e8e58332dfae842507d854f8c4f3c4c82e206c6178df22064b005119f8"
+    },
+    {
+      "name": "status",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-status.log",
+      "seconds": 2.72,
+      "logSha256": "7be3897df8804cd667013677e224a17a38b64b2f8065a995fbad8cb407459ab2"
+    },
+    {
+      "name": "reference",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-reference.log",
+      "seconds": 2.67,
+      "logSha256": "854bc5456b249f109272f4a0fb820575a980d8439c083d9ccba4f371c9a6eb50"
+    },
+    {
+      "name": "sequence",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-sequence.log",
+      "seconds": 2.67,
+      "logSha256": "36d3348182dfe3c8c594cb3ab88c1c043b1f2b81df4a28e3c587a5c183e6a25e"
+    },
+    {
+      "name": "proposal-bytes",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-proposal-bytes.log",
+      "seconds": 2.72,
+      "logSha256": "58e83c0fff89b691db7fb611759b9f7baec054f50775e2c92a1ce171d29869c6"
+    },
+    {
+      "name": "history-bytes",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-history-bytes.log",
+      "seconds": 2.67,
+      "logSha256": "8a73dcaa8bb8c921af674ffc8dc234d72c37400f2747111a678be38ef74b5620"
+    },
+    {
+      "name": "history-campaign",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-history-campaign.log",
+      "seconds": 2.62,
+      "logSha256": "5f87dab32882703044d99e6f2873a45c85198f74544792eb6b67378465caa2d5"
+    },
+    {
+      "name": "history-workspace",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-history-workspace.log",
+      "seconds": 2.67,
+      "logSha256": "7276f0eaa3a835d75599c7dd8ce041f6c94944e292e3e453ae62a16afb926e56"
+    },
+    {
+      "name": "history-request",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-history-request.log",
+      "seconds": 2.67,
+      "logSha256": "e58af2195f0211e44dd668f59ea6cbf95968888a9c51f18cbb7117fa4882fe72"
+    },
+    {
+      "name": "history-sequence",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-history-sequence.log",
+      "seconds": 2.67,
+      "logSha256": "57eee9c4ead54080ea162c556a159dd351cfee7ffefc07c35f81b47c3e692b8d"
+    },
+    {
+      "name": "history-capture",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-history-capture.log",
+      "seconds": 2.72,
+      "logSha256": "6ad1f34c80ea4891264a786ffae356406049c5138e89dc0c1e90bd0879ca947e"
+    },
+    {
+      "name": "proposal-source",
+      "exit": 1,
+      "validOutcome": true,
+      "log": "t3-thematic-ui-browser-mutation-proposal-source.log",
+      "seconds": 2.62,
+      "logSha256": "8ae7562cb17eb8da7c56e9b7ac5833566e14eb1aee7e6cc884369da392cf3fc2"
+    }
+  ],
+  "sourceRestored": true,
+  "sourceSha256": {
+    "route": "462ced11f146f5b99e0451e52e7f1e1cee383fd67c95ab9ca40034f6328ee15f",
+    "browser": "17d0f87991e240f2bdfb3443ff69e7c5fe932fe975e343ee5ad623beebbcc4fd"
+  }
+}

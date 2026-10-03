@@ -1,0 +1,11 @@
+{
+  "stack": "openplan-restore-target-2026091050",
+  "installedMigration": "20261015000011_engagement_synthesis_thematic_discovery.sql",
+  "exitCode": 0,
+  "testFiles": 1,
+  "testsPassed": 16,
+  "seconds": 31.46,
+  "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-thematic-discovery-after-crash.log",
+  "logSha256": "b56d077f055161e6f02897d54dbfaa64a548fb6066ae84cfb7eece18a3a913bb",
+  "boundary": "Installed native request discovery with exact source scope, keyset paging, role and privilege refusals; baseline, harmless control and fourteen targeted faults; all transactions roll back. No semantic or browser claim."
+}
