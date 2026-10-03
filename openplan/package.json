@@ -51,7 +51,7 @@
     "test:provider-connector": "node --test ../workers/planner_agent_connector/test/*.test.mjs",
     "audit:dependencies": "npm run test:braces-vendor && node scripts/ops/verify-braces-vendor.mjs && npm audit --audit-level=low",
     "vendor:braces:rebuild": "python3 scripts/ops/rebuild-braces-vendor.py",
-    "test:braces-vendor": "node --test scripts/ops/braces-vendor.test.mjs"
+    "test:braces-vendor": "node --test scripts/ops/braces-vendor-checks.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",

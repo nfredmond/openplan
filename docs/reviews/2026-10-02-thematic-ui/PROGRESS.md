@@ -436,3 +436,7 @@ The candidate now backports the upstream braces depth-limit proposal onto the pu
 The backport passes 764 published-release compatibility tests, 18 regression/corruption tests, harmless controls and targeted guard faults. Two fresh locked installs, exact archive reconstruction, lint, configured deadcode and the production webpack build pass. The build peaks at 6 GiB with zero swap. Full CI for this new source remains pending. Prior identified browser downloads belong to `8a14cee7`; no new browser journey is claimed.
 
 `braces-remediation-checks.json` records source hashes, initial failures, corrections and the boundaries of these checks. Staff generation remains isolated at `34775168`. No main, demo or release tag changes occur in this checkpoint.
+
+## Vendor test runner correction
+
+CI on `d494a7b8` finds the Node test file through Vitest discovery. The normal and shuffled jobs fail with `No test suite found`; the application tests otherwise pass. A local targeted run reproduces the error. Rename the file to `braces-vendor-checks.mjs` and retain its explicit `node --test` command inside the dependency audit. All 18 checks and the full audit pass. Vitest discovers 1,501 intended files and no vendor Node file. No exclusion or assertion changes. See `braces-runner-correction.json`; fresh full CI remains required.
