@@ -426,3 +426,13 @@ thematic import/recovery/editor checks. Strict lint passes. See
 [the integration record](locale-integration-checks.json). The production build,
 combined identified browser journey and fresh GitHub results remain pending.
 This integration does not change the release or v1 evidence requirements.
+
+## Dependency audit recovery, October 2, 2026
+
+Exact `8a14cee7` passes native RLS, the completed restore drill, shuffled tests and worker checks. Its QA job fails the full dependency audit on GHSA-vfj7-8cjw-p6xm after application and connector tests pass.
+
+The candidate now backports the upstream braces depth-limit proposal onto the published 3.0.3 package. The local identifier is `3.0.4-openplan.1`; it is not an upstream release. The complete audit remains enabled. Installed file hashes, lock identity, nested package inventory and depth behavior run before registry audit. See `openplan/vendor/braces/README.md` for provenance and limitations.
+
+The backport passes 764 published-release compatibility tests, 18 regression/corruption tests, harmless controls and targeted guard faults. Two fresh locked installs, exact archive reconstruction, lint, configured deadcode and the production webpack build pass. The build peaks at 6 GiB with zero swap. Full CI for this new source remains pending. Prior identified browser downloads belong to `8a14cee7`; no new browser journey is claimed.
+
+`braces-remediation-checks.json` records source hashes, initial failures, corrections and the boundaries of these checks. Staff generation remains isolated at `34775168`. No main, demo or release tag changes occur in this checkpoint.
