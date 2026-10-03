@@ -222,3 +222,28 @@ candidate discovery, heartbeat and restart orchestration. Mocked deadline
 checks do not prove in-flight socket cancellation. The native HTTP journey
 proves the exercised database path, not browser usability, provider accuracy
 or complete M9b/v1 readiness.
+
+## Authenticated preparation HTTP route
+
+The preparation route reads status or accepts an explicit enqueue/retry command.
+It requires current staff campaign access and exact expected account/workspace
+headers. Native commands retain original-requester authorization. Enqueue binds
+stage and intent hash; retry names the observed attempt. An old retry may return
+a newer failed state without restarting it. An unqueued request reads as null.
+
+The route bounds streamed bytes, rejects malformed or forged input, requires
+same-origin writes and refuses unregistered assistant markers. It uses the
+authenticated client and returns private, uncached responses. Audit entries
+carry operation, request ID and status without command contents. The handler
+does not run a worker, create provider authorization or dispatch a provider.
+
+All 38 route tests pass; the combined request/preparation suite passes160 tests
+in four files. A harmless edit survives and22 targeted defects fail assertions.
+The malformed-byte fault drops invalid bytes to turn an invalid stage into a
+valid one; ordinary replacement decoding also fails the strict stage schema.
+Strict lint and whole-package TypeScript pass, with1.8GiB peak memory and zero
+swap for TypeScript. See [the check record](preparation-route-checks.json).
+
+The tests execute real Next handlers and adapters over mocked RPC. Native HTTP
+acceptance remains pending at this checkpoint. Worker pickup, heartbeat/restart,
+browser controls, provider authorization and full integration remain open.
