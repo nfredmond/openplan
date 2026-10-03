@@ -483,3 +483,11 @@ private storage and supervisor requirements. No service is installed or enabled
 on the shared demo. Boot-time startup, host power loss and deployment capacity
 remain unverified. Staff generation controls, full QA/integration, dependency
 audit remediation and complete M9b/v1 acceptance remain open.
+
+## Saved generation request history
+
+The staff branch joins the tested thematic UI and dependency patch at `9d02019b`. The join passes 400 focused tests and the 18 vendor checks. PR114 later exposes a Node/Vitest filename collision; its separate correction remains required.
+
+Staff controls need to find requests after a reload or on another device. Migration013 adds a source-scoped history read across segment, context and thematic stages. Current staff can inspect earlier requesters, including cancelled requests. Each page preserves authorship, exact intent hash, stage and parent identity. It uses 25-row keyset pages with a lookahead row and retains microsecond timestamp precision. The authenticated HTTP route requires the expected account and workspace and rejects late responses after cancellation or deadline. It cannot queue or execute work.
+
+The change passes 21 native baseline/control/fault checks, 48 HTTP/page tests and a harmless control plus 31 HTTP/page faults. Types, strict lint and configured deadcode pass. The migration is applied only on the owned restore target. Security advisors report the same nine existing findings; none names the new function. Initial failures and blind categories remain in `request-history-checks.json`. Production build, installed HTTP reads and visible staff controls remain separate unfinished work at this commit.
