@@ -356,3 +356,25 @@ performs another inspection. Production code is unchanged. A harmless control
 survives and four consequential faults fail in [mutation evidence](storage-refresh-timing-mutations.json).
 The restored four-file suite passes all 65 tests with the failing seed; strict
 lint passes. Fresh whole-suite CI remains separate from this focused correction.
+
+## Tab preservation and download acceptance on f2465eed
+
+The combined source includes main577f2370. All 357 focused tests in 21 files
+pass with shuffle seed993126. The bounded production build and TypeScript pass.
+The identified T3 journey switches from Analysis to Responses and back while
+retaining the exact unsent import reason. After the reported client interruption,
+the 390px preview still retains that reason and has no horizontal overflow.
+The product preservation button saves the revision2 recovery copy without
+submitting a replacement. Earlier approvals remain outside this operation.
+
+A separate fresh Chrome profile downloads both original JSON files. Their
+3,726 and 3,289 bytes match the retained originals exactly, including SHA256.
+A corrupted copy fails comparison. Keyboard proposal opening, 390px contribution
+focus and complete final sentence pass. Desktop and mobile screenshots are
+visually inspected. The Chrome journey has no console warnings/errors or page
+errors. See [source-bound evidence](tab-integration-evidence.json).
+
+The owned server is stopped before further source changes. Mainc5942325 adds
+an Aerial mission page change after this tested source. Combined integration
+remains pending. These synthetic checks do not establish semantic accuracy,
+practitioner acceptance, campaign capacity or complete M9b/v1 readiness.

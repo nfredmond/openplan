@@ -1,0 +1,173 @@
+{
+  "sourceCommit": "f2465eedb1deaa6cd8dfd122b7e3de6b5d7fa9ec",
+  "mainIncluded": "577f2370",
+  "focused": {
+    "files": 21,
+    "passes": 357,
+    "seed": 993126,
+    "durationSeconds": 59.29,
+    "exit": 0
+  },
+  "build": {
+    "exit": 0,
+    "typescript": "pass",
+    "memoryPeak": "6.1GiB",
+    "swapPeak": 0
+  },
+  "chrome": {
+    "startedAt": "2026-10-03T00:18:30.718Z",
+    "browser": "installed Chrome, fresh temporary profile and context",
+    "navigation": [
+      "/sign-in",
+      "/dashboard",
+      "/engagement",
+      "/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+      "?tab=analysis"
+    ],
+    "downloads": [
+      {
+        "kind": "proposal",
+        "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-tab-chrome-downloads/thematic-proposal-dd741df4-7b58-4313-877e-55490ca40346.json",
+        "filename": "thematic-proposal-dd741df4-7b58-4313-877e-55490ca40346.json",
+        "bytes": 3726,
+        "sha256": "3ac8cb7761019a4b8d3e90406f236e10fcfb19e4bde4a56cbbecb03379d872be",
+        "exactOriginal": true,
+        "corruptedCopyRejected": true
+      },
+      {
+        "kind": "history",
+        "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-tab-chrome-downloads/thematic-history-dd741df4-7b58-4313-877e-55490ca40346.json",
+        "filename": "thematic-history-dd741df4-7b58-4313-877e-55490ca40346.json",
+        "bytes": 3289,
+        "sha256": "9bfea03a34175c062ff77de0cba5de2885f5ed6322665445cff9a55e7299f0fb",
+        "exactOriginal": true,
+        "corruptedCopyRejected": true
+      }
+    ],
+    "console": [],
+    "pageErrors": [],
+    "requests": [
+      {
+        "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+        "status": 200,
+        "method": "GET"
+      },
+      {
+        "url": "http://thematic-chrome-20261002.localhost:3477/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+        "status": 200,
+        "method": "GET"
+      }
+    ],
+    "screenshots": [
+      "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-tab-chrome-desktop.png",
+      "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-tab-chrome-mobile.png"
+    ],
+    "identity": {
+      "status": "ok",
+      "service": "openplan",
+      "checkedAt": "2026-10-03T00:18:31.608Z",
+      "deployment": {
+        "commit": "f2465eedb1de",
+        "version": "0.66.0"
+      },
+      "checks": {
+        "app": "ok",
+        "database": "not_checked"
+      }
+    },
+    "keyboard": {
+      "tabFromImportToggle": "Refresh proposal history, then Inspect proposal dd741df4",
+      "enter": "opened original proposal"
+    },
+    "mobile": {
+      "width": 390,
+      "selectedContributionFocus": true,
+      "completeFinalSentence": true
+    },
+    "status": "passed",
+    "finishedAt": "2026-10-03T00:18:37.201Z"
+  },
+  "t3": {
+    "reason": "SYNTHETIC tab-preservation check f2465eed. Keep this exact reason after Responses and back.",
+    "desktopTabSwitchPreservedExactReason": true,
+    "recoveredAfterInterruption": true,
+    "mobileWidth": 390,
+    "mobileScrollWidth": 390,
+    "preservedThroughProductButton": true,
+    "preservedRevision": 2,
+    "noReplacementSubmitted": true,
+    "screenshots": [
+      "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-thematic-20261002-localhost-murn2n8z-38c92995.png",
+      "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-thematic-20261002-localhost-murn2oaq-78abbbac.png",
+      "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-thematic-20261002-localhost-murn8ggp-9ed24df7.png"
+    ]
+  },
+  "files": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-tab-integration-tests.log",
+      "sha256": "fab5ae2c3ca2c9bdfae2ec4c35c2e65d92f87bc8b13ed68baa5e8d47f024041e"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-tab-integration-build.log",
+      "sha256": "a8a20ce7d50f08a99871f8abd0bd85c5ec6b34bfc1b276a18b1f4b00aacdb9f8"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-tab-chrome-downloads.cjs",
+      "sha256": "699eff2d3f462b96ea90c0ffafa2597462ff226e531efcbb1c595ef9bc7c1291"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-tab-chrome-desktop.png",
+      "sha256": "298839018b57e1d7e4893911b0808e6807751e9bb6dd7ba7cf052290e54143aa"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-tab-chrome-mobile.png",
+      "sha256": "4dd0987f9d520d5888848ffc566679c9db6a0b4d3c31fa49f84a54b70d0c10cb"
+    }
+  ],
+  "limits": [
+    "Synthetic engineering evidence does not establish semantic accuracy or practitioner acceptance.",
+    "Existing owned restore stack also contains additive staff-lane migration 20261015000012; this journey does not prove a pristine migration011 upgrade.",
+    "Main c5942325 is newer and outside this source evidence.",
+    "Exact-head GitHub CI and native/restore checks were pending at capture."
+  ]
+}
