@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const createClientMock = vi.fn();
@@ -262,6 +262,9 @@ const fromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected table: ${table}`);
 });
 
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: (...args: unknown[]) => redirectMock(...args),
@@ -291,6 +294,26 @@ vi.mock("@/components/reports/report-detail-controls", () => ({
 }));
 
 import ReportDetailPage from "@/app/(app)/reports/[reportId]/page";
+
+/**
+ * The report page is a record hub with URL tabs, and a closed tab is not
+ * rendered at all: "packet" (the default) holds the summary cards and the
+ * release review, "evidence" the composition audit, "history" the provenance
+ * audit and the drift rows. The header, `ReportDetailControls` and the
+ * read-failure notice sit above the tab strip and render on every tab. Every
+ * assertion about a panel names the tab that holds it, because a negative
+ * assertion made on the wrong tab passes for the wrong reason.
+ */
+type ReportTabKey = "packet" | "evidence" | "history";
+
+async function renderReport(tab: ReportTabKey) {
+  render(
+    await ReportDetailPage({
+      params: Promise.resolve({ reportId: "report-1" }),
+      searchParams: Promise.resolve({ tab }),
+    })
+  );
+}
 
 function expectLinkByHref(name: RegExp, href: string) {
   const link = screen
@@ -916,8 +939,9 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
   });
 
   it("shows the engagement source, its public page access, and why the report exists", async () => {
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    await renderReport("history");
 
+    // The provenance audit, on the History tab.
     expect(screen.getByText("Engagement source")).toBeInTheDocument();
     expect(screen.getByText("Downtown listening campaign")).toBeInTheDocument();
     expect(
@@ -935,6 +959,12 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     expect(screen.getByText(/Snapshot captured/i)).toBeInTheDocument();
     expect(screen.getByText(/7 ready for handoff/i)).toBeInTheDocument();
     expect(screen.getAllByText(/12 items/i).length).toBeGreaterThan(0);
+
+    // The links out to the campaign and its public page are in the related
+    // surfaces list, on the Packet tab.
+    cleanup();
+    await renderReport("packet");
+
     expect(screen.getByRole("link", { name: /Open engagement campaign/i })).toHaveAttribute(
       "href",
       "/engagement/campaign-1"
@@ -946,7 +976,10 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
   });
 
   it("shows the governance and stage-gate provenance frozen into the packet", async () => {
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    await renderReport("history");
+
+    // The control for the History mark: every read succeeded.
+    expect(screen.queryByTestId("page-tab-unreadable-history")).not.toBeInTheDocument();
 
     expect(
       screen.getByText("Governance and stage-gate provenance")
@@ -971,7 +1004,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       error: null,
     });
 
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    await renderReport("history");
 
     expect(screen.getByText("Crash evidence")).toBeInTheDocument();
     expect(
@@ -980,31 +1013,40 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
   });
 
   it("refuses current-ready posture when the artifact recorded a failed crash read", async () => {
-    artifactsOrderMock.mockResolvedValueOnce({
-      data: [{
-        id: "artifact-safety-failed",
-        artifact_kind: "html",
-        generated_at: "2026-03-29T12:00:00.000Z",
-        storage_path: "packet.html",
-        metadata_json: {
-          sourceContext: {
-            projectUpdatedAt: "2026-03-28T18:01:00.000Z",
-            safetyEvidenceReadStatus: "failed",
+    // Staged once per render: the drift row is on the History tab and the
+    // packet's freshness posture on the Packet tab.
+    const stageFailedCrashReadArtifact = () =>
+      artifactsOrderMock.mockResolvedValueOnce({
+        data: [{
+          id: "artifact-safety-failed",
+          artifact_kind: "html",
+          generated_at: "2026-03-29T12:00:00.000Z",
+          storage_path: "packet.html",
+          metadata_json: {
+            sourceContext: {
+              projectUpdatedAt: "2026-03-28T18:01:00.000Z",
+              safetyEvidenceReadStatus: "failed",
+            },
           },
-        },
-      }],
-      error: null,
-    });
+        }],
+        error: null,
+      });
 
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }), searchParams: Promise.resolve({}) }));
+    stageFailedCrashReadArtifact();
+    await renderReport("history");
 
     expect(screen.getByText("Crash evidence read")).toBeInTheDocument();
     expect(screen.getByText(/not current or ready until regeneration completes/i)).toBeInTheDocument();
+
+    cleanup();
+    stageFailedCrashReadArtifact();
+    await renderReport("packet");
+
     expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
   });
 
   it("shows the project records and scenario basis the packet was built from", async () => {
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    await renderReport("history");
 
     expect(screen.getByText("Project records provenance")).toBeInTheDocument();
     expect(screen.getByText(/ADA curb ramp package/i)).toBeInTheDocument();
@@ -1038,7 +1080,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
   });
 
   it("shows the evidence chain summary with the aerial source context and its caveat", async () => {
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    await renderReport("history");
 
     expect(screen.getByText("Evidence chain summary")).toBeInTheDocument();
     expect(screen.getByText(/Quick scan of the source surfaces captured in the latest packet\./i)).toBeInTheDocument();
@@ -1053,7 +1095,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
   });
 
   it("shows the release review with its readiness, funding, lineage and grant posture", async () => {
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    await renderReport("packet");
 
     expect(screen.getByText("Packet release review")).toBeInTheDocument();
     expect(screen.getByText("Carry this packet through readiness")).toBeInTheDocument();
@@ -1095,7 +1137,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
   });
 
   it("shows what drifted between the frozen packet and the live sources", async () => {
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    await renderReport("history");
 
     expect(screen.queryByText(/0 linked set/i)).not.toBeInTheDocument();
     expect(screen.getByText(/1 linked set/i)).toBeInTheDocument();
@@ -1157,11 +1199,8 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       error: null,
     });
 
-    const page = await ReportDetailPage({
-      params: Promise.resolve({ reportId: "report-1" }),
-    });
-
-    render(page);
+    // The "Generated" summary card is on the Packet tab.
+    await renderReport("packet");
 
     expect(screen.queryByText(/^Not yet$/i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/3\/28\/2026/i).length).toBeGreaterThan(0);
@@ -1184,16 +1223,15 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
   });
 
   it("does not report an unreadable live gate log as a packet that still matches", async () => {
-    stageGateLimitMock.mockResolvedValueOnce({
-      data: null,
-      error: { message: 'permission denied for table "stage_gate_decisions"' },
-    });
+    const stageUnreadableGateLog = () =>
+      stageGateLimitMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'permission denied for table "stage_gate_decisions"' },
+      });
 
-    const page = await ReportDetailPage({
-      params: Promise.resolve({ reportId: "report-1" }),
-    });
-
-    render(page);
+    // The drift rows are on the History tab.
+    stageUnreadableGateLog();
+    await renderReport("history");
 
     // The drift row is withheld rather than rendered as a comparison that never
     // happened: an unreadable board has zero passes because the counts are
@@ -1202,6 +1240,17 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     expect(
       screen.queryByText(/Review counts and next steps still match the saved report snapshot/i)
     ).not.toBeInTheDocument();
+    // A reader on History, where the gate row is missing, is told why.
+    expect(screen.getByTestId("page-tab-unreadable-history")).toBeInTheDocument();
+    expect(screen.getByTestId("page-tabs-unreadable-notice")).toHaveTextContent(
+      "History: the live stage-gate board"
+    );
+
+    // The packet's freshness line is on the Packet tab.
+    cleanup();
+    stageUnreadableGateLog();
+    await renderReport("packet");
+
     expect(
       screen.queryByText(/No live source drift is currently visible/i)
     ).not.toBeInTheDocument();
@@ -1245,7 +1294,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       error: null,
     });
 
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    await renderReport("history");
 
     // The workspaces read carried the binding columns (import-derived, never
     // retyped) — without them the page could not resolve the binding at all.
@@ -1304,25 +1353,52 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       error: null,
     });
 
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    await renderReport("history");
 
     expect(
       screen.queryByText(/Review counts and next steps still match the saved report snapshot/i)
     ).not.toBeInTheDocument();
   });
 
-  it("reports the stage-gate check uncovered when the workspace binding cannot be read, instead of rendering default gates", async () => {
-    workspaceMaybeSingleMock.mockResolvedValueOnce({
+  it("marks History when the project's live crash evidence could not be read", async () => {
+    safetyIngestLimitMock.mockResolvedValueOnce({
       data: null,
-      error: { message: "permission denied for table workspaces" },
+      error: { message: "permission denied for table safety_crash_ingests" },
     });
 
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    await renderReport("packet");
 
-    // No confident verdict in either direction...
+    expect(screen.getByTestId("page-tab-unreadable-history")).toBeInTheDocument();
+    expect(screen.getByTestId("page-tabs-unreadable-notice")).toHaveTextContent(
+      "History: the project's linked crash evidence"
+    );
+  });
+
+  it("reports the stage-gate check uncovered when the workspace binding cannot be read, instead of rendering default gates", async () => {
+    const stageUnreadableWorkspace = () =>
+      workspaceMaybeSingleMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table workspaces" },
+      });
+
+    // No confident verdict in either direction: not in the drift rows (History)...
+    stageUnreadableWorkspace();
+    await renderReport("history");
+
     expect(screen.queryByText(/Review counts and next steps still match/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/No live source drift is currently visible/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Snapshot 1 pass/i)).not.toBeInTheDocument();
+    // A reader on History, where the gate row is missing, is told why.
+    expect(screen.getByTestId("page-tab-unreadable-history")).toBeInTheDocument();
+    expect(screen.getByTestId("page-tabs-unreadable-notice")).toHaveTextContent(
+      "History: the live stage-gate board"
+    );
+
+    // ...nor in the packet's freshness line (Packet)...
+    cleanup();
+    stageUnreadableWorkspace();
+    await renderReport("packet");
+
+    expect(screen.queryByText(/No live source drift is currently visible/i)).not.toBeInTheDocument();
     // ...and the gap is named: the BINDING row is what failed, not the log.
     expect(screen.getAllByText(/live stage-gate board could not be checked/i).length).toBeGreaterThan(0);
     expect(
@@ -1332,24 +1408,33 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
   });
 
   it("refuses to render default gates when the workspace names a template this deployment does not register", async () => {
-    workspaceMaybeSingleMock.mockResolvedValueOnce({
-      data: {
-        id: "workspace-1",
-        name: "OpenPlan QA",
-        slug: "openplan-qa",
-        stage_gate_template_id: "not_a_registered_template_v9",
-        home_geography_source: "tigerweb",
-        home_country_code: "US",
-        home_subdivision_code: "CA",
-      },
-      error: null,
-    });
-
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    const stageUnregisteredTemplate = () =>
+      workspaceMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "workspace-1",
+          name: "OpenPlan QA",
+          slug: "openplan-qa",
+          stage_gate_template_id: "not_a_registered_template_v9",
+          home_geography_source: "tigerweb",
+          home_country_code: "US",
+          home_subdivision_code: "CA",
+        },
+        error: null,
+      });
 
     // Substituting any registered template would compare the packet's frozen
-    // snapshot against a gate vocabulary nobody bound this workspace to.
+    // snapshot against a gate vocabulary nobody bound this workspace to. That
+    // comparison would be a drift row, on the History tab.
+    stageUnregisteredTemplate();
+    await renderReport("history");
+
     expect(screen.queryByText(/Review counts and next steps still match/i)).not.toBeInTheDocument();
+
+    // The named gap is in the packet's freshness line, on the Packet tab.
+    cleanup();
+    stageUnregisteredTemplate();
+    await renderReport("packet");
+
     expect(screen.getAllByText(/live stage-gate board could not be checked/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/not_a_registered_template_v9/).length).toBeGreaterThan(0);
   });
@@ -1390,7 +1475,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       });
       artifactsOrderMock.mockResolvedValueOnce({ data: [], error: null });
 
-      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+      await renderReport("packet");
 
       expect(screen.getAllByText(/^No packet$/i).length).toBeGreaterThan(0);
       expect(
@@ -1423,7 +1508,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
         error: { message: 'permission denied for table "report_artifacts"' },
       });
 
-      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+      await renderReport("packet");
 
       // (a) the false absence is gone — and so is its opposite, because
       // certifying the packet against a snapshot never read is the same defect
@@ -1461,7 +1546,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
         error: { message: 'permission denied for table "project_deliverables"' },
       });
 
-      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+      await renderReport("history");
 
       // The snapshot recorded 2 deliverables. An unread live table has zero, so
       // the un-guarded page published "Deliverables: 2 -> 0" — an outage
@@ -1535,7 +1620,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     it("publishes the funding-posture drift row when the live funding reads SUCCEED", async () => {
       artifactsOrderMock.mockResolvedValueOnce({ data: [FUNDING_ARTIFACT], error: null });
 
-      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+      await renderReport("history");
 
       // The control case. The live board genuinely holds one award worth
       // $700,000 against a snapshot of three worth $8,000,000, so this is an
@@ -1553,7 +1638,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
         error: { message: 'permission denied for table "funding_awards"' },
       });
 
-      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+      await renderReport("history");
 
       // (a) The fabricated dollar delta is gone — and so is "unchanged", which
       // would certify the packet's funding against a board never read.

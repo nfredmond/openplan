@@ -210,7 +210,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   ingest: 8,
   input: 39,
   intake: 11,
-  lane: 54,
+  lane: 53,
   legible: 1,
   migration: 21,
   mode: 14,

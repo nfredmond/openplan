@@ -398,7 +398,7 @@ async function main() {
     notes.push('Verified /api/map-features/aerial-missions returns a FeatureCollection containing the new mission AOI.');
 
     await page.goto(`${baseUrl}/aerial`, { waitUntil: 'networkidle' });
-    await page.getByText(/Mission register/i).first().waitFor({ timeout: 30000 });
+    await page.getByRole('heading', { name: 'Missions', exact: true }).waitFor({ timeout: 30000 });
     await page.getByText(missionTitle, { exact: false }).first().waitFor({ timeout: 30000 });
     await page.getByRole('region', { name: 'Aerial imagery layers' }).waitFor({ timeout: 30000 });
     await page.getByText(/No map-ready aerial preview yet/i).waitFor({ timeout: 30000 });

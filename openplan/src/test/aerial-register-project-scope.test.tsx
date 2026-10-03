@@ -55,12 +55,17 @@ type Result = { data: unknown; error: { message: string } | null };
 
 /** Every `.eq(column, value)` any builder saw this render, in order. */
 let equalityFilters: Array<{ table: string; column: string; value: unknown }> = [];
+/** Every `.select(columns)` any builder saw this render. */
+let selections: Array<{ table: string; columns: string }> = [];
 
 /** A supabase-js query builder that answers with `result` however it is chained. */
 function respondWith(table: string, result: Result) {
   const builder: Record<string, unknown> = {};
   const chain = () => builder;
-  builder.select = chain;
+  builder.select = (columns: string) => {
+    selections.push({ table, columns });
+    return builder;
+  };
   builder.in = chain;
   builder.order = chain;
   builder.limit = chain;
@@ -115,6 +120,7 @@ describe("The aerial register says whose missions it is showing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     equalityFilters = [];
+    selections = [];
     loadCurrentWorkspaceMembershipMock.mockResolvedValue({
       membership: { workspace_id: WORKSPACE_ID, role: "admin" },
     });
@@ -200,7 +206,7 @@ describe("The aerial register says whose missions it is showing", () => {
 
     await renderAerial();
 
-    expect(screen.getByText(/Planned, active, and completed missions in this workspace/i)).toBeInTheDocument();
+    expect(screen.getByText(/Every mission, newest first/i)).toBeInTheDocument();
     expect(screen.queryByText(/Showing only missions linked to/i)).not.toBeInTheDocument();
     expect(
       equalityFilters.some((filter) => filter.table === "aerial_missions" && filter.column === "project_id")
@@ -218,8 +224,8 @@ describe("The aerial register says whose missions it is showing", () => {
     expect(screen.getByText(/not evidence that no missions exist/i)).toBeInTheDocument();
     expect(screen.getByText(/relation aerial_missions does not exist/)).toBeInTheDocument();
     expect(screen.getByText("count unavailable")).toBeInTheDocument();
-    // Four tiles — Missions, Active, Complete, Ready packages — and not one of
-    // them may print the failed read as a count.
+    // Four counts (missions, active, complete, packages ready) and not one of
+    // them may print the failed read as a number.
     expect(screen.getAllByText("—")).toHaveLength(4);
   });
 
@@ -232,9 +238,59 @@ describe("The aerial register says whose missions it is showing", () => {
     await renderAerial();
 
     expect(screen.getByText(/evidence packages for these missions/i)).toBeInTheDocument();
-    expect(screen.getByText("unknown")).toBeInTheDocument();
+    expect(screen.getByText("Evidence packages: unknown")).toBeInTheDocument();
     // The mission counts still loaded, so those stay numbers; only the package
     // tile goes unavailable.
     expect(screen.getAllByText("—")).toHaveLength(1);
+  });
+});
+
+/**
+ * THE INDEX SITS BESIDE THE MAP. The shell map already draws every mission's
+ * area, but the page panel covered it. The panel now narrows to a sidebar, and
+ * each mission can send the map to its own area.
+ */
+describe("The aerial register sits beside the map it lists", () => {
+  const AREA = {
+    type: "Polygon",
+    coordinates: [[[-121.0, 39.0], [-120.9, 39.0], [-120.9, 39.1], [-121.0, 39.1], [-121.0, 39.0]]],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    equalityFilters = [];
+    selections = [];
+    delete document.body.dataset.surfaceBesideMap;
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: { workspace_id: WORKSPACE_ID, role: "admin" },
+    });
+  });
+
+  it("reads each mission's area and offers the map only for a mission that has one", async () => {
+    mountSupabase({
+      missions: {
+        data: [
+          missionRow({ aoi_geojson: AREA }),
+          missionRow({ id: "mission-2", title: "Bridge deck flight", aoi_geojson: null }),
+        ],
+        error: null,
+      },
+    });
+
+    await renderAerial();
+
+    const missionSelect = selections.find((selection) => selection.table === "aerial_missions");
+    expect(missionSelect?.columns).toContain("aoi_geojson");
+    expect(screen.getByRole("button", { name: "Show Corridor overflight on the map" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Show Bridge deck flight on the map" })).toBeNull();
+    expect(screen.getByText("No area drawn yet")).toBeInTheDocument();
+  });
+
+  it("asks the shell to set the page beside the map", async () => {
+    mountSupabase({ missions: { data: [missionRow()], error: null } });
+
+    await renderAerial();
+
+    expect(document.body.dataset.surfaceBesideMap).toBe("true");
   });
 });

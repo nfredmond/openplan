@@ -651,8 +651,15 @@ export default async function EngagementCampaignDetailPage({
             tone="warning"
             title={`${awaitingReviewCount} ${
               awaitingReviewCount === 1 ? "submission is" : "submissions are"
-            } waiting for review — residents currently see none of them`}
-            description="The public page shows approved comments only. Until something is approved, this live portal reads to residents as if nobody has responded. Review the queue in the moderation sections below."
+            } waiting for review. Residents currently see none of them`}
+            description="The public page shows approved comments only. Until something is approved, this live portal reads to residents as if nobody has responded."
+            action={
+              activeTab === "responses" ? null : (
+                <Link href={`/engagement/${campaign.id}?tab=responses`} className="module-inline-action w-fit">
+                  Review comments
+                </Link>
+              )
+            }
           />
         </div>
       ) : null}
@@ -961,7 +968,7 @@ export default async function EngagementCampaignDetailPage({
         />
         {canManageContextLayers ? <SurveyReviewQueue campaignId={campaign.id} /> : null}
         <div className="mt-6 min-w-0 space-y-6">
-        {/* Refresh Activity on opening its tab; other hidden panels retain their drafts. */}
+        {/* Refresh Activity each time its tab opens. */}
         {activeTab === "responses" && <EngagementNotificationsInbox campaignId={campaign.id} initialNotifications={notifications} />}
 
         {locatedItems.length > 0 ? (

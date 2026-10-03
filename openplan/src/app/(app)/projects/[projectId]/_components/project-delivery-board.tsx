@@ -237,8 +237,8 @@ export function ProjectDeliveryBoard({
                 : "Add invoices here as you bill for project work, and this will track what is paid and what is late."}
             </p>
             <div className="mt-3">
-              <Link href="#project-invoices" className="module-inline-action w-fit">
-                Open invoice lane
+              <Link href="?tab=funding#project-invoices" className="module-inline-action w-fit">
+                Open invoices
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>

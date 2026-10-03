@@ -235,8 +235,7 @@ describe("a read that failed behind a closed tab is still announced", () => {
 
     const sentence = describeUnreadableTabs(tabs);
 
-    expect(sentence).toContain("Funding");
-    expect(sentence).toContain("funding awards");
+    expect(sentence).toContain("Funding: funding awards");
     expect(sentence).toContain("invoice records");
     expect(sentence).toContain("unavailable rather than as a record that does not exist");
   });

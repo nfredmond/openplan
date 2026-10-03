@@ -198,13 +198,58 @@ Checks: 66 targeted tests in 7 files, run on one worker, and lint on the changed
 
 Limit: managed run summaries written before this change carry no eligibility record, so the board still shows their raw numbers. Not checked in the browser for this batch.
 
+## Closed tabs, October 2, 2026
+
+Checks: 743 tests in 48 files (every page test that renders a tabbed record page, plus the tab, copy and class-name guards), run on one worker; lint on the changed files; production build of this worktree with its type check, on port 3211; Chrome at 1440 and 390. The full suite was not run locally, for the reason given in the previous section.
+
+| Change | How it was checked |
+|---|---|
+| Each record-page tab is wrapped in React's `Activity` (`components/ui/page-tab-panel.tsx`). The server leaves closed tabs out of the HTML; once the page runs, React renders them hidden and keeps their state. Before, every tab was in the HTML and hidden with a class. The project overview page drops from 576 KB on main to 454 KB. The page's data payload still carries every tab, so that is the whole saving | `page-tabs-nav-and-panels.test.tsx`: the closed panel is hidden, it is absent from server HTML, and a typed draft survives closing and reopening its tab. Returning nothing for a closed tab fails 2; leaving it visible fails 2. Chrome: sizes measured on port 3000 (main 32dbc44b) and 3211 |
+| A draft survives a tab switch. Unmounting closed tabs, the plan in the review, would have lost it; the engagement page relied on this | Chrome at both widths: text typed in the project's RTP rationale field on Overview is still there after Delivery and back |
+| A map in a closed tab is not started. The engagement Responses maps start when that tab opens and are removed when it closes | Chrome: no map elements on Record, two drawn on Responses, none after moving to Setup, two again on return; no page errors |
+| 230 page tests in 11 files now open the tab that holds what they check. Before, they found content in closed tabs. Negative checks that passed only because their tab was closed now run on the tab where the text would appear, or on every tab. Two order checks on the engagement page became per-tab placement checks, because those sections are never on screen together | Each file was mutated by pointing a changed test at a wrong tab; each failed on the missing content and passed after a harmless edit. **Correction, same day:** those runs used a version that returned nothing for a closed tab. Under `Activity`, jsdom keeps closed tabs in the page, hidden, so a wrong-tab test passed again (checked on the plan page). Fixed in the next section |
+| "Open invoice lane" on a project's Delivery tab pointed at the invoice list on the Funding tab and went nowhere. It now reads "Open invoices" and opens the Funding tab at the list | Chrome at both widths: lands on `?tab=funding#project-invoices`, list at the top of the window. The jargon count for "lane" fell from 54 to 53 and the baseline was lowered |
+| The engagement banner for comments awaiting review told the reader to use "the moderation sections below", which are on the Responses tab. It now has a "Review comments" link to Responses, shown on every other tab. Its title no longer uses a dash | Two new tests; showing the link on Responses fails one, pointing it at Setup fails the other. Not seen on screen: no live campaign in the test workspace has comments waiting |
+
+Found while doing this (fixed in the next section):
+
+- Plan page: the "Linked work" tab is marked unreadable only for scenarios, campaigns and reports, not for linked projects or supporting models. The banner above the tabs still names every failed read.
+- Plan page: "No explicit links yet" points to the "Plan record workflow panel", which is now the "Edit plan" tab.
+- Report page: when the stage-gate log cannot be read, the History tab drops the stage-gate row without saying why; the explanation is only on Packet.
+
+## Page tests check the tab again; plan and report tab warnings, October 2, 2026
+
+Checks: 746 tests in 48 files on one worker, then the plan, report and tab-guard files again after the last edits; lint on changed files; dead-code check clean. No browser pass for this batch: the changes are a test stand-in and tab warning lists, and the warning marks were seen in the previous batch's journey only in their passing state.
+
+| Change | How it was checked |
+|---|---|
+| New test stand-in `src/test/helpers/open-tab-only.tsx` renders only the open tab. The 11 page-test files that render a tabbed page use it, so a test passes only when it opens the tab that holds what it checks. The real panel's hiding, server omission and draft keeping stay covered in `page-tabs-nav-and-panels.test.tsx` | Pointing the plan readiness test at the Edit tab now fails (it passed under the real panel). Inverting the stand-in to render only closed tabs fails 172 tests across 10 files; the eleventh checks only content above the tabs. A harmless edit to the stand-in keeps all 246 passing |
+| Plan page: tab definitions move to `plans/[planId]/_tabs.ts` (`buildPlanTabs`), registered with the read-failure wiring guard. "Linked work" now names failed reads of linked projects, supporting models, their link sets, the plan's own links and the scenario, campaign and report statistics; "Overview" names readiness checks and the plan's own links. Before, only scenarios, campaigns and reports marked the tab | Two new page tests. Dropping either model lane fails its test; wiring the models flag to `false` fails the guard and the test; reordering lanes passes |
+| Plan page: "No explicit links yet" pointed to the "Plan record workflow panel". It now says to use the Edit plan tab | Existing empty-state tests pass |
+| Report page: the History tab now names a failed read of the live stage-gate board or the project's crash evidence, in the notice above the tabs and with a mark on the tab. Before, History dropped the stage-gate row without saying why | Three report tests gained the History mark, plus one new crash-evidence test and a control. Wiring the flag to `false` fails the guard and two tests; dropping either lane fails its tests |
+| The notice "Reads that failed behind a tab" joined each tab to its list with an em dash. It now uses a colon ("Funding: funding awards"). The stage-gate sentence on the report page also loses its dash | `page-tabs-url-and-anchors.test.ts` pins "Funding: funding awards"; restoring the dash fails it |
+
+## Aerial index beside the map, October 2, 2026 (review finding M4, in part)
+
+Checks: Aerial, camera, map and copy tests (80 files) on one worker; lint on changed files; dead-code check; production build of this worktree with its type check, on port 3211; Chrome at 1440, 1100, 1024 and 390; the repo's map-reading and card-nesting audits.
+
+| Change | How it was checked |
+|---|---|
+| The Aerial index page panel ran from the rail to the layer controls, so the mission areas the shell map draws were under it. On screens 1024px and wider the panel is now a sidebar (`SurfaceBesideTheMap`, "THE PAGE AS A SIDEBAR BESIDE THE MAP" in `cartographic.css`) and the map fills the rest. Below 1024px nothing changes | Map-reading audit on `/aerial` at 1600 by 900: map visible with the page showing went from 10.4% (main, port 3000) to 48.1%; reading mode unchanged at 70.4%. A test fails if the page stops setting the mode |
+| The two-card header with four stat tiles became the shared page header with one row of four counts; the six-column mission table became a list that fits the sidebar. Failed reads still print as "count unavailable", a dash per count, or "Evidence packages: unknown" | Existing register tests pass with two wording updates. Card-nesting audit: `/aerial` nesting fell from 3 to 0; budget lowered in `fixtures/card-nesting-budget.json` |
+| Each mission with a drawn area has "Show on map". It switches the mission-areas layer on and moves the map to the area. On a screen narrower than 1024px it also opens "Read the map", because the page covers the map there. A mission without an area says "No area drawn yet" | New `aerial-index-sends-the-map.test.tsx` and two register tests, including a check that the page selects `aoi_geojson`. Seven targeted breaks each fail one test. Chrome: at 1440 and 1100 the area lands in the open map; at 390 reading mode opens on it |
+| A map move now pads for the sidebar on the left and the layer controls on the right (`applyFitInstruction` takes insets; with none, its calls are unchanged) | Tests for both insets; dropping either fails a test. Chrome at 1440: the area sits between the sidebar and the layer panel |
+| From 1024 to 1100px the header's appearance buttons sat on top of the "Read the map" card. This was also true on main. In sidebar mode the map controls now start below the header | Chrome at 1100: no overlap. Every control in the sidebar is the top element at its centre at 1440, 1100, 1024 and 390; the same check with a covering sheet reports all 11 covered |
+| "Aerial Ops" became "Aerial Imagery" in the mission page's back link and page titles, matching the rail (review finding N3) | Text change |
+
+Not done here: the mission page still boxes its map at a fixed height. That is the other half of M4.
+
 ## What is next
 
-1. Closed tabs unmount. 134 tests in 11 files open the tab content directly and must render the tab first.
-2. Aerial onto the map-first frame.
-3. Number formatting (review finding M10) and charts (M9).
-4. Copy pass. This waits on Nathaniel's vocabulary answers (decision D6).
-5. Keyboard and screen-reader walk.
-6. The four remaining palettes.
-7. A hosted smoke script for the public pages.
-8. Spanish strings reviewed by a speaker; the footer credit is Nathaniel's call.
+1. Aerial mission page: the map as the page, not a box (rest of M4).
+2. Number formatting (review finding M10) and charts (M9).
+3. Copy pass. This waits on Nathaniel's vocabulary answers (decision D6).
+4. Keyboard and screen-reader walk.
+5. The four remaining palettes.
+6. A hosted smoke script for the public pages.
+7. Spanish strings reviewed by a speaker; the footer credit is Nathaniel's call.
