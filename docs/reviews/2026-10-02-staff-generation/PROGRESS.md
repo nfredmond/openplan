@@ -247,3 +247,20 @@ swap for TypeScript. See [the check record](preparation-route-checks.json).
 The tests execute real Next handlers and adapters over mocked RPC. Native HTTP
 acceptance remains pending at this checkpoint. Worker pickup, heartbeat/restart,
 browser controls, provider authorization and full integration remain open.
+
+## Preparation route native HTTP acceptance
+
+An identified development server serves9d9e50ae from this staff checkout on3478
+against the owned restore-target database. All20 actual HTTP/native checks pass.
+They cover unqueued/queued/failed states, lost enqueue and retry acknowledgements,
+changed intent/stage refusals, cancellation and later enqueue replay. Replaying
+attempt1 after attempt2 fails leaves the newer failure and update time unchanged.
+Changed account/workspace headers, anonymous access, assistant markers and
+cross-origin writes are refused.
+
+The synthetic request remains cancelled. No generation plan or provider
+authorization is created. Original sources and proposal requests remain intact.
+See [the native HTTP record](preparation-route-native-http.json) for the request
+ID and source identity. The owned server stops after acceptance. These checks
+exercise actual HTTP and database boundaries, but do not establish production
+build behavior, browser usability, worker pickup or provider quality.

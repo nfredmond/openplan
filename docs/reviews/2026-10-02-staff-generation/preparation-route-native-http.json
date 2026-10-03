@@ -1,0 +1,111 @@
+{
+  "startedAt": "2026-10-03T00:41:03.226Z",
+  "source": "9d9e50ae270f9fea11d78e582347638f1d7c6bf9",
+  "target": "http://staff-generation-20261002.localhost:3478",
+  "requestId": "19e25125-2e13-466c-a4f2-169c955ff39c",
+  "checks": [
+    {
+      "label": "read existing unqueued request",
+      "status": 200
+    },
+    {
+      "label": "enqueue; discard acknowledgement",
+      "status": 201
+    },
+    {
+      "label": "recover same enqueue",
+      "status": 200
+    },
+    {
+      "label": "read queued state",
+      "status": 200
+    },
+    {
+      "label": "changed intent hash refused",
+      "status": 409
+    },
+    {
+      "label": "changed stage refused",
+      "status": 409
+    },
+    {
+      "label": "read native worker failure",
+      "status": 200
+    },
+    {
+      "label": "retry observed failed attempt",
+      "status": 200
+    },
+    {
+      "label": "recover lost retry acknowledgement",
+      "status": 200
+    },
+    {
+      "label": "old retry cannot requeue newer failure",
+      "status": 200
+    },
+    {
+      "label": "read cancelled preparation",
+      "status": 200
+    },
+    {
+      "label": "fresh retry after cancellation refused",
+      "status": 409
+    },
+    {
+      "label": "recover enqueue after cancellation",
+      "status": 200
+    },
+    {
+      "label": "foreign account header refused",
+      "status": 403
+    },
+    {
+      "label": "foreign workspace header refused",
+      "status": 403
+    },
+    {
+      "label": "anonymous read refused",
+      "status": 401
+    },
+    {
+      "label": "unregistered agent refused",
+      "status": 403
+    },
+    {
+      "label": "cross-origin mutation refused",
+      "status": 403
+    },
+    {
+      "label": "no rows in engagement_synthesis_generation_plans",
+      "count": 0
+    },
+    {
+      "label": "no rows in engagement_synthesis_generation_authorizations",
+      "count": 0
+    }
+  ],
+  "status": "passed",
+  "identity": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-03T00:41:03.242Z",
+    "deployment": {
+      "commit": "9d9e50ae270f",
+      "version": "0.66.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  },
+  "finishedAt": "2026-10-03T00:41:06.299Z",
+  "script": {
+    "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-http.cjs",
+    "sha256": "61e022e04a98cac93c4631a0f76ceef8b6962b6ba7ccaa3aba63212ba02b15ed"
+  },
+  "limits": [
+    "Identified development server and actual HTTP/database path; not production build or browser acceptance.",
+    "Synthetic fixture does not establish provider quality, worker scheduling or v1 completion."
+  ]
+}
