@@ -378,3 +378,35 @@ The owned server is stopped before further source changes. Mainc5942325 adds
 an Aerial mission page change after this tested source. Combined integration
 remains pending. These synthetic checks do not establish semantic accuracy,
 practitioner acceptance, campaign capacity or complete M9b/v1 readiness.
+
+
+## Restore runtime correction after crash recovery
+
+Source 04539c6d includes main c5942325. Its 161 focused tests, production build,
+TypeScript and identified Chrome download/keyboard/390px journey pass. The
+[source-specific evidence](mission-integration-evidence.json) preserves original
+file hashes, visually reviewed captures and the separate T3 disconnection.
+GitHub application CI 37081724964, native isolation 37081724943 and worker
+regression 37081724938 now pass. These results do not include later main 08d8b12c.
+
+Restore run 37081724998 is cancelled at the 45-minute job limit. It restores
+330 tables and one storage file, signs into the restored account and checks
+record relationships before starting native isolation at 00:26:50 UTC. GitHub
+cancels it at 01:06:46. The parallel native suite takes 42 minutes 15 seconds,
+longer than the restore job's remaining time. Suppressed output prevents locating
+the exact final test. This cancelled restore remains unaccepted.
+
+The workflow now permits 90 minutes for setup, recovery, the full native suite
+and cleanup. The shell command exposes native test progress and preserves its
+exit status. No tests or migration checks are removed. Bash syntax and all
+28 restore unit tests pass. Existing mutation checks record 45 expected results,
+including surviving harmless controls. Tail-only shell probes show that native
+failure prevents the final PASS message. Reintroducing output suppression hides
+progress; ignoring the native failure incorrectly prints PASS. These probes use
+fake npm and do not establish database recovery. See
+[the timeout record](restore-timeout-checks.json).
+
+The full GitHub restore rerun remains required. Main integration, the staff
+preparation worker and complete M9b/v1 acceptance remain unfinished. Local
+checks use bounded memory and no swap. The reported client crashes have no
+established cause; no other agent's process, checkout or browser is changed.
