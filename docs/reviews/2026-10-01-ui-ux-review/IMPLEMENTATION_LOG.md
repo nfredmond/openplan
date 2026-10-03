@@ -244,12 +244,27 @@ Checks: Aerial, camera, map and copy tests (80 files) on one worker; lint on cha
 
 Not done here: the mission page still boxes its map at a fixed height. That is the other half of M4.
 
+## Aerial mission page as a record with its map first, October 2, 2026 (rest of review finding M4)
+
+Checks: 1,061 tests in 88 files (mission, Aerial, tab guards, map guards, copy guards and every tabbed page test) on one worker; lint on changed files; production build with its type check, on port 3211; Chrome at 1440 and 390, arriving from the Aerial index by clicking.
+
+| Change | How it was checked |
+|---|---|
+| The mission page was six stacked boxes beside a facts column, with the map fourth, in a 420px box. It is now a record: the shared record header, then tabs for Map, Flight plan, Photos, Processing and Evidence (`aerial/missions/[missionId]/_tabs.ts`). It opens on Map, with the mission map beside the facts column. The map's canvas measured 754 by 612 at 1440 by 900 | New tests: the page opens on Map with the map in it; Flight plan links to `tab=plan`. Defaulting to Flight plan fails one. Chrome: each tab opens with its own content, no horizontal scroll, no console errors |
+| The mission map now draws the mission's area to fly: a faint fill under any imagery, an outline over it, its own toggle, and the camera frames it. Before, a mission with an area but no imagery showed "Nothing to place on a map yet" | Four new tests in `aerial-mission-map.test.tsx`. Five targeted breaks (area not drawn alone, not framed, outline under the imagery, toggle inert, no validation) each fail. Chrome: the area is drawn on the Map tab at both widths |
+| Each tab names the reads that failed behind it: Map (the imagery preview, evidence packages), Processing (jobs, files held from each job), Evidence (packages). The builder is registered with the read-failure wiring guard and the tab guard table | Two new tests; wiring the jobs flag to `false` fails the guard and a test; dropping the Map packages lane fails a test after its check was tightened (the first version passed with the lane removed, because the preview alone marks the tab here) |
+| Section headings in plain words: "Mission AOI & export" is "Area to fly", "Survey flight plan & exports" is "Flight plan", "Packages" is "Evidence packages" | The evidence smoke (`qa-harness/local-aerial-evidence-smoke.js`) now opens each tab for what it checks. Not run: it writes users and missions into the local database the walkthrough instance uses |
+| The mission map and the flight-plan editor keep their maps sized to their containers, as the tab guard requires of any map inside a tab | `page-tabs-maps-are-resized.test.ts` passes for both |
+| The "Ready for project/report/grant attachment" badge ran past the facts column's edge. It wraps inside the column now | Chrome at 1440 |
+| Mission tests open the tab they check, using the open-tab-only stand-in | 81 mission page tests pass |
+
+Also in this stretch: the tab guards were reading the plan page's tab list from a declaration 4bf1f907 had moved into `_tabs.ts`, so three guard files failed on main (CI run for 4bf1f907). Fixed in 577f2370, which reads the plan tabs from `buildPlanTabs`; a planted link to an unclaimed plan anchor fails the guard again. I had not rerun those guards after the move.
+
 ## What is next
 
-1. Aerial mission page: the map as the page, not a box (rest of M4).
-2. Number formatting (review finding M10) and charts (M9).
-3. Copy pass. This waits on Nathaniel's vocabulary answers (decision D6).
-4. Keyboard and screen-reader walk.
-5. The four remaining palettes.
-6. A hosted smoke script for the public pages.
-7. Spanish strings reviewed by a speaker; the footer credit is Nathaniel's call.
+1. Number formatting (review finding M10) and charts (M9).
+2. Copy pass. This waits on Nathaniel's vocabulary answers (decision D6).
+3. Keyboard and screen-reader walk.
+4. The four remaining palettes.
+5. A hosted smoke script for the public pages.
+6. Spanish strings reviewed by a speaker; the footer credit is Nathaniel's call.

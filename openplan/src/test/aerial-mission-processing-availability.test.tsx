@@ -98,6 +98,9 @@ const fromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected table: ${table}`);
 });
 
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: () => redirectMock(),
@@ -139,9 +142,10 @@ import AerialMissionDetailPage from "@/app/(app)/aerial/missions/[missionId]/pag
  * body would let a leftover render from an earlier case satisfy — or falsely
  * fail — them.
  */
-async function renderMissionPage(): Promise<string> {
+async function renderMissionPage(tab = "processing"): Promise<string> {
+  // Processing is the tab these checks are about; the page opens on Map.
   const { container } = render(
-    await AerialMissionDetailPage({ params: Promise.resolve({ missionId: MISSION_ID }) })
+    await AerialMissionDetailPage({ params: Promise.resolve({ missionId: MISSION_ID }), searchParams: Promise.resolve({ tab }) })
   );
   return container.textContent ?? "";
 }

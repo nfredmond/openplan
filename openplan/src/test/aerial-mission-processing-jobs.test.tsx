@@ -129,6 +129,9 @@ const fromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected table: ${table}`);
 });
 
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: () => redirectMock(),
@@ -178,9 +181,10 @@ function jobRow(overrides: JobFixture = {}): JobFixture {
   };
 }
 
-async function renderMissionPage(): Promise<HTMLElement> {
+async function renderMissionPage(tab = "processing"): Promise<HTMLElement> {
+  // Processing is the tab these checks are about; the page opens on Map.
   const { container } = render(
-    await AerialMissionDetailPage({ params: Promise.resolve({ missionId: MISSION_ID }) })
+    await AerialMissionDetailPage({ params: Promise.resolve({ missionId: MISSION_ID }), searchParams: Promise.resolve({ tab }) })
   );
   return container;
 }
@@ -533,7 +537,9 @@ describe("aerial mission processing jobs are visible", () => {
     jobsLimitMock.mockResolvedValue({ data: [], error: null });
 
     const container = await renderMissionPage();
-    const text = container.textContent ?? "";
+    // Scoped to the processing section: the page can name an unrelated failed
+    // read above the tabs (here, the map preview this test does not set up).
+    const text = container.querySelector("#aerial-mission-processing")?.textContent ?? "";
 
     expect(text).toMatch(/No imagery processing has been requested for this mission/i);
     expect(text).not.toMatch(/could not be read/i);
@@ -595,7 +601,8 @@ describe("aerial mission processing jobs are visible", () => {
   });
 
   it("calls an uncapped job list a total", async () => {
-    const container = await renderMissionPage();
+    // The job count is summarised in the facts beside the map.
+    const container = await renderMissionPage("map");
 
     expect(container.textContent ?? "").toContain("1 total");
   });
@@ -702,7 +709,8 @@ describe("aerial mission processing jobs are visible", () => {
       error: { message: "column aerial_evidence_packages.verification_readiness does not exist" },
     });
 
-    const container = await renderMissionPage();
+    // The package counts are summarised in the facts beside the map.
+    const container = await renderMissionPage("map");
     const text = container.textContent ?? "";
 
     expect(text).toMatch(/Evidence packages could not be read/i);
@@ -1167,4 +1175,55 @@ describe("the silence boundary itself", () => {
     expect(container.textContent).not.toMatch(/download from the processing worker/i);
   });
 
+});
+
+/**
+ * THE MISSION PAGE IS A RECORD WITH TABS, AND IT OPENS ON THE MAP. The map used
+ * to be the fourth of six stacked sections, in a 420px box. A failed read behind
+ * a tab is named on the tab, because the panel that would say so may be closed.
+ */
+describe("the mission page opens on its map", () => {
+  beforeEach(installMissionPageMocks);
+  afterEach(restoreEnv);
+
+  async function renderDefault() {
+    const { container } = render(
+      await AerialMissionDetailPage({ params: Promise.resolve({ missionId: MISSION_ID }) })
+    );
+    return container;
+  }
+
+  it("shows the Map tab, with the mission map in it, when no tab is asked for", async () => {
+    const container = await renderDefault();
+
+    const mapPanel = container.querySelector('[data-page-tab-panel="map"][data-page-tab-panel-state="open"]');
+    expect(mapPanel).not.toBeNull();
+    expect(within(mapPanel as HTMLElement).getByTestId("aerial-mission-map")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^Flight plan/ })).toHaveAttribute(
+      "href",
+      expect.stringContaining("tab=plan")
+    );
+  });
+
+  it("marks the Evidence and Map tabs when the package read fails", async () => {
+    packagesOrderMock.mockResolvedValue({ data: null, error: { message: "permission denied" } });
+
+    await renderDefault();
+
+    expect(screen.getByTestId("page-tab-unreadable-evidence")).toBeInTheDocument();
+    expect(screen.getByTestId("page-tab-unreadable-map")).toBeInTheDocument();
+    expect(screen.queryByTestId("page-tab-unreadable-processing")).toBeNull();
+    // The Map tab can be marked for its preview alone (this file does not set
+    // up the signing client), so the lane is checked by name under Map.
+    expect(screen.getByTestId("page-tabs-unreadable-notice").textContent).toMatch(/Map: [^;]*evidence packages/);
+  });
+
+  it("marks the Processing tab when the job read fails", async () => {
+    jobsLimitMock.mockResolvedValue({ data: null, error: { message: "permission denied" } });
+
+    await renderDefault();
+
+    expect(screen.getByTestId("page-tab-unreadable-processing")).toBeInTheDocument();
+    expect(screen.getByTestId("page-tabs-unreadable-notice")).toHaveTextContent("Processing: processing jobs");
+  });
 });
