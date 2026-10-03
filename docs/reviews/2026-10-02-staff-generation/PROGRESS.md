@@ -304,3 +304,34 @@ Stage callbacks must cooperate with cancellation; the event loop cannot renew
 a lease during blocking synchronous work. Provider execution and staff-facing
 controls remain separate unfinished steps. No full-QA, capacity, semantic-quality
 or complete M9b/v1 claim follows from these focused checks.
+
+
+## Explicit preparation queue discovery
+
+The worker now reads bounded pages from the explicit preparation queue. It
+selects queued jobs and running jobs whose leases appear expired, orders by
+request ID and returns a continuation after every nonempty page. A short page
+is not the end of the queue. Discovery grants no authority; native claim still
+checks its own clock, current requester access and cancellation. Malformed,
+unordered, oversized, failed or late reads remain errors rather than empty work.
+
+All 26 discovery tests and 153 combined preparation tests pass. Strict lint and
+whole-package TypeScript pass. Mutation testing first exposes a test-fixture
+error: parameterized row arrays are unpacked instead of delivered as complete
+pages, so an ordering fault survives. Wrapping each page fixes that test boundary.
+The initial failure remains in [the check record](preparation-candidates-checks.json).
+After correction, a harmless control survives and 19 targeted faults fail.
+
+Five native checks pass on the owned restore-target. Explicit queued work is
+found; unqueued, failed, cancelled and actively leased work stays outside the
+scan. Reducing each outgoing HTTP page to one row still reaches the same full
+inventory. Advancing the discovery clock does not override a native active
+lease. After actual expiry, discovery returns the job and native reclaim starts
+attempt2. No execution authorization is created. A deliberate short-page fault
+fails the real inventory comparison. Source bytes are restored, all synthetic
+requests are cancelled, and the final combined tests pass.
+
+The caller still needs a durable token/outcome journal, stage reconstruction and
+an installed worker command. Queue scans are not immutable snapshots; changed
+jobs may be visited on the next pass. These checks do not establish campaign
+capacity, semantic quality, browser usability, full QA or complete M9b/v1 status.
