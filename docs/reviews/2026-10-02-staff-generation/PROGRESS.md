@@ -558,3 +558,27 @@ These are client protocol and static checks. The production build and native
 HTTP helper exercise follow separately. Visible staff controls, real browser
 storage/restart acceptance, context/thematic creation controls and explicit
 provider authorization remain unfinished. The full M9b and v1 scope is unchanged.
+
+## Generation client native HTTP follow-through
+
+The production build of `7e19e87f` passes in 73.575 seconds with a 6.4 GiB
+memory peak and swap disabled. The identified server serves the owned staff
+checkout. An immediate startup health probe receives no answer; the later
+identity check matches. The client harness also checks the compiled commit
+before writes, and the server process cwd matches the application directory.
+
+The actual browser-target client bundle passes 13 checks through authenticated
+HTTP to the isolated test database. Lost creation and cancellation replies
+recover the same records after storage rehydration. Changed intent bytes fail
+with a native conflict. Cancellation before creation prevents later creation;
+changed account headers fail while the exact local command remains retained.
+Creation replay after cancellation returns the same cancellation receipt.
+
+Database reads confirm one new cancelled root request and no second request,
+preparation job, plan or provider authorization. The original thematic fixture
+remains unchanged. Both new request IDs are cancelled, and the owned server is
+stopped after checks. See `generation-browser-native-http.json`.
+
+The client runs under Node with in-memory Storage in this check. Real browser
+storage and the visible staff workflow remain unverified. No release, main
+landing, full native isolation or complete branch acceptance is claimed here.

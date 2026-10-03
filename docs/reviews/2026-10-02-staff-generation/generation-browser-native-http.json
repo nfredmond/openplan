@@ -1,0 +1,63 @@
+{
+  "recordedAt": "2026-10-03T04:30:44.713678+00:00",
+  "applicationHead": "7e19e87f543b14a3e4b57710daf331d139e6ae5d",
+  "productionBuild": "pass webpack and TypeScript",
+  "buildResources": {
+    "wallSeconds": 73.575,
+    "memoryPeakGiB": 6.4,
+    "swapPolicy": "MemorySwapMax0"
+  },
+  "http": {
+    "startedAt": "2026-10-03T04:28:51.405Z",
+    "head": "7e19e87f543b14a3e4b57710daf331d139e6ae5d",
+    "target": "http://staff-generation-20261002.localhost:3478",
+    "requestId": "572fd25d-83e7-4d0f-add8-9864de249332",
+    "absentId": "ae1603e3-9280-4a7a-8e01-4bc8f68c639d",
+    "checks": [
+      "creation lost reply retains original intent and request",
+      "rehydrated client recovers original creation without a new ID",
+      "native byte conflict keeps changed retry unconfirmed",
+      "lost cancellation replay preserves independent creation custody",
+      "old creation replay recovers the same cancelled native record",
+      "cancellation before creation prevents later creation and keeps its local command",
+      "changed account header is refused with pending custody retained",
+      "explicit preservation retains the cancelled-before-arrival creation bytes",
+      "actual database contains one exact request and no cancelled-before-arrival request",
+      "no rows in engagement_synthesis_generation_plans",
+      "no rows in engagement_synthesis_preparation_jobs",
+      "no rows in engagement_synthesis_generation_authorizations",
+      "original thematic request remains unchanged"
+    ],
+    "status": "passed",
+    "limit": "Actual compiled client helper and HTTP/native protocol with synthetic account; Storage is an in-memory test implementation. No real browser or native Save dialog acceptance.",
+    "identity": {
+      "status": "ok",
+      "service": "openplan",
+      "checkedAt": "2026-10-03T04:28:51.834Z",
+      "deployment": {
+        "commit": "7e19e87f543b",
+        "version": "0.66.0"
+      },
+      "checks": {
+        "app": "ok",
+        "database": "not_checked"
+      }
+    },
+    "finishedAt": "2026-10-03T04:28:52.657Z"
+  },
+  "identity": "Client helper verifies matching health SHA before writes; which-openplan confirms matching checkout and /proc/2842760/cwd confirms owned application directory. Initial immediate health probe occurred before server was listening and was retried.",
+  "limits": [
+    "The browser-target client bundle runs under Node with an in-memory Storage implementation and real authenticated HTTP. No native browser storage, rendering, click path or screen-reader acceptance.",
+    "One new synthetic root request is created then cancelled; a second request is cancelled before creation and never created. No preparation jobs, plans or provider grants for these IDs. Original thematic fixture unchanged.",
+    "No new native RLS suite, complete branch QA, full restore, release or main acceptance is claimed by these thirteen HTTP checks."
+  ],
+  "privateEvidenceDirectory": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27",
+  "logs": {
+    "staff-generation-browser-http.cjs": "7a04a582d50599f83d3ba828575cff13adfa112b818f06092dcc2f99f74e1a89",
+    "staff-generation-browser-http.json": "d1e5a12981dc7bb2f2fb7d599f26d193d69e725ceafb9dc9d15235e2ae5257f9",
+    "staff-generation-browser-http.log": "531a1f41028c1e03e861e805103f7a32a6170cf82aa3ff79bf23979b4c20b635",
+    "staff-generation-browser-build.log": "3cee56936d2fd712839f4ea5b228c7b1f52765cadd5f85e7a7ae921afe718fe7",
+    "staff-generation-browser-server.log": "2452bde903292d9e3a517de408c3f516c4f488d6c0b7b90fbe0e78467f877d00",
+    "generation-request-recovery-browser.cjs": "edfc26d87282c56b930e7888684224ff983107db778d63eaac090c08238e9219"
+  }
+}

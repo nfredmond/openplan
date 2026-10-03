@@ -6,7 +6,10 @@
     "newRecoveryTests": 36,
     "newServerDeadlineTests": 1,
     "initialCombinedTests": 121,
-    "finalCombined": "See static log, eight files including context/thematic adapters and preparation recovery",
+    "finalCombined": {
+      "tests": 184,
+      "files": 8
+    },
     "types": "whole package pass",
     "lint": "strict changed files pass",
     "deadcode": "configured errors pass; existing warning classes remain",
