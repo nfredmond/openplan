@@ -148,7 +148,7 @@ function titleize(value: string | null | undefined): string {
 function fmtDateTime(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
 }
 
 function toneForConnectorStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
@@ -888,7 +888,7 @@ export default async function DataHubPage() {
                       {dataset.vintage_label ? <span className="module-record-chip">Vintage {dataset.vintage_label}</span> : null}
                       {dataset.license_label ? <span className="module-record-chip">License {dataset.license_label}</span> : null}
                       {dataset.row_count !== null ? (
-                        <span className="module-record-chip">Rows {dataset.row_count.toLocaleString()}</span>
+                        <span className="module-record-chip">Rows {dataset.row_count.toLocaleString("en-US")}</span>
                       ) : null}
                       {dataset.geometry_attachment !== "none" ? (
                         <span className="module-record-chip">Geometry {titleize(dataset.geometry_attachment)}</span>
@@ -1030,7 +1030,7 @@ export default async function DataHubPage() {
                         <span className="module-record-chip">Completed {fmtDateTime(job.completed_at)}</span>
                       ) : null}
                       {typeof job.records_written === "number" ? (
-                        <span className="module-record-chip">{job.records_written.toLocaleString()} records</span>
+                        <span className="module-record-chip">{job.records_written.toLocaleString("en-US")} records</span>
                       ) : null}
                       {job.triggered_by_label ? <span className="module-record-chip">Triggered by {job.triggered_by_label}</span> : null}
                     </div>

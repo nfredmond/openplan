@@ -410,3 +410,19 @@ The full GitHub restore rerun remains required. Main integration, the staff
 preparation worker and complete M9b/v1 acceptance remain unfinished. Local
 checks use bounded memory and no swap. The reported client crashes have no
 established cause; no other agent's process, checkout or browser is changed.
+
+
+## Main formatting and chart integration
+
+GitHub run37085539412 tests PR114754aa7e1 against newer main. Normal and shuffled
+suites each pass17,639 tests but fail the new locale guard on the import panel's
+request date. Local reproduction after merging main08d8b12c finds the same bare
+`toLocaleString()` call. The panel now passes `en-US`, matching main's formatter
+policy. The existing guard remains intact. This pins locale, not timezone.
+
+All89 focused tests in eight files pass with the failing seed304156, including
+main's shared chart bars, disclosure, missing-award and formatting checks, plus
+thematic import/recovery/editor checks. Strict lint passes. See
+[the integration record](locale-integration-checks.json). The production build,
+combined identified browser journey and fresh GitHub results remain pending.
+This integration does not change the release or v1 evidence requirements.

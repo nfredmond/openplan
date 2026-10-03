@@ -88,7 +88,7 @@ function ApprovedActionRecovery({ workspaceId, kind }: { workspaceId: string; ki
         {items.map(item => (
           <section key={item.approvalId} aria-label={`Approved ${kind}: ${"gateLabel" in item ? item.gateLabel : item.action?.title ?? "Earlier submittal approval"}`} className="min-w-0 rounded-lg border border-border p-4">
             <h3 className="font-semibold break-words">{"gateLabel" in item ? item.gateLabel : item.action?.title ?? "Earlier submittal approval"}</h3>
-            <p className="mt-1 text-xs text-muted-foreground">Approved {new Date(item.approvedAt).toLocaleString()}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Approved {new Date(item.approvedAt).toLocaleString("en-US")}</p>
             {item.action ? <p className="mt-3 whitespace-pre-wrap break-words text-sm">{item.action.kind === "record_stage_gate_hold" ? item.action.rationale : item.action.notes}</p> : null}
             {item.action?.kind === "record_stage_gate_hold" && item.action.missingArtifacts?.length ? <p className="mt-2 break-words text-sm">Missing evidence: {item.action.missingArtifacts.join(", ")}</p> : null}
             {item.action ? <dl className="mt-2 space-y-1 break-words text-xs text-muted-foreground">
@@ -99,7 +99,7 @@ function ApprovedActionRecovery({ workspaceId, kind }: { workspaceId: string; ki
             </dl> : null}
             {item.receipt && "record" in item.receipt ? <p className="mt-3 break-words text-sm">Original status: {item.receipt.record.status.replace(/_/g, " ")}. Submittal type: {item.receipt.record.submittal_type.replace(/_/g, " ")}.</p> : null}
             {item.issue ? <p className="mt-3 text-sm">{item.issue}</p> : item.receipt ? (
-              <p className="mt-3 text-sm font-medium">{kind === "HOLD" ? "HOLD" : "Submittal"} saved {new Date("decision" in item.receipt ? item.receipt.decision.decided_at : item.receipt.record.created_at).toLocaleString()}. Its original receipt is retained.{"record" in item.receipt ? " This is the result at creation; later project or record edits do not change it." : ""}</p>
+              <p className="mt-3 text-sm font-medium">{kind === "HOLD" ? "HOLD" : "Submittal"} saved {new Date("decision" in item.receipt ? item.receipt.decision.decided_at : item.receipt.record.created_at).toLocaleString("en-US")}. Its original receipt is retained.{"record" in item.receipt ? " This is the result at creation; later project or record edits do not change it." : ""}</p>
             ) : (
               <p className="mt-3 text-sm">No completed receipt was found in this read. {Date.parse(item.expiresAt) <= Date.now() ? "This approval expired. Check the project before reviewing a new request." : "An explicit resume can use the same approval if its context is still current."}</p>
             )}

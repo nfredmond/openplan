@@ -212,13 +212,13 @@ function esc(value: string): string {
 export function formatRtpExportDate(value: string | null | undefined): string {
   if (!value) return "Not set";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString("en-US");
 }
 
 function formatRtpExportDateTime(value: string | null | undefined): string {
   if (!value) return "Not set";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
 }
 
 function formatRtpExportCurrency(value: number | null | undefined): string {
@@ -937,7 +937,7 @@ export function buildRtpExportHtml(input: RtpExportHtmlInput): string {
     <h2>Appendix and references</h2>
     <div class="card">
       <p><strong>Packet composition:</strong> ${esc(enabledSectionKeys.join(", "))}</p>
-      <p><strong>Cycle updated:</strong> ${esc(new Date(cycle.updated_at).toLocaleString())}</p>
+      <p><strong>Cycle updated:</strong> ${esc(new Date(cycle.updated_at).toLocaleString("en-US"))}</p>
       <p><strong>Chapter count:</strong> ${chapters.length}</p>
       <p><strong>Linked projects:</strong> ${linkedProjects.length}</p>
       <p><strong>Engagement targets:</strong> ${campaigns.length}</p>
@@ -1021,7 +1021,7 @@ export function buildRtpExportHtml(input: RtpExportHtmlInput): string {
   </style>
 </head>
 <body>
-  <p class="muted">${esc(titleSuffix)} · Generated ${esc(new Date().toLocaleString())}</p>
+  <p class="muted">${esc(titleSuffix)} · Generated ${esc(new Date().toLocaleString("en-US"))}</p>
   <h1>${esc(cycle.title)}</h1>
   ${buildRtpPacketScanSummary({ enabledSectionKeys, composition, stats, chapters, linkedProjects, campaigns })}
   ${sections.join("\n")}

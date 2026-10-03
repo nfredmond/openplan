@@ -107,12 +107,12 @@ export function formatRtpModelingEvidenceLine(evidence: RtpModelingEvidence): st
   const vmt = evidence.residentVmtPerCapita ?? evidence.vmtPerCapita;
   if (vmt !== null) {
     const label = evidence.residentVmtPerCapita !== null ? "resident VMT/capita" : "VMT/capita";
-    parts.push(`${label} ${vmt.toLocaleString(undefined, { maximumFractionDigits: 1 })}`);
+    parts.push(`${label} ${vmt.toLocaleString("en-US", { maximumFractionDigits: 1 })}`);
   }
   if (evidence.ghgTonsPerYear !== null) {
-    parts.push(`GHG ${evidence.ghgTonsPerYear.toLocaleString(undefined, { maximumFractionDigits: 0 })} t CO₂e/yr`);
+    parts.push(`GHG ${evidence.ghgTonsPerYear.toLocaleString("en-US", { maximumFractionDigits: 0 })} t CO₂e/yr`);
   } else if (evidence.ghgKgPerCapitaDay !== null) {
-    parts.push(`GHG ${evidence.ghgKgPerCapitaDay.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg CO₂e/capita·day`);
+    parts.push(`GHG ${evidence.ghgKgPerCapitaDay.toLocaleString("en-US", { maximumFractionDigits: 2 })} kg CO₂e/capita·day`);
   }
   if (parts.length > 0) {
     return `${parts.join(" · ")} (screening-grade)`;

@@ -80,7 +80,7 @@ function pct(value: number | null): string {
 function when(value: string | null): string {
   if (!value) return "Not available";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
 }
 
 /** The four tiles in the overview header. */

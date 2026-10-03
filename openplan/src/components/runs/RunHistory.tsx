@@ -50,7 +50,7 @@ function formatDate(value: string): string {
     return value;
   }
 
-  return parsed.toLocaleString();
+  return parsed.toLocaleString("en-US");
 }
 
 function prioritizeMapContext(items: Array<{ label: string; value: string }>): Array<{ label: string; value: string }> {

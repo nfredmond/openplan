@@ -69,7 +69,7 @@ const defaultCostMetadata = () => ({
 
 function formatDateTime(value: string): string {
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
 }
 function normalizedHeaders(headers: string[]): string[] {
   return headers.map((header) => header.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase("en-US"));
@@ -209,7 +209,7 @@ export function ProjectPortfolioImporter({
         ...current,
         worksheets: current.worksheets.map((sheet) => sheet.index === worksheetIndex ? complete : sheet),
       } : current);
-      setMessage(`All ${complete.rowCount.toLocaleString()} rows in ${complete.name} are available for inspection.`);
+      setMessage(`All ${complete.rowCount.toLocaleString("en-US")} rows in ${complete.name} are available for inspection.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not inspect every row in the worksheet.");
     } finally {
@@ -402,8 +402,8 @@ export function ProjectPortfolioImporter({
             <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
               <span>
                 {sheet.sampleRows.length >= sheet.rowCount
-                  ? `All ${sheet.rowCount.toLocaleString()} rows available for inspection.`
-                  : `Showing the first ${sheet.sampleRows.length.toLocaleString()} of ${sheet.rowCount.toLocaleString()} rows.`}
+                  ? `All ${sheet.rowCount.toLocaleString("en-US")} rows available for inspection.`
+                  : `Showing the first ${sheet.sampleRows.length.toLocaleString("en-US")} of ${sheet.rowCount.toLocaleString("en-US")} rows.`}
               </span>
               {sheet.sampleRows.length < sheet.rowCount ? <button
                 type="button"
@@ -411,7 +411,7 @@ export function ProjectPortfolioImporter({
                 disabled={inspectingWorksheetIndex !== null}
                 onClick={() => void inspectAllWorksheetRows(sheet.index)}
               >
-                {inspectingWorksheetIndex === sheet.index ? "Loading every row…" : `Inspect all ${sheet.rowCount.toLocaleString()} rows`}
+                {inspectingWorksheetIndex === sheet.index ? "Loading every row…" : `Inspect all ${sheet.rowCount.toLocaleString("en-US")} rows`}
               </button> : null}
             </div>
             <div className="overflow-x-auto rounded border"><table className="min-w-max text-xs"><tbody>{sheet.sampleRows.map((row) => <tr key={row.rowNumber} className="border-b last:border-0"><th className="bg-muted/50 px-2 py-1 text-right font-mono">{row.rowNumber}</th>{row.cells.map((cell, index) => <td key={index} className="max-w-48 truncate border-l px-2 py-1" title={cell.formula ? "Cached formula value" : cell.display}>{cell.display || " "}{cell.formula ? " [formula]" : ""}</td>)}</tr>)}</tbody></table></div>

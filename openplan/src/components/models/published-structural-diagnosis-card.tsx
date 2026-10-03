@@ -47,8 +47,8 @@ export function PublishedStructuralDiagnosisCard({
       </p>
       <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>{countyIds.length} counties and {study.records.length} separate county/method records.</li>
-        <li>Up to {missingCoordinates.toLocaleString()} observations in a county lack usable point coordinates.</li>
-        <li>{zeroVolumeRecords.toLocaleString()} matched observation records across the separate method files retain zero assigned volume.</li>
+        <li>Up to {missingCoordinates.toLocaleString("en-US")} observations in a county lack usable point coordinates.</li>
+        <li>{zeroVolumeRecords.toLocaleString("en-US")} matched observation records across the separate method files retain zero assigned volume.</li>
         <li>Model year, day represented, coefficients, and population vintage remain unknown where the exact evidence does not prove them.</li>
       </ul>
       <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">

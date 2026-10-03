@@ -69,7 +69,7 @@ function HistoryRecords({ campaignId, revision }: { campaignId: string; revision
     <ol className="space-y-4">
       {revisions.map(row => <li key={row.id} className="space-y-2 rounded-lg border border-border p-3 text-sm break-words">
         <h3 className="font-semibold">Revision {row.revision}: {eventLabels[row.event]}</h3>
-        <p><time dateTime={row.recorded_at}>{new Date(row.recorded_at).toLocaleString()}</time></p>
+        <p><time dateTime={row.recorded_at}>{new Date(row.recorded_at).toLocaleString("en-US")}</time></p>
         <p className="text-xs text-muted-foreground">{row.actor_id ? `Recorded actor: ${row.actor_id}` : "Actor not recorded"}</p>
         <p className="whitespace-pre-wrap"><strong>Reason: </strong>{row.change_reason || "Not recorded"}</p>
         {row.change_origin === "source_withdrawal" && <p>Automatically withdrawn following a linked contribution change.</p>}

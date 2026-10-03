@@ -264,7 +264,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
         <label className="block text-sm">Project connection<select className={inputClass} value={connectionId} disabled={saving || Boolean(pending)} onChange={event => { setConnectionId(event.target.value); setCharges(false); }}>
           <option value="">Choose a connection</option>{active.map(connection => <option key={connection.id} value={connection.id}>{connection.device_label} · {connection.last_status.replaceAll("_", " ")}</option>)}
         </select></label>
-        {selected && <p className="text-xs">{authLabels[selected.expected_auth_mode]} · Expires {new Date(selected.expires_at).toLocaleDateString()}. Native account limits still apply.</p>}
+        {selected && <p className="text-xs">{authLabels[selected.expected_auth_mode]} · Expires {new Date(selected.expires_at).toLocaleDateString("en-US")}. Native account limits still apply.</p>}
         <details className="rounded border border-white/15 p-2"><summary className="cursor-pointer text-sm font-semibold">Connect or revoke a computer</summary><div className="mt-3 space-y-3">
           <p className="text-xs">Use {provider === "opencode" ? "OpenCode 1.18.30" : provider === "claude" ? "Claude Code 2.1.263" : "Codex 0.154.0"} on Linux. Sign in through that application itself. The connector uses your existing native account and does not switch billing modes.</p>
           <label className="block text-sm">Computer label<input className={inputClass} maxLength={120} value={label} onChange={event => setLabel(event.target.value)} /></label>

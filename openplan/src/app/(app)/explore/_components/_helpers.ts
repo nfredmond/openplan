@@ -45,7 +45,7 @@ export function getBoundsFromGeometry(geometry: CorridorGeometry): LngLatBoundsL
 
 export function formatRunTimestamp(value: string): string {
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
 }
 
 export function titleize(value: string | null | undefined): string {

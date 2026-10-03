@@ -217,7 +217,7 @@ export function BasisValueEditor({
                     </StatusBadge>
                   ) : null}
                 </td>
-                <td className="py-2 pr-3 text-right tabular-nums">{value.basisValue.toLocaleString()}</td>
+                <td className="py-2 pr-3 text-right tabular-nums">{value.basisValue.toLocaleString("en-US")}</td>
                 <td className="py-2 pr-3 text-xs text-muted-foreground">{value.basisSourceNote}</td>
                 {canWrite ? (
                   <td className="py-2 text-right">

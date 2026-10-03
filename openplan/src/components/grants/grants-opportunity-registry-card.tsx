@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatMoney } from "@/lib/money/format";
 import { ArrowRight } from "lucide-react";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
 import {
@@ -29,7 +30,6 @@ import {
 import {
   type FundingOpportunityRow,
   PURSUIT_KIND_LABELS,
-  formatCurrency,
   formatDateTime,
   formatDeadline,
   isClosingSoon,
@@ -141,7 +141,7 @@ export function GrantsOpportunityRegistryCard({
           <span className="module-record-chip">Agency {opportunity.agency_name ?? "Not set"}</span>
           <span className="module-record-chip">Owner {opportunity.owner_label ?? "Unassigned"}</span>
           <span className="module-record-chip">Cadence {opportunity.cadence_label ?? "Not set"}</span>
-          <span className="module-record-chip">Likely {formatCurrency(opportunity.expected_award_amount)}</span>
+          <span className="module-record-chip">Likely {formatMoney(opportunity.expected_award_amount, { precision: "whole", absent: "Not set" })}</span>
           <span className="module-record-chip">Opens {formatDeadline(opportunity.opens_at, "opens")}</span>
           <span className="module-record-chip">Closes {formatDeadline(opportunity.closes_at, "closes")}</span>
           <span className="module-record-chip">Decision due {formatDateTime(opportunity.decision_due_at)}</span>

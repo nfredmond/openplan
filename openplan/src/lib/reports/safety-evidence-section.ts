@@ -119,7 +119,7 @@ export function buildPacketSafetyEvidence(
     }
     if (item.mappedTotal < item.reportedTotal) {
       caveats.push(
-        `${(item.reportedTotal - item.mappedTotal).toLocaleString()} reported collisions carried no coordinates. They are real collisions that cannot be placed on a map, and they are included in the reported total above.`
+        `${(item.reportedTotal - item.mappedTotal).toLocaleString("en-US")} reported collisions carried no coordinates. They are real collisions that cannot be placed on a map, and they are included in the reported total above.`
       );
     }
 

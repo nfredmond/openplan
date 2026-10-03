@@ -27,7 +27,7 @@ function validationTone(status: string): StatusTone {
 
 function formatValue(value: number | null) {
   if (value === null) return "-";
-  return Number.isInteger(value) ? value.toLocaleString() : value.toLocaleString(undefined, { maximumFractionDigits: 3 });
+  return Number.isInteger(value) ? value.toLocaleString("en-US") : value.toLocaleString("en-US", { maximumFractionDigits: 3 });
 }
 
 export function CountyRunModelingEvidence({ evidence }: { evidence?: CountyRunModelingEvidence | null }) {

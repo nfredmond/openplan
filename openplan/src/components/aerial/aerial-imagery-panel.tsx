@@ -267,7 +267,7 @@ export function AerialImageryPanel({
                     )}
                     {" · "}
                     {row.captured_at
-                      ? new Date(row.captured_at).toLocaleString()
+                      ? new Date(row.captured_at).toLocaleString("en-US")
                       : "no capture time with a named timezone recorded"}
                     {row.camera_make || row.camera_model
                       ? ` · ${[row.camera_make, row.camera_model].filter(Boolean).join(" ")}`

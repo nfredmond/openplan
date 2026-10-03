@@ -1,3 +1,4 @@
+import { ChartShareBar } from "@/components/ui/chart-share-bar";
 import { DEMOGRAPHIC_DIMENSIONS } from "@/lib/engagement/demographics";
 import type {
   DemographicsSummary,
@@ -6,24 +7,6 @@ import type {
 
 function SubLabel({ children }: { children: React.ReactNode }) {
   return <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{children}</p>;
-}
-
-/** A relative band bar. Scaled to the largest band in its dimension and labeled
- * with the raw count — no percentage, since suppression + multi-select race make
- * a "share" misleading. Meaning survives desaturation (design-constitution test). */
-function BandBar({ label, count, max, muted }: { label: string; count: number; max: number; muted?: boolean }) {
-  const width = max > 0 ? Math.max(4, (count / max) * 100) : 0;
-  return (
-    <div className="space-y-1">
-      <div className="flex items-baseline justify-between gap-3 text-xs">
-        <span className={muted ? "text-muted-foreground" : "text-foreground"}>{label}</span>
-        <span className="tabular-nums text-muted-foreground">{count}</span>
-      </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div className={`h-full rounded-full ${muted ? "bg-slate-400/50" : "bg-sky-500/60"}`} style={{ width: `${width}%` }} />
-      </div>
-    </div>
-  );
 }
 
 /**
@@ -86,7 +69,15 @@ export function DemographicsPanel({ source }: { source: SelfReportedDemographics
             <div key={dimension.key} className="space-y-2">
               <SubLabel>{dimension.label}</SubLabel>
               {bands.map((band) => (
-                <BandBar key={band.band} label={band.label} count={band.count} max={max} muted={band.band === "suppressed"} />
+                <ChartShareBar
+                  key={band.band}
+                  label={band.label}
+                  // A count, not a share: suppression and multi-select make a
+                  // percentage misleading, so the bar is scaled to the largest band.
+                  valueText={String(band.count)}
+                  fraction={max > 0 ? band.count / max : 0}
+                  tone={band.band === "suppressed" ? "reference" : "series"}
+                />
               ))}
             </div>
           );

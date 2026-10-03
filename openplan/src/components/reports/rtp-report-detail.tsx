@@ -487,7 +487,7 @@ export function RtpReportDetail({
                 </p>
                 <p className="mt-1 text-xs text-amber-800/90 dark:text-amber-200/90">
                   {report.rtp_basis_stale_marked_at
-                    ? `Marked stale on ${new Date(report.rtp_basis_stale_marked_at).toLocaleString()}. Regenerate the packet to re-ground it on the new run.`
+                    ? `Marked stale on ${new Date(report.rtp_basis_stale_marked_at).toLocaleString("en-US")}. Regenerate the packet to re-ground it on the new run.`
                     : "Regenerate the packet to re-ground it on the new run."}
                 </p>
               </div>

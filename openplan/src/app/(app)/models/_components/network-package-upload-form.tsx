@@ -274,13 +274,13 @@ export function NetworkPackageUploadForm({
         { key: "ingest", label: "QA-check the nodes and links", status: "pending" },
         {
           key: "zones",
-          label: `Create ${plan.zones.length.toLocaleString()} zone${plan.zones.length === 1 ? "" : "s"}`,
+          label: `Create ${plan.zones.length.toLocaleString("en-US")} zone${plan.zones.length === 1 ? "" : "s"}`,
           status: plan.zones.length ? "pending" : "skipped",
           detail: plan.zones.length ? undefined : "No zones file.",
         },
         {
           key: "corridors",
-          label: `Create ${plan.corridors.length.toLocaleString()} corridor${
+          label: `Create ${plan.corridors.length.toLocaleString("en-US")} corridor${
             plan.corridors.length === 1 ? "" : "s"
           }`,
           status: plan.corridors.length ? "pending" : "skipped",
@@ -288,7 +288,7 @@ export function NetworkPackageUploadForm({
         },
         {
           key: "connectors",
-          label: `Create ${plan.connectors.length.toLocaleString()} connector${
+          label: `Create ${plan.connectors.length.toLocaleString("en-US")} connector${
             plan.connectors.length === 1 ? "" : "s"
           }`,
           status: plan.connectors.length ? "pending" : "skipped",
@@ -412,7 +412,7 @@ export function NetworkPackageUploadForm({
       // 4. Zones, keeping the external id -> row id map connectors need.
       const zoneIdByExternalId = new Map<string, string>();
       if (plan.zones.length > 0) {
-        setStep("zones", "running", `0 of ${plan.zones.length.toLocaleString()} created.`);
+        setStep("zones", "running", `0 of ${plan.zones.length.toLocaleString("en-US")} created.`);
         for (let index = 0; index < plan.zones.length; index += 1) {
           const zone: ZoneInsert = plan.zones[index];
           const result = await post<{ id?: string; zone_id_external?: string | null }>(
@@ -420,9 +420,9 @@ export function NetworkPackageUploadForm({
             zone
           );
           if (!result.ok) {
-            setStep("zones", "failed", `${index.toLocaleString()} created, then: ${result.message}`);
+            setStep("zones", "failed", `${index.toLocaleString("en-US")} created, then: ${result.message}`);
             setFailure(
-              `Version "${versionName.trim()}" holds ${index.toLocaleString()} of ${plan.zones.length.toLocaleString()} zones. Corridors and connectors were not sent.`
+              `Version "${versionName.trim()}" holds ${index.toLocaleString("en-US")} of ${plan.zones.length.toLocaleString("en-US")} zones. Corridors and connectors were not sent.`
             );
             return;
           }
@@ -433,23 +433,23 @@ export function NetworkPackageUploadForm({
             setStep(
               "zones",
               "running",
-              `${(index + 1).toLocaleString()} of ${plan.zones.length.toLocaleString()} created.`
+              `${(index + 1).toLocaleString("en-US")} of ${plan.zones.length.toLocaleString("en-US")} created.`
             );
           }
         }
-        setStep("zones", "done", `${plan.zones.length.toLocaleString()} created.`);
+        setStep("zones", "done", `${plan.zones.length.toLocaleString("en-US")} created.`);
       }
 
       // 5. Corridors.
       if (plan.corridors.length > 0) {
-        setStep("corridors", "running", `0 of ${plan.corridors.length.toLocaleString()} created.`);
+        setStep("corridors", "running", `0 of ${plan.corridors.length.toLocaleString("en-US")} created.`);
         for (let index = 0; index < plan.corridors.length; index += 1) {
           const corridor: CorridorInsert = plan.corridors[index];
           const result = await post<{ id?: string }>(`${versionBase}/corridors`, corridor);
           if (!result.ok) {
-            setStep("corridors", "failed", `${index.toLocaleString()} created, then: ${result.message}`);
+            setStep("corridors", "failed", `${index.toLocaleString("en-US")} created, then: ${result.message}`);
             setFailure(
-              `Version "${versionName.trim()}" holds ${index.toLocaleString()} of ${plan.corridors.length.toLocaleString()} corridors. Connectors were not sent.`
+              `Version "${versionName.trim()}" holds ${index.toLocaleString("en-US")} of ${plan.corridors.length.toLocaleString("en-US")} corridors. Connectors were not sent.`
             );
             return;
           }
@@ -457,16 +457,16 @@ export function NetworkPackageUploadForm({
             setStep(
               "corridors",
               "running",
-              `${(index + 1).toLocaleString()} of ${plan.corridors.length.toLocaleString()} created.`
+              `${(index + 1).toLocaleString("en-US")} of ${plan.corridors.length.toLocaleString("en-US")} created.`
             );
           }
         }
-        setStep("corridors", "done", `${plan.corridors.length.toLocaleString()} created.`);
+        setStep("corridors", "done", `${plan.corridors.length.toLocaleString("en-US")} created.`);
       }
 
       // 6. Connectors, resolved against the zones this upload just created.
       if (plan.connectors.length > 0) {
-        setStep("connectors", "running", `0 of ${plan.connectors.length.toLocaleString()} created.`);
+        setStep("connectors", "running", `0 of ${plan.connectors.length.toLocaleString("en-US")} created.`);
         for (let index = 0; index < plan.connectors.length; index += 1) {
           const connector: ConnectorInsert = plan.connectors[index];
           const zoneId = zoneIdByExternalId.get(connector.zoneExternalId);
@@ -474,10 +474,10 @@ export function NetworkPackageUploadForm({
             setStep(
               "connectors",
               "failed",
-              `${index.toLocaleString()} created, then zone "${connector.zoneExternalId}" could not be matched to a zone this upload created.`
+              `${index.toLocaleString("en-US")} created, then zone "${connector.zoneExternalId}" could not be matched to a zone this upload created.`
             );
             setFailure(
-              `Version "${versionName.trim()}" holds ${index.toLocaleString()} of ${plan.connectors.length.toLocaleString()} connectors.`
+              `Version "${versionName.trim()}" holds ${index.toLocaleString("en-US")} of ${plan.connectors.length.toLocaleString("en-US")} connectors.`
             );
             return;
           }
@@ -487,9 +487,9 @@ export function NetworkPackageUploadForm({
             zone_id: zoneId,
           });
           if (!result.ok) {
-            setStep("connectors", "failed", `${index.toLocaleString()} created, then: ${result.message}`);
+            setStep("connectors", "failed", `${index.toLocaleString("en-US")} created, then: ${result.message}`);
             setFailure(
-              `Version "${versionName.trim()}" holds ${index.toLocaleString()} of ${plan.connectors.length.toLocaleString()} connectors.`
+              `Version "${versionName.trim()}" holds ${index.toLocaleString("en-US")} of ${plan.connectors.length.toLocaleString("en-US")} connectors.`
             );
             return;
           }
@@ -497,11 +497,11 @@ export function NetworkPackageUploadForm({
             setStep(
               "connectors",
               "running",
-              `${(index + 1).toLocaleString()} of ${plan.connectors.length.toLocaleString()} created.`
+              `${(index + 1).toLocaleString("en-US")} of ${plan.connectors.length.toLocaleString("en-US")} created.`
             );
           }
         }
-        setStep("connectors", "done", `${plan.connectors.length.toLocaleString()} created.`);
+        setStep("connectors", "done", `${plan.connectors.length.toLocaleString("en-US")} created.`);
       }
 
       setDone(true);

@@ -186,6 +186,29 @@ describe("GrantsOpportunityRegistryCard", () => {
     );
   });
 
+  it("states the likely award it has, and says 'Not set' rather than $0 when there is none", () => {
+    const { unmount } = render(
+      <GrantsOpportunityRegistryCard
+        opportunity={baseOpportunity}
+        activeFocusedOpportunityId={null}
+        projectGrantModelingEvidence={null}
+      />
+    );
+    expect(screen.getByText("Likely $500,000")).toBeInTheDocument();
+    unmount();
+
+    const noEstimate = { ...baseOpportunity, expected_award_amount: null } as Opportunity;
+    render(
+      <GrantsOpportunityRegistryCard
+        opportunity={noEstimate}
+        activeFocusedOpportunityId={null}
+        projectGrantModelingEvidence={null}
+      />
+    );
+    expect(screen.getByText("Likely Not set")).toBeInTheDocument();
+    expect(screen.queryByText("Likely $0")).toBeNull();
+  });
+
   it("reads 'Not linked' when there is no project", () => {
     const noProject = { ...baseOpportunity, project: null } as Opportunity;
     render(

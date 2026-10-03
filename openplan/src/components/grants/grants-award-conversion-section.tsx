@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { formatMoney } from "@/lib/money/format";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ProjectFundingAwardCreator } from "@/components/projects/project-funding-award-creator";
@@ -6,7 +7,6 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { formatFundingOpportunityDecisionLabel } from "@/lib/programs/catalog";
 import {
   type FundingOpportunityRow,
-  formatCurrency,
   formatDateTime,
 } from "@/lib/grants/page-helpers";
 
@@ -99,7 +99,7 @@ export function GrantsAwardConversionSection({
                     </p>
                   </div>
                   <div className="text-right text-sm">
-                    <p className="font-semibold text-foreground">{formatCurrency(opportunity.expected_award_amount)}</p>
+                    <p className="font-semibold text-foreground">{formatMoney(opportunity.expected_award_amount, { precision: "whole", absent: "Not set" })}</p>
                     <p className="text-muted-foreground">Likely award</p>
                   </div>
                 </div>

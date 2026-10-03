@@ -79,7 +79,7 @@ export async function loadPublicDesignationMap(
       designationLabel: designation.designation_set_label ?? "Mapped designations",
       legendField: designation.legend_field ?? null,
       coverageNotes: tooDenseToDraw
-        ? [`${matchedCount.toLocaleString()} features intersect this view. Nothing is drawn until you zoom in; OpenPlan never shows a misleading subset.`]
+        ? [`${matchedCount.toLocaleString("en-US")} features intersect this view. Nothing is drawn until you zoom in; OpenPlan never shows a misleading subset.`]
         : [],
     },
   };

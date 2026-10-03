@@ -193,11 +193,11 @@ export function describeCountyCoverage(options: {
     );
   } else {
     notes.push(
-      `${options.storedTractCount.toLocaleString()} census tracts are loaded for ${name}.`
+      `${options.storedTractCount.toLocaleString("en-US")} census tracts are loaded for ${name}.`
     );
     if (options.storedTractCount > limit) {
       notes.push(
-        `The map draws at most ${limit.toLocaleString()} of them at a time, by tract ID — the rest are ` +
+        `The map draws at most ${limit.toLocaleString("en-US")} of them at a time, by tract ID — the rest are ` +
           "stored but not drawn."
       );
     }
@@ -217,7 +217,7 @@ export function describeCountyCoverage(options: {
   const stale = options.staleUniverseTractCount;
   if (typeof stale === "number" && stale > 0) {
     notes.push(
-      `${stale.toLocaleString()} of them were loaded before OpenPlan recorded which Census population ` +
+      `${stale.toLocaleString("en-US")} of them were loaded before OpenPlan recorded which Census population ` +
         "each rate is measured against, so they report no poverty rate and no minority share at all — " +
         "in the equity layer and in a Title VI service comparison alike. Reloading fixes it. Until then " +
         "those tracts are left out of the figures rather than counted with a rate divided by the wrong " +
@@ -244,7 +244,7 @@ export function describeCoverageLoadOutcome(
   options: { label: string | null; storedTractCount: number }
 ): string[] {
   const name = coveragePlaceName(options.label);
-  const stored = `${options.storedTractCount.toLocaleString()} census tracts are stored for this county now.`;
+  const stored = `${options.storedTractCount.toLocaleString("en-US")} census tracts are stored for this county now.`;
   const censusKeyRemedy =
     "The usual cause is a missing Census API key: add one under Integration keys on the dashboard, or " +
     "ask whoever runs this deployment to set CENSUS_API_KEY.";
@@ -253,7 +253,7 @@ export function describeCoverageLoadOutcome(
     case "ingested":
       if (result.tractsUpserted === 0 && result.unmatched > 0) {
         return [
-          `Nothing was stored for ${name}: all ${result.unmatched.toLocaleString()} tract boundaries came ` +
+          `Nothing was stored for ${name}: all ${result.unmatched.toLocaleString("en-US")} tract boundaries came ` +
             "back without matching ACS demographics. This is not a finding that the county has no " +
             "tracts — the boundaries exist, the demographics did not join to them.",
           censusKeyRemedy,
@@ -261,13 +261,13 @@ export function describeCoverageLoadOutcome(
       }
       if (result.unmatched > 0) {
         return [
-          `Loaded ${result.tractsUpserted.toLocaleString()} census tracts for ${name}. ` +
-            `${result.unmatched.toLocaleString()} more had a boundary but no matching ACS demographics in ` +
+          `Loaded ${result.tractsUpserted.toLocaleString("en-US")} census tracts for ${name}. ` +
+            `${result.unmatched.toLocaleString("en-US")} more had a boundary but no matching ACS demographics in ` +
             "this release, so they were not stored — they are missing from the equity layer rather than " +
             `absent from the county. ${stored}`,
         ];
       }
-      return [`Loaded ${result.tractsUpserted.toLocaleString()} census tracts for ${name}. ${stored}`];
+      return [`Loaded ${result.tractsUpserted.toLocaleString("en-US")} census tracts for ${name}. ${stored}`];
 
     case "no_tracts":
       return [
@@ -301,7 +301,7 @@ export function describeCoverageLoadFailure(options: {
 }): string[] {
   const name = coveragePlaceName(options.label);
   const stored =
-    `${options.storedTractCount.toLocaleString()} census tracts are stored for ${name} right now, which ` +
+    `${options.storedTractCount.toLocaleString("en-US")} census tracts are stored for ${name} right now, which ` +
     "may be a partial load.";
 
   if (options.httpStatus === 401) {

@@ -174,9 +174,9 @@ export function describeContextLayerCoverage(
 
   if (disclosure.truncated) {
     notes.push(
-      `${layerName}: showing ${disclosure.returnedCount.toLocaleString()} of ` +
-        `${disclosure.matchedCount.toLocaleString()} shapes — this deployment stores at most ` +
-        `${disclosure.limit.toLocaleString()} per layer. The rest are not drawn, which is not a finding ` +
+      `${layerName}: showing ${disclosure.returnedCount.toLocaleString("en-US")} of ` +
+        `${disclosure.matchedCount.toLocaleString("en-US")} shapes — this deployment stores at most ` +
+        `${disclosure.limit.toLocaleString("en-US")} per layer. The rest are not drawn, which is not a finding ` +
         `that the layer ends here.`
     );
   }
@@ -184,7 +184,7 @@ export function describeContextLayerCoverage(
   if (disclosure.droppedCount > 0) {
     const count = disclosure.droppedCount;
     notes.push(
-      `${layerName}: ${count.toLocaleString()} ${count === 1 ? "shape" : "shapes"} in the uploaded file ` +
+      `${layerName}: ${count.toLocaleString("en-US")} ${count === 1 ? "shape" : "shapes"} in the uploaded file ` +
         `could not be drawn — the geometry was unusable, or it was a kind OpenPlan will not place on a guess — ` +
         `so ${count === 1 ? "it is" : "they are"} missing from the map rather than absent from the source.`
     );

@@ -945,7 +945,7 @@ export default async function ProgramDetailPage({
                               <MetaItem>Agency {opportunity.agency_name || "Not set"}</MetaItem>
                               <MetaItem>Owner {opportunity.owner_label || "Unassigned"}</MetaItem>
                               <MetaItem>Cadence {opportunity.cadence_label || "Not set"}</MetaItem>
-                              <MetaItem>Likely {formatCurrency(opportunity.expected_award_amount)}</MetaItem>
+                              <MetaItem>Likely {formatMoney(opportunity.expected_award_amount, { precision: "whole", absent: "Not set" })}</MetaItem>
                               <MetaItem>Opens {formatProgramDateTime(opportunity.opens_at)}</MetaItem>
                               <MetaItem>Closes {formatProgramDateTime(opportunity.closes_at)}</MetaItem>
                               <MetaItem>Decision {formatProgramDateTime(opportunity.decision_due_at)}</MetaItem>

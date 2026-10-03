@@ -221,7 +221,7 @@ function dayLabel(day: string): string {
 function publicFeedNote(count: number): string[] {
   if (count <= 0) return [];
   return [
-    `Transit stops: ${count.toLocaleString()} preloaded transit ${count === 1 ? "feed is" : "feeds are"} ` +
+    `Transit stops: ${count.toLocaleString("en-US")} preloaded transit ${count === 1 ? "feed is" : "feeds are"} ` +
       "shared across this deployment and are not drawn here, because this layer shows only the feeds this " +
       "workspace brought in itself.",
   ];
@@ -377,7 +377,7 @@ export async function GET(request: NextRequest) {
       });
       return NextResponse.json(
         emptyLayer([
-          `Transit stops: ${feeds.length.toLocaleString()} transit ` +
+          `Transit stops: ${feeds.length.toLocaleString("en-US")} transit ` +
             `${feeds.length === 1 ? "feed belongs" : "feeds belong"} to this workspace, and none of them has a ` +
             "completed ingest in use, so nothing is drawn. Bring a feed in from the Data Hub, or open it there " +
             "to see why its last ingest did not finish.",
@@ -551,7 +551,7 @@ export async function GET(request: NextRequest) {
 
     if (features.length > 0) {
       coverageNotes.push(
-        `Transit stops: derived from ${versions.length.toLocaleString()} ingested transit ` +
+        `Transit stops: derived from ${versions.length.toLocaleString("en-US")} ingested transit ` +
           `${versions.length === 1 ? "feed" : "feeds"}, for one representative ` +
           `${dayLabel(serviceDay)} of service. Each dot is a place where something stops that day, and how ` +
           "often — a planning figure, not a timetable.",
@@ -578,9 +578,9 @@ export async function GET(request: NextRequest) {
      */
     if (disclosure.truncated) {
       coverageNotes.push(
-        `Transit stops: showing the ${disclosure.returnedCount.toLocaleString()} most-served of ` +
-          `${disclosure.matchedCount.toLocaleString()} — the map draws at most ` +
-          `${disclosure.limit.toLocaleString()}, taking them in order of how many trips call there on a ` +
+        `Transit stops: showing the ${disclosure.returnedCount.toLocaleString("en-US")} most-served of ` +
+          `${disclosure.matchedCount.toLocaleString("en-US")} — the map draws at most ` +
+          `${disclosure.limit.toLocaleString("en-US")}, taking them in order of how many trips call there on a ` +
           `${dayLabel(serviceDay)}. The ones not drawn are the least-served stops in these feeds, not stops ` +
           "that do not exist.",
       );
@@ -588,7 +588,7 @@ export async function GET(request: NextRequest) {
 
     if (droppedCount > 0) {
       coverageNotes.push(
-        `Transit stops: ${droppedCount.toLocaleString()} ${droppedCount === 1 ? "stop" : "stops"} could not ` +
+        `Transit stops: ${droppedCount.toLocaleString("en-US")} ${droppedCount === 1 ? "stop" : "stops"} could not ` +
           `be drawn because the stored location was unusable, so ${droppedCount === 1 ? "it is" : "they are"} ` +
           "missing from the map rather than absent from the record.",
       );

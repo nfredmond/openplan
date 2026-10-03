@@ -54,7 +54,7 @@ export function describeGeocodingShortfall(
   if (missing <= 0) return null;
   const share = Math.round((geocodedCount / reportedCount) * 1000) / 10;
   return (
-    `${missing.toLocaleString()} of the ${reportedCount.toLocaleString()} reported crashes in this ` +
+    `${missing.toLocaleString("en-US")} of the ${reportedCount.toLocaleString("en-US")} reported crashes in this ` +
     `retrieval carry no coordinates from the source agency (${share}% were mapped). ` +
     SAFETY_GEOCODING_CAVEAT
   );

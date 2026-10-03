@@ -260,9 +260,34 @@ Checks: 1,061 tests in 88 files (mission, Aerial, tab guards, map guards, copy g
 
 Also in this stretch: the tab guards were reading the plan page's tab list from a declaration 4bf1f907 had moved into `_tabs.ts`, so three guard files failed on main (CI run for 4bf1f907). Fixed in 577f2370, which reads the plan tabs from `buildPlanTabs`; a planted link to an unclaimed plan anchor fails the guard again. I had not rerun those guards after the move.
 
+## Numbers that read the same everywhere, October 2, 2026 (review finding M10)
+
+Checks: the full suite, 17,578 tests, passed on this machine on two workers with a memory watchdog (the earlier crashes were from the default worker count); lint on changed files.
+
+| Change | How it was checked |
+|---|---|
+| 286 number and date formatting calls named no locale (`toLocaleString()`, `toLocaleDateString(undefined, ...)`, `Intl.NumberFormat(undefined, ...)`), in 113 files. They formatted in the locale of whatever machine ran them, so a server render and a browser re-render could print the same figure differently. All are pinned to "en-US", the locale `lib/money/format.ts` already uses. The resident portal formats in the resident's language through `portal-i18n/format.ts`, which passes that language explicitly | New guard `numbers-read-the-same-on-every-machine.test.ts` walks `src` and fails on any locale-less call outside comments. A planted locale-less call fails it; a planted pinned call passes |
+| An opportunity with no expected award recorded showed "Likely $0" on the grants registry, the program pages and the award-conversion list, and "$0" in the workspace summary's lead award. It now reads "Not set", as the neighbouring chips do | New test in `grants-opportunity-registry-card.test.tsx`; putting "$0" back fails it |
+
+Not changed: the review counted `formatCurrency` defined 14 times. All 14 are short wrappers over the one shared `formatMoney`, so the money itself is already formatted one way. Several wrappers still print a missing amount as "$0"; their callers pass totals or choose `?? 0` themselves, so each would need its own reading before changing. Dates still render in the clock of the machine that formats them; pinning the locale fixes digits and separators, not time zones.
+
+## One bar for the engagement panels, October 2, 2026 (review finding M9, in part)
+
+Checks: the shared bar's tests and every test that names the four panels (84), style, copy and chart guards (231), on one worker; lint; production build on port 3211; Chrome at 1440 in dark and light and at 390, on a live campaign's Analysis tab.
+
+| Change | How it was checked |
+|---|---|
+| The demographics, representativeness, participation and survey panels each drew their own bars, in fixed sky, slate, emerald, amber and rose classes that ignored the planner's palette. They now share `components/ui/chart-share-bar.tsx`, drawn in `--chart-1`, a muted tone for comparison rows (an area baseline), or a category's own colour when the planner chose one | Chrome: the fill follows the palette (one teal in dark mode, a darker teal in light), no console errors. The hand-drawn bar functions and their colour classes are gone from all four panels |
+| Demographics drew a band nobody chose as a 4% sliver. A zero is now no fill | New shared-bar test, plus a panel test with a zero band; putting the sliver back in the panel fails it |
+| Representativeness drew an unknown share as an empty bar, which read as zero. It now draws nothing, shows a dash in place of the number, and is marked unknown | Shared-bar test; treating unknown as known fails it |
+| The empty track was `bg-muted`, which rendered as a solid grey bar, so "Pending 0 · 0%" looked like a full bar. The track is now a faint tint | Chrome, light mode: zero rows read as empty tracks |
+| Participation statuses were coloured green, slate, amber and red. Green against red fails colour-blind separation on this palette (measured in `chart-primitives.tsx`); every status now uses one colour and the label says which | Shared-bar tests: a category colour is used only when it is a real hex colour; a share over the whole stays inside the track. Four targeted breaks each fail |
+
+Not done: reports and measures still have no charts (the other half of M9), and the participation intake sparkline is still hand-drawn.
+
 ## What is next
 
-1. Number formatting (review finding M10) and charts (M9).
+1. Charts for reports and measures (rest of M9), using the shared chart primitives.
 2. Copy pass. This waits on Nathaniel's vocabulary answers (decision D6).
 3. Keyboard and screen-reader walk.
 4. The four remaining palettes.

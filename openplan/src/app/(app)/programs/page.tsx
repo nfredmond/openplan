@@ -953,7 +953,7 @@ export default async function ProgramsPage({
                     <span className="module-record-chip">Agency {opportunity.agency_name ?? "Not set"}</span>
                     <span className="module-record-chip">Owner {opportunity.owner_label ?? "Unassigned"}</span>
                     <span className="module-record-chip">How often {opportunity.cadence_label ?? "Not set"}</span>
-                    <span className="module-record-chip">Likely {formatCurrency(opportunity.expected_award_amount)}</span>
+                    <span className="module-record-chip">Likely {formatMoney(opportunity.expected_award_amount, { precision: "whole", absent: "Not set" })}</span>
                     <span className="module-record-chip">Opens {formatProgramDateTime(opportunity.opens_at)}</span>
                     <span className="module-record-chip">Closes {formatProgramDateTime(opportunity.closes_at)}</span>
                     <span className="module-record-chip">Decision {formatProgramDateTime(opportunity.decision_due_at)}</span>

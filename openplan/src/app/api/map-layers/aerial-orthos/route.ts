@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
               ...catalog,
               notes: [
                 ...catalog.notes,
-                `The catalog read reached ${CATALOG_LIMIT.toLocaleString()} preview records. Older previews may not be listed.`,
+                `The catalog read reached ${CATALOG_LIMIT.toLocaleString("en-US")} preview records. Older previews may not be listed.`,
               ],
             }
           : catalog,

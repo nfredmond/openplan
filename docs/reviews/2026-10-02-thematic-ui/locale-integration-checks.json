@@ -1,0 +1,36 @@
+{
+  "parents": [
+    "754aa7e10dd810977bce7cea1cd0e680cb3bb19e",
+    "08d8b12c9a274d5b49d356e9d97109f20a8f9523"
+  ],
+  "githubFailure": {
+    "run": 37085539412,
+    "normalAndShuffle": "Each fails only numbers-read-the-same-on-every-machine, finding synthesis-thematic-import-panel.tsx .toLocaleString()",
+    "shuffleSeed": 304156,
+    "otherTestsPassed": 17639,
+    "skipped": 1469
+  },
+  "reproduction": "Same existing guard fails locally after joining main08d8b12c, before the formatter correction.",
+  "correction": "Pass en-US to the retained request date formatter, following main formatting policy. No guard weakened.",
+  "localChecks": {
+    "files": 8,
+    "tests": 89,
+    "shuffleSeed": 304156,
+    "strictLint": "pass",
+    "peakMemory": "1.2GiB",
+    "swap": 0,
+    "seconds": 61.105
+  },
+  "pending": [
+    "production build and TypeScript",
+    "identified combined browser acceptance",
+    "fresh exact-head GitHub results",
+    "main landing and release"
+  ],
+  "logs": {
+    "pr114-754aa-ci-failures.log": "f3cd4cc4b4c9a4efe6e6f7310feee366ec20f15cefcef235ddf4ef1477f5716e",
+    "pr114-locale-reproduction.log": "6d273587171b5926c2fffcd70fb2f0ff85ccd5da42fbe248edd8f262baaabd24",
+    "pr114-locale-integration-tests.log": "ac322d595b8a10fcef6eba8f1074b4d6771f100a69082e31d10cb73a90f2cc83"
+  },
+  "limits": "Locale pinning sets separators and names, not a timezone. Focused tests do not establish production build, browser acceptance, semantic quality or complete v1 readiness."
+}

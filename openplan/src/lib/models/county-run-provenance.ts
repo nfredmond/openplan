@@ -93,7 +93,7 @@ function asText(value: unknown): string | null {
  */
 function stated(value: string | number | null | undefined, unit = ""): string {
   if (value === null || value === undefined || value === "") return "_not recorded_";
-  const rendered = typeof value === "number" ? value.toLocaleString() : value;
+  const rendered = typeof value === "number" ? value.toLocaleString("en-US") : value;
   return unit ? `${rendered} ${unit}` : rendered;
 }
 
@@ -359,7 +359,7 @@ function networkCoverage(validation: Record<string, unknown>): string[] {
     "",
     "### Which roads this run can speak about",
     "",
-    `This run put traffic on **${percent(carrying)}** of the ${links.toLocaleString()} road links inside ` +
+    `This run put traffic on **${percent(carrying)}** of the ${links.toLocaleString("en-US")} road links inside ` +
       `your study area, and none on the other ${percent(empty)}.${worstSentence}`,
     "",
     "**A road that received no traffic has no estimate — which is not the same as a low one.** The " +

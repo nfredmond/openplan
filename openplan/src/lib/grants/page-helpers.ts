@@ -357,7 +357,7 @@ export function formatInvoiceQueueReason(reason: string) {
 export function formatDateTime(value: string | null | undefined) {
   if (!value) return "Not set";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
 }
 
 /**
@@ -376,7 +376,7 @@ export function formatDeadline(value: string | null | undefined, kind: "opens" |
     kind === "opens"
       ? parsed.getUTCHours() === 0 && parsed.getUTCMinutes() === 0 && parsed.getUTCSeconds() === 0
       : parsed.getUTCHours() === 23 && parsed.getUTCMinutes() === 59 && parsed.getUTCSeconds() === 59;
-  if (!isSentinel) return parsed.toLocaleString();
+  if (!isSentinel) return parsed.toLocaleString("en-US");
   const dateOnly = parsed.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",

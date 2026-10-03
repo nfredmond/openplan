@@ -160,7 +160,7 @@ export function ModelRunZoneResolutionPanel({
           <p className="mt-2 text-sm leading-relaxed text-foreground">
             <span className="font-semibold tabular-nums">{state.sharePct.toFixed(1)}%</span> of this
             run&apos;s trips begin and end in the same zone
-            {state.zoneCount === null ? "" : ` of ${state.zoneCount.toLocaleString()}`}, so they
+            {state.zoneCount === null ? "" : ` of ${state.zoneCount.toLocaleString("en-US")}`}, so they
             never travel on any link.
           </p>
           {state.interpretation ? (

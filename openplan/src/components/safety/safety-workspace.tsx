@@ -183,7 +183,7 @@ export function splitLiveReadYears(
  * and it is what the product did until the `unknown` severity band existed.
  */
 function describeCasualty(value: number | null): string {
-  return value === null ? "not reported" : value.toLocaleString();
+  return value === null ? "not reported" : value.toLocaleString("en-US");
 }
 
 function describeTractMetric(
@@ -343,7 +343,7 @@ function describeExtentKm2(scope: {
     kmPerDegreeLat *
     Math.abs(scope.maxLon - scope.minLon) *
     kmPerDegreeLon;
-  return km2 >= 10 ? Math.round(km2).toLocaleString() : km2.toFixed(1);
+  return km2 >= 10 ? Math.round(km2).toLocaleString("en-US") : km2.toFixed(1);
 }
 
 export function SafetyWorkspace({
@@ -668,7 +668,7 @@ export function SafetyWorkspace({
 
       // Normalize at the boundary. The banner renders these directly, so a
       // malformed or unexpected response body must not be able to white-screen
-      // the page (an absent count would throw on .toLocaleString()).
+      // the page (an absent count would throw on .toLocaleString("en-US")).
       const count = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : 0);
       const summary: SafetyIngestSummary = {
         id: String(body.ingestId ?? ""),
@@ -1295,8 +1295,8 @@ export function SafetyWorkspace({
               <span className="font-medium">{liveRead.sourceLabel}</span>
               <span className="text-muted-foreground">·</span>
               <span className="text-muted-foreground">
-                {liveRead.crashCount.toLocaleString()} reported ·{" "}
-                {liveRead.geocodedCount.toLocaleString()} mappable
+                {liveRead.crashCount.toLocaleString("en-US")} reported ·{" "}
+                {liveRead.geocodedCount.toLocaleString("en-US")} mappable
               </span>
               <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
                 Live read — not saved
@@ -1341,8 +1341,8 @@ export function SafetyWorkspace({
               <span className="font-medium">{ingest.sourceLabel ?? "No source"}</span>
               <span className="text-muted-foreground">·</span>
               <span className="text-muted-foreground">
-                {ingest.crashCount.toLocaleString()} reported ·{" "}
-                {ingest.geocodedCount.toLocaleString()} mappable
+                {ingest.crashCount.toLocaleString("en-US")} reported ·{" "}
+                {ingest.geocodedCount.toLocaleString("en-US")} mappable
               </span>
             </div>
             <p className="text-muted-foreground">
@@ -1377,7 +1377,7 @@ export function SafetyWorkspace({
               <div data-testid="safety-ksi-headline" className="flex flex-col gap-1">
                 <p>
                   <span className="font-medium">
-                    {ksiTotal.toLocaleString()} fatal or serious-injury crashes
+                    {ksiTotal.toLocaleString("en-US")} fatal or serious-injury crashes
                   </span>{" "}
                   <span className="text-muted-foreground">
                     across the whole area you picked, with these filters. This counts crash
@@ -1389,14 +1389,14 @@ export function SafetyWorkspace({
                      saying what it is. The figure above is counted in the
                      database; this one is what fits on the map. */
                   <p className="text-xs text-muted-foreground">
-                    {`The map is drawing ${response.returnedCount.toLocaleString()} of ${
+                    {`The map is drawing ${response.returnedCount.toLocaleString("en-US")} of ${
                       response.matchedCountIsExact === false ? "at least " : ""
-                    }${response.matchedCount.toLocaleString()} matching crashes. The figure above counts all of them, not just the dots.`}
+                    }${response.matchedCount.toLocaleString("en-US")} matching crashes. The figure above counts all of them, not just the dots.`}
                   </p>
                 )}
                 {unclassifiedTotal !== null && unclassifiedTotal > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    {`${unclassifiedTotal.toLocaleString()} of those crashes are in no severity band at all, so the figure above is a floor rather than a full count. `}
+                    {`${unclassifiedTotal.toLocaleString("en-US")} of those crashes are in no severity band at all, so the figure above is a floor rather than a full count. `}
                     {SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT}
                   </p>
                 )}
@@ -1419,10 +1419,10 @@ export function SafetyWorkspace({
                     <li key={`${concentration.rank}:${concentration.longitude}:${concentration.latitude}`} className="flex items-center justify-between gap-3 rounded-md border border-border/60 bg-background/60 p-2 text-xs">
                       <div>
                         <p className="font-semibold">
-                          {concentration.rank}. {concentration.crashCount.toLocaleString()} KSI crashes
+                          {concentration.rank}. {concentration.crashCount.toLocaleString("en-US")} KSI crashes
                         </p>
                         <p className="text-muted-foreground">
-                          {concentration.fatalCrashCount.toLocaleString()} fatal · {concentration.seriousInjuryCrashCount.toLocaleString()} serious injury
+                          {concentration.fatalCrashCount.toLocaleString("en-US")} fatal · {concentration.seriousInjuryCrashCount.toLocaleString("en-US")} serious injury
                         </p>
                         <p className="font-mono text-muted-foreground">
                           {concentration.latitude.toFixed(5)}, {concentration.longitude.toFixed(5)}
@@ -1474,12 +1474,12 @@ export function SafetyWorkspace({
                   {response.ksiEquityTracts.slice(0, 5).map((tract) => (
                     <li key={tract.geoid} className="rounded-md border border-border/60 bg-background/60 p-2 text-xs">
                       <p className="font-semibold">
-                        {tract.rank}. {tract.tractName ?? `Census tract ${tract.geoid}`} · {tract.ksiCrashCount.toLocaleString()} KSI crashes
+                        {tract.rank}. {tract.tractName ?? `Census tract ${tract.geoid}`} · {tract.ksiCrashCount.toLocaleString("en-US")} KSI crashes
                       </p>
                       <p className="text-muted-foreground">
                         {tract.ksiPer100k === null
                           ? "Resident-normalized rate not available"
-                          : `${tract.ksiPer100k.toFixed(1)} KSI crashes per 100,000 tract residents`} · {tract.fatalCrashCount.toLocaleString()} fatal · {tract.seriousInjuryCrashCount.toLocaleString()} serious injury
+                          : `${tract.ksiPer100k.toFixed(1)} KSI crashes per 100,000 tract residents`} · {tract.fatalCrashCount.toLocaleString("en-US")} fatal · {tract.seriousInjuryCrashCount.toLocaleString("en-US")} serious injury
                       </p>
                       <p className="text-muted-foreground">
                         {describeTractMetric("Poverty", tract.pctPoverty, tract.areaMedianPctPoverty)} · {describeTractMetric("Nonwhite population", tract.pctNonwhite, tract.areaMedianPctNonwhite)} · {describeTractMetric("Zero-vehicle households", tract.pctZeroVehicle, tract.areaMedianPctZeroVehicle)}
@@ -1608,7 +1608,7 @@ export function SafetyWorkspace({
           different denominators is worse than either alone. */}
       {ksiTotal === null && unclassifiedScope.count > 0 && (
         <p className="text-xs text-muted-foreground">
-          {unclassifiedScope.count.toLocaleString()} of the collisions{" "}
+          {unclassifiedScope.count.toLocaleString("en-US")} of the collisions{" "}
           {unclassifiedScope.whole ? "in the area you picked" : "shown"} carry no casualty count
           from the source. {SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT}
         </p>
@@ -1628,8 +1628,8 @@ export function SafetyWorkspace({
                 <span className="text-muted-foreground">
                   {/* Reported vs geocoded, always both — an ungeocoded crash is
                       a real crash that cannot be plotted. */}
-                  {entry.crashCount.toLocaleString()} crashes ingested,{" "}
-                  {entry.geocodedCount.toLocaleString()} geocoded
+                  {entry.crashCount.toLocaleString("en-US")} crashes ingested,{" "}
+                  {entry.geocodedCount.toLocaleString("en-US")} geocoded
                 </span>
                 <span className="text-muted-foreground">
                   {describeCrashPublicationEvidence(entry.publishedThrough, entry.publishedThroughProvenance)}
@@ -1687,15 +1687,15 @@ export function SafetyWorkspace({
             ? /* Counted off the LIVE points, and against the source's own
                  mappable total rather than the stored query's — mixing the two
                  would describe one dataset with another's denominator. */
-              `Showing ${visibleFeatures.length.toLocaleString()} of ${liveRead.geocodedCount.toLocaleString()} mappable crashes from this live read, matching these filters.`
+              `Showing ${visibleFeatures.length.toLocaleString("en-US")} of ${liveRead.geocodedCount.toLocaleString("en-US")} mappable crashes from this live read, matching these filters.`
             : response
               ? /* "AT LEAST" WHEN THE DENOMINATOR IS A FALLBACK. If the count
                    query failed, the route falls back to the number of rows it
                    fetched — which is capped — so stating it flat would claim the
                    study area holds exactly as many crashes as the map drew. */
-                `Showing ${response.returnedCount.toLocaleString()} of ${
+                `Showing ${response.returnedCount.toLocaleString("en-US")} of ${
                   response.matchedCountIsExact === false ? "at least " : ""
-                }${response.matchedCount.toLocaleString()} crashes matching these filters in view.`
+                }${response.matchedCount.toLocaleString("en-US")} crashes matching these filters in view.`
               : "No crashes loaded."}{" "}
         {/* Rows the query matched and could not render — an unusable coordinate
             pair or a severity outside the vocabulary. Named separately from the
@@ -1703,7 +1703,7 @@ export function SafetyWorkspace({
             to widen the view while "these are in the table and undrawable"
             sends them to the record. */}
         {response && response.undrawableCount > 0
-          ? `${response.undrawableCount.toLocaleString()} matching ${
+          ? `${response.undrawableCount.toLocaleString("en-US")} matching ${
               response.undrawableCount === 1 ? "crash" : "crashes"
             } could not be drawn because the stored coordinates or severity value were unusable, so ${
               response.undrawableCount === 1 ? "it is" : "they are"

@@ -159,7 +159,7 @@ export function accuracyScatterSvg(
     const fill = ratio > 2 || ratio < 0.5 ? colors.critical : colors.series[0];
     parts.push(
       `<circle cx="${x(point.observed).toFixed(1)}" cy="${y(point.modelled).toFixed(1)}" r="4" fill="${fill}" fill-opacity="0.72" stroke="${colors.surface}" stroke-width="1">`,
-      `<title>${escapeXml(point.label || point.stationId)}: observed ${Math.round(point.observed).toLocaleString()}, modelled ${Math.round(point.modelled).toLocaleString()} (${ratio.toFixed(2)}×)</title>`,
+      `<title>${escapeXml(point.label || point.stationId)}: observed ${Math.round(point.observed).toLocaleString("en-US")}, modelled ${Math.round(point.modelled).toLocaleString("en-US")} (${ratio.toFixed(2)}×)</title>`,
       `</circle>`
     );
   }

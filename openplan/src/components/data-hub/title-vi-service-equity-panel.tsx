@@ -140,12 +140,12 @@ function Comparison({ comparison }: { comparison: ServiceEquityComparison }) {
         </div>
         <div>
           <dt className="text-xs uppercase text-muted-foreground">Residents in them</dt>
-          <dd className="tabular-nums">{comparison.minorityFocus.population.toLocaleString()}</dd>
+          <dd className="tabular-nums">{comparison.minorityFocus.population.toLocaleString("en-US")}</dd>
         </div>
         <div>
           <dt className="text-xs uppercase text-muted-foreground">With no stop at all</dt>
           <dd className="tabular-nums">
-            {comparison.minorityFocus.populationWithNoService.toLocaleString()}
+            {comparison.minorityFocus.populationWithNoService.toLocaleString("en-US")}
           </dd>
         </div>
         <div>

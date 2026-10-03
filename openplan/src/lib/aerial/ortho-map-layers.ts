@@ -208,7 +208,7 @@ export function buildAerialOrthoCatalog(
   ];
   if (unavailableCount > 0) {
     notes.push(
-      `${unavailableCount.toLocaleString()} preview ${unavailableCount === 1 ? "record is" : "records are"} not offered because custody or map placement could not be verified.`,
+      `${unavailableCount.toLocaleString("en-US")} preview ${unavailableCount === 1 ? "record is" : "records are"} not offered because custody or map placement could not be verified.`,
     );
   }
 

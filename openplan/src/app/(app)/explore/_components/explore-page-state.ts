@@ -84,7 +84,7 @@ export function describeRunAnalysisBlock({
     return "Write the question this run should answer. The study area is set.";
   }
   if (trimmed.length > ANALYSIS_QUERY_MAX_CHARS) {
-    return `The question is ${trimmed.length.toLocaleString()} characters, and the limit is ${ANALYSIS_QUERY_MAX_CHARS.toLocaleString()}. Shorten it and run again.`;
+    return `The question is ${trimmed.length.toLocaleString("en-US")} characters, and the limit is ${ANALYSIS_QUERY_MAX_CHARS.toLocaleString("en-US")}. Shorten it and run again.`;
   }
   return null;
 }

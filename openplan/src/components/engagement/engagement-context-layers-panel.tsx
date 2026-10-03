@@ -382,7 +382,7 @@ export function EngagementContextLayersPanel({
                       {layer.name}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {formatLabel(layer.source_format)} · {layer.feature_count.toLocaleString()} shape
+                      {formatLabel(layer.source_format)} · {layer.feature_count.toLocaleString("en-US")} shape
                       {layer.feature_count === 1 ? "" : "s"} drawn · {layer.source_filename}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">

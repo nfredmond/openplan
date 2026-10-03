@@ -28,7 +28,7 @@ export function SafetyPrintableStreetContext({
   if (!svg) return null;
   const sources = Array.from(
     new Set((roads ?? []).map((road) =>
-      `${road.sourceLabel} ${road.vintage}${road.cachedAt ? `, cached ${new Date(road.cachedAt).toLocaleDateString()}` : ""}`
+      `${road.sourceLabel} ${road.vintage}${road.cachedAt ? `, cached ${new Date(road.cachedAt).toLocaleDateString("en-US")}` : ""}`
     ))
   );
 
@@ -53,7 +53,7 @@ export function SafetyPrintableStreetContext({
       />
       <div className="mt-2 space-y-1 text-xs text-muted-foreground">
         <p><strong className="text-foreground">Project:</strong> {projectName ?? place?.label ?? "No project label available"}</p>
-        <p><strong className="text-foreground">Crash locations:</strong> {crashes.length.toLocaleString()} mapped crashes in this view.</p>
+        <p><strong className="text-foreground">Crash locations:</strong> {crashes.length.toLocaleString("en-US")} mapped crashes in this view.</p>
         <p><strong className="text-foreground">Road source:</strong> {sources.length > 0 ? sources.join("; ") : "Road identity unavailable"}</p>
         <p><strong className="text-foreground">Coverage limit:</strong> {coverageLimit}</p>
         <p>{SAFETY_STREET_CONTEXT_PROJECTION_NOTE}</p>

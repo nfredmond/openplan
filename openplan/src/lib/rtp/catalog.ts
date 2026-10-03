@@ -272,13 +272,13 @@ export function formatRtpChapterStatusLabel(value: string | null | undefined): s
 export function formatRtpDateTime(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
 }
 
 export function formatRtpDate(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString("en-US");
 }
 
 export function rtpCycleStatusTone(status: string | null | undefined): "info" | "success" | "warning" | "danger" | "neutral" {

@@ -778,7 +778,7 @@ export async function ReimbursementLane({
                     ) : null}
                     {riskState.title ? <StatusBadge tone={riskState.tone ?? "neutral"}>{riskState.title}</StatusBadge> : null}
                     <p className="text-label uppercase tracking-[0.08em] text-muted-foreground">
-                      {invoice.created_at ? new Date(invoice.created_at).toLocaleString() : "N/A"}
+                      {invoice.created_at ? new Date(invoice.created_at).toLocaleString("en-US") : "N/A"}
                     </p>
                   </div>
                   <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">

@@ -585,8 +585,8 @@ export function WorkspaceGisUploadWizard({
       {stage.kind === "uploading" ? (
         <div className="op-gis-wizard__progress" role="status">
           <p>
-            Uploading {stage.filename} — {stage.sent.toLocaleString()} of{" "}
-            {stage.total.toLocaleString()} shapes.
+            Uploading {stage.filename} — {stage.sent.toLocaleString("en-US")} of{" "}
+            {stage.total.toLocaleString("en-US")} shapes.
           </p>
           <progress value={stage.sent} max={Math.max(stage.total, 1)} />
           <p className="op-gis-wizard__hint">
@@ -607,7 +607,7 @@ export function WorkspaceGisUploadWizard({
           */}
           <p>
             <strong>{stage.layerName}</strong> is stored and switched on —{" "}
-            {stage.featureCount.toLocaleString()} shapes. Use{" "}
+            {stage.featureCount.toLocaleString("en-US")} shapes. Use{" "}
             <strong>Show on the map</strong> on its row below to go and look at it.
           </p>
           <button type="button" className="op-cart-btn" onClick={reset}>

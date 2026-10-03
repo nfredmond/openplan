@@ -38,7 +38,7 @@ export function SynthesisSourceInspection({ snapshot, sha256 }: { snapshot: Synt
   const filtered = useMemo(() => rows.filter(row => (!members || members.has(row.id)) && `${row.kind} ${row.title ?? ""} ${row.label} ${row.text} ${JSON.stringify(row.retained)}`.toLocaleLowerCase().includes(search.toLocaleLowerCase())), [rows, search, members]);
   return <article className="rounded border p-4 space-y-4" aria-label="Saved source inspection">
     <h3 className="font-semibold">Saved source: {snapshot.campaign.title}</h3>
-    <p>{new Date(snapshot.capturedAt).toLocaleString()} · Private staff copy</p>
+    <p>{new Date(snapshot.capturedAt).toLocaleString("en-US")} · Private staff copy</p>
     <p>{snapshot.counts.items} of {snapshot.counts.campaignItems} comments received; {snapshot.counts.sessions} of {snapshot.counts.campaignSessions} survey responses; {snapshot.counts.answers} of {snapshot.counts.campaignAnswers} answers retained.</p>
     <p className="text-sm">Scope: {snapshot.selection.statuses.join(", ")}. Comments {snapshot.selection.includeItems ? "included" : "excluded"}; surveys {snapshot.selection.includeSurveys ? "included" : "excluded"}. These counts describe contributions, not distinct people or representative support.</p>
     <p className="break-words text-xs">Category IDs: {snapshot.selection.categoryIds.join(", ") || "all"}. Received from {snapshot.selection.from ?? "no start"} to {snapshot.selection.to ?? "no end"}, end exclusive.</p>

@@ -25,7 +25,7 @@ function formatBytes(bytes: number | null): string {
 
 function formatDate(value: string): string {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("en-US");
 }
 
 function ManifestHash({ value }: { value: string }) {

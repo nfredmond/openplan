@@ -263,7 +263,7 @@ export function buildSafetyCrashEvidence(
 
   if (unclassifiedCount !== null && unclassifiedCount > 0) {
     caveats.push(
-      `${unclassifiedCount.toLocaleString()} of these collisions carry no casualty count from the source agency. ` +
+      `${unclassifiedCount.toLocaleString("en-US")} of these collisions carry no casualty count from the source agency. ` +
         SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT
     );
     narrativeCaveats.push(SAFETY_UNCLASSIFIED_SEVERITY_NARRATIVE_CAVEAT);
