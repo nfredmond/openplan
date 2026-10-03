@@ -371,3 +371,85 @@ describe("mission page wiring", () => {
     expect(source).toMatch(/loadAerialOrthoPreview\(/);
   });
 });
+
+/**
+ * THE AREA TO FLY IS ON THE MAP. The mission page opens on its map, and a
+ * mission with a drawn area but no imagery yet used to get "Nothing to place
+ * on a map yet" even though the page knew exactly where the mission was.
+ */
+describe("AerialMissionMap and the area to fly", () => {
+  const AREA = {
+    type: "Polygon",
+    coordinates: [[[-120.52, 39.19], [-120.48, 39.19], [-120.48, 39.23], [-120.52, 39.23], [-120.52, 39.19]]],
+  };
+
+  it("draws the area and frames it when there is no imagery yet", async () => {
+    mockImageryFetch({ imagery: [] });
+    const { AerialMissionMap } = await importMap();
+
+    render(<AerialMissionMap missionId={MISSION_ID} preview={null} previewNotice="no preview" aoi={AREA} />);
+
+    await waitFor(() => expect(mapboxMocks.Map).toHaveBeenCalledTimes(1));
+    const map = mapboxMocks.instances[0];
+    map.fire("load");
+
+    expect(map.sources["aerial-mission-area"]).toMatchObject({ type: "geojson" });
+    expect(map.layers.map((layer) => layer.id)).toEqual(
+      expect.arrayContaining(["aerial-mission-area-fill", "aerial-mission-area-outline"]),
+    );
+    expect(map.fitBounds).toHaveBeenCalled();
+    expect(screen.queryByText("Nothing to place on a map yet")).toBeNull();
+    expect(screen.getByRole("checkbox", { name: /Area to fly/ })).toBeChecked();
+  });
+
+  it("puts the fill under the imagery and the outline over it", async () => {
+    mockImageryFetch({ imagery: [] });
+    const { AerialMissionMap } = await importMap();
+
+    render(<AerialMissionMap missionId={MISSION_ID} preview={VALID_PREVIEW} previewNotice={null} aoi={AREA} />);
+
+    await waitFor(() => expect(mapboxMocks.Map).toHaveBeenCalledTimes(1));
+    const map = mapboxMocks.instances[0];
+    map.fire("load");
+    const order = map.layers.map((layer) => layer.id);
+
+    expect(order.indexOf("aerial-mission-area-fill")).toBeLessThan(order.indexOf("aerial-mission-ortho-preview-layer"));
+    expect(order.indexOf("aerial-mission-area-outline")).toBeGreaterThan(order.indexOf("aerial-mission-ortho-preview-layer"));
+  });
+
+  it("hides both area layers when the planner turns the area off", async () => {
+    mockImageryFetch({ imagery: [] });
+    const { AerialMissionMap } = await importMap();
+
+    render(<AerialMissionMap missionId={MISSION_ID} preview={null} previewNotice="no preview" aoi={AREA} />);
+    await waitFor(() => expect(mapboxMocks.Map).toHaveBeenCalledTimes(1));
+    const map = mapboxMocks.instances[0];
+    map.fire("load");
+
+    fireEvent.click(screen.getByRole("checkbox", { name: /Area to fly/ }));
+
+    const setLayout = (map as unknown as { setLayoutProperty: ReturnType<typeof vi.fn> }).setLayoutProperty;
+    expect(setLayout).toHaveBeenCalledWith("aerial-mission-area-fill", "visibility", "none");
+    expect(setLayout).toHaveBeenCalledWith("aerial-mission-area-outline", "visibility", "none");
+  });
+
+  it("says no area is drawn, and draws none, for a mission without a valid one", async () => {
+    mockImageryFetch({ imagery: [] });
+    const { AerialMissionMap } = await importMap();
+
+    render(
+      <AerialMissionMap
+        missionId={MISSION_ID}
+        preview={VALID_PREVIEW}
+        previewNotice={null}
+        aoi={{ type: "Point", coordinates: [-120.5, 39.2] }}
+      />,
+    );
+    await waitFor(() => expect(mapboxMocks.Map).toHaveBeenCalledTimes(1));
+    const map = mapboxMocks.instances[0];
+    map.fire("load");
+
+    expect(screen.getByText("No area drawn yet")).toBeInTheDocument();
+    expect(map.sources["aerial-mission-area"]).toBeUndefined();
+  });
+});

@@ -331,3 +331,108 @@ further integration. Main has separately advanced to b8551e4e with map changes;
 this record does not claim to test that later tree. PR114 remains a development
 candidate. No release tag, demo update, semantic-quality finding, capacity result
 or complete M9b/v1 claim follows from this download check.
+
+## Shuffled storage-refresh assertion correction
+
+Candidate c64d87a8 includes main b8551e4e. Its 123 focused integration tests,
+production build, TypeScript and repeated identified Chrome journey pass;
+[the source-specific record](map-integration-evidence.json) preserves them.
+GitHub normal QA passes, but shuffled seed 993126 fails one storage-refresh
+assertion while isolation and restore remain active. The failed run is retained
+in [timing checks](storage-refresh-timing-checks.json).
+
+The test assumed inspection became enabled immediately after an obsolete read
+completed. Storage refresh now restores the selected inspection and starts a
+replacement read. The replacement may still be verifying original evidence when
+the obsolete read finishes. A controlled delayed replacement reproduces the
+exact assertion failure. An initial local command used the repository root
+instead of the app package and failed import resolution; that is preserved as
+a harness failure, not product evidence.
+
+The corrected test holds both replies. It verifies that refresh starts the
+replacement, the late obsolete denial does not revoke access or clear its loading
+state, and inspection becomes enabled after the replacement finishes. It then
+performs another inspection. Production code is unchanged. A harmless control
+survives and four consequential faults fail in [mutation evidence](storage-refresh-timing-mutations.json).
+The restored four-file suite passes all 65 tests with the failing seed; strict
+lint passes. Fresh whole-suite CI remains separate from this focused correction.
+
+## Tab preservation and download acceptance on f2465eed
+
+The combined source includes main577f2370. All 357 focused tests in 21 files
+pass with shuffle seed993126. The bounded production build and TypeScript pass.
+The identified T3 journey switches from Analysis to Responses and back while
+retaining the exact unsent import reason. After the reported client interruption,
+the 390px preview still retains that reason and has no horizontal overflow.
+The product preservation button saves the revision2 recovery copy without
+submitting a replacement. Earlier approvals remain outside this operation.
+
+A separate fresh Chrome profile downloads both original JSON files. Their
+3,726 and 3,289 bytes match the retained originals exactly, including SHA256.
+A corrupted copy fails comparison. Keyboard proposal opening, 390px contribution
+focus and complete final sentence pass. Desktop and mobile screenshots are
+visually inspected. The Chrome journey has no console warnings/errors or page
+errors. See [source-bound evidence](tab-integration-evidence.json).
+
+The owned server is stopped before further source changes. Mainc5942325 adds
+an Aerial mission page change after this tested source. Combined integration
+remains pending. These synthetic checks do not establish semantic accuracy,
+practitioner acceptance, campaign capacity or complete M9b/v1 readiness.
+
+
+## Restore runtime correction after crash recovery
+
+Source 04539c6d includes main c5942325. Its 161 focused tests, production build,
+TypeScript and identified Chrome download/keyboard/390px journey pass. The
+[source-specific evidence](mission-integration-evidence.json) preserves original
+file hashes, visually reviewed captures and the separate T3 disconnection.
+GitHub application CI 37081724964, native isolation 37081724943 and worker
+regression 37081724938 now pass. These results do not include later main 08d8b12c.
+
+Restore run 37081724998 is cancelled at the 45-minute job limit. It restores
+330 tables and one storage file, signs into the restored account and checks
+record relationships before starting native isolation at 00:26:50 UTC. GitHub
+cancels it at 01:06:46. The parallel native suite takes 42 minutes 15 seconds,
+longer than the restore job's remaining time. Suppressed output prevents locating
+the exact final test. This cancelled restore remains unaccepted.
+
+The workflow now permits 90 minutes for setup, recovery, the full native suite
+and cleanup. The shell command exposes native test progress and preserves its
+exit status. No tests or migration checks are removed. Bash syntax and all
+28 restore unit tests pass. Existing mutation checks record 45 expected results,
+including surviving harmless controls. Tail-only shell probes show that native
+failure prevents the final PASS message. Reintroducing output suppression hides
+progress; ignoring the native failure incorrectly prints PASS. These probes use
+fake npm and do not establish database recovery. See
+[the timeout record](restore-timeout-checks.json).
+
+The full GitHub restore rerun remains required. Main integration, the staff
+preparation worker and complete M9b/v1 acceptance remain unfinished. Local
+checks use bounded memory and no swap. The reported client crashes have no
+established cause; no other agent's process, checkout or browser is changed.
+
+
+## Main formatting and chart integration
+
+GitHub run37085539412 tests PR114754aa7e1 against newer main. Normal and shuffled
+suites each pass17,639 tests but fail the new locale guard on the import panel's
+request date. Local reproduction after merging main08d8b12c finds the same bare
+`toLocaleString()` call. The panel now passes `en-US`, matching main's formatter
+policy. The existing guard remains intact. This pins locale, not timezone.
+
+All89 focused tests in eight files pass with the failing seed304156, including
+main's shared chart bars, disclosure, missing-award and formatting checks, plus
+thematic import/recovery/editor checks. Strict lint passes. See
+[the integration record](locale-integration-checks.json). The production build,
+combined identified browser journey and fresh GitHub results remain pending.
+This integration does not change the release or v1 evidence requirements.
+
+## Dependency audit recovery, October 2, 2026
+
+Exact `8a14cee7` passes native RLS, the completed restore drill, shuffled tests and worker checks. Its QA job fails the full dependency audit on GHSA-vfj7-8cjw-p6xm after application and connector tests pass.
+
+The candidate now backports the upstream braces depth-limit proposal onto the published 3.0.3 package. The local identifier is `3.0.4-openplan.1`; it is not an upstream release. The complete audit remains enabled. Installed file hashes, lock identity, nested package inventory and depth behavior run before registry audit. See `openplan/vendor/braces/README.md` for provenance and limitations.
+
+The backport passes 764 published-release compatibility tests, 18 regression/corruption tests, harmless controls and targeted guard faults. Two fresh locked installs, exact archive reconstruction, lint, configured deadcode and the production webpack build pass. The build peaks at 6 GiB with zero swap. Full CI for this new source remains pending. Prior identified browser downloads belong to `8a14cee7`; no new browser journey is claimed.
+
+`braces-remediation-checks.json` records source hashes, initial failures, corrections and the boundaries of these checks. Staff generation remains isolated at `34775168`. No main, demo or release tag changes occur in this checkpoint.

@@ -1194,6 +1194,44 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
   opacity: 1;
 }
 
+/* ═══ THE PAGE AS A SIDEBAR BESIDE THE MAP (2026-10-02) ═══
+
+   Set by `SurfaceBesideTheMap` on a page that reads the shell's own map: the
+   Aerial index. Its panel ran from the rail to the layer dock, so the mission
+   areas it listed were drawn underneath it. Here the panel keeps its left edge
+   and its frame and stops at a sidebar width; the map fills the rest. The
+   inspector, which opens when an area on the map is clicked, starts beside the
+   sidebar instead of over it.
+
+   Desktop only. Below 1024px the panel still spans the window and "Read the
+   map" is how the map is seen. */
+@media (min-width: 1024px) {
+  body[data-surface-beside-map="true"] {
+    --op-cart-beside-width: clamp(22rem, 34vw, 32rem);
+  }
+  body[data-surface-beside-map="true"] .op-cart-surface {
+    right: auto;
+    width: var(--op-cart-beside-width);
+  }
+  body[data-surface-beside-map="true"] .op-cart-inspector {
+    left: calc(92px + var(--op-cart-beside-width) + 16px);
+  }
+}
+@media (min-width: 1200px) {
+  body[data-surface-beside-map="true"] .op-cart-inspector {
+    left: calc(272px + var(--op-cart-beside-width) + 16px);
+  }
+}
+/* From 1024 to 1100px the header widens to the window edge (see the
+   max-width: 1100px block), and the map controls in the top-right corner sat
+   under its appearance buttons. Beside the map there is room below the header
+   for them, so they start where the page panel starts. */
+@media (min-width: 1024px) and (max-width: 1100px) {
+  body[data-surface-beside-map="true"] .op-cart-mapdock {
+    top: 84px;
+  }
+}
+
 /* ---------- Responsive: keep shell usable below 1024px ---------- */
 
 @media (max-width: 1100px) {

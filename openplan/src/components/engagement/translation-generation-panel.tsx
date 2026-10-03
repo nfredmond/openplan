@@ -233,7 +233,7 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
       {catalog && <><p>{catalog.requests.length ? "Saved requests at the last refresh:" : "No saved generation requests were returned."}</p>
         <ul className="space-y-2">{catalog.requests.map(request => <li key={request.id}>
           <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal text-left" onClick={() => void view(request.id)}>
-            {TRANSLATION_LANGUAGE_LABELS[request.locale]} · {new Date(request.createdAt).toLocaleString()} · {request.counts.completed} of {request.fieldCount} fields completed
+            {TRANSLATION_LANGUAGE_LABELS[request.locale]} · {new Date(request.createdAt).toLocaleString("en-US")} · {request.counts.completed} of {request.fieldCount} fields completed
           </Button>
         </li>)}</ul>
         {catalog.next && <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => void list(catalog.next)}>Load older generation requests</Button>}</>}
@@ -242,7 +242,7 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
         <p>{viewed.actorId === userId ? "Requested by you." : "Requested by another staff member."} Publication records you separately as the publisher.</p>
         <p>Review the retained output and its original source. Add a publication reason above before publishing with a machine label.</p>
         <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => void view(viewed.requestId)}>Refresh request status</Button>
-        <details><summary>Request record</summary><p className="break-all">Request: {viewed.requestId}</p><p className="break-all">Requested by: {viewed.actorId}</p><p>{new Date(viewed.createdAt).toLocaleString()}</p></details>
+        <details><summary>Request record</summary><p className="break-all">Request: {viewed.requestId}</p><p className="break-all">Requested by: {viewed.actorId}</p><p>{new Date(viewed.createdAt).toLocaleString("en-US")}</p></details>
         {viewed.fields.map(field => <div key={field.id} className="space-y-2 rounded-lg border border-border p-3 break-words">
           <h4 className="font-semibold">{field.address.field.replaceAll("_", " ")}: {stateNames[field.state]}</h4>
           <p>Source used:</p><p className="whitespace-pre-wrap" lang={field.address.expectedSource.sourceLocale ?? undefined} dir="auto">{field.address.expectedSource.text}</p>

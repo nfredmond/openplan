@@ -583,14 +583,14 @@ export function buildCrashSourceSnapshot(
   const ungeocoded = Math.max(0, crashes.reportedTotal - crashes.mappedTotal);
   const mappingNote =
     ungeocoded > 0
-      ? ` ${crashes.reportedTotal.toLocaleString()} crashes matched, ${crashes.mappedTotal.toLocaleString()} carried coordinates and are mappable.`
+      ? ` ${crashes.reportedTotal.toLocaleString("en-US")} crashes matched, ${crashes.mappedTotal.toLocaleString("en-US")} carried coordinates and are mappable.`
       : "";
 
   // Say the number, or the severity counts quietly fail to add up to the total
   // and a reader fills the gap in with "property damage".
   const unclassifiedNote =
     !crashes.truncated && crashes.unclassifiedCrashes > 0
-      ? ` ${crashes.unclassifiedCrashes.toLocaleString()} of the mapped crashes carry no casualty count from the source and are not classified by severity — they are counted in the total and in no severity band.`
+      ? ` ${crashes.unclassifiedCrashes.toLocaleString("en-US")} of the mapped crashes carry no casualty count from the source and are not classified by severity — they are counted in the total and in no severity band.`
       : "";
 
   const truncationNote = crashes.truncated
@@ -639,7 +639,7 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
   if (crashes.truncated) {
     return (
       `**Safety (${crashes.yearsQueried.length > 0 ? crashes.yearsQueried.join(", ") : "requested years"}, ${crashes.sourceLabel}):** ` +
-      `${crashes.reportedTotal.toLocaleString()} crashes matched the study area, but the record extract reached OpenPlan's analysis cap. ` +
+      `${crashes.reportedTotal.toLocaleString("en-US")} crashes matched the study area, but the record extract reached OpenPlan's analysis cap. ` +
       "Severity totals, crash density, and the safety score are withheld because the extract is incomplete."
     );
   }

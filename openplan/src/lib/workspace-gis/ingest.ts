@@ -243,8 +243,8 @@ export function describeIncompleteIngest(
 ): string {
   const missing = declaredFeatureCount - featureCount;
   return (
-    `This upload is not finished: ${featureCount.toLocaleString()} of ${declaredFeatureCount.toLocaleString()} shapes ` +
-    `have arrived and ${missing.toLocaleString()} have not. It stays unfinished — a partly loaded layer is never drawn, ` +
+    `This upload is not finished: ${featureCount.toLocaleString("en-US")} of ${declaredFeatureCount.toLocaleString("en-US")} shapes ` +
+    `have arrived and ${missing.toLocaleString("en-US")} have not. It stays unfinished — a partly loaded layer is never drawn, ` +
     `because a map missing shapes nobody knows about is worse than a map that is not there.`
   );
 }

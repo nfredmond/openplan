@@ -119,7 +119,7 @@ function FacetControl({
               {/* The count is only ever appended when it exists. A "(0)" on a
                   value the current view has none of is fine; a "(0)" on a value
                   nothing was counted for would be a fabricated zero. */}
-              {notCovered ? " (not covered)" : typeof count === "number" ? ` (${count.toLocaleString()})` : ""}
+              {notCovered ? " (not covered)" : typeof count === "number" ? ` (${count.toLocaleString("en-US")})` : ""}
             </button>
           );
         })}

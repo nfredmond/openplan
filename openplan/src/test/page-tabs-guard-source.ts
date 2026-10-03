@@ -6,6 +6,8 @@ import { stripSourceComments } from "./helpers/source-text";
 import { buildProjectTabs } from "@/app/(app)/projects/[projectId]/_components/_tabs";
 import { buildCampaignTabs } from "@/app/(app)/engagement/[campaignId]/_tabs";
 import { buildRtpCycleTabs } from "@/app/(app)/rtp/[rtpCycleId]/_tabs";
+import { buildPlanTabs } from "@/app/(app)/plans/[planId]/_tabs";
+import { buildMissionTabs } from "@/app/(app)/aerial/missions/[missionId]/_tabs";
 
 /**
  * SHARED SOURCE READING FOR THE `page-tabs-guard-*` FILES.
@@ -131,8 +133,8 @@ export function reportDetailTabsFromSource(): PageTabDefinition<string>[] {
  * restated. See `REPORT_HEADER_ANCHORS` there for why they belong to no tab. */
 /**
  * Tabs declared inline in a record page (`const planTabs: PageTabDefinition…`),
- * read from source the same way the report page's are. The plan, program, model
- * and scenario pages build their tabs from values only the page has, so there is
+ * read from source the same way the report page's are. The program, model and
+ * scenario pages build their tabs from values only the page has, so there is
  * no builder to import; the keys, labels and anchors are literals and are what
  * these guards check.
  */
@@ -176,7 +178,7 @@ export type TabbedPage = {
   pageAnchors: readonly string[];
 };
 
-/** The four URL-tabbed detail pages, with their real shipped tab definitions. */
+/** The URL-tabbed detail pages, with their real shipped tab definitions. */
 export function tabbedPages(): TabbedPage[] {
   return [
     {
@@ -204,7 +206,18 @@ export function tabbedPages(): TabbedPage[] {
       label: "plan detail",
       linkPrefix: "plans",
       file: "app/(app)/plans/[planId]/page.tsx",
-      tabs: inlineTabsFromSource("app/(app)/plans/[planId]/page.tsx", "const planTabs: PageTabDefinition"),
+      tabs: buildPlanTabs({
+        overview: { readinessBasis: false, planLinks: false },
+        linked: {
+          projects: false,
+          scenarios: false,
+          campaigns: false,
+          reports: false,
+          supportingModels: false,
+          supportingModelLinks: false,
+          planLinks: false,
+        },
+      }),
       pageAnchors: [],
     },
     {
@@ -229,6 +242,17 @@ export function tabbedPages(): TabbedPage[] {
         "app/(app)/scenarios/[scenarioSetId]/page.tsx",
         "const scenarioTabs: PageTabDefinition",
       ),
+      pageAnchors: [],
+    },
+    {
+      label: "aerial mission",
+      linkPrefix: "aerial/missions",
+      file: "app/(app)/aerial/missions/[missionId]/page.tsx",
+      tabs: buildMissionTabs({
+        map: { orthoPreview: false, packages: false },
+        processing: { jobs: false, custody: false },
+        evidence: { packages: false },
+      }),
       pageAnchors: [],
     },
     {

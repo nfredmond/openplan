@@ -202,9 +202,9 @@ export function TrafficVolumeMap({
             .setHTML(
               `<div style="font-family:system-ui;font-size:13px;line-height:1.5">
                 <strong>${name}</strong><br/>
-                <span style="color:${trafficVolumeClass(Number(props.pce_tot)).color}">●</span> Volume: <strong>${Number(props.pce_tot).toLocaleString()}</strong> PCE/day<br/>
+                <span style="color:${trafficVolumeClass(Number(props.pce_tot)).color}">●</span> Volume: <strong>${Number(props.pce_tot).toLocaleString("en-US")}</strong> PCE/day<br/>
                 <span style="font-size:11px;color:#888">
-                  AB: ${Number(props.pce_ab).toLocaleString()} · BA: ${Number(props.pce_ba).toLocaleString()}<br/>
+                  AB: ${Number(props.pce_ab).toLocaleString("en-US")} · BA: ${Number(props.pce_ba).toLocaleString("en-US")}<br/>
                   V/C: ${props.voc_max} · Delay: ${props.delay_factor}x
                 </span>
               </div>`

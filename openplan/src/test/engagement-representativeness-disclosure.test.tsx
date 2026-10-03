@@ -57,6 +57,39 @@ describe("DemographicsPanel", () => {
   });
 });
 
+describe("DemographicsPanel bars", () => {
+  it("draws a band nobody chose as no bar, not a sliver", () => {
+    const { container } = render(
+      <DemographicsPanel
+        source={{
+          state: "loaded",
+          summary: {
+            respondentsWithDemographics: 6,
+            dimensions: {
+              age_band: [
+                { band: "25_34", label: "25 to 34", count: 6 },
+                { band: "65_plus", label: "65 and over", count: 0 },
+              ],
+              primary_language: [],
+              household_tenure: [],
+              race_ethnicity: [],
+            },
+            hasAny: true,
+            hasSuppressed: false,
+            caveat: "Self-reported.",
+          },
+        }}
+      />
+    );
+
+    const rows = [...container.querySelectorAll("[data-chart-share-bar]")];
+    expect(rows).toHaveLength(2);
+    const fills = rows.map((row) => row.querySelector("span[aria-hidden] > span"));
+    expect(fills[0]).not.toBeNull();
+    expect(fills[1]).toBeNull();
+  });
+});
+
 describe("JointRepresentativenessPanel", () => {
   it("shows the self-reported floor beside the area share with both denominators", () => {
     render(

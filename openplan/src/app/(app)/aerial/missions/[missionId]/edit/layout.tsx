@@ -20,7 +20,7 @@ export async function generateMetadata({
     table: "aerial_missions",
     nameColumn: "title",
     id: missionId,
-    moduleName: "Aerial Ops",
+    moduleName: "Aerial Imagery",
     section: "Edit",
   });
 }

@@ -161,7 +161,7 @@ export function describeTransitAccess(core: TransitAccessCore): string {
   }
 
   const parts: string[] = [
-    `**Transit Access:** ${core.totalStops?.toLocaleString() ?? "0"} stops (${core.stopsPerSqMile}/sq mi). ` +
+    `**Transit Access:** ${core.totalStops?.toLocaleString("en-US") ?? "0"} stops (${core.stopsPerSqMile}/sq mi). ` +
       `Access tier: ${core.accessTier}.`,
   ];
 
@@ -184,7 +184,7 @@ export function describeTransitAccess(core: TransitAccessCore): string {
 
     if (core.frequentServiceShare !== null && core.frequentServiceHeadwayMinutes !== null) {
       parts.push(
-        `${sharePercent(core.frequentServiceShare)}% of those ${core.totalStops?.toLocaleString() ?? "0"} ` +
+        `${sharePercent(core.frequentServiceShare)}% of those ${core.totalStops?.toLocaleString("en-US") ?? "0"} ` +
           `stops (${core.frequentServiceStops}) meet a ${core.frequentServiceHeadwayMinutes}-minute peak ` +
           `headway on a representative service day. A stop with no derivable peak headway that day is counted ` +
           `as not meeting it, so this is a share of every stop above and not of some smaller subset.`

@@ -190,7 +190,7 @@ export function ProjectDecisionPackagePanel({ projectId }: { projectId: string }
         return (
           <div key={bundle.id} data-bundle-sha={bundle.bundle_sha256} className="mt-4 rounded-[0.45rem] border border-border bg-background p-3 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span>Bundle frozen {new Date(bundle.generated_at).toLocaleString()}</span>
+              <span>Bundle frozen {new Date(bundle.generated_at).toLocaleString("en-US")}</span>
               <a href={`/api/projects/${projectId}/evidence-bundles/${bundle.id}/download`} className="inline-flex items-center gap-1 underline decoration-dotted underline-offset-2">
                 <Download className="h-4 w-4" /> Download
               </a>

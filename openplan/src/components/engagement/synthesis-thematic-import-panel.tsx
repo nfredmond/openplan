@@ -123,7 +123,7 @@ export function SynthesisThematicImportPanel({ scope: suppliedScope, snapshot, r
     {listing ? <p role="status">Reading saved proposal requests.</p> : null}
     {page?.entries.length === 0 ? <p>No thematic requests are saved for this source. Staff can continue their review without a machine proposal.</p> : null}
     <ul className="space-y-2">{page?.entries.map(row => <li key={row.requestId} className="rounded border p-3 space-y-2">
-      <p>Requested {new Date(row.createdAt).toLocaleString()}. {row.cancelled ? "Cancelled; retained history remains readable." : "Inspect retained outputs to determine whether a complete proposal is available."}</p>
+      <p>Requested {new Date(row.createdAt).toLocaleString("en-US")}. {row.cancelled ? "Cancelled; retained history remains readable." : "Inspect retained outputs to determine whether a complete proposal is available."}</p>
       <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" disabled={Boolean(draft) || busy || blocked || reading}
         onClick={() => void inspect(row.requestId)}>Inspect proposal {row.requestId.slice(0, 8)}</Button>
     </li>)}</ul>

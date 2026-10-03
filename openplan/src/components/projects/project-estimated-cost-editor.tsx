@@ -27,13 +27,13 @@ function displayCost(amount: number | string, currency: string): string {
   const numeric = typeof amount === "number" ? amount : Number.parseFloat(amount);
   if (!Number.isFinite(numeric)) return `${currency} ${amount}`;
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency,
       maximumFractionDigits: 0,
     }).format(numeric);
   } catch {
-    return `${currency} ${numeric.toLocaleString()}`;
+    return `${currency} ${numeric.toLocaleString("en-US")}`;
   }
 }
 

@@ -8,6 +8,8 @@ import { WorkspaceCommandBoard } from "@/components/operations/workspace-command
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { withPresentedHeadlineScores } from "@/lib/analysis/score-presentation";
+import { presentRunSummary } from "@/lib/analysis/run-summary-presentation";
 import { PageRunsToTheEdge } from "@/components/cartographic/page-runs-to-the-edge";
 import { Input } from "@/components/ui/input";
 import {
@@ -406,6 +408,15 @@ export function ExploreWorkbench({
       const payload = (await response.json()) as AnalysisResult;
       setAnalysisResult({
         ...payload,
+        metrics: withPresentedHeadlineScores(
+          payload.metrics as AnalysisResult["metrics"] & Record<string, unknown>,
+        ) as AnalysisResult["metrics"],
+        summary: presentRunSummary(payload.summary, payload.metrics as Record<string, unknown>).text,
+        aiInterpretation:
+          payload.aiInterpretation &&
+          !presentRunSummary(payload.aiInterpretation, payload.metrics as Record<string, unknown>).withheld
+            ? payload.aiInterpretation
+            : undefined,
         projectId: projectForRun || null,
         title: buildRunTitle(queryForRun),
         createdAt: new Date().toISOString(),

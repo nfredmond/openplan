@@ -50,6 +50,7 @@ import {
 } from "@/lib/cartographic/workspace-gis-map-layers";
 import { useWorkspaceGisMapBinding } from "./use-workspace-gis-map-binding";
 import { useAerialOrthoMapBinding } from "./use-aerial-ortho-map-binding";
+import { surfaceBesideTheMapInsets } from "./surface-beside-the-map";
 import {
   describeMapLayerCoverage,
   describeMapLayerFailure,
@@ -1774,7 +1775,7 @@ export function CartographicMapBackdrop({
       return;
     }
     didInitialFitRef.current = true;
-    applyFitInstruction(map, mapFocus);
+    applyFitInstruction(map, mapFocus, surfaceBesideTheMapInsets());
     clearMapFocus();
   }, [mapFocus, ready, suppressed, clearMapFocus]);
 
@@ -2132,13 +2133,13 @@ export function CartographicMapBackdrop({
       }
       text(
         "op-map-popup__line",
-        `About ${trips.toLocaleString()} trips call here on a ${dayLabel}.`,
+        `About ${trips.toLocaleString("en-US")} trips call here on a ${dayLabel}.`,
       );
       text(
         "op-map-popup__line",
         headway === null
           ? "Too few trips that day to derive an interval between them."
-          : `About one vehicle every ${headway.toLocaleString()} minutes in the busiest hour.`,
+          : `About one vehicle every ${headway.toLocaleString("en-US")} minutes in the busiest hour.`,
       );
       if (routesServing > 0) {
         const listed = routeIds.slice(0, 4).join(", ");
@@ -2148,7 +2149,7 @@ export function CartographicMapBackdrop({
             : "";
         text(
           "op-map-popup__line",
-          `Served by ${routesServing.toLocaleString()} ${routesServing === 1 ? "route" : "routes"}${suffix}.`,
+          `Served by ${routesServing.toLocaleString("en-US")} ${routesServing === 1 ? "route" : "routes"}${suffix}.`,
         );
       }
       text(

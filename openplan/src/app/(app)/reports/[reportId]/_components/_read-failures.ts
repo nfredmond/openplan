@@ -212,12 +212,16 @@ export function buildReportUnreadableByTab(flags: {
   artifactsUnreadable: boolean;
   sectionsUnreadable: boolean;
   projectRecordsUnreadable: boolean;
+  stageGatesUnreadable: boolean;
+  crashEvidenceUnreadable: boolean;
 }): Partial<Record<ReportDetailTabKey, string[]>> {
   return {
     packet: unreadableLanes([["this report's generated packets", flags.artifactsUnreadable]]),
     evidence: unreadableLanes([["this report's sections", flags.sectionsUnreadable]]),
     history: unreadableLanes([
       ["the live project records this packet is compared against", flags.projectRecordsUnreadable],
+      ["the live stage-gate board", flags.stageGatesUnreadable],
+      ["the project's linked crash evidence", flags.crashEvidenceUnreadable],
     ]),
   };
 }

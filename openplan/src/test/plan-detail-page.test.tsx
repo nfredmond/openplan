@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -128,6 +128,9 @@ const fromMock = vi.fn((table: string) => {
   return { select };
 });
 
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: (...args: unknown[]) => redirectMock(...args),
@@ -171,8 +174,22 @@ vi.mock("@/components/operations/workspace-command-board", () => ({
 
 import PlanDetailPage from "@/app/(app)/plans/[planId]/page";
 
-async function renderPage() {
-  render(await PlanDetailPage({ params: Promise.resolve({ planId: "plan-1" }) }));
+/**
+ * The page is URL-tabbed and this file renders only the open tab (`helpers/open-tab-only`), so every
+ * render names the tab whose content it asserts on. "linked" holds the linked
+ * projects, scenarios, campaigns, reports, supporting models and explicit plan
+ * links; "overview" holds the readiness basis and the linkage ledger. The
+ * page-level disclosure sits above the tab strip and shows on every tab.
+ */
+type PlanTab = "overview" | "linked" | "edit";
+
+async function renderPage(tab?: PlanTab) {
+  render(
+    await PlanDetailPage({
+      params: Promise.resolve({ planId: "plan-1" }),
+      searchParams: Promise.resolve(tab ? { tab } : {}),
+    })
+  );
 }
 
 const EMPTY = { data: [], error: null };
@@ -252,7 +269,7 @@ describe("PlanDetailPage — a failed read may not be rendered as an answer", ()
    * printed the disclosure unconditionally would pass them both.
    */
   it("still shows the ordinary empty states when every read SUCCEEDS and there is genuinely nothing", async () => {
-    await renderPage();
+    await renderPage("linked");
 
     expect(screen.getByText("No scenario sets linked")).toBeInTheDocument();
     expect(screen.getByText("No campaigns linked")).toBeInTheDocument();
@@ -270,7 +287,7 @@ describe("PlanDetailPage — a failed read may not be rendered as an answer", ()
       error: { message: 'column scenario_sets.planning_question does not exist' },
     });
 
-    await renderPage();
+    await renderPage("linked");
 
     // (a) the false absence sentence is gone
     expect(screen.queryByText("No scenario sets linked")).not.toBeInTheDocument();
@@ -295,10 +312,16 @@ describe("PlanDetailPage — a failed read may not be rendered as an answer", ()
       error: { message: "permission denied for table engagement_campaigns" },
     });
 
-    await renderPage();
+    // The campaign section lives on the "linked" tab.
+    await renderPage("linked");
 
     expect(screen.queryByText("No campaigns linked")).not.toBeInTheDocument();
     expect(screen.getByText("Campaign links could not be read")).toBeInTheDocument();
+
+    // The readiness verdict lives on the "overview" tab.
+    cleanup();
+    await renderPage("overview");
+
     expect(screen.getByText("Readiness cannot be assessed right now")).toBeInTheDocument();
     expect(
       screen.getByText(/Readiness, coverage and workflow posture are withheld/)
@@ -311,11 +334,17 @@ describe("PlanDetailPage — a failed read may not be rendered as an answer", ()
       error: { message: "relation plan_links does not exist" },
     });
 
-    await renderPage();
+    // The explicit plan-links section lives on the "linked" tab.
+    await renderPage("linked");
 
     expect(screen.queryByText("No explicit links yet")).not.toBeInTheDocument();
-    expect(screen.queryByText("No explicit links stored on the plan yet.")).not.toBeInTheDocument();
     expect(screen.getByText("The plan's link set could not be read")).toBeInTheDocument();
+
+    // The linkage ledger count lives on the "overview" tab.
+    cleanup();
+    await renderPage("overview");
+
+    expect(screen.queryByText("No explicit links stored on the plan yet.")).not.toBeInTheDocument();
     expect(
       screen.getByText(/The plan's link set could not be read, so the number of stored links is unknown/)
     ).toBeInTheDocument();
@@ -376,7 +405,7 @@ describe("PlanDetailPage — a failed read may not be rendered as an answer", ()
       error: { message: "permission denied for table model_links" },
     });
 
-    await renderPage();
+    await renderPage("linked");
 
     // The model itself loaded, so it is still shown — the fix discloses, it
     // does not withhold records the planner is entitled to see.
@@ -400,12 +429,48 @@ describe("PlanDetailPage — a failed read may not be rendered as an answer", ()
     modelsProjectOrderMock.mockResolvedValue({ data: [SUPPORTING_MODEL], error: null });
     modelLinksInMock.mockResolvedValue({ data: [], error: null });
 
-    await renderPage();
+    await renderPage("linked");
 
     expect(screen.getByText("Corridor screening model")).toBeInTheDocument();
     expect(screen.getByText(/0 datasets/)).toBeInTheDocument();
     expect(screen.queryByText(/linkage counts unavailable/)).not.toBeInTheDocument();
     expect(screen.queryByText(/No readiness verdict is shown for this model/)).not.toBeInTheDocument();
     expect(screen.queryByText("Part of this page could not be read")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("page-tab-unreadable-linked")).not.toBeInTheDocument();
+  });
+
+  /**
+   * The tab strip must point a reader on Overview at the tab that holds the
+   * failure. It used to mark "Linked work" only for scenarios, campaigns and
+   * reports, so a failed model read left the strip silent.
+   */
+  it("marks Linked work when the supporting models could not be read", async () => {
+    modelsProjectOrderMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table models" },
+    });
+
+    await renderPage("overview");
+
+    expect(screen.getByTestId("page-tab-unreadable-linked")).toBeInTheDocument();
+    expect(screen.queryByTestId("page-tab-unreadable-overview")).not.toBeInTheDocument();
+    expect(screen.getByTestId("page-tabs-unreadable-notice")).toHaveTextContent(
+      "Linked work: supporting models"
+    );
+  });
+
+  it("marks Linked work when only the models' own link sets could not be read", async () => {
+    modelsProjectOrderMock.mockResolvedValue({ data: [SUPPORTING_MODEL], error: null });
+    modelLinksInMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table model_links" },
+    });
+
+    await renderPage("overview");
+
+    expect(screen.getByTestId("page-tab-unreadable-linked")).toBeInTheDocument();
+    expect(screen.getByTestId("page-tabs-unreadable-notice")).toHaveTextContent(
+      "supporting model link sets"
+    );
   });
 });

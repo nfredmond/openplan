@@ -147,7 +147,7 @@ export function CrsPicker({
                   "This workspace has not stated a geography, so this list is not narrowed to your area — " +
                   "it is the start of every system OpenPlan carries. Set your workspace geography to get a " +
                   "list you can actually read."
-                : `${matchedCount.toLocaleString()} coordinate systems are defined to cover your workspace's ` +
+                : `${matchedCount.toLocaleString("en-US")} coordinate systems are defined to cover your workspace's ` +
                   `area. OpenPlan does not pick one for you.`}
           </p>
 

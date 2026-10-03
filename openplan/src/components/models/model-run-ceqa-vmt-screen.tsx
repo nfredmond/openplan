@@ -72,7 +72,7 @@ function formatSavedAt(createdAt: string | null): string {
   const parsed = new Date(createdAt);
   return Number.isNaN(parsed.getTime())
     ? "date not recorded"
-    : parsed.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+    : parsed.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
 }
 
 export function ModelRunCeqaVmtScreen({

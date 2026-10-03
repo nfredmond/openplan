@@ -168,7 +168,7 @@ export function ModelRunHeadlineAnswer({
           <div key={figure.label}>
             <dt className="text-xs text-muted-foreground">{figure.label}</dt>
             <dd className="text-xl font-semibold tabular-nums text-foreground">
-              {Math.round(figure.value).toLocaleString()}{" "}
+              {Math.round(figure.value).toLocaleString("en-US")}{" "}
               <span className="block text-sm font-normal text-muted-foreground">{figure.unit}</span>
             </dd>
           </div>

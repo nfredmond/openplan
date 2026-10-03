@@ -1239,7 +1239,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
               ? "Live source changes are visible against the latest packet snapshot, so refresh this packet before leaning on it for grant prioritization or release review."
               : "Do not treat this packet as verified against live sources yet.",
             stageGateLiveReadFailure
-              ? `The live stage-gate board could not be checked (${stageGateLiveReadFailure}), so this check did not cover stage gates — that is an unchecked source, not a finding that gates changed.`
+              ? `The live stage-gate board could not be checked (${stageGateLiveReadFailure}), so this check did not cover stage gates. That is an unchecked source, not a finding that gates changed.`
               : null,
             safetyEvidenceLiveReadFailure
               ? `The project's linked crash evidence could not be checked (${safetyEvidenceLiveReadFailureReason}), so this is an unchecked source rather than a finding that no newer crash acquisition exists.`
@@ -1278,7 +1278,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     <PlanningContextStripForProject requestedProjectId={query.projectId} project={project} error={projectResult.error} className="mb-4" /><ReportReadFailureDisclosure reads={reads} />
     <ReportStandardDetail
       searchParams={query}
-      unreadableByTab={buildReportUnreadableByTab({ artifactsUnreadable, sectionsUnreadable, projectRecordsUnreadable: projectRecordReadFailures.size > 0 })}
+      unreadableByTab={buildReportUnreadableByTab({ artifactsUnreadable, sectionsUnreadable, projectRecordsUnreadable: projectRecordReadFailures.size > 0, stageGatesUnreadable: Boolean(stageGateLiveReadFailure), crashEvidenceUnreadable: Boolean(safetyEvidenceLiveReadFailure) })}
       report={report}
       project={project}
       workspace={workspace}

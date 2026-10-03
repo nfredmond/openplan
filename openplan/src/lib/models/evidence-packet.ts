@@ -659,7 +659,7 @@ export function renderModelRunProvenanceMarkdown(packet: NormalizedEvidencePacke
 function formatCompactNumber(value: number | null) {
   if (value === null) return null;
   if (Math.abs(value) >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-  if (Math.abs(value) >= 1000) return `${Math.round(value).toLocaleString()}`;
+  if (Math.abs(value) >= 1000) return `${Math.round(value).toLocaleString("en-US")}`;
   if (Number.isInteger(value)) return `${value}`;
   return `${Math.round(value * 10) / 10}`;
 }

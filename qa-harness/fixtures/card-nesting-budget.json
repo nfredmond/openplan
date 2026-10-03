@@ -145,14 +145,10 @@
       ]
     },
     "/aerial": {
-      "depth": 3,
+      "depth": 0,
       "deep": 0,
       "reading": false,
-      "deepestChain": [
-        "Aerial Imagery",
-        "Aerial Imagery",
-        "(untitled box)"
-      ]
+      "deepestChain": []
     },
     "/assistant-activity": {
       "depth": 2,

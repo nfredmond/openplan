@@ -214,7 +214,7 @@ function DecisionEditor(props: Props) {
         const current = snapshot.current.find(state => state.linkId === row.id);
         return <article key={row.id} className="min-w-0 space-y-2 rounded border border-border p-3 text-sm">
           <p className="break-words"><strong>{row.context.response.theme_title} → {row.context.decision.title}</strong></p>
-          <p>{row.operation} · {new Date(row.created_at).toLocaleString()} · {current ? `Current preview: ${current.sourceState}` : "Earlier retained version"}</p>
+          <p>{row.operation} · {new Date(row.created_at).toLocaleString("en-US")} · {current ? `Current preview: ${current.sourceState}` : "Earlier retained version"}</p>
           <p className="whitespace-pre-wrap break-words">{row.reason}</p>
           <Link className="underline" href={`/projects/${row.project_id}`}>Open linked project</Link>
           {current && <Button type="button" variant="outline" disabled={busy} onClick={() => { setResponseId(row.response_id); setDecisionId(row.decision_id); setPreview(null); }}>Select this link</Button>}

@@ -23,7 +23,9 @@ permissions:
 jobs:
   restore-drill:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # The full native suite alone took 42 minutes on 2026-10-03.
+    # Allow both disposable stacks, archive recovery and cleanup to finish.
+    timeout-minutes: 90
     defaults:
       run:
         working-directory: openplan

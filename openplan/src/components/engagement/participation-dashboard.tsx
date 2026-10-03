@@ -1,46 +1,31 @@
 import type { summarizeEngagementItems } from "@/lib/engagement/summary";
+import { ChartShareBar } from "@/components/ui/chart-share-bar";
 import type { HotspotAnalysis } from "@/lib/engagement/hotspots";
 import type { IntakeTrend } from "@/lib/engagement/participation-dashboard";
 
 type EngagementCounts = ReturnType<typeof summarizeEngagementItems>;
 
-const DEFAULT_BAR = "#64748b";
-
-function safeHex(value: string | null | undefined): string | null {
-  return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? value.trim() : null;
-}
-
-/** A labeled horizontal bar: meaning is carried by the label + count, so it
- * stays legible if color is desaturated (design-constitution test). */
+/** A labelled bar whose meaning is carried by the label and the count, so it
+ * stays legible if colour is desaturated (design-constitution test). */
 function Bar({
   label,
   count,
   sharePct,
   colorHex,
-  colorClass,
 }: {
   label: string;
   count: number;
   sharePct: number;
+  /** A category's own colour, chosen by the planner. Other rows use the palette. */
   colorHex?: string | null;
-  colorClass?: string;
 }) {
-  const width = Math.max(0, Math.min(100, sharePct));
   return (
-    <div className="space-y-1">
-      <div className="flex items-baseline justify-between gap-3 text-xs">
-        <span className="text-foreground">{label}</span>
-        <span className="tabular-nums text-muted-foreground">
-          {count} · {Math.round(sharePct)}%
-        </span>
-      </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className={`h-full rounded-full ${colorClass ?? ""}`}
-          style={{ width: `${width}%`, backgroundColor: colorClass ? undefined : safeHex(colorHex) ?? DEFAULT_BAR }}
-        />
-      </div>
-    </div>
+    <ChartShareBar
+      label={label}
+      valueText={`${count} · ${Math.round(sharePct)}%`}
+      fraction={sharePct / 100}
+      colorHex={colorHex}
+    />
   );
 }
 
@@ -48,11 +33,13 @@ function SubLabel({ children }: { children: React.ReactNode }) {
   return <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{children}</p>;
 }
 
-const STATUS_ROWS: Array<{ key: "approved" | "pending" | "flagged" | "rejected"; label: string; colorClass: string }> = [
-  { key: "approved", label: "Approved", colorClass: "bg-emerald-500/70" },
-  { key: "pending", label: "Pending", colorClass: "bg-slate-400/60" },
-  { key: "flagged", label: "Flagged", colorClass: "bg-amber-500/70" },
-  { key: "rejected", label: "Rejected", colorClass: "bg-rose-500/60" },
+// One colour for every status: green against red fails colour-blind separation
+// on this palette (see chart-primitives.tsx), and the label already says which.
+const STATUS_ROWS: Array<{ key: "approved" | "pending" | "flagged" | "rejected"; label: string }> = [
+  { key: "approved", label: "Approved" },
+  { key: "pending", label: "Pending" },
+  { key: "flagged", label: "Flagged" },
+  { key: "rejected", label: "Rejected" },
 ];
 
 function IntakeSparkline({ intake }: { intake: IntakeTrend }) {
@@ -118,7 +105,6 @@ export function ParticipationDashboard({
                 label={row.label}
                 count={counts.statusCounts[row.key]}
                 sharePct={(counts.statusCounts[row.key] / total) * 100}
-                colorClass={row.colorClass}
               />
             ))
           ) : (
@@ -131,13 +117,11 @@ export function ParticipationDashboard({
             label="Geolocated"
             count={geo.geolocatedItems}
             sharePct={geo.geolocatedShare * 100}
-            colorClass="bg-sky-500/60"
           />
           <Bar
             label="No location"
             count={geo.nonGeolocatedItems}
             sharePct={total > 0 ? (geo.nonGeolocatedItems / total) * 100 : 0}
-            colorClass="bg-slate-400/50"
           />
           <p className="text-label leading-relaxed text-muted-foreground">
             Only geolocated, approved comments feed the heatmap and the spatial hotspot test.

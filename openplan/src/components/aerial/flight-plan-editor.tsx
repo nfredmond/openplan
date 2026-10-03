@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
+import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -304,12 +305,13 @@ export function FlightPlanEditor({
   const displaySource: "generated" | "saved" | null = grid ? "generated" : savedSnapshot ? "saved" : null;
 
   useEffect(() => {
-    if (!hasAoi || !mapContainerRef.current || mapRef.current || !MAPBOX_ACCESS_TOKEN) return;
+    const container = mapContainerRef.current;
+    if (!hasAoi || !container || mapRef.current || !MAPBOX_ACCESS_TOKEN) return;
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
     const ring = (aoiGeojson as AoiPolygon).coordinates[0];
     const bounds = ringBounds(ring);
     const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
+      container,
       style: "mapbox://styles/mapbox/dark-v11",
       // The AOI is required to exist here, so the camera always opens on it —
       // never on a guessed place.
@@ -317,6 +319,8 @@ export function FlightPlanEditor({
       fitBoundsOptions: { padding: 48 },
       attributionControl: false,
     });
+    // This editor sits in the mission page's Flight plan tab.
+    const stopSizing = keepMapSizedToContainer(map, container);
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
     // Mapbox and OpenStreetMap require visible attribution on every map.
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
@@ -374,6 +378,7 @@ export function FlightPlanEditor({
     });
     mapRef.current = map;
     return () => {
+      stopSizing();
       mapReadyRef.current = false;
       map.remove();
       mapRef.current = null;

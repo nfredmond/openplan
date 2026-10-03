@@ -3,6 +3,9 @@ import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // This suite invokes server pages in jsdom; retain their real data loaders.
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("server-only", () => ({}));
 
 const createClientMock = vi.fn();
@@ -167,10 +170,20 @@ vi.mock("@/lib/scenarios/comparison-board", () => ({
 
 import ScenarioSetDetailPage from "@/app/(app)/scenarios/[scenarioSetId]/page";
 
-async function renderPage() {
+/**
+ * The page is a record hub with URL tabs, and a closed tab is not rendered at
+ * all. Every assertion therefore names the tab that holds the content it is
+ * about: "overview" (the default), "alternatives", "comparisons" or "edit". The
+ * header and the failed-read notice sit above the tab strip and render on every
+ * tab.
+ */
+type ScenarioTabKey = "overview" | "alternatives" | "comparisons" | "edit";
+
+async function renderPage(tab?: ScenarioTabKey) {
   render(
     await ScenarioSetDetailPage({
       params: Promise.resolve({ scenarioSetId: "scenario-set-1" }),
+      searchParams: Promise.resolve(tab ? { tab } : {}),
     })
   );
 }
@@ -341,7 +354,7 @@ describe("ScenarioSetDetailPage", () => {
   });
 
   it("surfaces packet freshness guidance for linked scenario reports", async () => {
-    await renderPage();
+    await renderPage("comparisons");
 
     expect(screen.getByText(/Scenario-linked report records/i)).toBeInTheDocument();
     expect(screen.getByText(/Protected Bike Packet needs packet attention/i)).toBeInTheDocument();
@@ -381,7 +394,7 @@ describe("ScenarioSetDetailPage", () => {
       error: null,
     });
 
-    await renderPage();
+    await renderPage("comparisons");
 
     expect(screen.getAllByText(/Packet current/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/Refresh recommended/i)).not.toBeInTheDocument();
@@ -405,7 +418,7 @@ describe("ScenarioSetDetailPage", () => {
     reportArtifactsInMock.mockResolvedValue({ data: [], error: null });
     comparisonIndicatorDeltasInMock.mockResolvedValue({ data: [], error: null });
 
-    await renderPage();
+    await renderPage("comparisons");
 
     expect(
       screen.getByText(/No linked reports yet\./i)
@@ -463,7 +476,7 @@ describe("ScenarioSetDetailPage", () => {
       error: null,
     });
 
-    await renderPage();
+    await renderPage("comparisons");
 
     expect(comparisonSnapshotsSelectMock).toHaveBeenCalledWith(
       expect.stringContaining("metadata_json")
@@ -501,7 +514,7 @@ describe("ScenarioSetDetailPage", () => {
       error: null,
     });
 
-    await renderPage();
+    await renderPage("comparisons");
 
     expect(screen.getByText(/Legacy protected bike comparison/i)).toBeInTheDocument();
     expect(screen.getByText(/0 export-ready/i)).toBeInTheDocument();
@@ -577,7 +590,7 @@ describe("ScenarioSetDetailPage", () => {
       error: null,
     });
 
-    await renderPage();
+    await renderPage("comparisons");
 
     expect(screen.getByText(/1 export-ready/i)).toBeInTheDocument();
     expect(screen.getByText(/1 needs source review/i)).toBeInTheDocument();
@@ -628,7 +641,7 @@ describe("ScenarioSetDetailPage", () => {
       },
     ]);
 
-    await renderPage();
+    await renderPage("comparisons");
 
     expect(screen.getByText(/Caveat and source context/i)).toBeInTheDocument();
     expect(screen.getByText(/Protected bike package compared against Existing conditions/i)).toBeInTheDocument();
@@ -704,7 +717,7 @@ describe("ScenarioSetDetailPage", () => {
       },
     ]);
 
-    await renderPage();
+    await renderPage("comparisons");
 
     expect(screen.getByText("Not comparable")).toBeInTheDocument();
     expect(screen.getByText(/change in how transit was measured/i)).toBeInTheDocument();
@@ -737,7 +750,7 @@ describe("ScenarioSetDetailPage", () => {
       error: null,
     });
 
-    await renderPage();
+    await renderPage("comparisons");
 
     expect(fromMock).toHaveBeenCalledWith("model_runs");
     expect(modelRunsInMock).toHaveBeenCalledWith("scenario_entry_id", ["entry-baseline", "entry-alt-1"]);
@@ -765,7 +778,7 @@ describe("ScenarioSetDetailPage", () => {
       error: null,
     });
 
-    await renderPage();
+    await renderPage("comparisons");
 
     expect(screen.queryByText(/Trip-generation comparison ready/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Save trip-gen comparison/i })).not.toBeInTheDocument();
@@ -800,31 +813,43 @@ describe("ScenarioSetDetailPage", () => {
     });
 
     it("discloses an unreadable entries read instead of reporting no alternatives", async () => {
-      entriesOrderCreatedMock.mockResolvedValueOnce({
+      // Persistent, not `...Once`: the page is rendered twice, once per tab, and
+      // both renders must see the failed read. `beforeEach` restores the default.
+      entriesOrderCreatedMock.mockResolvedValue({
         data: null,
         error: { message: "permission denied for table scenario_entries" },
       });
 
-      await renderPage();
+      // The notice and the header sit above the tab strip, so both tabs carry
+      // them; each tab is then checked for the sentence it would otherwise lie
+      // with.
+      for (const tab of ["overview", "comparisons"] as const) {
+        await renderPage(tab);
 
-      expect(screen.getByText(/Part of this scenario set could not be read/i)).toBeInTheDocument();
-      expect(screen.getByText(/could not read this scenario set's entries/i)).toBeInTheDocument();
-      // Internal page — the operator detail is shown, because whoever reads it
-      // can act on it.
-      expect(screen.getByText(/permission denied for table scenario_entries/i)).toBeInTheDocument();
+        expect(screen.getByText(/Part of this scenario set could not be read/i)).toBeInTheDocument();
+        expect(screen.getByText(/could not read this scenario set's entries/i)).toBeInTheDocument();
+        // Internal page — the operator detail is shown, because whoever reads it
+        // can act on it.
+        expect(screen.getByText(/permission denied for table scenario_entries/i)).toBeInTheDocument();
+        // The header's baseline chip.
+        expect(screen.queryByText(/^Missing$/)).not.toBeInTheDocument();
 
-      // The sentences that would now be lies.
-      expect(screen.queryByText(/No alternatives registered yet\./i)).not.toBeInTheDocument();
-      expect(screen.queryByText(/No comparison cards yet\./i)).not.toBeInTheDocument();
-      expect(screen.queryByText(/^Missing$/)).not.toBeInTheDocument();
+        if (tab === "overview") {
+          // The Analysis Studio handoff lists alternatives on the overview.
+          expect(screen.queryByText(/No alternatives registered yet\./i)).not.toBeInTheDocument();
+          expect(
+            screen.getByText(/entries could not be read, so its alternatives cannot be listed/i)
+          ).toBeInTheDocument();
+        } else {
+          // The comparison board lives on the comparisons tab.
+          expect(screen.queryByText(/No comparison cards yet\./i)).not.toBeInTheDocument();
+          expect(
+            screen.getByText(/an absent card here does not mean the alternative is unready/i)
+          ).toBeInTheDocument();
+        }
 
-      // And what replaces them.
-      expect(
-        screen.getByText(/entries could not be read, so its alternatives cannot be listed/i)
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(/an absent card here does not mean the alternative is unready/i)
-      ).toBeInTheDocument();
+        cleanup();
+      }
     });
 
     it("discloses unreadable reports instead of reporting no linked reports", async () => {
@@ -833,7 +858,7 @@ describe("ScenarioSetDetailPage", () => {
         error: { message: "permission denied for table reports" },
       });
 
-      await renderPage();
+      await renderPage("comparisons");
 
       expect(screen.getByText(/Part of this scenario set could not be read/i)).toBeInTheDocument();
       expect(screen.getByText(/could not read this project's reports/i)).toBeInTheDocument();
@@ -849,7 +874,7 @@ describe("ScenarioSetDetailPage", () => {
         error: { message: "permission denied for table scenario_comparison_snapshots" },
       });
 
-      await renderPage();
+      await renderPage("comparisons");
 
       expect(screen.getByText(/could not read saved comparison snapshots/i)).toBeInTheDocument();
       expect(screen.queryByText(/No saved comparison snapshots yet\./i)).not.toBeInTheDocument();
@@ -865,14 +890,21 @@ describe("ScenarioSetDetailPage", () => {
      * page that warns unconditionally.
      */
     it("keeps the ordinary empty states when every read succeeds and there is genuinely nothing", async () => {
-      entriesOrderCreatedMock.mockResolvedValueOnce({ data: [], error: null });
-      reportsOrderMock.mockResolvedValueOnce({ data: [], error: null });
-      comparisonSnapshotsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+      // Persistent, not `...Once`: rendered once per tab. `beforeEach` restores
+      // the defaults.
+      entriesOrderCreatedMock.mockResolvedValue({ data: [], error: null });
+      reportsOrderMock.mockResolvedValue({ data: [], error: null });
+      comparisonSnapshotsOrderMock.mockResolvedValue({ data: [], error: null });
 
-      await renderPage();
+      await renderPage("overview");
 
       expect(screen.queryByText(/Part of this scenario set could not be read/i)).not.toBeInTheDocument();
       expect(screen.getByText(/No alternatives registered yet\./i)).toBeInTheDocument();
+
+      cleanup();
+      await renderPage("comparisons");
+
+      expect(screen.queryByText(/Part of this scenario set could not be read/i)).not.toBeInTheDocument();
       expect(screen.getByText(/No comparison cards yet\./i)).toBeInTheDocument();
       expect(screen.getByText(/No linked reports yet\./i)).toBeInTheDocument();
       expect(screen.getByText(/No saved comparison snapshots yet\./i)).toBeInTheDocument();

@@ -136,7 +136,7 @@ export function describeUnreadableTabs<Key extends string>(
       labels.length === 1
         ? labels[0]
         : `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
-    return `${tab.label} — ${listed}`;
+    return `${tab.label}: ${listed}`;
   });
 
   return (

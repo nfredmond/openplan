@@ -276,7 +276,7 @@ export function ExploreResultsBoard({
     // measured. It used to arrive as 0 and render as a finding: "Population: 0",
     // "Transit mode share: 0%". A corridor nobody could read looked like a
     // corridor with nobody in it.
-    const population = metricDisplay(analysisResult.metrics.totalPopulation, (n) => n.toLocaleString());
+    const population = metricDisplay(analysisResult.metrics.totalPopulation, (n) => n.toLocaleString("en-US"));
     const medianIncome = metricDisplay(analysisResult.metrics.medianIncome, (n) => formatCurrency(n));
     const transitShare = metricDisplay(analysisResult.metrics.pctTransit, (n) => `${n}%`);
     const zeroVehicle = metricDisplay(analysisResult.metrics.pctZeroVehicle, (n) => `${n}%`);

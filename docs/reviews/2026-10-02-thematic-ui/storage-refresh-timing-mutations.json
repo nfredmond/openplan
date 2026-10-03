@@ -1,0 +1,42 @@
+{
+  "sourceSha256": "1e59be1cb88cc58f462bfc7b4e731e185560af60767b2064a96a80ccb73822b6",
+  "restored": true,
+  "results": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "control": true,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-storage-harmless.log",
+      "sha256": "d93403446c383ccbe58491c0921dc8681e20f9edfd50b30169f266e16b48abe6"
+    },
+    {
+      "name": "no-abort",
+      "exit": 1,
+      "control": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-storage-no-abort.log",
+      "sha256": "a53acac1dc8d13ffc9447bf46ac3dfc361b1ed2e605a1cf96f32adabfc2b24cd"
+    },
+    {
+      "name": "old-read-clears-loading",
+      "exit": 1,
+      "control": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-storage-old-read-clears-loading.log",
+      "sha256": "fd5e3badf6c7f24a8f843a2ed2bb99a8005c802ba5c7ee54453db485f79e9f4f"
+    },
+    {
+      "name": "loading-never-clears",
+      "exit": 1,
+      "control": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-storage-loading-never-clears.log",
+      "sha256": "be79b9d7bca6e975f2123ca5618f0dfcb8957a19e38c021260ae8e2e2c1d9469"
+    },
+    {
+      "name": "no-reinspection",
+      "exit": 1,
+      "control": false,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/pr114-storage-no-reinspection.log",
+      "sha256": "f84a8834db5ec21f035d6af29faf1f1151decd94317b21d499e407e36112d094"
+    }
+  ],
+  "blindCategory": "Synthetic delayed browser transport. No native concurrency capacity or browser rendering proof."
+}

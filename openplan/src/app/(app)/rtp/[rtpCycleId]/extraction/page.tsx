@@ -511,7 +511,7 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
                         })}
                       </p>
                       <p className="text-label text-muted-foreground">
-                        Read {new Date(run.created_at).toLocaleString()}
+                        Read {new Date(run.created_at).toLocaleString("en-US")}
                         {run.extraction_source === "ocr" ? " · text recognised from a scan" : ""}
                         {saved > 0 ? ` · ${saved} saved into the plan` : ""}
                         {setAside > 0 ? ` · ${setAside} set aside` : ""}

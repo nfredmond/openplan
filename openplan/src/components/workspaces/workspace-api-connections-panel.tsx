@@ -13,7 +13,7 @@ import {
 type Draft = { label: string; endpoint: string; models: string; authMode: "api_key" | "none"; apiKey: string; timeout: string };
 type Pending = { method: "PUT" | "DELETE"; body: string; connectionId: string; revisionId: string };
 const emptyDraft = (): Draft => ({ label: "", endpoint: "", models: "", authMode: "api_key", apiKey: "", timeout: "120" });
-const dateLabel = (value: string) => new Date(value).toLocaleString();
+const dateLabel = (value: string) => new Date(value).toLocaleString("en-US");
 
 // A workspace change remounts the state, clearing credentials and pending writes.
 export function WorkspaceApiConnectionsPanel(props: { workspaceId: string; canManage: boolean }) {

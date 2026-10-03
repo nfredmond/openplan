@@ -6,7 +6,8 @@ import {
   type CrashSeverityFilter,
   type CrashUserFilter,
 } from "@/lib/analysis/map-view-state";
-import { formatCurrency, formatPercent, titleize, NO_DATA_FILL_COLOR } from "./_helpers";
+import { tractMeasureLabelFor, tractMeasureLegend } from "@/lib/cartographic/tract-measure-classes";
+import { formatCurrency, formatPercent, titleize } from "./_helpers";
 import type { HoveredCrash, HoveredTract, TractLegendItem, TractMetric } from "./_types";
 
 type ExploreHoverInspectorProps = {
@@ -28,14 +29,7 @@ function buildTractLegend(tractMetric: TractMetric): {
     return {
       label: "Poverty share",
       note: "Share of residents below poverty threshold in corridor-context tracts.",
-      items: [
-        { label: "0-10%", color: "#0b3b2e" },
-        { label: "10-20%", color: "#15803d" },
-        { label: "20-30%", color: "#65a30d" },
-        { label: "30-45%", color: "#ca8a04" },
-        { label: "45%+", color: "#b91c1c" },
-        { label: "No data", color: NO_DATA_FILL_COLOR },
-      ],
+      items: tractMeasureLegend("pctBelowPoverty"),
     };
   }
 
@@ -43,14 +37,7 @@ function buildTractLegend(tractMetric: TractMetric): {
     return {
       label: "Median income",
       note: "Weighted ACS median household income for each intersecting tract.",
-      items: [
-        { label: "<$45k", color: "#7f1d1d" },
-        { label: "$45k-$70k", color: "#b45309" },
-        { label: "$70k-$100k", color: "#0f766e" },
-        { label: "$100k-$150k", color: "#0ea5e9" },
-        { label: "$150k+", color: "#e0f2fe" },
-        { label: "No data", color: NO_DATA_FILL_COLOR },
-      ],
+      items: tractMeasureLegend("medianIncome"),
     };
   }
 
@@ -68,14 +55,7 @@ function buildTractLegend(tractMetric: TractMetric): {
   return {
     label: "Minority share",
     note: "Share of residents identified in the current equity-screening minority population field.",
-    items: [
-      { label: "0-30%", color: "#123047" },
-      { label: "30-55%", color: "#1d4ed8" },
-      { label: "55-75%", color: "#2563eb" },
-      { label: "75-100%", color: "#0f766e" },
-      { label: "Highest concentration", color: "#34d399" },
-        { label: "No data", color: NO_DATA_FILL_COLOR },
-    ],
+    items: tractMeasureLegend("pctMinority"),
   };
 }
 
@@ -103,38 +83,13 @@ export function getActiveTractLegendLabel(hoveredTract: HoveredTract | null, tra
   if (!hoveredTract) {
     return null;
   }
-
-  if (tractMetric === "income") {
-    const value = hoveredTract.medianIncome;
-    if (value === null) return null;
-    if (value < 45000) return "<$45k";
-    if (value < 70000) return "$45k-$70k";
-    if (value < 100000) return "$70k-$100k";
-    if (value < 150000) return "$100k-$150k";
-    return "$150k+";
-  }
-
-  if (tractMetric === "poverty") {
-    const value = hoveredTract.pctBelowPoverty;
-    if (value === null) return null;
-    if (value < 10) return "0-10%";
-    if (value < 20) return "10-20%";
-    if (value < 30) return "20-30%";
-    if (value < 45) return "30-45%";
-    return "45%+";
-  }
-
   if (tractMetric === "disadvantaged") {
     return hoveredTract.isDisadvantaged ? "Flagged" : "Not flagged";
   }
-
-  const value = hoveredTract.pctMinority;
-  if (value === null) return null;
-  if (value < 30) return "0-30%";
-  if (value < 55) return "30-55%";
-  if (value < 75) return "55-75%";
-  if (value < 100) return "75-100%";
-  return "Highest concentration";
+  // The same classes the map paints, so the marked row is the tract's colour.
+  if (tractMetric === "income") return tractMeasureLabelFor("medianIncome", hoveredTract.medianIncome);
+  if (tractMetric === "poverty") return tractMeasureLabelFor("pctBelowPoverty", hoveredTract.pctBelowPoverty);
+  return tractMeasureLabelFor("pctMinority", hoveredTract.pctMinority);
 }
 
 export function ExploreHoverInspector({
@@ -225,7 +180,7 @@ export function ExploreHoverInspector({
                   <div className="analysis-sidepanel-stat-grid cols-2">
                     <div className="analysis-sidepanel-stat">
                       <p className="analysis-sidepanel-label">Population</p>
-                      <p className="analysis-sidepanel-value">{hoveredTract.population?.toLocaleString() ?? "N/A"}</p>
+                      <p className="analysis-sidepanel-value">{hoveredTract.population?.toLocaleString("en-US") ?? "N/A"}</p>
                     </div>
                     <div className="analysis-sidepanel-stat">
                       <p className="analysis-sidepanel-label">Median income</p>

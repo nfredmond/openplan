@@ -187,6 +187,9 @@ const fromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected table: ${table}`);
 });
 
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: (...args: unknown[]) => redirectMock(...args),

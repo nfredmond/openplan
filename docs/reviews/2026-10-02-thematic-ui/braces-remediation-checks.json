@@ -1,0 +1,234 @@
+{
+  "recordedAt": "2026-10-03T03:18:55.887831+00:00",
+  "base": "8a14cee76c0df40c66af97a9c780a41bcdafeafa",
+  "scope": "PR114 local braces depth-limit backport; no application or database behavior change intended",
+  "priorCi": {
+    "qa": {
+      "run": 37087355907,
+      "result": "failed full dependency audit after application and connector tests passed"
+    },
+    "shuffle": "passed",
+    "rls": {
+      "run": 37087355858,
+      "result": "passed"
+    },
+    "restore": {
+      "run": 37087355830,
+      "result": "passed"
+    },
+    "workers": {
+      "run": 37087355827,
+      "result": "passed"
+    }
+  },
+  "package": {
+    "schemaVersion": 1,
+    "upstreamVersion": "3.0.3",
+    "localVersion": "3.0.4-openplan.1",
+    "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+    "patchUrl": "https://github.com/micromatch/braces/pull/72",
+    "patchCommit": "d0d575e55e74a4e0218e5248fafb79efc3e54ebb",
+    "upstreamArchive": "braces-3.0.3.tgz",
+    "upstreamSha256": "1cd18e862c8640b4568b1425a7df4ee030ff201d45b2da8f9f222d2987494ffc",
+    "upstreamIntegrity": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==",
+    "patchFile": "depth-limit.patch",
+    "patchSha256": "f48ecfb72407bf6618f7f461f645d72a28cb5f5fa1e2093933050ca99620a60f",
+    "archive": "braces-3.0.4-openplan.1.tgz",
+    "archiveSha256": "de3da33354915f2202d6f883b2951043e623249b6b0d3cd1a82066210349f7c1",
+    "files": {
+      "LICENSE": "35bdd8a44339719441900fb50fbefc5e2dca1ca662cbaed7a687de842c8b70f2",
+      "README.md": "8fe392d64fe3f899db08039a825dec7ad59ea4dc219df9a22cc49d1a8ccf5d63",
+      "index.js": "332ea07c7b006361aad12aa994ca75dc1db8e8382b884909e2f38f10b85c88a4",
+      "lib/compile.js": "b651f7715e6db8942ce61d3394357b4d81c8ece88240aa31a458ea1165edd195",
+      "lib/constants.js": "f9fb688959232eee3e6ad7906a5b0e3234815db49ee857ef86983d65b917dc7c",
+      "lib/expand.js": "2974d5b8763a358d81dfa5b4b804329f525239f34429c396b93a540219504809",
+      "lib/parse.js": "ef9b3851f848460daaf91ff248222a43e266f97c4f2df7010cb7858e1e39a107",
+      "lib/stringify.js": "645f13c68af685148e9fe8eca449ee2ebb88eee0f27de7b2125fbfc175b1584d",
+      "lib/utils.js": "b5a7596aa67730412b3c029ef09e84e6b67b8e445cffd35d1d295549c89066c7",
+      "package.json": "13d6f2185ed345996ddadcacdc1a827b13773bd58b1a2f891fbcc9c94138dba4"
+    }
+  },
+  "checks": {
+    "upstreamCompatibility": {
+      "tests": 764,
+      "sourceCommit": "483836c3484f6bd0ff6db6e00d1dc35505efda15",
+      "sourceArchiveSha256": "dc858aeb785302b45f1a7d2629e481c66310cab575c766758ad8d22adc94d40b",
+      "runtimeSourceMatchesPublishedNpmBeforePatch": true,
+      "mutations": [
+        {
+          "mutation": "harmless comment",
+          "exitCode": 0,
+          "valid": true
+        },
+        {
+          "mutation": "wrong alternatives delimiter",
+          "exitCode": 110,
+          "valid": true
+        }
+      ]
+    },
+    "vendorRegressionTests": 18,
+    "guardMutations": [
+      {
+        "mutation": "harmless comment",
+        "exitCode": 0,
+        "expected": "survived",
+        "valid": true
+      },
+      {
+        "mutation": "direct dependency",
+        "exitCode": 1,
+        "expected": "killed by missing expected exception",
+        "valid": true
+      },
+      {
+        "mutation": "override",
+        "exitCode": 1,
+        "expected": "killed by missing expected exception",
+        "valid": true
+      },
+      {
+        "mutation": "locked copy inventory",
+        "exitCode": 1,
+        "expected": "killed by missing expected exception",
+        "valid": true
+      },
+      {
+        "mutation": "locked version",
+        "exitCode": 1,
+        "expected": "killed by missing expected exception",
+        "valid": true
+      },
+      {
+        "mutation": "locked resolution",
+        "exitCode": 1,
+        "expected": "killed by missing expected exception",
+        "valid": true
+      },
+      {
+        "mutation": "locked integrity",
+        "exitCode": 1,
+        "expected": "killed by missing expected exception",
+        "valid": true
+      },
+      {
+        "mutation": "installed copy inventory",
+        "exitCode": 1,
+        "expected": "killed by missing expected exception",
+        "valid": true
+      },
+      {
+        "mutation": "installed file hashes",
+        "exitCode": 1,
+        "expected": "killed by missing expected exception",
+        "valid": true
+      },
+      {
+        "mutation": "vendor archive hashes",
+        "exitCode": 1,
+        "expected": "killed by missing expected exception",
+        "valid": true
+      }
+    ],
+    "rebuildChecks": [
+      {
+        "case": "baseline",
+        "exitCode": 0,
+        "expected": "reproduces exactly",
+        "valid": true
+      },
+      {
+        "case": "harmless comment",
+        "exitCode": 0,
+        "expected": "reproduces exactly",
+        "valid": true
+      },
+      {
+        "case": "upstream bytes",
+        "exitCode": 1,
+        "expected": "SHA-256 differs",
+        "valid": true
+      },
+      {
+        "case": "patch bytes",
+        "exitCode": 1,
+        "expected": "SHA-256 differs",
+        "valid": true
+      },
+      {
+        "case": "patched archive bytes",
+        "exitCode": 1,
+        "expected": "SHA-256 differs",
+        "valid": true
+      },
+      {
+        "case": "file digest",
+        "exitCode": 1,
+        "expected": "rebuilt file differs",
+        "valid": true
+      },
+      {
+        "case": "archive reconstruction",
+        "exitCode": 1,
+        "expected": "Rebuilt archive differs",
+        "valid": true
+      }
+    ],
+    "cleanLockedInstalls": {
+      "npm11.19.0": "pass, ignore-scripts, 2.9GiB peak, zero swap",
+      "declaredNpm11.11.0": "pass, ignore-scripts, 3.3GiB peak, zero swap",
+      "subsequentVendorGuardAndFullAudit": "pass on both; zero known registry advisories"
+    },
+    "lintAndConfiguredDeadcode": "pass, 79.615s, 1.3GiB peak, zero swap; existing warning classes remain",
+    "productionWebpackBuild": "pass, 76.342s, 6GiB peak, zero swap",
+    "rebuild": "exact archive bytes reproduced",
+    "node": "24.21.0"
+  },
+  "retainedCorrections": [
+    "The initial whole-file upstream draft included unrelated unreleased parsing changes. It was never committed. This backport applies only the PR depth diff to the published npm source.",
+    "The bare relative override failed ENOENT. A direct local dependency and $braces override work with both checked npm versions.",
+    "The first compatibility command referenced a later initialization file absent in the release test tree. The corrected release command runs all 764 tests.",
+    "The initial rebuild normalized gzip OS to 3 instead of the archive byte 255. Corrected to 255 and checked exact bytes.",
+    "The initial stringify mutation was detected through expand cyclic-child processing before its named check. Reordered direct AST checks so each removed guard fails its named direct-entry assertion.",
+    "The first configured deadcode run flagged direct use of a transitive test dependency. The fixture now resolves the vendored package declared dependencies generically.",
+    "The first guard mutation demanded a missing exception, but a corrupt parser reached behavior checks and failed with a different error. Added independent license corruption so removal of file hashing also produces the intended missing exception.",
+    "The first compatibility fault replacement matched no source text and stopped before mutation. The corrected delimiter fault fails 110 upstream tests."
+  ],
+  "limits": [
+    "The upstream proposal is open and this version is local, not a registry release. Registry audit does not validate its security.",
+    "Depth checks do not bound all expansions, arbitrary malformed objects, cyclic parent pointers or every resource exhaustion path.",
+    "Installed inventory covers npm package directories, not embedded bundled source. Coordinated edits to code and expected hashes still need review.",
+    "Clean install checks disabled lifecycle scripts. The production build uses the owned checkout; fresh CI performs normal npm ci.",
+    "Full application CI on this new source is pending. Previous exact8a14 browser/download and native evidence does not claim a new browser journey on this commit.",
+    "No release, semantic quality, real participant acceptance or complete v1 claim. Crash cause remains unknown."
+  ],
+  "logHashes": {
+    "build.log": "cd420b2a6f237f67157d791b2617b8c4e6f4e790b85d335e8483966c28782886",
+    "clean-install-audit.log": "39e54f0ec0f4122e6e6eeeb6d264676b34f6bbe106439ef57cca18bfc06e2850",
+    "clean-install.log": "ea2a89ea500b120efc6e311435844b4700a491e57c1da5b148dbc31e6f2dfdcc",
+    "compatibility-final.log": "1937908364f24d1b1e9e7a81edb760bbc4dfef6d50101db4256617521f682e3a",
+    "compatibility-harmless-comment.log": "e90521c696be1735f16f19afd4c3eafc5544052625558e5e63e5d53bee0f5a08",
+    "compatibility-install.log": "36bf03b2addc178800d2e6a13cf49c8ce1ee0dde5377070b7e5d51fbcb3ff7d5",
+    "compatibility-wrong-alternatives-delimiter.log": "2d53106a7af739d2298ab6ce98c869f13e73803a1587b4c48e1d29ee9a79876e",
+    "compatibility.log": "ceb214a7672b92a4a8a614f71500a40e8557c569c90860ce7a7a87426620c361",
+    "deadcode-final.log": "7025e432418e7de94ec53f15af491b5469ea3af0343d336b8c8f17df31485d26",
+    "deadcode.log": "03d8d074525df835d269c24b9a421ed85152d4475e73d05c3258a5a1ee711341",
+    "declared-npm-audit.log": "540ca648c195caa9825d6fe09acd6367c8dc323cdbe2f6548765917366621934",
+    "declared-npm-install.log": "d8f1191ce790102526016c69ce7031b103911fc723aad800d5c5a3d9877fcf2b",
+    "install-recovery.log": "dbaecd62cd454e6e1125f1c2e1beb8bcfc976a977ece52afd178c12939b1847f",
+    "install.log": "dbcc0fc16c02498cc9bb926b2184425620d622f4d57f7569626efa8c3da9df3a",
+    "lint.log": "7f5f7a9957f2c056ae53b95a454d00fc449b36c3d28e3aa9bbaa3b06e358abe8",
+    "mutation-direct-dependency.log": "19324d83d229c920c2573c8fa4e1a9bb685ab7c294526768656a448c19916b9e",
+    "mutation-harmless-comment.log": "7d86fcd5ec67b3ef99a0417c6de1632df9b50778aa2f4a19d9b144fc6b2cda65",
+    "mutation-installed-copy-inventory.log": "15797e9a96994925f7250bb684accd48cf68b9846b08cffb32baf50f0165eac3",
+    "mutation-installed-file-hashes.log": "22aa4811e0fe47fc9f370037bf57a318bdbb46d70f02cf49f2d3b4a64e36606a",
+    "mutation-locked-copy-inventory.log": "d784e381b76231a931f0ddd3971ae4918ab4ac718ec39834b5081e5cfef1f2ad",
+    "mutation-locked-integrity.log": "af398722cbb2465ee258cecb6962c504801ffe22bf84197b9c57f15c3e45b97e",
+    "mutation-locked-resolution.log": "48dc55cae1015ef712bf101f3f6e32e8a28222dc243ebe52a6469fb3881a2f35",
+    "mutation-locked-version.log": "2bde8768e64c788e2c91ad5f50cbe5384e26d07160ddbe9e09108b2e8ad7a975",
+    "mutation-override.log": "310d137ba65813e41f7d6241a80e9e3b10da888db8c1e5815dcd6dfb32355c4d",
+    "mutation-vendor-archive-hashes.log": "43dacb1dcb7f332c9cdb0d0edfbcf6db7e0ab43c59d4d5b14b3afed2cb4686af",
+    "vendor-tests-audit-final.log": "b91edd54702ea4178a598ef77f8d880b81f2a703b25fac903cdd94239987b9af",
+    "vendor-tests-audit.log": "38b66535a381ef04bb4a161875056881d8fb19be3f7549278c8385fa109eb666"
+  }
+}

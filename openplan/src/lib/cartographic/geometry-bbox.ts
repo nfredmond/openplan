@@ -39,11 +39,13 @@ export const POINT_FIT_ZOOM = 14;
  * padding — are checked directly, and what remains unproven is only that
  * Mapbox honours its own documented options.
  */
+type FitPadding = { top: number; right: number; bottom: number; left: number };
+
 export type FitTarget = {
-  easeTo(options: { center: Position; zoom: number; duration: number }): unknown;
+  easeTo(options: { center: Position; zoom: number; duration: number; padding?: FitPadding }): unknown;
   fitBounds(
     bounds: Bbox,
-    options: { padding: number; maxZoom: number; duration: number },
+    options: { padding: number | FitPadding; maxZoom: number; duration: number },
   ): unknown;
 };
 
@@ -56,17 +58,32 @@ export type FitTarget = {
  * version. `POINT_FIT_ZOOM` is a deliberate answer to "how close should one
  * position be?" and the two-corner path never has to answer it.
  */
-export function applyFitInstruction(map: FitTarget, instruction: FitInstruction): void {
+export function applyFitInstruction(
+  map: FitTarget,
+  instruction: FitInstruction,
+  insets: { left: number; right: number } = { left: 0, right: 0 },
+): void {
+  // `insets` are the widths of panels covering the map's left and right edges.
+  // With none, the calls are exactly what they were before insets existed.
+  const inset = insets.left > 0 || insets.right > 0;
   if (instruction.kind === "center") {
     map.easeTo({
       center: instruction.center,
       zoom: POINT_FIT_ZOOM,
       duration: FIT_DURATION_MS,
+      ...(inset ? { padding: { top: 0, right: insets.right, bottom: 0, left: insets.left } } : {}),
     });
     return;
   }
   map.fitBounds(instruction.bbox, {
-    padding: FIT_PADDING,
+    padding: inset
+      ? {
+          top: FIT_PADDING,
+          right: FIT_PADDING + insets.right,
+          bottom: FIT_PADDING,
+          left: FIT_PADDING + insets.left,
+        }
+      : FIT_PADDING,
     maxZoom: FIT_MAX_ZOOM,
     duration: FIT_DURATION_MS,
   });

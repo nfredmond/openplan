@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -98,6 +98,9 @@ const redirectMock = vi.fn((..._args: unknown[]) => {
   throw new Error("redirect");
 });
 const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
+
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
 
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
@@ -202,8 +205,35 @@ function seedPage(overrides: Record<string, unknown> = {}) {
   tableErrors = {};
 }
 
-async function renderReportPage() {
-  render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+/**
+ * The report page is tabbed, and this file renders only the open tab (`helpers/open-tab-only`). The cited
+ * runs and their claim tiers are listed by `ReportCompositionAudit`, on the
+ * "evidence" tab, so that is the default here. The notice above the tab strip
+ * renders on every tab.
+ */
+type ReportTabKey = "packet" | "evidence" | "history";
+const REPORT_TABS: readonly ReportTabKey[] = ["packet", "evidence", "history"];
+
+async function renderReportPage(tab: ReportTabKey = "evidence") {
+  render(
+    await ReportDetailPage({
+      params: Promise.resolve({ reportId: "report-1" }),
+      searchParams: Promise.resolve({ tab }),
+    })
+  );
+}
+
+/**
+ * For an assertion that something appears NOWHERE on the page (an operator's
+ * database message, say). Before the page was tabbed one render covered every
+ * panel; now each tab has to be rendered and checked in turn.
+ */
+async function expectOnNoReportTab(pattern: RegExp) {
+  for (const tab of REPORT_TABS) {
+    await renderReportPage(tab);
+    expect(screen.queryByText(pattern), `on the ${tab} tab`).not.toBeInTheDocument();
+    cleanup();
+  }
 }
 
 /** The fake client, used directly by the loader-level tests. */
@@ -250,6 +280,8 @@ describe("report-lane run citations carry their claim tier", () => {
       expect(screen.getByText(/Cited run — could not be resolved/i)).toBeInTheDocument();
       // And the operator's database message is not leaked onto the surface.
       expect(screen.queryByText(/connection reset by peer/i)).not.toBeInTheDocument();
+      cleanup();
+      await expectOnNoReportTab(/connection reset by peer/i);
     });
 
     it("renders the resolved citation by its own title when the read succeeds", async () => {
@@ -257,6 +289,8 @@ describe("report-lane run citations carry their claim tier", () => {
 
       expect(screen.getByText("2050 Baseline Assignment")).toBeInTheDocument();
       expect(screen.queryByText(/could not be resolved/i)).not.toBeInTheDocument();
+      cleanup();
+      await expectOnNoReportTab(/could not be resolved/i);
     });
 
     /**
@@ -288,6 +322,8 @@ describe("report-lane run citations carry their claim tier", () => {
       // Operator detail stays off the surface even on an internal page here:
       // this sentence is for a planner deciding what the packet may claim.
       expect(screen.queryByText(/permission denied/i)).not.toBeInTheDocument();
+      cleanup();
+      await expectOnNoReportTab(/permission denied/i);
     });
   });
 

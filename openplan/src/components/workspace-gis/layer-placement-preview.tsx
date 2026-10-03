@@ -171,12 +171,12 @@ export function LayerPlacementPreview({
         <div>
           <dt>Shapes</dt>
           <dd>
-            {imported.featureCount.toLocaleString()} to store
+            {imported.featureCount.toLocaleString("en-US")} to store
             {imported.droppedFeatureCount > 0
-              ? `, ${imported.droppedFeatureCount.toLocaleString()} that could not be placed and will not be`
+              ? `, ${imported.droppedFeatureCount.toLocaleString("en-US")} that could not be placed and will not be`
               : ""}
             {imported.truncated
-              ? ` — of ${imported.sourceFeatureCount.toLocaleString()} in the file. The rest are beyond this deployment's per-layer limit.`
+              ? ` — of ${imported.sourceFeatureCount.toLocaleString("en-US")} in the file. The rest are beyond this deployment's per-layer limit.`
               : "."}
           </dd>
         </div>
@@ -224,7 +224,7 @@ export function LayerPlacementPreview({
       {entry?.datumShiftMetres != null && entry.datumShiftMetres > 0 ? (
         <p className="op-gis-preview__datum">
           Measured datum difference for this system: about{" "}
-          {Math.round(entry.datumShiftMetres).toLocaleString()} m.
+          {Math.round(entry.datumShiftMetres).toLocaleString("en-US")} m.
         </p>
       ) : null}
     </div>

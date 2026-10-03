@@ -255,8 +255,8 @@ export function describeMapLayerCoverage(
   if (disclosure.truncated) {
     notes.push(
       `${noun.plural[0].toUpperCase()}${noun.plural.slice(1)}: showing ` +
-        `${disclosure.returnedCount.toLocaleString()} of ${disclosure.matchedCount.toLocaleString()} — ` +
-        `the map draws at most ${disclosure.limit.toLocaleString()}. The rest are not drawn, which is not ` +
+        `${disclosure.returnedCount.toLocaleString("en-US")} of ${disclosure.matchedCount.toLocaleString("en-US")} — ` +
+        `the map draws at most ${disclosure.limit.toLocaleString("en-US")}. The rest are not drawn, which is not ` +
         `a finding that they do not exist.`
     );
   }
@@ -264,7 +264,7 @@ export function describeMapLayerCoverage(
   if (disclosure.droppedCount > 0) {
     const count = disclosure.droppedCount;
     notes.push(
-      `${noun.plural[0].toUpperCase()}${noun.plural.slice(1)}: ${count.toLocaleString()} ` +
+      `${noun.plural[0].toUpperCase()}${noun.plural.slice(1)}: ${count.toLocaleString("en-US")} ` +
         `${count === 1 ? noun.singular : noun.plural} could not be drawn because the stored location was ` +
         `unusable, so ${count === 1 ? "it is" : "they are"} missing from the map rather than absent from ` +
         `the record.`
