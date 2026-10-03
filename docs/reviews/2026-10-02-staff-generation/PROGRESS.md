@@ -188,3 +188,37 @@ input reconstruction and staging. Then connect browser controls and explicit
 provider execution authority. No unattended worker pickup or usable staff
 preparation workflow is claimed by this database checkpoint. Full QA, combined
 main integration and identified browser acceptance remain later checks.
+
+## Typed preparation status and commands
+
+The staff adapter reads an existing unqueued request as null. Enqueue binds the
+original requester, stage and exact intent hash. A lost acknowledgement can
+recover later progress, including preparation followed by cancellation. Retry
+names the observed attempt and accepts a newer native state without assuming
+that it restarted work. Staff output rejects worker tokens, foreign scope,
+contradictory status fields and malformed native values. Every call carries the
+caller signal and a ten-second deadline, with a post-response abort check.
+No command grants execution or spending authority.
+
+All 50 adapter tests pass; the combined request/preparation suite passes88.
+A harmless comment edit survives and28 targeted faults fail assertions. Source
+is restored afterward. Changed-file lint and whole-package TypeScript pass.
+The first test invocation runs from the repository root and fails alias
+resolution before tests run. The corrected invocation uses the app package;
+the failed log remains. The final test edit replaces a narrow fixture cast
+with the exported state type without changing assertions.
+
+Nine native HTTP checks pass on the owned restore-target stack. They exercise
+unqueued state, exact enqueue/replay, native intent/stage and campaign refusals,
+failed status without worker tokens, retry and cancellation. After a second
+worker attempt fails, retrying attempt1 returns that newer failure without
+requeueing it. Cancellation blocks a fresh retry. The synthetic request
+938af83d-834f-432c-b54d-ceb225a4567e remains cancelled as evidence, with no
+provider authorization. Original source and proposal requests remain unchanged.
+See [the check record](preparation-adapter-checks.json).
+
+These adapters still need an authenticated HTTP route and preparation-worker
+candidate discovery, heartbeat and restart orchestration. Mocked deadline
+checks do not prove in-flight socket cancellation. The native HTTP journey
+proves the exercised database path, not browser usability, provider accuracy
+or complete M9b/v1 readiness.
