@@ -125,3 +125,66 @@ native staging commands recheck current requester authority. Keep durable failur
 and retry status so one invalid request cannot starve others. Preserve cancellation
 and original receipts; a sealed preparation plan still needs separate provider
 execution approval. This is implementation guidance under M9b, not a new roadmap.
+
+
+## Explicit preparation queue and worker leases
+
+Migration 20261015000012 adds private preparation jobs and immutable claim
+attempts. Authenticated staff can inspect a scoped request. Only its original
+requester can enqueue it or retry its failed attempt. Enqueue binds the retained
+intent hash and actual segment, context or thematic stage. Historical requests
+remain unqueued until an explicit command arrives.
+
+Service-only claims retain a token and attempt number. The same token recovers
+its original claim without reviving an expired or superseded lease. A fresh token
+can reclaim an expired job. Renewal and completion require the current unexpired
+lease and current requester access. Cancellation blocks fresh preparation.
+Completion binds the exact existing native plan seal; preparation creates no
+provider authorization. Exact completion replay preserves the original result
+after later cancellation. Retry names the observed attempt, so a late old retry
+cannot restart a newer failure. Revoked queued requests become visibly failed,
+including before their first claim, and restored requesters can retry them.
+
+The CLI creates the migration file. Its filename then advances after the existing
+unreleased October 15 sequence, so installation follows its dependencies. The
+pending-migration comparison confirms only this migration before applying it to
+the owned restore-target stack. No demo, shared checkout or hosted database changes.
+
+Candidate tests pass 29 cases. The installed run passes those 29 plus five schema
+drift checks. A further scope audit adds probes that first authorize one campaign
+and then request another campaign's queued record, plus retry cancellation,
+negative retry bounds, renewal tokens and obsolete completion while queued.
+The final installed queue suite passes 34 cases: baseline, harmless control and
+32 detected native faults. All fixture writes and faults roll back. This is a
+focused native suite, not the full isolation gate.
+
+An actual Supabase HTTP journey passes ten checks. Two simultaneous worker claims
+produce exactly one active first attempt. Claim replay preserves its token and
+number; renewal retains its identity. The existing TypeScript driver prepares
+the full saved synthetic source through native batches. Completion and replay
+retain the same seal, staff status omits worker tokens, later cancellation leaves
+that completion recoverable, and no provider authorization exists for the request.
+The synthetic request remains as cancelled test evidence; original sources and
+prior requests remain unchanged.
+
+The first fixture expects PT409 from the existing immutable-history trigger,
+which actually returns P0001. The expectation is corrected without changing that
+trigger. The schema checks initially flag the two added relations and three SQL
+read columns. Native catalog verification and explicit SQL-use explanations bring
+them into agreement: 279 application tables have RLS, and 14 application views
+remain. All 34 schema/accounting tests pass. Strict lint and whole-package
+TypeScript pass. The final native suite peaks at 445.3 MiB; TypeScript peaks at
+1.8 GiB. Both use zero swap under the existing resource limits.
+
+The local security advisor reports nine findings in existing objects and none in
+new preparation objects. Five existing functions lack fixed search paths;
+spatial_ref_sys lacks RLS, and three extensions are in public. Their names and
+levels remain in the [check record](preparation-queue-checks.json). They are not
+silently marked fixed or dismissed as proof of database security.
+
+Next add typed staff status/enqueue/retry adapters and the preparation worker's
+candidate selection, heartbeat and restart recovery. Reuse each stage's original
+input reconstruction and staging. Then connect browser controls and explicit
+provider execution authority. No unattended worker pickup or usable staff
+preparation workflow is claimed by this database checkpoint. Full QA, combined
+main integration and identified browser acceptance remain later checks.

@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Internal staff-generation work adds exact request HTTP recovery and an explicit
+preparation queue with stage identity, worker leases, interruption recovery and
+original completion seals. Apply
+`20261015000012_engagement_synthesis_preparation_queue.sql` after the earlier
+unreleased migrations. Worker pickup and browser generation controls remain
+unfinished. Preparation grants no provider execution or spending authority.
+
 Transient unavailable synthesis proposal, review and approval reads now use
 bounded authenticated GET retries. Write recovery remains separate; exhausted
 reads keep an explicit unavailable state.
