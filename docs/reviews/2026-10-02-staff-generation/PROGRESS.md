@@ -264,3 +264,43 @@ See [the native HTTP record](preparation-route-native-http.json) for the request
 ID and source identity. The owned server stops after acceptance. These checks
 exercise actual HTTP and database boundaries, but do not establish production
 build behavior, browser usability, worker pickup or provider quality.
+
+## Preparation worker lease and interruption recovery
+
+The worker runner claims one explicit request and token. It verifies the native
+claim and returns without work for an unavailable or superseded claim. While a
+stage prepares its original inputs, the runner renews the native lease every
+30 seconds. Failed or inconsistent renewal aborts the stage signal. Completion
+waits for renewal already in flight, then binds the exact original attempt and
+plan seal or explicit failure. An exception or interruption remains unconfirmed;
+it does not become a fabricated preparation failure or an execution grant.
+
+All 39 worker tests pass; the combined worker/route/adapter suite passes 127 tests.
+Strict lint and whole-package TypeScript pass. The first test-file write uses a
+wrong relative path; the next test run exposes a Node timer mock missing its
+default export. Neither runs tests. Correcting those setup errors leaves the
+product behavior unchanged. Initial mutation testing finds that an active future
+claim is rejected by a second guard. Adding an inactive future-claim case makes
+the first guard observable. The original survivor remains in the check record.
+A harmless control survives and all 30 targeted faults fail after that correction.
+
+The live segment journey passes eight checks against the owned restore-target.
+It interrupts after retaining the plan but before acknowledging queue completion.
+The same token resumes attempt1, recovers the original seal, renews the actual
+lease after 30 seconds, and completes. Exact completion remains recoverable after
+later cancellation. A second request is cancelled during preparation; the actual
+renewal refusal aborts its stage and prevents restart. Neither request creates
+provider authorization. Both requests remain cancelled as synthetic evidence.
+
+A deliberate live fault delays heartbeat to 60 seconds. The 31-second native
+observation fails with "Heartbeat did not extend the native lease". The source
+is restored by exact hash, that fault request is cancelled, and the restored
+39-test suite passes. See [the check record](preparation-worker-checks.json).
+
+The runner still needs automatic candidate discovery, a durable claim-token
+journal, stage-specific reconstruction and an installed worker command. Native
+segment evidence does not establish context/thematic worker orchestration.
+Stage callbacks must cooperate with cancellation; the event loop cannot renew
+a lease during blocking synchronous work. Provider execution and staff-facing
+controls remain separate unfinished steps. No full-QA, capacity, semantic-quality
+or complete M9b/v1 claim follows from these focused checks.

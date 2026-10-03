@@ -1,0 +1,390 @@
+{
+  "baseCommit": "3cf3116b465cc26b8f6bd3bd1e98a4f651927d27",
+  "checks": {
+    "workerTests": 39,
+    "combinedTests": 127,
+    "combinedFiles": 3,
+    "strictLint": "pass",
+    "wholePackageTypes": "pass",
+    "finalTypesMemoryPeak": "1.8GiB",
+    "finalTypesSwap": 0
+  },
+  "mutations": {
+    "sourceSha256": "8b1680fa0e395496977aab301ef3e6eba056357713a374abc5be7679e6114854",
+    "results": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "expectedSurvivor": true,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-harmless.log",
+        "sha256": "6488c9b93a8dd0b557cf648d4490463e534f897dd8d913e3ee12ec2fdb88a085",
+        "assertionFailure": false
+      },
+      {
+        "name": "claim-token",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-token.log",
+        "sha256": "3def578a4096598b71bc401d5d879715c5132907c1aaebe3f60c7b236dfb1637",
+        "assertionFailure": true
+      },
+      {
+        "name": "claim-request",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-request.log",
+        "sha256": "ae07ac5f835a77a23c4e01d8eb5f4b5017932b1902cd35372e2cf774a58a4d66",
+        "assertionFailure": true
+      },
+      {
+        "name": "claim-attempt",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-attempt.log",
+        "sha256": "cc048dbdcb015441cbae08d121cc6245957cb97b21809ec0fd5e777bd8f6d691",
+        "assertionFailure": true
+      },
+      {
+        "name": "claim-interval",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-interval.log",
+        "sha256": "630d81d7a5b92024b66434d3ed4e9675fc631c810c2035f17efc9e187d3a8372",
+        "assertionFailure": true
+      },
+      {
+        "name": "claim-active",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-active.log",
+        "sha256": "bca11614fee715c76b16822c3f49aeb1464b3051dfb50ebd430d557c68f2f2e3",
+        "assertionFailure": true
+      },
+      {
+        "name": "claim-cancelled",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-cancelled.log",
+        "sha256": "e9cf64b2d116ec3a519991f91afc098a2459dfe17e3f65f41e52680885472c5f",
+        "assertionFailure": true
+      },
+      {
+        "name": "claim-lease-token",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-lease-token.log",
+        "sha256": "7d66a9e3f601442ae3ded5adb8aab462445edad67df685454658fe7524f6184f",
+        "assertionFailure": true
+      },
+      {
+        "name": "claim-current-attempt",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-current-attempt.log",
+        "sha256": "85d93ebe06bdf053cc77148368a24be81410ea5538a79ba4bf69fb7ea807a598",
+        "assertionFailure": true
+      },
+      {
+        "name": "claim-status",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-status.log",
+        "sha256": "91c627a933bb39a1b5d11f9a76b93c59514cafb002c0a273b36c1653e8b9c8cd",
+        "assertionFailure": true
+      },
+      {
+        "name": "campaign",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-campaign.log",
+        "sha256": "900f508e07a18b3a991b718afeee94088c25a1dbde53203a338aeced1fa2b0ea",
+        "assertionFailure": true
+      },
+      {
+        "name": "workspace",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-workspace.log",
+        "sha256": "98ccdc2dd3f2e7c02c4b17ce8cf87ce1c7eed17c039b479b56f64347b23bb770",
+        "assertionFailure": true
+      },
+      {
+        "name": "actor",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-actor.log",
+        "sha256": "043211297179c3e54fb09bd9023011ec66a4c50cf2f53c1e17bdfcce6dab44b2",
+        "assertionFailure": true
+      },
+      {
+        "name": "stage",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-stage.log",
+        "sha256": "0e9024a92780d258e97acdc4399887b4808702ea8a85a0b0dcdb3482a52a346c",
+        "assertionFailure": true
+      },
+      {
+        "name": "intent",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-intent.log",
+        "sha256": "aac9042396d925f95080e844ba7c6bfb247839480cdbe4af6cd71e378071e13d",
+        "assertionFailure": true
+      },
+      {
+        "name": "attempt",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-attempt.log",
+        "sha256": "a35be5aaa80c77a6659833d58250edcb31105fb850fdfcce33ffba68a68ac7c9",
+        "assertionFailure": true
+      },
+      {
+        "name": "lease",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-lease.log",
+        "sha256": "dcafec5173b9f4ea410fa08e6b7e3f4de1f31c7b7c39f6b71c31a501a723aee9",
+        "assertionFailure": true
+      },
+      {
+        "name": "created",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-created.log",
+        "sha256": "2def565a8bfe7565651bf0ae8c154a923ae62a6d5e09d24084a7a161a1c2efb0",
+        "assertionFailure": true
+      },
+      {
+        "name": "renew-cancelled",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-renew-cancelled.log",
+        "sha256": "9a3501177b6007fcca84bc6f3fe270583f7dca703f976c06fd5da8853d4ecca1",
+        "assertionFailure": true
+      },
+      {
+        "name": "renew-status",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-renew-status.log",
+        "sha256": "2fa7ddf10f52dbd542799b5e7019c7774ed868f0c4696733577f3fa9baf1d3f0",
+        "assertionFailure": true
+      },
+      {
+        "name": "completion-seal",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-completion-seal.log",
+        "sha256": "c722bc0f5d385a6b9eb169467a0a8a72dd405557ea4df2a08e9b6b4e10046083",
+        "assertionFailure": true
+      },
+      {
+        "name": "completion-failure",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-completion-failure.log",
+        "sha256": "c185b53472afe083dd7032bc6a8397a1668a957666eb0b81fe259515c9bae203",
+        "assertionFailure": true
+      },
+      {
+        "name": "claim-command",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-command.log",
+        "sha256": "b029c43ae329659429cb1d6bd05a4d82c017be941683c9f8ab278855a040304a",
+        "assertionFailure": true
+      },
+      {
+        "name": "completion-command",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-completion-command.log",
+        "sha256": "8bacd92705aa5340cb3fa4ec9a2e01eba81ede111cecda93f1e145de623d540e",
+        "assertionFailure": true
+      },
+      {
+        "name": "rpc-error",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-rpc-error.log",
+        "sha256": "6f5d17a13553ca78118b17ca2c95eaa07547fb591267c7728c3a434f622070d0",
+        "assertionFailure": true
+      },
+      {
+        "name": "post-deadline",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-post-deadline.log",
+        "sha256": "857b887468b93f7e646d86de9a6ecc73574c889ab7de093072616174cf86fda3",
+        "assertionFailure": true
+      },
+      {
+        "name": "timeout",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-timeout.log",
+        "sha256": "3624e7b8d2bd351ae3111215c839796a3a5ec9e14cdca96965e0305b97b07faf",
+        "assertionFailure": true
+      },
+      {
+        "name": "heartbeat-period",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-heartbeat-period.log",
+        "sha256": "7830031e686ff3947654e85c3c3bf0a241b84c0f3eecdd7e584a62f68ffc8e09",
+        "assertionFailure": true
+      },
+      {
+        "name": "heartbeat-abort",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-heartbeat-abort.log",
+        "sha256": "07007d6d202fcf5d646cf69e74721350219a116f86019cee740337abbc9c5f9f",
+        "assertionFailure": true
+      },
+      {
+        "name": "heartbeat-join",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-heartbeat-join.log",
+        "sha256": "93eea3a0e3096f5e98d8a679836eca9e2b2098926e1043ac52827d1cd8f01724",
+        "assertionFailure": true
+      },
+      {
+        "name": "caller-abort-fences",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-caller-abort-fences.log",
+        "sha256": "5c769ec7ffe0f1cd12b9e35124f02a2c0859b9ad92b6a9197d1955207b42e8a9",
+        "assertionFailure": true
+      }
+    ],
+    "restored": true,
+    "blindCategory": "Mocked RPC and controlled timer ticks. Does not prove real lease renewal, native recovery, automatic candidate discovery or stage-specific reconstruction."
+  },
+  "initialMutationGap": {
+    "sourceSha256": "8b1680fa0e395496977aab301ef3e6eba056357713a374abc5be7679e6114854",
+    "results": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "expectedSurvivor": true,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-harmless.log",
+        "sha256": "13454f2e656a85d49cf2c598df7a3e8048ccb499c28e70e348104bbe1f8b9220",
+        "assertionFailure": false
+      },
+      {
+        "name": "claim-token",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-token.log",
+        "sha256": "f48b179a7d3a7bc51f6b13e10c10b517bbaabc1cfde081a4eab147b4f9024934",
+        "assertionFailure": true
+      },
+      {
+        "name": "claim-request",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-request.log",
+        "sha256": "afd0ecb710bf734d55bd28072bebad11fcb773da8817a4bb8eba788410d682e0",
+        "assertionFailure": true
+      },
+      {
+        "name": "claim-attempt",
+        "exit": 0,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutation-claim-attempt.log",
+        "sha256": "63628086cd32240989bd660f098a5fb67e9433ced77fdcefc74f2366a6f926a5",
+        "assertionFailure": false
+      }
+    ],
+    "restored": true,
+    "blindCategory": "Mocked RPC and controlled timer ticks. Does not prove real lease renewal, native recovery, automatic candidate discovery or stage-specific reconstruction."
+  },
+  "nativeHttp": {
+    "requestId": "5ac9c20e-26cf-4c17-a4cb-f10a5e21c105",
+    "startedAt": "2026-10-03T01:00:48.440Z",
+    "sourceBase": "3cf3116b",
+    "cancelledRequest": "78a31685-83fa-4833-8dad-f73c50f6068c",
+    "candidateMigration": "20261015000012",
+    "checks": [
+      "new request remains unqueued until explicit enqueue",
+      "exact enqueue acknowledgement recovery",
+      "interruption after retained plan leaves queue completion unconfirmed",
+      "real thirty-second heartbeat renews same native attempt",
+      "same claim token resumes original plan seal and completes",
+      "typed completion recovers exact seal after cancellation",
+      "actual cancellation makes heartbeat abort and prevents preparation restart",
+      "worker recovery and heartbeat create no provider execution authorization"
+    ],
+    "status": "passed",
+    "finishedAt": "2026-10-03T01:01:49.852Z"
+  },
+  "nativeFault": {
+    "requestId": "63c7157e-639d-421c-bf08-064aa998e8b3",
+    "startedAt": "2026-10-03T01:03:10.814Z",
+    "sourceBase": "3cf3116b",
+    "cancelledRequest": "8690d59d-00c0-4da6-ace8-925e72381594",
+    "candidateMigration": "20261015000012",
+    "checks": [
+      "new request remains unqueued until explicit enqueue",
+      "exact enqueue acknowledgement recovery",
+      "interruption after retained plan leaves queue completion unconfirmed"
+    ],
+    "status": "failed",
+    "finishedAt": "2026-10-03T01:03:42.085Z",
+    "error": "Heartbeat did not extend the native lease"
+  },
+  "restoration": {
+    "sourceSha256": "8b1680fa0e395496977aab301ef3e6eba056357713a374abc5be7679e6114854",
+    "mutation": "Delay renewal until sixty seconds; the thirty-one-second native lease observation must fail",
+    "restored": true
+  },
+  "faultCleanup": {
+    "requestId": "63c7157e-639d-421c-bf08-064aa998e8b3",
+    "cancelled": true,
+    "sourceRestored": true
+  },
+  "files": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-mutations.py",
+      "sha256": "7833aaf84b7ec50a29a5446556e6a7b170909761de44298f275b2e72b932395b"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-http.ts",
+      "sha256": "8248e033c7d277963b1e5005ccf0e4db2b9555a894f71d9129d6acb0cd59c2b4"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-native-fault.py",
+      "sha256": "d204fca1f559d38a382978a8a431a2b1828165d4dac90992c35c85497bbfe107"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-http-fault.ts",
+      "sha256": "057be82fe25e1f326c0f15aee9fc4fb062f246d3d5f2295779ddb6ba72b8f8f1"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-restored-tests.log",
+      "sha256": "495a845bc559f4092303beb786284692a8ddaf35ea283fe82f26102b2775c70d"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-worker-final-types.log",
+      "sha256": "a598ea98668b7e19caadc5fc6b801944e6e44bb881517d3cc483f1e5fb096343"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/synthesis-staff-generation-2026-10-02/openplan/src/lib/engagement/synthesis-preparation-worker.ts",
+      "sha256": "8b1680fa0e395496977aab301ef3e6eba056357713a374abc5be7679e6114854"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/synthesis-staff-generation-2026-10-02/openplan/src/test/engagement-synthesis-preparation-worker.test.ts",
+      "sha256": "c1b99e0cffba9f299445597dedcc3dda11e379ba65bcd5937a166bdfc000b366"
+    }
+  ],
+  "limits": [
+    "Native heartbeat and recovery exercise segment retention with synthetic inputs; context and thematic automatic reconstruction remain unconnected.",
+    "Worker runner currently takes an explicit request/token and stage callback. Automatic candidate discovery, durable process token journal and installed worker command remain unfinished.",
+    "The runner forwards cancellation; a stage callback must cooperate. The heartbeat cannot preempt synchronous CPU work blocking the event loop.",
+    "No provider execution, browser usability, capacity or semantic-quality claim."
+  ]
+}
