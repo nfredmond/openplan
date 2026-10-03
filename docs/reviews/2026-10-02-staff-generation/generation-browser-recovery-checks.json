@@ -1,0 +1,524 @@
+{
+  "recordedAt": "2026-10-03T04:26:40.616144+00:00",
+  "baseline": "cae8f229e4b047ecec632fd6f6f9628aeeeef781",
+  "scope": "Exact creation/cancellation browser recovery and shared portable record parsing; preserve server hashing and correct ten-second post-response deadline.",
+  "checks": {
+    "newRecoveryTests": 36,
+    "newServerDeadlineTests": 1,
+    "initialCombinedTests": 121,
+    "finalCombined": "See static log, eight files including context/thematic adapters and preparation recovery",
+    "types": "whole package pass",
+    "lint": "strict changed files pass",
+    "deadcode": "configured errors pass; existing warning classes remain",
+    "browserBundle": {
+      "status": "pass",
+      "bytes": 553409,
+      "inputFiles": [
+        "node_modules/zod/v4/core/core.js",
+        "node_modules/zod/v4/core/util.js",
+        "node_modules/zod/v4/core/errors.js",
+        "node_modules/zod/v4/core/parse.js",
+        "node_modules/zod/v4/core/regexes.js",
+        "node_modules/zod/v4/core/checks.js",
+        "node_modules/zod/v4/core/doc.js",
+        "node_modules/zod/v4/core/versions.js",
+        "node_modules/zod/v4/core/schemas.js",
+        "node_modules/zod/v4/locales/ar.js",
+        "node_modules/zod/v4/locales/az.js",
+        "node_modules/zod/v4/locales/be.js",
+        "node_modules/zod/v4/locales/bg.js",
+        "node_modules/zod/v4/locales/ca.js",
+        "node_modules/zod/v4/locales/cs.js",
+        "node_modules/zod/v4/locales/da.js",
+        "node_modules/zod/v4/locales/de.js",
+        "node_modules/zod/v4/locales/el.js",
+        "node_modules/zod/v4/locales/en.js",
+        "node_modules/zod/v4/locales/eo.js",
+        "node_modules/zod/v4/locales/es.js",
+        "node_modules/zod/v4/locales/fa.js",
+        "node_modules/zod/v4/locales/fi.js",
+        "node_modules/zod/v4/locales/fr.js",
+        "node_modules/zod/v4/locales/fr-CA.js",
+        "node_modules/zod/v4/locales/he.js",
+        "node_modules/zod/v4/locales/hr.js",
+        "node_modules/zod/v4/locales/hu.js",
+        "node_modules/zod/v4/locales/hy.js",
+        "node_modules/zod/v4/locales/id.js",
+        "node_modules/zod/v4/locales/is.js",
+        "node_modules/zod/v4/locales/it.js",
+        "node_modules/zod/v4/locales/ja.js",
+        "node_modules/zod/v4/locales/ka.js",
+        "node_modules/zod/v4/locales/km.js",
+        "node_modules/zod/v4/locales/kh.js",
+        "node_modules/zod/v4/locales/ko.js",
+        "node_modules/zod/v4/locales/lt.js",
+        "node_modules/zod/v4/locales/mk.js",
+        "node_modules/zod/v4/locales/ms.js",
+        "node_modules/zod/v4/locales/nl.js",
+        "node_modules/zod/v4/locales/no.js",
+        "node_modules/zod/v4/locales/ota.js",
+        "node_modules/zod/v4/locales/ps.js",
+        "node_modules/zod/v4/locales/pl.js",
+        "node_modules/zod/v4/locales/pt.js",
+        "node_modules/zod/v4/locales/ro.js",
+        "node_modules/zod/v4/locales/ru.js",
+        "node_modules/zod/v4/locales/sl.js",
+        "node_modules/zod/v4/locales/sv.js",
+        "node_modules/zod/v4/locales/ta.js",
+        "node_modules/zod/v4/locales/th.js",
+        "node_modules/zod/v4/locales/tr.js",
+        "node_modules/zod/v4/locales/uk.js",
+        "node_modules/zod/v4/locales/ua.js",
+        "node_modules/zod/v4/locales/ur.js",
+        "node_modules/zod/v4/locales/uz.js",
+        "node_modules/zod/v4/locales/vi.js",
+        "node_modules/zod/v4/locales/zh-CN.js",
+        "node_modules/zod/v4/locales/zh-TW.js",
+        "node_modules/zod/v4/locales/yo.js",
+        "node_modules/zod/v4/locales/index.js",
+        "node_modules/zod/v4/core/registries.js",
+        "node_modules/zod/v4/core/api.js",
+        "node_modules/zod/v4/core/to-json-schema.js",
+        "node_modules/zod/v4/core/json-schema-processors.js",
+        "node_modules/zod/v4/core/json-schema-generator.js",
+        "node_modules/zod/v4/core/json-schema.js",
+        "node_modules/zod/v4/core/index.js",
+        "node_modules/zod/v4/classic/checks.js",
+        "node_modules/zod/v4/classic/iso.js",
+        "node_modules/zod/v4/classic/errors.js",
+        "node_modules/zod/v4/classic/parse.js",
+        "node_modules/zod/v4/classic/schemas.js",
+        "node_modules/zod/v4/classic/compat.js",
+        "node_modules/zod/v4/classic/from-json-schema.js",
+        "node_modules/zod/v4/classic/coerce.js",
+        "node_modules/zod/v4/classic/external.js",
+        "node_modules/zod/index.js",
+        "src/lib/engagement/synthesis-generation-request-records.ts",
+        "src/lib/engagement/synthesis-generation-request-browser.ts",
+        "src/lib/engagement/synthesis-generation-request-recovery.ts"
+      ],
+      "harmlessControl": "pass",
+      "nodeBuiltinFault": "refused node:crypto resolution",
+      "limit": "Bundle resolution only. No real browser storage, native endpoint, account switch or visible UI journey."
+    }
+  },
+  "mutations": [
+    {
+      "mutation": "harmless wording",
+      "exitCode": 0,
+      "expected": "survived",
+      "valid": true
+    },
+    {
+      "mutation": "version",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "strict authority fields",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "strict command fields",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "intent byte bound",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "intent schema",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "intent source id",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "intent source hash",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "command text",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "scope custody",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "operation custody",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "independent slots",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "unresolved replacement",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "durable readback",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "saved before send",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "durable send",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "caller abort",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "deadline",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "pretransport abort",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "late transport",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "late body",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "late digest",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "method",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "actor header",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "workspace header",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "exact payload",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "private cache",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "http refusal",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "receipt replay",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "receipt actor",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "receipt text",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "creation missing",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "cancellation missing",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "cancellation id",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "cancellation actor",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "cancellation reason",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "cleanup stale copy",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "cleanup readback",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "latest scope",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "latest operation",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive memory",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive raw",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive readback",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive active changed",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive removal",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive list isolation",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive parsed scope",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive parsed operation",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "browser request hash",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "browser cancellation hash",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "native request hash",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "native cancellation hash",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "native late deadline",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "native deadline duration",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "record campaign",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "record workspace",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "record empty",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "record request id",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "record byte bound",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "record cancellation id",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "record cancellation request",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "record cancellation campaign",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "record cancellation workspace",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "record cancellation existence",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "record cancellation actor",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    }
+  ],
+  "initialFindings": [
+    "Intent parse guard removal and missing-cancellation guard removal still throw through later access; initial survivors retained. Revised faults bypass schema validation and permit missing cancellation, and intended assertions fail.",
+    "Shared-slot mutation failed with a specific application refusal before an assertion. Harness now names that exact operation mismatch, rather than counting generic failure. Harmless control passes again."
+  ],
+  "limits": [
+    "Browser storage and fetch remain mocked in these tests. No UI journey, cross-tab atomicity, host crash or native acceptance claim at this commit.",
+    "Hashes bind returned text, not independently proven authorship, current staff authority or semantic quality. Native authorization remains authoritative.",
+    "Creation here is the root segment request. Context/thematic creation still uses its distinct preparation and request authority. Cancellation reads base request custody and does not grant execution.",
+    "Build and actual HTTP client-helper journey follow as separate evidence. No provider call, schema migration, main landing or release."
+  ],
+  "files": {
+    "openplan/src/lib/engagement/synthesis-generation-request-records.ts": "f726b847c68bf4d321818133f9ec7fa68153232737e5077c66f86b9be3582add",
+    "openplan/src/lib/engagement/synthesis-generation-request-browser.ts": "c82929d1dd51ac3905684268be93ef1e614542efa10e1db469917bec828daea7",
+    "openplan/src/lib/engagement/synthesis-generation-request-recovery.ts": "5c13f68b10b1133c81a1870eba4aea8ee46141a0ad38f2035c359458aa522af6",
+    "openplan/src/lib/engagement/synthesis-generation-requests-server.ts": "efed3f4f7028649723949a84d0705486de713e4300421b03c561e45b26a2400b",
+    "openplan/src/lib/engagement/synthesis-generation-plan.ts": "efa086b46d44ec38c82a0b33fc7034b2174b1e7437fefeec2be8d1b7cc841cda",
+    "openplan/src/test/engagement-synthesis-generation-request-recovery.test.ts": "b08308534a24458424e7e43fc906cf520e703bb8659d6a3c5dc63bdf608437c1",
+    "openplan/src/test/engagement-synthesis-generation-requests-server.test.ts": "b2d40e6912b80d5aa9e75607806a487bf9a719062323c1d7d97d166732b7a93e"
+  },
+  "privateEvidenceDirectory": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27",
+  "logs": {
+    "staff-generation-browser-static.log": "d9d5d062f8711104ba200fde5ff7877d198be333f3812573db59f6cba68fb000",
+    "staff-generation-browser-mutations-initial.json": "4dd19b9c6d84860d41ab7031b6082746a77c2872a1030a8dc6db1218e88a5671",
+    "staff-generation-browser-mutations-corrections.json": "51a208c611df07d0b365a8db2e0956735443f1281adf14e7c626c4d094095ad8",
+    "staff-generation-browser-bundle.json": "5e10f85454cb46535d6518377813d58d6dace5d9d8cc4ffea6c01aae8d9c2f34",
+    "staff-generation-browser-mutations.py": "37ded7c03e0407f2bb7065ec6447bbf8f93dd81361749b74337502362e88c37d"
+  }
+}

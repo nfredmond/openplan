@@ -122,6 +122,15 @@ describe("staff synthesis request custody adapter", () => {
     const saved = state(); saved.request!.intentText = text; saved.request!.intentSha256 = hash(text);
     expect(() => verifySynthesisGenerationRequest(saved, scope)).toThrow("bytes differ");
   });
+  it("rejects a successful native response after its ten-second deadline", async () => {
+    const controller = new AbortController(), timeout = vi.spyOn(AbortSignal, "timeout").mockReturnValueOnce(controller.signal);
+    try {
+      const mock = client(state(), undefined, () => controller.abort());
+      await expect(readSynthesisGenerationRequest(mock.db, scope, signal())).rejects.toMatchObject({ name: "AbortError" });
+      expect(timeout).toHaveBeenCalledWith(10_000);
+      expect(mock.abortSignal.mock.calls[0][0].aborted).toBe(true);
+    } finally { timeout.mockRestore(); }
+  });
   it("refuses empty cancellation reasons before native writes", async () => {
     const mock = client(state());
     await expect(cancelSynthesisGenerationRequest(mock.db, { ...cancel, reason: "  " }, signal())).rejects.toThrow();

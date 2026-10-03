@@ -529,3 +529,32 @@ real browser journey, cross-tab atomicity, native acceptance of the new client,
 or host power-loss recovery. Request creation/cancellation recovery, visible
 staff controls and explicit provider execution authorization remain unfinished.
 This checkpoint does not release an increment or close M9b or v1.
+
+## Browser creation and cancellation recovery
+
+Creation and cancellation now have separate source-scoped recovery slots. Staff
+can cancel an uncertain creation while retaining its original request and exact
+intent text. Commands survive lost replies, storage failures and changed account
+headers. Replies must match original intent, authorship, request and cancellation
+identity and reason before cleanup. Cancellation before creation remains explicit;
+replaying a creation after cancellation cannot infer execution permission.
+Unreadable originals and newer memory can be preserved before replacing a slot.
+
+Portable request schemas and record parsing are shared with the server. Browser
+inspection verifies original text using Web Crypto; the server retains its own
+hash verification. The server now checks its combined ten-second deadline after
+the native response, so an ignored transport timeout cannot acknowledge a late
+result. Existing public exports remain available to context/thematic callers.
+
+The initial 121-test run and final expanded eight-file run pass, including the
+36 new recovery tests and a server deadline regression. A harmless control passes;
+64 targeted faults fail for the recorded reasons. Two initial redundant faults
+still caused rejection, and the shared-slot failure used an application refusal.
+Those outcomes and corrected fault definitions remain in
+`generation-browser-recovery-checks.json`. Whole-package TypeScript, strict lint,
+configured deadcode and browser-target bundling pass.
+
+These are client protocol and static checks. The production build and native
+HTTP helper exercise follow separately. Visible staff controls, real browser
+storage/restart acceptance, context/thematic creation controls and explicit
+provider authorization remain unfinished. The full M9b and v1 scope is unchanged.
