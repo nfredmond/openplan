@@ -1,0 +1,256 @@
+{
+  "sourceBase": "a395163d",
+  "tests": {
+    "service": 24,
+    "cliProcesses": 13,
+    "combined": 296,
+    "wholePackageTypes": "pass",
+    "strictLint": "pass",
+    "configuredDeadcode": "pass with existing warning classes"
+  },
+  "sources": {
+    "openplan/src/lib/engagement/synthesis-preparation-service.ts": "854e866c1e526143a55b2fccc717ac9814751447b1f100f12738b54a66e9c982",
+    "openplan/scripts/workers/synthesis-preparation.ts": "f52d05be50023ce2f18a4724b66a3ed47d29eaf42e045da1607dfa4ad7bb8b3b",
+    "openplan/package.json": "8e7e9a55206219368f91941a14a35d0d3eb20d749695a6f478b695d0192c0b02",
+    "openplan/src/test/engagement-synthesis-preparation-service.test.ts": "fcca29412ce6c1af1c452ea42ca1a6bd3b481b1c66b743262f4e59f3f1d28be3",
+    "openplan/src/test/engagement-synthesis-preparation-cli-process.test.ts": "45cd589ab8076b8f978247e27b6b66169b45cdac0696d6a7d7b755b8ef677c82"
+  },
+  "mutations": {
+    "sources": {
+      "service": "0d226c9e978a7491d056e76d3110d4e065dd0cdf9d28e026ace67cd11d89460f",
+      "cli": "f52d05be50023ce2f18a4724b66a3ed47d29eaf42e045da1607dfa4ad7bb8b3b"
+    },
+    "results": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "expectedSurvivor": true,
+        "assertionFailure": false,
+        "logSha256": "b4a4930f434f5086ff33983f2ec8f42d219335c7f919d00d6d7dc81e64d267f5"
+      },
+      {
+        "name": "options-length",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "b3007e8052dd08f1999aebcdfaca1011075026d1a11ee34a7efbbe1d6b26ed0f"
+      },
+      {
+        "name": "options-name",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "1bd9e20fe2789b0f34c81e160d60e0341ceb98821b4c416fe1e5277463c09411"
+      },
+      {
+        "name": "target-validation",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "d140d8d4fce8d7d1dd0b52a13c693d09033e6c843d7337fc18f44786eaff84ae"
+      },
+      {
+        "name": "absolute-root",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "6cdc0742e1cbf43771f967965a30aba5bdbf25cffbb53d804c24a1488c7ab01f"
+      },
+      {
+        "name": "default-root",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "a34cb83342f6f2d9c49603ef8793a726bfef13c34eee8c984e7b767f3e9ad635"
+      },
+      {
+        "name": "target-partition",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "d8afa4d6bd4a8320a28404aec9998e2e20f5b3a02e7b3926b1b1f13b767fadb0"
+      },
+      {
+        "name": "once-option",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "4fecc3d9f0a7458a760ba57da7dffdcf55993bd86a8963ce9b242372fc5757da"
+      },
+      {
+        "name": "loop-abort",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "418a220b0a4a9a2768c7b3abe02090089d9bf5fd6726697185e6d59389812a12"
+      },
+      {
+        "name": "late-abort",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "18a362de37d6123ee6d4a1e43e6b21d867f0efeb41da0f0d54fcadb27e722ca3"
+      },
+      {
+        "name": "error-stop",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "dec906b528dbf796c15b508ebdb428f2d262d971144a4b068577002fef86a31b"
+      },
+      {
+        "name": "error-report",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "709ba03d5ccd9df026a6c616d5a4a907432bc23a5466701f1912a9ca9bee5e29"
+      },
+      {
+        "name": "once-error",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "894ee8d7f8f79b2272884dd892e453c7797c0a5ca7ab668e69e2fb066e2d5e39"
+      },
+      {
+        "name": "pending-result",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "d3fa61d744a056714d8f676fbf10be69403d0ab998d46fcd6b01bd5c3a18d38f"
+      },
+      {
+        "name": "error-backoff",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "b6030d1b58cb6d26a1d817c4e4bae70fc95b1cbcf76dc6891a3e719a666925f5"
+      },
+      {
+        "name": "success-backoff",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "a4284a9cdb8883648268a7956da21d65667d0da5f2acf531960d6159d6066182"
+      },
+      {
+        "name": "pause-signal",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "58d5ae8a35535d1cf0a272300af82413e2ccb74d38824f20b0c5141bc61f6b5e"
+      },
+      {
+        "name": "timer-failure",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "d90f4584e5242091323023c8044038be96812403c984e10f765cca5998ff8cef"
+      },
+      {
+        "name": "pass-directory",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "3e16191919039a0b8a2080779312d3c003688ffb7f1e69d9d7ee55fdb9b0d50a"
+      },
+      {
+        "name": "pending-exit",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "020354e2b69328306deefbde3fc449e01ee441a928b1c3412c18415886f7640e"
+      },
+      {
+        "name": "error-exit",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "7d7f44918784378a9bb66a25dedb114de418c29e05945f24148ed26d1ea08723"
+      },
+      {
+        "name": "once-stop-exit",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "0ebe4aca79ae7b2b6ba2d0bbbd035bb5528d80a7423d1c786ceb26e9972430ff"
+      },
+      {
+        "name": "term-handler",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "c03a190fda0068e8f65f953d6da6e8701309b96ea01ebfe82ca0d5b8c72031d8"
+      },
+      {
+        "name": "int-handler",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "a649cddd9951b3e1ebbc20df564abc0dcc27e887d08b4ed46503dc94837cc759"
+      },
+      {
+        "name": "help",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "ba39787a51f85db1efdd14d2bf645bf4db751d2347de086aa34aed4487b54252"
+      },
+      {
+        "name": "startup-credential",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "63857115c0cc4c67d5c07687bdd5da5f310c0f2c342e12fd193733e347accd90"
+      }
+    ],
+    "restored": true,
+    "blindCategory": "Unit service mocks queue and timers; process CLI uses real HTTP and filesystem but synthetic database replies."
+  },
+  "native": {
+    "startedAt": "2026-10-03T02:52:06.598Z",
+    "sourceBase": "a395163d",
+    "checks": [
+      "actual npm command exits2 and retains exact outcome when the native completion reply is lost",
+      "fresh npm process replays original completion and retains terminal receipt",
+      "SIGTERM stops the continuous entrypoint during a committed native claim without dropping pending custody",
+      "fresh npm process resumes the native claim with original token and one attempt",
+      "SIGINT interrupts the real continuous idle wait",
+      "no provider authorizations created"
+    ],
+    "status": "passed",
+    "cleanup": true,
+    "finishedAt": "2026-10-03T02:52:09.658Z"
+  },
+  "nativeFault": {
+    "fault": "report an unconfirmed native completion as exit0",
+    "sourceSha256": "f52d05be50023ce2f18a4724b66a3ed47d29eaf42e045da1607dfa4ad7bb8b3b",
+    "exit": 1,
+    "logSha256": "a3bd185e5852ddc069c1cb0da1bf07a552b6c3b71bd511cd5f56bfbbc21e6d79",
+    "output": "Expected values to be strictly equal:\n\n0 !== 2",
+    "restored": true
+  },
+  "nativeFaultCleanup": true,
+  "initialFailures": [
+    "Two array-valued option test cases were unpacked by Vitest. Named argv fixtures fix the test inputs. The actual CLI process cases already passed.",
+    "The Next.js environment type requires NODE_ENV. The initial test environment annotation and a later weak optional-field type did not accept all callers. Partial<NodeJS.ProcessEnv> now passes whole-package TypeScript. This is an erased type-only correction after mutation testing. Final native command checks run after the correction."
+  ],
+  "logs": {
+    "staff-preparation-service-tests.log": "ce579a2478f58962a4c56e59998477784c1d658427ffe9e15eef6963c46529d5",
+    "staff-preparation-service-types.log": "2991079a3622c4f12ab594b20c2de2d2e72bb15d58869a1d2d7cdef11e9aa66b",
+    "staff-preparation-service-types-narrow-environment.log": "5486441e4062805aba060cd25dca996918a2b75a134101bfb300d37ebff68a7c",
+    "staff-preparation-service-final-tests.log": "ac0851a1479da90fc59c6334020a2a39872bbc85eccf8c7ae28e6e509f3d1ea6",
+    "staff-preparation-service-final-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staff-preparation-service-final-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staff-preparation-service-deadcode.log": "e5c4dae248802215652d6d69bfc8b2769c089ca6f01d44881f9ea8a9b18e8a95",
+    "staff-preparation-cli-native.log": "077d340e31eabc29566b3857cba871fbc88d657728d8b5fc25d9c3a1814588a1",
+    "staff-preparation-cli-native-fault.log": "a3bd185e5852ddc069c1cb0da1bf07a552b6c3b71bd511cd5f56bfbbc21e6d79"
+  },
+  "limitations": [
+    "Service unit tests mock the coordinator and timers. CLI process tests use actual HTTP, signals and filesystem with synthetic database replies.",
+    "Native tests use a local forwarding proxy to the owned restore-target. It restricts discovery to new synthetic fixtures and injects lost or held replies after actual native commits.",
+    "No service installed or enabled on the shared host, and no boot, host power-loss, deployment capacity or provider-quality acceptance claim.",
+    "Pending custody and acknowledged attempt receipts are distinct from current native request status, complete queue preparation and staff approval.",
+    "Staff generation controls, full QA/integration, audit remediation and complete M9b/v1 outcomes remain unfinished."
+  ]
+}

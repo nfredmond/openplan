@@ -210,6 +210,58 @@ reconciled through database status. A failed key read, decryption or changed
 selection prevents dispatch. The worker logs states without source words or keys.
 Do not infer publication or translation quality from a completed worker cycle.
 
+### Synthesis preparation worker
+
+Apply migrations through
+`20261015000012_engagement_synthesis_preparation_queue.sql`. From `openplan/`,
+use Node 24, installed npm dependencies, Linux `/usr/bin/flock` and `/usr/bin/cat`,
+and the app's private Supabase URL and service credential. The command reads
+`.env.local` when present; environment variables already supplied to the process
+take precedence.
+
+```bash
+npm run worker:synthesis-preparation -- --help
+npm run worker:synthesis-preparation -- --once
+npm run worker:synthesis-preparation
+```
+
+Only explicitly enqueued requests are eligible. Preparation reconstructs retained
+segment, context and thematic inputs, stages their deterministic plans and records
+completion receipts. Provider execution still requires its separate native
+resource authorization. Preparation neither calls a model nor approves or
+publishes a result. Staff generation controls remain under development.
+
+`--once` retries up to 64 pending attempts and reads one candidate page of up to
+64 requests. It is not a queue drain. No arguments keeps polling, with a
+two-second pause after a pass without pending custody, and five seconds after an
+error or a pass with pending custody. SIGINT and SIGTERM interrupt active work
+and waits. Preserve the directory and restart the same command against the same
+database. Do not delete journals, change the directory to bypass an unresolved
+attempt, or copy pending state between databases.
+
+Set `OPENPLAN_SYNTHESIS_PREPARATION_WORK_DIR` to an absolute private durable root.
+The default is `~/.local/state/openplan/synthesis-preparation-worker`. The worker
+partitions either root by the full SHA-256 of the canonical database URL and
+checks the target retained in the journal. Directories require mode 0700 and
+journal files mode 0600. Back up the root with the database. The coordinator
+retains terminal child journals and bounds its active index at 16 MiB; exceeding
+the bound refuses work without dropping custody. Monitor storage separately.
+
+For `--once`, exit 0 means that pass finished without pending custody records,
+exit 2 means unconfirmed custody remains, and exit 1 means failure or interruption.
+Continuous operation reports pass failures and keeps polling. Its requested
+shutdown exits 0 and prints a stopped message. These are process outcomes, not
+claims that all requests are prepared or approved. A retained superseded outcome
+can remain unconfirmed even when another worker has completed the native request.
+Read the current request status separately from its historical journal.
+
+A process supervisor can run the continuous command from the application package.
+Keep the same environment, operating-system user and persistent root across
+restarts. Send SIGTERM for a normal stop and retain the files after an abnormal
+exit. This command does not install or enable a service. Process termination and
+restart have been tested; boot-time startup, host power loss and deployment
+capacity require separate verification.
+
 ### Synthesis execution and context recovery
 
 The internal synthesis worker accepts an existing native resource authorization.

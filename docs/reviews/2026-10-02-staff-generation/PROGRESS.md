@@ -445,3 +445,41 @@ claim. Superseded outcomes stay unconfirmed, and pending custody does not imply
 that the current native request is still unfinished. This check covers process
 loss, not host reboot or power loss. The installed preparation command, service
 lifecycle, staff controls, full QA and complete M9b/v1 outcomes remain open.
+
+## Preparation command and shutdown
+
+`npm run worker:synthesis-preparation` now polls the explicit queue through the
+retained coordinator. `-- --once` performs one bounded pass. `-- --help` describes
+usage without requiring a database credential. The command partitions its private
+absolute storage root by canonical database target and preserves pending attempts
+across restarts. SIGINT and SIGTERM interrupt both active work and waits. A
+continuous worker reports a requested stop separately from queue completion.
+One-pass exit codes distinguish a completed pass, unconfirmed custody and error
+or interruption. No command creates a provider grant or approves output.
+
+All 24 service tests, 13 CLI process tests and 296 combined preparation tests
+pass. Whole-package TypeScript, strict lint and the configured dead-code check
+pass. Existing warning classes remain in the dead-code output. A harmless
+control survives and 25 targeted faults fail, including wrong exit codes, missing
+signal handlers and changed target/directory handling. Two initial option cases
+used incorrectly unpacked array fixtures. The tests now pass named argv values.
+The initial environment annotations also failed TypeScript under Next.js's
+required NODE_ENV declaration. Partial<NodeJS.ProcessEnv> fixes that type boundary
+without changing runtime behavior. Earlier failed logs remain recorded.
+
+Six final native checks pass. The actual npm command retains an exact completion
+whose response is deliberately lost after database commit, then a fresh npm
+process recovers it. SIGTERM stops the continuous entrypoint after a native claim
+commits but before its response arrives. Restart uses the original token and
+one native attempt. SIGINT stops the real idle wait. New requests receive no
+provider authorization. A local proxy forwards commands to the owned database,
+limits discovery to new synthetic fixtures and injects only the specified lost
+or delayed responses. A wrong-exit-code fault makes the native check fail. The
+source is restored and all new fixtures are cancelled. See
+[the check record](preparation-cli-checks.json).
+
+The runbook and self-hosting guide now explain preparation, exits, shutdown,
+private storage and supervisor requirements. No service is installed or enabled
+on the shared demo. Boot-time startup, host power loss and deployment capacity
+remain unverified. Staff generation controls, full QA/integration, dependency
+audit remediation and complete M9b/v1 acceptance remain open.
