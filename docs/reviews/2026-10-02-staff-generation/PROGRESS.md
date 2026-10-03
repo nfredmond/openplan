@@ -491,3 +491,11 @@ The staff branch joins the tested thematic UI and dependency patch at `9d02019b`
 Staff controls need to find requests after a reload or on another device. Migration013 adds a source-scoped history read across segment, context and thematic stages. Current staff can inspect earlier requesters, including cancelled requests. Each page preserves authorship, exact intent hash, stage and parent identity. It uses 25-row keyset pages with a lookahead row and retains microsecond timestamp precision. The authenticated HTTP route requires the expected account and workspace and rejects late responses after cancellation or deadline. It cannot queue or execute work.
 
 The change passes 21 native baseline/control/fault checks, 48 HTTP/page tests and a harmless control plus 31 HTTP/page faults. Types, strict lint and configured deadcode pass. The migration is applied only on the owned restore target. Security advisors report the same nine existing findings; none names the new function. Initial failures and blind categories remain in `request-history-checks.json`. Production build, installed HTTP reads and visible staff controls remain separate unfinished work at this commit.
+
+## Installed generation history read
+
+Build `2debaf9b` includes the vendor runner correction. The production webpack build passes with a 6.3 GiB peak and zero swap. The first server launch lacks a commit stamp, so the identity check refuses acceptance. Restarting the owned server with its actual compiled commit gives a matching health identity and process cwd.
+
+The real authenticated endpoint reads all 40 retained requests across two pages: 34 segment, three context and three thematic. IDs, authors, intent hashes and cancellation flags match the owned database. Wrong source/hash, incomplete/unknown query, changed account/workspace and anonymous access fail as expected. No generation request, queue entry or execution is created. The installed native baseline also passes after migration013.
+
+See `request-history-installed-http.json` for the12 HTTP/inventory checks, initial identity refusal and log hashes. This closes the earlier installed-HTTP/build boundary. The staff creation/preparation controls, client recovery, full branch QA, semantic quality and wider v1 obligations remain unfinished.
