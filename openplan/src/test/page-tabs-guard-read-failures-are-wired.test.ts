@@ -6,7 +6,7 @@ import { pageSource } from "./page-tabs-guard-source";
  * A READ THAT FAILED BEHIND A CLOSED TAB MUST STILL BE ANNOUNCED — AND THAT
  * DEPENDS ENTIRELY ON THE CALL SITE.
  *
- * `describeUnreadableTabs` and the five `build*Tabs` builders are well tested,
+ * `describeUnreadableTabs` and the six `build*Tabs` builders are well tested,
  * and every one of those tests calls the builder ITSELF with flags it wrote.
  * None of them can see what the page passes. Changing the engagement page's
  * `buildCampaignTabs({ … itemsUnreadable … })` to a hardcoded `false` — a
@@ -74,6 +74,12 @@ const WIRED_BUILDERS: WiredBuilder[] = [
     builderFile: "app/(app)/plans/[planId]/_tabs.ts",
     builderName: "buildPlanTabs",
     callSiteFile: "app/(app)/plans/[planId]/page.tsx",
+  },
+  {
+    label: "aerial mission",
+    builderFile: "app/(app)/aerial/missions/[missionId]/_tabs.ts",
+    builderName: "buildMissionTabs",
+    callSiteFile: "app/(app)/aerial/missions/[missionId]/page.tsx",
   },
 ];
 

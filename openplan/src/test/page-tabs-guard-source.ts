@@ -7,6 +7,7 @@ import { buildProjectTabs } from "@/app/(app)/projects/[projectId]/_components/_
 import { buildCampaignTabs } from "@/app/(app)/engagement/[campaignId]/_tabs";
 import { buildRtpCycleTabs } from "@/app/(app)/rtp/[rtpCycleId]/_tabs";
 import { buildPlanTabs } from "@/app/(app)/plans/[planId]/_tabs";
+import { buildMissionTabs } from "@/app/(app)/aerial/missions/[missionId]/_tabs";
 
 /**
  * SHARED SOURCE READING FOR THE `page-tabs-guard-*` FILES.
@@ -241,6 +242,17 @@ export function tabbedPages(): TabbedPage[] {
         "app/(app)/scenarios/[scenarioSetId]/page.tsx",
         "const scenarioTabs: PageTabDefinition",
       ),
+      pageAnchors: [],
+    },
+    {
+      label: "aerial mission",
+      linkPrefix: "aerial/missions",
+      file: "app/(app)/aerial/missions/[missionId]/page.tsx",
+      tabs: buildMissionTabs({
+        map: { orthoPreview: false, packages: false },
+        processing: { jobs: false, custody: false },
+        evidence: { packages: false },
+      }),
       pageAnchors: [],
     },
     {

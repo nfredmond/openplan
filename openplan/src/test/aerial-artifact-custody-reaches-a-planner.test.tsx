@@ -66,6 +66,9 @@ const serviceFromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected table: ${table}`);
 });
 
+// Only the open tab is rendered, so each test must open the tab that holds what it checks.
+vi.mock("@/components/ui/page-tab-panel", () => import("@/test/helpers/open-tab-only"));
+
 vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
   createClient: (...args: unknown[]) => createClientMock(...args),
@@ -336,9 +339,10 @@ describe("artifact custody decides what an evidence package may claim", () => {
 });
 
 describe("what the planner actually sees on the mission page", () => {
-  async function renderMissionPage(): Promise<string> {
+  async function renderMissionPage(tab = "processing"): Promise<string> {
+    // Processing is the tab these checks are about; the page opens on Map.
     const { container } = render(
-      await AerialMissionDetailPage({ params: Promise.resolve({ missionId: MISSION_ID }) })
+      await AerialMissionDetailPage({ params: Promise.resolve({ missionId: MISSION_ID }), searchParams: Promise.resolve({ tab }) })
     );
     return container.textContent ?? "";
   }
@@ -397,7 +401,8 @@ describe("what the planner actually sees on the mission page", () => {
   it("renders a custody-incomplete package as VERIFICATION PENDING, not as partially verified", async () => {
     pagePackagesOrderMock.mockResolvedValue({ data: [packageRow("pending")], error: null });
 
-    const text = await renderMissionPage();
+    // The package list is on the Evidence tab.
+    const text = await renderMissionPage("evidence");
 
     expect(text).toContain("Verification pending");
     expect(text).not.toContain("Partially verified");
@@ -406,7 +411,7 @@ describe("what the planner actually sees on the mission page", () => {
   it("renders a custody-complete package differently — the two are not the same page", async () => {
     pagePackagesOrderMock.mockResolvedValue({ data: [packageRow("partial")], error: null });
 
-    const text = await renderMissionPage();
+    const text = await renderMissionPage("evidence");
 
     expect(text).toContain("Partially verified");
   });

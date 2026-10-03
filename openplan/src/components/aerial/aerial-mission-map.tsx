@@ -33,7 +33,9 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { Map as MapIcon } from "lucide-react";
 
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { extractArtifactGeoref } from "@/lib/aerial/artifact-custody";
+import { isAoiPolygonGeoJson } from "@/lib/aerial/dji-export";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { useAerialOrthoLayers } from "@/components/cartographic/aerial-ortho-layer-context";
 
@@ -52,6 +54,12 @@ const ORTHO_SOURCE_ID = "aerial-mission-ortho-preview";
 const ORTHO_LAYER_ID = "aerial-mission-ortho-preview-layer";
 const PHOTOS_SOURCE_ID = "aerial-mission-photo-points";
 const PHOTOS_LAYER_ID = "aerial-mission-photo-points-layer";
+const AREA_SOURCE_ID = "aerial-mission-area";
+const AREA_FILL_LAYER_ID = "aerial-mission-area-fill";
+const AREA_LINE_LAYER_ID = "aerial-mission-area-outline";
+
+/** The area to fly: the same orange the workspace map uses for mission areas. */
+const AREA_COLOR = "#e45635";
 
 /** Photo dots: the AOI orange family, distinct from every backdrop layer. */
 const PHOTO_DOT_COLOR = "#e45635";
@@ -83,6 +91,17 @@ export type AerialMissionMapProps = {
    * who can act on it.
    */
   previewNoticeDetail?: string | null;
+  /**
+   * Size of the map canvas. The mission page's Map tab gives it most of the
+   * window; anywhere else it keeps the 420px it always had.
+   */
+  mapClassName?: string;
+  /**
+   * The area this mission is to fly, as drawn on the mission. Drawn whenever it
+   * is a valid polygon, so the map shows where the mission is before any imagery
+   * exists. Re-validated here, like the preview bounds.
+   */
+  aoi?: unknown;
 };
 
 type PhotoPoint = {
@@ -171,11 +190,14 @@ export function AerialMissionMap({
   preview,
   previewNotice,
   previewNoticeDetail = null,
+  mapClassName = "h-[420px]",
+  aoi = null,
 }: AerialMissionMapProps) {
   const [photoState, setPhotoState] = useState<PhotoState>({ status: "loading" });
   const [mapStartupFailed, setMapStartupFailed] = useState(false);
   const [showOrtho, setShowOrtho] = useState(true);
   const [showPhotos, setShowPhotos] = useState(true);
+  const [showArea, setShowArea] = useState(true);
   const { layers: workspaceOrthoLayers, selected: workspaceOrthoSelected, setSelected: setWorkspaceOrthoSelected } =
     useAerialOrthoLayers();
 
@@ -184,6 +206,7 @@ export function AerialMissionMap({
   const styleLoadedRef = useRef(false);
 
   const bounds = useMemo(() => validatedPreviewBounds(preview), [preview]);
+  const area = useMemo(() => (isAoiPolygonGeoJson(aoi) ? aoi : null), [aoi]);
   // A preview whose bounds fail re-validation is not a smaller preview — it is
   // one this map refuses to place, and it says so.
   const previewRejectedHere = preview !== null && bounds === null;
@@ -222,7 +245,7 @@ export function AerialMissionMap({
     () => (photoState.status === "ready" ? photoState.points : []),
     [photoState],
   );
-  const hasSomethingToDraw = bounds !== null || photoPoints.length > 0;
+  const hasSomethingToDraw = bounds !== null || photoPoints.length > 0 || area !== null;
 
   const attachContainer = useCallback((node: HTMLDivElement | null) => {
     containerRef.current = node;
@@ -249,11 +272,28 @@ export function AerialMissionMap({
     }
 
     mapRef.current = map;
+    // The mission page's Map tab sizes this canvas to the window, so it changes
+    // size with the window; and it sits in a tab, which the guard requires.
+    const stopSizing = keepMapSizedToContainer(map, container);
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
 
     map.on("load", () => {
       styleLoadedRef.current = true;
+
+      if (area) {
+        map.addSource(AREA_SOURCE_ID, {
+          type: "geojson",
+          data: { type: "Feature", geometry: area, properties: {} } as GeoJSON.Feature,
+        });
+        // The fill goes under any imagery so it never tints the orthomosaic.
+        map.addLayer({
+          id: AREA_FILL_LAYER_ID,
+          type: "fill",
+          source: AREA_SOURCE_ID,
+          paint: { "fill-color": AREA_COLOR, "fill-opacity": 0.12 },
+        });
+      }
 
       if (bounds) {
         const [west, south, east, north] = bounds;
@@ -272,6 +312,16 @@ export function AerialMissionMap({
           type: "raster",
           source: ORTHO_SOURCE_ID,
           paint: { "raster-opacity": 0.92, "raster-fade-duration": 0 },
+        });
+      }
+
+      if (area) {
+        // The outline goes over the imagery, so the area reads on top of it.
+        map.addLayer({
+          id: AREA_LINE_LAYER_ID,
+          type: "line",
+          source: AREA_SOURCE_ID,
+          paint: { "line-color": AREA_COLOR, "line-width": 2 },
         });
       }
 
@@ -299,8 +349,9 @@ export function AerialMissionMap({
         },
       });
 
-      // Frame the mission's own evidence: the ortho if placed, else its photos.
-      // Never a place constant — everything framed here came from this mission.
+      // Frame the mission's own evidence: the ortho if placed, else its photos,
+      // and its area to fly either way. Never a place constant: everything
+      // framed here came from this mission.
       const fit = new mapboxgl.LngLatBounds();
       if (bounds) {
         fit.extend([bounds[0], bounds[1]]);
@@ -308,12 +359,14 @@ export function AerialMissionMap({
       } else {
         for (const point of photoPoints) fit.extend([point.lon, point.lat]);
       }
+      for (const [lon, lat] of area?.coordinates[0] ?? []) fit.extend([lon, lat]);
       if (!fit.isEmpty()) {
         map.fitBounds(fit, { padding: 48, maxZoom: 18, duration: 0 });
       }
     });
 
     return () => {
+      stopSizing();
       map.remove();
       mapRef.current = null;
       styleLoadedRef.current = false;
@@ -353,6 +406,13 @@ export function AerialMissionMap({
       map.setLayoutProperty(PHOTOS_LAYER_ID, "visibility", showPhotos ? "visible" : "none");
     }
   }, [showPhotos]);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !styleLoadedRef.current) return;
+    for (const id of [AREA_FILL_LAYER_ID, AREA_LINE_LAYER_ID]) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", showArea ? "visible" : "none");
+    }
+  }, [showArea]);
 
   const notices: Array<{ text: string; operatorDetail?: string }> = [];
   if (previewNotice) notices.push({ text: previewNotice, operatorDetail: previewNoticeDetail ?? undefined });
@@ -425,11 +485,24 @@ export function AerialMissionMap({
         <div
           ref={attachContainer}
           data-testid="aerial-mission-map-canvas"
-          className="h-[420px] w-full overflow-hidden rounded-[0.5rem] border border-border/70 bg-muted/10"
+          className={`${mapClassName} w-full overflow-hidden rounded-[0.5rem] border border-border/70 bg-muted/10`}
         />
       )}
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+        {area ? (
+          <label className="flex items-center gap-1.5">
+            <input type="checkbox" checked={showArea} onChange={(event) => setShowArea(event.target.checked)} />
+            <span
+              aria-hidden="true"
+              className="inline-block h-2.5 w-3.5 rounded-[2px] border-2"
+              style={{ borderColor: AREA_COLOR, backgroundColor: `${AREA_COLOR}1f` }}
+            />
+            Area to fly
+          </label>
+        ) : (
+          <span>No area drawn yet</span>
+        )}
         {bounds ? (
           <label className="flex items-center gap-1.5">
             <input

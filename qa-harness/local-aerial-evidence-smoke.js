@@ -405,11 +405,21 @@ async function main() {
     await screenshot('local-aerial-evidence-smoke-01-aerial-list');
     notes.push('Asserted /aerial renders the mission list and the normal-path aerial layer panel.');
 
-    await page.goto(`${baseUrl}/aerial/missions/${ids.missionId}`, { waitUntil: 'networkidle' });
+    // The mission page is a record with tabs (2026-10-02): it opens on Map,
+    // with the saved project summary beside the map; the package list is on
+    // Evidence and the area and flight plan are on Flight plan.
+    const missionUrl = `${baseUrl}/aerial/missions/${ids.missionId}`;
+    await page.goto(missionUrl, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: missionTitle, exact: false }).waitFor({ timeout: 30000 });
-    await page.getByText(packageTitle, { exact: false }).first().waitFor({ timeout: 30000 });
     await page.getByText(/Project aerial summary \(saved\)/i).first().waitFor({ timeout: 30000 });
-    await page.getByText(/Mission AOI & export/i).first().waitFor({ timeout: 30000 });
+    await page.goto(`${missionUrl}?tab=evidence`, { waitUntil: 'networkidle' });
+    await page
+      .locator('[data-page-tab-panel="evidence"][data-page-tab-panel-state="open"]')
+      .getByText(packageTitle, { exact: false })
+      .first()
+      .waitFor({ timeout: 30000 });
+    await page.goto(`${missionUrl}?tab=plan`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: 'Area to fly', exact: true }).waitFor({ timeout: 30000 });
 
     /*
       THE DJI EXPORT MOVED, AND IT MOVED UP. This asserted an "Export DJI JSON"
@@ -425,7 +435,7 @@ async function main() {
       proven here is that the section a planner needs is on the page.
     */
     await page
-      .getByRole('heading', { name: /Survey flight plan & exports/i })
+      .getByRole('heading', { name: 'Flight plan', exact: true })
       .first()
       .waitFor({ timeout: 30000 });
     assertEqual(

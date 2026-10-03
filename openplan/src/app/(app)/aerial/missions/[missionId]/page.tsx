@@ -1,12 +1,17 @@
+import type * as React from "react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
-import { ArrowLeft, Hexagon, PlaneTakeoff } from "lucide-react";
+import { ArrowLeft, Hexagon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
-import { Worksurface, WorksurfaceSection } from "@/components/ui/worksurface";
+import { RecordHubHeader } from "@/components/ui/record-hub-header";
+import { PageTabNav } from "@/components/ui/page-tab-nav";
+import { PageTabPanel } from "@/components/ui/page-tab-panel";
+import { resolvePageTab } from "@/lib/ui/page-tabs";
+import { buildMissionTabs } from "./_tabs";
 import { Inspector, InspectorField, InspectorGroup, InspectorEmpty } from "@/components/ui/inspector";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -325,36 +330,6 @@ export default async function AerialMissionDetailPage({ params, searchParams }: 
     },
   ];
 
-  const header = (
-    <div className="flex flex-col gap-3">
-      <Link
-        href="/aerial"
-        className="inline-flex items-center gap-1.5 text-label font-medium text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-3 w-3" />
-        Back to Aerial Imagery
-      </Link>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-label uppercase tracking-[0.12em] text-muted-foreground">
-          <PlaneTakeoff className="h-3 w-3" />
-          Aerial mission
-        </div>
-        <h1 className="text-2xl font-semibold text-foreground">{mission.title}</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge tone={aerialMissionStatusTone(mission.status as AerialMissionStatus)}>
-            {formatAerialMissionStatusLabel(mission.status)}
-          </StatusBadge>
-          <span className="text-xs text-muted-foreground">
-            {formatAerialMissionTypeLabel(mission.mission_type)}
-          </span>
-          {mission.geography_label ? (
-            <span className="text-xs text-muted-foreground">· {mission.geography_label}</span>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  );
-
   // Every number in the two groups below is derived from the evidence-package
   // read. If that read failed, "0 ready · 0 total" is not a small inaccuracy —
   // it is the page stating a finding it does not have.
@@ -402,7 +377,13 @@ export default async function AerialMissionDetailPage({ params, searchParams }: 
       <InspectorGroup label="Attachment readiness">
         <InspectorField
           label="Project / grant / report"
-          value={<StatusBadge tone={attachmentSummaryTone}>{attachmentSummary.label}</StatusBadge>}
+          // The longest label here ("Ready for project/report/grant attachment")
+          // ran past the column edge on one line.
+          value={
+            <StatusBadge tone={attachmentSummaryTone} className="max-w-full whitespace-normal text-left">
+              {attachmentSummary.label}
+            </StatusBadge>
+          }
           hint={attachmentSummary.detail}
         />
         <InspectorField
@@ -543,77 +524,58 @@ export default async function AerialMissionDetailPage({ params, searchParams }: 
     </Inspector>
   );
 
+  const missionTabs = buildMissionTabs({
+    map: { orthoPreview: orthoPreview.status === "unreadable", packages: packagesUnreadable },
+    processing: { jobs: Boolean(processingJobsUnreadable), custody: Boolean(custodyUnreadable) },
+    evidence: { packages: packagesUnreadable },
+  });
+  const activeTab = resolvePageTab(
+    missionTabs,
+    typeof query.tab === "string" ? query.tab : undefined,
+    "map"
+  );
+  const canWrite = !isReadOnlyWorkspaceRole(membership.role);
+
   return (
-    <>
+    <section className="module-page space-y-6" aria-label={`Aerial mission ${mission.title}`}>
       <CartographicSurfaceWide />
-      <PlanningContextStrip context={planningContext} className="mb-4" />
-      <Worksurface
-      ariaLabel={`Aerial mission ${mission.title}`}
-      header={header}
-      worksurface={
-        <>
-          <WorksurfaceSection
-            id="aerial-mission-authoring"
-            label="Authoring"
-            title="Mission AOI & export"
-            // "or request ODM processing" used to close this line, but nothing
-            // in this section requests anything. Requesting imagery processing
-            // now has its own section below, so this one describes only what it
-            // actually does. The old "Export DJI JSON" perimeter export that
-            // lived here is superseded by the flight-plan section below, which
-            // exports the actual survey grid.
-            description="Draw the area of interest the flight plan below will fill."
-            trailing={
-              <StatusBadge tone={hasAoi ? "success" : "neutral"}>
-                {hasAoi ? `${aoiVertexCount} vertex polygon` : "No AOI yet"}
-              </StatusBadge>
-            }
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <Button asChild>
-                <Link
-                  href={withPlanningContext(
-                    `/aerial/missions/${mission.id}/edit`,
-                    planningContext.status === "active" ? planningContext.project.id : null
-                  )}
-                >
-                  <Hexagon className="h-4 w-4" />
-                  {hasAoi ? "Edit AOI" : "Draw AOI"}
-                </Link>
-              </Button>
-            </div>
-          </WorksurfaceSection>
-          <WorksurfaceSection
-            id="aerial-mission-flight-plan"
-            label="Flight plan"
-            title="Survey flight plan & exports"
-            description="Plan the photogrammetry flight for this mission's AOI: camera, ground resolution or altitude, overlaps, speed, and margin. Generate the grid, review every assumption, save it, then export for DJI Pilot 2, Litchi, or any GIS."
-          >
-            <FlightPlanEditor
-              missionId={mission.id}
-              aoiGeojson={mission.aoi_geojson ?? null}
-              canEdit={!isReadOnlyWorkspaceRole(membership.role)}
-            />
-          </WorksurfaceSection>
-          <WorksurfaceSection
-            id="aerial-mission-imagery"
-            label="Imagery"
-            title="Mission photos"
-            description="The source photos this mission collected, held in OpenPlan's own storage with each file's own EXIF read as evidence — capture time, camera, and GPS where the file recorded them."
-          >
-            <AerialImageryPanel
-              missionId={mission.id}
-              canWrite={!isReadOnlyWorkspaceRole(membership.role)}
-            />
-          </WorksurfaceSection>
-          <WorksurfaceSection
-            id="aerial-mission-map"
-            label="Map"
-            title="Imagery on the map"
-            description="Where this mission's held imagery sits on the ground: the processed orthomosaic preview at the position the processing worker read from the file itself, and each uploaded photo at the GPS its own EXIF recorded. Nothing here is inferred — imagery the worker did not georeference is said to be unplaceable, never guessed onto the map."
-          >
+      <PlanningContextStrip context={planningContext} />
+      <RecordHubHeader
+        parentHref="/aerial"
+        parentLabel="Aerial Imagery"
+        title={mission.title}
+        status={
+          <>
+            <StatusBadge tone={aerialMissionStatusTone(mission.status as AerialMissionStatus)}>
+              {formatAerialMissionStatusLabel(mission.status)}
+            </StatusBadge>
+            <span className="text-xs text-muted-foreground">
+              {formatAerialMissionTypeLabel(mission.mission_type)}
+              {mission.geography_label ? ` · ${mission.geography_label}` : null}
+            </span>
+          </>
+        }
+      />
+
+      <PageTabNav
+        tabs={missionTabs}
+        activeKey={activeTab}
+        basePath={`/aerial/missions/${mission.id}`}
+        searchParams={query}
+        ariaLabel="Mission sections"
+      />
+
+      <PageTabPanel tabKey="map" active={activeTab === "map"}>
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,22rem)]">
+          <div className="min-w-0 space-y-3">
+            <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+              The area to fly, the processed imagery and each photo that carries its own GPS position. Imagery without one
+              is listed, never guessed onto the map.
+            </p>
             <AerialMissionMap
               missionId={mission.id}
+              mapClassName="h-[max(20rem,min(68svh,46rem))]"
+              aoi={mission.aoi_geojson ?? null}
               preview={
                 orthoPreview.status === "ready"
                   ? {
@@ -630,109 +592,160 @@ export default async function AerialMissionDetailPage({ params, searchParams }: 
                 orthoPreview.status === "unreadable" ? (orthoPreview.operatorDetail ?? null) : null
               }
             />
-          </WorksurfaceSection>
-          <WorksurfaceSection
-            id="aerial-mission-processing"
-            label="Processing"
-            title="Imagery processing jobs"
-            description={
-              processingJobsTruncated
-                ? `The ${processingPosture.jobCount} most recent processing jobs for this mission, in the state the worker last reported them. This mission has more than that; older jobs are not shown. OpenPlan cannot poll the worker, so a job advances only when a callback arrives — what is shown is as of the last one.`
-                : "Every processing job dispatched for this mission, in the state the worker last reported it. OpenPlan cannot poll the worker, so a job advances only when a callback arrives — what is shown is as of the last one."
-            }
-            // A roll-up derived from a read that failed is not a small
-            // inaccuracy — "No processing jobs" is an answer, and this page does
-            // not have one. Same treatment the packages section below gets.
-            trailing={
-              processingJobsUnreadable ? (
-                <StatusBadge tone="danger">Unavailable</StatusBadge>
-              ) : (
-                <StatusBadge tone={processingPosture.tone}>{processingPosture.label}</StatusBadge>
-              )
-            }
-          >
-            {workerConfigured ? (
-              <StateBlock
-                title={processingSurface.title}
-                description={processingSurface.description}
-                tone={processingSurface.tone === "info" ? "info" : "neutral"}
-                compact
-              />
-            ) : (
-              <StateBlock
-                title={unconfiguredNotice.title}
-                description={unconfiguredNotice.description}
-                tone="info"
-                compact
-              />
-            )}
+          </div>
+          {evidenceChain}
+        </div>
+      </PageTabPanel>
 
-            {canRequestProcessing ? (
-              <div className="mt-3">
-                <AerialProcessingRequestForm missionId={mission.id} />
-              </div>
-            ) : null}
+      <PageTabPanel tabKey="plan" active={activeTab === "plan"} className="space-y-8">
+        <MissionSection
+          id="aerial-mission-authoring"
+          title="Area to fly"
+          // The old "Export DJI JSON" perimeter export that lived here is
+          // superseded by the flight plan below, which exports the survey grid.
+          description="Draw the area the flight plan below will cover."
+          trailing={
+            <StatusBadge tone={hasAoi ? "success" : "neutral"}>
+              {hasAoi ? `${aoiVertexCount}-point area` : "No area drawn yet"}
+            </StatusBadge>
+          }
+        >
+          <Button asChild>
+            <Link
+              href={withPlanningContext(
+                `/aerial/missions/${mission.id}/edit`,
+                planningContext.status === "active" ? planningContext.project.id : null
+              )}
+            >
+              <Hexagon className="h-4 w-4" />
+              {hasAoi ? "Edit area" : "Draw area"}
+            </Link>
+          </Button>
+        </MissionSection>
+        <MissionSection
+          id="aerial-mission-flight-plan"
+          title="Flight plan"
+          description="Set the camera, ground resolution or altitude, overlap, speed and margin for this area. Generate the grid, check every assumption, save it, then export it for DJI Pilot 2, Litchi or any GIS."
+        >
+          <FlightPlanEditor missionId={mission.id} aoiGeojson={mission.aoi_geojson ?? null} canEdit={canWrite} />
+        </MissionSection>
+      </PageTabPanel>
 
-            <div className="mt-4 space-y-3">
-              <AerialProcessingFreshness
-                renderedAt={renderedAt.toISOString()}
-                hasOpenJob={processingPosture.hasOpenJob}
-              />
-              <AerialProcessingJobsPanel
-                jobs={processingJobs}
-                summaries={processingJobSummaries}
-                now={renderedAt}
-                unreadableReason={processingJobsUnreadable}
-          custodyByJobId={custodyByJobId}
-          custodyUnreadableReason={custodyUnreadable}
-                truncated={processingJobsTruncated}
-              />
-            </div>
-          </WorksurfaceSection>
-          <WorksurfaceSection
-            id="aerial-mission-packages"
-            label="Evidence"
-            title="Packages"
-            description="Each package is one processed output — orthophotos, models, surfaces, QA bundles — with its status, whether it is ready to verify, and whether it is attached to a report."
-            trailing={
-              packagesUnreadable ? (
-                <StatusBadge tone="danger">Unavailable</StatusBadge>
-              ) : (
-                <StatusBadge tone={packagePosture.attachmentReady ? "success" : packagePosture.tone}>
-                  {packagePosture.attachmentReadyLabel}
-                </StatusBadge>
-              )
-            }
-          >
-            {packagesUnreadable ? (
-              // The planner sentence here is narrower than `reads.describe()` on
-              // purpose: this notice stands in for one panel, so it says what an
-              // empty package list would not mean rather than speaking for the
-              // whole page.
-              <ReadFailureNotice
-                reads={reads}
-                title="Evidence packages could not be read"
-                description="An empty list here would not mean this mission has no packages — the query failed, so OpenPlan cannot say either way."
-              />
+      <PageTabPanel tabKey="photos" active={activeTab === "photos"}>
+        <AerialImageryPanel missionId={mission.id} canWrite={canWrite} />
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="processing" active={activeTab === "processing"}>
+        <MissionSection
+          id="aerial-mission-processing"
+          title="Processing"
+          description={
+            processingJobsTruncated
+              ? `The ${processingPosture.jobCount} most recent processing jobs for this mission, as the worker last reported them. Older jobs are not shown. OpenPlan cannot ask the worker for news, so a job moves on only when the worker reports back.`
+              : "Every processing job sent for this mission, as the worker last reported it. OpenPlan cannot ask the worker for news, so a job moves on only when the worker reports back."
+          }
+          // "No processing jobs" is an answer, and a failed read is not one.
+          trailing={
+            processingJobsUnreadable ? (
+              <StatusBadge tone="danger">Unavailable</StatusBadge>
             ) : (
-              <DataTable<PackageRow>
-                columns={columns}
-                rows={packages}
-                getRowId={(row) => row.id}
-                density="compact"
-                emptyState={
-                  <EmptyState
-                    title="No evidence packages yet"
-                    description="Once packages are recorded for this mission, they will appear here with status and verification state."
-                  />
-                }
-              />
-            )}
-          </WorksurfaceSection>
-        </>
-      }
-      inspector={evidenceChain}
-    />
-    </>
+              <StatusBadge tone={processingPosture.tone}>{processingPosture.label}</StatusBadge>
+            )
+          }
+        >
+          {workerConfigured ? (
+            <StateBlock
+              title={processingSurface.title}
+              description={processingSurface.description}
+              tone={processingSurface.tone === "info" ? "info" : "neutral"}
+              compact
+            />
+          ) : (
+            <StateBlock title={unconfiguredNotice.title} description={unconfiguredNotice.description} tone="info" compact />
+          )}
+          {canRequestProcessing ? <AerialProcessingRequestForm missionId={mission.id} /> : null}
+          <AerialProcessingFreshness renderedAt={renderedAt.toISOString()} hasOpenJob={processingPosture.hasOpenJob} />
+          <AerialProcessingJobsPanel
+            jobs={processingJobs}
+            summaries={processingJobSummaries}
+            now={renderedAt}
+            unreadableReason={processingJobsUnreadable}
+            custodyByJobId={custodyByJobId}
+            custodyUnreadableReason={custodyUnreadable}
+            truncated={processingJobsTruncated}
+          />
+        </MissionSection>
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="evidence" active={activeTab === "evidence"}>
+        <MissionSection
+          id="aerial-mission-packages"
+          title="Evidence packages"
+          description="Each package is one processed output (orthophotos, models, surfaces, QA bundles) with its status, whether it is ready to verify, and whether it is attached to a report."
+          trailing={
+            packagesUnreadable ? (
+              <StatusBadge tone="danger">Unavailable</StatusBadge>
+            ) : (
+              <StatusBadge tone={packagePosture.attachmentReady ? "success" : packagePosture.tone}>
+                {packagePosture.attachmentReadyLabel}
+              </StatusBadge>
+            )
+          }
+        >
+          {packagesUnreadable ? (
+            // Narrower than `reads.describe()` on purpose: this notice stands in
+            // for one list, so it says what an empty list would not mean.
+            <ReadFailureNotice
+              reads={reads}
+              title="Evidence packages could not be read"
+              description="An empty list here would not mean this mission has no packages. The query failed, so OpenPlan cannot say either way."
+            />
+          ) : (
+            <DataTable<PackageRow>
+              columns={columns}
+              rows={packages}
+              getRowId={(row) => row.id}
+              density="compact"
+              emptyState={
+                <EmptyState
+                  title="No evidence packages yet"
+                  description="Once packages are recorded for this mission, they will appear here with status and verification state."
+                />
+              }
+            />
+          )}
+        </MissionSection>
+      </PageTabPanel>
+    </section>
+  );
+}
+
+/** One section of a mission tab: a heading, one sentence, and its content. Not a card. */
+function MissionSection({
+  id,
+  title,
+  description,
+  trailing,
+  children,
+}: {
+  id: string;
+  title: string;
+  description: string;
+  trailing?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={id} aria-labelledby={`${id}-heading`} className="space-y-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 space-y-1">
+          <h2 id={`${id}-heading`} className="text-base font-semibold text-foreground">
+            {title}
+          </h2>
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
+        </div>
+        {trailing}
+      </div>
+      {children}
+    </section>
   );
 }
