@@ -1,0 +1,335 @@
+{
+  "sourceBase": "f821c4c7",
+  "tests": {
+    "journal": 36,
+    "combined": 189,
+    "lint": "pass",
+    "wholePackageTypes": "pass"
+  },
+  "mutations": {
+    "sourceSha256": "9216f1921533450179ccb08c57cf7ef66078545a472f484dbfc03905b9cd478a",
+    "results": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "expectedSurvivor": true,
+        "assertionFailure": false,
+        "logSha256": "ef3ae17bb1b23d21ee27098c96dc84658e88fed6dd7627c7876b44f64fdc5ad6"
+      },
+      {
+        "name": "target",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "801f588349223124773e4123775f4e00aa02a4100bf3dae94b6a7c9ba40922b7"
+      },
+      {
+        "name": "request",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "f53d35196491022b2ed454797d20fafb3a6a02ff24844f6ed4eaa2db8671ca2f"
+      },
+      {
+        "name": "claim-binding",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "edfe824dc93fab7ce78276f1c6aa755cbae479a1f0baba4dfe1161748ec3f8f3"
+      },
+      {
+        "name": "outcome-validation",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "b7522deb0e9a83b6143cd64ce5c8ac10b9f4604836740dd8f2c7722c071cb880"
+      },
+      {
+        "name": "strict",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "2d91b4e6f8cca3fd63063d0e08d22529ec2eda3977ce7387d8dc47816663765f"
+      },
+      {
+        "name": "version",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "3ccac8625a177b74abf2513edcd24249ab15d200cb60db90aec68b88b3eed97a"
+      },
+      {
+        "name": "token-save",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "1f3bd1360095ea5f37923ad8c0787a3d1c5a2004df21ce35cbd19635bb3e757b"
+      },
+      {
+        "name": "outcome-save",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "b99851cac4cf3e0fdf2a10bac66e3ecfd8ff4156a4b2a72261434ba8ac9284a5"
+      },
+      {
+        "name": "ack-save",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "dbc0f010171d8c0a15f78337e2e21f0584d1ef04707c4231c3f9f76732261367"
+      },
+      {
+        "name": "inactive-save",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "4996d1e6d2e176e63fd898603c0355cfd41bd46c5430b5636b5158ec0f6dbe7e"
+      },
+      {
+        "name": "native-replay",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "5c63580b0688ec9d2cc8efb0a8c13ac920271977ac36c76f4637fae5ad8a1889"
+      },
+      {
+        "name": "lease-clone",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "ebf46c8f1dc42752f22193c9d535e4b2514c417298227448b223bd5a44f00123"
+      },
+      {
+        "name": "read-bound",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "7017d5436f5ad88a4de02d45df8683bfd3af0b1084d43a19d3035a5bb3b53859"
+      },
+      {
+        "name": "read-error",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "894d354b4f666db7a166b3758d7269c0afd4efb863e3422ff03b6e7e7334e5f9"
+      },
+      {
+        "name": "saved-token",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "e61f038e7db6170e73ef5284173140861c479aa913f272daffb41631ec102681"
+      },
+      {
+        "name": "lock",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "a03de498cbd4514da257f652fb647eb9f9b9e8844b6bbd5393f0e2c7a5995719"
+      },
+      {
+        "name": "journal-interruption-fences",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "c9b0139ecf91e86fb06eff37c3911d551d7a0ce897eb536c1618e28c7adfa227"
+      }
+    ],
+    "restored": true,
+    "blindCategory": "Real private filesystem and flock but mocked database; not native attempt or process-crash proof."
+  },
+  "earlierMutationEvidence": [
+    {
+      "sourceSha256": "9216f1921533450179ccb08c57cf7ef66078545a472f484dbfc03905b9cd478a",
+      "results": [
+        {
+          "name": "harmless",
+          "exit": 0,
+          "expectedSurvivor": true,
+          "assertionFailure": false,
+          "logSha256": "7987199d6884ee8cfec606fff49fbc204df28e4bb9ba6a885ccf144cfad976d7"
+        },
+        {
+          "name": "target",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "16dac9600b469aee24af7f90d9e13578d64b3aac6ed01a5732bf17b331e2ae64"
+        },
+        {
+          "name": "request",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "e64bdc5638d23a4dc3ef749e4b096d08525d671215f767db0d149a5c49186524"
+        },
+        {
+          "name": "claim-binding",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "ba750963b4dc67553964aab4f98077f9ec958bf87df60d5805c6cff31b9fb962"
+        },
+        {
+          "name": "outcome-validation",
+          "exit": 0,
+          "expectedSurvivor": false,
+          "assertionFailure": false,
+          "logSha256": "a2c9fd64164f009295742578cfd80a134a66556d387e8d9b19a39c10b505d655"
+        }
+      ],
+      "restored": true,
+      "blindCategory": "Real private filesystem and flock but mocked database; not native attempt or process-crash proof."
+    },
+    {
+      "sourceSha256": "9216f1921533450179ccb08c57cf7ef66078545a472f484dbfc03905b9cd478a",
+      "results": [
+        {
+          "name": "harmless",
+          "exit": 0,
+          "expectedSurvivor": true,
+          "assertionFailure": false,
+          "logSha256": "575b07ff93e7412ce26698d385dd4f7c74d2f467d02c08e3001c60aa0c1ba0b2"
+        },
+        {
+          "name": "target",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "daa9ae72d77ad474eddfffc7d20b11571d008c8c55257be44133365024a53053"
+        },
+        {
+          "name": "request",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "6be4d71bd36182d1e3be455cea4fe97f11093ac92cead4f72c5f4c348c77a934"
+        },
+        {
+          "name": "claim-binding",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "b801559b9d0f8b9f3ea77be58318286c3acf88d830e4f79fc0cf997eb7b94334"
+        },
+        {
+          "name": "outcome-validation",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "409505d707971235424a3d3444b6265ade54eab248a550dae1ea3a35c53921ff"
+        },
+        {
+          "name": "strict",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "027142fde201fed14112d10ae116460de5c030549a405f37ce197a4f11ca7a75"
+        },
+        {
+          "name": "version",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "be290e2786fa0af6b563084f78db5c2bec367be57aaa82280be701bc2deca51f"
+        },
+        {
+          "name": "token-save",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "5c544b689ed6cd29b450902a21df3a6bc3b93c6dd7683ef301dc4df1951f0fcb"
+        },
+        {
+          "name": "outcome-save",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "526d30a0ff89bd27cbda7681f24fbcda42c2baeb11354cbecaff48e97ff3053a"
+        },
+        {
+          "name": "ack-save",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "346fa4192124fc54e19deaec1d76c6d57853f28728c3f2b89016615a22ebbf06"
+        },
+        {
+          "name": "inactive-save",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "e83f94861d189bdc21dfc8f94669ca811424c66024a2f27cbc0eb534007a251c"
+        },
+        {
+          "name": "native-replay",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "5d196dbed980e5c8038e8ded8de23c532687be3a495702cf99c90c780555c758"
+        },
+        {
+          "name": "lease-clone",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": false,
+          "logSha256": "55c8e3c562737ca5399ac2ebd78b01e9be610525c8948ff5f742b9fd335af1a5"
+        }
+      ],
+      "restored": true,
+      "blindCategory": "Real private filesystem and flock but mocked database; not native attempt or process-crash proof."
+    }
+  ],
+  "native": {
+    "startedAt": "2026-10-03T01:40:39.500Z",
+    "sourceBase": "f821c4c7",
+    "directory": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/journal-native-Pzwxgw",
+    "requests": [
+      "9c1f0f2c-9e1b-4f9d-a18b-74753e21cf64",
+      "a6b642a2-67da-49eb-b0fa-516dd9da1a56"
+    ],
+    "checks": [
+      "native completion commits while child loses reply; exact outcome remains on private disk",
+      "fresh child resends exact completion after cancellation without preparing again",
+      "historical acknowledgement reread uses no network or replacement attempt",
+      "abrupt child exit after native claim releases flock; restart completes original token and attempt1",
+      "no provider authorization or execution is created"
+    ],
+    "status": "passed",
+    "cleanup": true,
+    "finishedAt": "2026-10-03T01:40:41.817Z"
+  },
+  "nativeFault": {
+    "startedAt": "2026-10-03T01:41:34.078Z",
+    "sourceBase": "f821c4c7",
+    "directory": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/journal-native-JNNzcM",
+    "requests": [
+      "d1b74c4b-2d11-4c28-aca7-60eb908aae6f"
+    ],
+    "checks": [],
+    "status": "failed",
+    "cleanup": true,
+    "finishedAt": "2026-10-03T01:41:34.680Z"
+  },
+  "restoration": {
+    "restoredSha256": "9216f1921533450179ccb08c57cf7ef66078545a472f484dbfc03905b9cd478a",
+    "restored": true
+  },
+  "resources": {
+    "finalChecks": "1.7GiB peak, zero swap,11.346sec",
+    "native": "249.5MiB peak, zero swap,2.985sec"
+  },
+  "limits": [
+    "One directory retains one attempt. Terminal acknowledgement means a historical receipt, not current queue status or execution permission.",
+    "A superseded unconfirmed outcome is preserved and may still be refused on replay. Queue orchestration must allocate another attempt directory without deleting this evidence.",
+    "Atomic fsync/rename and real child process exit are tested; hardware power loss, damaged filesystem and full host reboot are not.",
+    "Interruption fences are mutated as a group; redundant individual fences are not claimed as separately detectable.",
+    "Stage drivers, polling coordinator, installed CLI and staff controls remain unfinished. No full QA, semantic, capacity or v1 completion claim."
+  ],
+  "sourceHashes": {
+    "openplan/src/lib/engagement/synthesis-preparation-journal.ts": "9216f1921533450179ccb08c57cf7ef66078545a472f484dbfc03905b9cd478a",
+    "openplan/src/lib/engagement/synthesis-preparation-worker.ts": "874e72021fd8cae09236b6504db7112cade74289e2857cd29963b184778b8dae",
+    "openplan/src/test/engagement-synthesis-preparation-journal.test.ts": "8206fd93d2385cde9210529795a8e923f9208a6dc9cb792784da6994d9b94f4b"
+  }
+}

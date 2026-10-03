@@ -335,3 +335,40 @@ The caller still needs a durable token/outcome journal, stage reconstruction and
 an installed worker command. Queue scans are not immutable snapshots; changed
 jobs may be visited on the next pass. These checks do not establish campaign
 capacity, semantic quality, browser usability, full QA or complete M9b/v1 status.
+
+
+## Durable preparation attempts
+
+Each private attempt directory now persists its claim token before contacting
+the database. It persists the original lease and exact outcome before finishing.
+Unknown replies retain those records. Restart reclaims the same token or resends
+the saved completion without repeating preparation. An acknowledged directory
+records a past receipt; it does not claim current queue status. Terminal records
+remain intact, and later work must use another directory. Existing private-file,
+atomic fsync/rename and operating-system lock helpers enforce local custody.
+Preparation receives a copy of the lease so it cannot change retained identity.
+
+All 36 journal tests and 189 combined preparation tests pass. Strict lint and
+whole-package TypeScript pass. A harmless mutation survives and 17 targeted
+faults fail. The first outcome-validation fault survives because completion
+already rejects the bad value. Adding an acknowledged-journal case tests the
+separate offline receipt path. A lease-copy fault initially throws the intended
+scope error; the test now asserts successful completion directly so mutation
+results distinguish assertion failures. The earlier results remain in
+[the check record](preparation-journal-checks.json). Interruption fences are
+checked as a group, without claiming each redundant fence is independent.
+
+Five native checks pass in separate child processes on the owned restore-target.
+A completion commits while its reply is deliberately lost; a fresh child resends
+the original outcome after cancellation without preparing again. Rereading the
+acknowledged record uses no network. A second child exits immediately after the
+database accepts its claim. Its operating-system lock releases, and a replacement
+child completes the same token and attempt1. Neither request creates execution
+authorization. Removing outcome persistence makes the actual lost-reply check
+fail. Exact source bytes are restored and all synthetic requests are cancelled.
+
+This tests process interruption, not hardware power loss or a host reboot. A
+superseded unconfirmed outcome remains retained even when replay is refused.
+Queue coordination, original stage drivers, the installed command and staff
+controls remain unfinished. Full QA, browser usability, campaign capacity,
+semantic quality and complete M9b/v1 acceptance remain separate requirements.

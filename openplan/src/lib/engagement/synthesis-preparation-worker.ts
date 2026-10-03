@@ -44,10 +44,9 @@ function sameAttempt(current: WorkerState, original: SynthesisPreparationLease) 
   }
 }
 
-/** Recover the supplied claim token. A superseded token never starts fresh work. */
-export async function claimSynthesisPreparation(service: Service, rawRequestId: string, rawToken: string, signal: AbortSignal) {
+/** Verify either a native claim reply or the original claim saved in a journal. */
+export function verifySynthesisPreparationClaim(raw: unknown, rawRequestId: string, rawToken: string) {
   const requestId = id.parse(rawRequestId), token = id.parse(rawToken);
-  const raw = await call(service, "claim_engagement_synthesis_preparation", { p_request: requestId, p_token: token }, signal);
   if (raw === null) return null;
   const state = workerState(raw, requestId), claim = state.claim;
   if (!claim || state.active === undefined || claim.token !== token || claim.request_id !== requestId ||
@@ -59,6 +58,17 @@ export async function claimSynthesisPreparation(service: Service, rawRequestId: 
     throw new Error("Preparation worker lease is not current");
   }
   return { ...state, leaseToken: token };
+}
+
+export function verifySynthesisPreparationOutcome(raw: unknown) {
+  return outcomeSchema.parse(raw);
+}
+
+/** Recover the supplied claim token. A superseded token never starts fresh work. */
+export async function claimSynthesisPreparation(service: Service, rawRequestId: string, rawToken: string, signal: AbortSignal) {
+  const requestId = id.parse(rawRequestId), token = id.parse(rawToken);
+  const raw = await call(service, "claim_engagement_synthesis_preparation", { p_request: requestId, p_token: token }, signal);
+  return verifySynthesisPreparationClaim(raw, requestId, token);
 }
 
 async function renew(service: Service, lease: SynthesisPreparationLease, signal: AbortSignal) {
