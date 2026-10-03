@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChartShareBar } from "@/components/ui/chart-share-bar";
 import { useRouter } from "next/navigation";
 import { Loader2, ScatterChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,8 +32,6 @@ const ERROR_MESSAGE: Record<string, string> = {
 
 function MetricRow({ metric }: { metric: RepresentativenessMetric }) {
   const max = Math.max(metric.baselinePct ?? 0, metric.respondentPct ?? 0, 1);
-  const baseW = ((metric.baselinePct ?? 0) / max) * 100;
-  const respW = ((metric.respondentPct ?? 0) / max) * 100;
   return (
     <div className="border-l-2 border-border/60 pl-3">
       <div className="flex items-baseline justify-between gap-3">
@@ -43,24 +42,20 @@ function MetricRow({ metric }: { metric: RepresentativenessMetric }) {
         </p>
       </div>
       <div className="mt-1.5 space-y-1">
-        <div className="flex items-center gap-2 text-xs">
-          <span className="w-24 shrink-0 text-muted-foreground">Area baseline</span>
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-slate-400/60" style={{ width: `${baseW}%` }} />
-          </div>
-          <span className="w-10 shrink-0 text-right tabular-nums text-muted-foreground">
-            {metric.baselinePct === null ? "—" : `${metric.baselinePct}%`}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="w-24 shrink-0 text-muted-foreground">Respondents</span>
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-sky-500/60" style={{ width: `${respW}%` }} />
-          </div>
-          <span className="w-10 shrink-0 text-right tabular-nums text-muted-foreground">
-            {metric.respondentPct === null ? "—" : `${metric.respondentPct}%`}
-          </span>
-        </div>
+        {/* An unknown share draws no bar and says "—"; an empty track alone would read as zero. */}
+        <ChartShareBar
+          layout="inline"
+          tone="reference"
+          label="Area baseline"
+          valueText={metric.baselinePct === null ? "—" : `${metric.baselinePct}%`}
+          fraction={metric.baselinePct === null ? null : metric.baselinePct / max}
+        />
+        <ChartShareBar
+          layout="inline"
+          label="Respondents"
+          valueText={metric.respondentPct === null ? "—" : `${metric.respondentPct}%`}
+          fraction={metric.respondentPct === null ? null : metric.respondentPct / max}
+        />
       </div>
     </div>
   );

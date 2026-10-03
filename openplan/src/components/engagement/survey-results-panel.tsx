@@ -1,4 +1,5 @@
 import { StatusBadge } from "@/components/ui/status-badge";
+import { ChartShareBar } from "@/components/ui/chart-share-bar";
 import { SURVEY_QUESTION_TYPES, SURVEY_SMALL_SAMPLE_N } from "@/lib/engagement/survey";
 import type { SurveyQuestionAggregation } from "@/lib/engagement/survey-responses";
 
@@ -8,17 +9,7 @@ import type { SurveyQuestionAggregation } from "@/lib/engagement/survey-response
 type Agg = { n: number; lowN: boolean };
 
 function Bar({ label, value, pct, muted }: { label: string; value: string; pct: number; muted?: boolean }) {
-  return (
-    <div className="space-y-1">
-      <div className="flex items-baseline justify-between gap-3 text-sm">
-        <span className={muted ? "text-muted-foreground" : "text-foreground"}>{label}</span>
-        <span className="tabular-nums text-muted-foreground">{value}</span>
-      </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div className="h-full rounded-full bg-sky-500/70" style={{ width: `${Math.max(0, Math.min(100, pct * 100)).toFixed(1)}%` }} />
-      </div>
-    </div>
-  );
+  return <ChartShareBar label={label} valueText={value} fraction={pct} tone={muted ? "reference" : "series"} />;
 }
 
 function pctText(pct: number): string {
