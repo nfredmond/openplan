@@ -407,3 +407,41 @@ These checks cover retained synthetic records and preparation custody. They do
 not assess language quality, browser usability, campaign capacity or host reboot
 recovery. Queue coordination, the installed preparation command and staff
 controls remain unfinished. Complete M9b and v1 requirements remain open.
+
+## Durable queue coordination
+
+The preparation coordinator saves its native target, queue cursor and pending
+attempt directory identities before starting work. Each pass retries up to 64
+saved attempts, then reads one native candidate page. The retry cursor rotates
+through all pending entries, including short final pages. Unknown replies retain
+the original directory and do not stop unrelated requests. A pending request
+cannot receive a second local directory. Confirmed terminal attempts leave the
+active index, while their child journals remain on disk. A wrapped queue cursor
+means only that discovery reached an empty page. It does not declare completion.
+
+All 30 coordinator tests and 259 combined preparation tests pass. Strict lint and
+whole-package TypeScript pass. A harmless control survives and 27 targeted faults
+fail. Two early faults cause the intended missing-file or duplicate-inventory
+errors, but do not reach assertion diagnostics. The tests now assert successful
+completion explicitly and detect both faults through those assertions. The
+earlier results are retained. The first test command used the wrong directory
+and found no test file; the corrected command and final suite pass.
+
+Five native checks pass in separate child processes. The database accepts one
+completion while its response is deliberately lost. The coordinator preserves
+that attempt and completes an unrelated request. A fresh process replays the
+exact saved outcome, preserves its token and retains the terminal child journal.
+A second child exits immediately after a native claim. Restart preserves both
+scheduled identities and completes the original claim token. All four requests
+prepare once, with no provider authorizations. Discovery in this journey is
+restricted to those new synthetic fixtures. Removing uncertain attempts from
+the active index makes the native check fail on its retained-entry count. Source
+bytes are restored and every new fixture is cancelled. See
+[the check record](preparation-coordinator-checks.json).
+
+The active index has a 16 MiB read/write bound and refuses further work if the
+bound is exceeded. It does not discard custody. This is not a campaign-capacity
+claim. Superseded outcomes stay unconfirmed, and pending custody does not imply
+that the current native request is still unfinished. This check covers process
+loss, not host reboot or power loss. The installed preparation command, service
+lifecycle, staff controls, full QA and complete M9b/v1 outcomes remain open.
