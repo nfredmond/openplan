@@ -372,3 +372,38 @@ superseded unconfirmed outcome remains retained even when replay is refused.
 Queue coordination, original stage drivers, the installed command and staff
 controls remain unfinished. Full QA, browser usability, campaign capacity,
 semantic quality and complete M9b/v1 acceptance remain separate requirements.
+
+## Original stage preparation
+
+The worker now reconstructs segment, context and thematic preparation from the
+retained request and source. The input reader checks the exact native lease
+before and after private immutable reads. It verifies requester, stage, source
+identity, original bytes and hashes. Each read has a ten-second deadline and
+rejects a late response. Context preparation uses the original parent's selected
+results. Thematic preparation includes every comment and survey answer, then
+seals the complete input inventory before staging its plan. All three drivers
+reuse existing retention commands and recheck the lease before returning a seal.
+This adds no schema, provider execution permission or staff impersonation.
+
+All 31 input tests, nine driver tests and 229 combined preparation tests pass.
+Strict lint and whole-package TypeScript pass. Two harmless controls survive;
+32 initial targeted faults and three additional faults fail. The first source
+hash fault survives because the test changes the hash without changing the
+source bytes. A new self-consistent substitution case detects the missing
+request-to-source hash comparison. The deadline test also checks that no later
+private read occurs. This detects removal of the post-response deadline check
+independently of the renewal checks. The initial TypeScript narrowing failure
+and mutation survivor remain part of the evidence.
+
+Five native journey checks pass against the owned restore-target. Newly created
+segment, context and thematic requests complete one journaled attempt each.
+Thematic choices reconstruct the original synthetic context histories with exact
+matching bytes. No new request receives provider authorization. Omitting the
+last thematic contribution fails the complete-source membership check before
+the input seal write. The source files are restored and every synthetic request
+is cancelled. See [the check record](preparation-driver-checks.json).
+
+These checks cover retained synthetic records and preparation custody. They do
+not assess language quality, browser usability, campaign capacity or host reboot
+recovery. Queue coordination, the installed preparation command and staff
+controls remain unfinished. Complete M9b and v1 requirements remain open.

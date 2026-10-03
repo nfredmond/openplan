@@ -71,7 +71,7 @@ export async function claimSynthesisPreparation(service: Service, rawRequestId: 
   return verifySynthesisPreparationClaim(raw, requestId, token);
 }
 
-async function renew(service: Service, lease: SynthesisPreparationLease, signal: AbortSignal) {
+export async function renewSynthesisPreparation(service: Service, lease: SynthesisPreparationLease, signal: AbortSignal) {
   const state = workerState(await call(service, "renew_engagement_synthesis_preparation", {
     p_request: lease.requestId, p_token: lease.leaseToken,
   }, signal), lease.requestId);
@@ -116,7 +116,7 @@ export async function runSynthesisPreparationAttempt(args: {
       try { await delay(30_000, undefined, { signal: timerSignal }); }
       catch { break; }
       if (stopTimer.signal.aborted || signal.aborted) break;
-      try { await renew(args.service, lease, signal); }
+      try { await renewSynthesisPreparation(args.service, lease, signal); }
       catch (error) { lost.abort(error); break; }
     }
   })();
