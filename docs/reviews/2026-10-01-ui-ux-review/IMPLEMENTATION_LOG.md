@@ -229,9 +229,24 @@ Checks: 746 tests in 48 files on one worker, then the plan, report and tab-guard
 | Report page: the History tab now names a failed read of the live stage-gate board or the project's crash evidence, in the notice above the tabs and with a mark on the tab. Before, History dropped the stage-gate row without saying why | Three report tests gained the History mark, plus one new crash-evidence test and a control. Wiring the flag to `false` fails the guard and two tests; dropping either lane fails its tests |
 | The notice "Reads that failed behind a tab" joined each tab to its list with an em dash. It now uses a colon ("Funding: funding awards"). The stage-gate sentence on the report page also loses its dash | `page-tabs-url-and-anchors.test.ts` pins "Funding: funding awards"; restoring the dash fails it |
 
+## Aerial index beside the map, October 2, 2026 (review finding M4, in part)
+
+Checks: Aerial, camera, map and copy tests (80 files) on one worker; lint on changed files; dead-code check; production build of this worktree with its type check, on port 3211; Chrome at 1440, 1100, 1024 and 390; the repo's map-reading and card-nesting audits.
+
+| Change | How it was checked |
+|---|---|
+| The Aerial index page panel ran from the rail to the layer controls, so the mission areas the shell map draws were under it. On screens 1024px and wider the panel is now a sidebar (`SurfaceBesideTheMap`, "THE PAGE AS A SIDEBAR BESIDE THE MAP" in `cartographic.css`) and the map fills the rest. Below 1024px nothing changes | Map-reading audit on `/aerial` at 1600 by 900: map visible with the page showing went from 10.4% (main, port 3000) to 48.1%; reading mode unchanged at 70.4%. A test fails if the page stops setting the mode |
+| The two-card header with four stat tiles became the shared page header with one row of four counts; the six-column mission table became a list that fits the sidebar. Failed reads still print as "count unavailable", a dash per count, or "Evidence packages: unknown" | Existing register tests pass with two wording updates. Card-nesting audit: `/aerial` nesting fell from 3 to 0; budget lowered in `fixtures/card-nesting-budget.json` |
+| Each mission with a drawn area has "Show on map". It switches the mission-areas layer on and moves the map to the area. On a screen narrower than 1024px it also opens "Read the map", because the page covers the map there. A mission without an area says "No area drawn yet" | New `aerial-index-sends-the-map.test.tsx` and two register tests, including a check that the page selects `aoi_geojson`. Seven targeted breaks each fail one test. Chrome: at 1440 and 1100 the area lands in the open map; at 390 reading mode opens on it |
+| A map move now pads for the sidebar on the left and the layer controls on the right (`applyFitInstruction` takes insets; with none, its calls are unchanged) | Tests for both insets; dropping either fails a test. Chrome at 1440: the area sits between the sidebar and the layer panel |
+| From 1024 to 1100px the header's appearance buttons sat on top of the "Read the map" card. This was also true on main. In sidebar mode the map controls now start below the header | Chrome at 1100: no overlap. Every control in the sidebar is the top element at its centre at 1440, 1100, 1024 and 390; the same check with a covering sheet reports all 11 covered |
+| "Aerial Ops" became "Aerial Imagery" in the mission page's back link and page titles, matching the rail (review finding N3) | Text change |
+
+Not done here: the mission page still boxes its map at a fixed height. That is the other half of M4.
+
 ## What is next
 
-1. Aerial onto the map-first frame.
+1. Aerial mission page: the map as the page, not a box (rest of M4).
 2. Number formatting (review finding M10) and charts (M9).
 3. Copy pass. This waits on Nathaniel's vocabulary answers (decision D6).
 4. Keyboard and screen-reader walk.

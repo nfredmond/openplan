@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PlaneTakeoff } from "lucide-react";
 
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
-import { Worksurface, WorksurfaceSection } from "@/components/ui/worksurface";
-import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
+import { PageHeader } from "@/components/ui/page-header";
+import { SurfaceBesideTheMap } from "@/components/cartographic/surface-beside-the-map";
+import { AerialMissionShowOnMap } from "@/components/aerial/aerial-mission-show-on-map";
+import { fitInstructionFromGeometry, type FitInstruction } from "@/lib/cartographic/geometry-bbox";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import {
@@ -40,7 +41,7 @@ export const metadata = moduleMetadata("Aerial Imagery");
  * scanning the Project column. The board could not pass the id because this page
  * declared no `searchParams` to receive it.
  *
- * Optional on purpose: opening Aerial Ops from the sidebar still shows the whole
+ * Optional on purpose: opening Aerial Imagery from the sidebar still shows the whole
  * register, and says that is what it is showing.
  */
 type AerialIndexSearchParams = Promise<{ projectId?: string | string[] }>;
@@ -64,6 +65,8 @@ type AerialMissionRow = {
   package_count: number;
   ready_package_count: number;
   package_posture: AerialMissionPackagePosture;
+  /** Where "Show on map" sends the camera; null when no usable area is drawn. */
+  map_focus: FitInstruction | null;
 };
 
 export default async function AerialIndexPage({
@@ -85,9 +88,9 @@ export default async function AerialIndexPage({
   if (!membership?.workspace_id) {
     return (
       <WorkspaceMembershipRequired
-        moduleLabel="Aerial operations"
-        title="Aerial Ops needs a workspace"
-        description="Missions and evidence packages belong to a workspace. You are signed in, but this account is not in one yet — join a workspace or create one before planning aerial operations."
+        moduleLabel="Aerial Imagery"
+        title="Aerial Imagery needs a workspace"
+        description="Missions and evidence packages belong to a workspace. You are signed in, but this account is not in one yet. Join a workspace or create one before planning a mission."
       />
     );
   }
@@ -166,7 +169,7 @@ export default async function AerialIndexPage({
   let missionsQuery = supabase
     .from("aerial_missions")
     .select(
-      "id, title, status, mission_type, geography_label, collected_at, created_at, project_id, projects:projects!aerial_missions_project_id_fkey(name)"
+      "id, title, status, mission_type, geography_label, collected_at, created_at, project_id, aoi_geojson, projects:projects!aerial_missions_project_id_fkey(name)"
     )
     .eq("workspace_id", workspaceId);
 
@@ -221,6 +224,7 @@ export default async function AerialIndexPage({
       package_count: packagePosture.packageCount,
       ready_package_count: packagePosture.readyPackageCount,
       package_posture: packagePosture,
+      map_focus: fitInstructionFromGeometry(row.aoi_geojson),
     };
   });
 
@@ -254,75 +258,106 @@ export default async function AerialIndexPage({
         ? "This page was opened for a project that is not in this workspace, so the register below was not narrowed to it. Every mission in this workspace is listed."
         : null;
 
-  const columns: Array<DataTableColumn<AerialMissionRow>> = [
-    {
-      id: "title",
-      header: "Mission",
-      cell: (row) => (
-        <Link
-          href={withPlanningContext(
-            `/aerial/missions/${row.id}`,
-            planningContext.status === "active" ? planningContext.project.id : null
-          )}
-          className="text-foreground hover:underline"
-        >
-          {row.title}
-        </Link>
-      ),
-    },
-    {
-      id: "project",
-      header: "Project",
-      cell: (row) =>
-        row.project_id && row.project_name ? (
-          <Link
-            href={`/projects/${row.project_id}`}
-            className="text-sky-400 hover:underline"
-          >
-            {row.project_name}
-          </Link>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        ),
-    },
-    {
-      id: "type",
-      header: "Type",
-      cell: (row) => formatAerialMissionTypeLabel(row.mission_type),
-    },
-    {
-      id: "status",
-      header: "Status",
-      cell: (row) => (
-        <StatusBadge tone={aerialMissionStatusTone(row.status)}>
-          {formatAerialMissionStatusLabel(row.status)}
-        </StatusBadge>
-      ),
-    },
-    {
-      id: "geography",
-      header: "Geography",
-      cell: (row) => row.geography_label ?? <span className="text-muted-foreground">—</span>,
-    },
-    {
-      id: "packages",
-      header: "Packages",
-      align: "right",
-      cell: (row) =>
-        // "0" here would be a claim that this mission carries no evidence
-        // package, which a failed package read cannot support.
-        packagesUnreadable ? (
-          <span className="text-muted-foreground">unknown</span>
-        ) : row.package_count === 0 ? (
-          <span className="text-muted-foreground">0</span>
-        ) : (
-          <StatusBadge tone={row.package_posture.tone}>{row.package_posture.label}</StatusBadge>
-        ),
-    },
+  const missionHref = (id: string) =>
+    withPlanningContext(
+      `/aerial/missions/${id}`,
+      planningContext.status === "active" ? planningContext.project.id : null
+    );
+
+  const missionList =
+    missions.length === 0 ? (
+      // Three different absences, three different sentences. There used to be
+      // one, the workspace-wide "no missions recorded yet", and it was printed
+      // for a failed read and a narrowed register too.
+      missionsUnreadable ? (
+        <EmptyState
+          title="Missions could not be read"
+          description="The mission register did not load, so this list is unavailable rather than empty. An empty list here is not evidence that no missions exist."
+        />
+      ) : focusLabel ? (
+        <EmptyState
+          title={`No aerial missions are linked to ${focusLabel}`}
+          description="This register was narrowed to one project; other missions may exist in this workspace. Create a mission for this project, or clear the filter to see the whole register."
+        />
+      ) : (
+        <EmptyState
+          title="No aerial missions recorded yet"
+          description="Start the first one below. It will appear here with its evidence packages and its area on the map."
+        />
+      )
+    ) : (
+      <ul className="divide-y divide-border/60" aria-label="Missions">
+        {missions.map((row) => (
+          <li key={row.id} className="space-y-1.5 py-3" data-testid="aerial-mission-row">
+            <div className="flex items-start justify-between gap-3">
+              <Link href={missionHref(row.id)} className="min-w-0 font-medium text-foreground hover:underline">
+                {row.title}
+              </Link>
+              <StatusBadge tone={aerialMissionStatusTone(row.status)}>
+                {formatAerialMissionStatusLabel(row.status)}
+              </StatusBadge>
+            </div>
+            <p className="text-xs leading-5 text-muted-foreground">
+              {formatAerialMissionTypeLabel(row.mission_type)}
+              {row.geography_label ? ` · ${row.geography_label}` : null}
+              {" · "}
+              {row.project_id && row.project_name ? (
+                <Link href={`/projects/${row.project_id}`} className="underline underline-offset-2 hover:text-foreground">
+                  {row.project_name}
+                </Link>
+              ) : (
+                "No project linked"
+              )}
+            </p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+              {/* "0" would claim this mission carries no evidence package, which a failed package read cannot support. */}
+              {packagesUnreadable ? (
+                <span className="text-muted-foreground">Evidence packages: unknown</span>
+              ) : row.package_count === 0 ? (
+                <span className="text-muted-foreground">No evidence packages yet</span>
+              ) : (
+                <StatusBadge tone={row.package_posture.tone}>{row.package_posture.label}</StatusBadge>
+              )}
+              {row.map_focus ? (
+                <AerialMissionShowOnMap title={row.title} focus={row.map_focus} />
+              ) : (
+                <span className="text-muted-foreground">No area drawn yet</span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
+
+  const stats: Array<{ label: string; value: string }> = [
+    { label: "Missions", value: missionCount(totalMissions) },
+    { label: "Active", value: missionCount(activeMissions) },
+    { label: "Complete", value: missionCount(completeMissions) },
+    { label: "Packages ready", value: packageCount },
   ];
 
-  const header = (
-    <div className="flex flex-col gap-4">
+  return (
+    <section className="module-page space-y-6" aria-label="Aerial Imagery">
+      <SurfaceBesideTheMap />
+      <PageHeader
+        title="Aerial Imagery"
+        description="Drone missions and the imagery they brought back. Each mission's area is drawn on the map."
+        actions={
+          <a href="#aerial-mission-launcher" className="module-inline-action">
+            New mission
+          </a>
+        }
+      >
+        <dl className="grid grid-cols-4 gap-3">
+          {stats.map((stat) => (
+            <div key={stat.label} className="min-w-0">
+              <dt className="text-xs text-muted-foreground">{stat.label}</dt>
+              <dd className="text-xl font-semibold tabular-nums text-foreground">{stat.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </PageHeader>
+
       {reads.any ? (
         <StateBlock
           tone="danger"
@@ -332,139 +367,53 @@ export default async function AerialIndexPage({
       ) : null}
 
       {projectFilterNotice ? (
-        <StateBlock
-          tone="warning"
-          title="This register was not narrowed to that project"
-          description={projectFilterNotice}
-        />
+        <StateBlock tone="warning" title="This register was not narrowed to that project" description={projectFilterNotice} />
       ) : null}
 
-      <div className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <PlaneTakeoff className="h-3.5 w-3.5" />
-            Drone missions & imagery
-          </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">Aerial Imagery</h1>
-            <p className="module-intro-description">
-              Plan flights, track what came back from them, and attach the imagery that is ready to verify to the project it belongs to.
-            </p>
-            {focusLabel ? (
-              // Named, and reversible in one click. Every count and every row
-              // below is this project's, so the page has to say so somewhere the
-              // reader cannot miss — otherwise the numbers read as the
-              // workspace's.
-              <p className="module-intro-description">
-                Showing only missions linked to {focusLabel}.{" "}
-                <Link href="/aerial" className="underline underline-offset-2 hover:text-foreground">
-                  Show every mission in this workspace
-                </Link>
-                .
-              </p>
-            ) : null}
-          </div>
-          <div className="module-summary-grid cols-4">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Missions</p>
-              <p className="module-summary-value">{missionCount(totalMissions)}</p>
-              <p className="module-summary-detail">
-                {focusLabel
-                  ? `Planned, active, and completed missions linked to ${focusLabel}.`
-                  : "Planned, active, and completed missions in this workspace."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Active</p>
-              <p className="module-summary-value">{missionCount(activeMissions)}</p>
-              <p className="module-summary-detail">Missions currently flying or in capture.</p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Complete</p>
-              <p className="module-summary-value">{missionCount(completeMissions)}</p>
-              <p className="module-summary-detail">Missions whose collection phase is done.</p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Ready packages</p>
-              <p className="module-summary-value">{packageCount}</p>
-              <p className="module-summary-detail">Evidence packages marked ready or shared.</p>
-            </div>
-          </div>
-        </article>
-      </div>
-    </div>
-  );
+      <PlanningContextStrip context={planningContext} />
 
-  return (
-    <Worksurface
-      ariaLabel="Aerial operations"
-      header={header}
-      worksurface={
-        <>
-        <PlanningContextStrip context={planningContext} className="mb-4" />
-        <WorksurfaceSection
-          id="aerial-missions-list"
-          label="Missions"
-          title="Mission register"
-          description={
-            focusLabel
-              ? `Chronological log of the aerial missions linked to ${focusLabel}. Open a mission to see evidence packages and verification state.`
-              : "Chronological log of aerial missions. Open a mission to see evidence packages and verification state."
-          }
-          trailing={
-            <StatusBadge tone="neutral">
-              {missionsUnreadable ? "count unavailable" : `${totalMissions} total`}
-            </StatusBadge>
-          }
-        >
-          <DataTable<AerialMissionRow>
-            columns={columns}
-            rows={missions}
-            getRowId={(row) => row.id}
-            density="compact"
-            emptyState={
-              // Three different absences, three different sentences. There used
-              // to be one — the workspace-wide "no missions recorded yet" — and
-              // it was printed for a failed read and a narrowed register too.
-              missionsUnreadable ? (
-                <EmptyState
-                  title="Missions could not be read"
-                  description="The mission register did not load, so this list is unavailable rather than empty. An empty list here is not evidence that no missions exist."
-                />
-              ) : focusLabel ? (
-                <EmptyState
-                  title={`No aerial missions are linked to ${focusLabel}`}
-                  description="This register was narrowed to one project; other missions may exist in this workspace. Create a mission for this project, or clear the filter to see the whole register."
-                />
-              ) : (
-                <EmptyState
-                  title="No aerial missions recorded yet"
-                  description="Log the first one in the Start a mission section below; it will appear here with its packages and verification state."
-                />
-              )
-            }
-          />
-        </WorksurfaceSection>
+      <section id="aerial-missions-list" aria-labelledby="aerial-missions-heading" className="space-y-2">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 id="aerial-missions-heading" className="text-base font-semibold text-foreground">
+            Missions
+          </h2>
+          <span className="text-xs text-muted-foreground">
+            {missionsUnreadable ? "count unavailable" : `${totalMissions} total`}
+          </span>
+        </div>
+        {focusLabel ? (
+          // Named, and reversible in one click. Every count and every row here
+          // is this project's, so the page has to say so where the reader
+          // cannot miss it; otherwise the numbers read as the workspace's.
+          <p className="text-sm text-muted-foreground">
+            Showing only missions linked to {focusLabel}.{" "}
+            <Link href="/aerial" className="underline underline-offset-2 hover:text-foreground">
+              Show every mission in this workspace
+            </Link>
+            .
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground">Every mission, newest first.</p>
+        )}
+        {missionList}
+      </section>
 
-        <WorksurfaceSection
-          id="aerial-mission-launcher"
-          label="New mission"
-          title="Start a mission"
-          description={
-            focusLabel
-              ? `Log a new flight. The form starts on ${focusLabel} because this page was opened for it; any project in this workspace can be chosen instead.`
-              : "Log a new flight. Every mission is linked to a project — choose which one this flight is for."
-          }
-        >
-          <AerialMissionLauncher
-            projects={launcherProjects}
-            projectsUnreadable={projectListUnreadable}
-            projectListTruncatedAt={launcherProjects.length >= PROJECT_PICKER_LIMIT ? PROJECT_PICKER_LIMIT : null}
-            initialProjectId={focusProject?.id ?? null}
-          />
-        </WorksurfaceSection>
-        </>
-      }
-    />
+      <section id="aerial-mission-launcher" aria-labelledby="aerial-launcher-heading" className="scroll-mt-6 space-y-2">
+        <h2 id="aerial-launcher-heading" className="text-base font-semibold text-foreground">
+          Start a mission
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          {focusLabel
+            ? `The form starts on ${focusLabel} because this page was opened for it; any project in this workspace can be chosen instead.`
+            : "Every mission belongs to a project. Choose which one this flight is for."}
+        </p>
+        <AerialMissionLauncher
+          projects={launcherProjects}
+          projectsUnreadable={projectListUnreadable}
+          projectListTruncatedAt={launcherProjects.length >= PROJECT_PICKER_LIMIT ? PROJECT_PICKER_LIMIT : null}
+          initialProjectId={focusProject?.id ?? null}
+        />
+      </section>
+    </section>
   );
 }

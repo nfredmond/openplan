@@ -146,7 +146,7 @@ export default async function AerialMissionDetailPage({ params, searchParams }: 
           <Button asChild variant="outline">
             <Link href="/aerial">
               <ArrowLeft className="h-4 w-4" />
-              Back to Aerial Ops
+              Back to Aerial Imagery
             </Link>
           </Button>
         </div>
@@ -332,7 +332,7 @@ export default async function AerialMissionDetailPage({ params, searchParams }: 
         className="inline-flex items-center gap-1.5 text-label font-medium text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-3 w-3" />
-        Back to Aerial Ops
+        Back to Aerial Imagery
       </Link>
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-label uppercase tracking-[0.12em] text-muted-foreground">

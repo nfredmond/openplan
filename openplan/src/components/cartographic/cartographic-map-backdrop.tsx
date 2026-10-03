@@ -50,6 +50,7 @@ import {
 } from "@/lib/cartographic/workspace-gis-map-layers";
 import { useWorkspaceGisMapBinding } from "./use-workspace-gis-map-binding";
 import { useAerialOrthoMapBinding } from "./use-aerial-ortho-map-binding";
+import { surfaceBesideTheMapInsets } from "./surface-beside-the-map";
 import {
   describeMapLayerCoverage,
   describeMapLayerFailure,
@@ -1774,7 +1775,7 @@ export function CartographicMapBackdrop({
       return;
     }
     didInitialFitRef.current = true;
-    applyFitInstruction(map, mapFocus);
+    applyFitInstruction(map, mapFocus, surfaceBesideTheMapInsets());
     clearMapFocus();
   }, [mapFocus, ready, suppressed, clearMapFocus]);
 
