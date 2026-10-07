@@ -1,0 +1,168 @@
+
+> openplan@0.67.0 test
+> vitest run --maxWorkers=1 src/test/font-preload-source.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/font-preload-source.test.ts (1 test | 1 failed) 8ms
+     × uses one Space Grotesk next/font variable for both display and body text 7ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  23:57:53
+   Duration  551ms (transform 27ms, setup 55ms, import 8ms, tests 8ms, environment 332ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/font-preload-source.test.ts > font preload source wiring > uses one Space Grotesk next/font variable for both display and body text
+AssertionError: expected 'import type { Metadata } from "next";…' to contain 'variable: "--font-display"'
+
+- Expected
++ Received
+
+- variable: "--font-display"
++ import type { Metadata } from "next";
++ import localFont from "next/font/local";
++ import { ThemeProvider } from "@/components/theme-provider";
++ import { DEFAULT_PALETTE, PALETTES } from "@/lib/theme/palettes";
++ import { OPENPLAN_OG_IMAGE_PATH, OPENPLAN_SITE_NAME, resolveSiteOrigin } from "@/lib/public-page-metadata";
++ import "./globals.css";
++
++ const spaceGrotesk = localFont({
++   src: "./fonts/spacegrotesk/SpaceGrotesk[wght].ttf",
++   weight: "400 700",
++   style: "normal",
++   display: "swap",
++   variable: "--font-body",
++ });
++
++ /**
++  * The valid palette ids, inlined into the pre-paint script. Derived from the
++  * registry rather than restated, so a palette added to `PALETTES` cannot be
++  * silently rejected by the script that runs before React exists.
++  */
++ const PALETTE_IDS = PALETTES.map((palette) => palette.id);
++
++ const jetBrainsMono = localFont({
++   src: "./fonts/jetbrainsmono/JetBrainsMono[wght].ttf",
++   weight: "400 500",
++   style: "normal",
++   display: "swap",
++   variable: "--font-mono-sys",
++ });
++
++ const siteOrigin = resolveSiteOrigin();
++ const rootCanonicalUrl = siteOrigin?.toString() ?? null;
++ const rootSocialImageUrl = siteOrigin ? new URL(OPENPLAN_OG_IMAGE_PATH, siteOrigin).toString() : null;
++
++ export const metadata: Metadata = {
++   metadataBase: siteOrigin,
++   applicationName: OPENPLAN_SITE_NAME,
++   title: {
++     default: "OpenPlan | Free, open-source planning software",
++     template: "%s · OpenPlan",
++   },
++   description:
++     "Free, open-source Apache-2.0 planning software for agencies, tribes, RTPAs, counties, cities, non-profits, and consultants.",
++   creator: OPENPLAN_SITE_NAME,
++   publisher: OPENPLAN_SITE_NAME,
++   category: "civic planning software",
++   ...(rootCanonicalUrl ? { alternates: { canonical: rootCanonicalUrl } } : {}),
++   openGraph: {
++     title: "OpenPlan | Free, open-source planning software",
++     description:
++       "Inspectable planning software for maps, engagement, project records, and delivery packets. Every number carries its provenance.",
++     ...(rootCanonicalUrl ? { url: rootCanonicalUrl } : {}),
++     siteName: OPENPLAN_SITE_NAME,
++     type: "website",
++     locale: "en_US",
++     ...(rootSocialImageUrl
++       ? {
++           images: [
++             {
++               url: rootSocialImageUrl,
++               width: 1200,
++               height: 630,
++               alt: "OpenPlan: free, open-source planning software for agencies, tribes, counties, cities, and consultants.",
++             },
++           ],
++         }
++       : {}),
++   },
++   twitter: {
++     card: "summary_large_image",
++     title: "OpenPlan | Free, open-source planning software",
++     description:
++       "An Apache-2.0 planning workbench for agencies, tribes, counties, cities, non-profits, and consultants. Free, with no paid tier.",
++     ...(rootSocialImageUrl ? { images: [rootSocialImageUrl] } : {}),
++   },
++   robots: {
++     index: true,
++     follow: true,
++   },
++ };
++
++ export default function RootLayout({
++   children,
++ }: Readonly<{
++   children: React.ReactNode;
++ }>) {
++   return (
++     <html
++       lang="en"
++       className={`${spaceGrotesk.variable} ${jetBrainsMono.variable} dark`}
++       data-palette={DEFAULT_PALETTE}
++       data-scroll-behavior="smooth"
++       suppressHydrationWarning
++     >
++       <head>
++         {/*
++           APPLY THE STORED THEME BEFORE FIRST PAINT.
++
++           The server cannot know the reader's choice — it is in localStorage —
++           so the markup ships the defaults and the provider corrects them in an
++           effect, which runs AFTER the browser has already painted. That was
++           survivable while the only mismatch was dark-vs-light on a page that
++           renders in milliseconds. With palettes it is not: every seed token
++           changes, so the whole product visibly repaints on each navigation for
++           anyone not on the defaults.
++
++           This runs synchronously in <head>, before <body> exists, so the first
++           paint is already correct. It is deliberately tiny and dependency-free:
++           it must not throw if storage is blocked, and it must not wait on the
++           React bundle.
++         */}
++         <script
++           dangerouslySetInnerHTML={{
++             __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem("theme");if(t==="light"||t==="dark"){d.classList.remove("light","dark");d.classList.add(t);d.style.colorScheme=t;}var p=localStorage.getItem("theme-palette");if(p&&${JSON.stringify(
++               PALETTE_IDS
++             )}.indexOf(p)>-1){d.setAttribute("data-palette",p);}}catch(e){}})();`,
++           }}
++         />
++       </head>
++       <body className="antialiased">
++         {/*
++           First focusable element on every page. Each route group's layout owns
++           the `#main-content` landmark this points at.
++         */}
++         <a href="#main-content" className="skip-link">
++           Skip to main content
++         </a>
++         <ThemeProvider defaultTheme="dark">{children}</ThemeProvider>
++       </body>
++     </html>
++   );
++ }
++
+
+ ❯ src/test/font-preload-source.test.ts:18:26
+     16|     expect(layoutSource).toContain('from "next/font/local"');
+     17|     expect(layoutSource).not.toContain('next/font/google');
+     18|     expect(layoutSource).toContain('variable: "--font-display"');
+       |                          ^
+     19|     expect(layoutSource).not.toContain('variable: "--font-body"');
+     20|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

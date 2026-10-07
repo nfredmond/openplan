@@ -11,7 +11,10 @@ function rootTokenBlock(source: string) {
 
 describe("font preload source wiring", () => {
   it("uses one Space Grotesk next/font variable for both display and body text", () => {
-    expect(layoutSource.match(/Space_Grotesk\(/g) ?? []).toHaveLength(1);
+    expect(layoutSource.match(/const\s+spaceGrotesk\s*=\s*localFont\(/g) ?? []).toHaveLength(1);
+    expect(layoutSource.match(/const\s+jetBrainsMono\s*=\s*localFont\(/g) ?? []).toHaveLength(1);
+    expect(layoutSource).toContain('from "next/font/local"');
+    expect(layoutSource).not.toContain('next/font/google');
     expect(layoutSource).toContain('variable: "--font-display"');
     expect(layoutSource).not.toContain('variable: "--font-body"');
 
