@@ -1,0 +1,17 @@
+{
+  "tool": "LibreOffice Calc via UNO, own profile",
+  "originalBcr": 1.5940526107739261,
+  "changedRatePct": 4,
+  "changedBcr": 2.1038870591728815,
+  "changedEpoch": 2024,
+  "changedNpv": 2041211.278056364,
+  "elementMatchesSummary": true,
+  "fullCalcOnLoad": true,
+  "checksums": "all match",
+  "packageSha256": "40af27a247c8af557653a715848db4d409be473e1d13aed2f999101240bf8e25",
+  "limits": [
+    "Synthetic fixture",
+    "Not Microsoft Excel",
+    "Not Cal-B/C parity"
+  ]
+}

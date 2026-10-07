@@ -20,6 +20,19 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No changes recorded after the 0.67.0 candidate below.
+
+## 0.67.0 (2026-10-07)
+
+Grants gains a project-bound benefit-cost workbench with annual Build/No Build
+inputs, current program methods, source and data-gap tracking, quantity helpers,
+separate saved model comparisons, element results, sensitivity, immutable
+versions and recoverable saves. The analysis package includes a formula workbook,
+annual data, full JSON and a PDF/HTML method report. Apply
+`20261016000001_bca_workbench_versions.sql` after the earlier migrations.
+This is supporting analysis, not native Cal-B/C parity or agency acceptance.
+See the [workbench guide](docs/ops/BCA_WORKBENCH.md) for use and limits.
+
 Internal staff-generation work adds exact request HTTP recovery and an explicit
 preparation queue with stage identity, worker leases, interruption recovery and
 original completion seals. Apply

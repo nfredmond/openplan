@@ -1,0 +1,144 @@
+{
+  "cases": [
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedTest": null,
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "discount-epoch",
+      "outcome": "failed",
+      "expectedTest": "matches an independent annuity",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "missing-quantity",
+      "outcome": "failed",
+      "expectedTest": "does not turn absent inputs",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "dollar-override",
+      "outcome": "failed",
+      "expectedTest": "rejects dollar multipliers",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "residual-guard",
+      "outcome": "failed",
+      "expectedTest": "adds final-year residual",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "annual-override",
+      "outcome": "failed",
+      "expectedTest": "preserves explicit annual overrides",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "model-warning",
+      "outcome": "failed",
+      "expectedTest": "keeps assumptions, model limits",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "federal-horizon",
+      "outcome": "failed",
+      "expectedTest": "flags a federal horizon",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "element-allocation",
+      "outcome": "failed",
+      "expectedTest": "does not manufacture ratios",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "parameter-unit",
+      "outcome": "failed",
+      "expectedTest": "refuses a mismatched quantity unit",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "valuation-growth",
+      "outcome": "failed",
+      "expectedTest": "accepts operator person-hours",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "travel-minute-conversion",
+      "outcome": "failed",
+      "expectedTest": "calculates rule-of-half",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "cmf-effect",
+      "outcome": "failed",
+      "expectedTest": "applies a CMF",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "hazard-probability",
+      "outcome": "failed",
+      "expectedTest": "calculates disjoint hazard",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "safety-person-unit",
+      "outcome": "failed",
+      "expectedTest": "preserves a person injury count",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "truck-published-unit",
+      "outcome": "failed",
+      "expectedTest": "accepts operator person-hours",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "replay-author",
+      "outcome": "failed",
+      "expectedTest": "recovers only the same author",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "replay-content",
+      "outcome": "failed",
+      "expectedTest": "recovers only the same author",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "cursor-validation",
+      "outcome": "survived",
+      "expectedTest": "scopes and pages history",
+      "expectedOutcomeObserved": false
+    },
+    {
+      "case": "canonical-order",
+      "outcome": "failed",
+      "expectedTest": "canonicalizes key order",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "model-unit",
+      "outcome": "failed",
+      "expectedTest": "imports one method",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "workbook-rate-link",
+      "outcome": "failed",
+      "expectedTest": "retains formulas, linked discount controls",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "html-escape",
+      "outcome": "survived",
+      "expectedTest": "escapes report markup",
+      "expectedOutcomeObserved": false
+    }
+  ],
+  "restored": true,
+  "limits": "Targeted numerical and route mutations, not exhaustive proof; native RLS mutations recorded separately."
+}

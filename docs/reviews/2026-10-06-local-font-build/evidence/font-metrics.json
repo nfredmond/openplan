@@ -1,0 +1,18 @@
+[
+  {
+    "family": "Space Grotesk Light",
+    "oldSubsetCodepoints": 634,
+    "newCodepoints": 735,
+    "missingCodepoints": [],
+    "changedDefaultAdvanceWidths": [],
+    "version": "Version 2.000"
+  },
+  {
+    "family": "JetBrains Mono",
+    "oldSubsetCodepoints": 663,
+    "newCodepoints": 976,
+    "missingCodepoints": [],
+    "changedDefaultAdvanceWidths": [],
+    "version": "Version 2.211"
+  }
+]
