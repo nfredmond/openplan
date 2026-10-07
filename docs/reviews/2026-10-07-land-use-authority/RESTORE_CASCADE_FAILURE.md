@@ -1,5 +1,8 @@
 # Restored-schema cascade failure
 
+Follow-up: [finalized GIS cascade guards](GIS_RESTORE_CASCADE.md) records the
+remaining failure found by the complete restore drill on `418ba38f`.
+
 October 7, 2026. PR #126 commit `67b052123750d6fcf91cb9539dccefcdfbdd3b13`
 passes seven GitHub checks, including live RLS. Its full archive restore drill
 fails two native land-use cases. This is a merge blocker, not a reason to remove

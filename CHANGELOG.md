@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Restored workspace deletion now permits finalized GIS versions and features to
+follow their deleted parent. Direct edits to finalized records remain refused,
+including moving a feature out of a finalized version. Migration
+`20261016000011_workspace_gis_cascade_guards.sql` removes the cascade-order
+dependency without changing foreign keys or row-level security.
+
 Land-use plans retain their own boundaries, responsible bodies and applicability
 assessment. Staff can save incomplete browser drafts, retry an uncertain save
 without creating a second change, and review older drafts against current facts.
