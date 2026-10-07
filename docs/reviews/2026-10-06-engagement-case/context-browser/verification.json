@@ -1,0 +1,30 @@
+{
+  "recordedAt": "2026-10-07T07:59:20.764806+00:00",
+  "applicationCommit": "8b707f2fc61c4e47d9f0bd4f790a4f0fc0ee64b0",
+  "port": 3483,
+  "nextPid": 2248759,
+  "verifiedCwd": "/home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan",
+  "browser": "T3 tab_a; available true, visible false",
+  "firstSaveStatus": 201,
+  "explicitReplayStatus": 200,
+  "identicalFields": [
+    "requestId",
+    "requestBodySha256",
+    "requestIntentSha256",
+    "contextSha256",
+    "savedStateSha256"
+  ],
+  "pendingCountBeforeReload": 1,
+  "pendingCountAfterVerifiedReplay": 0,
+  "freshMobileChildHistory": true,
+  "collectionEndedBeforeEdits": true,
+  "limitations": [
+    "Synthetic software fixture, not public input or semantic validation.",
+    "DOM activation and DOM geometry only; image snapshots failed at desktop and mobile.",
+    "No keyboard, pointer, console, visual, artifact or human acceptance established.",
+    "Initial resized hidden document retained a 240px surface offset; fresh 390px reload measured left 0 and width 390. Resize transition remains unassessed.",
+    "Read-only preliminary clicks inside closed history disclosure were discarded. Actual save/retry journey used exposed controls after opening the disclosure.",
+    "No provider execution permission was granted; preparation was not queued.",
+    "Capture after reload was installed before explicit retry but after opening the contribution; it does not independently prove absence of every intervening network request."
+  ]
+}

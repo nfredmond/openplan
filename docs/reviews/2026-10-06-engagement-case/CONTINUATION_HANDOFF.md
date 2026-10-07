@@ -146,3 +146,47 @@ across 12 suites, the full TypeScript check and changed-source ESLint. A harmles
 comment control passes, and 10 targeted faults fail for the named recovery,
 receipt, stage, page or account boundary. Source bytes are restored after each
 fault. Production build and identified-build browser evidence follow separately.
+
+## Context recovery in the owned browser build
+
+The production build passes from unchanged commit `8b707f2f`, with Google Fonts
+blocked and zero requests to those endpoints. The owned server on port 3483
+reports that commit. Its Next process runs from this worktree's application
+directory. The [browser record](context-browser/verification.json) preserves
+the build, request receipts, DOM measurements and limits.
+
+The desktop journey starts at the application root and follows Overview,
+Engagement, the synthetic campaign, Analysis and the retained source. Staff opens
+the saved-request disclosure, the completed parent, saved results and contribution
+choices. Preliminary read-only activations within a closed disclosure are
+discarded; the actual save and retry use exposed controls.
+
+The browser saves context request `daa0abcc-1942-4949-9afd-c7a30c4fed93` for the
+long multilingual synthetic contribution. A fetch wrapper captures the actual
+201 response, then withholds that acknowledgement. The UI retains the exact
+command and displays its uncertain status. After a real page reload and return
+through the exposed controls, the same unconfirmed request remains available.
+An explicit retry returns 200 with `replayed: true`. The request identity, exact
+body hash, provider-intent hash, context hash and normalized saved-state hash all
+match the first response. Only then does the pending browser copy disappear.
+The form opens the existing context preparation controls. No execution permission
+is granted and no preparation is queued.
+
+A fresh 390px page load finds the saved child in request history. Its preparation
+panel measures 326px wide, with the inspected buttons inside the viewport. The
+earlier resize of the hidden desktop document retained a 240px surface offset;
+the fresh mobile load measures a 390px surface with no offset. Both observations
+remain in the record. This does not establish correct resize animation.
+
+T3 still rejects image snapshots at desktop and mobile. These results establish
+DOM-driven request recovery and saved history, not visual, pointer, keyboard,
+console, human or semantic acceptance. Capture after reload starts before the
+explicit retry but after opening the contribution, so it does not independently
+prove absence of every intervening network request. The server is stopped after
+collection and before these documentation edits.
+
+The refreshed integration audit uses main `3e54ecc3`. It accounts for 52 local
+branches and 41 worktrees. Every local branch matches its remote. Four engagement
+branches remain outside main; the unrelated canonical `.directory` is the only
+untracked item. PR #120 is merged after all seven checks pass. All seven PR #119
+checks also pass. PR #121 checks and final visible acceptance remain open.
