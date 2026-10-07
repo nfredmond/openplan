@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { readSynthesisHistory } from "@/lib/engagement/synthesis-history-read";
 import type { SynthesisExecutionScope } from "@/lib/engagement/synthesis-execution-records";
 import { verifySynthesisProgress, type SynthesisProgress } from "@/lib/engagement/synthesis-progress";
+import { SynthesisContinuationPanel } from "./synthesis-continuation-panel";
 
 type Props = SynthesisExecutionScope & { userId: string; onAccessLost: () => void };
 const outcomes: Record<SynthesisProgress["status"], { title: string; next: string }> = {
@@ -65,6 +66,10 @@ function Progress({ userId, workspaceId, campaignId, requestId, actorId, sourceI
     return () => { active.current?.abort(); active.current = null; };
   }, [expanded, refresh]);
   const outcome = summary ? outcomes[summary.status] : null;
+  const continuationParent = useMemo(() => summary?.stage === "segment" && summary.status === "ready_for_record_consolidation" && summary.selectionSequence !== null
+    ? { parentRequestId: summary.requestId, parentActorId: summary.actorId, parentIntentSha256: summary.requestIntentSha256,
+      sourceId: summary.sourceId, sourceSha256: summary.sourceSha256, throughSequence: summary.selectionSequence,
+      segmentResultsManifestSha256: summary.manifestSha256 } : null, [summary]);
   return <section aria-label="Saved analysis results" className="min-w-0 space-y-3 border-t border-border pt-3">
     <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal text-left" aria-expanded={expanded}
       onClick={() => { setSummary(null); setError(null); setExpanded(current => !current); }}>Inspect saved analysis results</Button>
@@ -90,6 +95,8 @@ function Progress({ userId, workspaceId, campaignId, requestId, actorId, sourceI
             <dt>Selection sequence</dt><dd>{summary.selectionSequence ?? "Not available"}</dd>
             <dt>History SHA-256</dt><dd>{summary.manifestSha256}</dd></dl>
         </details>
+        {continuationParent ? <SynthesisContinuationPanel userId={userId} workspaceId={workspaceId} campaignId={campaignId}
+          parent={continuationParent} onAccessLost={onAccessLost} /> : null}
       </> : null}
     </div> : null}
   </section>;

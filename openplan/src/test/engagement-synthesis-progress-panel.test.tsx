@@ -23,6 +23,7 @@ describe("saved analysis progress view", () => {
     await screen.findByText("Analysis results are incomplete");
     expect(screen.getByText("Selected attempt without retained output")).toBeTruthy();
     expect(screen.getByText("No selected attempt")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Choose a contribution to combine" })).toBeNull();
     expect(screen.getByText(/does not establish whether a provider call is still running or stopped/)).toBeTruthy();
     expect(transport).toHaveBeenCalledExactlyOnceWith(expect.stringContaining(`/synthesis/progress?requestId=${scope.requestId}&stage=segment`),
       expect.objectContaining({ method: "GET", cache: "no-store", headers: { "x-openplan-expected-user": scope.actorId, "x-openplan-expected-workspace": scope.workspaceId } }));
@@ -34,6 +35,7 @@ describe("saved analysis progress view", () => {
       counts: [{ disposition: stage === "segment" ? "validated_output" : "verified", count: 3 }] }));
     mount({ ...scope, stage }); open();
     await screen.findByText("3 tasks accounted for in this saved selection.");
+    expect(Boolean(screen.queryByRole("button", { name: "Choose a contribution to combine" }))).toBe(stage === "segment");
     expect(screen.getByText(/do not establish meaning, representative support, staff approval or publication/)).toBeTruthy();
     expect(screen.getByText(/cancellation does not prove that a call already sent stopped/)).toBeTruthy();
     expect(transport.mock.calls.every(([, init]) => init?.method === "GET")).toBe(true);

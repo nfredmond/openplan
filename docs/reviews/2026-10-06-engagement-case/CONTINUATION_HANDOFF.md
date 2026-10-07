@@ -13,11 +13,10 @@ bring the resulting proposal into the existing staff review. Existing native
 operations already retain context and thematic requests. This change exposes
 their current-staff handoff without adding another execution system.
 
-The first checkpoint adds the HTTP boundary and contribution picker data. It does
-not yet add the browser controls. Browser command recovery, provider selection,
-context preparation, per-contribution thematic choices and the full review
-journey remain unfinished. This is an implementation checkpoint, not a completed
-user-visible capability or release.
+The first checkpoint adds the HTTP boundary and contribution picker data. At
+that checkpoint, browser controls and browser command recovery remain unfinished.
+The subsequent context-control work is recorded below. Per-contribution thematic
+choices and the full review journey remain unfinished; this is not a release.
 
 ## Request boundary
 
@@ -94,3 +93,56 @@ work. This checkpoint and its PR are pushed. GitHub checks remain pending.
 The hidden T3 progress tab still rejects both image and text snapshots. That retry
 belongs to the previously built progress candidate, not visual evidence for this
 backend checkpoint. The roadmap remains the sole work queue.
+
+
+## Context controls, October 7
+
+Staff can now open a completed contribution request, inspect its saved results,
+choose a contribution from the paged list, and use the existing provider-choice
+form to save a context request. The confirmed child opens the existing
+preparation, cancellation, execution-permission and progress controls with the
+context stage. Saving the request itself grants no provider permission.
+
+The layout stays within the selected parent request. It uses Space Grotesk,
+existing ink `#1a1a1a`, muted text `#716b63`, white `#ffffff`, accent `#c03f1c` and
+secondary accent `#1f6b5e`, with current theme variants. Left-aligned contribution
+previews and pressed-state buttons distinguish choices without a new dashboard,
+completion badge or automatic motion. Labels and provider destinations wrap.
+The saved parent reference appears in retry details where it informs the decision.
+
+```text
+Contribution outputs are ready to combine
+  Choose a contribution to combine
+    Showing [loaded] of [total] contributions
+    [Contribution title]     [plain-text preview]
+    Context for [selected contribution]
+      Saved API connection
+      Analysis model
+      Save context request
+      Preparation and explicit execution permission
+```
+
+Browser custody reuses the existing request-recovery module. Slots now distinguish
+root creation, cancellation, parent request, stage and contribution. The saved
+command retains its original provider intent, parent sequence, result checksum
+and resource limits. A later selection does not replace an uncertain command.
+Staff sees its original parent reference before an explicit retry. Different
+accounts, workspaces, sources, parent authors or contributions cannot reuse it.
+Native child receipt bytes and hashes are checked before clearing the exact
+pending command. A newer command in the same slot survives delayed cleanup.
+
+The contribution picker checks returned scope, full parent identity, page offsets,
+total counts and duplicates across pages. Access loss clears private previews.
+Changing account or parent remounts the picker, and closing it aborts the read.
+These are DOM and protocol checks, not rendered or keyboard acceptance.
+
+The thematic protocol supports exact browser custody, but the thematic request
+and complete-context choice controls are not yet exposed in this picker. That
+work remains part of M9b. Context controls also still require identified-build
+browser evidence before the visible workflow is accepted.
+
+The [context-control checks](context-controls/verification.json) pass 237 tests
+across 12 suites, the full TypeScript check and changed-source ESLint. A harmless
+comment control passes, and 10 targeted faults fail for the named recovery,
+receipt, stage, page or account boundary. Source bytes are restored after each
+fault. Production build and identified-build browser evidence follow separately.

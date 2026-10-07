@@ -23,6 +23,12 @@ export const synthesisContinuationCommandSchema = z.discriminatedUnion("stage", 
 });
 export type SynthesisContinuationCommand = z.infer<typeof synthesisContinuationCommandSchema>;
 export type SynthesisContinuationParent = z.infer<typeof synthesisContinuationParentSchema>;
+export const synthesisContinuationProposalSchema = z.discriminatedUnion("stage", [
+  z.object({ stage: z.literal("context"), parent: synthesisContinuationParentSchema,
+    frameByteLimit: common.frameByteLimit, targetRecordId: target }).strict(),
+  z.object({ stage: z.literal("thematic"), parent: synthesisContinuationParentSchema, frameByteLimit: common.frameByteLimit }).strict(),
+]);
+export type SynthesisContinuationProposal = z.infer<typeof synthesisContinuationProposalSchema>;
 export const synthesisContinuationPageSchema = z.object({ schemaVersion: z.literal(1), campaignId: id, workspaceId: id,
   parent: synthesisContinuationParentSchema, cancelled: z.boolean(), interpretation: z.literal("not_assessed"),
   offset: natural, pageSize: z.literal(25), total: natural.positive(), nextOffset: natural.nullable(),

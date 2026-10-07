@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-10-07T07:46:08.608677+00:00",
+  "basedOn": "56b0c3685f3697c37d0cf641014c73dc24a4ec91",
+  "focusedTests": {
+    "files": 12,
+    "passed": 237
+  },
+  "fullTypeScriptExitCode": 0,
+  "changedSourceEslintExitCode": 0,
+  "controls": "Harmless comments pass; 10 faults fail at their stated boundaries; source restored byte for byte.",
+  "controlRunnerCorrections": "Earlier matcher attempts correctly failed the contribution-slot and account-remount tests but did not recognize their Error-form assertions. The final runner matches their specific error messages. Product tests and guards were unchanged by these corrections.",
+  "boundaries": [
+    "Unit and DOM simulation only. No rendered, keyboard, console or native HTTP/browser recovery acceptance yet.",
+    "Native continuation server replay evidence remains scoped to the preceding application checkpoint.",
+    "Thematic input-choice UI and the full staff review journey remain unfinished."
+  ]
+}

@@ -1,3 +1,6 @@
 # Retain upstream notice bytes, including original line endings and spaces.
 /openplan/src/app/fonts/*/OFL.txt -text whitespace=-blank-at-eol,cr-at-eol
 /openplan/src/app/fonts/*/METADATA.pb -text
+
+# Preserve captured test logs byte for byte, including terminal blank lines.
+/docs/reviews/2026-10-06-engagement-case/**/*.log whitespace=-blank-at-eof
