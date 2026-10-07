@@ -107,3 +107,29 @@ the actual tests ran from the application package. No native command, worker,
 provider, browser write or new capability is implemented by this checkpoint.
 Mock-free record checks do not establish database authorization, browser storage,
 concurrency, worker recovery, deployment or full-package compatibility.
+
+## Native enqueue candidate
+
+The additive candidate stores one immutable enqueue command per authorization.
+It uses the current requester lock and stage-specific execution checks, compares
+source/request/permission identities and hashes, and rejects new scheduling after
+expiry or credential changes. Exact receipt replay does not recheck permission
+expiry or create another record. Direct table writes are revoked; only the narrow
+authenticated enqueue function and service read are granted.
+
+`native-probe.sql` runs inside a rollback-only transaction against the owned
+synthetic restore target. It uses existing source/plan records and creates fresh
+permissions through the actual stage authorization functions. All three stages
+pass exact receipt/replay and adverse hash/stage/actor/duplicate/byte checks.
+The baseline and harmless control pass; six targeted native faults fail the
+intended probe assertions, recorded in `native-controls.json`. No worker runs,
+provider is contacted, or candidate migration remains installed.
+
+This probe sets the synthetic JWT subject while using the local database owner.
+It tests function behavior, not authenticated-role grants or live HTTP isolation.
+It depends on the retained synthetic fixture and is not a self-contained CI test.
+Before landing the migration, add independent role, expiry/replay, cancellation,
+credential-change, foreign scope, duplicate/concurrency and immutable-history
+checks. Add the migration inventories and release documentation with the complete
+increment. The queue has no claim/status API or worker pickup yet; service reads
+must never interpret a queue record alone as fresh dispatch authority.
