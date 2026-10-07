@@ -244,3 +244,49 @@ T3 image capture still fails. Pixel review, console, keyboard and practitioner
 acceptance remain open. The readable-content defect is corrected in code and
 observed in the production DOM; these limits do not become interface acceptance.
 No new choice, preparation or provider permission is created by the reader check.
+
+## Preparation, execution and import at `9825bef7`
+
+The next [workflow record](thematic-inputs/workflow/browser-9825.json) continues
+the same synthetic request through preparation, bounded local execution and
+explicit import. The unchanged application build still identifies `9825bef75ee5`.
+Its restarted process 3032995 runs from the owned worktree on port 3485. No
+application edits occur during collection.
+
+The interface queues preparation for `3620e480` after both context choices are
+confirmed. A worker processes only that request through its durable journal.
+Native preparation acknowledges the original input seal, two tasks and 51,113
+saved bytes. Repeating the journal returns the same acknowledged result. It does
+not scan unrelated preparation jobs.
+
+The interface saves an execution allowance for two attempts, 2,048 output tokens
+and 65,536 response bytes per call, expiring at 10:58 UTC on October 7. The
+configured endpoint is an owned local synthetic stub at port 34667. The stub
+accepts only this thematic request and its two ordered tasks. It reuses the
+earlier synthetic response behavior: no inferred themes, both contributions
+unassigned, and explicit uncertainty. No paid or external model provider is used.
+
+The scoped generation command retains two outputs, with no unobserved dispatch,
+unprocessed scheduled task or task outside the schedule. Repeating that command
+recovers the same retained results; the provider call count remains two. The
+interface reports a machine draft ready for staff review and distinguishes
+structural output checks from interpretation and approval.
+
+A new synthetic staff review receives the inspected proposal through an explicit,
+reasoned import. Native HTTP returns 201 for revision 2, retaining proposal hash
+`9c9fde7e9b51b6bdebc8a056ee4142e0c139e03fb8f3574d671a3055a2349ae1`.
+Reloading and reopening that review recovers the same revision and evidence. Both
+contributions remain unassigned, revision 1 remains available, and revision 2
+states that it is unapproved. Inspecting the contrasting contribution exposes its
+complete original wording and all 13 earlier contextual uncertainties.
+
+The proposal and history download controls offer original JSON Blobs of 3,726 and
+1,615 bytes. Their hashes match the retained proposal and history references.
+Completed filesystem downloads remain unobserved. The DOM document widths match
+the 390px and 1440px viewports. T3 image capture still fails; visual, pointer,
+keyboard, console and practitioner acceptance remain open. This fixture does not
+exercise nonempty thematic groups or citations and does not validate meaning.
+
+The owned application and synthetic provider units are stopped after collection,
+before these evidence edits. The result extends the software workflow evidence;
+it does not approve or publish findings, close M9b, or declare a release.

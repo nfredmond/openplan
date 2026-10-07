@@ -1,0 +1,17 @@
+{
+  "pid": "3032995",
+  "cwd": "/home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan",
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-07T09:01:53.217Z",
+    "deployment": {
+      "commit": "9825bef75ee5",
+      "version": "0.67.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  }
+}
