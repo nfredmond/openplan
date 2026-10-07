@@ -1,0 +1,221 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "target": null
+    },
+    {
+      "case": "agent-source",
+      "exitCode": 1,
+      "matched": true,
+      "target": "agent write carrying x-openplan-assistant-execution-source"
+    },
+    {
+      "case": "agent-hash",
+      "exitCode": 1,
+      "matched": true,
+      "target": "agent write carrying x-openplan-assistant-input-hash"
+    },
+    {
+      "case": "agent-approval",
+      "exitCode": 1,
+      "matched": true,
+      "target": "agent write carrying x-openplan-assistant-approval-id"
+    },
+    {
+      "case": "origin",
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses cross-origin writes"
+    },
+    {
+      "case": "write-permission",
+      "exitCode": 1,
+      "matched": true,
+      "target": "saves exact normalized command bytes"
+    },
+    {
+      "case": "actor-scope",
+      "exitCode": 1,
+      "matched": true,
+      "target": "changes in x-openplan-expected-user"
+    },
+    {
+      "case": "workspace-scope",
+      "exitCode": 1,
+      "matched": true,
+      "target": "changes in x-openplan-expected-workspace"
+    },
+    {
+      "case": "body-limit",
+      "exitCode": 1,
+      "matched": true,
+      "target": "bounds the body"
+    },
+    {
+      "case": "normalization",
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses unnormalized fields"
+    },
+    {
+      "case": "read-user-client",
+      "exitCode": 1,
+      "matched": true,
+      "target": "through the user client"
+    },
+    {
+      "case": "raw-command",
+      "exitCode": 1,
+      "matched": true,
+      "target": "saves exact normalized command bytes"
+    },
+    {
+      "case": "authenticated-actor",
+      "exitCode": 1,
+      "matched": true,
+      "target": "saves exact normalized command bytes"
+    },
+    {
+      "case": "lookup-failure",
+      "exitCode": 1,
+      "matched": true,
+      "target": "retained-command discovery fails"
+    },
+    {
+      "case": "replay-lookup",
+      "exitCode": 1,
+      "matched": true,
+      "target": "without reinstalling old rules"
+    },
+    {
+      "case": "command-scope",
+      "exitCode": 1,
+      "matched": true,
+      "target": "saves exact normalized command bytes"
+    },
+    {
+      "case": "journal-workspace",
+      "exitCode": 1,
+      "matched": true,
+      "target": "saves exact normalized command bytes"
+    },
+    {
+      "case": "new-plan-kind",
+      "exitCode": 1,
+      "matched": true,
+      "target": "unsupported new checklist"
+    },
+    {
+      "case": "result-command",
+      "exitCode": 1,
+      "matched": true,
+      "target": "mismatched or altered result"
+    },
+    {
+      "case": "result-version",
+      "exitCode": 1,
+      "matched": true,
+      "target": "mismatched or altered result"
+    },
+    {
+      "case": "result-actor",
+      "exitCode": 1,
+      "matched": true,
+      "target": "mismatched or altered result"
+    },
+    {
+      "case": "result-normalization",
+      "exitCode": 1,
+      "matched": true,
+      "target": "mismatched or altered result"
+    },
+    {
+      "case": "rpc-conflict",
+      "exitCode": 1,
+      "matched": true,
+      "target": "preserves RPC PT409 as 409"
+    },
+    {
+      "case": "rpc-permission",
+      "exitCode": 1,
+      "matched": true,
+      "target": "preserves RPC 42501 as 403"
+    },
+    {
+      "case": "rpc-missing",
+      "exitCode": 1,
+      "matched": true,
+      "target": "preserves RPC PT404 as 404"
+    },
+    {
+      "case": "rpc-invalid",
+      "exitCode": 1,
+      "matched": true,
+      "target": "preserves RPC PT400 as 400"
+    },
+    {
+      "case": "read-workspace",
+      "exitCode": 1,
+      "matched": true,
+      "target": "required projections through the user client"
+    },
+    {
+      "case": "read-projection",
+      "exitCode": 1,
+      "matched": true,
+      "target": "reads the exact retained context"
+    },
+    {
+      "case": "read-invalid",
+      "exitCode": 1,
+      "matched": true,
+      "target": "legacy null distinct"
+    },
+    {
+      "case": "read-legacy-hash",
+      "exitCode": 1,
+      "matched": true,
+      "target": "legacy null distinct"
+    },
+    {
+      "case": "read-hash",
+      "exitCode": 1,
+      "matched": true,
+      "target": "legacy null distinct"
+    },
+    {
+      "case": "read-normalization",
+      "exitCode": 1,
+      "matched": true,
+      "target": "legacy null distinct"
+    },
+    {
+      "case": "missing-is-legacy",
+      "exitCode": 1,
+      "matched": true,
+      "target": "legacy null distinct"
+    },
+    {
+      "case": "base-client-attribution",
+      "exitCode": 1,
+      "matched": true,
+      "target": "invented client attribution"
+    },
+    {
+      "case": "extra-client-scope",
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses client attribution"
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/app/api/land-use-plans/[planId]/context/route.ts": "2934bb818b3192e2e8345b928cdf0e36d95a9bd4b1cdc48e26fb2bb56882c99b",
+    "src/lib/land-use-plans/plan-context-store.ts": "9349638cdd21f1ca4dc072dfe8bc5860ca62e43fe055bf407c1871c81bb8521a",
+    "src/lib/land-use-plans/plan-context-command.ts": "e23725f9c6827703e5bb6a52abe22394470ea1dd806eae7eba955d429031b016",
+    "src/lib/land-use-plans/plan-context.ts": "c220b7e64a152ea5844bf50b7e45ad8a6ed6ace85a3be34802b8ffa5ee6b9ab1"
+  }
+}

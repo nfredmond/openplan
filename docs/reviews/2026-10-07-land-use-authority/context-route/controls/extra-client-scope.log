@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 4 failed) 43ms
+     × refuses client attribution or extra scope savedBy 5ms
+     × refuses client attribution or extra scope savedAt 1ms
+     × refuses client attribution or extra scope workspaceId 1ms
+     × refuses client attribution or extra scope actorId 1ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 48 passed (52)
+   Start at  03:34:59
+   Duration  1.37s (transform 185ms, setup 87ms, import 309ms, tests 61ms, environment 672ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > refuses client attribution or extra scope savedBy
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > refuses client attribution or extra scope savedAt
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > refuses client attribution or extra scope workspaceId
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > refuses client attribution or extra scope actorId
+AssertionError: expected 201 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 201
+
+ ❯ src/test/land-use-plan-context-route.test.ts:108:83
+    106|   });
+    107|   it.each(["savedBy", "savedAt", "workspaceId", "actorId"])("refuses c…
+    108|     expect((await post(JSON.stringify({ ...command, [field]: actorId }…
+       |                                                                                   ^
+    109|     expect(mocks.service).not.toHaveBeenCalled();
+    110|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+

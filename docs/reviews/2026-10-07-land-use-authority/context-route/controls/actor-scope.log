@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 39ms
+     × refuses account/workspace changes in x-openplan-expected-user 4ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:09
+   Duration  1.39s (transform 186ms, setup 97ms, import 309ms, tests 58ms, environment 679ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > refuses account/workspace changes in x-openplan-expected-user
+AssertionError: expected 201 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 201
+
+ ❯ src/test/land-use-plan-context-route.test.ts:99:64
+     97|   });
+     98|   it.each(["x-openplan-expected-user", "x-openplan-expected-workspace"…
+     99|     expect((await post(undefined, { [key]: otherId })).status).toBe(40…
+       |                                                                ^
+    100|     expect(mocks.service).not.toHaveBeenCalled();
+    101|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

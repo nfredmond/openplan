@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 44ms
+     × saves exact normalized command bytes under server-authenticated scope 18ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:07
+   Duration  1.37s (transform 201ms, setup 85ms, import 329ms, tests 61ms, environment 647ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > saves exact normalized command bytes under server-authenticated scope
+AssertionError: expected "vi.fn()" to be called with arguments: [ …(2) ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    "10000000-0000-4000-8000-000000000001",
+-   {
+-     "write": true,
+-   },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/test/land-use-plan-context-route.test.ts:69:26
+     67|     expect(response.status).toBe(201); expect(await response.json()).t…
+     68|     expect(response.headers.get("cache-control")).toBe("private, no-st…
+     69|     expect(mocks.access).toHaveBeenCalledWith(planId, { write: true });
+       |                          ^
+     70|     expect(queries).toEqual([{ table: "land_use_plan_context_commands"…
+     71|       filters: [["plan_id", planId], ["workspace_id", workspaceId], ["…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

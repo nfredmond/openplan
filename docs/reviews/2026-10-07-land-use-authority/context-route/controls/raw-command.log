@@ -1,0 +1,107 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 41ms
+     × saves exact normalized command bytes under server-authenticated scope 18ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:18
+   Duration  1.31s (transform 199ms, setup 91ms, import 323ms, tests 60ms, environment 653ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > saves exact normalized command bytes under server-authenticated scope
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'save_land_use_plan_context', …(1) ]
+
+Received:
+
+  1st vi.fn() call:
+
+@@ -1,18 +1,16 @@
+  [
+    "save_land_use_plan_context",
+    {
+      "p_actor_id": "10000000-0000-4000-8000-000000000003",
+      "p_command_id": "10000000-0000-4000-8000-000000000005",
+-     "p_command_text": " 
+- {\"place\":{\"mode\":\"uploaded\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[1,0],[1,1],[0,0]]]},\"label\":\"SYNTHETIC study\"},\"assessment\":{\"authorities\":[{\"id\":\"10000000-0000-4000-8000-000000000006\",\"label\":\"SYNTHETIC body\",\"role\":\"adopting\",\"kind\":\"unassessed\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic unresolved assessment\"}},\"commandId\":\"10000000-0000-4000-8000-000000000005\",\"versionId\":\"10000000-0000-4000-8000-000000000002\",\"expectedContextHash\":null,\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"}
+-  ",
++     "p_command_text": "{\"place\":{\"mode\":\"uploaded\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[1,0],[1,1],[0,0]]]},\"label\":\"SYNTHETIC study\"},\"assessment\":{\"authorities\":[{\"id\":\"10000000-0000-4000-8000-000000000006\",\"label\":\"SYNTHETIC body\",\"role\":\"adopting\",\"kind\":\"unassessed\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic unresolved assessment\"}},\"commandId\":\"10000000-0000-4000-8000-000000000005\",\"versionId\":\"10000000-0000-4000-8000-000000000002\",\"expectedContextHash\":null,\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"}",
+      "p_expected_context_hash": null,
+      "p_expected_descriptor_id": "local-unconfigured",
+      "p_expected_plan_kind_key": "community",
+      "p_plan_id": "10000000-0000-4000-8000-000000000001",
+-     "p_prepared_context": ObjectContaining {
++     "p_prepared_context": {
+        "assessment": {
+          "applicability": {
+            "explanation": "Synthetic unresolved assessment",
+            "status": "unresolved",
+          },
+@@ -25,14 +23,49 @@
+              "role": "adopting",
+              "sourceUrls": [],
+            },
+          ],
+        },
+-       "place": ObjectContaining {
++       "place": {
++         "bbox": {
++           "maxLat": 1,
++           "maxLon": 1,
++           "minLat": 0,
++           "minLon": 0,
++         },
+          "countryCode": null,
++         "geometry": {
++           "coordinates": [
++             [
++               [
++                 0,
++                 0,
++               ],
++               [
++                 1,
++                 0,
++               ],
++               [
++                 1,
++                 1,
++               ],
++               [
++                 0,
++                 0,
++               ],
++             ],
++           ],
++           "type": "Polygon",
++         },
++         "kind": null,
++         "label": "SYNTHETIC study",
++         "ref": null,
+          "source": "uploaded_file",
++         "subdivisionCode": null,
+        },
++       "savedAt": "2026-10-07T10:34:19.126Z",
+        "savedBy": "10000000-0000-4000-8000-000000000003",
++       "schemaVersion": 1,
+      },
+      "p_version_id": "10000000-0000-4000-8000-000000000002",
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/test/land-use-plan-context-route.test.ts:72:23
+     70|     expect(queries).toEqual([{ table: "land_use_plan_context_commands"…
+     71|       filters: [["plan_id", planId], ["workspace_id", workspaceId], ["…
+     72|     expect(mocks.rpc).toHaveBeenCalledWith("save_land_use_plan_context…
+       |                       ^
+     73|       p_actor_id: actorId, p_command_id: commandId, p_expected_context…
+     74|       p_prepared_context: expect.objectContaining({ savedBy: actorId, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

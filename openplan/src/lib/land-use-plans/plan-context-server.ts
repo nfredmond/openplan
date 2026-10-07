@@ -1,14 +1,11 @@
-import { z } from "zod";
-import { studyAreaCaptureSchema, placeOfRecordFromBoundary, placeOfRecordFromCapturedArea } from "@/lib/geographies/study-area-capture";
+import { placeOfRecordFromBoundary, placeOfRecordFromCapturedArea } from "@/lib/geographies/study-area-capture";
 import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
-import { planAuthorityAssessmentSchema, planApplicabilityBlocker, savedPlanContextSchema, type SavedPlanContext } from "./plan-context";
+import { planApplicabilityBlocker, savedPlanContextSchema, type SavedPlanContext } from "./plan-context";
 import type { JurisdictionPlanDescriptor } from "./contracts";
 
-export const planContextCommandSchema = z.object({
-  place: studyAreaCaptureSchema,
-  assessment: planAuthorityAssessmentSchema,
-}).strict();
-export type PlanContextCommand = z.infer<typeof planContextCommandSchema>;
+import type { PlanContextCommand } from "./plan-context-command";
+export { planContextCommandSchema } from "./plan-context-command";
+export type { PlanContextCommand } from "./plan-context-command";
 
 /** Resolve only the study place. Authority/applicability remains an attributed staff statement. */
 export async function preparePlanContext(command: PlanContextCommand, descriptor: JurisdictionPlanDescriptor, userId: string): Promise<

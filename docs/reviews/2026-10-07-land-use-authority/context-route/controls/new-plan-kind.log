@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 39ms
+     × refuses unsupported new checklist and plan-kind selections 4ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:29
+   Duration  1.34s (transform 219ms, setup 85ms, import 355ms, tests 57ms, environment 661ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > refuses unsupported new checklist and plan-kind selections
+AssertionError: expected 201 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 201
+
+ ❯ src/test/land-use-plan-context-route.test.ts:122:154
+    120|   });
+    121|   it("refuses unsupported new checklist and plan-kind selections", asy…
+    122|     for (const patch of [{ descriptorId: "missing" }, { planKindKey: "…
+       |                                                                                                                                                          ^
+    123|     expect(mocks.rpc).not.toHaveBeenCalled();
+    124|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
