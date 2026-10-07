@@ -25,8 +25,9 @@ assessment. Staff can save incomplete browser drafts, retry an uncertain save
 without creating a second change, and review older drafts against current facts.
 Frozen versions retain their original plan identity, descriptor rules and context.
 Atomic freeze checks the displayed draft revision and current write permission.
-Creation still uses the older workspace-home restriction; correcting it and
-completing rendered desktop/mobile acceptance remain open.
+Creation now uses the plan area and assessed bodies instead of office location.
+The form retains incomplete drafts and exact requests, with explicit retry after
+an uncertain reply. Rendered desktop/mobile acceptance remains open.
 
 Apply these additive migrations in order before using these candidate changes:
 
@@ -41,18 +42,25 @@ Apply these additive migrations in order before using these candidate changes:
 - `20261016000006_land_use_plan_retained_study_area.sql` preserves an unchanged
   saved boundary during authority edits and aligns the plan's displayed geography.
 
-The backend creation checkpoint adds
+The initial backend creation checkpoint adds
 `20261016000007_land_use_plan_creation_commands.sql`. It creates a plan, first
 version, checklist, assessed context and immutable retry receipt in one
 permission-checked transaction. Individual plan deletion cannot erase that
 creation identity and make an old retry create another plan; workspace deletion
-still removes its owned records. The existing route and creator are not connected
-to this transaction yet, so their workspace-home restriction remains.
+still removes its owned records. The route and creator now use this transaction.
+
+`20261016000008_land_use_plan_creation_cancellation.sql` adds an explicit stop
+command for an unresolved creation request. Under the same transaction lock as
+creation, it either returns the already-created plan or retains a stop receipt
+that prevents later creation from that request. It never deletes a plan. The
+browser retains stop intent before sending, and imported receipts require server
+confirmation before the form treats creation or stopping as settled. After a
+confirmed stop, staff can restore the draft to a new copy and review current rules.
 
 The migrations are installed only on the isolated verification stack. The
 [context editor evidence](docs/reviews/2026-10-07-land-use-authority/CONTEXT_EDITOR.md)
 distinguishes unit/native checks and partial desktop behavior from unresolved
-rendered acceptance. These changes are not a released version.
+rendered acceptance. The [creation workflow evidence](docs/reviews/2026-10-07-land-use-authority/CREATION_WORKFLOW.md) records request recovery, stopping and their remaining acceptance limits. These changes are not a released version.
 
 ## 0.67.0 (2026-10-07)
 

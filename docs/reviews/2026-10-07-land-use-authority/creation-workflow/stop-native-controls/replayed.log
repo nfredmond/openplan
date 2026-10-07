@@ -1,0 +1,4 @@
+ERROR:  exact stop replay
+CONTEXT:  PL/pgSQL function pg_temp_99.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert(repeated=result||jsonb_build_object('replayed',true),'exact stop replay')"
+PL/pgSQL function inline_code_block line 31 at PERFORM

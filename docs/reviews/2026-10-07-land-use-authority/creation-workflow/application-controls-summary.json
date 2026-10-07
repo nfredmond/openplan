@@ -1,0 +1,12 @@
+{
+  "uniqueCases": 61,
+  "targetedFaults": 59,
+  "allMatched": true,
+  "allSourceRestored": true,
+  "reports": [
+    "ui-controls-final/report.json",
+    "ui-controls-final-v2/report.json",
+    "ui-controls-final-v3/report.json"
+  ],
+  "boundary": "Mocked routes, in-memory storage and mounted simulated DOM. No browser layout, native HTTP or real storage evidence."
+}

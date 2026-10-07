@@ -1,0 +1,38 @@
+from pathlib import Path
+import hashlib,json,subprocess
+app=Path('/home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan')
+out=Path('/tmp/openplan-plan-creation-stop-native-controls');out.mkdir(exist_ok=False)
+path=app/'supabase/migrations/20261016000008_land_use_plan_creation_cancellation.sql';original=path.read_bytes();sql=original.decode()
+fixture=(app/'src/test/fixtures/land-use-plans/creation-cancellation.sql').read_text()
+cases=[('baseline',None,None,None),('harmless','-- An explicit stop command','-- Harmless control: an explicit stop command',None),
+ ('viewer',"role IN ('owner','admin','member')","role IN ('owner','admin','member','viewer')",'viewer stop denied: accepted'),
+ ('membership','IF NOT EXISTS (SELECT 1 FROM public.workspace_members','IF false AND NOT EXISTS (SELECT 1 FROM public.workspace_members','viewer stop denied: accepted'),
+ ('stop-bytes','stopped.command_text IS DISTINCT FROM p_command_text','false','stop changed bytes: accepted'),
+ ('stop-actor','stopped.actor_id IS DISTINCT FROM p_actor_id','false','stop different actor: accepted'),
+ ('created-bytes','previous.command_text IS DISTINCT FROM p_command_text','false','existing creation exact bytes: accepted'),
+ ('created-actor','previous.actor_id IS DISTINCT FROM p_actor_id','false','existing creation actor: accepted'),
+ ('stop-scope','SELECT * INTO stopped FROM public.land_use_plan_creation_cancellations\n    WHERE workspace_id=p_workspace_id AND command_id=p_command_id;','SELECT * INTO stopped FROM public.land_use_plan_creation_cancellations\n    WHERE command_id=p_command_id;','independent stop workspace'),
+ ('created-scope','SELECT * INTO previous FROM public.land_use_plan_creation_commands\n    WHERE workspace_id=p_workspace_id AND command_id=p_command_id;','SELECT * INTO previous FROM public.land_use_plan_creation_commands\n    WHERE command_id=p_command_id;','existing creation workspace scope'),
+ ('cancelled-can-create','IF EXISTS (SELECT 1 FROM public.land_use_plan_creation_cancellations','IF false AND EXISTS (SELECT 1 FROM public.land_use_plan_creation_cancellations','stopped request cannot create: accepted'),
+ ('journal-rls','ALTER TABLE public.land_use_plan_creation_cancellations ENABLE ROW LEVEL SECURITY;','ALTER TABLE public.land_use_plan_creation_cancellations DISABLE ROW LEVEL SECURITY;','stop journal RLS'),
+ ('journal-read','GRANT SELECT, INSERT ON public.land_use_plan_creation_cancellations TO service_role;','GRANT SELECT, INSERT ON public.land_use_plan_creation_cancellations TO service_role; GRANT SELECT ON public.land_use_plan_creation_cancellations TO authenticated;','stop journal private'),
+ ('client-rpc','GRANT EXECUTE ON FUNCTION public.cancel_land_use_plan_creation(uuid,uuid,uuid,text) TO service_role;','GRANT EXECUTE ON FUNCTION public.cancel_land_use_plan_creation(uuid,uuid,uuid,text) TO service_role, authenticated;','stop RPC private'),
+ ('definer',') RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER',') RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER','stop RPC invoker'),
+ ('append-only',"RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='Creation stop receipts are immutable';",'RETURN OLD;','stop append only: accepted'),
+ ('cascade',"IF TG_OP='DELETE' AND NOT EXISTS", "IF false AND TG_OP='DELETE' AND NOT EXISTS",'stop workspace cascade'),
+ ('command-id',"AND command->>'commandId'=p_command_id::text",'AND true','stop command identity: accepted'),
+ ('replayed',"RETURN stopped.receipt || jsonb_build_object('replayed',true);",'RETURN stopped.receipt;','exact stop replay'),
+ ('created-outcome',"jsonb_build_object('outcome','created','result'","jsonb_build_object('outcome','cancelled','result'",'existing creation returned'),
+ ('receipt-bytes',"'commandText',p_command_text","'commandText',p_command_text||' '",'retained stop receipt'),
+]
+rows=[]
+for name,old,new,target in cases:
+ changed=sql
+ if old:
+  assert sql.count(old)==1,(name,sql.count(old));changed=sql.replace(old,new)
+ run=subprocess.run(['docker','exec','-i','supabase_db_openplan-restore-target-2026091050','psql','-U','postgres','-d','postgres','-qAt','-v','ON_ERROR_STOP=1'],input="BEGIN; SET LOCAL statement_timeout='15s';\n"+changed+'\n'+fixture+'\nROLLBACK;',text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=30)
+ (out/(name+'.log')).write_text(run.stdout)
+ matched=run.returncode==0 and 'creation cancellation verified' in run.stdout if target is None else run.returncode!=0 and target in run.stdout
+ rows.append({'case':name,'target':target,'exitCode':run.returncode,'matched':matched})
+ (out/'report.json').write_text(json.dumps({'results':rows,'sourceUnchanged':path.read_bytes()==original,'sourceSha256':hashlib.sha256(original).hexdigest(),'boundary':'Rollback-only candidate migration8 probe. Must not run after persistent installation.'},indent=2)+'\n')
+ print(name,matched,flush=True);assert matched,name

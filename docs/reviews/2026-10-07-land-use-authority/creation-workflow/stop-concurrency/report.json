@@ -1,0 +1,81 @@
+{
+  "workspaceId": "d300356d-f579-4571-b5d4-e9901ec6584c",
+  "actorId": "f945c26d-0b21-463c-a66e-5b1bed99ef68",
+  "results": [
+    {
+      "case": "installed",
+      "refused": true,
+      "accepted": false,
+      "targetedFaultDetected": false,
+      "matched": true
+    },
+    {
+      "case": "baseline",
+      "refused": true,
+      "accepted": false,
+      "targetedFaultDetected": false,
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "refused": true,
+      "accepted": false,
+      "targetedFaultDetected": false,
+      "matched": true
+    },
+    {
+      "case": "missing-lock",
+      "refused": false,
+      "accepted": true,
+      "targetedFaultDetected": true,
+      "matched": true
+    },
+    {
+      "case": "creation-first",
+      "contenderRefused": true,
+      "outcome": "created",
+      "retryMatches": true,
+      "matched": true
+    },
+    {
+      "case": "stop-first",
+      "contenderRefused": true,
+      "outcome": "cancelled",
+      "retryMatches": true,
+      "matched": true
+    },
+    {
+      "case": "simultaneous-exclusive-outcome",
+      "counts": {
+        "plans": 1,
+        "created": 0,
+        "versions": 1,
+        "cancelled": 1
+      },
+      "outcome": "cancelled",
+      "retriesMatch": true,
+      "matched": true
+    },
+    {
+      "case": "permission-installed",
+      "locked": true,
+      "targetedFaultDetected": false,
+      "matched": true
+    },
+    {
+      "case": "permission-harmless",
+      "locked": true,
+      "targetedFaultDetected": false,
+      "matched": true
+    },
+    {
+      "case": "permission-missing",
+      "locked": false,
+      "targetedFaultDetected": true,
+      "matched": true
+    }
+  ],
+  "fixturesPreserved": true,
+  "nativeMigration": "20261016000008",
+  "boundary": "Native SQL concurrency and rollback-only temporary function controls. No HTTP or rendered acceptance."
+}

@@ -73,6 +73,7 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "land_use_plan_creation_cancellations.command_text", category: "READ_IN_SQL", reason: "cancel_land_use_plan_creation compares the exact original command before replaying its stop receipt. Request bytes remain immutable across stop and creation races." },
   { column: "land_use_plan_creation_commands.command_text", category: "READ_IN_SQL", reason: "The native creation command compares original bytes before returning its retained receipt, preserving the request identity before a plan exists." },
   { column: "land_use_plan_creation_commands.descriptor_text", category: "WRITE_ONLY", reason: "Original descriptor bytes are retained for creation audit and generate descriptor_sha256. Runtime replay returns the original receipt rather than reading those rules again." },
   { column: "land_use_plan_creation_commands.descriptor_sha256", category: "WRITE_ONLY", reason: "Generated digest supports native audit of the original descriptor bytes. Runtime receipts retain the matching descriptorHash but do not select this generated column." },

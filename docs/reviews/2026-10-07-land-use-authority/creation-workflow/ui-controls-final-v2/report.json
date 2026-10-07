@@ -1,0 +1,88 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "target": null,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "target": null,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "transport-workspace",
+      "exitCode": 1,
+      "target": "retains before sending",
+      "failedTests": [
+        "creation request recovery retains before sending and sends the exact original request with scope headers"
+      ],
+      "matched": true
+    },
+    {
+      "case": "transport-bytes",
+      "exitCode": 1,
+      "target": "imports pretty-printed",
+      "failedTests": [
+        "creation request recovery imports pretty-printed copies without changing the inner command and refuses a substituted draft"
+      ],
+      "matched": true
+    },
+    {
+      "case": "reply-status",
+      "exitCode": 1,
+      "target": "refuses malformed, altered",
+      "failedTests": [
+        "creation request recovery refuses malformed, altered, or status-mismatched successful responses"
+      ],
+      "matched": true
+    },
+    {
+      "case": "reply-identity",
+      "exitCode": 1,
+      "target": "keeps a substituted receipt",
+      "failedTests": [
+        "creation request recovery keeps a substituted receipt actorId unconfirmed",
+        "creation request recovery keeps a substituted receipt workspaceId unconfirmed",
+        "creation request recovery keeps a substituted receipt commandId unconfirmed",
+        "creation request recovery keeps a substituted receipt descriptorId unconfirmed",
+        "creation request recovery keeps a substituted receipt planKindKey unconfirmed",
+        "creation request recovery keeps a substituted receipt descriptorHash unconfirmed",
+        "creation request recovery keeps a substituted receipt title unconfirmed",
+        "creation request recovery keeps a substituted receipt authorityLabel unconfirmed",
+        "creation request recovery refuses malformed, altered, or status-mismatched successful responses"
+      ],
+      "matched": true
+    },
+    {
+      "case": "confirmation-identity",
+      "exitCode": 1,
+      "target": "keeps a substituted receipt",
+      "failedTests": [
+        "creation request recovery keeps a substituted receipt actorId unconfirmed",
+        "creation request recovery keeps a substituted receipt workspaceId unconfirmed",
+        "creation request recovery keeps a substituted receipt commandId unconfirmed",
+        "creation request recovery keeps a substituted receipt descriptorId unconfirmed",
+        "creation request recovery keeps a substituted receipt planKindKey unconfirmed",
+        "creation request recovery keeps a substituted receipt descriptorHash unconfirmed",
+        "creation request recovery keeps a substituted receipt title unconfirmed",
+        "creation request recovery keeps a substituted receipt authorityLabel unconfirmed"
+      ],
+      "matched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/app/api/land-use-plans/route.ts": "6f1bf5935415f30a5b0c3ac9ff273ee8b990588fe9c7dc4f1bdebbb07dc889ad",
+    "src/lib/land-use-plans/create-recovery.ts": "c98ecb1850748354f43b9dc608806c18fe03d3aac1559ebfa07f2b0916cb4a56",
+    "src/components/land-use-plans/land-use-plan-creator.tsx": "836963993e5c035a1b007a4ca730f852d0334483f62f5f9cb7674fbc27e8d6d2",
+    "src/app/(app)/land-use-plans/page.tsx": "77a011d02f46e995ef26a1c73ff992039fb27fc291aac53cc4ca486f2773eae9",
+    "src/lib/land-use-plans/create-stop.ts": "c6b8722c75e12d12b9c9f323a7e286906df7af991d4155c6dbbebac08483ccfe",
+    "src/app/api/land-use-plans/creation-requests/[commandId]/stop/route.ts": "02fe7cdafd69361df6a6514263fcc02f084d20107fecee0dd24f312bb51bacc7"
+  },
+  "boundary": "Synthetic HTTP mocks, local browser-storage simulation, mounted DOM and static guards. No native HTTP or rendered acceptance."
+}

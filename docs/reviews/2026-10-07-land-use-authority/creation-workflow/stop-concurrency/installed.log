@@ -1,0 +1,3 @@
+ERROR:  PT409: This creation request is running. Keep it and retry the stop command
+CONTEXT:  PL/pgSQL function cancel_land_use_plan_creation(uuid,uuid,uuid,text) line 16 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3911
