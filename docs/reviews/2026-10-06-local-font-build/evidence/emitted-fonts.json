@@ -1,0 +1,12 @@
+[
+  {
+    "source": "spacegrotesk/SpaceGrotesk[wght].ttf",
+    "emitted": "dcc2f1532f204149-s.p.ttf",
+    "sha256": "acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72"
+  },
+  {
+    "source": "jetbrainsmono/JetBrainsMono[wght].ttf",
+    "emitted": "3b1be6633988325f-s.p.ttf",
+    "sha256": "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda"
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "results": [
+    {
+      "name": "harmless-comment",
+      "exitCode": 0,
+      "expected": "pass"
+    },
+    {
+      "name": "remote-font-import",
+      "exitCode": 1,
+      "expected": "assertion failure"
+    },
+    {
+      "name": "duplicate-display",
+      "exitCode": 1,
+      "expected": "assertion failure"
+    },
+    {
+      "name": "separate-body-variable",
+      "exitCode": 1,
+      "expected": "assertion failure"
+    }
+  ],
+  "restored": true,
+  "blindCategory": "Source wiring checks do not establish actual build behavior or rendered typography."
+}
