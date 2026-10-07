@@ -4,6 +4,13 @@ September 4, 2026 review proposal. These requirements record Nathaniel's directi
 
 ## Scope traceability
 
+October 6 evidence update for CORE-ENG-03 and CORE-AGENT-01: the
+[integration record](../reviews/2026-10-06-integration/INTEGRATION.md) adds
+source-scoped request discovery, original stage/author/cancellation inspection,
+native pagination and desktop/390px refusal/recovery evidence. It does not close
+complete staff generation, provider choice, participant outcomes or the full
+requirements below.
+
 | Stable requirement | Binding outcome | Existing home and present evidence | Roadmap and completion evidence |
 |---|---|---|---|
 | CORE-PM-01 | Track contracted budgets by project, contract/task order, task, employee and deliverable, through the overall deadline. Apply planning project-management best practices. | Projects, engagements, staff/time, rates, invoicing, My Work and delivery records exist. The v0.45 reporting increment adds OWP-linked actuals. The [v0.46 contract increment](../reviews/2026-09-07-contract-reconciliation/VERIFICATION.md) adds standalone approved agreement baselines, task/staff/deliverable allocations, rates, corrections, dated estimates and private management snapshots. The [M11 engineering continuation](../reviews/2026-09-08-m11-delivery/RESUMED.md) adds synthetic agency and small-practice reconciliation, schedules and forecasts, scoped corrections, settlement and immutable underspent closeouts with actual exports and recovery checks. Actual agency accounting fit, human PM usefulness, independent human finance acceptance and automatic reminder delivery remain incomplete. | M11a–c, linked to M2/M10. Reconciled weekly PM review, staff entry, forecast warning, approved change and independent financial reconstruction. |

@@ -10,7 +10,7 @@ Audit date: October 6, 2026 Pacific. This record covers registered worktrees, lo
 - Outdated or absent remote branch references were pushed without force. The inventory records each local and remote tip. Merged worktrees remain on disk so ignored configuration and evidence are not lost.
 - No stashes exist. Nathaniel confirms no other active OpenPlan editing or browser acceptance session.
 - Main `eae9880d` has successful exact-commit GitHub QA, shuffled tests, worker checks, live RLS, browser smoke and populated upgrade checks. Historical health failures returned by broad listings do not describe that commit. Staff head `9775ab53` had no GitHub checks at audit.
-- The demo initially serves `32dbc44b388e`, a different build from either fetched main or integration. Browser access succeeds. Its results cannot establish acceptance of this integration.
+- The demo initially served `32dbc44b388e`. Nathaniel then used OpenPlan Control to update it. The supplied update log and the live identity both show `eae9880dc83e`, matching fetched main at audit. That successful update does not establish acceptance of this later integration.
 
 ## Worktrees at audit
 
@@ -50,9 +50,18 @@ Audit date: October 6, 2026 Pacific. This record covers registered worktrees, lo
 | `fix/workspace-switch-v0581` | `ef16f166` | 0 | None |
 | `work/write-outcome-truth` | `3a6099c1` | 0 | None |
 
+The later UI worktree, `work/synthesis-history-ui-20261006` at `b720ba36`, brings
+the registered total to 34. It is clean, pushed and merged into integration
+`d4b85e30`. The final scan finds no other unpublished source changes outside this
+integration's evidence files and the canonical checkout's desktop metadata.
+
 ## Next completed outcome
 
-The [roadmap](../../ROADMAP.md) remains the sole queue. The next bounded M9b outcome is a staff member finding saved synthesis requests from the campaign and inspecting their original source, stage, author and cancellation state. The existing caller-scoped history route supports this read. A saved request is not proof that preparation or provider execution completed.
+The [roadmap](../../ROADMAP.md) remains the sole queue. The new bounded M9b outcome lets a staff member find saved synthesis requests from the campaign and inspect their original source, stage, author and cancellation state. The existing caller-scoped history route supports this read. A saved request is not proof that preparation or provider execution completed.
+
+The identified browser journey starts from sign-in, then Dashboard, Engagement, campaign, Analysis and saved source. The history stays collapsed until requested so it does not bury staff review controls. Native pages contain 25 and 16 requests; the rendered order and cancellation states match all 41 native records. Refresh resets the list to the newest page. Desktop and 390px views preserve full identifiers without horizontal overflow. A connection failure clears the list with an unavailable notice. A deliberately mismatched expected account receives a real HTTP 403 and clears retained source and request details. Reopening through campaign navigation restores the authorized 25-row view. No new requests or provider calls are made.
+
+The [browser record](history-browser.json), [desktop list](images/history-desktop.png), [desktop details](images/history-desktop-details.png) and [390px details](images/history-390px-details.png) retain this synthetic software evidence. It does not establish public participation, practicing-planner usefulness, full accessibility conformance or real-browser write recovery. The existing denied-access notice says the account changed even when permission cannot be confirmed; the private content is cleared, but that wording remains imprecise.
 
 Creation, preparation, cancellation, provider authorization, retained output, proposal import and review then need one coherent campaign workflow. Use the existing recovery modules and approval registry. Do not add a second execution system. Keep external provider calls opt-in and preserve original command identity after uncertain replies.
 
@@ -60,4 +69,10 @@ Broader v1 priorities remain the complete agency workflows, independent installa
 
 ## Verification
 
-Combined QA and new GitHub checks are pending. The original branch evidence remains in [staff-generation progress](../2026-10-02-staff-generation/PROGRESS.md). The historical [independent review](../2026-10-01-independent-code-review/FINAL_REPORT.md) and [fix disposition](../2026-10-01-independent-fixes/DISPOSITION.md) retain separate dates and conclusions.
+The first combined QA exposed an unused history endpoint, an omitted migration in the changelog, an undocumented preparation-worker directory, two stale schema exceptions and a roadmap expiry assertion that contradicted the adopted development policy. These are corrected. The historical review date remains unchanged. Mutation records cover the [history UI](history-ui-mutations.json), [roadmap guard](roadmap-guard-mutations.json) and [schema inventory](schema-inventory-mutations.json).
+
+The next combined run passes 1,435 test files and 18,144 tests, with 84 files and 1,524 tests skipped. It then finds eight dependency advisories. The [dependency correction](DEPENDENCIES.md) records their resolution, CLI compatibility checks and limits. Final clean-install QA and GitHub checks remain pending at this documentation checkpoint.
+
+The past-month reflog contains 618 distinct tips. Thirteen no longer have a live branch reference. [Their disposition](reflog-disposition.json) identifies the merged equivalent or superseding change for each. Superseded raw captures that contain a provider token are not republished. The safe replacements and retained evidence remain in main's history.
+
+The original branch evidence remains in [staff-generation progress](../2026-10-02-staff-generation/PROGRESS.md). The historical [independent review](../2026-10-01-independent-code-review/FINAL_REPORT.md) and [fix disposition](../2026-10-01-independent-fixes/DISPOSITION.md) retain separate dates and conclusions.

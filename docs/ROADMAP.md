@@ -46,8 +46,8 @@ The immediate sequence is:
 1. **M0:** merge the remaining staff-synthesis foundation and original independent
    review, with combined QA, live isolation and populated upgrade evidence. Keep
    all source history and record any remaining local-only files.
-2. **M9b:** expose saved generation requests in the campaign, then finish explicit
-   creation, preparation, cancellation, provider authorization and proposal import
+2. **M9b:** saved-request discovery now has [desktop, 390px and native-read evidence](reviews/2026-10-06-integration/INTEGRATION.md).
+   Finish explicit creation, preparation, cancellation, provider authorization and proposal import
    as one recoverable staff workflow. Validate real navigation at desktop and
    390px. Existing worker/API checks do not close this visible outcome.
 3. **M2/M9/A0:** finish the engagement source-to-response-to-decision journey and
@@ -63,6 +63,16 @@ The immediate sequence is:
 
 This sequence selects the next bounded outcome. The milestone definitions below
 remain binding and the capability registry retains its current evidence grades.
+
+The next staff-generation increment starts from a retained source and saves a
+staff-authored request with its original intent. Reuse the existing request and
+preparation recovery modules. A page reload or lost reply must recover that same
+request. Show preparation progress and cancellation separately from provider
+authorization. A stopped worker must leave a recoverable job; an uncertain reply
+must never cause a new request or a second provider call. Finish with a reviewed
+proposal imported into the existing staff review. Verify root, context and theme
+stages, account changes, unavailable storage, interruption and narrow-screen use.
+Preserve the complete source and its uncertainty throughout.
 
 ## September 7 release-policy correction
 
