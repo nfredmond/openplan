@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-custody.test.tsx (17 tests | 1 failed) 402ms
+     × shows the repealed recorded identity and context, independent of later labels 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > shows the repealed recorded identity and context, independent of later labels
+TestingLibraryElementError: Unable to find an element with the text: SYNTHETIC frozen title. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto max-w-3xl p-8"[39m
+    [36m>[39m
+      [36m<h1[39m
+        [33mclass[39m=[32m"text-3xl font-semibold"[39m
+      [36m>[39m
+        [0mThis plan report could not be verified[0m
+      [36m</h1>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"mt-4"[39m
+        [33mrole[39m=[32m"alert"[39m
+      [36m>[39m
+        [0mThe saved report does not match its recorded plan version. OpenPlan withheld the report content. This does not mean the agency withdrew the plan.[0m
+      [36m</p>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-report-custody.test.tsx:52:185
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
+   Start at  11:54:07
+   Duration  1.14s (transform 119ms, setup 55ms, import 264ms, tests 402ms, environment 329ms)
+

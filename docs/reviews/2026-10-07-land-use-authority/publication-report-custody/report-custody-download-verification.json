@@ -1,0 +1,15 @@
+{
+  "observedAt": "2026-10-07T19:03:34.564Z",
+  "sourceCommit": "da4d1898c756d557a19a8141095dd5c5213b8f8f",
+  "file": "browser-download-muyh632e-g-openplan-report-e0aab60e-a9ff-4d51-a98e-4f01e99ceb45-provenance.json",
+  "bytes": 13777,
+  "sha256": "6e5bc2b73882a56b69285912e28c3e0d9b1b46b5f250285e524e7d24f60b02dc",
+  "reportId": "e0aab60e-a9ff-4d51-a98e-4f01e99ceb45",
+  "artifactId": "c48b2190-1990-4028-9270-edfdfa9c0833",
+  "contentHash": "fc9818674bd5d0d6ea354f42ef6bb9c9dba8c8a81464b5225e8c2e94bc5211e1",
+  "nativeArtifactEqual": true,
+  "canonicalHashVerified": true,
+  "harmlessObjectOrder": true,
+  "changedAreaRefused": true,
+  "blindCategory": "Recorded download from the synthetic report; no print/PDF, concurrency or practitioner acceptance."
+}

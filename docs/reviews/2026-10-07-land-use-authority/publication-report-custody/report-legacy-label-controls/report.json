@@ -1,0 +1,32 @@
+{
+  "state": "complete",
+  "cases": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "legacy-heading",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "separates legacy reviewed identity"
+    }
+  ],
+  "restored": true,
+  "sourceHashes": {
+    "src/app/(app)/land-use-plans/page.tsx": "d053fc4b55a89266c2a342f94b707d9958d072b481a8c9be9c13b1152248a439",
+    "src/app/(published)/review/land-use-plans/[shareToken]/page.tsx": "3729b8839afeea0067021737626f80aa8c08a5e1f9ffbca0b437b4a170da89fd",
+    "src/app/(published)/published-plans/[planId]/page.tsx": "a979563e5de0650ab85686abac25953a6c6a8908d2683bb80929aa700477cfbe",
+    "src/components/land-use-plans/land-use-plan-public-context.tsx": "94bdf093e40e445930a6362cc51a2a712faba67b2bf108f25345baa25df789cb",
+    "src/components/land-use-plans/land-use-plan-retained-context.tsx": "44f4eb980447f002009f0a5b86c6f0d381c695e7951f1d82f21c89e765f1df93"
+  },
+  "blindCategory": "Mounted pages and projected mocks only. Does not prove native authorization, browser download, layout, or practitioner acceptance."
+}

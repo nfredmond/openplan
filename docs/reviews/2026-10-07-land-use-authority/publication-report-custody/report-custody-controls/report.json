@@ -1,0 +1,65 @@
+{
+  "state": "incomplete",
+  "cases": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "live-identity",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "recorded identity and context"
+    },
+    {
+      "name": "omit-context",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "recorded identity and context"
+    },
+    {
+      "name": "omit-legacy-context",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "discloses legacy context"
+    },
+    {
+      "name": "omit-superseded",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "shows the superseded"
+    },
+    {
+      "name": "omit-repealed",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "shows the repealed"
+    },
+    {
+      "name": "omit-download",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "recorded identity and context"
+    },
+    {
+      "name": "omit-wrap",
+      "exitCode": 1,
+      "verified": false,
+      "expectedFailure": "recorded identity and context"
+    }
+  ],
+  "restored": true,
+  "sourceHashes": {
+    "src/components/reports/land-use-plan-report-page.tsx": "a395a091e27952eb9091440b57baa6e1b2eedf2c2009daacc5ed551d86b4e4b0",
+    "src/components/reports/land-use-plan-report-detail.tsx": "1551bb27cfb1ecb94710735b638b3309458e13311777774756d6b1e75e8d7b63"
+  },
+  "blindCategory": "Mounted pages and projected mocks only. Does not prove native authorization, browser download, layout, or practitioner acceptance."
+}
