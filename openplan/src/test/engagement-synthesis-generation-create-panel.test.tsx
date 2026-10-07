@@ -30,6 +30,31 @@ async function choose(f: ReturnType<typeof fixture>) {
 }
 
 describe("staff analysis request creation", () => {
+  it("requires a fresh selection when paging returns a changed revision of the chosen connection", async () => {
+    const f = fixture();
+    const preceding = Array.from({ length: 49 }, (_, index) => {
+      const id = randomUUID(), revisionId = randomUUID();
+      return { ...f.connection, id, current_revision_id: revisionId, current_revision: { ...f.revision, id: revisionId, connection_id: id,
+        configuration: { ...f.revision.configuration, label: `Other synthetic API ${index}` } } };
+    });
+    const replacementId = randomUUID();
+    const changed = { ...f.connection, current_revision_id: replacementId, current_revision: { ...f.revision, id: replacementId, configuration_hash: "c".repeat(64),
+      configuration: { ...f.revision.configuration, endpoint: "http://changed-synthetic.invalid/v1" } } };
+    const first = { ...f.page, connections: [...preceding, f.connection], total: 51, nextOffset: 50 };
+    const later = { ...f.page, connections: [changed], total: 51, offset: 50, nextOffset: null };
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(json(first)).mockResolvedValueOnce(json(later));
+    vi.stubGlobal("fetch", fetcher); render(<SynthesisGenerationCreatePanel {...f.props} />); await choose(f);
+    expect(screen.getByRole("button", { name: "Save analysis request" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Load more analysis providers" }));
+    await screen.findByText("The selected API changed or is unavailable. Choose its current revision before saving a new request.");
+    expect(screen.getByRole("button", { name: "Save analysis request" })).toBeDisabled();
+    expect(screen.getByLabelText("Saved API connection")).toHaveValue("");
+    fireEvent.change(screen.getByLabelText("Saved API connection"), { target: { value: changed.id } });
+    fireEvent.change(screen.getByLabelText("Analysis model"), { target: { value: "synthetic-model" } });
+    expect(screen.getByRole("button", { name: "Save analysis request" })).toBeEnabled();
+    expect(screen.getByText("Destination: http://changed-synthetic.invalid/v1")).toBeTruthy();
+    expect(fetcher.mock.calls.some(([, init]) => init?.method === "POST")).toBe(false);
+  });
   it("can start another request after cancellation precedes creation and the uncertain original is preserved", async () => {
     const f = fixture();
     const fetcher = vi.fn<typeof fetch>().mockImplementation(async (_url, init) => {

@@ -31,7 +31,7 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
   const [pending, setPending] = useState<PendingSynthesisGenerationCommand | null>(null);
   const [copies, setCopies] = useState<ReturnType<typeof listPreservedSynthesisGeneration>>([]);
   const [connections, setConnections] = useState<ApiListedConnection[]>([]), [next, setNext] = useState<number | null>(null);
-  const [connectionId, setConnectionId] = useState(""), [modelId, setModelId] = useState("");
+  const [selection, setSelection] = useState<ApiListedConnection | null>(null), [modelId, setModelId] = useState("");
   const [loading, setLoading] = useState(false), [choicesError, setChoicesError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null), [receipt, setReceipt] = useState<Receipt | null>(null);
   const activeRead = useRef<AbortController | null>(null), activeWrite = useRef<AbortController | null>(null), mounted = useRef(false), writing = useRef(false);
@@ -44,7 +44,7 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
     setReady(true);
   }, [scope]);
   const loseAccess = useCallback(() => {
-    activeRead.current?.abort(); activeWrite.current?.abort(); setReceipt(null); setPending(null); setConnections([]); setCopies([]); setBlocked(true); onAccessLost();
+    activeRead.current?.abort(); activeWrite.current?.abort(); setReceipt(null); setPending(null); setConnections([]); setSelection(null); setModelId(""); setCopies([]); setBlocked(true); onAccessLost();
   }, [onAccessLost]);
   useEffect(() => {
     mounted.current = true; restore();
@@ -54,7 +54,7 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
     activeRead.current?.abort(); const controller = new AbortController(); activeRead.current = controller;
     const isCurrent = () => mounted.current && activeRead.current === controller && !controller.signal.aborted;
     setLoading(true); setChoicesError(null);
-    if (!offset) { setConnections([]); setConnectionId(""); setModelId(""); setNext(null); }
+    if (!offset) { setConnections([]); setSelection(null); setModelId(""); setNext(null); }
     try {
       const response = await readSynthesisHistory(`/api/workspaces/provider-api-connections?workspaceId=${workspaceId}&offset=${offset}`, {
         userId, workspaceId, signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]), isCurrent,
@@ -72,9 +72,11 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
     finally { if (isCurrent()) setLoading(false); }
   }, [userId, workspaceId, loseAccess]);
   useEffect(() => { if (expanded) void loadChoices(); return () => activeRead.current?.abort(); }, [expanded, loadChoices]);
-  const connection = connections.find(row => row.id === connectionId && !row.revoked_at);
+  const connection = selection;
   const revision = connection?.current_revision;
-  const canCreate = ready && !blocked && !pending && !receipt && !busy && !loading && !choicesError && revision?.configuration.modelIds.includes(modelId);
+  const selectionCurrent = Boolean(connection && !connection.revoked_at && revision && connections.some(row => row.id === connection.id &&
+    !row.revoked_at && row.current_revision_id === revision.id && row.current_revision?.configuration_hash === revision.configuration_hash));
+  const canCreate = ready && !blocked && !pending && !receipt && !busy && !loading && !choicesError && selectionCurrent && revision?.configuration.modelIds.includes(modelId);
 
   async function send(command: PendingSynthesisGenerationCommand) {
     if (writing.current) return;
@@ -121,10 +123,11 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
           actorId={receipt.state.request.actorId} stage="segment" cancelled={receipt.cancellation !== null} onAccessLost={loseAccess} /> : null}
         <Button type="button" variant="outline" disabled={busy || Boolean(pending) || blocked} onClick={() => { setReceipt(null); void loadChoices(); }}>Start another request</Button>
       </div> : <>
-        <label className="block text-sm">Saved API connection<select className={inputClass} disabled={busy || Boolean(pending) || loading || blocked} value={connectionId}
-          onChange={event => { setConnectionId(event.target.value); setModelId(""); }}>
+        <label className="block text-sm">Saved API connection<select className={inputClass} disabled={busy || Boolean(pending) || loading || blocked} value={selectionCurrent ? connection?.id : ""}
+          onChange={event => { setSelection(connections.find(row => row.id === event.target.value) ?? null); setModelId(""); }}>
           <option value="">Choose a saved API</option>{connections.filter(row => !row.revoked_at && row.current_revision).map(row => <option key={row.id} value={row.id}>{row.current_revision!.configuration.label}</option>)}
         </select></label>
+        {connection && !selectionCurrent && !loading ? <p role="alert">The selected API changed or is unavailable. Choose its current revision before saving a new request.</p> : null}
         {revision ? <><p className="break-words text-sm [overflow-wrap:anywhere]">Destination: {revision.configuration.endpoint}</p>
           <label className="block text-sm">Analysis model<select className={inputClass} disabled={busy || Boolean(pending) || blocked} value={modelId} onChange={event => setModelId(event.target.value)}>
             <option value="">Choose a model</option>{revision.configuration.modelIds.map(model => <option key={model} value={model}>{model}</option>)}

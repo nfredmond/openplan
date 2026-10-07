@@ -81,6 +81,15 @@ command and offers the original retry without sending a network write. Removing
 that recovery read makes each corresponding new test fail. Full gate and native
 browser checks of creation and cancellation remain pending.
 
+Source review then found that a later metadata page could replace the revision
+of the selected provider without a fresh selection. The panel now retains the
+explicitly selected revision and disables saving if a later read changes or
+revokes it. Staff must choose the current revision and model again. The new
+regression passes; restoring the earlier selection behavior fails that exact
+test. A harmless comment still passes. The first local full gate on `00971fe7`
+was deliberately stopped during tests to make this correction. It supplies no
+passing full-gate claim; the corrected commit requires a fresh run.
+
 The main-branch QA workflow `37567988907` passes after PR #115. Its separate live
 RLS workflow is still running when this checkpoint is recorded. This does not
 replace verification of the new branch.
