@@ -3,6 +3,7 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { hashFrozenRecord } from "./versioning";
 import { readFrozenPlanDescriptor } from "./descriptor-snapshot";
+import { readFrozenPlanContext } from "./context-snapshot";
 
 const frozenIdentitySchema = z.object({
   plan: z.object({
@@ -19,6 +20,7 @@ function frozenPublicIdentity(snapshot: unknown, planId: string, versionId: stri
   const parsed = frozenIdentitySchema.safeParse(snapshot);
   if (!parsed.success || parsed.data.plan.id !== planId || parsed.data.version.id !== versionId
     || parsed.data.version.versionNumber !== versionNumber || hashFrozenRecord(snapshot) !== contentHash) return null;
+  if (readFrozenPlanContext(snapshot as Record<string, unknown>).status === "invalid") return null;
   return parsed.data.plan;
 }
 

@@ -1,9 +1,12 @@
 import { createHash } from "node:crypto";
 import type { JurisdictionPlanDescriptor } from "./contracts";
+import type { SavedPlanContext } from "./plan-context";
 
 export type FrozenPlanContent = {
   /** Absent in historical versions; never backfilled from today's registry. */
   descriptorSnapshot?: JurisdictionPlanDescriptor;
+  /** Historical absence remains explicit; this never reads a later draft. */
+  planContext?: SavedPlanContext | null;
   plan: {
     id: string;
     descriptorId: string;

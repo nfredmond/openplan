@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hashFrozenPlanContent, type FrozenPlanContent } from "./versioning";
 import { getJurisdictionPlanDescriptor } from "./registry";
 import { snapshotPlanDescriptor } from "./descriptor-snapshot";
+import { PlanContextError, readPlanContext } from "./plan-context-store";
 
 export type LandUsePlanAccess = {
   supabase: Awaited<ReturnType<typeof createClient>>;
@@ -97,6 +98,15 @@ export async function buildFrozenSnapshot(
   if (!descriptor || !descriptor.planKinds.some(kind => kind.key === access.plan.plan_kind_key)) return null;
   const descriptorSnapshot = snapshotPlanDescriptor(descriptor, access.plan.plan_kind_key);
   const supabase = access.supabase;
+  let context;
+  try {
+    context = await readPlanContext(supabase, { planId: access.plan.id, workspaceId: access.plan.workspace_id, actorId: access.userId });
+  } catch (error) {
+    if (error instanceof PlanContextError) return null;
+    throw error;
+  }
+  if (context.versionId !== version.id || context.descriptorId !== access.plan.descriptor_id
+    || context.planKindKey !== access.plan.plan_kind_key) return null;
   const [nodes, relationships, designations, actions] = await Promise.all([
     supabase
       .from("land_use_plan_content_nodes")
@@ -139,6 +149,7 @@ export async function buildFrozenSnapshot(
 
   const snapshot: FrozenPlanContent = {
     descriptorSnapshot,
+    planContext: context.contextState.status === "retained" ? context.contextState.context : null,
     plan: {
       id: access.plan.id,
       descriptorId: access.plan.descriptor_id,

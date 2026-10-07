@@ -6,6 +6,7 @@ import { loadLandUsePlanAccess } from "@/lib/land-use-plans/api";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
 import { readFrozenPlanDescriptor } from "@/lib/land-use-plans/descriptor-snapshot";
+import { readFrozenPlanContext } from "@/lib/land-use-plans/context-snapshot";
 import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
 import { buildAdoptionBlockers } from "@/lib/land-use-plans/workflow";
 import { createServiceRoleClient } from "@/lib/supabase/server";
@@ -61,6 +62,10 @@ export async function POST(request: NextRequest, context: Context) {
     return NextResponse.json({ error: "The decision does not match the exact frozen version hash" }, { status: 409 });
   }
 
+  const retainedContext = version.frozen_snapshot && typeof version.frozen_snapshot === "object"
+    ? readFrozenPlanContext(version.frozen_snapshot as Record<string, unknown>) : { status: "invalid" as const };
+  if (retainedContext.status === "invalid") return NextResponse.json({ error: "The frozen plan context could not be verified" }, { status: 409 });
+
   if (payload.operation === "adopt") {
     if (version.state !== "public_review") return NextResponse.json({ error: "Only the frozen public-review version can be adopted" }, { status: 409 });
     const frozenScope = frozenScopeSchema.safeParse(version.frozen_snapshot);
@@ -112,6 +117,8 @@ export async function POST(request: NextRequest, context: Context) {
       descriptorSnapshot: descriptor,
       descriptorSha256: hashFrozenRecord(descriptor),
       descriptorCustody: rules.status === "retained" ? "frozen" : "current_reference_not_retained_at_review",
+      planContext: retainedContext.status === "retained" ? retainedContext.context : null,
+      planContextCustody: retainedContext.status === "retained" ? "frozen" : "not_retained",
       reviewReleaseId: release.id,
       reviewRound: release.round_number,
       reviewOutcomeHash: release.outcome_hash,

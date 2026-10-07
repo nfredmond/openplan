@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { hashFrozenRecord, type FrozenPlanContent } from "@/lib/land-use-plans/versioning";
 import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { syntheticPlanContext } from "./fixtures/land-use-plans/plan-context";
 
 const state = vi.hoisted(() => ({
   rows: {} as Record<string, Array<Record<string, unknown>>>,
@@ -56,6 +57,7 @@ beforeEach(() => {
     descriptor_id: "local-unconfigured", plan_kind_key: "community", title: snapshot.plan.title,
     authority_label: snapshot.plan.authorityLabel, geography_label: snapshot.plan.geographyLabel } };
   state.rows = {
+    land_use_plans: [{ plan_context: null, plan_context_hash: null, descriptor_id: "local-unconfigured", plan_kind_key: "community", current_working_version_id: versionId }],
     land_use_plan_versions: [{ id: versionId, version_number: 1, state: "public_review", frozen_snapshot: snapshot, published_report_id: null }],
     kb_documents: [{ id: documentId, title: "Synthetic supporting document" }],
     land_use_plan_process_records: [{ process_key: "local_process", status: "complete", due_on: null, completed_on: "2026-10-07", evidence_document_id: documentId }],
@@ -77,6 +79,36 @@ describe("freezing a descriptor with authored content", () => {
     (state.access.plan as Record<string, unknown>).plan_kind_key = "absent";
     expect(await buildFrozenSnapshot(state.access as unknown as LandUsePlanAccess, working)).toBeNull();
     expect(state.queries).toHaveLength(0);
+  });
+  it("retains exact context and scopes the fresh context read before hashing", async () => {
+    const context = syntheticPlanContext();
+    Object.assign(state.rows.land_use_plans[0], { plan_context: context, plan_context_hash: "c".repeat(64) });
+    const result = await buildFrozenSnapshot(state.access as unknown as LandUsePlanAccess, working);
+    expect(result).not.toBeNull();
+    expect(result?.snapshot.planContext).toEqual(context);
+    expect(result?.hash).toBe(hashFrozenRecord(result?.snapshot));
+    expect(hashFrozenRecord({ ...result?.snapshot, planContext: null })).not.toBe(result?.hash);
+    const query = state.queries.find(q => q.table === "land_use_plans")!;
+    expect(query.projection.split(",")).toEqual(expect.arrayContaining(["plan_context", "plan_context_hash", "descriptor_id", "plan_kind_key", "current_working_version_id"]));
+    expect(query.filters).toContainEqual(["id", planId]);
+    expect(query.filters).toContainEqual(["workspace_id", workspaceId]);
+    context.place.label = "Later draft label";
+    expect(result?.snapshot.planContext?.place.label).toBe("SYNTHETIC study area");
+  });
+  it("retains explicit historical absence without inventing context", async () => {
+    const result = await buildFrozenSnapshot(state.access as unknown as LandUsePlanAccess, working);
+    expect(result?.snapshot).toHaveProperty("planContext", null);
+  });
+  it.each(["missing", "malformed", "normalized", "hash", "version", "descriptor", "kind"])("refuses a %s context read before freeze", async fault => {
+    const row = state.rows.land_use_plans[0];
+    if (fault === "missing") delete row.plan_context;
+    if (fault === "malformed") row.plan_context = {};
+    if (fault === "normalized") { const context = syntheticPlanContext(); context.place.label = "  Changed by trimming  "; row.plan_context = context; row.plan_context_hash = "c".repeat(64); }
+    if (fault === "hash") row.plan_context_hash = "c".repeat(64);
+    if (fault === "version") row.current_working_version_id = documentId;
+    if (fault === "descriptor") row.descriptor_id = "us-ca-general-plan";
+    if (fault === "kind") row.plan_kind_key = "comprehensive";
+    expect(await buildFrozenSnapshot(state.access as unknown as LandUsePlanAccess, working)).toBeNull();
   });
 });
 
@@ -105,6 +137,22 @@ describe("adoption of the reviewed descriptor", () => {
     expect(query.filters).toContainEqual(["plan_id", planId]);
   });
 
+  it("retains the exact reviewed context in the adoption manifest", async () => {
+    snapshot.planContext = syntheticPlanContext(); rehash();
+    const response = await adopt();
+    expect(response.status).toBe(200);
+    expect(state.rpc.mock.calls[0][1].p_adoption_manifest).toMatchObject({ planContext: snapshot.planContext, planContextCustody: "frozen" });
+  });
+
+  it.each(["malformed", "normalized"])("refuses %s context before recording adoption", async fault => {
+    const context = syntheticPlanContext();
+    if (fault === "malformed") context.savedBy = "unverified";
+    else context.place.label = "  Trimmed label  ";
+    snapshot.planContext = context; rehash();
+    expect((await adopt()).status).toBe(409);
+    expect(state.rpc).not.toHaveBeenCalled();
+  });
+
   it("keeps required recorded process evidence as an adoption gate", async () => {
     state.rows.land_use_plan_process_records = [];
     const response = await adopt();
@@ -120,6 +168,8 @@ describe("adoption of the reviewed descriptor", () => {
     const manifest = state.rpc.mock.calls[0][1].p_adoption_manifest;
     expect(manifest.descriptorCustody).toBe("current_reference_not_retained_at_review");
     expect(manifest.descriptorSnapshot).toEqual(getJurisdictionPlanDescriptor("local-unconfigured"));
+    expect(manifest.planContext).toBeNull();
+    expect(manifest.planContextCustody).toBe("not_retained");
     expect(snapshot).not.toHaveProperty("descriptorSnapshot");
   });
 
