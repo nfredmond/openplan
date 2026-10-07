@@ -100,6 +100,13 @@ BEGIN
   PERFORM set_config('request.jwt.claim.sub',request.actor_id::text,true);
   EXECUTE 'SET LOCAL ROLE authenticated';
   receipt:=enqueue_engagement_synthesis_execution(queued.command_text);
+  IF read_engagement_synthesis_execution_queue(request.campaign_id,request.id,queued.authorization_id)->'receipt' IS DISTINCT FROM receipt THEN
+   RAISE EXCEPTION 'Lookup receipt differs';
+  END IF;
+  BEGIN
+   PERFORM read_engagement_synthesis_execution_queue(request.campaign_id,request.id,gen_random_uuid());
+   RAISE EXCEPTION 'Unknown permission lookup allowed';
+  EXCEPTION WHEN insufficient_privilege THEN NULL; END;
   IF receipt->>'queueId' IS DISTINCT FROM queued.id::text THEN RAISE EXCEPTION 'Authenticated replay failed'; END IF;
   BEGIN
    PERFORM 1 FROM engagement_synthesis_execution_queue;
@@ -114,6 +121,10 @@ BEGIN
    PERFORM enqueue_engagement_synthesis_execution(queued.command_text);
    RAISE EXCEPTION 'Foreign actor replay allowed';
   EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+  BEGIN
+   PERFORM read_engagement_synthesis_execution_queue(request.campaign_id,request.id,queued.authorization_id);
+   RAISE EXCEPTION 'Foreign actor lookup allowed';
+  EXCEPTION WHEN insufficient_privilege THEN NULL; END;
   PERFORM set_config('request.jwt.claim.sub',request.actor_id::text,true);
   EXECUTE 'RESET ROLE';
   FOREACH role_name IN ARRAY ARRAY['anon','service_role'] LOOP
@@ -121,6 +132,10 @@ BEGIN
    BEGIN
     PERFORM enqueue_engagement_synthesis_execution(queued.command_text);
     RAISE EXCEPTION 'Nonstaff execute allowed for %',role_name;
+   EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+   BEGIN
+    PERFORM read_engagement_synthesis_execution_queue(request.campaign_id,request.id,queued.authorization_id);
+    RAISE EXCEPTION 'Nonstaff lookup allowed';
    EXCEPTION WHEN insufficient_privilege THEN NULL; END;
    EXECUTE 'RESET ROLE';
   END LOOP;
@@ -133,6 +148,9 @@ BEGIN
    WHEN 'thematic' THEN PERFORM authorize_engagement_synthesis_thematic(request.id,fresh_id,fresh_intent);
   END CASE;
   fresh_command:=command||jsonb_build_object('queueId',gen_random_uuid(),'authorizationId',fresh_id);
+  IF read_engagement_synthesis_execution_queue(request.campaign_id,request.id,fresh_id)->'receipt' IS DISTINCT FROM 'null'::jsonb THEN
+   RAISE EXCEPTION 'Unused permission has queue receipt';
+  END IF;
   PERFORM enqueue_engagement_synthesis_execution(fresh_command::text);
   -- Rotation does not alter old receipts, but invalidates an unused allowance.
   fresh_id:=gen_random_uuid();
@@ -207,6 +225,11 @@ BEGIN
    PERFORM enqueue_engagement_synthesis_execution(fresh_command::text);
    RAISE EXCEPTION 'Cancelled new queue accepted';
   EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
+  EXECUTE 'RESET ROLE';
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  IF read_engagement_synthesis_execution_queue(request.campaign_id,request.id,queued.authorization_id)->'receipt' IS DISTINCT FROM receipt THEN
+   RAISE EXCEPTION 'Cancelled lookup receipt differs';
+  END IF;
   EXECUTE 'RESET ROLE';
   RAISE NOTICE 'authenticated role and cancellation verified for %',queued.stage;
  END LOOP;

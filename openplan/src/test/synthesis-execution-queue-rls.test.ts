@@ -57,7 +57,13 @@ function probe(mutation = "", stage: Stage = "segment", apiKey = true) {
     encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], timeout: 60_000, maxBuffer: 16 * 1024 * 1024,
   });
 }
+const lookupDefinition = migration.slice(migration.indexOf("CREATE FUNCTION public.read_engagement_synthesis_execution_queue"),
+  migration.indexOf("REVOKE ALL ON FUNCTION public.read_engagement_synthesis_execution_queue"))
+  .replace("CREATE FUNCTION", "CREATE OR REPLACE FUNCTION");
 const faults = [
+  ["lookup permission", lookupDefinition.replace("NOT EXISTS(SELECT 1 FROM engagement_synthesis_generation_authorizations WHERE id=p_authorization AND request_id=p_request)", "false"), "Unknown permission lookup allowed"],
+  ["lookup receipt", lookupDefinition.replace("'commandText',saved.command_text", "'commandText',saved.command_text||' '"), "Lookup receipt differs"],
+  ["lookup role", "GRANT EXECUTE ON FUNCTION public.read_engagement_synthesis_execution_queue(uuid,uuid,uuid) TO anon;", "Nonstaff lookup allowed"],
   ["credential rotation", change("credential_hash IS DISTINCT FROM permission.credential_sha256", "false"), "Changed credential queue accepted"],
   ["workspace", change("(command->>'workspaceId')::uuid IS DISTINCT FROM workspace", "false"), "Foreign workspace accepted"],
   ["source identity", change("request.source_id IS DISTINCT FROM (command->>'sourceId')::uuid", "false"), "Foreign source accepted"],

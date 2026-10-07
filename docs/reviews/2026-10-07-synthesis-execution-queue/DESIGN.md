@@ -356,3 +356,23 @@ in `recovery-controls.json`. These in-memory storage and mocked transport tests
 do not prove browser persistence, cross-device recovery or live HTTP behavior.
 The scheduling control, server-side receipt lookup, unreadable-copy preservation
 and identified-build desktop/mobile acceptance remain unfinished.
+
+## Server receipt lookup candidate
+
+A native read command recovers the exact receipt by campaign, request and
+permission ID. It requires current staff scope and the original requester.
+Unknown permissions are refused; a valid permission with no queue entry returns
+an explicit null receipt. The read neither schedules work nor renews permission.
+Existing receipts remain readable after cancellation under current access.
+
+The candidate remains in the uninstalled additive queue migration. Browser and
+HTTP integration will verify both the returned scope and original command bytes
+before offering recovery. Native receipt lookup alone does not prove cross-device
+recovery or allow a browser to infer that a worker ran.
+
+All 19 native cases pass in 34.14 seconds on the isolated restore target, including
+all three stages, the harmless control and targeted lookup faults. Removing the
+permission lookup check, changing returned command bytes or granting anonymous
+execution fails the intended assertion. Tests also refuse a foreign actor,
+recover unchanged receipts after cancellation and distinguish an unused allowance
+from a missing permission. Changed-test ESLint and whitespace checks pass.

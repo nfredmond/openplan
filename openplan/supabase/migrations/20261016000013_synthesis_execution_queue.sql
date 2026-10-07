@@ -90,3 +90,24 @@ EXCEPTION WHEN data_exception THEN RAISE EXCEPTION 'Invalid execution queue comm
 END $$;
 REVOKE ALL ON FUNCTION public.enqueue_engagement_synthesis_execution(text) FROM PUBLIC,anon,authenticated,service_role;
 GRANT EXECUTE ON FUNCTION public.enqueue_engagement_synthesis_execution(text) TO authenticated;
+
+-- Recover the original command on another browser without creating a new entry.
+CREATE FUNCTION public.read_engagement_synthesis_execution_queue(p_campaign uuid,p_request uuid,p_authorization uuid)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,pg_temp AS $$
+DECLARE workspace uuid; request public.engagement_synthesis_generation_requests;
+ saved public.engagement_synthesis_execution_queue;
+BEGIN
+ workspace:=lock_synthesis_generation_request_scope(p_campaign,p_request);
+ SELECT * INTO request FROM engagement_synthesis_generation_requests WHERE id=p_request;
+ IF request.id IS NULL OR request.actor_id IS DISTINCT FROM auth.uid()
+ OR NOT EXISTS(SELECT 1 FROM engagement_synthesis_generation_authorizations WHERE id=p_authorization AND request_id=p_request) THEN
+  RAISE EXCEPTION 'Original execution requester and permission required' USING ERRCODE='42501';
+ END IF;
+ SELECT * INTO saved FROM engagement_synthesis_execution_queue WHERE authorization_id=p_authorization AND request_id=p_request;
+ RETURN jsonb_build_object('schemaVersion',1,'campaignId',p_campaign,'workspaceId',workspace,
+  'requestId',p_request,'authorizationId',p_authorization,'receipt',CASE WHEN saved.id IS NULL THEN NULL ELSE
+   jsonb_build_object('schemaVersion',1,'queueId',saved.id,'commandText',saved.command_text,
+    'commandSha256',saved.command_sha256,'createdAt',saved.created_at) END);
+END $$;
+REVOKE ALL ON FUNCTION public.read_engagement_synthesis_execution_queue(uuid,uuid,uuid) FROM PUBLIC,anon,authenticated,service_role;
+GRANT EXECUTE ON FUNCTION public.read_engagement_synthesis_execution_queue(uuid,uuid,uuid) TO authenticated;
