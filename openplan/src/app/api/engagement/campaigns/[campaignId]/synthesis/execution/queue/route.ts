@@ -62,4 +62,3 @@ export async function POST(request: NextRequest, context: Context) {
     return failure(failed.kind, failed.status);
   }
 }
-
