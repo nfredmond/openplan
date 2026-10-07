@@ -22,6 +22,23 @@ beforeEach(() => {
   mocks.membership.mockResolvedValue({ membership: { workspace_id: creationScope.workspaceId, role: "member" }, workspace: { name: "SYNTHETIC office" } });
 });
 describe("plan-owned first-run rule selection", () => {
+  it.each([
+    { working: "older", adopted: "middle", expected: "Version 1 · working" },
+    { working: null, adopted: "middle", expected: "Version 2 · adopted" },
+    { working: null, adopted: null, expected: "Version 3 · public review" },
+    { working: "absent", adopted: "absent", expected: "Version 3 · public review" },
+  ])("shows the same default edition as the workbench: $expected", async ({ working, adopted, expected }) => {
+    const versions = [{ id: "older", version_number: 1, state: "working" },
+      { id: "latest", version_number: 3, state: "public_review" }, { id: "middle", version_number: 2, state: "adopted" }];
+    mocks.order.mockResolvedValue({ data: [{ id: "synthetic-plan", title: "SYNTHETIC edition list", descriptor_id: "local-unconfigured",
+      plan_kind_key: "community", authority_label: "SYNTHETIC body", geography_label: "SYNTHETIC area",
+      current_working_version_id: working, current_adopted_version_id: adopted, land_use_plan_versions: versions }], error: null });
+    render(await LandUsePlansPage());
+    expect(screen.getByText(expected)).toBeVisible();
+    expect(screen.queryByText("Version unavailable")).toBeNull();
+    expect(versions.map(version => version.id)).toEqual(["older", "latest", "middle"]);
+    expect(mocks.select).toHaveBeenCalledWith(expect.stringContaining("(id, version_number, state, content_hash)"));
+  });
   it("passes each family-kind hash from the real page into the saved creation draft", async () => {
     render(await LandUsePlansPage());
     fireEvent.change(await screen.findByLabelText("Plan title"), { target: { value: "SYNTHETIC kind selection" } });

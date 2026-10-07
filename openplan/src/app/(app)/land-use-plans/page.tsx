@@ -62,7 +62,9 @@ export default async function LandUsePlansPage() {
           {plans.map((plan) => {
             const descriptor = getPlanKindDescriptor(plan.descriptor_id, plan.plan_kind_key);
             const versions = plan.land_use_plan_versions ?? [];
-            const active = versions.find((version) => version.id === plan.current_working_version_id) ?? versions.find((version) => version.id === plan.current_adopted_version_id);
+            const active = versions.find((version) => version.id === plan.current_working_version_id)
+              ?? versions.find((version) => version.id === plan.current_adopted_version_id)
+              ?? [...versions].sort((a, b) => b.version_number - a.version_number)[0];
             return (
               <Link key={plan.id} href={`/land-use-plans/${plan.id}`} className="rounded-xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{descriptor?.planKinds.find((kind) => kind.key === plan.plan_kind_key)?.label ?? plan.plan_kind_key}</p>

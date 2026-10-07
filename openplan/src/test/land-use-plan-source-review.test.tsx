@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import PublishedLandUsePlanPage from "@/app/(published)/published-plans/[planId]/page";
 import PublicLandUsePlanReviewPage from "@/app/(published)/review/land-use-plans/[shareToken]/page";
 import { loadPublishedLandUsePlanPacket, loadPublicLandUsePlanReviewPacket, type PublishedLandUsePlanPacket } from "@/lib/land-use-plans/public";
+import { syntheticPlanContext } from "./fixtures/land-use-plans/plan-context";
 
 vi.mock("@/lib/land-use-plans/public", () => ({ loadPublishedLandUsePlanPacket: vi.fn(), loadPublicLandUsePlanReviewPacket: vi.fn() }));
 vi.mock("@/components/land-use-plans/public-designation-map", () => ({ PublicDesignationMap: () => null }));
@@ -20,6 +21,43 @@ function packet(sourceUrls: string[]): PublishedLandUsePlanPacket {
 }
 
 describe("published plan source-review disclosure", () => {
+  describe.each(["adopted", "review"] as const)("%s saved context and download", kind => {
+    async function show(content: Record<string, unknown>) {
+      const value = { ...packet([]), content };
+      if (kind === "adopted") {
+        vi.mocked(loadPublishedLandUsePlanPacket).mockResolvedValue({ ok: true, packet: value });
+        render(await PublishedLandUsePlanPage({ params: Promise.resolve({ planId: "test-plan" }) }));
+      } else {
+        vi.mocked(loadPublicLandUsePlanReviewPacket).mockResolvedValue({ ok: true, packet: { ...value,
+          release: { id: "synthetic-release", roundNumber: 1, reviewOpenOn: "2026-10-07", reviewCloseOn: "2026-10-08", reviewMethod: "external_process", status: "open", outcomeHash: null } } });
+        render(await PublicLandUsePlanReviewPage({ params: Promise.resolve({ shareToken: "synthetic-token" }) }));
+      }
+    }
+    it("shows saved area, authority and caveat with an explicit JSON download", async () => {
+      const context = syntheticPlanContext();
+      context.place.label = "SYNTHETIC retained public boundary";
+      context.assessment.authorities[0].label = "SYNTHETIC retained responsible body";
+      await show({ planContext: context, confidential_notes: "SYNTHETIC private sentinel" });
+      expect(screen.getByRole("region", { name: "Context retained with this version" })).toBeVisible();
+      expect(screen.getByText(context.place.label)).toBeVisible();
+      expect(screen.getByText(context.assessment.authorities[0].label)).toBeVisible();
+      expect(screen.getByText(context.assessment.applicability.explanation)).toBeVisible();
+      expect(screen.getByText(/They do not establish legal sufficiency/)).toBeVisible();
+      expect(screen.queryByText("SYNTHETIC private sentinel")).toBeNull();
+      expect(screen.getByRole("link", { name: /Download/ })).toHaveAttribute("download", `openplan-${kind === "adopted" ? "adopted" : "review"}-v1.json`);
+      expect(screen.getByRole("link", { name: /Download/ })).toHaveAttribute("href", kind === "adopted" ? "/api/public/land-use-plans/test-plan" : "/api/public/land-use-plan-reviews/synthetic-token");
+    });
+    it.each([{}, { planContext: null }])("discloses unretained context without substituting display labels", async content => {
+      await show(content);
+      expect(screen.getByText(/This version did not retain its plan context/)).toBeVisible();
+      expect(screen.queryByRole("heading", { name: "Responsible bodies" })).toBeNull();
+    });
+    it("withholds an invalid saved assessment in a malformed reader result", async () => {
+      await show({ planContext: { ...syntheticPlanContext(), savedBy: "invalid" } });
+      expect(screen.getByRole("alert")).toHaveTextContent("could not be verified");
+      expect(screen.queryByRole("heading", { name: "Responsible bodies" })).toBeNull();
+    });
+  });
   it.each(["frozen", "not_retained"] as const)("discloses %s rules on the public review page", async custody => {
     const value = { ...packet([]), descriptorCustody: custody, release: { id: "synthetic-release", roundNumber: 1,
       reviewOpenOn: "2026-10-07", reviewCloseOn: "2026-10-08", reviewMethod: "external_process", status: "open" as const, outcomeHash: null } };
