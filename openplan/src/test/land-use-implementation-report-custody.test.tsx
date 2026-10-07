@@ -6,8 +6,8 @@ import { loadImplementationReportSnapshot } from "@/lib/land-use-plans/implement
 import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
 import { syntheticPlanContext } from "./fixtures/land-use-plans/plan-context";
 
-const mocks = vi.hoisted(() => ({ create: vi.fn() }));
-vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.create }));
+const mocks = vi.hoisted(() => ({ create: vi.fn(), service: vi.fn() }));
+vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.create, createServiceRoleClient: mocks.service }));
 const planId = "23000000-0000-4000-8000-000000000001";
 const versionId = "23000000-0000-4000-8000-000000000002";
 const reportId = "23000000-0000-4000-8000-000000000003";
@@ -129,5 +129,71 @@ describe("implementation report retains verified history", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("This does not establish whether the agency completed any action.");
     for (const value of ["SYNTHETIC saved action", "SYNTHETIC adopted title", "SYNTHETIC later title", "ALTERED", "PRIVATE"]) expect(screen.queryByText(value)).toBeNull();
     expect(screen.queryByRole("link", { name: "Download source JSON" })).toBeNull();
+  });
+});
+
+
+describe("atomic implementation report snapshot bytes", () => {
+  let retained: Record<string, unknown> | null;
+  let serviceError: { message: string } | null;
+  let selected: string;
+  let filters: Array<[string, unknown]>;
+  beforeEach(() => {
+    const text = JSON.stringify(snapshot, null, 1);
+    metadata.contentHashEncoding = "postgresql-jsonb-text-sha256";
+    metadata.contentHash = createHash("sha256").update(text).digest("hex");
+    native().content_hash = metadata.contentHash;
+    retained = { plan_id: planId, workspace_id: workspaceId, version_id: versionId, report_id: reportId, snapshot_text: text, content_hash: metadata.contentHash };
+    selected = ""; filters = []; serviceError = null;
+    mocks.service.mockReturnValue({ from(table: string) {
+      expect(table).toBe("land_use_plan_implementation_report_commands");
+      const chain = {
+        select(value: string) { selected = value; return chain; },
+        eq(key: string, value: unknown) { filters.push([key, value]); return chain; },
+        async maybeSingle() { return { data: retained && Object.fromEntries(Object.entries(retained).filter(([key]) => selected.split(",").map(v => v.trim()).includes(key))), error: serviceError }; },
+      }; return chain;
+    } });
+  });
+  it("verifies exact retained bytes and uses only scoped public snapshot fields", async () => {
+    await show(); expect(screen.getByText("SYNTHETIC saved action")).toBeVisible();
+    expect(selected).toBe("plan_id, workspace_id, version_id, report_id, snapshot_text, content_hash");
+    expect(filters).toEqual([["plan_id", planId], ["workspace_id", workspaceId], ["report_id", reportId]]);
+    expect(mocks.service).toHaveBeenCalledOnce();
+  });
+  it("keeps key order immaterial while preserving the original text hash", async () => {
+    metadata.snapshot = Object.fromEntries(Object.entries(snapshot).reverse());
+    await show(); expect(screen.getByText("SYNTHETIC saved action")).toBeVisible();
+  });
+  it.each(["plan_id", "workspace_id", "version_id", "report_id"])("withholds a different native %s", async key => {
+    retained![key] = "23000000-0000-4000-8000-000000000009";
+    await show(); expect(screen.getByRole("alert")).toHaveTextContent("does not match");
+    expect(screen.queryByText("SYNTHETIC saved action")).toBeNull();
+  });
+  it.each(["missing", "query failure", "different native hash", "changed bytes", "invalid JSON", "different parsed value", "not text"])("withholds %s", async kind => {
+    if (kind === "missing") retained = null;
+    if (kind === "query failure") serviceError = { message: "private internal error" };
+    if (kind === "different native hash") retained!.content_hash = "a".repeat(64);
+    if (kind === "changed bytes") retained!.snapshot_text += " ";
+    if (kind === "not text") retained!.snapshot_text = snapshot;
+    if (kind === "invalid JSON" || kind === "different parsed value") {
+      retained!.snapshot_text = kind === "invalid JSON" ? "{" : JSON.stringify({ ...snapshot, reportingPeriodStart: "2026-01-02" });
+      retained!.content_hash = createHash("sha256").update(String(retained!.snapshot_text)).digest("hex");
+      metadata.contentHash = retained!.content_hash; native().content_hash = retained!.content_hash;
+    }
+    await show(); expect(screen.getByRole("alert")).toHaveTextContent("does not match");
+    expect(screen.queryByText("SYNTHETIC saved action")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Download source JSON" })).toBeNull();
+  });
+  it.each([null, "unknown", 1])("refuses unknown encoding %s before privileged reads", async encoding => {
+    metadata.contentHashEncoding = encoding; await show(); expect(screen.getByRole("alert")).toBeVisible();
+    expect(mocks.service).not.toHaveBeenCalled();
+  });
+  it("never reads privileged records if current RLS-backed register access fails", async () => {
+    errors.land_use_plan_implementation_reports = { message: "not allowed" }; await show();
+    expect(mocks.service).not.toHaveBeenCalled(); expect(screen.queryByText("SYNTHETIC saved action")).toBeNull();
+  });
+  it("withholds unexpected service read failure", async () => {
+    mocks.service.mockImplementation(() => { throw new Error("private configuration"); });
+    await show(); expect(screen.getByRole("alert")).toBeVisible(); expect(screen.queryByText("private configuration")).toBeNull();
   });
 });

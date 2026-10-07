@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isDeepStrictEqual } from "node:util";
 import { z } from "zod";
 
@@ -30,6 +32,7 @@ export async function loadImplementationReportSnapshot(
 ) {
   if (report.report_type !== "land_use_plan_implementation_report" || !report.land_use_plan_id
     || metadata.kind !== "land_use_plan_implementation_report" || metadata.landUsePlanId !== report.land_use_plan_id
+    || (metadata.contentHashEncoding !== undefined && metadata.contentHashEncoding !== "postgresql-jsonb-text-sha256")
     || !hash.safeParse(metadata.contentHash).success || !snapshotSchema.safeParse(metadata.snapshot).success) return null;
 
   const result = await supabase.from("land_use_plan_implementation_reports")
@@ -59,6 +62,21 @@ export async function loadImplementationReportSnapshot(
     actions: native.action_status_snapshot,
   };
   if (!isDeepStrictEqual(metadata.snapshot, snapshot)) return null;
+  if (metadata.contentHashEncoding === "postgresql-jsonb-text-sha256") {
+    // Read only the public snapshot fields after the caller's RLS client has
+    // verified access to the register and adopted edition. Never return command
+    // text, actor details or the private receipt from this service-only table.
+    try {
+      const retained = await createServiceRoleClient().from("land_use_plan_implementation_report_commands")
+        .select("plan_id, workspace_id, version_id, report_id, snapshot_text, content_hash")
+        .eq("plan_id", report.land_use_plan_id).eq("workspace_id", report.workspace_id).eq("report_id", report.id).maybeSingle();
+      const record = retained.data;
+      if (retained.error || !record || record.plan_id !== report.land_use_plan_id || record.workspace_id !== report.workspace_id
+        || record.version_id !== version.id || record.report_id !== report.id || record.content_hash !== metadata.contentHash
+        || typeof record.snapshot_text !== "string" || createHash("sha256").update(record.snapshot_text).digest("hex") !== record.content_hash
+        || !isDeepStrictEqual(JSON.parse(record.snapshot_text), snapshot)) return null;
+    } catch { return null; }
+  }
   return { identity, frozen: version.frozen_snapshot as Record<string, unknown>, snapshot,
     summary: native.summary ?? `Implementation status for ${native.reporting_period_start} through ${native.reporting_period_end}.` };
 }
