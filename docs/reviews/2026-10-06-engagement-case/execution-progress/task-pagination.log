@@ -1,0 +1,31 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-plan.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts (16 tests | 1 failed) 318ms
+     × reads beyond the first task page without a silent limit 187ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > reads beyond the first task page without a silent limit
+Error: Synthesis plan seal is incomplete or corrupt
+ ❯ verifySynthesisGenerationPlanState src/lib/engagement/synthesis-generation-plan.ts:65:119
+     63|   if (state.taskBytes !== (last?.cumulativeBytes ?? 0) || state.tailSh…
+     64|   if (state.seal) {
+     65|     if (state.nextIndex !== plan.entries.length || digest(state.seal.r…
+       |                                                                                                                       ^
+     66|     const receipt = z.object({
+     67|       schemaVersion: z.literal(1), requestId: z.literal(plan.header.re…
+ ❯ readSynthesisProgressPlan src/lib/engagement/synthesis-progress-plan-server.ts:56:3
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts:53:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  23:42:18
+   Duration  938ms (transform 106ms, setup 53ms, import 148ms, tests 318ms, environment 324ms)

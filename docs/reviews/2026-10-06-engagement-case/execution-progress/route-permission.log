@@ -1,0 +1,36 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-route.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-route.test.ts (22 tests | 1 failed) 29ms
+     × refuses denied before private reads 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-route.test.ts > saved analysis results HTTP boundary > refuses denied before private reads
+AssertionError: expected 200 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 200
+
+ ❯ src/test/engagement-synthesis-progress-route.test.ts:48:29
+     46|     if (kind.endsWith("workspace")) override["x-openplan-expected-work…
+     47|     const response = await GET(get(undefined, override), context);
+     48|     expect(response.status).toBe(["anonymous", "auth-error"].includes(…
+       |                             ^
+     49|     expect(mocks.service).not.toHaveBeenCalled(); expect(mocks.read).n…
+     50|     expect(JSON.stringify(await response.json())).not.toContain("PRIVA…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 passed (22)
+   Start at  23:42:21
+   Duration  663ms (transform 57ms, setup 57ms, import 93ms, tests 29ms, environment 332ms)

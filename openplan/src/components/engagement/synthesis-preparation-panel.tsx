@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SynthesisExecutionPanel } from "./synthesis-execution-panel";
+import { SynthesisProgressPanel } from "./synthesis-progress-panel";
 import { readSynthesisHistory } from "@/lib/engagement/synthesis-history-read";
 import { verifySynthesisPreparation, type SynthesisPreparationState } from "@/lib/engagement/synthesis-preparation-state";
 import {
@@ -109,6 +110,8 @@ function Preparation({ userId, workspaceId, campaignId, sourceId, sourceSha256, 
     </div>
     {pending ? <p className="text-sm">An exact {pending.command.operation} command remains in this browser. Retrying uses the same request and observed attempt. It never starts provider execution.</p> : null}
     <SynthesisExecutionPanel userId={userId} workspaceId={workspaceId} campaignId={campaignId} requestId={requestId}
+      actorId={actorId} sourceId={sourceId} sourceSha256={sourceSha256} requestIntentSha256={intentSha256} stage={stage} onAccessLost={onAccessLost} />
+    <SynthesisProgressPanel userId={userId} workspaceId={workspaceId} campaignId={campaignId} requestId={requestId}
       actorId={actorId} sourceId={sourceId} sourceSha256={sourceSha256} requestIntentSha256={intentSha256} stage={stage} onAccessLost={onAccessLost} />
     {copies.length ? <details><summary className="cursor-pointer">Preserved preparation copies ({copies.length})</summary>
       <p className="text-sm">These copies contain request identifiers. Keep them private. Downloading or preserving a copy does not send it.</p>

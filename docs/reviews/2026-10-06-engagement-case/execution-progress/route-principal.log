@@ -1,0 +1,42 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-route.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-route.test.ts (22 tests | 4 failed) 26ms
+     × refuses changed-user before private reads 4ms
+     × refuses changed-workspace before private reads 1ms
+     × refuses missing-user before private reads 1ms
+     × refuses missing-workspace before private reads 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-route.test.ts > saved analysis results HTTP boundary > refuses changed-user before private reads
+ FAIL  src/test/engagement-synthesis-progress-route.test.ts > saved analysis results HTTP boundary > refuses changed-workspace before private reads
+ FAIL  src/test/engagement-synthesis-progress-route.test.ts > saved analysis results HTTP boundary > refuses missing-user before private reads
+ FAIL  src/test/engagement-synthesis-progress-route.test.ts > saved analysis results HTTP boundary > refuses missing-workspace before private reads
+AssertionError: expected 200 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 200
+
+ ❯ src/test/engagement-synthesis-progress-route.test.ts:48:29
+     46|     if (kind.endsWith("workspace")) override["x-openplan-expected-work…
+     47|     const response = await GET(get(undefined, override), context);
+     48|     expect(response.status).toBe(["anonymous", "auth-error"].includes(…
+       |                             ^
+     49|     expect(mocks.service).not.toHaveBeenCalled(); expect(mocks.read).n…
+     50|     expect(JSON.stringify(await response.json())).not.toContain("PRIVA…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 18 passed (22)
+   Start at  23:42:20
+   Duration  655ms (transform 53ms, setup 58ms, import 85ms, tests 26ms, environment 332ms)

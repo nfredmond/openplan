@@ -1,0 +1,265 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-server.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts (23 tests | 8 failed) 24ms
+     × brackets segment history with current native access and omits private text 8ms
+     × brackets context history with current native access and omits private text 1ms
+     × brackets thematic history with current native access and omits private text 1ms
+     × refuses segment results if access is revoked after reconstruction 4ms
+     × refuses context results if access is revoked after reconstruction 1ms
+     × refuses thematic results if access is revoked after reconstruction 1ms
+     × reports cancellation observed at the final access check without discarding retained results 1ms
+     × refuses changed identity and an abort at the final access check 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > brackets segment history with current native access and omits private text
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > brackets context history with current native access and omits private text
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > brackets thematic history with current native access and omits private text
+AssertionError: expected "vi.fn()" to be called 2 times, but got 1 times
+ ❯ src/test/engagement-synthesis-progress-server.test.ts:37:27
+     35|   it.each(["segment", "context", "thematic"] as const)("brackets %s hi…
+     36|     const result = await run(stage), reader = mocks[stage];
+     37|     expect(mocks.request).toHaveBeenCalledTimes(2);
+       |                           ^
+     38|     expect(mocks.request).toHaveBeenNthCalledWith(1, client, requestSc…
+     39|     expect(reader).toHaveBeenCalledExactlyOnceWith(client, service, re…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > refuses segment results if access is revoked after reconstruction
+AssertionError: promise resolved "{ …(17) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "actorId": "c7610000-0000-4000-8000-000000000004",
++   "campaignId": "c7610000-0000-4000-8000-000000000001",
++   "cancelled": false,
++   "checkedAt": "2026-10-07T06:41:42.694Z",
++   "counts": [
++     {
++       "count": 1,
++       "disposition": "validated_output",
++     },
++     {
++       "count": 1,
++       "disposition": "awaiting_result",
++     },
++     {
++       "count": 1,
++       "disposition": "not_started",
++     },
++   ],
++   "interpretation": "not_assessed",
++   "manifestSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
++   "requestId": "c7610000-0000-4000-8000-000000000003",
++   "requestIntentSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
++   "schemaVersion": 1,
++   "selectionSequence": 2,
++   "sourceId": "c7610000-0000-4000-8000-000000000005",
++   "sourceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++   "stage": "segment",
++   "status": "incomplete",
++   "taskCount": 3,
++   "workspaceId": "c7610000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts:52:28
+     50|   it.each(["segment", "context", "thematic"] as const)("refuses %s res…
+     51|     mocks.request.mockResolvedValueOnce(original).mockRejectedValueOnc…
+     52|     await expect(run(stage)).rejects.toMatchObject({ status: 403 });
+       |                            ^
+     53|   });
+     54|   it("does not reach private replay when initial access fails", async …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > refuses context results if access is revoked after reconstruction
+AssertionError: promise resolved "{ …(17) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "actorId": "c7610000-0000-4000-8000-000000000004",
++   "campaignId": "c7610000-0000-4000-8000-000000000001",
++   "cancelled": false,
++   "checkedAt": "2026-10-07T06:41:42.698Z",
++   "counts": [
++     {
++       "count": 1,
++       "disposition": "verified",
++     },
++     {
++       "count": 1,
++       "disposition": "awaiting_output",
++     },
++     {
++       "count": 1,
++       "disposition": "blocked_by_predecessor",
++     },
++   ],
++   "interpretation": "machine_unreviewed",
++   "manifestSha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
++   "requestId": "c7610000-0000-4000-8000-000000000003",
++   "requestIntentSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
++   "schemaVersion": 1,
++   "selectionSequence": 5,
++   "sourceId": "c7610000-0000-4000-8000-000000000005",
++   "sourceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++   "stage": "context",
++   "status": "incomplete",
++   "taskCount": 3,
++   "workspaceId": "c7610000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts:52:28
+     50|   it.each(["segment", "context", "thematic"] as const)("refuses %s res…
+     51|     mocks.request.mockResolvedValueOnce(original).mockRejectedValueOnc…
+     52|     await expect(run(stage)).rejects.toMatchObject({ status: 403 });
+       |                            ^
+     53|   });
+     54|   it("does not reach private replay when initial access fails", async …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > refuses thematic results if access is revoked after reconstruction
+AssertionError: promise resolved "{ …(17) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "actorId": "c7610000-0000-4000-8000-000000000004",
++   "campaignId": "c7610000-0000-4000-8000-000000000001",
++   "cancelled": false,
++   "checkedAt": "2026-10-07T06:41:42.699Z",
++   "counts": [
++     {
++       "count": 1,
++       "disposition": "verified",
++     },
++     {
++       "count": 1,
++       "disposition": "awaiting_output",
++     },
++     {
++       "count": 1,
++       "disposition": "blocked_by_predecessor",
++     },
++   ],
++   "interpretation": "machine_unreviewed",
++   "manifestSha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
++   "requestId": "c7610000-0000-4000-8000-000000000003",
++   "requestIntentSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
++   "schemaVersion": 1,
++   "selectionSequence": 5,
++   "sourceId": "c7610000-0000-4000-8000-000000000005",
++   "sourceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++   "stage": "thematic",
++   "status": "incomplete",
++   "taskCount": 3,
++   "workspaceId": "c7610000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts:52:28
+     50|   it.each(["segment", "context", "thematic"] as const)("refuses %s res…
+     51|     mocks.request.mockResolvedValueOnce(original).mockRejectedValueOnc…
+     52|     await expect(run(stage)).rejects.toMatchObject({ status: 403 });
+       |                            ^
+     53|   });
+     54|   it("does not reach private replay when initial access fails", async …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > reports cancellation observed at the final access check without discarding retained results
+AssertionError: expected { …(17) } to match object { cancelled: true, taskCount: 3 }
+(15 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "cancelled": true,
++   "cancelled": false,
+    "taskCount": 3,
+  }
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts:87:25
+     85|   it("reports cancellation observed at the final access check without …
+     86|     mocks.request.mockResolvedValueOnce(original).mockResolvedValueOnc…
+     87|     expect(await run()).toMatchObject({ cancelled: true, taskCount: 3 …
+       |                         ^
+     88|   });
+     89|   it("refuses changed identity and an abort at the final access check"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > refuses changed identity and an abort at the final access check
+AssertionError: promise resolved "{ …(17) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "actorId": "c7610000-0000-4000-8000-000000000004",
++   "campaignId": "c7610000-0000-4000-8000-000000000001",
++   "cancelled": false,
++   "checkedAt": "2026-10-07T06:41:42.706Z",
++   "counts": [
++     {
++       "count": 1,
++       "disposition": "validated_output",
++     },
++     {
++       "count": 1,
++       "disposition": "awaiting_result",
++     },
++     {
++       "count": 1,
++       "disposition": "not_started",
++     },
++   ],
++   "interpretation": "not_assessed",
++   "manifestSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
++   "requestId": "c7610000-0000-4000-8000-000000000003",
++   "requestIntentSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
++   "schemaVersion": 1,
++   "selectionSequence": 2,
++   "sourceId": "c7610000-0000-4000-8000-000000000005",
++   "sourceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++   "stage": "segment",
++   "status": "incomplete",
++   "taskCount": 3,
++   "workspaceId": "c7610000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts:91:23
+     89|   it("refuses changed identity and an abort at the final access check"…
+     90|     mocks.request.mockResolvedValueOnce(original).mockResolvedValueOnc…
+     91|     await expect(run()).rejects.toMatchObject({ status: 503 });
+       |                       ^
+     92|     const controller = new AbortController(); mocks.request.mockResolv…
+     93|     await expect(run("segment", controller.signal)).rejects.toThrow();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 15 passed (23)
+   Start at  23:41:42
+   Duration  677ms (transform 60ms, setup 57ms, import 86ms, tests 24ms, environment 335ms)

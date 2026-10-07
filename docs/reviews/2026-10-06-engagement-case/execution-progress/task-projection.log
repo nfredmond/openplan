@@ -1,0 +1,119 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-plan.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts (16 tests | 11 failed) 301ms
+     × compares the seal before the header and every exact saved task 25ms
+     × reads beyond the first task page without a silent limit 180ms
+     × keeps missing and partially staged preparation separate from complete tasks 7ms
+     × rejects changed task request_id 7ms
+     × rejects changed task task_index 6ms
+     × rejects changed task task_text 7ms
+     × rejects changed task task_sha256 7ms
+     × rejects changed task task_bytes 7ms
+     × rejects changed task cumulative_bytes 7ms
+     × rejects changed task chain_sha256 7ms
+     × rejects a sealed missing task, extra task and missing header 7ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > compares the seal before the header and every exact saved task
+AssertionError: expected 'request_id,task_index,task_sha256,tas…' to be 'request_id,task_index,task_text,task_…' // Object.is equality
+
+Expected: "request_id,task_index,task_text,task_sha256,task_bytes,cumulative_bytes,chain_sha256"
+Received: "request_id,task_index,task_sha256,task_bytes,cumulative_bytes,chain_sha256"
+
+ ❯ Object.select src/test/engagement-synthesis-progress-plan.test.ts:28:55
+     26|     tables.push(table); let after = -1;
+     27|     const query = {
+     28|       select(projection: string) { expect(projection).toBe(columns[tab…
+       |                                                       ^
+     29|       eq(column: string, value: string) { expect([column, value]).toEq…
+     30|       gt(column: string, value: number) { expect(column).toBe("task_in…
+ ❯ readSynthesisProgressPlan src/lib/engagement/synthesis-progress-plan-server.ts:40:8
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts:47:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > reads beyond the first task page without a silent limit
+AssertionError: expected 'request_id,task_index,task_sha256,tas…' to be 'request_id,task_index,task_text,task_…' // Object.is equality
+
+Expected: "request_id,task_index,task_text,task_sha256,task_bytes,cumulative_bytes,chain_sha256"
+Received: "request_id,task_index,task_sha256,task_bytes,cumulative_bytes,chain_sha256"
+
+ ❯ Object.select src/test/engagement-synthesis-progress-plan.test.ts:28:55
+     26|     tables.push(table); let after = -1;
+     27|     const query = {
+     28|       select(projection: string) { expect(projection).toBe(columns[tab…
+       |                                                       ^
+     29|       eq(column: string, value: string) { expect([column, value]).toEq…
+     30|       gt(column: string, value: number) { expect(column).toBe("task_in…
+ ❯ readSynthesisProgressPlan src/lib/engagement/synthesis-progress-plan-server.ts:40:8
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts:53:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > keeps missing and partially staged preparation separate from complete tasks
+AssertionError: expected 'request_id,task_index,task_sha256,tas…' to be 'request_id,task_index,task_text,task_…' // Object.is equality
+
+Expected: "request_id,task_index,task_text,task_sha256,task_bytes,cumulative_bytes,chain_sha256"
+Received: "request_id,task_index,task_sha256,task_bytes,cumulative_bytes,chain_sha256"
+
+ ❯ Object.select src/test/engagement-synthesis-progress-plan.test.ts:28:55
+     26|     tables.push(table); let after = -1;
+     27|     const query = {
+     28|       select(projection: string) { expect(projection).toBe(columns[tab…
+       |                                                       ^
+     29|       eq(column: string, value: string) { expect([column, value]).toEq…
+     30|       gt(column: string, value: number) { expect(column).toBe("task_in…
+ ❯ readSynthesisProgressPlan src/lib/engagement/synthesis-progress-plan-server.ts:40:8
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts:57:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > rejects changed task request_id
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > rejects changed task task_index
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > rejects changed task task_text
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > rejects changed task task_sha256
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > rejects changed task task_bytes
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > rejects changed task cumulative_bytes
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > rejects changed task chain_sha256
+AssertionError: expected [Function] to throw error including 'task differs' but got 'expected \'request_id,task_index,task…'
+
+Expected: "task differs"
+Received: "expected 'request_id,task_index,task_sha256,tas…' to be 'request_id,task_index,task_text,task_…' // Object.is equality"
+
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts:67:25
+     65|     const f = fixture(), task = f.data.tasks[0];
+     66|     task[field] = field === "request_id" ? sourceScope.requestId : fie…
+     67|     await expect(f.run()).rejects.toThrow("task differs");
+       |                         ^
+     68|   });
+     69|   it("rejects a sealed missing task, extra task and missing header", a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > rejects a sealed missing task, extra task and missing header
+AssertionError: expected [Function] to throw error including 'seal is incomplete' but got 'expected \'request_id,task_index,task…'
+
+Expected: "seal is incomplete"
+Received: "expected 'request_id,task_index,task_sha256,tas…' to be 'request_id,task_index,task_text,task_…' // Object.is equality"
+
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts:70:84
+     68|   });
+     69|   it("rejects a sealed missing task, extra task and missing header", a…
+     70|     const missing = fixture(); missing.data.tasks.pop(); await expect(…
+       |                                                                                    ^
+     71|     const extra = fixture(); extra.data.tasks.push({ ...extra.data.tas…
+     72|     const header = fixture(); header.data.header = null; await expect(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 5 passed (16)
+   Start at  23:42:19
+   Duration  1.01s (transform 120ms, setup 62ms, import 164ms, tests 301ms, environment 321ms)
