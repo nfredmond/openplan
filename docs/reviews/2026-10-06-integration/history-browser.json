@@ -62,7 +62,33 @@
   "limits": [
     "Synthetic local software behavior, not public participant or practicing-planner acceptance.",
     "Read-only request discovery; no provider execution, request creation, or preparation control acceptance.",
-    "Desktop and 390px viewport inspection, not complete accessibility conformance.",
-    "Browser build predates dependency update; final integrated build receives separate check."
-  ]
+    "Desktop and 390px viewport inspection, not complete accessibility conformance."
+  ],
+  "productionFollowThrough": {
+    "commit": "923b5c5a8a80d8386b000f53d047a454cacdd1e7",
+    "checkout": "/home/nathaniel/.local/state/openplan/october-integration-20261006/openplan",
+    "buildId": "C3FZrAOEO0wbpZp9gqWZf",
+    "processCwdAndHealthMatch": true,
+    "navigation": [
+      "Dashboard",
+      "Engagement",
+      "Campaign",
+      "Analysis",
+      "Saved source",
+      "Saved generation requests"
+    ],
+    "firstPage": 25,
+    "allPages": 41,
+    "terminalOlderButton": false,
+    "desktopWidth": 1440,
+    "desktopDocumentWidth": 1440,
+    "mobileWidth": 390,
+    "mobileDocumentWidth": 390,
+    "console": "No new application errors observed after production navigation. The tab retains an earlier 02:11:08Z HMR connection refusal after its development server stopped.",
+    "serverStoppedAfterJourney": true,
+    "images": [
+      "images/production-desktop.png",
+      "images/production-390px.png"
+    ]
+  }
 }
