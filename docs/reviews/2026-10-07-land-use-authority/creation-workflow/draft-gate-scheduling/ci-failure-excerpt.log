@@ -1,0 +1,35 @@
+2026-10-07T14:55:55.8602897Z ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+2026-10-07T14:55:55.8603253Z 
+2026-10-07T14:55:55.8606744Z  FAIL  src/test/land-use-plan-draft-custody.test.tsx > Live workbench draft custody > blocks freezing until all edited content is actually saved
+2026-10-07T14:55:55.8613563Z Error: expect(element).toBeEnabled()
+2026-10-07T14:55:55.8614144Z 
+2026-10-07T14:55:55.8614343Z Received element is not enabled:
+2026-10-07T14:55:55.8614907Z   <button
+2026-10-07T14:55:55.8619064Z   class="inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"
+2026-10-07T14:55:55.8623131Z   data-size="default"
+2026-10-07T14:55:55.8623560Z   data-slot="button"
+2026-10-07T14:55:55.8623980Z   data-variant="default"
+2026-10-07T14:55:55.8624404Z   disabled=""
+2026-10-07T14:55:55.8624857Z />
+2026-10-07T14:55:55.8625806Z  ❯ src/test/land-use-plan-draft-custody.test.tsx:159:20
+2026-10-07T14:55:55.8681515Z     157|     const { fields, buttons, writes } = await setup();
+2026-10-07T14:55:55.8682985Z     158|     const freeze = screen.getByRole('button', { name: 'Freeze public d…
+2026-10-07T14:55:55.8684184Z     159|     expect(freeze).toBeEnabled();
+2026-10-07T14:55:55.8685073Z        |                    ^
+2026-10-07T14:55:55.8686073Z     160|     fireEvent.change(fields[1], { target: { value: 'Unsubmitted sectio…
+2026-10-07T14:55:55.8687518Z     161|     expect(freeze).toBeDisabled();
+2026-10-07T14:55:55.8688105Z 
+2026-10-07T14:55:55.8688552Z ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+2026-10-07T14:55:55.8688919Z 
+2026-10-07T14:55:55.8688955Z 
+2026-10-07T14:55:55.8745126Z  Test Files  1 failed | 1457 passed | 90 skipped (1548)
+2026-10-07T14:55:55.8865343Z       Tests  1 failed | 18643 passed | 1534 skipped (20178)
+2026-10-07T14:55:55.8866081Z    Start at  14:35:18
+2026-10-07T14:55:55.8881513Z    Duration  1237.78s (transform 48.78s, setup 93.32s, import 338.12s, tests 1962.27s, environment 1022.27s)
+2026-10-07T14:55:55.8882951Z 
+2026-10-07T14:55:56.1365303Z 
+2026-10-07T14:55:56.1366461Z The suite failed in shuffled order with seed 717404.
+2026-10-07T14:55:56.1367671Z This is an order-dependence defect, not a flake: replay it with
+2026-10-07T14:55:56.1368367Z     node scripts/ops/test-shuffled.mjs 717404
+2026-10-07T14:55:56.1368900Z and bisect by skipping tests in the failing file until it passes.
+2026-10-07T14:55:56.1369231Z 
