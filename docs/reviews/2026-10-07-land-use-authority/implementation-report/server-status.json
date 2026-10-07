@@ -1,0 +1,34 @@
+{
+  "build": {
+    "commit": "d3815893b2bbf6f2c2803e16b05cab7e81ab5f7f",
+    "startedEpoch": 1791403155.9030943,
+    "state": "finished",
+    "exitCode": 0,
+    "finishedEpoch": 1791403220.4857183,
+    "finalCommit": "d3815893b2bbf6f2c2803e16b05cab7e81ab5f7f",
+    "checkoutUnchanged": true
+  },
+  "unit": "openplan-implementation-report-d3815893-prod-20261007.service",
+  "pid": "1778110",
+  "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan",
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-07T20:00:21.934Z",
+    "deployment": {
+      "commit": "d3815893b2bb",
+      "version": "0.67.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  },
+  "beforeStop": "MainPID=1778110\nResult=success\nMemoryPeak=221773824\n",
+  "stopStartedEpoch": 1791403537.4983547,
+  "browserBeforeStop": "T3 navigated to /api/health after completed acceptance",
+  "stopExitCode": 0,
+  "stopFinishedEpoch": 1791403537.5286543,
+  "afterStop": "ActiveState=inactive\nResult=success\nExecMainCode=0\nExecMainStatus=0\n",
+  "portAfterStop": "State Recv-Q Send-Q Local Address:Port Peer Address:Port\n"
+}

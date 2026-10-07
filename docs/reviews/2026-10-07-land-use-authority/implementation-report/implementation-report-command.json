@@ -1,0 +1,20 @@
+{
+  "commandText": "{\"reportingPeriodStart\":\"2026-10-01\",\"reportingPeriodEnd\":\"2026-10-07\",\"title\":\"SYNTHETIC implementation custody 20261007\",\"summary\":\"SYNTHETIC acceptance fixture. No agency assessment or completed work is claimed.\"}",
+  "fetchNative": true,
+  "payload": {
+    "reportingPeriodEnd": "2026-10-07",
+    "reportingPeriodStart": "2026-10-01",
+    "summary": "SYNTHETIC acceptance fixture. No agency assessment or completed work is claimed.",
+    "title": "SYNTHETIC implementation custody 20261007"
+  },
+  "valid": true,
+  "savedBeforeClickEpoch": 1791403298.2210803,
+  "sourceCommit": "d3815893b2bbf6f2c2803e16b05cab7e81ab5f7f",
+  "planId": "fb049e81-a3a7-4ae0-be50-752410899be8",
+  "nativeBefore": {
+    "implementationReports": 0,
+    "readableReports": 0
+  },
+  "dateInputLimit": "T3 type failed three times. Native date input values set through T3 evaluate and input/change events. Calendar and keyboard date entry not verified.",
+  "commandSha256": "55fabd51c406228bce4fc60960dd8846900068a6eac20f4c1edb195e68becb11"
+}

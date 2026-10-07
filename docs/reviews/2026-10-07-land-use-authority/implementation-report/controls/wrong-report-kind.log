@@ -1,0 +1,145 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-custody.test.tsx (41 tests | 1 failed) 645ms
+     × refuses wrong report kind before native reads 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > refuses wrong report kind before native reads
+AssertionError: expected { identity: { …(6) }, …(3) } to be null
+
+- Expected:
+null
+
++ Received:
+{
+  "frozen": {
+    "designations": [],
+    "implementationActions": [
+      {
+        "status": "not_started",
+        "title": "OLD frozen action",
+      },
+    ],
+    "nodes": [],
+    "plan": {
+      "authorityLabel": "SYNTHETIC adopted authority",
+      "descriptorId": "local-unconfigured",
+      "geographyLabel": "SYNTHETIC adopted geography",
+      "id": "23000000-0000-4000-8000-000000000001",
+      "planKindKey": "community",
+      "title": "SYNTHETIC adopted title",
+    },
+    "planContext": {
+      "assessment": {
+        "applicability": {
+          "explanation": "SYNTHETIC fixture with no legal applicability claim",
+          "status": "unresolved",
+        },
+        "authorities": [
+          {
+            "id": "20000000-0000-4000-8000-000000000010",
+            "jurisdiction": null,
+            "kind": "unassessed",
+            "label": "SYNTHETIC responsible body",
+            "role": "Responsibility unresolved",
+            "sourceUrls": [],
+          },
+        ],
+      },
+      "place": {
+        "bbox": {
+          "maxLat": 39,
+          "maxLon": -121,
+          "minLat": 38,
+          "minLon": -122,
+        },
+        "countryCode": null,
+        "geometry": {
+          "coordinates": [
+            [
+              [
+                -122,
+                38,
+              ],
+              [
+                -121,
+                38,
+              ],
+              [
+                -121,
+                39,
+              ],
+              [
+                -122,
+                38,
+              ],
+            ],
+          ],
+          "type": "Polygon",
+        },
+        "kind": null,
+        "label": "SYNTHETIC study area",
+        "ref": null,
+        "source": "uploaded_file",
+        "subdivisionCode": null,
+      },
+      "savedAt": "2026-10-07T00:00:00.123456Z",
+      "savedBy": "20000000-0000-4000-8000-000000000003",
+      "schemaVersion": 1,
+    },
+    "relationships": [],
+    "version": {
+      "id": "23000000-0000-4000-8000-000000000002",
+      "versionNumber": 2,
+    },
+  },
+  "identity": {
+    "authorityLabel": "SYNTHETIC adopted authority",
+    "descriptorId": "local-unconfigured",
+    "geographyLabel": "SYNTHETIC adopted geography",
+    "id": "23000000-0000-4000-8000-000000000001",
+    "planKindKey": "community",
+    "title": "SYNTHETIC adopted title",
+  },
+  "snapshot": {
+    "actions": [
+      {
+        "description": "Retained implementation detail",
+        "due_on": "2026-12-01",
+        "evidence_document_id": null,
+        "id": "23000000-0000-4000-8000-000000000005",
+        "program_id": null,
+        "project_id": null,
+        "responsible_party": "SYNTHETIC responsible team",
+        "status": "completed",
+        "title": "SYNTHETIC saved action",
+        "updated_at": "2026-09-29T12:34:56+00:00",
+      },
+    ],
+    "adoptedVersionContentHash": "9e0fff784858b8d8ee2b58d6bd2d1b96fcdd221c31de97d2d858542eef5bdf05",
+    "adoptedVersionId": "23000000-0000-4000-8000-000000000002",
+    "planId": "23000000-0000-4000-8000-000000000001",
+    "reportingPeriodEnd": "2026-09-30",
+    "reportingPeriodStart": "2026-01-01",
+  },
+  "summary": "SYNTHETIC retained summary",
+}
+
+ ❯ src/test/land-use-implementation-report-custody.test.tsx:61:91
+     59|   it.each(["wrong report kind", "missing plan"])("refuses %s before na…
+     60|     const input = kind === "wrong report kind" ? { ...report, report_t…
+     61|     expect(await loadImplementationReportSnapshot(await mocks.create()…
+       |                                                                                           ^
+     62|     expect(queries).toEqual([]);
+     63|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 40 passed (41)
+   Start at  12:57:03
+   Duration  1.49s (transform 172ms, setup 56ms, import 377ms, tests 645ms, environment 321ms)
+

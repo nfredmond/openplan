@@ -1,0 +1,228 @@
+{
+  "state": "complete",
+  "cases": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "wrong-report-kind",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses wrong report kind"
+    },
+    {
+      "name": "infer-missing-plan",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses missing plan"
+    },
+    {
+      "name": "wrong-artifact-kind",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong kind"
+    },
+    {
+      "name": "wrong-artifact-plan",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong artifact plan"
+    },
+    {
+      "name": "invalid-hash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds invalid content hash"
+    },
+    {
+      "name": "invalid-action-status",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds invalid status"
+    },
+    {
+      "name": "invalid-update-time",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds invalid update time"
+    },
+    {
+      "name": "private-extra-field",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds private extra field"
+    },
+    {
+      "name": "inverted-dates",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds inverted reporting dates"
+    },
+    {
+      "name": "ignore-register-error",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds unreadable register"
+    },
+    {
+      "name": "wrong-native-report",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong registered report"
+    },
+    {
+      "name": "ignore-native-plan",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong registered plan"
+    },
+    {
+      "name": "wrong-native-workspace",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong registered workspace"
+    },
+    {
+      "name": "wrong-native-hash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed artifact hash"
+    },
+    {
+      "name": "changed-summary",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed artifact summary"
+    },
+    {
+      "name": "ignore-version-error",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds unreadable version"
+    },
+    {
+      "name": "ignore-version-id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native version"
+    },
+    {
+      "name": "wrong-version-workspace",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native workspace"
+    },
+    {
+      "name": "wrong-version-plan",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native plan"
+    },
+    {
+      "name": "wrong-version-state",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds unadopted version"
+    },
+    {
+      "name": "skip-frozen-identity",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed native snapshot"
+    },
+    {
+      "name": "skip-status-comparison",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed artifact action"
+    },
+    {
+      "name": "order-sensitive-comparison",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "accepts jsonb key reordering"
+    },
+    {
+      "name": "omit-register-projection",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "reads the adopted edition"
+    },
+    {
+      "name": "omit-register-report-filter",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "reads the adopted edition"
+    },
+    {
+      "name": "omit-version-id-filter",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "reads the adopted edition"
+    },
+    {
+      "name": "omit-workspace-filters",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "reads the adopted edition"
+    },
+    {
+      "name": "omit-owner",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "reads the adopted edition"
+    },
+    {
+      "name": "omit-update-time",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "reads the adopted edition"
+    },
+    {
+      "name": "omit-owner-absence",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "labels an unspecified responsible party"
+    },
+    {
+      "name": "omit-summary-default",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "uses saved reporting dates"
+    },
+    {
+      "name": "omit-retained-context",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "discloses absent legacy context"
+    },
+    {
+      "name": "omit-refusal-caveat",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed artifact action"
+    },
+    {
+      "name": "restore-original-unverified-render",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds missing register"
+    }
+  ],
+  "restored": true,
+  "sourceHashes": {
+    "src/lib/land-use-plans/implementation-report-snapshot.ts": "5c3b6b5e738f6e7e2ebe7afb30ab77d490b2fb2753fc0d3ae5fa82f13a90668c",
+    "src/components/reports/land-use-plan-report-page.tsx": "2e2f49cdc302b505ad00d62620d6089c112b1d6d0b4640d29cae1408fb40d323",
+    "src/components/reports/land-use-plan-report-detail.tsx": "7ff893c06990bd0a94396ce0fa610a054fe064f6434054b06951d88f71a0bd6e"
+  },
+  "blindCategory": "Mounted pages and projected mocks only. Does not prove native authorization, browser download, layout, or practitioner acceptance."
+}

@@ -1,0 +1,93 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-custody.test.tsx (41 tests | 32 failed) 649ms
+     × withholds wrong kind without substituting live values 10ms
+     × withholds wrong artifact plan without substituting live values 8ms
+     × withholds missing snapshot without substituting live values 8ms
+     × withholds invalid content hash without substituting live values 8ms
+     × withholds changed artifact hash without substituting live values 8ms
+     × withholds wrong snapshot plan without substituting live values 8ms
+     × withholds wrong snapshot version without substituting live values 8ms
+     × withholds wrong adopted hash without substituting live values 8ms
+     × withholds changed artifact action without substituting live values 8ms
+     × withholds changed artifact owner without substituting live values 7ms
+     × withholds changed artifact summary without substituting live values 7ms
+     × withholds changed reporting start without substituting live values 7ms
+     × withholds changed reporting end without substituting live values 7ms
+     × withholds inverted reporting dates without substituting live values 8ms
+     × withholds invalid status without substituting live values 7ms
+     × withholds invalid update time without substituting live values 7ms
+     × withholds missing actions without substituting live values 7ms
+     × withholds private extra field without substituting live values 8ms
+     × withholds unreadable register without substituting live values 7ms
+     × withholds missing register without substituting live values 7ms
+     × withholds wrong registered report without substituting live values 7ms
+     × withholds wrong registered plan without substituting live values 7ms
+     × withholds wrong registered workspace without substituting live values 7ms
+     × withholds wrong native version without substituting live values 7ms
+     × withholds wrong native plan without substituting live values 7ms
+     × withholds wrong native workspace without substituting live values 7ms
+     × withholds unadopted version without substituting live values 8ms
+     × withholds unreadable version without substituting live values 7ms
+     × withholds missing version without substituting live values 7ms
+     × withholds changed native snapshot without substituting live values 7ms
+     × withholds wrong native version number without substituting live values 7ms
+     × withholds invalid frozen context without substituting live values 7ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 32 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong kind without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong artifact plan without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds missing snapshot without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds invalid content hash without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds changed artifact hash without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong snapshot plan without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong snapshot version without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong adopted hash without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds changed artifact action without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds changed artifact owner without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds changed artifact summary without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds changed reporting start without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds changed reporting end without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds inverted reporting dates without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds invalid status without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds invalid update time without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds missing actions without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds private extra field without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds unreadable register without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds missing register without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong registered report without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong registered plan without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong registered workspace without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong native version without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong native plan without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong native workspace without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds unadopted version without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds unreadable version without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds missing version without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds changed native snapshot without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong native version number without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds invalid frozen context without substituting live values
+Error: expect(element).toHaveTextContent()
+
+Expected element to have text content:
+  This does not establish whether the agency completed any action.
+Received:
+  The saved report does not match its implementation history and adopted plan version. OpenPlan withheld the report content.
+ ❯ src/test/land-use-implementation-report-custody.test.tsx:129:39
+    127|     change(); await show();
+    128|     expect(screen.getByRole("alert")).toHaveTextContent("does not matc…
+    129|     expect(screen.getByRole("alert")).toHaveTextContent("This does not…
+       |                                       ^
+    130|     for (const value of ["SYNTHETIC saved action", "SYNTHETIC adopted …
+    131|     expect(screen.queryByRole("link", { name: "Download source JSON" }…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/32]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  32 failed | 9 passed (41)
+   Start at  12:58:11
+   Duration  1.54s (transform 177ms, setup 66ms, import 376ms, tests 649ms, environment 331ms)
+

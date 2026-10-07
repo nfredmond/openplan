@@ -1,0 +1,8 @@
+{
+  "commandText": "{\"operation\":\"update_status\",\"actionId\":\"db42e920-fbb3-4cb5-b299-e65ad8decf78\",\"status\":\"in_progress\"}",
+  "commandSha256": "f87b8ed75d82494f4737c048faf52aa7dfac2c82721c9fa419984717de42326b",
+  "savedBeforeKeyEpoch": 1791403362.9904296,
+  "before": "not_started",
+  "keyboardAction": "ArrowDown once on focused status select",
+  "planId": "fb049e81-a3a7-4ae0-be50-752410899be8"
+}
