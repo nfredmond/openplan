@@ -1,0 +1,45 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-first-run-jurisdiction.test.tsx (10 tests | 4 failed) 624ms
+     × shows the same default edition as the workbench: 'Version 1 · working' 147ms
+     × shows the same default edition as the workbench: 'Version 2 · adopted' 31ms
+     × shows the same default edition as the workbench: 'Version 3 · public review' 33ms
+     × shows the same default edition as the workbench: 'Version 3 · public review' 32ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-first-run-jurisdiction.test.tsx > plan-owned first-run rule selection > shows the same default edition as the workbench: 'Version 1 · working'
+ FAIL  src/test/land-use-plan-first-run-jurisdiction.test.tsx > plan-owned first-run rule selection > shows the same default edition as the workbench: 'Version 2 · adopted'
+ FAIL  src/test/land-use-plan-first-run-jurisdiction.test.tsx > plan-owned first-run rule selection > shows the same default edition as the workbench: 'Version 3 · public review'
+ FAIL  src/test/land-use-plan-first-run-jurisdiction.test.tsx > plan-owned first-run rule selection > shows the same default edition as the workbench: 'Version 3 · public review'
+AssertionError: expected "vi.fn()" to be called with arguments: [ StringContaining{…} ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   StringContaining "(id, version_number, state, content_hash)",
++   "id, title, descriptor_id, plan_kind_key, authority_label, geography_label, current_working_version_id, current_adopted_version_id, updated_at, land_use_plan_versions!land_use_plan_versions_plan_id_workspace_id_fkey(id, state, content_hash)",
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/test/land-use-plan-first-run-jurisdiction.test.tsx:40:26
+     38|     expect(screen.queryByText("Version unavailable")).toBeNull();
+     39|     expect(versions.map(version => version.id)).toEqual(["older", "lat…
+     40|     expect(mocks.select).toHaveBeenCalledWith(expect.stringContaining(…
+       |                          ^
+     41|   });
+     42|   it("passes each family-kind hash from the real page into the saved c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 6 passed (10)
+   Start at  11:00:26
+   Duration  1.48s (transform 172ms, setup 54ms, import 381ms, tests 624ms, environment 328ms)
+
