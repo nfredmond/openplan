@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Repeated inspection of an engagement contribution now returns keyboard focus
+to its retained evidence. Desktop and 390px T3 checks cover both pointer and
+keyboard activation. This correction changes no source records or approvals.
+
 Restored workspace deletion now permits finalized GIS versions and features to
 follow their deleted parent. Direct edits to finalized records remain refused,
 including moving a feature out of a finalized version. Migration

@@ -1,0 +1,10 @@
+[
+  {
+    "name": "harmless",
+    "exit": 0
+  },
+  {
+    "name": "no-repeat-focus",
+    "exit": 1
+  }
+]
