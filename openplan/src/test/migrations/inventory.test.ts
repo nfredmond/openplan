@@ -536,10 +536,12 @@ const EXPECTED = {
   // Installed isolated catalog: 285 RLS application tables, 14 views, 758 policies.
   // 20261016000012 adds one private implementation-report command journal.
   // Installed isolated catalog: 286 RLS application tables, 14 views, 758 policies.
-  relations: 300,
-  tables: 286,
+  // 20261016000013 adds one private execution queue with no client policies.
+  // Rollback catalog probe: 287 RLS application tables and 14 views.
+  relations: 301,
+  tables: 287,
   views: 14,
-  rlsEnabledTables: 286,
+  rlsEnabledTables: 287,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

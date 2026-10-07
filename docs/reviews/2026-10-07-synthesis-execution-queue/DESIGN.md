@@ -415,3 +415,17 @@ these checks. The React review checked stable component identity, event-driven
 reads, aborted requests, native buttons and bounded wrapping. No browser evidence
 has been collected for these new controls. Full type/build checks, keyboard and
 390px review, live cross-browser recovery and worker acceptance remain open.
+
+## Build preparation and catalog evidence
+
+The full bounded type check at 0af9bd91 passes. A fresh rollback-only catalog
+probe with the candidate migration reports 287 application tables, all with RLS,
+and 14 application views after excluding extension relations. The migration
+inventory now records those counts. All 29 inventory tests pass; a harmless SQL
+comment passes and removing queue RLS fails the inventory assertions. Results
+remain in `inventory-controls.json`. No new client table policy is introduced.
+
+The existing integration runtime remains on port 3504. The queue worktree will
+use its own build and port. The owned restore-target database has no active
+application query during preparation and records migrations through 00012.
+This catalog check alone does not establish restore behavior or live acceptance.

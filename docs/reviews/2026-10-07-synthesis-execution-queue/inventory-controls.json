@@ -1,0 +1,16 @@
+[
+  {
+    "name": "harmless",
+    "exitCode": 0,
+    "expected": 0,
+    "assertionFailure": false,
+    "output": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/synthesis-execution-queue-20261007/openplan\n\n\n Test Files  1 passed (1)\n      Tests  29 passed (29)\n   Start at  16:36:49\n   Duration  1.18s (transform 81ms, setup 55ms, import 512ms, tests 199ms, environment 325ms)\n\n"
+  },
+  {
+    "name": "missing queue RLS",
+    "exitCode": 1,
+    "expected": 1,
+    "assertionFailure": true,
+    "output": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/synthesis-execution-queue-20261007/openplan\n\n \u276f src/test/migrations/inventory.test.ts (29 tests | 2 failed) 203ms\n     \u00d7 reads every relation the migrations declare 5ms\n     \u00d7 distinguishes a table with no RLS from a table with no policy 1ms\n\n Test Files  1 failed (1)\n      Tests  2 failed | 27 passed (29)\n   Start at  16:36:50\n   Duration  1.19s (transform 81ms, setup 55ms, import 511ms, tests 203ms, environment 334ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 2 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/migrations/inventory.test.ts > migration schema inventory > reads every relation the migrations declare\nAssertionError: expected [ \u2026(286) ] to have a length of 287 but got 286\n\n- Expected\n+ Received\n\n- 287\n+ 286\n\n \u276f src/test/migrations/inventory.test.ts:824:65\n    822|     expect(schema.tables()).toHaveLength(EXPECTED.tables);\n    823|     expect(schema.views()).toHaveLength(EXPECTED.views);\n    824|     expect(schema.tables().filter((t) => schema.rlsEnabled(t))).toHave\u2026\n       |                                                                 ^\n    825|   });\n    826|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/2]\u23af\n\n FAIL  src/test/migrations/inventory.test.ts > migration schema inventory > distinguishes a table with no RLS from a table with no policy\nAssertionError: expected [ Array(1) ] to deeply equal []\n\n- Expected\n+ Received\n\n- []\n+ [\n+   \"engagement_synthesis_execution_queue\",\n+ ]\n\n \u276f src/test/migrations/inventory.test.ts:872:66\n    870|     // `src/test/policies-are-enforced-guard.test.ts` asserts the same\u2026\n    871|     // against a LIVE catalog, which is what would have caught this or\u2026\n    872|     expect(schema.tables().filter((t) => !schema.rlsEnabled(t))).toEqu\u2026\n       |                                                                  ^\n    873|\n    874|     // Positive and negative controls, so an empty list above cannot b\u2026\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/2]\u23af\n\n"
+  }
+]
