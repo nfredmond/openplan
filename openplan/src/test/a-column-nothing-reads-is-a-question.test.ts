@@ -73,8 +73,6 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
-  { column: "engagement_synthesis_preparation_attempts.claimed_at", category: "READ_IN_SQL", reason: "Native claim replay returns the original attempt timestamp through to_jsonb(attempt); the immutable row preserves claim identity after reassignment." },
-  { column: "engagement_synthesis_preparation_attempts.initial_lease_until", category: "READ_IN_SQL", reason: "Native claiming copies this original bound to the active job lease, and exact token replay returns the immutable initial lease in its claim record." },
   { column: "engagement_synthesis_preparation_jobs.seal_sha256", category: "READ_IN_SQL", reason: "Native completion compares the requested original seal, retains its hash, and returns sealSha256 through the scoped preparation state function." },
   { column: "engagement_synthesis_thematic_inputs.proof_text", category: "READ_IN_SQL", reason: "Native custody reads return proofText; saves compare exact retained proof bytes and the application verifies their scope and digest." },
   { column: "engagement_synthesis_thematic_inputs.proof_sha256", category: "READ_IN_SQL", reason: "Native input records return the generated proofSha256 for application byte verification." },
