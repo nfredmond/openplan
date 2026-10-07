@@ -16,6 +16,9 @@ type Props = RuleReconciliationClientScope & {
   onRefresh: () => Promise<void>;
 };
 
+// Recovery labels wrap within nested mobile panels while keeping a full-height target.
+const recoveryButtonClassName = "h-auto min-h-10 max-w-full whitespace-normal";
+
 function downloadCopy(raw: string) {
   const url = URL.createObjectURL(new Blob([raw], { type: "application/json" }));
   const link = document.createElement("a"); link.href = url; link.download = "openplan-checklist-request.json"; link.click();
@@ -127,22 +130,22 @@ export function LandUsePlanRuleReconciliationControl(props: Props) {
       {props.missingSections.length ? <div className="text-sm"><p className="font-medium">Blank sections to add</p><ul className="mt-1 list-disc space-y-1 pl-5">{props.missingSections.map(item => <li key={item.key}>{item.label}</li>)}</ul></div> : null}
       {props.missingDefaults.length ? <div className="text-sm"><p className="font-medium">Sections to mark as applicable</p><ul className="mt-1 list-disc space-y-1 pl-5">{props.missingDefaults.map(item => <li key={item.key}>{item.label}</li>)}</ul></div> : null}
       <label className="flex max-w-prose items-start gap-2 text-sm"><input type="checkbox" checked={reviewed === reviewKey} disabled={busy || props.disabled || !props.canWrite} onChange={event => setReviewed(event.target.checked ? reviewKey : null)} />I reviewed these section additions and applicability changes.</label>
-      <Button disabled={busy || refreshRequired || !ready || !props.canWrite || props.disabled || pending.length > 0 || reviewed !== reviewKey} onClick={() => void send()}>Add reviewed checklist items</Button>
+      <Button className={recoveryButtonClassName} disabled={busy || refreshRequired || !ready || !props.canWrite || props.disabled || pending.length > 0 || reviewed !== reviewKey} onClick={() => void send()}>Add reviewed checklist items</Button>
     </> : props.working ? <p className="text-sm text-muted-foreground">This draft contains the current checklist&apos;s sections and default applicability selections. Staff still needs to complete and review the content.</p> : <p className="text-sm text-muted-foreground">This edition is read-only for checklist changes. Saved requests below retain their original draft.</p>}
     {props.disabled ? <p className="text-sm text-muted-foreground">Save current edits and resolve pending context changes before applying, retrying or refreshing a checklist change.</p> : null}
     {notice ? <p role="status" className="text-sm text-muted-foreground">{notice}</p> : null}
     {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
-    {refreshRequired ? <Button variant="outline" disabled={busy || props.disabled} onClick={() => void refresh()}>Refresh current checklist</Button> : null}
-    {!ready ? <Button variant="outline" onClick={() => { setError(null); read(); }} disabled={busy}>Read saved checklist requests again</Button> : null}
+    {refreshRequired ? <Button className={recoveryButtonClassName} variant="outline" disabled={busy || props.disabled} onClick={() => void refresh()}>Refresh current checklist</Button> : null}
+    {!ready ? <Button className={recoveryButtonClassName} variant="outline" onClick={() => { setError(null); read(); }} disabled={busy}>Read saved checklist requests again</Button> : null}
     {pending.length ? <div className="space-y-3 border-l-2 border-amber-500 pl-4">
       <h4 className="font-semibold">Unconfirmed checklist requests</h4>
       <p className="max-w-prose text-sm text-muted-foreground">An explicit retry sends the original request. It may apply that reviewed change if the first request did not arrive. Newer saved edits cause a conflict.</p>
       {pending.map(record => <div key={record.key} className="space-y-2">
         <p className="text-sm">{record.pending ? `Saved request for draft ${record.pending.versionNumber}` : "Unreadable saved request. Preserve a copy before reviewing the current draft."}</p>
         <div className="flex flex-wrap gap-2">
-          {record.pending ? <Button variant="outline" disabled={busy || props.disabled || !props.canWrite} onClick={() => { if (record.pending) void send(record.pending); }}>Check or retry saved checklist change</Button> : null}
-          <Button variant="outline" disabled={busy} onClick={() => downloadCopy(record.raw)}>Download checklist request</Button>
-          <Button variant="outline" disabled={busy || props.disabled} onClick={() => void preserve(record)}>Preserve request and review current checklist</Button>
+          {record.pending ? <Button className={recoveryButtonClassName} variant="outline" disabled={busy || props.disabled || !props.canWrite} onClick={() => { if (record.pending) void send(record.pending); }}>Check or retry saved checklist change</Button> : null}
+          <Button className={recoveryButtonClassName} variant="outline" disabled={busy} onClick={() => downloadCopy(record.raw)}>Download checklist request</Button>
+          <Button className={recoveryButtonClassName} variant="outline" disabled={busy || props.disabled} onClick={() => void preserve(record)}>Preserve request and review current checklist</Button>
         </div>
       </div>)}
     </div> : null}
@@ -158,8 +161,8 @@ export function LandUsePlanRuleReconciliationControl(props: Props) {
         }} /></label>
         {copies.map(record => <div key={record.key} className="flex flex-wrap items-center gap-2">
           <span>{record.pending ? `Preserved request for draft ${record.pending.versionNumber}` : "Preserved unreadable request"}</span>
-          <Button variant="outline" disabled={busy} onClick={() => downloadCopy(record.raw)}>Download checklist copy</Button>
-          {record.pending ? <Button variant="outline" disabled={busy} onClick={() => restore(record.raw)}>Restore checklist request</Button> : null}
+          <Button className={recoveryButtonClassName} variant="outline" disabled={busy} onClick={() => downloadCopy(record.raw)}>Download checklist copy</Button>
+          {record.pending ? <Button className={recoveryButtonClassName} variant="outline" disabled={busy} onClick={() => restore(record.raw)}>Restore checklist request</Button> : null}
         </div>)}
       </div>
     </details>
