@@ -1,0 +1,29 @@
+
+> openplan@0.67.0 test
+> vitest run --maxWorkers=1 src/test/reference-count-projection-guard.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/reference-count-projection-guard.test.ts (6 tests | 1 failed) 16ms
+     × guards the guard 3ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  00:04:59
+   Duration  4.00s (transform 125ms, setup 53ms, import 3.42s, tests 16ms, environment 346ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/reference-count-projection-guard.test.ts > reference count projections > guards the guard
+AssertionError: expected 250 to be less than 250
+ ❯ src/test/reference-count-projection-guard.test.ts:263:75
+    261|     // What is deliberately not checked, pinned so the skipped set can…
+    262|     // into the whole codebase without someone noticing.
+    263|     expect(selectSites.filter((site) => site.projection === null).leng…
+       |                                                                           ^
+    264|     // Reads of a VIEW are not column-checked, because the schema inve…
+    265|     // built from CREATE TABLE. The list is pinned so that exemption c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

@@ -1,0 +1,68 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress.test.ts (20 tests | 8 failed) 16ms
+     × rejects different campaignId 4ms
+     × rejects different workspaceId 1ms
+     × rejects different requestId 1ms
+     × rejects different actorId 1ms
+     × rejects different sourceId 1ms
+     × rejects different sourceSha256 1ms
+     × rejects different requestIntentSha256 1ms
+     × rejects different stage 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress.test.ts > private synthesis progress transport > rejects different campaignId
+ FAIL  src/test/engagement-synthesis-progress.test.ts > private synthesis progress transport > rejects different workspaceId
+ FAIL  src/test/engagement-synthesis-progress.test.ts > private synthesis progress transport > rejects different requestId
+ FAIL  src/test/engagement-synthesis-progress.test.ts > private synthesis progress transport > rejects different actorId
+ FAIL  src/test/engagement-synthesis-progress.test.ts > private synthesis progress transport > rejects different sourceId
+ FAIL  src/test/engagement-synthesis-progress.test.ts > private synthesis progress transport > rejects different sourceSha256
+ FAIL  src/test/engagement-synthesis-progress.test.ts > private synthesis progress transport > rejects different requestIntentSha256
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ src/test/engagement-synthesis-progress.test.ts:18:83
+     16|   it.each(["campaignId", "workspaceId", "requestId", "actorId", "sourc…
+     17|     const value = field.endsWith("Sha256") ? "d".repeat(64) : field ==…
+     18|     expect(() => verifySynthesisProgress({ ...original, [field]: value…
+       |                                                                                   ^
+     19|   });
+     20|   it.each([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/test/engagement-synthesis-progress.test.ts > private synthesis progress transport > rejects different stage
+AssertionError: expected [Function] to throw error matching /another request/ but got 'Analysis progress has a different sta…'
+
+- Expected:
+/another request/
+
++ Received:
+"Analysis progress has a different stage's task state"
+
+ ❯ src/test/engagement-synthesis-progress.test.ts:18:83
+     16|   it.each(["campaignId", "workspaceId", "requestId", "actorId", "sourc…
+     17|     const value = field.endsWith("Sha256") ? "d".repeat(64) : field ==…
+     18|     expect(() => verifySynthesisProgress({ ...original, [field]: value…
+       |                                                                                   ^
+     19|   });
+     20|   it.each([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 12 passed (20)
+   Start at  23:41:39
+   Duration  610ms (transform 37ms, setup 55ms, import 55ms, tests 16ms, environment 318ms)

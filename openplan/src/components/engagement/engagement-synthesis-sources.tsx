@@ -14,7 +14,7 @@ import {
 } from "@/lib/engagement/pending-synthesis-source";
 import { SynthesisSourceInspection } from "./synthesis-source-inspection";
 import { SynthesisRequestHistoryPanel } from "./synthesis-request-history-panel";
-import { SynthesisGenerationCreatePanel } from "./synthesis-generation-create-panel";
+import { SynthesisGenerationCreatePanel, type SynthesisGenerationChoiceMemory } from "./synthesis-generation-create-panel";
 import type { ResponseLinkWorkingCopy } from "@/lib/engagement/synthesis-response-link-recovery";
 import type { ApprovalWorkingCopy } from "@/lib/engagement/synthesis-approval-recovery";
 import { SynthesisReviewEditor } from "./synthesis-review-editor";
@@ -59,6 +59,16 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
   const approvalMemories = useRef(new Map<string, { current: ApprovalWorkingCopy | null }>());
   const importMemories = useRef(new Map<string, ThematicImportMemory>());
   const reviewMemories = useRef(new Map<string, { current: ReviewWorkingCopy | null }>());
+  const generationChoices = useRef(new Map<string, SynthesisGenerationChoiceMemory>());
+  function generationChoiceMemory(saved: Inspection) {
+    const key = `${saved.requestId}:${saved.snapshotSha256}`;
+    let memory = generationChoices.current.get(key);
+    if (!memory) {
+      memory = { scope: { userId, workspaceId, campaignId, sourceId: saved.requestId, sourceSha256: saved.snapshotSha256 }, current: null };
+      generationChoices.current.set(key, memory);
+    }
+    return memory;
+  }
   function reviewMemory(saved: Inspection) {
     const key = `${saved.requestId}:${saved.snapshotSha256}`;
     let memory = reviewMemories.current.get(key);
@@ -66,7 +76,7 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     return memory;
   }
   const openIdRef = useRef<string | null>(null);
-  const loseReviewAccess = useCallback(() => { reviewMemories.current.clear(); approvalMemories.current.clear(); responseLinkMemories.current.clear(); importMemories.current.clear(); setAccessLost(true); setInspection(null); setEntries(null); setPending(null); setNotice(null); }, []);
+  const loseReviewAccess = useCallback(() => { generationChoices.current.clear(); reviewMemories.current.clear(); approvalMemories.current.clear(); responseLinkMemories.current.clear(); importMemories.current.clear(); setAccessLost(true); setInspection(null); setEntries(null); setPending(null); setNotice(null); }, []);
   const epoch = useRef(0), readSequence = useRef(0), listSequence = useRef(0), sending = useRef(false);
   const endpoint = `/api/engagement/campaigns/${campaignId}/synthesis/sources`;
 
@@ -94,6 +104,7 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     setOpenId(requestId); setInspection(null); setReadError(null); setReading(true);
     try {
       const response = await fetch(`${endpoint}?requestId=${requestId}`, { cache: "no-store", headers: { "x-openplan-expected-user": userId, "x-openplan-expected-workspace": workspaceId } });
+      if (current === epoch.current && sequence === readSequence.current && [401, 403].includes(response.status)) generationChoices.current.clear();
       if (!response.ok) throw new Error("The saved source could not be opened. Retry this read; an earlier confirmed save remains retained.");
       const saved = inspectionSchema.parse(await response.json());
       if (saved.requestId !== requestId || saved.campaignId !== campaignId || saved.workspaceId !== workspaceId
@@ -115,7 +126,7 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     const client = createClient();
     const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
       if (session?.user.id !== userId) {
-        reviewMemories.current.clear(); approvalMemories.current.clear(); responseLinkMemories.current.clear(); importMemories.current.clear();
+        generationChoices.current.clear(); reviewMemories.current.clear(); approvalMemories.current.clear(); responseLinkMemories.current.clear(); importMemories.current.clear();
         epoch.current++; setAccessLost(true); setInspection(null); setEntries(null); setPending(null); setNotice(null);
       }
     });
@@ -187,7 +198,7 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     {inspection ? <div key={inspection.requestId} className="space-y-4">
       <SynthesisSourceInspection snapshot={inspection.snapshot} sha256={inspection.snapshotSha256} />
       <SynthesisGenerationCreatePanel userId={userId} workspaceId={workspaceId} campaignId={campaignId}
-        sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} onAccessLost={loseReviewAccess} onCreated={generationCreated} />
+        sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} choiceMemory={generationChoiceMemory(inspection)} onAccessLost={loseReviewAccess} onCreated={generationCreated} />
       <details className="border-y border-border py-3"><summary className="cursor-pointer font-medium">Browse saved generation requests</summary><div className="pt-3">
         <SynthesisRequestHistoryPanel key={generationHistoryVersion} userId={userId} workspaceId={workspaceId} campaignId={campaignId}
           sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} onAccessLost={loseReviewAccess} />

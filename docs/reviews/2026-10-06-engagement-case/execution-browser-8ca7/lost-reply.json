@@ -1,0 +1,65 @@
+{
+  "at": "2026-10-07T06:18:49.463Z",
+  "head": "8ca7dc23d332b9a6a500d61afcdef1a29c21d18e",
+  "posts": [
+    {
+      "body": "{\"operation\":\"create\",\"requestId\":\"3ebc394b-35de-48c2-b65d-65dce0d7c0cb\",\"intentText\":\"{\\\"schemaVersion\\\":1,\\\"sourceId\\\":\\\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\\\",\\\"sourceSha256\\\":\\\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\\\",\\\"connectionId\\\":\\\"0240eaf0-1f70-47e5-b3be-d0455b8f4a48\\\",\\\"configurationRevisionId\\\":\\\"cdeaafcb-c5f1-4525-a47a-27394a6299f5\\\",\\\"configurationHash\\\":\\\"07f1287cfc81ea95427dd0cf5aff341914e9851ee85f6f14b90d1628afbd8b01\\\",\\\"modelId\\\":\\\"synthetic\\\",\\\"taskByteLimit\\\":65536}\"}",
+      "response": {
+        "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+        "cancellation": null,
+        "replayed": false,
+        "request": {
+          "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+          "createdAt": "2026-10-07T06:18:53.84892+00:00",
+          "id": "3ebc394b-35de-48c2-b65d-65dce0d7c0cb",
+          "intentSha256": "26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925",
+          "intentText": "{\"schemaVersion\":1,\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"connectionId\":\"0240eaf0-1f70-47e5-b3be-d0455b8f4a48\",\"configurationRevisionId\":\"cdeaafcb-c5f1-4525-a47a-27394a6299f5\",\"configurationHash\":\"07f1287cfc81ea95427dd0cf5aff341914e9851ee85f6f14b90d1628afbd8b01\",\"modelId\":\"synthetic\",\"taskByteLimit\":65536}"
+        },
+        "schemaVersion": 1,
+        "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+      },
+      "status": 201,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/generation"
+    },
+    {
+      "body": "{\"operation\":\"enqueue\",\"requestId\":\"3ebc394b-35de-48c2-b65d-65dce0d7c0cb\",\"stage\":\"segment\",\"intentSha256\":\"26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925\"}",
+      "response": {
+        "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+        "attempts": 0,
+        "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+        "cancelled": false,
+        "createdAt": "2026-10-07T06:19:07.862238+00:00",
+        "failureCode": null,
+        "intentSha256": "26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925",
+        "leaseUntil": null,
+        "replayed": false,
+        "requestId": "3ebc394b-35de-48c2-b65d-65dce0d7c0cb",
+        "schemaVersion": 1,
+        "sealSha256": null,
+        "stage": "segment",
+        "status": "queued",
+        "updatedAt": "2026-10-07T06:19:07.862238+00:00",
+        "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+      },
+      "status": 201,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/preparation"
+    },
+    {
+      "body": "{\"requestId\":\"3ebc394b-35de-48c2-b65d-65dce0d7c0cb\",\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"requestIntentSha256\":\"26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925\",\"stage\":\"segment\",\"authorizationId\":\"6be8af02-f007-4343-826e-6ed8bdbe5f59\",\"intentText\":\"{\\\"schemaVersion\\\":1,\\\"headerSha256\\\":\\\"a609dd68e09ef04521c9405fa6bbc1d7387a0643d1cfb5facbe7cd68084c7356\\\",\\\"maxAttempts\\\":4,\\\"maxOutputTokens\\\":2048,\\\"responseByteLimit\\\":65536,\\\"expiresAt\\\":\\\"2026-10-07T08:18:00.000Z\\\",\\\"chargesAcknowledged\\\":true,\\\"retryTaskIndex\\\":null,\\\"retryOfAttemptId\\\":null}\"}",
+      "response": {
+        "id": "6be8af02-f007-4343-826e-6ed8bdbe5f59",
+        "intentSha256": "00257fe99421f644603452755e241e4dca4d214d36b7c663b5d0b9a378d76b4c",
+        "intentText": "{\"schemaVersion\":1,\"headerSha256\":\"a609dd68e09ef04521c9405fa6bbc1d7387a0643d1cfb5facbe7cd68084c7356\",\"maxAttempts\":4,\"maxOutputTokens\":2048,\"responseByteLimit\":65536,\"expiresAt\":\"2026-10-07T08:18:00.000Z\",\"chargesAcknowledged\":true,\"retryTaskIndex\":null,\"retryOfAttemptId\":null}",
+        "requestId": "3ebc394b-35de-48c2-b65d-65dce0d7c0cb",
+        "schemaVersion": 1
+      },
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/execution"
+    }
+  ],
+  "text": "\n\nSending contributions to a provider requires separate staff permission. Saving this allowance does not start a worker or approve findings.\n\nRefresh execution review\n\nSYNTHETIC lost execution response after real commit\n\nProvider: SYNTHETIC local browser provider. Destination: http://127.0.0.1:38741/v1/\n\nModel: synthetic. 4 prepared tasks; 43,932 saved bytes.\n\nPrepared bytes describe saved material, not a token estimate or provider price. Workers recheck the complete original material before each call.\n\nSaved execution permissions\n\nReview earlier allowances before adding one. An allowance is not proof that a call ran or completed. Expiry does not tell you whether a provider call completed.\n\nNo saved permissions were found.\n\nNew execution allowance\nMaximum attempts\nOutput tokens per call\nResponse bytes per call\nPermission expires, local time\n\nThese resource limits are not a dollar ceiling. Check the provider’s terms and rates. A call already sent may incur charges even if its reply is lost. This form does not authorize retrying a task whose outcome is unknown.\n\nI authorize sending the saved contributions to this provider under these limits and accept the provider’s charges.\nSave execution permission\n\nOriginal allowance 6be8af02-f007-4343-826e-6ed8bdbe5f59 remains saved in this browser. Retrying reuses its exact bytes and never renews its expiry.\n\nInspect retained allowance\nRetry original execution permission\nPreserve allowance recovery\nStart another request\nStop this analysis request\n\nCancellation prevents new work under this request. You can cancel while the original save is unconfirmed. Earlier contributions, approvals and results remain retained; a provider call already sent may still incur charges.\n\nReason for cancelling\nCancel analysis request\nBrowse saved generation requests\nSaved generation requests\nRefresh generation requests\n\nRequests for this saved source, newest first. A saved request does not mean analysis has finished. Cancellation does not remove earlier results.\n\nContribution analysis\nRequest saved\n\n10/6/2026, 11:18:53 PM · Requested by you\n\nRequest details 3ebc394b\nInspect preparation 3ebc394b\nContribution analysis\nCancellation recorded\n\n10/6/2026, 9:50:50 PM · Requested by you\n\nRequest details 6c96a132\nInspect preparation 6c96a132\nContribution analysis\nCancellation recorded\n\n10/2/2026, 9:28:51 PM · Requested by you\n\nRequest details 572fd25d\nInspect preparation 572fd25d\nContribution analysis\nCancellation recorded\n\n10/2/2026, 7:52:08 PM · Requested by you\n\nRequest details e68f5da3\nInspect preparation e68f5da3\nContribution analysis\nCancellation recorded\n\n10/2/2026, 7:52:06 PM · Requested by you\n\nRequest details 8f08821b\nInspect preparation 8f08821b\nContribution analysis\nCancellation recorded\n\n10/2/2026, 7:49:32 PM · Requested by you\n\nRequest details 2b56c12c\nInspect preparation 2b56c12c\nContribution analysis\nCancellation recorded\n\n10/2/2026, 7:48:41 PM · Requested by you\n\nRequest details 2648518c\nInspect preparation 2648518c\nContribu",
+  "withheld": {
+    "at": "2026-10-07T06:19:42.696Z",
+    "status": 200
+  }
+}

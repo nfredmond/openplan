@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-context-output-reader.test.tsx (4 tests | 1 failed | 3 skipped) 179ms
+     × pages notes and uncertainties independently without omitting their totals 177ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-context-output-reader.test.tsx > original context reading > pages notes and uncertainties independently without omitting their totals
+AssertionError: expected <p …(1)></p> to be null
+
+- Expected:
+null
+
++ Received:
+<p
+  class="whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+>
+  SYNTHETIC context note 20
+</p>
+
+ ❯ src/test/engagement-synthesis-context-output-reader.test.tsx:36:61
+     34|     fireEvent.click(screen.getByRole("button", { name: "Show more unce…
+     35|     view.rerender(<SynthesisContextOutputReader {...props(22)} />);
+     36|     expect(screen.queryByText("SYNTHETIC context note 20")).toBeNull()…
+       |                                                             ^
+     37|   });
+     38|   it("downloads the exact original JSON without transport or regenerat…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 skipped (4)
+   Start at  02:44:40
+   Duration  888ms (transform 58ms, setup 63ms, import 168ms, tests 179ms, environment 325ms)
+

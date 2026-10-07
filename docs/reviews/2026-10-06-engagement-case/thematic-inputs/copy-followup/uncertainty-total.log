@@ -1,0 +1,210 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-context-output-reader.test.tsx (4 tests | 1 failed) 1182ms
+     × pages notes and uncertainties independently without omitting their totals 22ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-context-output-reader.test.tsx > original context reading > pages notes and uncertainties independently without omitting their totals
+TestingLibraryElementError: Unable to find an element with the text: Showing 20 of 21 reported uncertainties.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-w-0 space-y-3 text-sm"[39m
+    [36m>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"font-medium"[39m
+      [36m>[39m
+        [0mCompleted context, machine wording not reviewed[0m
+      [36m</p>[39m
+      [36m<p>[39m
+        [0mThis wording needs staff review. Choosing it for theme preparation does not approve its meaning.[0m
+      [36m</p>[39m
+      [36m<h6[39m
+        [33mclass[39m=[32m"font-semibold"[39m
+      [36m>[39m
+        [0mGenerated notes ([0m
+        [0m21[0m
+        [0m)[0m
+      [36m</h6>[39m
+      [36m<ol[39m
+        [33mclass[39m=[32m"space-y-3"[39m
+      [36m>[39m
+        [36m<li[39m
+          [33mclass[39m=[32m"min-w-0 space-y-1"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+          [36m>[39m
+            [0mSYNTHETIC context note 0[0m
+          [36m</p>[39m
+          [36m<details>[39m
+            [36m<summary[39m
+              [33mclass[39m=[32m"cursor-pointer"[39m
+            [36m>[39m
+              [0mSource quotations for note [0m
+              [0m0[0m
+            [36m</summary>[39m
+            [36m<blockquote[39m
+              [33mclass[39m=[32m"my-2 border-l border-border pl-3"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+              [36m>[39m
+                [0mSYNTHETIC source quotation 0[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-all font-mono text-xs"[39m
+              [36m>[39m
+                [0mSource part [0m
+                [0mdd0ddf1a11cb08c97b045cecb2c1a12c218455888157869859338fb819a8e89f[0m
+              [36m</p>[39m
+            [36m</blockquote>[39m
+          [36m</details>[39m
+        [36m</li>[39m
+        [36m<li[39m
+          [33mclass[39m=[32m"min-w-0 space-y-1"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+          [36m>[39m
+            [0mSYNTHETIC context note 1[0m
+          [36m</p>[39m
+          [36m<details>[39m
+            [36m<summary[39m
+              [33mclass[39m=[32m"cursor-pointer"[39m
+            [36m>[39m
+              [0mSource quotations for note [0m
+              [0m1[0m
+            [36m</summary>[39m
+            [36m<blockquote[39m
+              [33mclass[39m=[32m"my-2 border-l border-border pl-3"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+              [36m>[39m
+                [0mSYNTHETIC source quotation 1[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-all font-mono text-xs"[39m
+              [36m>[39m
+                [0mSource part [0m
+                [0mdd0ddf1a11cb08c97b045cecb2c1a12c218455888157869859338fb819a8e89f[0m
+              [36m</p>[39m
+            [36m</blockquote>[39m
+          [36m</details>[39m
+        [36m</li>[39m
+        [36m<li[39m
+          [33mclass[39m=[32m"min-w-0 space-y-1"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+          [36m>[39m
+            [0mSYNTHETIC context note 2[0m
+          [36m</p>[39m
+          [36m<details>[39m
+            [36m<summary[39m
+              [33mclass[39m=[32m"cursor-pointer"[39m
+            [36m>[39m
+              [0mSource quotations for note [0m
+              [0m2[0m
+            [36m</summary>[39m
+            [36m<blockquote[39m
+              [33mclass[39m=[32m"my-2 border-l border-border pl-3"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+              [36m>[39m
+                [0mSYNTHETIC source quotation 2[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-all font-mono text-xs"[39m
+              [36m>[39m
+                [0mSource part [0m
+                [0mdd0ddf1a11cb08c97b045cecb2c1a12c218455888157869859338fb819a8e89f[0m
+              [36m</p>[39m
+            [36m</blockquote>[39m
+          [36m</details>[39m
+        [36m</li>[39m
+        [36m<li[39m
+          [33mclass[39m=[32m"min-w-0 space-y-1"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+          [36m>[39m
+            [0mSYNTHETIC context note 3[0m
+          [36m</p>[39m
+          [36m<details>[39m
+            [36m<summary[39m
+              [33mclass[39m=[32m"cursor-pointer"[39m
+            [36m>[39m
+              [0mSource quotations for note [0m
+              [0m3[0m
+            [36m</summary>[39m
+            [36m<blockquote[39m
+              [33mclass[39m=[32m"my-2 border-l border-border pl-3"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+              [36m>[39m
+                [0mSYNTHETIC source quotation 3[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-all font-mono text-xs"[39m
+              [36m>[39m
+                [0mSource part [0m
+                [0mdd0ddf1a11cb08c97b045cecb2c1a12c218455888157869859338fb819a8e89f[0m
+              [36m</p>[39m
+            [36m</blockquote>[39m
+          [36m</details>[39m
+        [36m</li>[39m
+        [36m<li[39m
+          [33mclass[39m=[32m"min-w-0 space-y-1"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+          [36m>[39m
+            [0mSYNTHETIC context note 4[0m
+          [36m</p>[39m
+          [36m<details>[39m
+            [36m<summary[39m
+              [33mclass[39m=[32m"cursor-pointer"[39m
+            [36m>[39m
+              [0mSource quotations for note [0m
+              [0m4[0m
+            [36m</summary>[39m
+            [36m<blockquote[39m
+              [33mclass[39m=[32m"my-2 border-l border-border pl-3"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+              [36m>[39m
+                [0mSYNTHETIC source quotation 4[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-all font-mono text-xs"[39m
+              [36m>[39m
+                [0mSource part ...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/engagement-synthesis-context-output-reader.test.tsx:31:19
+     29|     const view = render(<SynthesisContextOutputReader {...props(21)} /…
+     30|     expect(screen.getByText("Showing 20 of 21 generated notes.")).toBe…
+     31|     expect(screen.getByText("Showing 20 of 21 reported uncertainties."…
+       |                   ^
+     32|     fireEvent.click(screen.getByRole("button", { name: "Show more cont…
+     33|     expect(screen.queryByText("SYNTHETIC uncertainty 20")).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  02:45:00
+   Duration  1.88s (transform 50ms, setup 56ms, import 160ms, tests 1.18s, environment 334ms)
+

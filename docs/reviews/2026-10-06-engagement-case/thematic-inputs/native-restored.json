@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-10-07T08:07:03.566Z",
+  "requestId": "3620e480-3d20-4934-9d3d-e14fc640e22d",
+  "contextRequestId": "359abb88-65b5-4682-8ad2-ff786adfad25",
+  "targetRecordId": "item:26e3f37d-ef2c-4080-834f-a3351692a484",
+  "throughSequence": 13,
+  "choiceSha256": "ee093f95efbc5c2679bc02e04758ba50cb77e22e43f4c0fa3692440912c1dd51",
+  "commandSha256": "5c3872cdafa0ddc6bd23906d9a70264b6a3b0ddb930a6c386ddd513376dfaaba",
+  "firstReplayed": true,
+  "retryReplayed": true,
+  "outputBytes": 3326,
+  "outputSha256": "62fb33f5df6f583bb41a7848c5d3d888ba3aca4d5596bebb88383cc10dfc6479",
+  "sameSavedBytes": true,
+  "refusals": [
+    {
+      "field": "requestIntentSha256",
+      "rejected": true
+    },
+    {
+      "field": "thematicSha256",
+      "rejected": true
+    },
+    {
+      "field": "choiceText",
+      "rejected": true
+    }
+  ],
+  "boundary": "Synthetic native choice reconstruction and exact replay only. No provider execution, sealed thematic input, browser, semantic, human or release acceptance."
+}

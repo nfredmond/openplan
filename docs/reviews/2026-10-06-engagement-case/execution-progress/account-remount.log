@@ -1,0 +1,34 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-panel.test.tsx
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-panel.test.tsx (11 tests | 1 failed) 429ms
+     × ignores late denial from a previous account 23ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-panel.test.tsx > saved analysis progress view > ignores late denial from a previous account
+Error: expect(element).toHaveAttribute("aria-expanded", "false") // element.getAttribute("aria-expanded") === "false"
+
+Expected the element to have attribute:
+  aria-expanded="false"
+Received:
+  aria-expanded="true"
+ ❯ src/test/engagement-synthesis-progress-panel.test.tsx:75:84
+     73|     await act(async () => { resolve(json({}, 403)); });
+     74|     expect(lostAccess).not.toHaveBeenCalled(); expect(screen.queryByRo…
+     75|     expect(screen.getByRole("button", { name: "Inspect saved analysis …
+       |                                                                                    ^
+     76|   });
+     77|   it("aborts closed inspection and does not expose the late result whe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  23:42:59
+   Duration  1.14s (transform 67ms, setup 54ms, import 181ms, tests 429ms, environment 328ms)

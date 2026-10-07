@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "cases": [
+    {
+      "case": "harmless-comments",
+      "exitCode": 0,
+      "expectedEvidence": "15 passed",
+      "log": "/tmp/openplan-attempt-limit-harmless-comments.log"
+    },
+    {
+      "case": "refresh-resets-limit",
+      "exitCode": 1,
+      "expectedEvidence": "expected '2' to be '1'",
+      "log": "/tmp/openplan-attempt-limit-refresh-resets-limit.log"
+    },
+    {
+      "case": "initial-default-missing",
+      "exitCode": 1,
+      "expectedEvidence": "expected '1' to be '2'",
+      "log": "/tmp/openplan-attempt-limit-initial-default-missing.log"
+    },
+    {
+      "case": "refresh-keeps-old-acknowledgement",
+      "exitCode": 1,
+      "expectedEvidence": "expected true to be false",
+      "log": "/tmp/openplan-attempt-limit-refresh-keeps-old-acknowledgement.log"
+    }
+  ],
+  "restored": {
+    "src/components/engagement/synthesis-execution-panel.tsx": "e91ece24e733381044367a870c46d1f543422b51da7fc28289ae53e8b9f827a4",
+    "src/test/engagement-synthesis-execution-panel.test.tsx": "327a499973722f807387e5adb3c9d3ed0554786db7bb75c997af557a15dda570"
+  },
+  "blindCategory": "React DOM with synthetic fetch responses. Does not prove browser rendering, native database isolation, provider execution or planner acceptance."
+}

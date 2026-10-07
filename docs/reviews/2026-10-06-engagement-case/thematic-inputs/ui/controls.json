@@ -1,0 +1,161 @@
+{
+  "checkedAt": 1791362329.7129261,
+  "results": [
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "expected": "pass"
+    },
+    {
+      "case": "cursor-pair",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "rejects ambiguous query",
+      "markerMatched": true
+    },
+    {
+      "case": "choice-readback",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "refuses storage dropWrite",
+      "markerMatched": true
+    },
+    {
+      "case": "newer-copy",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "keeps newer commands",
+      "markerMatched": true
+    },
+    {
+      "case": "archive-scope",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "lists exact preserved bytes",
+      "markerMatched": true
+    },
+    {
+      "case": "command-account",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "separates userId",
+      "markerMatched": true
+    },
+    {
+      "case": "discovery-target",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "different targetRecordId",
+      "markerMatched": true
+    },
+    {
+      "case": "discovery-manifest",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "different contextManifestSha256",
+      "markerMatched": true
+    },
+    {
+      "case": "discovery-parent",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "different parent source",
+      "markerMatched": true
+    },
+    {
+      "case": "discovery-final-read",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "late access loss",
+      "markerMatched": true
+    },
+    {
+      "case": "saved-choice-checksum",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "browser checks reject",
+      "markerMatched": true
+    },
+    {
+      "case": "preview-progress",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "changed incomplete",
+      "markerMatched": true
+    },
+    {
+      "case": "preview-manifest",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "changed manifest",
+      "markerMatched": true
+    },
+    {
+      "case": "preview-intent",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "changed intent",
+      "markerMatched": true
+    },
+    {
+      "case": "preview-thematic",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "changed thematic",
+      "markerMatched": true
+    },
+    {
+      "case": "choice-account-remount",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "clears an already inspected private preview",
+      "markerMatched": true
+    },
+    {
+      "case": "coverage-total",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "does not report readiness",
+      "markerMatched": true
+    },
+    {
+      "case": "coverage-empty-choice",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "unchosen contribution",
+      "markerMatched": true
+    },
+    {
+      "case": "coverage-duplicate",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "changed duplicate",
+      "markerMatched": true
+    },
+    {
+      "case": "preparation-coverage",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "requires whole-source",
+      "markerMatched": true
+    },
+    {
+      "case": "theme-parent-proposal",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "reads only on demand",
+      "markerMatched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/lib/engagement/synthesis-thematic-choice-recovery.ts": "bffd5c012736220ef2d994f40537ecb78019f7689dfadb72a36711915dcbfa69",
+    "src/lib/engagement/synthesis-thematic-choice-discovery-server.ts": "bf5d5924d9412b8b161036e8b335994304400925996723926d5777a80b4facb2",
+    "src/lib/engagement/synthesis-thematic-choice-discovery.ts": "3ed77981bfc81b38f4efb8560627ea80f15434b09f13791aa6d3cc80aa4a03d6",
+    "src/components/engagement/synthesis-thematic-context-choice.tsx": "a1bc11822400ce1c156e5a91e998a5fd0f657aa3e7eadc2f4c1721b45da39bb9",
+    "src/components/engagement/synthesis-thematic-inputs-panel.tsx": "0003008df58aba98962b916af452f42f5ecc0c91a6c6d3c0b9be9605c3f2a3e5",
+    "src/components/engagement/synthesis-preparation-panel.tsx": "dd0eca69c394376d453b0419879c1b5bfc51d249f29e7d88c42b90c6ea380a76",
+    "src/components/engagement/synthesis-continuation-panel.tsx": "09f962af622bc527fc003821f362450cad6bb31517ad83407fa264b8d1ae0e5b",
+    "src/app/api/engagement/campaigns/[campaignId]/synthesis/thematic-choices/route.ts": "af166e48c9e3f244a437f6454c2c43ce74e4046c8b2dbfeea13ffe29cbae4b25"
+  }
+}

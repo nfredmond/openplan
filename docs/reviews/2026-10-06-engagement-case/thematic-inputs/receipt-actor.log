@@ -1,0 +1,45 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-thematic-choice-command.test.ts (31 tests | 1 failed | 30 skipped) 11ms
+     × rejects altered receipt createdBy 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-thematic-choice-command.test.ts > exact inspected thematic choice contract > rejects altered receipt createdBy
+AssertionError: promise resolved "{ schemaVersion: 1, …(9) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "campaignId": "c7720000-0000-4000-8000-000000000001",
++   "choiceSha256": "45e19930c2858a943f4be21f6e2eb3935712d1c0c7bf64bd066737bf9b05c7df",
++   "choiceText": "{\"schemaVersion\":1,\"targetRecordId\":\"item:c7720000-0000-4000-8000-000000000006\",\"contextRequestId\":\"c7720000-0000-4000-8000-000000000005\",\"selectionSequence\":7,\"historyManifestSha256\":\"259aa8ef98a8b91de574cd904138ef643240c23080cf24da4793a6f10a43fa9d\",\"finalCaptureSha256\":\"460ee6aa3a80359181b794cc31a7185addba77626e9f719c10e3c8efb8668a1d\",\"finalResultSha256\":\"f6a214f7a5fcda0c2cee9660b7fc29f5649e3c68aad48e20e950137c98913a68\"}",
++   "createdAt": "2026-10-07T08:00:00Z",
++   "createdBy": "c7720000-0000-4000-8000-000000000099",
++   "replayed": false,
++   "requestId": "c7720000-0000-4000-8000-000000000004",
++   "schemaVersion": 1,
++   "targetRecordId": "item:c7720000-0000-4000-8000-000000000006",
++   "workspaceId": "c7720000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/engagement-synthesis-thematic-choice-command.test.ts:39:80
+     37|   it.each(["campaignId", "workspaceId", "createdBy", "requestId", "tar…
+     38|     const changed = { ...receipt, [key]: key === "choiceSha256" ? hash…
+     39|     await expect(inspectSynthesisThematicChoiceReceipt(changed, scope,…
+       |                                                                                ^
+     40|   });
+     41|   it("refuses self-hashed substituted choice bytes and missing replay …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 30 skipped (31)
+   Start at  01:06:42
+   Duration  279ms (transform 36ms, setup 57ms, import 53ms, tests 11ms, environment 0ms)
+

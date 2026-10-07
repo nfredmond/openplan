@@ -1,0 +1,83 @@
+{
+  "buttons": [
+    {
+      "rect": {
+        "bottom": 142.265625,
+        "height": 40,
+        "left": 42,
+        "right": 262.3125,
+        "top": 102.265625,
+        "width": 220.3125,
+        "x": 42,
+        "y": 102.265625
+      },
+      "text": "Refresh preparation status"
+    },
+    {
+      "rect": {
+        "bottom": 303.53125,
+        "height": 40,
+        "left": 42,
+        "right": 205.953125,
+        "top": 263.53125,
+        "width": 163.953125,
+        "x": 42,
+        "y": 263.53125
+      },
+      "text": "Queue preparation"
+    },
+    {
+      "rect": {
+        "bottom": 368.53125,
+        "height": 40,
+        "left": 42,
+        "right": 275.796875,
+        "top": 328.53125,
+        "width": 233.796875,
+        "x": 42,
+        "y": 328.53125
+      },
+      "text": "Review execution permission"
+    },
+    {
+      "rect": {
+        "bottom": 433.53125,
+        "height": 40,
+        "left": 42,
+        "right": 283.390625,
+        "top": 393.53125,
+        "width": 241.390625,
+        "x": 42,
+        "y": 393.53125
+      },
+      "text": "Inspect saved analysis results"
+    }
+  ],
+  "form": "Prepare this source for analysis\nRefresh preparation status\n\nPreparation organizes this saved source for analysis. It does not send contributions to a provider or approve findings.\n\nPreparation has not been queued\n\nQueue preparation\nReview execution permission\nInspect saved analysis results",
+  "pendingCount": 0,
+  "rect": {
+    "bottom": 446.53125,
+    "height": 390.53125,
+    "left": 29,
+    "right": 355,
+    "top": 56,
+    "width": 326,
+    "x": 29,
+    "y": 56
+  },
+  "surface": {
+    "bottom": 788,
+    "height": 732,
+    "left": 0,
+    "right": 390,
+    "top": 56,
+    "width": 390,
+    "x": 0,
+    "y": 56
+  },
+  "viewport": {
+    "height": 844,
+    "scrollWidth": 390,
+    "width": 390
+  }
+}

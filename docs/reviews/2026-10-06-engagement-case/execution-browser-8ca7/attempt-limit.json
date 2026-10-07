@@ -1,0 +1,13 @@
+{
+  "acknowledgedAfter": false,
+  "acknowledgedBefore": true,
+  "after": "1",
+  "afterReopen": "1",
+  "at": "2026-10-07T06:10:53.498Z",
+  "before": "1",
+  "head": "8ca7dc23d332b9a6a500d61afcdef1a29c21d18e",
+  "initial": "4",
+  "method": "Real navigation and native reads through observed DOM links/buttons in T3 evaluation. No permission submitted.",
+  "posts": [],
+  "url": "http://openplan-execution.localhost:3479/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7?tab=analysis"
+}

@@ -1,0 +1,68 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-server.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts (23 tests | 1 failed) 21ms
+     × rejects a different segment checksum 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > rejects a different segment checksum
+AssertionError: promise resolved "{ …(17) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "actorId": "c7610000-0000-4000-8000-000000000004",
++   "campaignId": "c7610000-0000-4000-8000-000000000001",
++   "cancelled": false,
++   "checkedAt": "2026-10-07T06:41:43.726Z",
++   "counts": [
++     {
++       "count": 1,
++       "disposition": "validated_output",
++     },
++     {
++       "count": 1,
++       "disposition": "awaiting_result",
++     },
++     {
++       "count": 1,
++       "disposition": "not_started",
++     },
++   ],
++   "interpretation": "not_assessed",
++   "manifestSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
++   "requestId": "c7610000-0000-4000-8000-000000000003",
++   "requestIntentSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
++   "schemaVersion": 1,
++   "selectionSequence": 2,
++   "sourceId": "c7610000-0000-4000-8000-000000000005",
++   "sourceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++   "stage": "segment",
++   "status": "incomplete",
++   "taskCount": 3,
++   "workspaceId": "c7610000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts:79:64
+     77|     if (kind === "source") result.inventory.source.requestId = id(99);
+     78|     if (kind === "checksum") result.inventory.source.sha256 = "e".repe…
+     79|     mocks.segment.mockResolvedValue(result); await expect(run()).rejec…
+       |                                                                ^
+     80|   });
+     81|   it.each(["context", "thematic"] as const)("refuses substituted %s or…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 22 passed (23)
+   Start at  23:41:43
+   Duration  638ms (transform 60ms, setup 53ms, import 84ms, tests 21ms, environment 328ms)

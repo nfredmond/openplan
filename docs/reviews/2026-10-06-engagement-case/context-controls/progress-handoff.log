@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-progress-panel.test.tsx (11 tests | 1 failed) 467ms
+     × keeps completed segment output separate from findings 40ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-panel.test.tsx > saved analysis progress view > keeps completed segment output separate from findings
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/test/engagement-synthesis-progress-panel.test.tsx:38:97
+     36|     mount({ ...scope, stage }); open();
+     37|     await screen.findByText("3 tasks accounted for in this saved selec…
+     38|     expect(Boolean(screen.queryByRole("button", { name: "Choose a cont…
+       |                                                                                                 ^
+     39|     expect(screen.getByText(/do not establish meaning, representative …
+     40|     expect(screen.getByText(/cancellation does not prove that a call a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  00:44:39
+   Duration  1.30s (transform 144ms, setup 55ms, import 279ms, tests 467ms, environment 346ms)
+

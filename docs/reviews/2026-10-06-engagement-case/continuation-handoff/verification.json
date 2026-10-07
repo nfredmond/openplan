@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-10-07T07:28:11.905137+00:00",
+  "applicationCommit": "53de593139dbfa3c42796d6869428689853c7d4d",
+  "focusedTests": {
+    "files": 8,
+    "passed": 144
+  },
+  "typeScriptExitCode": 0,
+  "changedSourceEslintExitCode": 0,
+  "repositoryDeadcodeExitCode": 0,
+  "deadcodeBoundary": "Existing advisory inventory remains; exit 0 does not mean zero findings.",
+  "build": {
+    "commit": "53de593139dbfa3c42796d6869428689853c7d4d",
+    "finalCommit": "53de593139dbfa3c42796d6869428689853c7d4d",
+    "startedEpoch": 1791357916.370062,
+    "finishedEpoch": 1791358034.8044078,
+    "state": "finished",
+    "exitCode": 0,
+    "checkoutUnchanged": true
+  },
+  "fontRequestsBlocked": 0,
+  "nativeProbeSha256": "5ce135deb775fa07b1fd0e4b3a64f01309681b11b478b2c1f886fe1353455f18",
+  "nativeControlRunnerSha256": "c5b6166d5a6783e12a3f5673dc9c08671de0b6569ff1b5aa9ccadd68ae3b6c06",
+  "browserRetry": {
+    "available": true,
+    "visible": false,
+    "tabId": "tab_9",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "imageSnapshot": "failed",
+    "textSnapshot": "failed",
+    "application": "Existing progress candidate on port3481, not this backend checkpoint"
+  },
+  "limitations": [
+    "No browser controls or browser command-recovery implementation in this checkpoint.",
+    "Native replay intentionally drops the acknowledgement after save; it does not prove browser/HTTP recovery.",
+    "No provider call, permission grant, thematic choice or publication is performed.",
+    "No rendered, keyboard, console, semantic, practitioner or release acceptance."
+  ]
+}

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { providerApiConfigurationSchema } from "@/lib/integrations/provider-api-credentials";
 import { createSynthesisGenerationPlan, synthesisGenerationRequestIntentSchema, verifySynthesisGenerationPlanState } from "./synthesis-generation-plan";
 import { synthesisGenerationAttemptBindingSchema } from "./synthesis-generation-results";
+import { synthesisWorkerAuthorizationIntentSchema as authorizationIntentSchema } from "./synthesis-execution-records";
 
 const id = z.string().uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/), natural = z.number().int().nonnegative().safe();
 const digest = (text: string) => createHash("sha256").update(text, "utf8").digest("hex");
@@ -27,12 +28,7 @@ const taskSchema = z.object({ request_id: id, task_index: natural, task_text: z.
 const revisionSchema = z.object({ id, connection_id: id, workspace_id: id, configuration: providerApiConfigurationSchema,
   configuration_canonical: z.string().max(32000), configuration_hash: hash }).strict();
 const credentialSchema = z.object({ revision_id: id, connection_id: id, workspace_id: id, credential_ciphertext: z.string().max(32000).nullable() }).strict();
-const authorizationIntentSchema = z.object({ schemaVersion: z.literal(1), headerSha256: hash,
-  maxAttempts: z.number().int().positive().safe(), maxOutputTokens: z.number().int().min(1).max(65536),
-  responseByteLimit: z.number().int().min(4096).max(4194304), expiresAt: z.string().datetime({ offset: true }),
-  chargesAcknowledged: z.literal(true), retryTaskIndex: natural.nullable(), retryOfAttemptId: id.nullable(),
-}).strict();
-export { authorizationIntentSchema as synthesisWorkerAuthorizationIntentSchema };
+export { synthesisWorkerAuthorizationIntentSchema } from "./synthesis-execution-records";
 const synthesisWorkerJobSchema = z.object({ binding: synthesisGenerationAttemptBindingSchema,
   workspaceId: id, campaignId: id, actorId: id, connectionId: id, headerSha256: hash,
   authorizationId: id, authorizationIntentText: z.string().max(4096), authorizationIntentSha256: hash,

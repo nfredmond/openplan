@@ -22,14 +22,83 @@ function fixture() {
   };
   return { scope, props: { ...scope, onAccessLost: vi.fn(), onCreated: vi.fn() }, page, connection, revision, receipt };
 }
-async function choose(f: ReturnType<typeof fixture>) {
-  fireEvent.click(screen.getByRole("button", { name: "Optional generated analysis" }));
+async function choose(f: ReturnType<typeof fixture>, toggle = "Optional generated analysis") {
+  fireEvent.click(screen.getByRole("button", { name: toggle }));
   await screen.findByRole("option", { name: "Synthetic local API" });
   fireEvent.change(screen.getByLabelText("Saved API connection"), { target: { value: f.connection.id } });
   fireEvent.change(screen.getByLabelText("Analysis model"), { target: { value: "synthetic-model" } });
 }
 
 describe("staff analysis request creation", () => {
+  it("restores an unsent choice after remount but waits for fresh provider metadata", async () => {
+    const f = fixture(), choiceMemory = { scope: f.scope, current: null };
+    let finish!: (value: Response) => void;
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(json(f.page))
+      .mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    vi.stubGlobal("fetch", fetcher);
+    const view = render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await choose(f); view.unmount();
+    render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    expect(screen.getByLabelText("Analysis model")).toHaveValue("synthetic-model");
+    expect(screen.getByRole("button", { name: "Save analysis request" })).toBeDisabled();
+    await act(async () => finish(json(f.page)));
+    expect(screen.getByLabelText("Saved API connection")).toHaveValue(f.connection.id);
+    expect(screen.getByRole("button", { name: "Save analysis request" })).toBeEnabled();
+    expect(fetcher.mock.calls.every(([, init]) => init?.method !== "POST")).toBe(true);
+  });
+  it("does not silently replace a retained provider revision after remount", async () => {
+    const f = fixture(), choiceMemory = { scope: f.scope, current: null };
+    const revisionId = randomUUID();
+    const changed = { ...f.connection, current_revision_id: revisionId, current_revision: { ...f.revision,
+      id: revisionId, configuration_hash: "c".repeat(64), configuration: { ...f.revision.configuration, endpoint: "http://replacement.invalid/v1" } } };
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(json(f.page))
+      .mockResolvedValueOnce(json({ ...f.page, connections: [changed] }));
+    vi.stubGlobal("fetch", fetcher);
+    const view = render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await choose(f); view.unmount();
+    render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await screen.findByText("The selected API changed or is unavailable. Choose its current revision before saving a new request.");
+    expect(screen.getByText("Destination: http://synthetic.invalid/v1")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Save analysis request" })).toBeDisabled();
+    expect(screen.getByLabelText("Saved API connection")).toHaveValue("");
+    expect(fetcher.mock.calls.every(([, init]) => init?.method !== "POST")).toBe(true);
+  });
+  it.each(["userId", "workspaceId", "campaignId", "sourceId", "sourceSha256"] as const)("does not restore choices for a different %s", async field => {
+    const f = fixture(), choiceMemory = { scope: f.scope, current: null };
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockResolvedValue(json(f.page)));
+    const view = render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await choose(f); view.unmount();
+    render(<SynthesisGenerationCreatePanel {...f.props} {...{ [field]: field === "sourceSha256" ? "c".repeat(64) : randomUUID() }} choiceMemory={choiceMemory} />);
+    expect(screen.getByRole("button", { name: "Optional generated analysis" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByLabelText("Analysis model")).toBeNull();
+  });
+  it.each([401, 403])("forgets the unsent choice after provider access fails with %s", async status => {
+    const f = fixture(), choiceMemory = { scope: f.scope, current: null };
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockResolvedValueOnce(json(f.page)).mockResolvedValueOnce(json({}, status)));
+    const view = render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await choose(f);
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analysis providers" }));
+    await waitFor(() => expect(f.props.onAccessLost).toHaveBeenCalledOnce());
+    view.unmount(); render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    expect(screen.getByRole("button", { name: "Optional generated analysis" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByLabelText("Analysis model")).toBeNull();
+  });
+  it("retires an unsent choice once its exact request becomes the recovery record", async () => {
+    const f = fixture(), choiceMemory = { scope: f.scope, current: null };
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async (_url, init) => {
+      if (init?.method === "POST") throw new Error("SYNTHETIC lost reply");
+      return json(f.page);
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const view = render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await choose(f); fireEvent.click(screen.getByRole("button", { name: "Save analysis request" }));
+    await screen.findByText("SYNTHETIC lost reply");
+    expect(choiceMemory.current).toBeNull();
+    view.unmount(); render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await screen.findByRole("button", { name: "Retry saved analysis request" });
+    expect(screen.getByRole("button", { name: "Save analysis request" })).toBeDisabled();
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+  });
   it("requires a fresh selection when paging returns a changed revision of the chosen connection", async () => {
     const f = fixture();
     const preceding = Array.from({ length: 49 }, (_, index) => {
@@ -213,5 +282,47 @@ describe("staff analysis request creation", () => {
     expect(a.props.onCreated).not.toHaveBeenCalled(); expect(b.props.onCreated).not.toHaveBeenCalled();
     expect(screen.queryByText("Analysis request saved. No provider execution is authorized.")).toBeNull();
     expect(readPendingSynthesisGeneration(localStorage, a.scope, "create")).not.toBeNull();
+  });
+});
+
+
+describe("context request through the shared staff form", () => {
+  it("retains a selected contribution before sending and retries it after remount without changing provider or parent", async () => {
+    const f = fixture(), continuation = { stage: "context" as const, parent: { parentRequestId: randomUUID(), parentActorId: randomUUID(),
+      parentIntentSha256: "c".repeat(64), sourceId: f.scope.sourceId, sourceSha256: f.scope.sourceSha256, throughSequence: 4,
+      segmentResultsManifestSha256: "d".repeat(64) }, frameByteLimit: 65536, targetRecordId: `item:${randomUUID()}` };
+    let first: string | null = null;
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async (url, init) => {
+      if (init?.method !== "POST") return String(url).includes("provider-api-connections") ? json(f.page) : json({}, 503);
+      expect(String(url).endsWith(`/synthesis/continuation`)).toBe(true);
+      const retained = readPendingSynthesisGeneration(localStorage, f.scope, "continue", continuation);
+      expect(retained?.intentText).toBe(JSON.parse(String(init.body)).intentText);
+      if (first === null) { first = String(init.body); throw new Error("SYNTHETIC lost context reply"); }
+      expect(String(init.body)).toBe(first);
+      const command = JSON.parse(first);
+      const contextText = JSON.stringify({ schemaVersion: 1, parentRequestId: continuation.parent.parentRequestId,
+        selectionSequence: 4, segmentResultsManifestSha256: continuation.parent.segmentResultsManifestSha256,
+        contextManifestSha256: "e".repeat(64), contentManifestSha256: "f".repeat(64), frameByteLimit: 65536, targetRecordId: continuation.targetRecordId });
+      return json({ ...f.receipt(String(init.body)), replayed: true,
+        context: { parentRequestId: command.parent.parentRequestId, contextText,
+          contextSha256: createHash("sha256").update(contextText).digest("hex"), createdAt: "2026-10-07T00:00:00Z" } });
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const view = render(<SynthesisGenerationCreatePanel {...f.props} continuation={continuation} />);
+    await choose(f, "Combine this contribution"); fireEvent.click(screen.getByRole("button", { name: "Save context request" }));
+    await screen.findByText("SYNTHETIC lost context reply");
+    expect(readPendingSynthesisGeneration(localStorage, f.scope, "create")).toBeNull(); view.unmount();
+    render(<SynthesisGenerationCreatePanel {...f.props} continuation={{ ...continuation, parent: { ...continuation.parent, throughSequence: 5, segmentResultsManifestSha256: "e".repeat(64) } }} />);
+    await screen.findByRole("button", { name: "Retry saved analysis request" });
+    expect(screen.getByText(/original parent selection and contribution below govern this retry/)).toBeTruthy();
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Retry saved analysis request" }));
+    await screen.findByText("Analysis request saved. No provider execution is authorized.");
+    expect(f.props.onCreated).toHaveBeenCalledOnce();
+    expect(readPendingSynthesisGeneration(localStorage, f.scope, "continue", continuation)).toBeNull();
+    expect(JSON.parse(first!).targetRecordId).toBe(continuation.targetRecordId);
+    expect(JSON.parse(first!).parent).toEqual(continuation.parent);
+    fireEvent.click(screen.getByRole("button", { name: "Inspect saved analysis results" }));
+    await waitFor(() => expect(fetcher.mock.calls.some(([url]) => String(url).includes("stage=context"))).toBe(true));
   });
 });

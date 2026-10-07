@@ -1,0 +1,116 @@
+{
+  "at": 1791355380.776146,
+  "results": [
+    {
+      "name": "harmless-comments",
+      "exitCode": 0,
+      "expected": "pass",
+      "log": "harmless-comments.log"
+    },
+    {
+      "name": "scope-check",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "scope-check.log"
+    },
+    {
+      "name": "completion-claim",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "completion-claim.log"
+    },
+    {
+      "name": "null-task-count",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "null-task-count.log"
+    },
+    {
+      "name": "final-access",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "final-access.log"
+    },
+    {
+      "name": "source-hash",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "source-hash.log"
+    },
+    {
+      "name": "retained-plan",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "retained-plan.log"
+    },
+    {
+      "name": "task-bytes",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "task-bytes.log"
+    },
+    {
+      "name": "seal-accounting",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "seal-accounting.log"
+    },
+    {
+      "name": "task-pagination",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "task-pagination.log"
+    },
+    {
+      "name": "task-projection",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "task-projection.log"
+    },
+    {
+      "name": "route-principal",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "route-principal.log"
+    },
+    {
+      "name": "route-permission",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "route-permission.log"
+    },
+    {
+      "name": "response-cache",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "response-cache.log"
+    },
+    {
+      "name": "stale-results",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "stale-results.log"
+    },
+    {
+      "name": "response-scope",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "response-scope.log"
+    },
+    {
+      "name": "account-remount",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "log": "account-remount.log"
+    }
+  ],
+  "restored": true,
+  "sha256": {
+    "schema": "6852c99d733bb81057cd3ac94164e8f3fd60aa78eb1b91d4abd830866f28f0de",
+    "server": "0ea6594c23f82adc711ecd67493da9d8b09e2b0d181b8b99646b6fd2eaddb1f3",
+    "plan": "5f7d73da7a32eabf53a23dd3415b04a66db072841006fdde9e6a68341c66ed5d",
+    "route": "e6fb06a56f3b0ffb39cd7228303b6041475aa96dacbdf36261d99928e3993336",
+    "panel": "55b22478a04cbca5dd21e5a2144f459a888ec9c665db382c7939a022c7cab7f6"
+  },
+  "blindCategory": "Mocked and pure checks do not prove native access, actual rendering, provider semantics or human acceptance."
+}

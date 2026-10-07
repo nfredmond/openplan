@@ -1,0 +1,58 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-thematic-choice-command.test.ts (33 tests | 1 failed | 32 skipped) 12ms
+     × verifies complete output beyond a shortened raw excerpt 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-thematic-choice-command.test.ts > exact inspected thematic choice contract > verifies complete output beyond a shortened raw excerpt
+AssertionError: promise resolved "{ schemaVersion: 1, …(12) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "actorId": "c7720000-0000-4000-8000-000000000003",
++   "campaignId": "c7720000-0000-4000-8000-000000000001",
++   "cancelled": false,
++   "choiceSha256": "45e19930c2858a943f4be21f6e2eb3935712d1c0c7bf64bd066737bf9b05c7df",
++   "command": {
++     "contextRequestId": "c7720000-0000-4000-8000-000000000005",
++     "expected": {
++       "choiceText": "{\"schemaVersion\":1,\"targetRecordId\":\"item:c7720000-0000-4000-8000-000000000006\",\"contextRequestId\":\"c7720000-0000-4000-8000-000000000005\",\"selectionSequence\":7,\"historyManifestSha256\":\"259aa8ef98a8b91de574cd904138ef643240c23080cf24da4793a6f10a43fa9d\",\"finalCaptureSha256\":\"460ee6aa3a80359181b794cc31a7185addba77626e9f719c10e3c8efb8668a1d\",\"finalResultSha256\":\"f6a214f7a5fcda0c2cee9660b7fc29f5649e3c68aad48e20e950137c98913a68\"}",
++       "requestIntentSha256": "282bcbc3f0a34a8a4ac6f00c276fcf66cf3757a3332e83d92208e5079af46922",
++       "thematicSha256": "7c9538141f7ccca18be57435c48867041362c50fac93019bba4d397324f71a2f",
++     },
++     "requestId": "c7720000-0000-4000-8000-000000000004",
++     "targetRecordId": "item:c7720000-0000-4000-8000-000000000006",
++     "throughSequence": 7,
++   },
++   "interpretation": "machine_unreviewed",
++   "outputBytes": 3457,
++   "outputExcerpt": "{\"status\":\"complete\",\"coveredPartIds\":[\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f93",
++   "outputExcerptTruncated": true,
++   "outputSha256": "ba1678ac443bfc11cb1b3a3dfdd8b808f783343afe378abdf033652abf49ba89",
++   "outputText": "{\"status\":\"complete\",\"coveredPartIds\":[\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\",\"37a680133bd09342f934afb8dd2c7d9e1b624da5f35e3a38adb103e37c055ed1\"],\"notes\":[],\"uncertainties\":[\"SYNTHETIC altered after identifiers\"]}",
++   "schemaVersion": 1,
++   "workspaceId": "c7720000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/engagement-synthesis-thematic-choice-command.test.ts:59:140
+     57|       outputBytes: Buffer.byteLength(outputText), outputSha256: hash(o…
+     58|     expect((await inspectSynthesisThematicChoicePreview(full, scope, s…
+     59|     await expect(inspectSynthesisThematicChoicePreview({ ...full, outp…
+       |                                                                                                                                            ^
+     60|     await expect(inspectSynthesisThematicChoicePreview({ ...full, outp…
+     61|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 32 skipped (33)
+   Start at  02:44:31
+   Duration  285ms (transform 40ms, setup 55ms, import 58ms, tests 12ms, environment 0ms)
+

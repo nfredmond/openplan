@@ -32,7 +32,7 @@ class Store {
 }
 function retained(value = pending) { const storage = new Store(); retainPendingSynthesisGeneration(storage, value); return storage; }
 const response = (body: unknown = state(), status = 200) => new Response(JSON.stringify(body), { status });
-const read = (storage: Store, operation: "create" | "cancel" = "create") => readPendingSynthesisGeneration(storage, scope, operation);
+const read = (storage: Store, operation: Parameters<typeof readPendingSynthesisGeneration>[2] = "create") => readPendingSynthesisGeneration(storage, scope, operation);
 
 describe("generation request browser recovery", () => {
   it("preserves exact intent whitespace and independent creation/cancellation slots", () => {

@@ -1,0 +1,58 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-thematic-choice-command.test.ts (33 tests | 1 failed | 32 skipped) 11ms
+     × refuses self-hashed incomplete context output 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-thematic-choice-command.test.ts > exact inspected thematic choice contract > refuses self-hashed incomplete context output
+AssertionError: promise resolved "{ schemaVersion: 1, …(12) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "actorId": "c7720000-0000-4000-8000-000000000003",
++   "campaignId": "c7720000-0000-4000-8000-000000000001",
++   "cancelled": false,
++   "choiceSha256": "45e19930c2858a943f4be21f6e2eb3935712d1c0c7bf64bd066737bf9b05c7df",
++   "command": {
++     "contextRequestId": "c7720000-0000-4000-8000-000000000005",
++     "expected": {
++       "choiceText": "{\"schemaVersion\":1,\"targetRecordId\":\"item:c7720000-0000-4000-8000-000000000006\",\"contextRequestId\":\"c7720000-0000-4000-8000-000000000005\",\"selectionSequence\":7,\"historyManifestSha256\":\"259aa8ef98a8b91de574cd904138ef643240c23080cf24da4793a6f10a43fa9d\",\"finalCaptureSha256\":\"460ee6aa3a80359181b794cc31a7185addba77626e9f719c10e3c8efb8668a1d\",\"finalResultSha256\":\"f6a214f7a5fcda0c2cee9660b7fc29f5649e3c68aad48e20e950137c98913a68\"}",
++       "requestIntentSha256": "282bcbc3f0a34a8a4ac6f00c276fcf66cf3757a3332e83d92208e5079af46922",
++       "thematicSha256": "7c9538141f7ccca18be57435c48867041362c50fac93019bba4d397324f71a2f",
++     },
++     "requestId": "c7720000-0000-4000-8000-000000000004",
++     "targetRecordId": "item:c7720000-0000-4000-8000-000000000006",
++     "throughSequence": 7,
++   },
++   "interpretation": "machine_unreviewed",
++   "outputBytes": 73,
++   "outputExcerpt": "{\"status\":\"incomplete\",\"coveredPartIds\":[],\"notes\":[],\"uncertainties\":[]}",
++   "outputExcerptTruncated": false,
++   "outputSha256": "8a13d00ef2c2432cc9bd53ab9a98c10323fc7d0eba8846d112938e8734f2d0fc",
++   "outputText": "{\"status\":\"incomplete\",\"coveredPartIds\":[],\"notes\":[],\"uncertainties\":[]}",
++   "schemaVersion": 1,
++   "workspaceId": "c7720000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/engagement-synthesis-thematic-choice-command.test.ts:65:102
+     63|     const outputText = kind === "invalid" ? "SYNTHETIC invalid structu…
+     64|     await expect(inspectSynthesisThematicChoicePreview({ ...preview, o…
+     65|       outputBytes: Buffer.byteLength(outputText), outputSha256: hash(o…
+       |                                                                                                      ^
+     66|   });
+     67| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 32 skipped (33)
+   Start at  02:44:32
+   Duration  269ms (transform 36ms, setup 52ms, import 56ms, tests 11ms, environment 0ms)
+

@@ -1,0 +1,181 @@
+{
+  "commit": "53a6fae7ffeabf34315e36d24fcda8b833e187ca",
+  "boundary": "Synthetic T3 DOM interaction and native HTTP/browser-storage recovery. Image capture fails; no visual, console, keyboard, human, sealing or provider execution acceptance.",
+  "observations": {
+    "themeDesktopCoverage": {
+      "buttons": [
+        {
+          "disabled": false,
+          "text": "Choose context for themes"
+        },
+        {
+          "disabled": false,
+          "text": "Refresh context choices"
+        },
+        {
+          "disabled": false,
+          "text": "SYNTHETIC long multilingual contribution"
+        },
+        {
+          "disabled": false,
+          "text": "SYNTHETIC contrasting contribution"
+        }
+      ],
+      "queueDisabled": true,
+      "textSha256": "33da9eb3e0034933d241f1a34f6bea42107c093a07c0c2f292cbf011e752f58b"
+    },
+    "themeDesktopDiscoveryFirst": {
+      "buttons": [
+        {
+          "disabled": false,
+          "text": "Find eligible contexts"
+        },
+        {
+          "disabled": false,
+          "text": "Check older context requests"
+        }
+      ],
+      "textSha256": "645eff410bffa2ae4d3c0fbb0edb6b4de53d26a9c397afc09270960b75bb30b2"
+    },
+    "themeDesktopDiscoveryFinal": {
+      "buttons": [
+        {
+          "disabled": false,
+          "text": "Find eligible contexts"
+        },
+        {
+          "disabled": false,
+          "text": "Inspect context 34ca0f3f saved 10/2/2026, 10:11:09 AM"
+        }
+      ],
+      "textSha256": "efc7bb314c1b9ca798d968858b5cb8802988f07da4033a212c6ff0d09eb47e8a"
+    },
+    "themeFirstUncertain": {
+      "alerts": [
+        "SYNTHETIC interrupted thematic acknowledgement"
+      ],
+      "calls": [
+        {
+          "replayed": false,
+          "status": 201,
+          "target": "item:99fa474c-7e7f-4ec5-8f80-8be07c2dd4d2"
+        }
+      ],
+      "queueDisabled": true,
+      "retry": true
+    },
+    "themeRecoveredBeforeRetry": {
+      "calls": 1,
+      "pendingCount": 1,
+      "queueDisabled": false,
+      "retry": true,
+      "savedReference": true,
+      "textSha256": "c267d8f3d4df083e33816be02ad218f38050eceb74c4343bc2615bbeeb13022c"
+    },
+    "themeRecoveredAfterRetry": {
+      "calls": [
+        {
+          "bodySha256": "a48743fc87ae05a75036998321231433bd7133b73db845dfde3a67f0e05bacd5",
+          "choiceSha256": "f592416bef08456c82940f1441505aa9f690cc60e8beef175458e2091f67943f",
+          "contextRequestId": "34ca0f3f-0547-4282-8108-f5fe51e4f51e",
+          "replayed": false,
+          "status": 201,
+          "throughSequence": 13
+        },
+        {
+          "bodySha256": "a48743fc87ae05a75036998321231433bd7133b73db845dfde3a67f0e05bacd5",
+          "choiceSha256": "f592416bef08456c82940f1441505aa9f690cc60e8beef175458e2091f67943f",
+          "contextRequestId": "34ca0f3f-0547-4282-8108-f5fe51e4f51e",
+          "replayed": true,
+          "status": 200,
+          "throughSequence": 13
+        }
+      ],
+      "notices": [
+        "No categories yetAdd a few categories so intake can be classified before downstream reports rely on it.",
+        "",
+        "No approved comment on this campaign has a location yetThis comparison needs comments placed on the map. Approved comments without a pin cannot be matched to a place, and are not counted here.",
+        "Every source contribution has a saved context choice. Preparation must still verify the complete input and its original records.",
+        "Context choice saved. It does not approve the generated wording.",
+        "No linked project yetAttach this campaign to a project before expecting report-aware handoff cues."
+      ],
+      "pendingCount": 0,
+      "queueDisabled": false,
+      "sameBody": true,
+      "sameReceipt": true
+    },
+    "themeMobileCoverage": {
+      "buttons": [
+        {
+          "left": 42,
+          "right": 265.25,
+          "text": "Choose context for themes",
+          "width": 223.25
+        },
+        {
+          "left": 42,
+          "right": 245.90625,
+          "text": "Refresh context choices",
+          "width": 203.90625
+        },
+        {
+          "left": 42,
+          "right": 342,
+          "text": "SYNTHETIC long multilingual contribution",
+          "width": 300
+        },
+        {
+          "left": 42,
+          "right": 324.796875,
+          "text": "SYNTHETIC contrasting contribution",
+          "width": 282.796875
+        }
+      ],
+      "documentWidth": 390,
+      "pendingCount": 0,
+      "queueDisabled": false,
+      "section": {
+        "left": 42,
+        "right": 342,
+        "width": 300
+      },
+      "width": 390,
+      "textSha256": "44504beeb9d782aa81bb57fe6f29066e05382a7548a8706ac38436ba6af6c785"
+    }
+  },
+  "checkedAt": "2026-10-07T08:48:29.032438+00:00",
+  "path": [
+    "/",
+    "Overview",
+    "Engagement",
+    "synthetic campaign",
+    "Analysis",
+    "Open saved source cc77a4d3",
+    "Browse saved generation requests",
+    "Inspect preparation 3620e480",
+    "Choose context for themes",
+    "SYNTHETIC contrasting contribution",
+    "Find eligible contexts",
+    "Check older context requests",
+    "Inspect context 34ca0f3f",
+    "Use this context",
+    "withheld successful acknowledgement",
+    "reload",
+    "reopen source and request through disclosures",
+    "Retry saved context choice",
+    "390px fresh reload"
+  ],
+  "writes": {
+    "choiceInitial": 201,
+    "choiceReplay": 200,
+    "preparationQueued": false,
+    "providerGranted": false,
+    "captureLimit": "The wrapper covers thematic-choice POSTs from installation before the first save and after reload before reopening the source. It does not establish every request during navigation."
+  },
+  "finding": {
+    "severity": "usability defect, unresolved",
+    "trigger": "Inspect a completed context with many covered-part identifiers",
+    "observed": "The first 1600 JSON characters contain identifiers and can omit notes and uncertainties.",
+    "requiredCorrection": "Present generated notes and uncertainties in a readable form while retaining complete original output and checksums."
+  }
+}

@@ -1,0 +1,57 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-thematic-choice-command.test.ts (31 tests | 1 failed | 30 skipped) 12ms
+     × refuses altered preview choiceSha256 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-thematic-choice-command.test.ts > exact inspected thematic choice contract > refuses altered preview choiceSha256
+AssertionError: promise resolved "{ schemaVersion: 1, …(11) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "actorId": "c7720000-0000-4000-8000-000000000003",
++   "campaignId": "c7720000-0000-4000-8000-000000000001",
++   "cancelled": false,
++   "choiceSha256": "d67e2e944994496c8d8ec76eed0cf9f09679448d584b532bebf941852a37f5ed",
++   "command": {
++     "contextRequestId": "c7720000-0000-4000-8000-000000000005",
++     "expected": {
++       "choiceText": "{\"schemaVersion\":1,\"targetRecordId\":\"item:c7720000-0000-4000-8000-000000000006\",\"contextRequestId\":\"c7720000-0000-4000-8000-000000000005\",\"selectionSequence\":7,\"historyManifestSha256\":\"259aa8ef98a8b91de574cd904138ef643240c23080cf24da4793a6f10a43fa9d\",\"finalCaptureSha256\":\"460ee6aa3a80359181b794cc31a7185addba77626e9f719c10e3c8efb8668a1d\",\"finalResultSha256\":\"f6a214f7a5fcda0c2cee9660b7fc29f5649e3c68aad48e20e950137c98913a68\"}",
++       "requestIntentSha256": "282bcbc3f0a34a8a4ac6f00c276fcf66cf3757a3332e83d92208e5079af46922",
++       "thematicSha256": "7c9538141f7ccca18be57435c48867041362c50fac93019bba4d397324f71a2f",
++     },
++     "requestId": "c7720000-0000-4000-8000-000000000004",
++     "targetRecordId": "item:c7720000-0000-4000-8000-000000000006",
++     "throughSequence": 7,
++   },
++   "interpretation": "machine_unreviewed",
++   "outputBytes": 44,
++   "outputExcerpt": "SYNTHETIC completed context, sin aprobación",
++   "outputExcerptTruncated": false,
++   "outputSha256": "eba8980b4f36b943db96f9b80dae968853baa9d030f21ed5deb962ead285e8cd",
++   "schemaVersion": 1,
++   "workspaceId": "c7720000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/engagement-synthesis-thematic-choice-command.test.ts:48:82
+     46|   it.each(["campaignId", "workspaceId", "actorId", "choiceSha256", "ou…
+     47|     const changed = { ...preview, [key]: key === "outputBytes" ? 1 : k…
+     48|     await expect(inspectSynthesisThematicChoicePreview(changed, scope,…
+       |                                                                                  ^
+     49|   });
+     50|   it.each(["requestId", "contextRequestId", "throughSequence", "target…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 30 skipped (31)
+   Start at  01:06:42
+   Duration  279ms (transform 33ms, setup 54ms, import 54ms, tests 12ms, environment 0ms)
+

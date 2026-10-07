@@ -1,0 +1,5 @@
+
+> openplan@0.66.0 worker:synthesis-generation
+> node --env-file=.env.local --conditions=react-server --import tsx scripts/workers/synthesis-generation.ts --authorization *** --all-tasks
+
+Synthesis grant: 4 outputs retained; 0 dispatches unobserved; 0 scheduled tasks not processed; 0 tasks outside this schedule. Output still needs complete analysis and review.

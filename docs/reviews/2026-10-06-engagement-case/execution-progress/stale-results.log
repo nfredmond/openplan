@@ -1,0 +1,40 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-panel.test.tsx
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-panel.test.tsx (11 tests | 1 failed) 425ms
+     × clears old results immediately while refreshing and leaves unavailable results explicit 36ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-panel.test.tsx > saved analysis progress view > clears old results immediately while refreshing and leaves unavailable results explicit
+AssertionError: expected <h4 class="font-semibold"></h4> to be null
+
+- Expected:
+null
+
++ Received:
+<h4
+  class="font-semibold"
+>
+  Analysis results are incomplete
+</h4>
+
+ ❯ src/test/engagement-synthesis-progress-panel.test.tsx:53:67
+     51|     transport.mockImplementation(() => new Promise<Response>(done => {…
+     52|     fireEvent.click(screen.getByRole("button", { name: "Refresh result…
+     53|     expect(screen.queryByText("Analysis results are incomplete")).toBe…
+       |                                                                   ^
+     54|     await act(async () => { resolve(json({}, 500)); });
+     55|     expect(await screen.findByRole("alert")).toHaveTextContent("unavai…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  23:42:24
+   Duration  1.08s (transform 62ms, setup 54ms, import 178ms, tests 425ms, environment 333ms)

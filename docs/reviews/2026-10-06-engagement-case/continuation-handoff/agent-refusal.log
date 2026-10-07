@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-continuation-route.test.ts (39 tests | 3 failed) 39ms
+     × refuses unregistered agent write marker x-openplan-assistant-execution-source 4ms
+     × refuses unregistered agent write marker x-openplan-assistant-input-hash 1ms
+     × refuses unregistered agent write marker x-openplan-assistant-approval-id 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-route.test.ts > staff continuation HTTP boundary > refuses unregistered agent write marker x-openplan-assistant-execution-source
+ FAIL  src/test/engagement-synthesis-continuation-route.test.ts > staff continuation HTTP boundary > refuses unregistered agent write marker x-openplan-assistant-input-hash
+ FAIL  src/test/engagement-synthesis-continuation-route.test.ts > staff continuation HTTP boundary > refuses unregistered agent write marker x-openplan-assistant-approval-id
+AssertionError: expected 201 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 201
+
+ ❯ src/test/engagement-synthesis-continuation-route.test.ts:68:75
+     66|   });
+     67|   it.each(["x-openplan-assistant-execution-source", "x-openplan-assist…
+     68|     expect((await POST(post(command, { [header]: "" }), context)).stat…
+       |                                                                           ^
+     69|   });
+     70|   it.each<Record<string, string>>([{ origin: "https://foreign.invalid"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 36 passed (39)
+   Start at  00:22:09
+   Duration  745ms (transform 145ms, setup 55ms, import 213ms, tests 39ms, environment 339ms)
+

@@ -1,0 +1,89 @@
+{
+  "checkedAt": 1791359093.5404503,
+  "results": [
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "expected": "pass"
+    },
+    {
+      "case": "contribution-slot",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "failureMarker": "separates parents",
+      "markerMatched": true
+    },
+    {
+      "case": "immutable-parent-actor",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "failureMarker": "parentActorId",
+      "markerMatched": true
+    },
+    {
+      "case": "context-target",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "failureMarker": "altered child target",
+      "markerMatched": true
+    },
+    {
+      "case": "context-checksum",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "failureMarker": "altered child checksum",
+      "markerMatched": true
+    },
+    {
+      "case": "selection-sequence",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "failureMarker": "altered child sequence",
+      "markerMatched": true
+    },
+    {
+      "case": "child-stage",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "failureMarker": "retries it after remount",
+      "markerMatched": true
+    },
+    {
+      "case": "progress-handoff",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "failureMarker": "completed segment output",
+      "markerMatched": true
+    },
+    {
+      "case": "picker-manifest",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "failureMarker": "contribution page manifest",
+      "markerMatched": true
+    },
+    {
+      "case": "cross-page-duplicate",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "failureMarker": "contribution page duplicate",
+      "markerMatched": true
+    },
+    {
+      "case": "account-remount",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "failureMarker": "changed account",
+      "markerMatched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "recovery": "0fd59e25a08b7fa80eabc31a56236bbac52e11297e34a6062255c555fe6d761c",
+    "browser": "f81611e7ecd9216341bbc8fba81fbd8863d7922f0132f329c26143ed47614b77",
+    "records": "6408a4f01e0bccd4f3b3186562c606538afc784cfdfb07ea8609a5b1a4b1e671",
+    "form": "0d514c88dd4c7f2590234f6969c4aa313b41e96af120b8a90909e2250a23a596",
+    "progress": "feedff41b769802457ab307e3ac26ec4b266052b34e2fd74a211a548aac2d57b",
+    "picker": "6bda48da0dcb8cd68f147b165575cfbe8b7be052cf5f5231f50c050254985306"
+  }
+}

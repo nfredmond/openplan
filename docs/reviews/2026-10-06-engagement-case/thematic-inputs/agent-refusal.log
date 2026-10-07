@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-thematic-choice-route.test.ts (34 tests | 3 failed | 31 skipped) 17ms
+     × refuses unregistered agent marker x-openplan-assistant-execution-source 13ms
+     × refuses unregistered agent marker x-openplan-assistant-input-hash 2ms
+     × refuses unregistered agent marker x-openplan-assistant-approval-id 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-thematic-choice-route.test.ts > staff thematic input HTTP boundary > refuses unregistered agent marker x-openplan-assistant-execution-source
+ FAIL  src/test/engagement-synthesis-thematic-choice-route.test.ts > staff thematic input HTTP boundary > refuses unregistered agent marker x-openplan-assistant-input-hash
+ FAIL  src/test/engagement-synthesis-thematic-choice-route.test.ts > staff thematic input HTTP boundary > refuses unregistered agent marker x-openplan-assistant-approval-id
+AssertionError: expected 201 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 201
+
+ ❯ src/test/engagement-synthesis-thematic-choice-route.test.ts:85:75
+     83|   });
+     84|   it.each(["x-openplan-assistant-execution-source", "x-openplan-assist…
+     85|     expect((await POST(post(command, { [header]: "" }), context)).stat…
+       |                                                                           ^
+     86|   });
+     87|   it.each<Record<string, string>>([{ origin: "https://foreign.invalid"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 31 skipped (34)
+   Start at  01:06:45
+   Duration  782ms (transform 152ms, setup 54ms, import 220ms, tests 17ms, environment 336ms)
+

@@ -1,0 +1,58 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-route.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-route.test.ts (22 tests | 6 failed) 25ms
+     × loads segment with current principal and no-store response 10ms
+     × loads context with current principal and no-store response 1ms
+     × loads thematic with current principal and no-store response 1ms
+     × keeps failed reconstruction unavailable or denied: Error: PRIVATE source bytes 1ms
+     × keeps failed reconstruction unavailable or denied: SyntaxError: PRIVATE malformed output 1ms
+     × keeps failed reconstruction unavailable or denied: Error: Synthesis request forbidden 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-route.test.ts > saved analysis results HTTP boundary > loads segment with current principal and no-store response
+ FAIL  src/test/engagement-synthesis-progress-route.test.ts > saved analysis results HTTP boundary > loads context with current principal and no-store response
+ FAIL  src/test/engagement-synthesis-progress-route.test.ts > saved analysis results HTTP boundary > loads thematic with current principal and no-store response
+AssertionError: expected 'public, max-age=3600' to be 'private, no-store' // Object.is equality
+
+Expected: "private, no-store"
+Received: "public, max-age=3600"
+
+ ❯ src/test/engagement-synthesis-progress-route.test.ts:29:86
+     27|   it.each(["segment", "context", "thematic"])("loads %s with current p…
+     28|     const response = await GET(get(`requestId=${requestId}&stage=${sta…
+     29|     expect(response.status).toBe(200); expect(response.headers.get("ca…
+       |                                                                                      ^
+     30|     expect(mocks.access).toHaveBeenCalledExactlyOnceWith(client, campa…
+     31|     expect(mocks.read).toHaveBeenCalledExactlyOnceWith(client, service…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-route.test.ts > saved analysis results HTTP boundary > keeps failed reconstruction unavailable or denied: Error: PRIVATE source bytes
+ FAIL  src/test/engagement-synthesis-progress-route.test.ts > saved analysis results HTTP boundary > keeps failed reconstruction unavailable or denied: SyntaxError: PRIVATE malformed output
+ FAIL  src/test/engagement-synthesis-progress-route.test.ts > saved analysis results HTTP boundary > keeps failed reconstruction unavailable or denied: Error: Synthesis request forbidden
+AssertionError: expected 'public, max-age=3600' to be 'private, no-store' // Object.is equality
+
+Expected: "private, no-store"
+Received: "public, max-age=3600"
+
+ ❯ src/test/engagement-synthesis-progress-route.test.ts:56:51
+     54|     expect(response.status).toBe(cause instanceof SynthesisGenerationR…
+     55|     expect(JSON.stringify(await response.json())).not.toContain("PRIVA…
+     56|     expect(response.headers.get("cache-control")).toBe("private, no-st…
+       |                                                   ^
+     57|   });
+     58|   it("refuses an aborted request before reconstructing private history…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 16 passed (22)
+   Start at  23:42:23
+   Duration  657ms (transform 55ms, setup 54ms, import 91ms, tests 25ms, environment 331ms)

@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-10-07T08:38:55.463Z",
+  "requestId": "3620e480-3d20-4934-9d3d-e14fc640e22d",
+  "sourceTotal": 2,
+  "selectedCount": 1,
+  "wholeSourceReady": false,
+  "pages": 2,
+  "historyRequests": 47,
+  "eligibleRequestIds": [
+    "4f598331-5e4d-4eb1-a444-db6a0abd2ce5",
+    "359abb88-65b5-4682-8ad2-ff786adfad25"
+  ],
+  "originalContextFound": true,
+  "differentParentExcluded": true,
+  "otherActorRefused": true,
+  "boundary": "Read-only synthetic native discovery. No new choice, preparation, execution, seal, semantic, human or release acceptance."
+}

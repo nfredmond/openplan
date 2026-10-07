@@ -1,0 +1,23 @@
+{
+  "recordedAt": "2026-10-07T08:08:01.723785+00:00",
+  "baseCommit": "21b1f86a",
+  "focusedTests": 85,
+  "suites": 3,
+  "unitControls": 11,
+  "nativeControls": 3,
+  "nativeProbeSha256": "a90fe9d4b62f035ff45b82ee12b0f3f475affb96a8af8ec9abb14cf00fc62bb1",
+  "nativeControlRunnerSha256": "31e41ddcf4de995cf5735f13b2a72d43a14647966188d416f7a5dfad173bd813",
+  "boundary": "Backend inspection and exact choice retention; browser controls/recovery, complete thematic preparation and release remain unfinished.",
+  "typescriptExitCode": 0,
+  "changedSourceEslintExitCode": 0,
+  "applicationCommit": "338ff24e6bc652865b6b21d0883a9bb6bb7be394",
+  "productionBuild": "pass; unchanged checkout; GoogleFonts blocked with zero endpoint requests",
+  "nativeHttp": "Authenticated inspected preview/exact replay pass; changed choice, workspace, user and assistant marker refused; retained choice unchanged",
+  "servedProcess": {
+    "pid": 2489675,
+    "port": 3485,
+    "cwd": "/home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan",
+    "collectionEnded": true,
+    "serverStoppedBeforeEdits": true
+  }
+}

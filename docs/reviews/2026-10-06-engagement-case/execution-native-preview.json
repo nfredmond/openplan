@@ -1,0 +1,91 @@
+{
+  "checkedAt": "2026-10-07T04:38:43.454Z",
+  "target": "owned local API 29821",
+  "fixture": "Existing synthetic retained plans",
+  "boundary": "Authenticated native bounded reads only. No grants, worker execution, provider calls, browser or semantic acceptance.",
+  "results": [
+    {
+      "schemaVersion": 1,
+      "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+      "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7",
+      "requestId": "54c0e22b-2fde-45b6-8b0c-94a2ffc2928f",
+      "stage": "segment",
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+      "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+      "requestIntentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+      "headerSha256": "966d0224d377bf08fa68b97c1524619714a3ed4c326d9166ffed431674b72fa9",
+      "sealSha256": "5521747f2a3f79b457f152e167b61a7fcc1fe506f3ab021786eaf2c1ca73fa4c",
+      "taskCount": 4,
+      "inputBytes": 43932,
+      "sealedAt": "2026-10-02T17:11:02.53064+00:00",
+      "cancelled": false,
+      "provider": {
+        "connectionId": "7b257b91-c86c-43a9-b1bb-ef6255bf65bf",
+        "revisionId": "910024eb-a147-4a91-a3b9-2e4476636731",
+        "configurationHash": "d5256a2cbe32cfb78dac66bb5ae786cfbaaa75959089c77da1c880d069031915",
+        "label": "SYNTHETIC local browser provider",
+        "endpoint": "http://127.0.0.1:34667/v1/",
+        "modelId": "synthetic",
+        "current": true
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+      "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7",
+      "requestId": "359abb88-65b5-4682-8ad2-ff786adfad25",
+      "stage": "context",
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+      "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+      "requestIntentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+      "headerSha256": "af2826ea1866a2fa4be6f409450c26e08f9687bc4f3865a42e79924d4afb01af",
+      "sealSha256": "48d7a4656b4f187ee625abd5c4f7c204b10d1150959d5bfbd8cab618cb15649e",
+      "taskCount": 13,
+      "inputBytes": 209536,
+      "sealedAt": "2026-10-02T17:11:03.928225+00:00",
+      "cancelled": false,
+      "provider": {
+        "connectionId": "7b257b91-c86c-43a9-b1bb-ef6255bf65bf",
+        "revisionId": "910024eb-a147-4a91-a3b9-2e4476636731",
+        "configurationHash": "d5256a2cbe32cfb78dac66bb5ae786cfbaaa75959089c77da1c880d069031915",
+        "label": "SYNTHETIC local browser provider",
+        "endpoint": "http://127.0.0.1:34667/v1/",
+        "modelId": "synthetic",
+        "current": true
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+      "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7",
+      "requestId": "dd741df4-7b58-4313-877e-55490ca40346",
+      "stage": "thematic",
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+      "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+      "requestIntentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+      "headerSha256": "93c182d79c3b5e1e3aff5ab2547bc73c271dd12455bba07e0045b6f699cca0bf",
+      "sealSha256": "0e4b77be197d86e079de48438b8199f0c2d0b8f649d721e94a88b54fe6026a84",
+      "taskCount": 5,
+      "inputBytes": 51749,
+      "sealedAt": "2026-10-02T17:11:16.234788+00:00",
+      "cancelled": false,
+      "provider": {
+        "connectionId": "7b257b91-c86c-43a9-b1bb-ef6255bf65bf",
+        "revisionId": "910024eb-a147-4a91-a3b9-2e4476636731",
+        "configurationHash": "d5256a2cbe32cfb78dac66bb5ae786cfbaaa75959089c77da1c880d069031915",
+        "label": "SYNTHETIC local browser provider",
+        "endpoint": "http://127.0.0.1:34667/v1/",
+        "modelId": "synthetic",
+        "current": true
+      }
+    }
+  ],
+  "baseCommit": "69446c25dc7db47c1651d811936f673bf08e6b9d",
+  "uncommittedSourceSha256": {
+    "openplan/src/lib/engagement/synthesis-execution-preview-server.ts": "13ebf2d92a50162688bf5fdbb6c4e0fb50cf65721e1319968b61147d9721f3ec",
+    "openplan/src/lib/engagement/synthesis-generation-requests-server.ts": "efed3f4f7028649723949a84d0705486de713e4300421b03c561e45b26a2400b"
+  }
+}
