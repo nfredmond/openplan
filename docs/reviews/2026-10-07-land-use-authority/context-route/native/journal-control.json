@@ -1,0 +1,5 @@
+{
+  "existingJournalRefused": true,
+  "journalUnchanged": true,
+  "failure": "FileExistsError before probe schema or fixture creation"
+}

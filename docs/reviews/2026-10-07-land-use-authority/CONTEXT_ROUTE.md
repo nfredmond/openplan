@@ -45,7 +45,56 @@ test passes against the installed schema without its candidate-DDL probe flag.
 This supersedes the earlier checkpoint's unapplied status for this test stack
 only. The demo and BCA owner's stacks are untouched.
 
-Identified production-build HTTP checks and concurrent-session proof are next.
+Identified production-build HTTP checks and simultaneous-save proof are now recorded below. Concurrent freeze and permission-change transactions remain open.
 The existing PostGIS `spatial_ref_sys` advisor finding remains recorded in the
 persistence checkpoint. No complete security-advisor pass, deployment to users,
 visible workflow, legal applicability, agency acceptance or v1 release is claimed.
+
+## Production HTTP and simultaneous-save follow-up
+
+The [clean production build](context-route/native/build-status.json) passes at
+`522fe33bf06e579e831b1e1b64f7b6ed32410e3a`. The owned server on port 3493 reports
+that commit, and its process directory matches the isolated checkout.
+[Server identity and shutdown](context-route/native/server-identity.json) record
+that boundary. The server stops before subsequent repository edits.
+
+The [HTTP record](context-route/native/http.json) contains 19 authenticated
+requests against that build and the installed isolated schema. A new synthetic
+workspace and plan start with historical-null context. The staff route saves an
+uploaded study area and explicitly unresolved authority assessment. Native reads
+confirm exact original command bytes and their hash. Exact replay returns the
+original result; altered bytes and stale new commands are refused. A later save
+remains current after replaying the older command. Wrong account/workspace
+headers, assistant headers, cross-origin requests, viewer writes and replay after
+writer revocation are refused. A viewer can still read the private plan context.
+A direct authenticated table update is also refused.
+
+These are synthetic fixtures. No agency or person adopts a plan or attests to
+legal applicability. The second test user remains a viewer after the temporary
+revocation case; the original fixture actor's owner role is restored. The probe
+retains its request records before sending them. It does not simulate a lost
+browser reply, prove offline draft recovery or collect rendered acceptance.
+
+The [two-session SQL probe](context-route/native/concurrency.json) starts two
+writers with the same context hash. The real function refuses the busy second
+writer, and refuses its stale retry after the first commits. The first writer's
+context remains current. An unchanged copy with a harmless comment does the
+same. A private, unexposed function copy with both update locks removed allows
+the stale second writer to overwrite the first after an observed row-lock wait.
+This is the expected defect, demonstrating that the probe can detect a lost
+update. The real function definition remains byte-for-byte equivalent, and the
+private probe schema is removed. Each case owns a separate marked synthetic
+plan; the fault-case output is not accepted planning evidence.
+
+The [local probe source](context-route/native/concurrency.py) requires the
+retained private synthetic-fixture journal and the named isolated stack. It
+refuses an existing output journal before creating another schema or fixture;
+[the guard check](context-route/native/journal-control.json) confirms the old
+record remains unchanged. Do not rerun it over the original case. No credentials
+or session cookies are included in these committed records.
+
+This proves sequential HTTP custody and simultaneous database saves. It does not
+prove concurrent HTTP calls, a freeze racing with a save, current-rule
+reconciliation, the complete authoring/publication journey, browser usability,
+practitioner acceptance or full v1 readiness. Continue those M1 requirements
+without treating this checkpoint as their substitute.

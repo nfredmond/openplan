@@ -1,0 +1,15 @@
+{
+  "applicationCommit": "522fe33bf06e579e831b1e1b64f7b6ed32410e3a",
+  "observedBeforeHttpRequests": {
+    "pid": 4109616,
+    "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan",
+    "healthStatus": 200,
+    "healthCommit": "522fe33bf06e",
+    "packageVersion": "0.67.0"
+  },
+  "unit": "openplan-plan-context-522f-prod-20261007.service",
+  "stoppedAfterCollection": true,
+  "port3493NotListening": true,
+  "oldPidAbsent": true,
+  "shutdownVerifiedAt": "2026-10-07T10:46:22.352339+00:00"
+}
