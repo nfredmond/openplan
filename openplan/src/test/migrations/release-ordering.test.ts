@@ -489,6 +489,11 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20261014000039_engagement_synthesis_context_execution.sql",
     migrationsAtRelease: 358,
   },
+  {
+    tag: "0.67.0",
+    lastMigration: "20261016000001_bca_workbench_versions.sql",
+    migrationsAtRelease: 373,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

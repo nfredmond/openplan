@@ -118,6 +118,7 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
   { table: "project_decision_package_decisions", column: "project_id", label: "agency package decisions", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}?tab=documents#project-decision-packages" },
   { table: "scenario_sets", column: "project_id", label: "scenario sets", severity: "evidence", behavior: "cascade", href: "/scenarios" },
   { table: "safety_road_context_features", column: "project_id", label: "cached Safety road context", severity: "evidence", behavior: "cascade", href: "/safety" },
+  { table: "project_bca_versions", column: "project_id", label: "saved benefit-cost analyses", severity: "evidence", behavior: "cascade", href: "/grants/bca/{projectId}", describeLoss: () => "Saved BCA versions are retained evidence. Retire the project to preserve its analysis history." },
   { table: "project_bca_screenings", column: "project_id", label: "BCA screenings", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
   { table: "project_spend_entries", column: "project_id", label: "spend entries", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
   { table: "project_funding_profiles", column: "project_id", label: "funding profile", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
@@ -325,6 +326,8 @@ export function assessProjectDelete(
         )} across ${pluralize(blockers.length, "modules")}, so deleting it would take real work with it.`,
     alternative: blockers.some(blocker => blocker.privateProviderHistory)
       ? "Set the project's status to complete to retire it. Its attached records and private Planner Agent history stay intact."
+      : blockers.some(blocker => blocker.table === "project_bca_versions")
+      ? "Set the project's status to complete to retire it. Saved benefit-cost analyses stay intact and attributable."
       : hasCommitments
       ? "Set the project's status to complete to retire it. Its funding and invoicing history stays intact and attributable."
       : "Set the project's status to complete to retire it — that is reversible — or remove the attached records from the modules listed above and delete the empty project afterwards.",

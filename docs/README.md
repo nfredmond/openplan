@@ -57,6 +57,8 @@ Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before inte
 
 ## Planning and engineering references
 
+- [Benefit-cost analysis workbench](ops/BCA_WORKBENCH.md): project evidence, annual calculations, program methods, recovery and exports.
+
 - [Reading an adopted plan](../openplan/docs/READING_AN_ADOPTED_PLAN.md): sourced
   document extraction and human-reviewed use in a plan.
 - [Architecture decisions](ADRs/): dated design rationale, including modeling,

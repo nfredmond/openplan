@@ -1,0 +1,60 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "exit": 0,
+      "expectedTest": null,
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "invalid-draft",
+      "exit": 1,
+      "expectedTest": "keeps unfinished edits",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "overwrite-original",
+      "exit": 1,
+      "expectedTest": "does not overwrite unreadable",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "recover-pending",
+      "exit": 1,
+      "expectedTest": "does not overwrite unreadable",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "import-retry",
+      "exit": 1,
+      "expectedTest": "restores an exported retained request",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "alternate-partial",
+      "exit": 1,
+      "expectedTest": "does not report partial NPV",
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "schema-policy",
+      "exit": 0,
+      "expectedTest": "policy inventory",
+      "expectedOutcomeObserved": false
+    },
+    {
+      "case": "release-count",
+      "exit": 1,
+      "expectedTest": "released migration ordering",
+      "expectedOutcomeObserved": true
+    }
+  ],
+  "restored": true,
+  "limits": "Targeted UI effects and calculation/schema guard faults; not complete browser or native database acceptance.",
+  "policyRemoval": {
+    "exit": 1,
+    "restored": true,
+    "assertion": "Observed total/permissive/write policy counts reject deletion of INSERT policy."
+  },
+  "policyRenameInterpretation": "Renaming a policy without changing its SQL semantics is a harmless change, not an access defect. Its survival is expected; the mislabeled initial case remains above. Removing the INSERT policy supplies the meaningful fault."
+}

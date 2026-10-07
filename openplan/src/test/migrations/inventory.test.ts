@@ -485,12 +485,14 @@ const EXPECTED = {
   // Confirmed in the isolated installed catalog; no new write policy or view.
   // Migrations 21/22 add two immutable RLS tables and two staff/actor SELECT policies.
   // Isolated postgres catalog: 756 policies, 225 policy tables, 252 application tables.
-  policies: 756,
-  permissive: 505,
+  // 20261016000001 adds one append-only BCA table and SELECT/INSERT policies.
+  // Owned isolated catalog: 758 policies, 226 policy tables, 280 application RLS tables.
+  policies: 758,
+  permissive: 507,
   restrictive: 251,
-  permissiveWrites: 277,
+  permissiveWrites: 278,
   expanded: 286,
-  tablesWithPolicies: 225,
+  tablesWithPolicies: 226,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.
@@ -523,10 +525,10 @@ const EXPECTED = {
   // 20261015000009 adds private thematic dynamic attempt inputs.
   // Installed isolated catalog confirms 277 application RLS tables and 14 views.
   // Explicit preparation jobs and immutable worker claim attempts add two RLS tables.
-  relations: 293,
-  tables: 279,
+  relations: 294,
+  tables: 280,
   views: 14,
-  rlsEnabledTables: 279,
+  rlsEnabledTables: 280,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

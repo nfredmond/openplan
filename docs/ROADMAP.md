@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: 380aad49770d856a9c4b577ccc9793baf39d3ddf
-current_release: v0.66.0
+current_release: v0.67.0
 review_by: 2026-11-06
 paths:
 - AGENTS.md
@@ -43,7 +43,7 @@ constitute a complete passing rerun.
 
 The [integration audit](reviews/2026-10-06-integration/INTEGRATION.md) accounts for
 September 6 through October 6 branches, worktrees and original review evidence.
-The package remains v0.66.0 with unreleased work. This checkpoint does not alter
+At that checkpoint the package remained v0.66.0 with unreleased work. That checkpoint does not alter
 the full v1 contract or redate the September strategic review.
 
 The immediate workflow sequence is below. M1/G1 geography and authority work,
@@ -338,6 +338,7 @@ M6 needs separate completion evidence for these decisions:
 
 1. **M6a — Transit, active travel and freight work.** Carry transit feed discovery/URL/ZIP intake and validated versions through service-day/headway/span/coverage/accessibility analysis, alternative service/resource plans, the agency's operations/capital decision and appropriate GTFS/record handoff. A transit provider's operating plan is not complete because a model loaded a feed. Walking/cycling network gaps, safety interventions and freight movements each need their own baseline, alternative, cost, distributional effects and implementation case. Verify missing/no-feed rural service, calendar exceptions, transfers, accessibility, service resources/cost assumptions, source version changes and public/board reuse. Existing GTFS/routing/safety/project tools are the starting point; this does not implicitly launch fare collection, fleet dispatch or an AVL platform.
 2. **M6b — Defensible benefit-cost and demand-management evidence.** Extend existing BCA and TDM engines and their grant/safety/report connections. Complete a source-bound calculation and a reviewable application/decision memo with baseline, price year, discounting, quantities, overlapping benefits/measures, scenario assumptions and sensitivity. Current screening defaults and unverified effect estimates remain screening until their actual use is supported. Distinguish transportation demand management from the separate demand-model engines. Independent recomputation, zero/missing costs, incompatible years/units, double counting, correlated measures and source/version changes must fail or disclose correctly. Research and maintaining current parameter sources cost time; no AI-generated coefficient or generic model agreement establishes application-grade validity.
+   October 6 BCA increment: the [workbench guide](ops/BCA_WORKBENCH.md) and [verification record](reviews/2026-10-06-bca/VERIFICATION.md) cover annual project inputs, program profiles, retained versions, evidence gaps, quantity helpers, model-comparison import and calculation exports. M6b remains open for the wider TDM practice boundary, native Cal-B/C parity and supported empirical forecasts. This increment does not promote screening models or certify a grant application.
 3. **M6c — Agency-controlled project prioritization.** Extend current RTP priority framework/scoring and Programs records. An agency adopts or chooses actual criteria/weights and eligibility, reviews candidate evidence, compares sensitivity and budget constraints, records overrides/reasons and approves a traceable program. This is distinct from both BCA and procurement scoring. Done means an independent reviewer reconstructs inclusion, ranking, selection and deferred projects from exact inputs and policy versions. Test changed weights, missing evidence, ties, incompatible scoring units, excluded projects, geographic applicability and selected-program budget reconciliation. A mathematically sorted list is not an agency decision; policy and final approval remain human-owned.
 
 ## M7. Land-use, housing and development review in practice
