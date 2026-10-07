@@ -172,3 +172,13 @@ export function preservePlanContextRecord(storage: PlanContextStorage, scope: Pl
 export function makePlanContextDraft(scope: PlanContextClientScope, base: PlanContextBase, draft: PlanContextDraft, instanceId: string): StoredPlanContextDraft {
   return draftSchema.parse({ ...scope, base, draft, instanceId, schemaVersion: 1, kind: "draft", savedAt: new Date().toISOString() });
 }
+
+/** Clear only the active instance's exact draft after confirmation or explicit preservation. */
+export function clearOwnedPlanContextDraft(storage: PlanContextStorage, input: StoredPlanContextDraft, instanceId: string) {
+  const value = parseUnchanged(draftSchema, input);
+  if (value.instanceId !== instanceId) throw new Error("Another browser instance owns this draft.");
+  const key = recordKey(value), raw = JSON.stringify(value);
+  if (storage.getItem(key) !== raw) throw new Error("The draft copy changed. Keep the current text and saved copies.");
+  storage.removeItem(key);
+  if (storage.getItem(key) !== null) throw new Error("The confirmed draft copy could not be cleared. Keep it for review.");
+}

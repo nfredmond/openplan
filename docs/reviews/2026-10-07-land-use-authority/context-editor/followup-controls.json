@@ -1,0 +1,59 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "unresolved-recovery-freeze",
+      "exitCode": 1,
+      "matched": true,
+      "target": "malformed copies downloadable",
+      "failedTests": [
+        "LandUsePlanWorkbench content editing joins context edits, pending recovery and refreshed revisions to the actual freeze control",
+        "plan context editor keeps an unknown save for explicit exact retry, including duplicate clicks and reload",
+        "plan context editor keeps malformed copies downloadable and refuses a new save until they are preserved"
+      ]
+    },
+    {
+      "case": "refresh-before-cleanup",
+      "exitCode": 1,
+      "matched": true,
+      "target": "retains an edited draft and command before transport",
+      "failedTests": [
+        "LandUsePlanWorkbench content editing joins context edits, pending recovery and refreshed revisions to the actual freeze control",
+        "plan context editor retains an edited draft and command before transport, then refreshes before enabling freeze",
+        "plan context editor keeps an unknown save for explicit exact retry, including duplicate clicks and reload",
+        "plan context editor retains confirmation and both copies when the workbench refresh fails",
+        "plan context editor permits exact request recovery after freezing but refuses new edits",
+        "plan context editor keeps current typing when a different recovered request is confirmed",
+        "plan context editor saves an uploaded study area and multiple responsible bodies through the mounted fields"
+      ]
+    },
+    {
+      "case": "scope-abort",
+      "exitCode": 1,
+      "matched": true,
+      "target": "aborts old-account requests",
+      "failedTests": [
+        "plan context editor aborts old-account requests and preserves their copies after a scope change"
+      ]
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/components/land-use-plans/land-use-plan-context-editor.tsx": "fab2069532994b4cb086549b75fb75f9e9fbafa1d9a01a299208096431650c3e",
+    "src/components/land-use-plans/land-use-plan-workbench.tsx": "49fc7bfc829c7b5f7451f3074292aad9cc63a2cef74a2c61db6de601e1d5bed1",
+    "src/lib/land-use-plans/plan-context-recovery.ts": "dc7512c4dadc3c8af515d12226ce51ddf5db5157397e302c7aefbb34381d6f92"
+  }
+}

@@ -4,13 +4,14 @@ import { LandUsePlanWorkbench } from '@/components/land-use-plans/land-use-plan-
 
 const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }));
+vi.mock('@/components/models/study-area-picker', () => ({ StudyAreaPicker: () => <div>Study area picker</div> }));
 vi.mock('next/link', () => ({ default: ({ href, children }: { href: string; children: React.ReactNode }) => <a href={href}>{children}</a> }));
 
 function fixture() {
   const version = { id: '10000000-0000-4000-8000-000000000001', draft_revision: 7, version_number: 1, version_kind: 'original', state: 'working', applicable_requirement_keys: ['local'], content_hash: null, frozen_at: null, published_report_id: null };
   const node = (id: string, title: string, kind = 'section') => ({ id, title, node_kind: kind, parent_node_id: null, requirement_key: kind === 'section' ? 'local' : null, body: `Saved ${title}`, sort_order: 0, evidence_document_id: null, evidence_url: null });
   return {
-    plan: { id: '10000000-0000-4000-8000-000000000002', workspace_id: '10000000-0000-4000-8000-000000000003', title: 'EXERCISE ONLY draft custody', authority_label: 'Local planning', geography_label: 'Fixture geography', geography_geojson: null, current_working_version_id: version.id, current_adopted_version_id: null },
+    plan: { plan_kind_key: 'community', id: '10000000-0000-4000-8000-000000000002', workspace_id: '10000000-0000-4000-8000-000000000003', title: 'EXERCISE ONLY draft custody', authority_label: 'Local planning', geography_label: 'Fixture geography', geography_geojson: null, current_working_version_id: version.id, current_adopted_version_id: null },
     descriptor: { id: 'local-unconfigured', configured: false, disclosure: 'Local legal requirements are not configured.', verifiedAt: '', reviewDueAt: '', terminology: { plan: 'plan', section: 'section', adoptionInstrument: 'instrument', implementationReport: 'report' }, requirements: [{ key: 'local', label: 'Local content', applicability: 'locally_defined', sourceUrls: [] }], processSteps: [], sourceUrls: [] },
     actorId: '10000000-0000-4000-8000-000000000004', descriptorHash: 'a'.repeat(64), canWrite: true, versions: [version], activeVersion: version,
     nodes: [node('section-a', 'First section'), node('section-b', 'Second section'), node('policy-a', 'Policy', 'policy')],
@@ -19,11 +20,13 @@ function fixture() {
 }
 
 async function setup(delay = false, options: { failSave?: boolean; failRefresh?: boolean; onWrite?: (saved: ReturnType<typeof fixture>) => void } = {}) {
+  localStorage.clear();
   const saved = fixture();
   let finish!: () => void;
   const pending = new Promise<void>((resolve) => { finish = resolve; });
   const writes: Array<Record<string, unknown>> = [];
   vi.stubGlobal('fetch', vi.fn(async (_url: string, init?: RequestInit) => {
+    if (_url.endsWith('/context')) return Response.json({ actorId:saved.actorId,workspaceId:saved.plan.workspace_id,planId:saved.plan.id,contextState:{status:'legacy'},contextHash:null,descriptorId:saved.descriptor.id,planKindKey:saved.plan.plan_kind_key,versionId:saved.plan.current_working_version_id,canWrite:saved.canWrite });
     if (!init?.method) return options.failRefresh && writes.length ? Response.json({ error: 'Read unavailable' }, { status: 503 }) : Response.json(saved);
     const body = JSON.parse(String(init.body)) as Record<string, unknown>;
     writes.push(body);
@@ -36,6 +39,7 @@ async function setup(delay = false, options: { failSave?: boolean; failRefresh?:
   }));
   const view = render(<LandUsePlanWorkbench planId={saved.plan.id} />);
   const fields = await screen.findAllByPlaceholderText('Author the plan text, with evidence links and policy details.');
+  await screen.findByText('Current saved context');
   return { saved, fields, writes, finish, view, buttons: screen.getAllByRole('button', { name: 'Save section' }) };
 }
 
@@ -105,7 +109,7 @@ describe('Live workbench draft custody', () => {
     await waitFor(() => expect(refresh).toHaveBeenCalled());
     expect(saved.nodes[0].body).toBe('Submitted snapshot');
     expect(fields[0]).toHaveValue('Saved First section');
-    expect(screen.getByRole('status')).toHaveTextContent('Unsaved content changes');
+    expect(screen.getByRole('status')).toHaveTextContent('Context or content needs attention');
   });
 
   it('refreshes clean fields changed on the server rather than retaining every local value', async () => {
@@ -123,7 +127,7 @@ describe('Live workbench draft custody', () => {
     await screen.findByText('Save rejected');
     expect(fields[0]).toHaveValue('Refused first draft');
     expect(fields[1]).toHaveValue('Unsaved second draft');
-    expect(screen.getByRole('status')).toHaveTextContent('Unsaved content changes');
+    expect(screen.getByRole('status')).toHaveTextContent('Context or content needs attention');
     expect(refresh).not.toHaveBeenCalled();
   });
 
@@ -135,7 +139,7 @@ describe('Live workbench draft custody', () => {
     await screen.findByText('Read unavailable');
     expect(fields[0]).toHaveValue('Submitted first draft');
     expect(fields[1]).toHaveValue('Unsaved second draft');
-    expect(screen.getByRole('status')).toHaveTextContent('Unsaved content changes');
+    expect(screen.getByRole('status')).toHaveTextContent('Context or content needs attention');
   });
 
   it('never acknowledges the only dirty field after its save is refused', async () => {
@@ -145,7 +149,7 @@ describe('Live workbench draft custody', () => {
     await screen.findByText('Save rejected');
     expect(saved.nodes[0].body).toBe('Saved First section');
     expect(fields[0]).toHaveValue('Only unsaved draft');
-    expect(screen.getByRole('status')).toHaveTextContent('Unsaved content changes');
+    expect(screen.getByRole('status')).toHaveTextContent('Context or content needs attention');
     expect(screen.getByRole('button', { name: 'Freeze public draft' })).toBeDisabled();
   });
 
@@ -156,14 +160,14 @@ describe('Live workbench draft custody', () => {
     fireEvent.change(fields[1], { target: { value: 'Unsubmitted section' } });
     expect(freeze).toBeDisabled();
     expect(screen.queryByText('The public draft is ready to freeze.')).not.toBeInTheDocument();
-    expect(screen.getByText('Save edited sections and content nodes before freezing.')).toBeVisible();
+    expect(screen.getByText('Save edited context, sections and content nodes, and resolve recovery before freezing.')).toBeVisible();
     fireEvent.click(freeze);
     expect(writes).toHaveLength(0);
     fireEvent.click(buttons[1]);
     await waitFor(() => expect(refresh).toHaveBeenCalled());
     expect(freeze).toBeEnabled();
     expect(screen.getByText('The public draft is ready to freeze.')).toBeVisible();
-    expect(screen.getByRole('status')).toHaveTextContent('All section and content-node changes are saved');
+    expect(screen.getByRole('status')).toHaveTextContent('Context, section and content-node changes are saved');
   });
 
   it('acknowledges a saved policy and displays its server-normalized title', async () => {
@@ -176,7 +180,7 @@ describe('Live workbench draft custody', () => {
     await waitFor(() => expect(refresh).toHaveBeenCalled());
     expect(title).toHaveValue('Revised policy');
     expect(body).toHaveValue('Submitted policy body');
-    expect(screen.getByRole('status')).toHaveTextContent('All section and content-node changes are saved');
+    expect(screen.getByRole('status')).toHaveTextContent('Context, section and content-node changes are saved');
   });
 
   it('shows only stored frozen content after the server closes editing', async () => {

@@ -96,3 +96,9 @@ Then verify mounted controls and their harmless/failing cases, build the exact
 checkpoint and collect native HTTP and rendered desktop/390px journeys. Atomic
 creation, sourced plan-kind rules, public/export presentation, practitioner and
 counsel acceptance remain open under M1. The full v1 contract remains unchanged.
+
+## Follow-up
+
+The [mounted context editor](CONTEXT_EDITOR.md) now connects these recovery
+functions to the workbench. Its controlled DOM evidence does not replace the
+rendered and practitioner acceptance still required by M1.
