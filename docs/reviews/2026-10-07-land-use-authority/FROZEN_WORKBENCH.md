@@ -37,3 +37,9 @@ A fresh [T3 browser attempt](frozen-workbench/browser-attempt.json) opens the id
 ## Remaining work
 
 Specific-plan selection and reconciliation with older working drafts remain unfinished. Existing reporting and publication links retain their own version-selection behavior; this increment does not certify a complete amendment/reporting workflow. Full public/export presentation, rendered acceptance and the remaining M1 contract are open. No scientific or legal claim changes.
+
+## Integration checkpoint
+
+The [branch/worktree audit](frozen-workbench/integration-audit.json) accounts for 58 local branches, 59 remote branches and 47 worktrees. Every local branch has a remote counterpart. Nine remote tips remain outside main `80a829c2`. The current history branch alone has unpublished commits; the remaining working trees are clean except the canonical checkout's unrelated `.directory`. No stashes are present. The BCA and engagement evidence worktrees remain untouched.
+
+[GitHub push attempts](frozen-workbench/push-status.json) fail with a remote Internal Server Error, including ordinary retries, a different pack and HTTP setting, a new recovery ref and the same owned ref from the canonical Git context. The new recovery ref is not created. The local connectivity check passes. This does not identify the server-side cause. The verified checkpoint remains committed locally, with no new PR, merge or release claimed. Retry the push before further integration.
