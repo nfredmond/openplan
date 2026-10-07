@@ -61,3 +61,16 @@ export class SynthesisQueueSaveError extends Error {
     super("Execution scheduling is unconfirmed. Keep the original queue command and retry it to recover the receipt.");
   }
 }
+
+/** Preserve unreadable bytes before freeing the local slot. This does not cancel
+ * a server queue entry; staff must read server custody again before scheduling.
+ */
+export function preservePendingSynthesisQueue(storage: ReviewStorage, scope: Scope) {
+  const active = key(scope), raw = storage.getItem(active);
+  if (raw === null) return;
+  const archive = `${active}:preserved:${crypto.randomUUID()}`;
+  storage.setItem(archive, raw);
+  if (storage.getItem(archive) !== raw || storage.getItem(active) !== raw) throw new Error("Queue recovery could not be preserved");
+  storage.removeItem(active);
+  if (storage.getItem(active) !== null) throw new Error("Queue recovery could not be moved aside");
+}

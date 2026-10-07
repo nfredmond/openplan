@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { SynthesisQueuePanel } from "./synthesis-queue-panel";
 import { Button } from "@/components/ui/button";
 import { readSynthesisHistory } from "@/lib/engagement/synthesis-history-read";
 import { synthesisWorkerAuthorizationIntentSchema, type SynthesisExecutionScope } from "@/lib/engagement/synthesis-execution-records";
@@ -146,6 +147,8 @@ function Execution({ userId, workspaceId, campaignId, requestId, actorId, source
             <p>{intent.maxAttempts} attempts; {intent.maxOutputTokens} output tokens and {intent.responseByteLimit} response bytes per call.</p>
             <p>Expires {new Date(intent.expiresAt).toLocaleString("en-US")}. {new Date(intent.expiresAt).getTime() <= Date.now() ? "Expired allowance." : "Workers still check current access and request state."}</p>
             <details><summary className="cursor-pointer">Original allowance bytes</summary><pre className="whitespace-pre-wrap break-all text-xs">{entry.intentText}</pre></details>
+            {userId === actorId ? <SynthesisQueuePanel scope={scope} authorizationId={entry.id} authorizationIntentSha256={entry.intentSha256}
+              expiresAt={intent.expiresAt} unavailable={!ready || !preview?.provider.current || Boolean(preview?.cancelled || history.cancelled)} onAccessLost={loseAccess} /> : null}
           </li>;
         })}</ul>}
         {history.nextCursor ? <Button type="button" variant="outline" disabled={busy} onClick={() => void refresh(history.nextCursor)}>Load older permissions</Button> : null}

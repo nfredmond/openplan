@@ -391,3 +391,27 @@ The harmless control passes. Removing envelope or embedded-command binding, or
 duplicate-query rejection, causes assertion failures. Results remain in
 `lookup-http-controls.json`. The HTTP tests mock native transport, so real
 session isolation and browser recovery still require acceptance evidence.
+
+## Visible scheduling controls candidate
+
+Each saved permission now offers its original requester a scheduling review.
+Opening that review reads server custody without posting. A valid empty lookup
+enables an explicit execution request when the allowance is current; retained
+commands can retry exact receipt recovery after expiry. A returned server receipt
+restores the original browser command. Unknown lookup results never enable fresh
+scheduling. The panel distinguishes queue custody from provider-call completion
+and directs staff to saved results.
+
+Unreadable or conflicting browser recovery blocks scheduling until staff
+preserves its raw copy. Preservation verifies the archive before clearing the
+active slot and then reads server custody again. Access loss clears private
+command display. Scope changes remount the panel and abort outstanding work.
+
+All 39 scheduling-panel, existing permission-panel and recovery tests pass
+together. Changed-file ESLint passes. The harmless control passes. Removing fresh
+allowance eligibility, lookup-required gating, private-display clearing or archive
+persistence causes intended assertion failures. `panel-controls.json` records
+these checks. The React review checked stable component identity, event-driven
+reads, aborted requests, native buttons and bounded wrapping. No browser evidence
+has been collected for these new controls. Full type/build checks, keyboard and
+390px review, live cross-browser recovery and worker acceptance remain open.
