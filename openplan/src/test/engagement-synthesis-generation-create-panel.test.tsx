@@ -190,7 +190,7 @@ describe("staff analysis request creation", () => {
     await screen.findByRole("button", { name: "Queue preparation" });
     expect(f.props.onCreated).toHaveBeenCalledOnce(); expect(readPendingSynthesisGeneration(localStorage, f.scope, "create")).toBeNull();
     expect(fetcher.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
-    expect(screen.getByText("Analysis request saved. No provider execution is authorized.")).toBeTruthy();
+    expect(screen.getByText("Analysis request saved. Saving a request does not grant provider execution permission.")).toBeTruthy();
   });
 
   it("recovers a lost reply after remount and retries the original intent despite changed provider metadata", async () => {
@@ -209,7 +209,7 @@ describe("staff analysis request creation", () => {
     render(<SynthesisGenerationCreatePanel {...f.props} />); await screen.findByRole("button", { name: "Retry saved analysis request" });
     expect(postCount).toBe(1); expect(screen.getByRole("button", { name: "Save analysis request" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Retry saved analysis request" }));
-    await screen.findByText("Analysis request saved. No provider execution is authorized."); expect(postCount).toBe(2);
+    await screen.findByText("Analysis request saved. Saving a request does not grant provider execution permission."); expect(postCount).toBe(2);
   });
 
   it("does not send when storage cannot retain the exact command", async () => {
@@ -280,7 +280,7 @@ describe("staff analysis request creation", () => {
     await waitFor(() => expect(body).not.toBe("")); view.rerender(<SynthesisGenerationCreatePanel {...b.props} />);
     await act(async () => resolve(json(a.receipt(body))));
     expect(a.props.onCreated).not.toHaveBeenCalled(); expect(b.props.onCreated).not.toHaveBeenCalled();
-    expect(screen.queryByText("Analysis request saved. No provider execution is authorized.")).toBeNull();
+    expect(screen.queryByText("Analysis request saved. Saving a request does not grant provider execution permission.")).toBeNull();
     expect(readPendingSynthesisGeneration(localStorage, a.scope, "create")).not.toBeNull();
   });
 });
@@ -317,7 +317,7 @@ describe("context request through the shared staff form", () => {
     expect(screen.getByText(/original parent selection and contribution below govern this retry/)).toBeTruthy();
     expect(fetcher.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
     fireEvent.click(screen.getByRole("button", { name: "Retry saved analysis request" }));
-    await screen.findByText("Analysis request saved. No provider execution is authorized.");
+    await screen.findByText("Analysis request saved. Saving a request does not grant provider execution permission.");
     expect(f.props.onCreated).toHaveBeenCalledOnce();
     expect(readPendingSynthesisGeneration(localStorage, f.scope, "continue", continuation)).toBeNull();
     expect(JSON.parse(first!).targetRecordId).toBe(continuation.targetRecordId);

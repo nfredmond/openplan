@@ -138,7 +138,7 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
       {error ? <p role="alert">{error}</p> : null}{choicesError ? <p role="alert">{choicesError}</p> : null}
       {blocked ? <p>Browser recovery needs attention. Preserve the original before saving another request.</p> : null}
       {receipt ? <div className="space-y-3">
-        <p role="status">{receipt.cancellation ? "Cancellation saved for this analysis request." : "Analysis request saved. No provider execution is authorized."}</p>
+        <p role="status">{receipt.cancellation ? "Cancellation saved for this analysis request." : "Analysis request saved. Saving a request does not grant provider execution permission."}</p>
         <p className="text-sm break-all">Request {receipt.state.request?.id ?? receipt.cancellation?.requestId}{receipt.intent ? ` · Model ${receipt.intent.modelId}` : ""}</p>
         {receipt.cleanupError ? <p role="alert">{receipt.cleanupError}</p> : null}
         {receipt.state.request ? <SynthesisPreparationPanel {...scope} requestId={receipt.state.request.id} intentSha256={receipt.state.request.intentSha256}

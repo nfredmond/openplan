@@ -499,3 +499,19 @@ fails three assertions. `diagnostic-controls.json` retains those results. These
 tests use real private journals with mocked schedulers. They do not establish
 live CLI output on a new refusal or solve the pre-dispatch validation boundary.
 The production browser build remains 27835bf6 pending a later rebuild.
+
+
+## Request-save notice correction
+
+The full bounded TypeScript check at 7f9efd05 passes. The direction check also
+passes with existing jurisdiction, capability and release-version reminders;
+those reminders have not been cleared by changing review dates.
+
+The live journey exposed a stale statement in the request-save notice: it said
+no provider execution was authorized even after a permission was saved and calls
+ran. The notice now states that saving a request does not grant execution
+permission. This describes the action without asserting current grant state.
+All 27 request-panel tests and changed-file lint pass. A harmless comment passes;
+restoring the old assertion fails three tests. `save-notice-controls.json`
+retains the results. Browser verification of the new wording awaits the next
+identified build; the prior screenshot remains evidence for the prior build.
