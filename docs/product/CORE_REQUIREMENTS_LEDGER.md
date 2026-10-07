@@ -4,6 +4,20 @@ September 4, 2026 review proposal. These requirements record Nathaniel's directi
 
 ## Scope traceability
 
+October 7 evidence update for CORE-ENG-03/04: the
+[manual engagement case](../reviews/2026-10-07-engagement-manual-case/VERIFICATION.md)
+connects retained source contributions, corrected staff review, exact approval,
+draft response, proposed decision and downloaded internal files. Its
+[public-copy and withdrawal follow-up](../reviews/2026-10-07-engagement-manual-case/PUBLIC_WITHDRAWAL.md)
+checks history retention, unchanged earlier downloads and a later 15-page PDF.
+[Source labels](../reviews/2026-10-07-engagement-manual-case/SOURCE_LABELS.md) and
+[approval labels](../reviews/2026-10-07-engagement-manual-case/STATUS_LABELS.md)
+correct observed presentation defects with new artifact checks. These are
+synthetic engineering cases on identified isolated builds, not a claim that
+pending integration CI passed. They do not establish comparative superiority,
+practitioner or participant usefulness, complete disclosure/recovery coverage,
+scientific acceptance, or completion of M9/V1. The roadmap remains the sole queue.
+
 October 6 evidence update for CORE-ENG-03 and CORE-AGENT-01: the
 [integration record](../reviews/2026-10-06-integration/INTEGRATION.md) adds
 source-scoped request discovery, original stage/author/cancellation inspection,

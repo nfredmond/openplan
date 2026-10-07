@@ -78,7 +78,7 @@ tests and neither is test evidence. A later root-level invocation failed import
 resolution before collecting tests. The final app-package invocation passes all
 eight tests after restoring the source.
 
-## Remaining boundaries
+## Boundaries at the initial checkpoint
 
 The code correction still needs production build and identified-build browser
 acceptance. The export evidence above belongs to the preceding runtime and does
@@ -90,3 +90,16 @@ establish geographic, legal or scientific acceptance, or complete V1 readiness.
 
 Private raw records and rendered pages remain in the dated local recovery
 folder. Only synthetic bounded results and the mobile capture are committed.
+
+
+## October 7 follow-up map
+
+[TARGET_BROWSER.md](TARGET_BROWSER.md) records identified-build acceptance of
+the handoff target correction. [PUBLIC_WITHDRAWAL.md](PUBLIC_WITHDRAWAL.md)
+records the public copy, retained withdrawal and all-page withdrawal PDF review.
+[SOURCE_LABELS.md](SOURCE_LABELS.md) and [STATUS_LABELS.md](STATUS_LABELS.md)
+record the later source-authorship and approval terminology corrections.
+These follow-ups address the stated bounded checks above. They do not prove
+marked-private source exclusion, interrupted export recovery in this case,
+native Excel interaction, practitioner/public-participant usefulness, or model
+interpretation quality. The full V1 requirements remain open.

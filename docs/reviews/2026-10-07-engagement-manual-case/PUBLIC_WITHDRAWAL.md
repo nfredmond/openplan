@@ -20,3 +20,21 @@ The new withdrawal PDF has not received a fresh visual review. All source
 records and the proposed decision remain synthetic. No real agency act or
 public publication occurred. The bounded results accompany this repository checkpoint. Private raw records
 remain in the local recovery folder. PR135 source and its CI head were unchanged.
+
+
+## Later PDF inspection
+
+The retained post-withdrawal PDF was downloaded through T3 from runtime
+492f85e2 on port 3503. Its bytes match the earlier worker file. All 15 pages
+were rendered and visually inspected. Page 4 starts the original link; page 8
+identifies the withdrawn link, predecessor, reason and retained proposed
+decision. Source text, exact approval context and the synthesis appendix remain
+readable. See withdrawal-pdf-review.json for the checksum and runtime boundary.
+This resolves the earlier uninspected-withdrawal-PDF boundary for this case.
+
+The file still contains the older Published and participation labels and lacks
+the later source labels. Saved files retain their original bytes. The source
+and approval presentation corrections are verified separately in SOURCE_LABELS.md
+and STATUS_LABELS.md; this older file is not evidence of their rendered output.
+Explicitly marked-private source exclusion and observed human usefulness remain
+unproved by this fixture.
