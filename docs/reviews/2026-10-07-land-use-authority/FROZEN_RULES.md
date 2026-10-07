@@ -81,3 +81,33 @@ The [integration audit](frozen-rules/integration-audit-c2a9.json) accounts for
 branch, and no stash exists. Seven branches remain outside main. The only
 untracked file is the canonical checkout's pre-existing `.directory`. This
 is an accounting result, not a claim that all work has merged.
+
+## Native adoption and publication follow-up
+
+The [authenticated API case](frozen-rules/adoption-c2a9.json) runs on the same
+identified production application, `c2a991d7`. It uses only the two synthetic
+versions created by the earlier native probe. A new document is pasted through
+the Knowledge Base API and indexed successfully. Its content explicitly says
+that no agency, public review, legal determination or human adoption occurred.
+
+For each version, adoption first returns 409 with review and process evidence
+missing. A new external-review release opens and closes through the API with a
+synthetic disposition summary. Adoption still returns 409 for the missing local
+process prerequisite. Saving that prerequisite permits the correct request; an
+incorrect content hash still returns 409. The actual adoption RPC succeeds, and
+a repeated adoption request returns 409.
+
+The saved manifest contains the expected descriptor and its verified hash. The
+retained version says `frozen`. The legacy version says
+`current_reference_not_retained_at_review`. Both versions retain their original
+frozen bytes; the legacy snapshot still has no descriptor property. Publication
+then succeeds through the API, and each adopted public packet and HTML page
+returns 200 with its correct custody disclosure. The document, decisions,
+releases and reports remain retained on the isolated target. The owned server
+is stopped before this evidence edit.
+
+This closes the previously open native adoption and adopted-packet boundaries
+for these two cases. It does not establish a full readiness/freeze journey, an
+actual external review or agency adoption, rendered desktop/mobile acceptance,
+keyboard, console or practitioner acceptance. The fixture dates, votes, body
+and instruments are explicitly synthetic.
