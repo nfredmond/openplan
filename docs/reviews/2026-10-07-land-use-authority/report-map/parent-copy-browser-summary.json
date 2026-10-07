@@ -1,0 +1,76 @@
+{
+  "commit": "eef8c13dfac3d83b2725338ce8ec916b1b6b2bda",
+  "pid": 1580293,
+  "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan",
+  "started": "2026-10-07T19:42:20Z",
+  "journey": [
+    "/land-use-plans",
+    "actual plan card",
+    "Open adopted-plan report"
+  ],
+  "screenshots": {
+    "desktop": "parent-copy-desktop.png",
+    "mobile": "parent-copy-mobile.png"
+  },
+  "desktop": {
+    "width": 1440,
+    "scrollWidth": 1440
+  },
+  "mobile": {
+    "width": 390,
+    "scrollWidth": 390
+  },
+  "console": [
+    {
+      "level": "error",
+      "text": "Electron sandboxed_renderer.bundle.js script failed to run",
+      "timestamp": "2026-10-07T17:48:48.542Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "TypeError: Cannot destructure property 'preloadScripts' of 'binding.startupData' as it is null.\n    at node:electron/js2c/sandbox_bundle:2:124925\n    at node:electron/js2c/sandbox_bundle:2:125860\n    at ___electron_webpack_init__ (node:electron/js2c/sandbox_bundle:2:125864)\n    at node:electron/js2c/sandbox_bundle:2:125987",
+      "timestamp": "2026-10-07T17:48:48.542Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Fetch API cannot load chrome-error://chromewebdata/api/health. URL scheme \"chrome-error\" is not supported.",
+      "timestamp": "2026-10-07T18:03:52.344Z",
+      "source": "javascript"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:398)\n    at n (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://\u2026",
+      "timestamp": "2026-10-07T18:38:41.585Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:285)\n    at n (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://\u2026",
+      "timestamp": "2026-10-07T18:40:09.032Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:285)\n    at n (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://\u2026",
+      "timestamp": "2026-10-07T18:40:55.768Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:285)\n    at n (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://\u2026",
+      "timestamp": "2026-10-07T18:41:19.145Z",
+      "source": "console"
+    }
+  ],
+  "omitted": [
+    "accessibilityTree (use interactiveElements locators or preview_evaluate)",
+    "console entries text after 500 characters",
+    "160 older network entries",
+    "137 older action timeline entries",
+    "30 of 40 actionTimeline"
+  ],
+  "fetch": "native",
+  "producerWrites": 0
+}

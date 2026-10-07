@@ -1,0 +1,101 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-designation-map-recovery.test.tsx (6 tests | 3 failed) 43ms
+     × clears prior features on an authorization failure 9ms
+     × clears prior features and offers retry after transport failure 4ms
+     × clears prior features and offers retry after invalid JSON failure 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-designation-map-recovery.test.tsx > designation map refresh recovery > clears prior features on an authorization failure
+AssertionError: expected last "vi.fn()" call to have been called with [ { type: 'FeatureCollection', …(1) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "features": [],
++     "features": [
++       {
++         "geometry": {
++           "coordinates": [
++             -121.5,
++             38.5,
++           ],
++           "type": "Point",
++         },
++         "id": "f1",
++         "properties": {
++           "attributes": {
++             "designation": "SYNTHETIC retained use",
++           },
++           "label": "SYNTHETIC retained use",
++         },
++         "type": "Feature",
++       },
++     ],
+      "type": "FeatureCollection",
+    },
+  ]
+
+ ❯ src/test/land-use-designation-map-recovery.test.tsx:37:27
+     35|     mocks.fetch.mockResolvedValueOnce(new Response(JSON.stringify({ er…
+     36|     await event("moveend");
+     37|     expect(mocks.setData).toHaveBeenLastCalledWith(empty); expect(scre…
+       |                           ^
+     38|   });
+     39|   it.each(["transport", "invalid JSON"])("clears prior features and of…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/test/land-use-designation-map-recovery.test.tsx > designation map refresh recovery > clears prior features and offers retry after transport failure
+ FAIL  src/test/land-use-designation-map-recovery.test.tsx > designation map refresh recovery > clears prior features and offers retry after invalid JSON failure
+AssertionError: expected last "vi.fn()" call to have been called with [ { type: 'FeatureCollection', …(1) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "features": [],
++     "features": [
++       {
++         "geometry": {
++           "coordinates": [
++             -121.5,
++             38.5,
++           ],
++           "type": "Point",
++         },
++         "id": "f1",
++         "properties": {
++           "attributes": {
++             "designation": "SYNTHETIC retained use",
++           },
++           "label": "SYNTHETIC retained use",
++         },
++         "type": "Feature",
++       },
++     ],
+      "type": "FeatureCollection",
+    },
+  ]
+
+ ❯ src/test/land-use-designation-map-recovery.test.tsx:44:27
+     42|     else mocks.fetch.mockResolvedValueOnce(new Response("unreadable"));
+     43|     await event("moveend");
+     44|     expect(mocks.setData).toHaveBeenLastCalledWith(empty);
+       |                           ^
+     45|     expect(screen.getByText("The frozen designation map could not be l…
+     46|     mocks.fetch.mockResolvedValueOnce(new Response(JSON.stringify(payl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 3 passed (6)
+   Start at  12:30:54
+   Duration  608ms (transform 64ms, setup 63ms, import 85ms, tests 43ms, environment 324ms)
+

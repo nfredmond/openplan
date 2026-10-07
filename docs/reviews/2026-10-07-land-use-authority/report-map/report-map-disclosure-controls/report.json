@@ -1,0 +1,33 @@
+{
+  "state": "complete",
+  "cases": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "skip-frozen-hash-private-fields",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses altered saved disclosure fields"
+    }
+  ],
+  "restored": true,
+  "sourceHashes": {
+    "src/app/api/reports/[reportId]/land-use-map/[designationId]/route.ts": "b0905bb5811ff746b0ded5860826ae4e0b73102514da570ec45505e964f0aed5",
+    "src/lib/land-use-plans/report-snapshot.ts": "bda12210a80d4d761eb63feaff6c352a1b6fd2c33d65c45e10c5606421f0b8aa",
+    "src/lib/land-use-plans/public-map.ts": "5f469e275301fe000e6ff6de7e20c444dea4edf2f8b1c689b705a1a79bd650fb",
+    "src/components/reports/land-use-plan-report-detail.tsx": "0b51375e1a156d79b63dace1318196e812c20767bc3094cb51612933b8cb56d5",
+    "src/components/land-use-plans/public-designation-map.tsx": "f3aca02cb7aff4ef40f09d5fc485398defd2806104829464c331a20db2337eeb",
+    "src/components/reports/land-use-plan-report-adoption.tsx": "91e33bda27548de1346b088d7c76d20961f315ec1bb738ec0ef9afcbdfb41129"
+  },
+  "blindCategory": "Mounted pages and projected mocks only. Does not prove native authorization, browser download, layout, or practitioner acceptance."
+}

@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 1 failed) 211ms
+     × accepts the native zero-count sentinel as an empty map 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > accepts the native zero-count sentinel as an empty map
+AssertionError: expected 503 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 503
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:137:63
+    135|   it("accepts the native zero-count sentinel as an empty map", async (…
+    136|     featureRows = [{ id: null, geometry_geojson: null, matched_count: …
+    137|     const response = await request(); expect(response.status).toBe(200…
+       |                                                               ^
+    138|     expect(await response.json()).toMatchObject({ matchedCount: 0, ret…
+    139|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  12:30:40
+   Duration  984ms (transform 151ms, setup 53ms, import 305ms, tests 211ms, environment 326ms)
+

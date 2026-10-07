@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 1 failed) 218ms
+     × refuses wrong report pointer before reading features 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses wrong report pointer before reading features
+AssertionError: expected 200 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 200
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:103:73
+    101|     ["changed GIS feature hash", 503, () => { rows.workspace_gis_layer…
+    102|   ] as const)("refuses %s before reading features", async (_name, stat…
+    103|     mutate(); const response = await request(); expect(response.status…
+       |                                                                         ^
+    104|     expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.service).no…
+    105|     expect(JSON.stringify(await response.json())).not.toContain("PRIVA…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  12:30:08
+   Duration  975ms (transform 136ms, setup 53ms, import 287ms, tests 218ms, environment 327ms)
+

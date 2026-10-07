@@ -111,3 +111,6 @@ screenshots above identify the earlier build and wording.
 The older `797d3ea6` live-RLS retry and archive-restore run now pass. The failed
 first RLS attempt remains a port-conflict result. Subsequent live jobs keep their
 own outcomes; a new push does not establish that CI passed.
+
+The subsequent [report-map note](REPORT_MAPS.md) retains the corrected parent
+build and desktop/390px copy follow-up, including its shutdown timeout.

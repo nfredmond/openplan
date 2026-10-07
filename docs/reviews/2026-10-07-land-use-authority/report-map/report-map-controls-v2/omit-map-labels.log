@@ -1,0 +1,129 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-designation-map-recovery.test.tsx (6 tests | 4 failed) 1159ms
+     × loads the report viewport and draws retained labels 1024ms
+     × clears prior features and offers retry after transport failure 24ms
+     × clears prior features and offers retry after invalid JSON failure 13ms
+     × keeps a newer successful view when an older request fails 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-designation-map-recovery.test.tsx > designation map refresh recovery > loads the report viewport and draws retained labels
+AssertionError: expected last "vi.fn()" call to have been called with [ { type: 'FeatureCollection', …(1) } ]
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33maria-label[39m=[32m"SYNTHETIC map"[39m
+          [33mclass[39m=[32m"h-80 w-full overflow-hidden rounded-lg border"[39m
+          [33mrole[39m=[32m"img"[39m
+        [36m/>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+
+- Expected
++ Received
+
+@@ -12,11 +12,11 @@
+          "id": "f1",
+          "properties": {
+            "attributes": {
+              "designation": "SYNTHETIC retained use",
+            },
+-           "label": "SYNTHETIC retained use",
++           "label": "",
+          },
+          "type": "Feature",
+        },
+      ],
+      "type": "FeatureCollection",
+
+ ❯ src/test/land-use-designation-map-recovery.test.tsx:30:47
+     28|   it("loads the report viewport and draws retained labels", async () =…
+     29|     show(); await event("load");
+     30|     await waitFor(() => expect(mocks.setData).toHaveBeenLastCalledWith…
+       |                                               ^
+     31|     expect(mocks.fetch).toHaveBeenCalledWith(`${endpoint}?bbox=-122,38…
+     32|   });
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/test/land-use-designation-map-recovery.test.tsx > designation map refresh recovery > clears prior features and offers retry after transport failure
+ FAIL  src/test/land-use-designation-map-recovery.test.tsx > designation map refresh recovery > clears prior features and offers retry after invalid JSON failure
+AssertionError: expected last "vi.fn()" call to have been called with [ { type: 'FeatureCollection', …(1) } ]
+
+- Expected
++ Received
+
+@@ -12,11 +12,11 @@
+          "id": "f1",
+          "properties": {
+            "attributes": {
+              "designation": "SYNTHETIC retained use",
+            },
+-           "label": "SYNTHETIC retained use",
++           "label": "",
+          },
+          "type": "Feature",
+        },
+      ],
+      "type": "FeatureCollection",
+
+ ❯ src/test/land-use-designation-map-recovery.test.tsx:47:27
+     45|     expect(screen.getByText("The frozen designation map could not be l…
+     46|     mocks.fetch.mockResolvedValueOnce(new Response(JSON.stringify(payl…
+     47|     expect(mocks.setData).toHaveBeenLastCalledWith({ type: "FeatureCol…
+       |                           ^
+     48|     expect(screen.queryByText(/Move the map to retry/)).toBeNull();
+     49|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/test/land-use-designation-map-recovery.test.tsx > designation map refresh recovery > keeps a newer successful view when an older request fails
+AssertionError: expected last "vi.fn()" call to have been called with [ { type: 'FeatureCollection', …(1) } ]
+
+- Expected
++ Received
+
+@@ -12,11 +12,11 @@
+          "id": "f1",
+          "properties": {
+            "attributes": {
+              "designation": "SYNTHETIC retained use",
+            },
+-           "label": "SYNTHETIC retained use",
++           "label": "",
+          },
+          "type": "Feature",
+        },
+      ],
+      "type": "FeatureCollection",
+
+ ❯ src/test/land-use-designation-map-recovery.test.tsx:55:27
+     53|     show(); await event("load"); await event("moveend");
+     54|     await act(async () => { rejectOld(new Error("old failure")); });
+     55|     expect(mocks.setData).toHaveBeenLastCalledWith({ type: "FeatureCol…
+       |                           ^
+     56|     expect(screen.queryByText(/could not be loaded/)).toBeNull();
+     57|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 2 passed (6)
+   Start at  12:30:58
+   Duration  1.72s (transform 54ms, setup 54ms, import 76ms, tests 1.16s, environment 333ms)
+

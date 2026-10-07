@@ -1,0 +1,102 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-designation-map-recovery.test.tsx (6 tests | 2 failed) 155ms
+     × keeps a newer successful view when an older request fails 6ms
+     × does not draw after the map unmounts 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-designation-map-recovery.test.tsx > designation map refresh recovery > keeps a newer successful view when an older request fails
+AssertionError: expected last "vi.fn()" call to have been called with [ { type: 'FeatureCollection', …(1) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "features": [
+-       {
+-         "geometry": {
+-           "coordinates": [
+-             -121.5,
+-             38.5,
+-           ],
+-           "type": "Point",
+-         },
+-         "id": "f1",
+-         "properties": {
+-           "attributes": {
+-             "designation": "SYNTHETIC retained use",
+-           },
+-           "label": "SYNTHETIC retained use",
+-         },
+-         "type": "Feature",
+-       },
+-     ],
++     "features": [],
+      "type": "FeatureCollection",
+    },
+  ]
+
+ ❯ src/test/land-use-designation-map-recovery.test.tsx:55:27
+     53|     show(); await event("load"); await event("moveend");
+     54|     await act(async () => { rejectOld(new Error("old failure")); });
+     55|     expect(mocks.setData).toHaveBeenLastCalledWith({ type: "FeatureCol…
+       |                           ^
+     56|     expect(screen.queryByText(/could not be loaded/)).toBeNull();
+     57|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-designation-map-recovery.test.tsx > designation map refresh recovery > does not draw after the map unmounts
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "features": Array [
+          Object {
+            "geometry": Object {
+              "coordinates": Array [
+                -121.5,
+                38.5,
+              ],
+              "type": "Point",
+            },
+            "id": "f1",
+            "properties": Object {
+              "attributes": Object {
+                "designation": "SYNTHETIC retained use",
+              },
+              "label": "SYNTHETIC retained use",
+            },
+            "type": "Feature",
+          },
+        ],
+        "type": "FeatureCollection",
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/test/land-use-designation-map-recovery.test.tsx:63:31
+     61|     const view = show(); await event("load"); view.unmount();
+     62|     await act(async () => { resolveOld(new Response(JSON.stringify(pay…
+     63|     expect(mocks.setData).not.toHaveBeenCalled(); expect(mocks.remove)…
+       |                               ^
+     64|   });
+     65| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  12:30:56
+   Duration  726ms (transform 59ms, setup 58ms, import 83ms, tests 155ms, environment 335ms)
+

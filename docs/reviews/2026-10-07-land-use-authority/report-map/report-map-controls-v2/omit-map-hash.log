@@ -1,0 +1,234 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 1 failed) 209ms
+     × uses the report map endpoint, saved extent, hash and note 125ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > report designation presentation > uses the report map endpoint, saved extent, hash and note
+TestingLibraryElementError: Unable to find an element with the text: Frozen GIS feature hash: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto min-w-0 w-full max-w-4xl [overflow-wrap:anywhere] p-5 md:p-10 print:max-w-none print:p-0"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-7"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+        [36m>[39m
+          [0mAdopted plan report[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+        [36m>[39m
+          [0mSYNTHETIC report[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg"[39m
+        [36m>[39m
+          [0mSYNTHETIC saved plan[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+        [36m>[39m
+          [0mSYNTHETIC authority[0m
+          [0m · [0m
+          [0mSYNTHETIC area[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mt-5 flex flex-wrap gap-3 print:hidden"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"default"[39m
+          [36m>[39m
+            [0mPrint report[0m
+          [36m</button>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mdownload[39m=[32m"openplan-report-33000000-0000-4000-8000-000000000001-provenance.json"[39m
+            [33mhref[39m=[32m"/api/reports/33000000-0000-4000-8000-000000000001/provenance"[39m
+          [36m>[39m
+            [0mDownload source JSON[0m
+          [36m</a>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mhref[39m=[32m"/land-use-plans/33000000-0000-4000-8000-000000000002"[39m
+          [36m>[39m
+            [0mOpen plan workbench[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"Context not retained with this version"[39m
+          [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mContext not retained with this version[0m
+            [36m</h2>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-sm"[39m
+          [36m>[39m
+            [0mThis version did not retain its plan context. Current plan context cannot establish what reviewers saw.[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"report-adoption-heading"[39m
+        [33mclass[39m=[32m"mt-8 rounded-lg border p-5"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+          [33mid[39m=[32m"report-adoption-heading"[39m
+        [36m>[39m
+          [0mRecorded adoption decision[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3"[39m
+        [36m>[39m
+          [0mThis report did not retain an adoption record. OpenPlan has not substituted a later decision. This does not establish whether an agency adopted the plan.[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mFrozen plan content[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+        [36m>[39m
+          [0mPlan content hash: [0m
+          [0md850f13307eaef7b901f3368f84fcf3aa3a0a156e1274ffe713c48b681c3a734[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-9 border-t pt-7"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mImplementation program[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3"[39m
+        [36m>[39m
+          [0mNo implementation actions were present in this frozen report.[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"report-maps-heading"[39m
+        [33mclass[39m=[32m"mt-9 border-t pt-7"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+          [33mid[39m=[32m"report-maps-heading"[39m
+        [36m>[39m
+          [0mMapped designations retained with this version[0m
+        [36m</h2>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-semibold"[39m
+          [36m>[39m
+            [0mSYNTHETIC retained designations[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 whitespace-pre-wrap"[39m
+          [36m>[39m
+            [0mSYNTHETIC map is not zoning[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+          [36m>[39m
+            [0mFrozen GIS feature hash: [0m
+            [0mNot retained[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"SYNTHETIC retained designations"[39m
+            [33mdata-bbox[39m=[32m"[-122,38,-121,39]"[39m
+            [33mdata-endpoint[39m=[32m"/api/reports/33000000-0000-4000-8000-000000000001/land-use-map/33000000-0000-4000-8000-000000000006"[39m
+            [33mrole[39m=[32m"img"[39m
+          [36m/>[39m
+        [36m</article>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"report-relationships-heading"[39m
+        [33mclass[39m=[32m"mt-9 border-t pt-7"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+          [33mid[39m=[32m"report-relationships-heading"[39m
+        [36m>[39m
+          [0mRelated plans retained with this version[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3"[39m
+        [36m>[39m
+          [0mNo related-plan references were retained with this version.[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<footer[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<p>[39m
+          [0mGenerated [0m
+          [0m2026-10-07[0m
+          [0m. Consultation details, confidential notes, and sensitive-location flags are not part of this report.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all"[39m
+        [36m>[39m
+          [0mReport ID [0m
+          [0m33000000-0000-4000-8000-000000000001[0m
+        [36m</p>[39m
+      [36m</footer>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-report-map.test.tsx:158:19
+    156|     expect(screen.getByRole("img", { name: "SYNTHETIC retained designa…
+    157|     expect(screen.getByText("SYNTHETIC map is not zoning")).toBeVisibl…
+    158|     expect(screen.getByText(`Frozen GIS feature hash: ${featureHash}`)…
+       |                   ^
+    159|   });
+    160|   it("discloses no retained designation", async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  12:30:48
+   Duration  979ms (transform 141ms, setup 53ms, import 297ms, tests 209ms, environment 329ms)
+

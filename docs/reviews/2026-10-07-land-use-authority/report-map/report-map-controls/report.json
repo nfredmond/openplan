@@ -1,0 +1,195 @@
+{
+  "state": "incomplete",
+  "cases": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "fabricate-auth",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses signed-out account"
+    },
+    {
+      "name": "ignore-auth-error",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses failed authentication"
+    },
+    {
+      "name": "ignore-access-error",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses report read error"
+    },
+    {
+      "name": "skip-role-guard",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses unrecognized role"
+    },
+    {
+      "name": "skip-membership-guard",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses missing membership"
+    },
+    {
+      "name": "omit-artifact-error",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses artifact read error"
+    },
+    {
+      "name": "missing-report-is-success",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses missing report"
+    },
+    {
+      "name": "unverified-report-is-success",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses missing artifact"
+    },
+    {
+      "name": "invalid-id-is-success",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses invalid identifiers"
+    },
+    {
+      "name": "invalid-bounds-is-success",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses malformed or unsupported viewport"
+    },
+    {
+      "name": "blank-bbox-as-zero",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "10,,12,35"
+    },
+    {
+      "name": "cache-private-map",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "reads the superseded"
+    },
+    {
+      "name": "skip-artifact-projection",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "reads the superseded"
+    },
+    {
+      "name": "skip-artifact-filter",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "reads the superseded"
+    },
+    {
+      "name": "skip-report-type",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses unrelated report type"
+    },
+    {
+      "name": "skip-native-workspace",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses wrong native workspace"
+    },
+    {
+      "name": "skip-workspace-query",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "reads the superseded"
+    },
+    {
+      "name": "skip-native-workspace-projection",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "reads the superseded"
+    },
+    {
+      "name": "skip-kind",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds kind substitution"
+    },
+    {
+      "name": "skip-artifact-plan",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong artifact plan"
+    },
+    {
+      "name": "skip-native-plan",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong queried plan"
+    },
+    {
+      "name": "skip-native-version",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong queried version"
+    },
+    {
+      "name": "skip-native-number",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong version number"
+    },
+    {
+      "name": "skip-native-state",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses unfrozen version"
+    },
+    {
+      "name": "skip-report-pointer",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "refuses wrong report pointer"
+    },
+    {
+      "name": "skip-native-error",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds unreadable native version"
+    },
+    {
+      "name": "trust-self-rehashed-artifact",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds self-rehashed artifact"
+    },
+    {
+      "name": "skip-frozen-hash",
+      "exitCode": 0,
+      "verified": false,
+      "expectedFailure": "refuses altered saved geometry reference"
+    }
+  ],
+  "restored": true,
+  "sourceHashes": {
+    "src/app/api/reports/[reportId]/land-use-map/[designationId]/route.ts": "b0905bb5811ff746b0ded5860826ae4e0b73102514da570ec45505e964f0aed5",
+    "src/lib/land-use-plans/report-snapshot.ts": "bda12210a80d4d761eb63feaff6c352a1b6fd2c33d65c45e10c5606421f0b8aa",
+    "src/lib/land-use-plans/public-map.ts": "7a1b933d7450ac30df3e514af5133f51a860b4535dc9a7f0aef59627afdb9783",
+    "src/components/reports/land-use-plan-report-detail.tsx": "0b51375e1a156d79b63dace1318196e812c20767bc3094cb51612933b8cb56d5",
+    "src/components/land-use-plans/public-designation-map.tsx": "ba4fc9c335b9a9a5928233bcb184d091680cc3cafef21642d787b222e32e6a77",
+    "src/components/reports/land-use-plan-report-adoption.tsx": "91e33bda27548de1346b088d7c76d20961f315ec1bb738ec0ef9afcbdfb41129"
+  },
+  "blindCategory": "Mounted pages and projected mocks only. Does not prove native authorization, browser download, layout, or practitioner acceptance."
+}
