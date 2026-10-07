@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-thematic-choice-command.test.ts (31 tests | 1 failed | 30 skipped) 8ms
+     × refuses choice bytes for a different selectionSequence 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-thematic-choice-command.test.ts > exact inspected thematic choice contract > refuses choice bytes for a different selectionSequence
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/test/engagement-synthesis-thematic-choice-command.test.ts:28:156
+     26|   it.each(["targetRecordId", "contextRequestId", "selectionSequence"])…
+     27|     const changed = { ...choice, [key]: key === "selectionSequence" ? …
+     28|     expect(synthesisThematicChoiceCommandSchema.safeParse({ ...command…
+       |                                                                                                                                                            ^
+     29|   });
+     30|   it.each([{ ...command, expected: undefined }, { ...command, actorId:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 30 skipped (31)
+   Start at  01:06:43
+   Duration  285ms (transform 34ms, setup 56ms, import 52ms, tests 8ms, environment 0ms)
+

@@ -1,0 +1,13 @@
+{
+  "recordedAt": "2026-10-07T08:08:01.723785+00:00",
+  "baseCommit": "21b1f86a",
+  "focusedTests": 85,
+  "suites": 3,
+  "unitControls": 11,
+  "nativeControls": 3,
+  "nativeProbeSha256": "a90fe9d4b62f035ff45b82ee12b0f3f475affb96a8af8ec9abb14cf00fc62bb1",
+  "nativeControlRunnerSha256": "31e41ddcf4de995cf5735f13b2a72d43a14647966188d416f7a5dfad173bd813",
+  "boundary": "Backend inspection and exact choice retention; browser controls/recovery, complete thematic preparation and release remain unfinished.",
+  "typescriptExitCode": 0,
+  "changedSourceEslintExitCode": 0
+}
