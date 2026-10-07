@@ -89,6 +89,29 @@ audit is claimed. The full archive restore drill is still a separate GitHub gate
 Migration probes that CREATE these installed objects must not run again on this
 stack. Installed native fixtures without probe flags remain repeatable.
 
+## Identified build and T3 attempt
+
+The [production build](rule-reconciliation/build-status.json) passes on unchanged
+`d7c9215c` with webpack. The owned build service has an 8 GiB memory ceiling and
+peaks at 6,674,649,088 bytes. No other heavy local check runs alongside it.
+The [server identity](rule-reconciliation/server-identity.json) ties port 3498,
+PID 3667600, its working directory and health response to that commit. Health
+explicitly leaves the database unchecked; the installed native suite is separate.
+
+The [T3 attempt](rule-reconciliation/t3-attempt.json) reaches the landing page at
+1280 by 800 and 390 by 844, then follows the sign-in link. DOM inspection confirms
+the 390px viewport, document scroll width 375 and sign-in fields. The role-locator
+attempt fails; the text locator succeeds. Snapshot requests fail at desktop,
+text-only desktop, mobile landing and mobile sign-in with the same preview-client
+error. There is no saved screenshot or visual acceptance. Console, authenticated
+workflow and downloaded-artifact review remain unverified. No alternative browser
+is used or requested.
+
+The owned server stops before further source edits. Its Next.js process remains
+after the listener closes during shutdown; the owner confirms its exact working
+directory and service group before terminating that residual process. Port 3498
+is clear. BCA, engagement and demo processes remain untouched.
+
 ## Remaining boundary
 
 The browser recovery library, explicit workbench action, unsaved-edit protection
