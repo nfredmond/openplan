@@ -1,0 +1,222 @@
+{
+  "state": "complete",
+  "cases": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "omit-adoption-slot",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders the retained decision"
+    },
+    {
+      "name": "legacy-not-disclosed",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "discloses a legacy"
+    },
+    {
+      "name": "partial-record-as-legacy",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds manifest without hash"
+    },
+    {
+      "name": "partial-record-as-legacy-2",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds hash without manifest"
+    },
+    {
+      "name": "ignore-native-plan_id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native plan"
+    },
+    {
+      "name": "ignore-native-version_id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native version"
+    },
+    {
+      "name": "ignore-native-version_content_hash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native content hash"
+    },
+    {
+      "name": "ignore-native-adoption_manifest_hash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native manifest hash"
+    },
+    {
+      "name": "ignore-native-review_release_id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native review release"
+    },
+    {
+      "name": "ignore-manifest-planId",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong manifest plan"
+    },
+    {
+      "name": "ignore-manifest-versionId",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong manifest version"
+    },
+    {
+      "name": "ignore-manifest-versionContentHash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong manifest content hash"
+    },
+    {
+      "name": "ignore-manifest-reviewReleaseId",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong artifact review release"
+    },
+    {
+      "name": "ignore-full-record-decision",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed artifact decision"
+    },
+    {
+      "name": "ignore-full-record-evidence",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed ancillary evidence"
+    },
+    {
+      "name": "order-sensitive-comparison",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "accepts reordered native keys"
+    },
+    {
+      "name": "ignore-read-error",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds unreadable native decision"
+    },
+    {
+      "name": "fabricate-missing-native",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds missing native decision"
+    },
+    {
+      "name": "accept-invalid-date",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds invalid decision shape"
+    },
+    {
+      "name": "accept-invalid-hash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds invalid manifest hash"
+    },
+    {
+      "name": "omit-vote-missing",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "labels missing vote and effective date"
+    },
+    {
+      "name": "omit-effective-missing",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "labels missing vote and effective date"
+    },
+    {
+      "name": "omit-native-projection",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders the retained decision"
+    },
+    {
+      "name": "omit-query-plan_id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders the retained decision"
+    },
+    {
+      "name": "omit-query-version_id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders the retained decision"
+    },
+    {
+      "name": "omit-query-adoption_manifest_hash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders the retained decision"
+    },
+    {
+      "name": "omit-relationships",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders related plan labels"
+    },
+    {
+      "name": "omit-related-label",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders related plan labels"
+    },
+    {
+      "name": "omit-related-kind",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders related plan labels"
+    },
+    {
+      "name": "omit-related-notes",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders related plan labels"
+    },
+    {
+      "name": "omit-empty-disclosure",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "distinguishes an empty retained relationship list"
+    },
+    {
+      "name": "omit-incomplete-label",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "does not infer labels or kinds"
+    },
+    {
+      "name": "omit-incomplete-kind",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "does not infer labels or kinds"
+    }
+  ],
+  "restored": true,
+  "sourceHashes": {
+    "src/components/reports/land-use-plan-report-page.tsx": "1f68f6fe1939b06f4980ec55ab5da6ca8695c5fb4f65e92c6e243565f64e0d6c",
+    "src/components/reports/land-use-plan-report-detail.tsx": "cbb4300a74b83d071adf5bb90224502790d95649eb16c964dd2e45520c9b08af",
+    "src/components/reports/land-use-plan-report-adoption.tsx": "91e33bda27548de1346b088d7c76d20961f315ec1bb738ec0ef9afcbdfb41129"
+  },
+  "blindCategory": "Mounted pages and projected mocks only. Does not prove native authorization, browser download, layout, or practitioner acceptance."
+}
