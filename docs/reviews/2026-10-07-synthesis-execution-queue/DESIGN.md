@@ -339,3 +339,20 @@ in 3.05 seconds. Changed-test ESLint and whitespace checks pass. The bounded ful
 package type check at e679bfd9 passes. These checks still do not prove concurrent
 worker dispatch, live service interruption, visible scheduling or planner
 acceptance. The queue migration remains a rollback-tested candidate.
+
+## Browser queue recovery checkpoint
+
+The browser helper retains exact queue command bytes in a slot scoped to the
+requester, workspace, campaign, request, stage and permission. It checks source
+and permission hashes when reading. A successful receipt never clears the slot;
+retrying a lost response uses the original queue ID and bytes. Storage failure,
+changed recovery data, receipt substitution or cancellation prevents a success
+acknowledgement. The transport sends expected account/workspace headers.
+
+All 16 recovery tests and changed-file ESLint pass. The harmless control passes;
+removing scope checks, overwrite protection, storage readback, post-response
+storage comparison or cancellation checks causes assertion failures. Results are
+in `recovery-controls.json`. These in-memory storage and mocked transport tests
+do not prove browser persistence, cross-device recovery or live HTTP behavior.
+The scheduling control, server-side receipt lookup, unreadable-copy preservation
+and identified-build desktop/mobile acceptance remain unfinished.
