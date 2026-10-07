@@ -1,0 +1,107 @@
+{
+  "baseline": "pass",
+  "harmless": "pass",
+  "faults": [
+    {
+      "fault": "build identity",
+      "result": "detected"
+    },
+    {
+      "fault": "preserved interruption",
+      "result": "detected"
+    },
+    {
+      "fault": "completed continuation",
+      "result": "detected"
+    },
+    {
+      "fault": "membership restored",
+      "result": "detected"
+    },
+    {
+      "fault": "first request count",
+      "result": "detected"
+    },
+    {
+      "fault": "creation and refusal statuses",
+      "result": "detected"
+    },
+    {
+      "fault": "continuation request count",
+      "result": "detected"
+    },
+    {
+      "fault": "current permission before replay",
+      "result": "detected"
+    },
+    {
+      "fault": "private reconciliation response",
+      "result": "detected"
+    },
+    {
+      "fault": "exact-byte explicit retry",
+      "result": "detected"
+    },
+    {
+      "fault": "fresh and replay receipt",
+      "result": "detected"
+    },
+    {
+      "fault": "same native result on retry",
+      "result": "detected"
+    },
+    {
+      "fault": "real edited source content",
+      "result": "detected"
+    },
+    {
+      "fault": "one added section per operation",
+      "result": "detected"
+    },
+    {
+      "fault": "keyed section count",
+      "result": "detected"
+    },
+    {
+      "fault": "authored content retained",
+      "result": "detected"
+    },
+    {
+      "fault": "duplicate serialization observed",
+      "result": "detected"
+    },
+    {
+      "fault": "competing revision conflict",
+      "result": "detected"
+    },
+    {
+      "fault": "native command count",
+      "result": "detected"
+    },
+    {
+      "fault": "native exact command custody",
+      "result": "detected"
+    },
+    {
+      "fault": "native command identity",
+      "result": "detected"
+    },
+    {
+      "fault": "native plan scope",
+      "result": "detected"
+    },
+    {
+      "fault": "native actor scope",
+      "result": "detected"
+    },
+    {
+      "fault": "native revision binding",
+      "result": "detected"
+    }
+  ],
+  "boundary": "Faults alter recorded observations, not the running product. These controls validate record checking only. Native production behavior comes from the original one-shot runs and existing implementation fault controls.",
+  "sources": {
+    "reconciliation-native-http-private.json": "3d1f6aeeee067669d9985b2b350384076eb4828949f7f60600d3b16eeb07f5bd",
+    "reconciliation-native-http-continuation-private.json": "f7883eac5ed981563414b98428c13ae9fdb448cc66c72f495619d9f1cb4f7ed6"
+  }
+}

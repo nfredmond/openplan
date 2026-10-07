@@ -104,3 +104,11 @@ and downloaded-file checks remain separate work.
 The user requires T3 preview only. Prior snapshot failures and an available
 preview are not rendered acceptance. GitHub checks must pass on the pushed
 checkpoint before any merge. This is not a release or completion of M1 or V1.
+
+## Later October 7 acceptance
+
+The [HTTP and T3 follow-up](RULE_RECONCILIATION_ACCEPTANCE.md) completes a bounded
+synthetic recovery journey after the preview reconnects. It includes desktop and
+390px evidence, a downloaded recovery file, explicit retry and a corrected mobile
+button overflow. Earlier failed attempts remain recorded above. Complete M1,
+practitioner, historical-edition/publication and V1 acceptance remain open.
