@@ -6,6 +6,7 @@ import { resolveLocalDbContainer } from "./helpers/live-catalog";
 import { requireContractVerificationStack } from "./helpers/contract-verification-stack";
 
 const migration = readFileSync("supabase/migrations/20261015000012_engagement_synthesis_preparation_queue.sql", "utf8");
+const recoveryMigration = readFileSync("supabase/migrations/20261015000014_engagement_synthesis_preparation_recovery.sql", "utf8");
 const sources = readFileSync("src/test/fixtures/engagement/synthesis-source-custody.sql", "utf8");
 const requests = readFileSync("src/test/fixtures/engagement/synthesis-generation-requests.sql", "utf8")
   .split("SET LOCAL ROLE authenticated;\nINSERT INTO generation_probe VALUES('original'")[0];
@@ -51,7 +52,8 @@ const faults = [
   ["finish private failure", change(finish, "(p_failure_code IS NOT NULL AND p_failure_code NOT IN ('input_unavailable','preparation_failed'))", "false"), "Arbitrary failure text was saved"],
   ["finish replay failure", change(finish, "OR job.failure_code IS DISTINCT FROM p_failure_code", ""), "Changed outcome replayed"],
   ["finish replay seal", change(finish, "job.seal_sha256 IS DISTINCT FROM p_seal_sha256", "false"), "Different completed seal replayed"],
-  ["finish expiry", change(finish, "OR job.lease_until<=clock_timestamp()", ""), "Expired lease finished"],
+  ["retained failure after expiry", change(finish, "IF job.status<>'running' THEN", "IF job.status<>'running' OR (p_failure_code IS NOT NULL AND job.lease_until<=clock_timestamp()) THEN"), "Preparation lease is not active"],
+  ["retained seal after expiry", change(finish, "IF job.status<>'running' THEN", "IF job.status<>'running' OR (p_seal_sha256 IS NOT NULL AND job.lease_until<=clock_timestamp()) THEN"), "Preparation lease is not active"],
   ["finish running state", change(finish, "job.status<>'running'", "false"), "Queued job accepted an old completion"],
   ["finish cancellation", change(finish, cancelled, "false"), "Cancelled worker finished"],
   ["finish seal", change(finish, "p_seal_sha256 IS NOT NULL AND NOT EXISTS", "false AND NOT EXISTS"), "Missing seal was accepted"],
@@ -67,7 +69,7 @@ function exercise(before = "") {
   requireContractVerificationStack(container);
   return execFileSync("docker", ["exec", "-i", container, "psql", "-U", "postgres", "-d", "postgres", "-X", "-qAt", "-v", "ON_ERROR_STOP=1"], {
     input: `BEGIN; SET LOCAL statement_timeout='30s'; SET LOCAL lock_timeout='2s';
-      ${process.env.OPENPLAN_SYNTHESIS_PREPARATION_CANDIDATE === "1" ? migration : ""}
+      ${process.env.OPENPLAN_SYNTHESIS_PREPARATION_CANDIDATE === "1" ? migration + recoveryMigration : ""}
       ${sources}\n${requests}\n${plans}\n${before}\n${fixture}\nROLLBACK;`,
     encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], timeout: 45_000,
   });

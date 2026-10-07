@@ -26,7 +26,9 @@ original completion seals. Apply
 `20261015000012_engagement_synthesis_preparation_queue.sql` after the earlier
 unreleased migrations, followed by
 `20261015000013_engagement_synthesis_request_discovery.sql` for staff request
-history. Staff can browse saved requests from each saved campaign source,
+history and `20261015000014_engagement_synthesis_preparation_recovery.sql`
+for retained worker outcomes that finish after lease expiry. A superseded token,
+cancelled request or revoked requester still cannot finish. Staff can browse saved requests from each saved campaign source,
 including stages, original authors and cancellation status. The preparation
 worker supports explicit queued jobs; browser creation/preparation controls
 remain unfinished. Preparation grants no provider execution or spending authority.

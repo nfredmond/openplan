@@ -67,7 +67,13 @@ UPDATE engagement_synthesis_preparation_jobs SET lease_until=clock_timestamp()-i
 SET LOCAL ROLE service_role;
 SELECT pg_temp.assert_true(pg_temp.prep_claim()->>'active'='false','Expired claim replay reopened authority');
 SELECT pg_temp.expect_error($q$SELECT renew_engagement_synthesis_preparation('f0000000-0000-4000-8000-000000000001','a0000000-0000-4000-8000-000000000001')$q$,'PT409','Expired lease renewed');
-SELECT pg_temp.expect_error('SELECT pg_temp.prep_finish()','PT409','Expired lease finished');
+-- An outcome durably retained before an interruption can finish after expiry.
+-- Keep this branch separate so the following probes still challenge reclaiming.
+SAVEPOINT retained_failure_after_expiry;
+INSERT INTO preparation_probe VALUES('expiredFailure',pg_temp.prep_finish());
+SELECT pg_temp.assert_true((SELECT value->>'status'='failed' AND value->>'failureCode'='preparation_failed' FROM preparation_probe WHERE key='expiredFailure'),'Expired retained failure did not finish');
+SELECT pg_temp.assert_true(pg_temp.prep_finish()=(SELECT value FROM preparation_probe WHERE key='expiredFailure'),'Expired retained failure replay changed');
+ROLLBACK TO SAVEPOINT retained_failure_after_expiry;
 SELECT pg_temp.assert_true(pg_temp.prep_claim('a0000000-0000-4000-8000-000000000002')->>'attempts'='2','Expired job did not resume');
 SELECT pg_temp.assert_true(pg_temp.prep_claim()->>'active'='false','Old token replaced current lease');
 SELECT pg_temp.expect_error('SELECT pg_temp.prep_finish()','PT409','Obsolete worker finished current attempt');
@@ -117,6 +123,9 @@ SELECT pg_temp.plan_prepare('f0000000-0000-4000-8000-000000000003');
 SELECT pg_temp.plan_stage(0,'f0000000-0000-4000-8000-000000000003');
 SELECT pg_temp.plan_stage(1,'f0000000-0000-4000-8000-000000000003');
 INSERT INTO preparation_probe VALUES('seal3',pg_temp.plan_seal('f0000000-0000-4000-8000-000000000003'));
+RESET ROLE;
+UPDATE engagement_synthesis_preparation_jobs SET lease_until=clock_timestamp()-interval '1 second' WHERE request_id='f0000000-0000-4000-8000-000000000003';
+SET LOCAL ROLE service_role;
 INSERT INTO preparation_probe SELECT 'prepared3',finish_engagement_synthesis_preparation('f0000000-0000-4000-8000-000000000003','a0000000-0000-4000-8000-000000000010',value#>>'{seal,receiptSha256}',NULL) FROM preparation_probe WHERE key='seal3';
 SELECT pg_temp.assert_true((SELECT value->>'status'='prepared' AND value->'leaseUntil'='null'::jsonb AND value->>'sealSha256'=(SELECT value#>>'{seal,receiptSha256}' FROM preparation_probe WHERE key='seal3') FROM preparation_probe WHERE key='prepared3'),'Prepared state lost exact seal');
 SELECT pg_temp.assert_true((SELECT finish_engagement_synthesis_preparation('f0000000-0000-4000-8000-000000000003','a0000000-0000-4000-8000-000000000010',value#>>'{seal,receiptSha256}',NULL)=(SELECT value FROM preparation_probe WHERE key='prepared3') FROM preparation_probe WHERE key='seal3'),'Prepared outcome replay changed');

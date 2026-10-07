@@ -1,0 +1,37 @@
+{
+  "base": "57e2cdae37157e672f72d9278f9e9e92e3783ce1",
+  "review": "https://github.com/nfredmond/openplan/pull/115#discussion_r4202264750",
+  "database": "supabase_db_openplan-restore-target-2026091050",
+  "port": 29822,
+  "before": {
+    "positive_cases_failed": 2,
+    "reason": "Preparation lease is not active"
+  },
+  "after": {
+    "native_cases_passed": 35,
+    "harmless_control": "SQL comment survives",
+    "targeted_faults": [
+      "Reintroduce lease expiry refusal for a retained failure",
+      "Reintroduce lease expiry refusal for a retained seal"
+    ],
+    "focused_files_passed": 4,
+    "focused_tests_passed": 111
+  },
+  "advisor": {
+    "exit_code": 1,
+    "finding": "rls_disabled_in_public_public_spatial_ref_sys",
+    "scope": "Existing PostGIS extension table, unchanged by this migration"
+  },
+  "log_sha256": {
+    "openplan-preparation-expiry-before.log": "945e6a01d229a0a5c588b05eba54d2af19bad69e074aaea07576b2cebcc670f4",
+    "openplan-preparation-expiry-after.log": "bf3ad9c66dc5c80b761d0719109a55ec8b4f1711de9140e0b4c7a517b2f6d55e",
+    "openplan-preparation-recovery-focused.log": "ee956f4c7a1b60420870631444d36ce88227b0d08e971a534257c1774261d931",
+    "openplan-preparation-advisors.log": "d61082c041667af523d654bd557ddcba75f5f7e389b11aa721c55a7522f587f0"
+  },
+  "limits": [
+    "No real provider call",
+    "No full-process interruption or concurrent claim race performed in this new probe",
+    "Native SQL transactions roll back all fixtures",
+    "Full candidate GitHub checks and populated upgrade must rerun after the correction"
+  ]
+}

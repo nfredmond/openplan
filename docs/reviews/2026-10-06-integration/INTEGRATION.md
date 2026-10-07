@@ -82,3 +82,10 @@ The [populated upgrade from v0.66.0](https://github.com/nfredmond/openplan/actio
 The past-month reflog contains 618 distinct tips. Thirteen no longer have a live branch reference. [Their disposition](reflog-disposition.json) identifies the merged equivalent or superseding change for each. Superseded raw captures that contain a provider token are not republished. The safe replacements and retained evidence remain in main's history.
 
 The original branch evidence remains in [staff-generation progress](../2026-10-02-staff-generation/PROGRESS.md). The historical [independent review](../2026-10-01-independent-code-review/FINAL_REPORT.md) and [fix disposition](../2026-10-01-independent-fixes/DISPOSITION.md) retain separate dates and conclusions.
+
+## Subsequent review correction
+
+Before merge, GitHub review exposes an expiry-related preparation recovery defect.
+The [correction and evidence](PREPARATION_RECOVERY.md) preserve the reproduced failure,
+additive migration, 35 passing native cases and 111 focused tests. Earlier candidate
+results above remain dated evidence; final-head verification restarts in PR #115.
