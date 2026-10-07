@@ -67,6 +67,32 @@ describe("staff execution permission review", () => {
     expect(saveButton().disabled).toBe(true);
     expect(screen.getByRole("button", { name: "Retry original execution permission" })).toBeTruthy();
   });
+  it.each(["refresh", "reopen"])("preserves chosen limits after %s and requires a new charge acknowledgement", async action => {
+    mount(); await open();
+    expect((screen.getByLabelText("Maximum attempts") as HTMLInputElement).value).toBe("2");
+    fireEvent.change(screen.getByLabelText("Maximum attempts"), { target: { value: "1" } });
+    fireEvent.change(screen.getByLabelText("Output tokens per call"), { target: { value: "1234" } });
+    fireEvent.change(screen.getByLabelText("Response bytes per call"), { target: { value: "8192" } });
+    const expiry = (screen.getByLabelText("Permission expires, local time") as HTMLInputElement).value;
+    acknowledge(); expect(saveButton().disabled).toBe(false);
+    if (action === "refresh") fireEvent.click(screen.getByRole("button", { name: "Refresh execution review" }));
+    else {
+      fireEvent.click(screen.getByRole("button", { name: "Review execution permission" }));
+      fireEvent.click(screen.getByRole("button", { name: "Review execution permission" }));
+    }
+    await screen.findByText(/Provider: SYNTHETIC saved provider/);
+    expect((screen.getByLabelText("Maximum attempts") as HTMLInputElement).value).toBe("1");
+    expect((screen.getByLabelText("Output tokens per call") as HTMLInputElement).value).toBe("1234");
+    expect((screen.getByLabelText("Response bytes per call") as HTMLInputElement).value).toBe("8192");
+    expect((screen.getByLabelText("Permission expires, local time") as HTMLInputElement).value).toBe(expiry);
+    expect((screen.getByRole("checkbox", { name: /I authorize sending/ }) as HTMLInputElement).checked).toBe(false);
+    expect(saveButton().disabled).toBe(true); expect(posts()).toHaveLength(0);
+    acknowledge(); fireEvent.click(saveButton()); await screen.findByText(/Execution permission saved:/);
+    expect(posts()).toHaveLength(1);
+    expect(JSON.parse(JSON.parse(String(posts()[0][1]?.body)).intentText)).toMatchObject({
+      maxAttempts: 1, maxOutputTokens: 1234, responseByteLimit: 8192, expiresAt: new Date(expiry).toISOString(),
+    });
+  });
   it("reopens an expired saved allowance without writing and retries only its original bytes", async () => {
     retainPendingSynthesisExecution(localStorage, pending); mount();
     await screen.findByText(/Original allowance/); expect(posts()).toHaveLength(0);

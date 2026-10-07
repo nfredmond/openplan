@@ -37,6 +37,7 @@ function Execution({ userId, workspaceId, campaignId, requestId, actorId, source
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
   const [attempts, setAttempts] = useState("1"), [tokens, setTokens] = useState("2048"), [bytes, setBytes] = useState("65536");
   const [expires, setExpires] = useState(localExpiry), [acknowledged, setAcknowledged] = useState(false);
+  const attemptsInitialized = useRef(false);
   const active = useRef<AbortController | null>(null), writing = useRef(false);
   const endpoint = `/api/engagement/campaigns/${campaignId}/synthesis/execution`;
   const loseAccess = useCallback(() => {
@@ -75,7 +76,14 @@ function Execution({ userId, workspaceId, campaignId, requestId, actorId, source
         plan = verifySynthesisExecutionPreview(await response.json(), scope);
       }
       if (!isCurrent()) return;
-      if (plan) { setPreview(plan); setAttempts(String(Math.max(1, plan.taskCount))); }
+      if (plan) {
+        setPreview(plan);
+        // A fresh review must not increase a limit the requester already chose.
+        if (!attemptsInitialized.current) {
+          setAttempts(String(Math.max(1, plan.taskCount)));
+          attemptsInitialized.current = true;
+        }
+      }
       setReady(true);
     } catch (cause) { if (isCurrent()) { setError(message(cause)); setReady(false); } }
     finally { if (isCurrent()) setBusy(false); }
