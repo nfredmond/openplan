@@ -58,3 +58,26 @@ keyboard or console acceptance, legal completeness or practitioner acceptance.
 They do not correct workspace-home-based descriptor selection or shared
 California general/specific-plan requirements. Those M1 boundaries and the full
 v1 contract remain open. No release or tag is created by this checkpoint.
+
+## Identified production follow-up
+
+The [clean production build](frozen-rules/build-c2a9.json) passes at
+`c2a991d7a4e6b52ebe81905335bee2511d3cc8f0` with an unchanged checkout. The owned
+server on port 3492 reports that application commit; its process directory is
+verified separately in the [identity record](frozen-rules/identity-c2a9.json).
+
+The [HTTP case](frozen-rules/http-c2a9.json) creates a second synthetic review
+round for each retained native version. Both public APIs and server-rendered
+pages return 200 with the correct custody state. The retained descriptor and
+its public projection match the saved bytes. The HTML includes the appropriate
+retained or legacy disclosure. Withdrawing each new release returns 404. All
+fixture history remains retained. The owned server is stopped before evidence
+edits. This closes the missing production HTTP boundary above for these named
+cases only. Native adoption, complete freeze workflow and rendered browser
+acceptance remain open.
+
+The [integration audit](frozen-rules/integration-audit-c2a9.json) accounts for
+44 worktrees and 55 local branches. Every local branch matches its live origin
+branch, and no stash exists. Seven branches remain outside main. The only
+untracked file is the canonical checkout's pre-existing `.directory`. This
+is an accounting result, not a claim that all work has merged.
