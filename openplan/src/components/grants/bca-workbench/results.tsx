@@ -140,13 +140,13 @@ export function BcaResults({ doc }: { doc: BcaDocument }) {
                 <div
                   className="h-2 rounded-sm bg-[color:var(--pine)]"
                   style={{
-                    width: `${Math.max(0.3, (Math.abs(row.benefits) / max) * 100)}%`,
+                    width: `${(Math.abs(row.benefits) / max) * 100}%`,
                   }}
                 />
                 <div
                   className="h-2 rounded-sm bg-[color:var(--ochre,#a96b20)]"
                   style={{
-                    width: `${Math.max(0.3, (Math.abs(row.costs) / max) * 100)}%`,
+                    width: `${(Math.abs(row.costs) / max) * 100}%`,
                   }}
                 />
               </div>

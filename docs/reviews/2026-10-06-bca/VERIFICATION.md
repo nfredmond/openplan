@@ -1,6 +1,6 @@
 # BCA workbench verification
 
-Date: October 6–7, 2026. Worktree: `bca-workbench-20261006`, branch `work/bca-workbench-20261006`, base `b028d0e4`. This record is in progress until the final check disposition below is complete.
+Date: October 6–7, 2026. Worktree: `bca-workbench-20261006`, branch `work/bca-workbench-20261006`, base `b028d0e4`. The dated checks below identify their source and remaining acceptance boundaries.
 
 ## Implemented boundary
 
@@ -65,4 +65,10 @@ The later independent recovery pass added four component regressions and a numer
 
 ## Final check disposition
 
-Pending: final focused checks and mutations, final artifact/render review, full restarted suite, dead-code and dependency checks, production build, final identified-build browser check, commit/push and CI.
+The source checkpoint `4f5b9ce2` was committed and pushed as PR #118. Its first production build exposed a Zod core/classic type mismatch in draft recovery. Commit `7ebdd285` corrects that type boundary; its four recovery component tests, scoped lint and full production build (including TypeScript) pass. Build checks run alone under a 7 GiB memory limit. The production preview uses a separate 2 GiB limit and its process cwd was confirmed.
+
+The identified `7ebdd285` production browser journey confirms ordinary Dashboard/Grants navigation, incomplete-title recovery, a real 201 save followed by an intentionally lost reply, reload and exact-ID retry, and importing/replaying the retained envelope. There is one record for that UUID and three total versions. Desktop and settled/reloaded 390px views fit. Keyboard focus moves to Evidence with a visible outline and Enter displays its content. A T3 press call reports failure despite the observed activation; earlier nonexistent `/overview` navigation and dev disconnection messages are not application successes. The first image immediately after resizing was clipped during layout transition; the stable view and reload are recorded separately.
+
+The real export button returns a 13-file package identifying `7ebdd285`. Every checksum matches. LibreOffice recalculates Summary and Elements, changed rate and changed epoch correctly, and the ledger explicitly carries quantity units and source IDs. All four final US Letter PDF pages were visually inspected. The synthetic package, PDF, screenshots and structured receipts are retained in `evidence/`. No source attachment or real client case is included.
+
+Visual review found a minimum bar width displaying nonzero marks for zero-dollar years. The final chart change removes the minimum, with a DOM regression covering zero and proportional positive values. Its harmless control passes and restoring the old minimum fails. This changes chart width only; final rendering and current-head CI remain to be checked before merge/tag. Current check status is linked through [PR #118](https://github.com/nfredmond/openplan/pull/118).

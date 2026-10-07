@@ -1,0 +1,53 @@
+{
+  "runtimeCommit": "7ebdd2859bd41af658527bf167fe2acc08e0286d",
+  "version": "0.67.0",
+  "server": {
+    "port": 3486,
+    "pid": 840532,
+    "cwd": "/home/nathaniel/.local/state/openplan/bca-workbench-20261006/openplan",
+    "memoryLimitGiB": 2
+  },
+  "database": "bca-test-stack-20261006",
+  "navigation": [
+    "Dashboard Overview",
+    "Grants",
+    "Prepare a benefit-cost analysis",
+    "Analyze Synthetic BCA verification corridor"
+  ],
+  "recovery": {
+    "emptyTitleSurvivedReload": true,
+    "flowsAndSourcesUnchanged": true,
+    "saveDisabledUntilRepaired": true,
+    "lostReplyAfterStatus": 201,
+    "retainedId": "2641d119-1400-4405-b675-90a9c715b370",
+    "historyCount": 3,
+    "copiesOfRetriedVersion": 1,
+    "sameRetainedEnvelopeImportedAndReplayed": true
+  },
+  "layout": {
+    "desktopWidth": 1280,
+    "mobileWidth": 390,
+    "mobileMainWidth": 390.34478759765625,
+    "mobileMainScrollWidth": 385,
+    "keyboard": "Tab focused Evidence with visible outline; Enter displayed its heading. One tool call reported failure despite the observed activation.",
+    "transient": "The first capture immediately after resizing was clipped during layout transition. Settled layout and mobile reload fit; no claim covers every animation frame."
+  },
+  "console": "No BCA application error or failed request observed after 2026-10-07T05:43:00Z. Older dev disconnection errors and a tester-requested nonexistent /overview 404 remain in the browser history.",
+  "artifact": {
+    "httpStatus": 200,
+    "zipSha256": "45c858792e0a32269806220e93605ca2ec68e29c189d0a21b5d297bb69126595",
+    "files": 13,
+    "checksums": "all match",
+    "pdfPages": 4,
+    "pdfSize": "US Letter",
+    "renderer": "Chrome",
+    "allPagesVisuallyInspected": true,
+    "accessibilityConformance": "not established"
+  },
+  "limits": [
+    "Synthetic account and project only",
+    "No new real model run",
+    "No practitioner or agency acceptance",
+    "No Microsoft Excel or Cal-B/C macro execution"
+  ]
+}

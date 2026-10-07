@@ -1,0 +1,15 @@
+{
+  "commit": "7ebdd2859bd41af658527bf167fe2acc08e0286d",
+  "packageSha256": "45c858792e0a32269806220e93605ca2ec68e29c189d0a21b5d297bb69126595",
+  "originalBcr": 1.5940526107739261,
+  "rate4Bcr": 2.1038870591728815,
+  "epoch2024Npv": 2041211.2780563643,
+  "elementMatchesSummary": true,
+  "quantityUnitsPresent": true,
+  "packageChecksums": "all match",
+  "limits": [
+    "Synthetic fixture",
+    "LibreOffice Calc, not Microsoft Excel",
+    "No Cal-B/C macros or parity"
+  ]
+}
