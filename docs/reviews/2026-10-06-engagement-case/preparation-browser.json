@@ -1,0 +1,115 @@
+{
+  "date": "2026-10-06",
+  "commit": "81c06fef",
+  "server": {
+    "unit": "openplan-engagement-case-20261006",
+    "port": 3479,
+    "pid": 3869545,
+    "cwd": "/home/nathaniel/.local/state/openplan/engagement-complete-case-20261006/openplan",
+    "databasePort": 29821
+  },
+  "navigation": [
+    "home",
+    "Overview",
+    "Engagement",
+    "synthetic campaign",
+    "Analysis",
+    "saved source cc77a4d3",
+    "saved generation requests",
+    "preparation inspector"
+  ],
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "cancelledRequestQueueDisabled": true,
+  "lostReply": {
+    "body": {
+      "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+      "operation": "enqueue",
+      "requestId": "54c0e22b-2fde-45b6-8b0c-94a2ffc2928f",
+      "stage": "segment"
+    },
+    "receipt": {
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "attempts": 0,
+      "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+      "cancelled": false,
+      "createdAt": "2026-10-07T03:59:07.18316+00:00",
+      "failureCode": null,
+      "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+      "leaseUntil": null,
+      "replayed": false,
+      "requestId": "54c0e22b-2fde-45b6-8b0c-94a2ffc2928f",
+      "schemaVersion": 1,
+      "sealSha256": null,
+      "stage": "segment",
+      "status": "queued",
+      "updatedAt": "2026-10-07T03:59:07.18316+00:00",
+      "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+    },
+    "status": 201
+  },
+  "replay": {
+    "native": {
+      "body": {
+        "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+        "operation": "enqueue",
+        "requestId": "54c0e22b-2fde-45b6-8b0c-94a2ffc2928f",
+        "stage": "segment"
+      },
+      "receipt": {
+        "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+        "attempts": 0,
+        "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+        "cancelled": false,
+        "createdAt": "2026-10-07T03:59:07.18316+00:00",
+        "failureCode": null,
+        "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+        "leaseUntil": null,
+        "replayed": true,
+        "requestId": "54c0e22b-2fde-45b6-8b0c-94a2ffc2928f",
+        "schemaVersion": 1,
+        "sealSha256": null,
+        "stage": "segment",
+        "status": "queued",
+        "updatedAt": "2026-10-07T03:59:07.18316+00:00",
+        "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+      },
+      "status": 200
+    },
+    "panel": "Prepare analysis inputs\nRefresh preparation status\n\nPreparation reads this saved source and builds the inputs for analysis. It does not send contributions to a provider or approve findings.\n\nPreparation command confirmed. Provider execution still requires separate authorization.\n\nWaiting for the preparation worker\n\nAttempt 0. Last updated 10/6/2026, 8:59:07 PM.",
+    "remainingCopies": []
+  },
+  "keyboard": [
+    "Refresh preparation status",
+    "Tab focused Retry saved preparation command",
+    "Enter submitted replay"
+  ],
+  "worker": {
+    "method": "selected existing runSynthesisPreparationJournal and prepareSynthesisStage",
+    "state": "acknowledged",
+    "requestId": "54c0e22b-2fde-45b6-8b0c-94a2ffc2928f",
+    "sealSha256": "5521747f2a3f79b457f152e167b61a7fcc1fe506f3ab021786eaf2c1ca73fa4c",
+    "nativeState": "prepared",
+    "attempts": 1
+  },
+  "limits": [
+    "Synthetic existing retained source and prepared plan; not a new independent public case",
+    "No provider call, approval, publication or practitioner acceptance",
+    "T3 browser interaction became unavailable after native worker completion; refreshed prepared screen remains unverified",
+    "Context and thematic native preparation controls not yet exercised"
+  ],
+  "screenshots": {
+    "desktopCancelled": "images/desktopCancelled.png",
+    "mobileCancelled": "images/mobileCancelled.png",
+    "mobileLostReply": "images/mobileLostReply.png",
+    "desktopReplay": "images/desktopReplay.png"
+  }
+}

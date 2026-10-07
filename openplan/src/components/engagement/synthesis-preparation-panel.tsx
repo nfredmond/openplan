@@ -78,6 +78,7 @@ function Preparation({ userId, workspaceId, campaignId, sourceId, sourceSha256, 
     } catch (cause) {
       if (isCurrent()) {
         if (cause instanceof SynthesisPreparationSaveError && [401, 403].includes(cause.status)) loseAccess();
+        else restore();
         setError(message(cause));
       }
     } finally { writing.current = false; if (isCurrent()) setBusy(false); }

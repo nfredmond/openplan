@@ -1,0 +1,38 @@
+[
+  {
+    "name": "cancellation-harmless-comment",
+    "exitCode": 0,
+    "expectedPass": true,
+    "matched": true
+  },
+  {
+    "name": "inspector-harmless-comment",
+    "exitCode": 0,
+    "expectedPass": true,
+    "matched": true
+  },
+  {
+    "name": "cancellation-reason-trimmed",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "name": "late-creation-erases-cancellation",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "name": "cancel-before-create-dead-end",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "name": "inspector-ignores-source-hash",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  }
+]

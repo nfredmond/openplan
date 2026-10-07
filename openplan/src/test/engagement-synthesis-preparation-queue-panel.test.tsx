@@ -92,6 +92,18 @@ describe("staff preparation controls", () => {
     vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("Storage is full"); });
     fireEvent.click(queue); await screen.findByText("Storage is full"); expect(fetcher).toHaveBeenCalledTimes(1);
   });
+  it("reopens a preparation command after its storage write succeeds but readback is interrupted", async () => {
+    const f = fixture(), fetcher = vi.fn<typeof fetch>().mockResolvedValue(json(null)); vi.stubGlobal("fetch", fetcher);
+    render(<SynthesisPreparationPanel {...f.props} />); const queue = await screen.findByRole("button", { name: "Queue preparation" });
+    const original = Storage.prototype.getItem; let interrupted = false;
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(function (this: Storage, key: string) {
+      const value = original.call(this, key);
+      if (key.endsWith(f.scope.requestId) && value !== null && !interrupted) { interrupted = true; throw new Error("SYNTHETIC interrupted preparation readback"); }
+      return value;
+    });
+    fireEvent.click(queue); expect(await screen.findByRole("button", { name: "Retry saved preparation command" })).toBeEnabled();
+    expect(readPendingSynthesisPreparation(localStorage, f.scope)).toEqual(f.pending); expect(fetcher).toHaveBeenCalledTimes(1);
+  });
 
   it("preserves unreadable recovery before allowing another command", async () => {
     const f = fixture(); retainPendingSynthesisPreparation(localStorage, f.pending);

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SynthesisPreparationPanel } from "./synthesis-preparation-panel";
+import { SynthesisGenerationCancellationInspector } from "./synthesis-generation-cancellation-inspector";
 import { readSynthesisHistory } from "@/lib/engagement/synthesis-history-read";
 import {
   verifySynthesisRequestHistory, type SynthesisRequestHistoryCursor,
@@ -88,9 +89,13 @@ function History({ userId, workspaceId, campaignId, sourceId, sourceSha256, onAc
         onClick={() => setSelected(current => current === entry.requestId ? null : entry.requestId)}>
         {selected === entry.requestId ? "Close preparation" : "Inspect preparation"} {entry.requestId.slice(0, 8)}
       </Button>
-      {selected === entry.requestId ? <SynthesisPreparationPanel userId={userId} workspaceId={workspaceId} campaignId={campaignId}
+      {selected === entry.requestId ? <><SynthesisPreparationPanel userId={userId} workspaceId={workspaceId} campaignId={campaignId}
         sourceId={sourceId} sourceSha256={sourceSha256} requestId={entry.requestId} intentSha256={entry.intentSha256}
-        stage={entry.stage} actorId={entry.actorId} cancelled={entry.cancelled} onAccessLost={onAccessLost} /> : null}
+        stage={entry.stage} actorId={entry.actorId} cancelled={entry.cancelled} onAccessLost={onAccessLost} />
+        <SynthesisGenerationCancellationInspector userId={userId} workspaceId={workspaceId} campaignId={campaignId}
+          sourceId={sourceId} sourceSha256={sourceSha256} requestId={entry.requestId} intentSha256={entry.intentSha256} actorId={entry.actorId}
+          onAccessLost={onAccessLost} onCancelled={() => setEntries(current => current?.map(row => row.requestId === entry.requestId ? { ...row, cancelled: true } : row) ?? null)} />
+      </> : null}
     </li>)}</ul>
     {cursor ? <Button type="button" variant="outline" disabled={busy} onClick={() => void load(cursor)}>Load older generation requests</Button> : null}
   </section>;
