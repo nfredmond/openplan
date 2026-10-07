@@ -39,3 +39,21 @@ export async function verifySynthesisExecutionQueueReceipt(raw: unknown, origina
   if (checksum !== receipt.commandSha256) throw new Error("Execution queue receipt checksum differs");
   return { receipt, command };
 }
+
+const lookupSchema = z.object({ schemaVersion: z.literal(1), campaignId: id, workspaceId: id,
+  requestId: id, authorizationId: id, receipt: synthesisExecutionQueueReceiptSchema.nullable() }).strict();
+export type SynthesisQueueLookupScope = { campaignId: string; workspaceId: string; requestId: string; authorizationId: string; actorId: string };
+
+/** A null receipt means a valid permission has no queue entry. Malformed or
+ * foreign evidence throws and must never become an empty scheduling history.
+ */
+export async function verifySynthesisQueueLookup(raw: unknown, scope: SynthesisQueueLookupScope) {
+  const value = lookupSchema.parse(raw);
+  const fields = ["campaignId", "workspaceId", "requestId", "authorizationId"] as const;
+  if (fields.some(field => value[field] !== scope[field])) throw new Error("Queue lookup scope differs");
+  if (value.receipt !== null) {
+    const { command } = await verifySynthesisExecutionQueueReceipt(value.receipt, value.receipt.commandText);
+    if (fields.some(field => command[field] !== scope[field]) || command.actorId !== scope.actorId) throw new Error("Queue lookup command differs");
+  }
+  return value;
+}

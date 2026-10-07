@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { parseSynthesisExecutionQueueCommand, verifySynthesisExecutionQueueReceipt } from "./synthesis-execution-queue-records";
+import { parseSynthesisExecutionQueueCommand, verifySynthesisExecutionQueueReceipt, verifySynthesisQueueLookup, type SynthesisQueueLookupScope } from "./synthesis-execution-queue-records";
 import { SynthesisGenerationRequestError } from "./synthesis-generation-requests-server";
 
 /** Forward unchanged staff bytes using the authenticated client. Native locks
@@ -33,4 +33,22 @@ export async function enqueueSynthesisExecution(client: Pick<SupabaseClient, "rp
   catch { throw new SynthesisGenerationRequestError("unavailable", 503); }
   bounded.throwIfAborted();
   return verified.receipt;
+}
+
+/** Recover receipt custody through current authenticated staff access. */
+export async function readSynthesisExecutionQueue(client: Pick<SupabaseClient, "rpc">,
+  scope: SynthesisQueueLookupScope, signal: AbortSignal) {
+  const bounded = AbortSignal.any([signal, AbortSignal.timeout(10_000)]);
+  bounded.throwIfAborted();
+  const response = await client.rpc("read_engagement_synthesis_execution_queue", {
+    p_campaign: scope.campaignId, p_request: scope.requestId, p_authorization: scope.authorizationId,
+  }).abortSignal(bounded);
+  bounded.throwIfAborted();
+  if (response.error) throw new SynthesisGenerationRequestError(response.error.code === "42501" ? "forbidden" : "unavailable",
+    response.error.code === "42501" ? 403 : 503);
+  let result;
+  try { result = await verifySynthesisQueueLookup(response.data, scope); }
+  catch { throw new SynthesisGenerationRequestError("unavailable", 503); }
+  bounded.throwIfAborted();
+  return result;
 }

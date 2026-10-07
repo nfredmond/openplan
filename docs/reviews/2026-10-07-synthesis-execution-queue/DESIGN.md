@@ -376,3 +376,18 @@ permission lookup check, changing returned command bytes or granting anonymous
 execution fails the intended assertion. Tests also refuse a foreign actor,
 recover unchanged receipts after cancellation and distinguish an unused allowance
 from a missing permission. Changed-test ESLint and whitespace checks pass.
+
+## HTTP receipt lookup checkpoint
+
+The queue endpoint now reads a saved receipt using request and permission IDs.
+It requires current staff access and expected account/workspace headers, rejects
+duplicate or extra query fields, and uses only the authenticated native read.
+The response verifier checks envelope scope, exact receipt checksum and the
+embedded command's requester, campaign, workspace, request and permission.
+Malformed or unavailable evidence remains an error, never a null receipt.
+
+All 66 route, server and record tests pass together; changed-file ESLint passes.
+The harmless control passes. Removing envelope or embedded-command binding, or
+duplicate-query rejection, causes assertion failures. Results remain in
+`lookup-http-controls.json`. The HTTP tests mock native transport, so real
+session isolation and browser recovery still require acceptance evidence.

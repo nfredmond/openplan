@@ -7,7 +7,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { readBytesWithLimitStreaming } from "@/lib/http/body-limit";
 import { SynthesisGenerationRequestError } from "@/lib/engagement/synthesis-generation-requests-server";
 
-import { enqueueSynthesisExecution } from "@/lib/engagement/synthesis-execution-queue-server";
+import { enqueueSynthesisExecution, readSynthesisExecutionQueue } from "@/lib/engagement/synthesis-execution-queue-server";
 
 const headers = { "Cache-Control": "private, no-store" };
 const messages = {
@@ -59,6 +59,24 @@ export async function POST(request: NextRequest, context: Context) {
   } catch (cause) {
     const failed = classify(cause);
     audit.warn("queue_entry_unconfirmed", { kind: failed.kind });
+    return failure(failed.kind, failed.status);
+  }
+}
+
+/** Read an original scheduling receipt without creating another command. */
+export async function GET(request: NextRequest, context: Context) {
+  const audit = createApiAuditLogger("engagement.synthesis-execution.queue-read", request);
+  try {
+    const { campaignId } = z.object({ campaignId: z.string().uuid() }).parse(await context.params);
+    const entries = [...request.nextUrl.searchParams];
+    if (new Set(entries.map(([key]) => key)).size !== entries.length) return failure("invalid", 400);
+    const query = z.object({ requestId: z.string().uuid(), authorizationId: z.string().uuid() }).strict().parse(Object.fromEntries(entries));
+    const { client, workspaceId, actorId } = await staff(request, campaignId);
+    const result = await readSynthesisExecutionQueue(client, { ...query, campaignId, workspaceId, actorId }, request.signal);
+    audit.info("queue_receipt_read", { requestId: query.requestId, authorizationId: query.authorizationId });
+    return NextResponse.json(result, { headers });
+  } catch (cause) {
+    const failed = classify(cause); audit.warn("queue_receipt_unavailable", { kind: failed.kind });
     return failure(failed.kind, failed.status);
   }
 }

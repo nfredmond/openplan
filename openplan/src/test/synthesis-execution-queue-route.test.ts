@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({ client: vi.fn(), user: vi.fn(), access: vi.fn(
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.client }));
 vi.mock("@/lib/engagement/api", () => ({ loadCampaignAccess: mocks.access }));
 vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: () => ({ info: mocks.info, warn: mocks.warn }) }));
-import { POST } from "@/app/api/engagement/campaigns/[campaignId]/synthesis/execution/queue/route";
+import { GET, POST } from "@/app/api/engagement/campaigns/[campaignId]/synthesis/execution/queue/route";
 const id = (n: number) => `c7100000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const campaignId = id(1), workspaceId = id(2), actorId = id(3);
 const command = { schemaVersion: 1, queueId: id(4), authorizationId: id(5), authorizationIntentSha256: "a".repeat(64),
@@ -60,5 +60,50 @@ describe("staff scheduling HTTP boundary", () => {
   it("does not acknowledge a malformed native receipt", async () => {
     mocks.rpc.mockResolvedValue({ data: { ...receipt, commandSha256: "0".repeat(64) }, error: null });
     expect((await POST(request(), context)).status).toBe(503); expect(mocks.info).not.toHaveBeenCalled();
+  });
+});
+
+const lookup = { schemaVersion: 1, campaignId, workspaceId, requestId: command.requestId, authorizationId: command.authorizationId, receipt };
+function get(query = `requestId=${command.requestId}&authorizationId=${command.authorizationId}`, extra: Record<string, string> = {}) {
+  return new NextRequest(`${request().url}?${query}`, { headers: { ...headers, ...extra } });
+}
+describe("queue receipt lookup HTTP boundary", () => {
+  it.each([true, false])("distinguishes retained receipt from unused permission: %s", async queued => {
+    const data = { ...lookup, receipt: queued ? receipt : null }; mocks.rpc.mockResolvedValue({ data, error: null });
+    const response = await GET(get(), context);
+    expect(response.status).toBe(200); expect(await response.json()).toEqual(data);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("read_engagement_synthesis_execution_queue", {
+      p_campaign: campaignId, p_request: command.requestId, p_authorization: command.authorizationId,
+    }, expect.any(AbortSignal));
+  });
+  it.each(["campaignId", "workspaceId", "requestId", "authorizationId"])("rejects foreign envelope %s", async field => {
+    mocks.rpc.mockResolvedValue({ data: { ...lookup, [field]: id(99) }, error: null });
+    expect((await GET(get(), context)).status).toBe(503); expect(mocks.info).not.toHaveBeenCalled();
+  });
+  it.each(["actorId", "campaignId", "workspaceId", "requestId", "authorizationId"])("rejects foreign saved command %s despite a valid checksum", async field => {
+    const text = JSON.stringify({ ...command, [field]: id(99) });
+    mocks.rpc.mockResolvedValue({ data: { ...lookup, receipt: { ...receipt, commandText: text,
+      commandSha256: createHash("sha256").update(text).digest("hex") } }, error: null });
+    expect((await GET(get(), context)).status).toBe(503);
+  });
+  it.each(["", "requestId=bad", `requestId=${command.requestId}&authorizationId=${command.authorizationId}&requestId=${command.requestId}`,
+    `requestId=${command.requestId}&authorizationId=${command.authorizationId}&extra=true`])("refuses malformed query %s", async query => {
+    expect((await GET(get(query), context)).status).toBe(400); expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it("enforces expected account and workspace before reading", async () => {
+    for (const field of ["x-openplan-expected-user", "x-openplan-expected-workspace"]) {
+      expect((await GET(get(undefined, { [field]: id(99) }), context)).status).toBe(403);
+    }
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it.each([["42501", 403], ["PT503", 503]])("preserves native %s refusal", async (code, status) => {
+    mocks.rpc.mockResolvedValue({ data: null, error: { code, message: "PRIVATE" } });
+    const response = await GET(get(), context); expect(response.status).toBe(status);
+    expect(JSON.stringify(await response.json())).not.toContain("PRIVATE");
+  });
+  it("does not interpret malformed evidence as not queued", async () => {
+    mocks.rpc.mockResolvedValue({ data: { ...lookup, receipt: {} }, error: null });
+    expect((await GET(get(), context)).status).toBe(503);
   });
 });
