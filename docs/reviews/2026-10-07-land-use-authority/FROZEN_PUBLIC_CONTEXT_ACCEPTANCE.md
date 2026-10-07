@@ -79,3 +79,5 @@ practitioner, counsel, scientific and full V1 acceptance remain open. No release
 or merge is declared by this record.
 
 Artifact integrity is recorded in [sha256.json](frozen-public-context/sha256.json).
+
+The [public content follow-up](PUBLIC_CONTENT_FOLLOWUP.md) corrects the root-policy, implementation-action and legacy-introduction defects identified here. Its acceptance limits remain separate.
