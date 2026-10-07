@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SynthesisPreparationPanel } from "@/components/engagement/synthesis-preparation-panel";
 import { readPendingSynthesisPreparation, retainPendingSynthesisPreparation } from "@/lib/engagement/synthesis-preparation-recovery";
+import { thematicChoiceUiFixture } from "./fixtures/engagement/synthesis-thematic-choice-ui";
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); vi.unstubAllGlobals(); });
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
@@ -18,6 +19,29 @@ function fixture() {
 }
 
 describe("staff preparation controls", () => {
+  it.each(["enqueue", "retry"])("requires whole-source context choices before a fresh thematic %s", async operation => {
+    const f = thematicChoiceUiFixture();
+    const props = { ...f.scope, userId: f.scope.actorId, intentSha256: f.scope.requestIntentSha256, stage: "thematic" as const, cancelled: false, onAccessLost: vi.fn() };
+    const state = { ...fixture().state, campaignId: props.campaignId, workspaceId: props.workspaceId, requestId: props.requestId,
+      actorId: props.actorId, intentSha256: props.intentSha256, stage: "thematic", attempts: 3 };
+    const transport = vi.fn<typeof fetch>().mockImplementation(async (url, init) => {
+      if (init?.method === "POST") return json(state);
+      const query = new URL(String(url), "http://localhost").searchParams;
+      if (query.get("mode") === "contributions") return json(f.contributionPage(Number(query.get("offset"))));
+      return json(operation === "retry" ? { ...state, status: "failed", failureCode: "input_unavailable" } : null);
+    });
+    vi.stubGlobal("fetch", transport); render(<SynthesisPreparationPanel {...props} />);
+    const button = await screen.findByRole("button", { name: operation === "retry" ? "Retry failed preparation" : "Queue preparation" });
+    expect(button).toBeDisabled(); fireEvent.click(screen.getByRole("button", { name: "Choose context for themes" }));
+    await screen.findByText(/25 selected among 25 loaded/); expect(button).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Load more contributions" }));
+    await waitFor(() => expect(button).toBeEnabled()); expect(transport.mock.calls.some(([, init]) => init?.method === "POST")).toBe(false);
+    fireEvent.click(button); await screen.findByText("Waiting to prepare analysis");
+    const writes = transport.mock.calls.filter(([, init]) => init?.method === "POST"); expect(writes).toHaveLength(1);
+    expect(JSON.parse(String(writes[0][1]?.body))).toEqual(operation === "retry" ? { operation, requestId: props.requestId, attempt: 3 }
+      : { operation, requestId: props.requestId, stage: "thematic", intentSha256: props.intentSha256 });
+  });
+
   it("reads without writing, then retains an exact command before the explicit enqueue", async () => {
     const f = fixture();
     const fetcher = vi.fn<typeof fetch>().mockImplementation(async (_url, init) => {

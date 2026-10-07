@@ -55,6 +55,7 @@ function Continuation({ userId, workspaceId, campaignId, parent, onAccessLost }:
   }, [expanded, load]);
   const proposal = useMemo<SynthesisContinuationProposal | undefined>(() => selected
     ? { stage: "context", parent, targetRecordId: selected, frameByteLimit: 65_536 } : undefined, [selected, parent]);
+  const thematic = useMemo<SynthesisContinuationProposal>(() => ({ stage: "thematic", parent, frameByteLimit: 65_536 }), [parent]);
   const selectedEntry = entries.find(row => row.recordId === selected);
   return <section aria-label="Combine contribution context" className="min-w-0 space-y-3 border-t border-border pt-3 [&_button]:h-auto [&_button]:min-h-10 [&_button]:max-w-full [&_button]:whitespace-normal">
     <Button type="button" variant="outline" aria-expanded={expanded} onClick={() => { clear(); setError(null); setExpanded(value => !value); }}>Choose a contribution to combine</Button>
@@ -74,6 +75,12 @@ function Continuation({ userId, workspaceId, campaignId, parent, onAccessLost }:
         <h5 className="break-words font-semibold">Context for {selectedEntry.label}</h5>
         <SynthesisGenerationCreatePanel userId={userId} workspaceId={workspaceId} campaignId={campaignId}
           sourceId={parent.sourceId} sourceSha256={parent.sourceSha256} continuation={proposal} onAccessLost={loseAccess} onCreated={saved} />
+      </div> : null}
+      {total !== null && !busy ? <div className="min-w-0 space-y-2 border-t border-border pt-3">
+        <h5 className="font-semibold">Themes across this saved source</h5>
+        <p className="text-sm">Save a theme request, then select the completed context for every contribution. Each contribution remains part of the complete source.</p>
+        <SynthesisGenerationCreatePanel userId={userId} workspaceId={workspaceId} campaignId={campaignId}
+          sourceId={parent.sourceId} sourceSha256={parent.sourceSha256} continuation={thematic} onAccessLost={loseAccess} onCreated={saved} />
       </div> : null}
     </div> : null}
   </section>;

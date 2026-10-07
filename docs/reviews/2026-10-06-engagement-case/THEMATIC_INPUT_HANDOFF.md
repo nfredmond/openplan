@@ -88,3 +88,60 @@ or browser-storage recovery. The server is stopped after collection and before
 documentation edits. The earlier native-HTTP limitation is superseded only for
 these named cases. GitHub checks, browser controls and the broader limits above
 remain open.
+
+## Discovery and browser controls follow-up
+
+The follow-up adds a theme-request form within the saved parent results, using
+that exact source, selection sequence and manifest. Within a saved theme request,
+staff can list every original contribution, discover matching context requests,
+inspect a completed result and explicitly choose it. Discovery preserves the
+whole history cursor even when a page contains no eligible context. Matching
+request metadata alone does not establish completed output.
+
+The browser stores and reads back the exact choice command before transport.
+A lost acknowledgement retains that command across remounts. Staff explicitly
+retry the same bytes, including when discovery already shows the saved server
+choice. Only a matching receipt permits cleanup. Account changes clear private
+previews, late responses cannot update the new account, and newer browser copies
+survive delayed cleanup. Unreadable originals can be preserved and downloaded
+without dispatch. Saved references remain inspectable.
+
+Fresh thematic preparation and failed-job retries require confirmed coverage of
+every original contribution. A partial page or absent choice leaves the action
+disabled. Existing uncertain preparation commands keep their exact retry path;
+native preparation still verifies all original inputs and creates the seal.
+Choosing context does not approve its wording or authorize provider work.
+
+The [follow-up record](thematic-inputs/ui/verification.json) and
+[controls](thematic-inputs/ui/controls.json) identify the engineering checks.
+Final focused verification passes 224 tests across ten suites, including the
+unchanged route-caller and style guards. Full TypeScript and ESLint for all 16
+changed TypeScript files pass. The harmless control passes 157 tests across six
+affected suites. Twenty targeted
+faults fail, including incomplete context, changed manifests, account isolation,
+storage readback, original choice bytes, history cursor pairing, duplicate
+contributions and premature preparation. The runner restores original source
+bytes. During test development, an invalid context task-state fixture initially
+masked the completion guard. It now uses a valid incomplete context state and
+checks the specific refusal. A separate completed-preview account-switch case
+checks what an in-flight abort test did not cover.
+
+The [native discovery record](thematic-inputs/ui/native-discovery.json) reads the
+isolated restore target through authenticated native functions. It traverses 47
+requests across two pages, finds the original completed context, and excludes a
+context from another parent. One of two contributions has a saved choice. This
+request remains unready. A harmless native run passes; bypassing requester
+identity produces the intended failure; restored code passes. This check does
+not impersonate a second authenticated account or establish all RLS boundaries.
+
+The original `070c71ca` shuffled CI run fails the existing route-caller guard
+because that backend checkpoint has no application caller. This follow-up adds
+actual callers and keeps the guard unchanged. A full CI rerun must assess the
+new commit. The React review checks stable request/account remount keys, effect
+cleanup, bounded previews, ordinary buttons, disclosure controls and wrapping.
+It does not establish rendered geometry, accessibility or human usability.
+
+T3 reports an available but hidden preview after an explicit open. Its image
+capture still fails. No image, console or current thematic UI acceptance is
+claimed. The complete thematic journey, usable artifacts and human evidence
+remain open; this follow-up does not release a version or close M9b.

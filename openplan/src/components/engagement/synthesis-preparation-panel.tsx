@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SynthesisExecutionPanel } from "./synthesis-execution-panel";
 import { SynthesisProgressPanel } from "./synthesis-progress-panel";
+import { SynthesisThematicInputsPanel } from "./synthesis-thematic-inputs-panel";
 import { readSynthesisHistory } from "@/lib/engagement/synthesis-history-read";
 import { verifySynthesisPreparation, type SynthesisPreparationState } from "@/lib/engagement/synthesis-preparation-state";
 import {
@@ -28,6 +29,7 @@ function Preparation({ userId, workspaceId, campaignId, sourceId, sourceSha256, 
   const scope = useMemo(() => ({ userId, workspaceId, campaignId, sourceId, sourceSha256, requestId, intentSha256, stage }),
     [userId, workspaceId, campaignId, sourceId, sourceSha256, requestId, intentSha256, stage]);
   const [state, setState] = useState<SynthesisPreparationState | null>(null);
+  const [thematicInputsReady, setThematicInputsReady] = useState(false);
   const [confirmed, setConfirmed] = useState(false), [ready, setReady] = useState(false), [blocked, setBlocked] = useState(false);
   const [pending, setPending] = useState<PendingSynthesisPreparation | null>(null);
   const [copies, setCopies] = useState<ReturnType<typeof listPreservedSynthesisPreparations>>([]);
@@ -89,7 +91,8 @@ function Preparation({ userId, workspaceId, campaignId, sourceId, sourceSha256, 
     try { preservePendingSynthesisPreparation(localStorage, scope, pending ?? undefined); restore(); setError(null); setNotice("Recovery copies preserved in this browser. This does not cancel a saved preparation job."); }
     catch (cause) { setError(message(cause)); }
   }
-  const canChange = ready && confirmed && !busy && !blocked && !pending && actorId === userId && !cancelled && !state?.cancelled;
+  const canChange = ready && confirmed && !busy && !blocked && !pending && actorId === userId && !cancelled && !state?.cancelled &&
+    (stage !== "thematic" || thematicInputsReady);
   return <section aria-label="Request preparation" className="min-w-0 space-y-3 rounded border border-border p-3">
     <div className="flex flex-wrap items-center justify-between gap-2"><h4 className="font-semibold">Prepare this source for analysis</h4>
       <Button type="button" variant="outline" disabled={busy} onClick={() => void refresh()}>Refresh preparation status</Button></div>
@@ -102,6 +105,9 @@ function Preparation({ userId, workspaceId, campaignId, sourceId, sourceSha256, 
       {state?.failureCode ? <p>{failureLabels[state.failureCode]}</p> : null}
       {state?.cancelled || cancelled ? <p>Cancellation is saved. Earlier preparation and results remain retained.</p> : null}</> : null}
     {actorId !== userId ? <p className="text-sm">Another staff account created this request. Only that account can queue or retry preparation.</p> : null}
+    {stage === "thematic" ? <SynthesisThematicInputsPanel userId={userId} workspaceId={workspaceId} campaignId={campaignId}
+      sourceId={sourceId} sourceSha256={sourceSha256} requestId={requestId} requestIntentSha256={intentSha256} actorId={actorId}
+      onAccessLost={loseAccess} onReadyChange={setThematicInputsReady} /> : null}
     <div className="flex flex-wrap gap-2">
       {confirmed && state === null ? <Button type="button" disabled={!canChange} onClick={() => void send({ version: 1, ...scope, command: { operation: "enqueue", requestId, stage, intentSha256 } })}>Queue preparation</Button> : null}
       {confirmed && state?.status === "failed" ? <Button type="button" disabled={!canChange} onClick={() => void send({ version: 1, ...scope, command: { operation: "retry", requestId, attempt: state.attempts } })}>Retry failed preparation</Button> : null}

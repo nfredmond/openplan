@@ -1,0 +1,22 @@
+{
+  "checkedAt": 1791362335.5385027,
+  "results": [
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "markerMatched": true
+    },
+    {
+      "case": "actor-fault",
+      "exitCode": 1,
+      "markerMatched": true
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "markerMatched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": "bf5d5924d9412b8b161036e8b335994304400925996723926d5777a80b4facb2"
+}

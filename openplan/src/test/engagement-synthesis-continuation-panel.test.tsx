@@ -25,9 +25,11 @@ describe("contribution context handoff", () => {
     const [url, init] = transport.mock.calls[0], query = new URL(String(url), "http://localhost").searchParams;
     for (const [key, value] of Object.entries(parent)) expect(query.get(key)).toBe(String(value));
     expect(init).toMatchObject({ method: "GET", cache: "no-store", headers: { "x-openplan-expected-user": props.userId, "x-openplan-expected-workspace": props.workspaceId } });
-    expect(form).not.toHaveBeenCalled();
+    expect(form).toHaveBeenLastCalledWith(expect.objectContaining({ sourceId: parent.sourceId, sourceSha256: parent.sourceSha256,
+      continuation: { stage: "thematic", parent, frameByteLimit: 65536 } }));
+    expect(form.mock.calls.some(([props]) => props.continuation.stage === "context")).toBe(false);
     fireEvent.click(screen.getByRole("button", { name: "Synthetic contribution 2" }));
-    expect(form).toHaveBeenLastCalledWith(expect.objectContaining({ userId: props.userId, workspaceId: props.workspaceId, campaignId: props.campaignId,
+    expect(form).toHaveBeenCalledWith(expect.objectContaining({ userId: props.userId, workspaceId: props.workspaceId, campaignId: props.campaignId,
       sourceId: parent.sourceId, sourceSha256: parent.sourceSha256, continuation: { stage: "context", parent, frameByteLimit: 65536, targetRecordId: entries[1].recordId } }));
     expect(transport.mock.calls.every(([, options]) => options?.method === "GET")).toBe(true);
   });
@@ -38,7 +40,7 @@ describe("contribution context handoff", () => {
     expect(new URL(String(transport.mock.calls[1][0]), "http://localhost").searchParams.get("offset")).toBe("25");
     expect(screen.queryByRole("button", { name: "Load more contributions" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Synthetic contribution 27" }));
-    expect(form.mock.lastCall?.[0].continuation.targetRecordId).toBe(entries[26].recordId);
+    expect(form.mock.calls.filter(([props]) => props.continuation.stage === "context").at(-1)?.[0].continuation.targetRecordId).toBe(entries[26].recordId);
   });
   it.each(["workspace", "source", "manifest", "sequence", "actor", "offset", "total", "duplicate"])("refuses a changed contribution page %s and clears the form", async field => {
     render(<SynthesisContinuationPanel {...props} />); open(); await screen.findByText("Showing 25 of 27 contributions in this saved selection.");

@@ -10,9 +10,14 @@ import { synthesisThematicChoiceCommandSchema, synthesisThematicChoiceSelectionS
   synthesisThematicChoiceReceiptSchema } from "@/lib/engagement/synthesis-thematic-choice-command";
 import { prepareSynthesisThematicChoice, readSynthesisThematicChoice, retainSynthesisThematicChoice } from "@/lib/engagement/synthesis-thematic-choices-server";
 import { SynthesisGenerationRequestError } from "@/lib/engagement/synthesis-generation-requests-server";
+import { readThematicContributionPage, readThematicContextPage } from "@/lib/engagement/synthesis-thematic-choice-discovery-server";
+import { synthesisRequestHistoryCursorSchema } from "@/lib/engagement/synthesis-request-history";
 
 const id = z.string().uuid(), integer = z.string().regex(/^(0|[1-9]\d*)$/).transform(Number).pipe(z.number().int().nonnegative().safe());
 const querySchema = z.discriminatedUnion("mode", [
+  z.object({ mode: z.literal("contributions"), requestId: id, offset: integer }).strict(),
+  synthesisThematicChoiceSelectionSchema.pick({ requestId: true, targetRecordId: true }).extend({ mode: z.literal("contexts"),
+    beforeId: id.optional(), beforeCreatedAt: synthesisRequestHistoryCursorSchema.shape.createdAt.optional() }).strict(),
   synthesisThematicChoiceSelectionSchema.extend({ mode: z.literal("inspect"), throughSequence: integer }).strict(),
   synthesisThematicChoiceSelectionSchema.pick({ requestId: true, targetRecordId: true }).extend({ mode: z.literal("saved") }).strict(),
 ]);
@@ -47,9 +52,26 @@ export async function GET(request: NextRequest, context: Context) {
   const audit = createApiAuditLogger("engagement.synthesis-thematic-choice.read", request);
   try {
     const entries = [...request.nextUrl.searchParams], parsed = querySchema.safeParse(Object.fromEntries(entries));
-    if (!parsed.success || new Set(entries.map(([key]) => key)).size !== entries.length) return failure(400);
+    if (!parsed.success || new Set(entries.map(([key]) => key)).size !== entries.length ||
+      (parsed.data.mode === "contexts" && Boolean(parsed.data.beforeId) !== Boolean(parsed.data.beforeCreatedAt))) return failure(400);
     const auth = await staff(request, context), signal = AbortSignal.any([request.signal, AbortSignal.timeout(30_000)]);
     signal.throwIfAborted();
+    if (parsed.data.mode === "contributions") {
+      const result = await readThematicContributionPage(auth.client, createServiceRoleClient(), { ...auth.scope, actorId: auth.actorId,
+        requestId: parsed.data.requestId }, parsed.data.offset, signal);
+      signal.throwIfAborted();
+      audit.info("contribution_choices_read", { requestId: parsed.data.requestId, offset: parsed.data.offset, count: result.page.entries.length });
+      return NextResponse.json(result, { headers });
+    }
+    if (parsed.data.mode === "contexts") {
+      const query = parsed.data;
+      const before = query.beforeId ? { id: query.beforeId, createdAt: query.beforeCreatedAt! } : null;
+      const result = await readThematicContextPage(auth.client, { ...auth.scope, actorId: auth.actorId, requestId: query.requestId },
+        query.targetRecordId, before, signal);
+      signal.throwIfAborted();
+      audit.info("eligible_contexts_read", { requestId: query.requestId, count: result.eligibleRequestIds.length, hasMore: result.history.nextCursor !== null });
+      return NextResponse.json(result, { headers });
+    }
     const { mode, ...selection } = parsed.data;
     if (mode === "saved") {
       const result = await readSynthesisThematicChoice(auth.client, { ...auth.scope, requestId: selection.requestId }, selection.targetRecordId, signal);
