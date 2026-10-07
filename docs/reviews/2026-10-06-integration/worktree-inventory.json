@@ -1,0 +1,689 @@
+{
+  "captured_at": "2026-10-07T01:50:55.233512+00:00",
+  "period_start": "2026-09-06",
+  "period_end": "2026-10-06",
+  "initial_main": "891a0d89a848133d44b9e4f314a76a922cd71ace",
+  "fetched_main": "eae9880dc83efdd1251d3cd159726b23c701c83e",
+  "integration": "5b580803c8866bc5bbe8128153cde96bfefd1981",
+  "worktrees": [
+    {
+      "path": "/home/nathaniel/code/openplan",
+      "branch": "main",
+      "commit": "eae9880dc83efdd1251d3cd159726b23c701c83e",
+      "unmerged_into_integration": 0,
+      "status": "?? .directory"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10",
+      "branch": "work/engagement-response-snapshots",
+      "commit": "e006b98bd8aeedbde48a74bec2169e1f1d01c9ad",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/assistant-audit-outcomes-2026-09-10",
+      "branch": "work/assistant-audit-outcomes",
+      "commit": "d87a04d4271ee7e46e21d09e4fc63cd3fec6f5b3",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/contract-reconciliation-2026-09-07",
+      "branch": "work/contract-reconciliation",
+      "commit": "76f019bfb80300434c23273db07c43610cbf1625",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/dependency-patch-2026-09-10",
+      "branch": "fix/development-dependency-advisories",
+      "commit": "5d7ccdb067bb4db639132889f8efd5db160dfc6b",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/engagement-first-workflow-2026-09-06",
+      "branch": "work/engagement-first-workflow",
+      "commit": "860260baa7a84ceacd354d12006fa9d503721037",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/engagement-response-writes-2026-09-12",
+      "branch": "work/engagement-response-writes",
+      "commit": "88fb20b619f9108c29c7102ca20fb6423f553e45",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/engagement-write-recovery-2026-09-12",
+      "branch": "work/engagement-write-recovery",
+      "commit": "3f70af98e6fb06b4c0f932769e10f880711d46ec",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/explicit-agent-consent-2026-09-10",
+      "branch": "work/explicit-agent-consent",
+      "commit": "4d02130b24c7b83ff9111c3bbe058fdfe7f67b86",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/independent-fixes-20261001",
+      "branch": "fix/independent-review-20261001",
+      "commit": "ca3e442cdfd11441247a7df2e3461cf665240d91",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/independent-review-20261001-01",
+      "branch": "review/independent-20261001-01",
+      "commit": "3072fc155a5c48134646def8a70c2e73d7817385",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/m11-delivery-closeout-2026-09-08",
+      "branch": "work/m11-delivery-closeout",
+      "commit": "5850d63e99b755f5c2da2ca930ae67768a5f25d4",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/m2d3-reimbursement-2026-09-09",
+      "branch": "work/m2d3-reimbursement",
+      "commit": "88de2d23ff174de8ef7bcf1eeeb76a47d656a1a0",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/m2d4-closeout-review-2026-09-09",
+      "branch": "work/m2d4-closeout-review",
+      "commit": "8015a05f15028387e56fcbe952639c23c7f01d9b",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/m2d4-multi-carryover-2026-09-09",
+      "branch": "work/m2d4-multi-carryover",
+      "commit": "3a752db6c7c249c45fa245530f4b52fda6a54251",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/m2d4-period-closure-2026-09-09",
+      "branch": "work/m2d4-period-closure",
+      "commit": "b0c6c05854a7bef44d1440ef5ed89621332b63e7",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/m2d4-refund-matching-2026-09-09",
+      "branch": "work/m2d4-refund-matching",
+      "commit": "609347ade35418765b459c8ba1b6bdb2a07cff2d",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/m2d4-settlement-2026-09-09",
+      "branch": "work/m2d4-settlement",
+      "commit": "5dffba4bc4813cdee6ac17825b45aa4b629768a2",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/october-integration-20261006",
+      "branch": "work/october-integration-20261006",
+      "commit": "5b580803c8866bc5bbe8128153cde96bfefd1981",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/owp-full-recovery-2026-09-09",
+      "branch": "work/owp-full-recovery",
+      "commit": "051b735fa444fab5287357b30dc2eaafe6783bcf",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06",
+      "branch": "work/owp-preparation",
+      "commit": "398d8f0df8178cf4c56eca21110c09e139c4d60d",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/owp-reporting-2026-09-07",
+      "branch": "fix/owp-staff-workspace",
+      "commit": "dfdb9845974ad870db159a0576eedbb087a38150",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/owp-review-2026-09-07",
+      "branch": "work/owp-review",
+      "commit": "e204cdeeaffdf3ac8fca51c067c0c4e38e1a9814",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/planner-action-followup-recovery-2026-09-10",
+      "branch": "work/planner-action-followup-recovery",
+      "commit": "3ffd2a415f6561cfb37f52e2ce1eeef251522db5",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/synthesis-staff-generation-2026-10-02",
+      "branch": "work/synthesis-staff-generation",
+      "commit": "9775ab5314dd09a05738163eea0d6632ff8e58bd",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/thematic-import-ui-2026-10-02",
+      "branch": "work/thematic-import-ui",
+      "commit": "6f3ffa7b501e4e444add29865d1e104e5069b07d",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13",
+      "branch": "work/engagement-synthesis-generation",
+      "commit": "a8f7183090378f8b7d124299da31f3c9eeb75958",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/translation-resolution-qa-20260913-125bf2a3",
+      "branch": "detached",
+      "commit": "5a93ae99c32412ccf6a9620d705a4cc9de63f81c",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/ui-ux-2026-10-01",
+      "branch": "work/ui-ux-review",
+      "commit": "08d8b12c9a274d5b49d356e9d97109f20a8f9523",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/v047-release-2026-09-09",
+      "branch": "work/v047-release",
+      "commit": "f65a27db9432c1f0a460bfe8b966a8c1446327bd",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/v048-release-2026-09-09",
+      "branch": "work/v048-release",
+      "commit": "e39258b92f119d5b7d8326155f99188d43a7eaf3",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-2026-09-13",
+      "branch": "fix/workspace-switch-v0581",
+      "commit": "ef16f166447ab477ea36588a5c01620f61560b19",
+      "unmerged_into_integration": 0,
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/write-outcome-truth-2026-09-10",
+      "branch": "work/write-outcome-truth",
+      "commit": "3a6099c119a65dd93ed85ef7f16eb1b641f27a6d",
+      "unmerged_into_integration": 0,
+      "status": ""
+    }
+  ],
+  "refs": [
+    {
+      "ref": "refs/heads/docs/m11-consolidated-status-2026-09-09",
+      "commit": "a0b253209b0e3555aa955d66337904d29683aefb",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/fix/development-dependency-advisories",
+      "commit": "5d7ccdb067bb4db639132889f8efd5db160dfc6b",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/fix/independent-review-20261001",
+      "commit": "ca3e442cdfd11441247a7df2e3461cf665240d91",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/fix/owp-staff-workspace",
+      "commit": "dfdb9845974ad870db159a0576eedbb087a38150",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/fix/workspace-switch-v0581",
+      "commit": "ef16f166447ab477ea36588a5c01620f61560b19",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/main",
+      "commit": "eae9880dc83efdd1251d3cd159726b23c701c83e",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/review/independent-20261001-01",
+      "commit": "3072fc155a5c48134646def8a70c2e73d7817385",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/agent-hold-receipts",
+      "commit": "0df7a50a209c0e5e545cc86bfb0331e4ec18c2a9",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/agent-submittal-receipts",
+      "commit": "38f951ebc9d2db14594c1f01847de686f157cde6",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/assistant-audit-outcomes",
+      "commit": "d87a04d4271ee7e46e21d09e4fc63cd3fec6f5b3",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/contract-reconciliation",
+      "commit": "76f019bfb80300434c23273db07c43610cbf1625",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/engagement-decision-traceability",
+      "commit": "6dda510d62f6cb42f5f606cb5e491f66f8e6d79a",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/engagement-first-workflow",
+      "commit": "860260baa7a84ceacd354d12006fa9d503721037",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/engagement-response-recovery",
+      "commit": "d08bd18aa91c609f9cbeccb7a40e6e15960a2c87",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/engagement-response-snapshots",
+      "commit": "e006b98bd8aeedbde48a74bec2169e1f1d01c9ad",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/engagement-response-writes",
+      "commit": "88fb20b619f9108c29c7102ca20fb6423f553e45",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/engagement-synthesis-generation",
+      "commit": "a8f7183090378f8b7d124299da31f3c9eeb75958",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/engagement-write-recovery",
+      "commit": "3f70af98e6fb06b4c0f932769e10f880711d46ec",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/explicit-agent-consent",
+      "commit": "4d02130b24c7b83ff9111c3bbe058fdfe7f67b86",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/m11-delivery-closeout",
+      "commit": "5850d63e99b755f5c2da2ca930ae67768a5f25d4",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/m11-history-audit-2026-09-09",
+      "commit": "4978802392485bb7951ccb2fe0411e11934159c1",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/m2d3-reimbursement",
+      "commit": "88de2d23ff174de8ef7bcf1eeeb76a47d656a1a0",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/m2d4-closeout-review",
+      "commit": "8015a05f15028387e56fcbe952639c23c7f01d9b",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/m2d4-multi-carryover",
+      "commit": "3a752db6c7c249c45fa245530f4b52fda6a54251",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/m2d4-period-closure",
+      "commit": "b0c6c05854a7bef44d1440ef5ed89621332b63e7",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/m2d4-refund-matching",
+      "commit": "609347ade35418765b459c8ba1b6bdb2a07cff2d",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/m2d4-settlement",
+      "commit": "5dffba4bc4813cdee6ac17825b45aa4b629768a2",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/october-integration-20261006",
+      "commit": "5b580803c8866bc5bbe8128153cde96bfefd1981",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/owp-full-recovery",
+      "commit": "051b735fa444fab5287357b30dc2eaafe6783bcf",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/owp-preparation",
+      "commit": "398d8f0df8178cf4c56eca21110c09e139c4d60d",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/owp-reporting",
+      "commit": "859ecabf4d34b1a33f20255a69fa50fc847115b4",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/owp-review",
+      "commit": "e204cdeeaffdf3ac8fca51c067c0c4e38e1a9814",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/planner-action-followup-recovery",
+      "commit": "3ffd2a415f6561cfb37f52e2ce1eeef251522db5",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/planner-agent-api-connections",
+      "commit": "c73b051095d59beb105cf9cb1570776d416676ec",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/planner-agent-claude-connection",
+      "commit": "de01ce9b176d31752af44e0afd0245f505c9ae1f",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/planner-agent-opencode-connection",
+      "commit": "3a4d0900776dcf0531fa0e6b8cf7218620f448b8",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/planner-agent-provider-connection",
+      "commit": "914a9d966bbf1ea344b4d9ccd0762dbfa184aeea",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/synthesis-staff-generation",
+      "commit": "9775ab5314dd09a05738163eea0d6632ff8e58bd",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/thematic-import-ui",
+      "commit": "6f3ffa7b501e4e444add29865d1e104e5069b07d",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/translation-command-workflow",
+      "commit": "8d563fd270510f4148ade835bc80a1a0217f0b0f",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/ui-ux-review",
+      "commit": "08d8b12c9a274d5b49d356e9d97109f20a8f9523",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/v047-release",
+      "commit": "f65a27db9432c1f0a460bfe8b966a8c1446327bd",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/v048-release",
+      "commit": "e39258b92f119d5b7d8326155f99188d43a7eaf3",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/heads/work/write-outcome-truth",
+      "commit": "3a6099c119a65dd93ed85ef7f16eb1b641f27a6d",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/HEAD",
+      "commit": "eae9880dc83efdd1251d3cd159726b23c701c83e",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/docs/m11-consolidated-status-2026-09-09",
+      "commit": "a0b253209b0e3555aa955d66337904d29683aefb",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/fix/development-dependency-advisories",
+      "commit": "5d7ccdb067bb4db639132889f8efd5db160dfc6b",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/fix/independent-review-20261001",
+      "commit": "ca3e442cdfd11441247a7df2e3461cf665240d91",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/fix/owp-staff-workspace",
+      "commit": "dfdb9845974ad870db159a0576eedbb087a38150",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/fix/workspace-switch-v0581",
+      "commit": "ef16f166447ab477ea36588a5c01620f61560b19",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/main",
+      "commit": "eae9880dc83efdd1251d3cd159726b23c701c83e",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/review/independent-20261001-01",
+      "commit": "3072fc155a5c48134646def8a70c2e73d7817385",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/verify/v0.66.0-candidate",
+      "commit": "3ca6fe3eed0679e064f220eb0acd5b1ce4e20834",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/agent-hold-receipts",
+      "commit": "0df7a50a209c0e5e545cc86bfb0331e4ec18c2a9",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/agent-submittal-receipts",
+      "commit": "38f951ebc9d2db14594c1f01847de686f157cde6",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/assistant-audit-outcomes",
+      "commit": "d87a04d4271ee7e46e21d09e4fc63cd3fec6f5b3",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/contract-reconciliation",
+      "commit": "76f019bfb80300434c23273db07c43610cbf1625",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/engagement-decision-traceability",
+      "commit": "6dda510d62f6cb42f5f606cb5e491f66f8e6d79a",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/engagement-first-workflow",
+      "commit": "860260baa7a84ceacd354d12006fa9d503721037",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/engagement-response-recovery",
+      "commit": "d08bd18aa91c609f9cbeccb7a40e6e15960a2c87",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/engagement-response-snapshots",
+      "commit": "e006b98bd8aeedbde48a74bec2169e1f1d01c9ad",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/engagement-response-writes",
+      "commit": "88fb20b619f9108c29c7102ca20fb6423f553e45",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/engagement-synthesis-generation",
+      "commit": "a8f7183090378f8b7d124299da31f3c9eeb75958",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/engagement-write-recovery",
+      "commit": "3f70af98e6fb06b4c0f932769e10f880711d46ec",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/explicit-agent-consent",
+      "commit": "4d02130b24c7b83ff9111c3bbe058fdfe7f67b86",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/m11-delivery-closeout",
+      "commit": "5850d63e99b755f5c2da2ca930ae67768a5f25d4",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/m11-history-audit-2026-09-09",
+      "commit": "4978802392485bb7951ccb2fe0411e11934159c1",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/m2d3-reimbursement",
+      "commit": "88de2d23ff174de8ef7bcf1eeeb76a47d656a1a0",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/m2d4-closeout-review",
+      "commit": "8015a05f15028387e56fcbe952639c23c7f01d9b",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/m2d4-multi-carryover",
+      "commit": "3a752db6c7c249c45fa245530f4b52fda6a54251",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/m2d4-period-closure",
+      "commit": "b0c6c05854a7bef44d1440ef5ed89621332b63e7",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/m2d4-refund-matching",
+      "commit": "609347ade35418765b459c8ba1b6bdb2a07cff2d",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/m2d4-settlement",
+      "commit": "5dffba4bc4813cdee6ac17825b45aa4b629768a2",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/owp-full-recovery",
+      "commit": "051b735fa444fab5287357b30dc2eaafe6783bcf",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/owp-preparation",
+      "commit": "398d8f0df8178cf4c56eca21110c09e139c4d60d",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/owp-reporting",
+      "commit": "859ecabf4d34b1a33f20255a69fa50fc847115b4",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/owp-review",
+      "commit": "e204cdeeaffdf3ac8fca51c067c0c4e38e1a9814",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/planner-action-followup-recovery",
+      "commit": "3ffd2a415f6561cfb37f52e2ce1eeef251522db5",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/planner-agent-api-connections",
+      "commit": "c73b051095d59beb105cf9cb1570776d416676ec",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/planner-agent-claude-connection",
+      "commit": "de01ce9b176d31752af44e0afd0245f505c9ae1f",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/planner-agent-opencode-connection",
+      "commit": "3a4d0900776dcf0531fa0e6b8cf7218620f448b8",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/planner-agent-provider-connection",
+      "commit": "914a9d966bbf1ea344b4d9ccd0762dbfa184aeea",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/synthesis-staff-generation",
+      "commit": "9775ab5314dd09a05738163eea0d6632ff8e58bd",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/thematic-import-ui",
+      "commit": "6f3ffa7b501e4e444add29865d1e104e5069b07d",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/translation-command-workflow",
+      "commit": "8d563fd270510f4148ade835bc80a1a0217f0b0f",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/ui-ux-review",
+      "commit": "08d8b12c9a274d5b49d356e9d97109f20a8f9523",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/v047-release",
+      "commit": "f65a27db9432c1f0a460bfe8b966a8c1446327bd",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/v048-release",
+      "commit": "e39258b92f119d5b7d8326155f99188d43a7eaf3",
+      "unmerged_into_integration": 0
+    },
+    {
+      "ref": "refs/remotes/origin/work/write-outcome-truth",
+      "commit": "3a6099c119a65dd93ed85ef7f16eb1b641f27a6d",
+      "unmerged_into_integration": 0
+    }
+  ],
+  "stashes": ""
+}
