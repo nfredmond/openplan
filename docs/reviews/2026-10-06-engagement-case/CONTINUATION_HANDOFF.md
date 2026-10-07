@@ -68,5 +68,29 @@ recovery, complete thematic input selection, rendering, keyboard access, console
 health, semantic quality, participant representation, staff acceptance or release
 readiness. Those boundaries remain separate.
 
-Evidence and final check results will accompany the verified checkpoint. The
-roadmap remains the sole work queue.
+The [verification record](continuation-handoff/verification.json) identifies
+application commit `53de593139dbfa3c42796d6869428689853c7d4d`. All 144 tests across
+eight focused and source-guard suites pass. TypeScript, changed-source ESLint and
+the repository dead-code command exit successfully; the latter retains its
+existing advisory inventory. The production build passes from the clean,
+unchanged application commit while the Google Fonts network block is active,
+with zero blocked-endpoint attempts.
+
+A harmless comment control passes. Eight targeted unit faults fail for the
+expected parent/source, membership, plan, account or assistant-refusal boundary.
+The source files are restored byte for byte. The native manifest mutation also
+fails because the broken reader accepts the altered parent. Harmless and restored
+native versions pass. The [unit control runner](continuation-handoff/controls.py)
+accepts an application directory and a new output directory. Native commands and
+login fixtures remain in the private recovery directory; their probe hashes and
+sanitized outcomes are retained here. Native rows remain synthetic fixtures.
+
+The integration audit accounts for 52 local branches, 53 live origin branches and
+41 worktrees. Every local branch matches its remote, none lacks a remote, and no
+stash remains. Only the unrelated canonical `.directory` is untracked. Five
+branches remain outside main, all within the active engagement/font dependency
+work. This checkpoint and its PR are pushed. GitHub checks remain pending.
+
+The hidden T3 progress tab still rejects both image and text snapshots. That retry
+belongs to the previously built progress candidate, not visual evidence for this
+backend checkpoint. The roadmap remains the sole work queue.

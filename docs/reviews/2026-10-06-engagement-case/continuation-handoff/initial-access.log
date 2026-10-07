@@ -1,0 +1,373 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-continuation-server.test.ts (40 tests | 8 failed) 40ms
+     × pages complete membership with bounded previews and checks access after the final source read 9ms
+     × refuses changed parent parentActorId before private replay 2ms
+     × refuses changed parent parentIntentSha256 before private replay 1ms
+     × refuses changed parent sourceId before private replay 1ms
+     × refuses changed parent sourceSha256 before private replay 1ms
+     × refuses access loss at read 1 without returning a page 1ms
+     × refuses access loss at read 3 without returning a page 4ms
+     × does not write after access is lost at the final preflight 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-server.test.ts > continuation from a pinned, complete parent > pages complete membership with bounded previews and checks access after the final source read
+AssertionError: expected "vi.fn()" to be called 3 times, but got 2 times
+ ❯ src/test/engagement-synthesis-continuation-server.test.ts:56:27
+     54|     expect(rpc).toHaveBeenCalledExactlyOnceWith("read_engagement_synth…
+     55|     expect(mocks.source).toHaveBeenCalledExactlyOnceWith({ native: tru…
+     56|     expect(mocks.request).toHaveBeenCalledTimes(3);
+       |                           ^
+     57|     expect(mocks.request.mock.invocationCallOrder[0]).toBeLessThan(moc…
+     58|     expect(mocks.request.mock.invocationCallOrder[2]).toBeGreaterThan(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-server.test.ts > continuation from a pinned, complete parent > refuses changed parent parentActorId before private replay
+ FAIL  src/test/engagement-synthesis-continuation-server.test.ts > continuation from a pinned, complete parent > refuses changed parent parentIntentSha256 before private replay
+ FAIL  src/test/engagement-synthesis-continuation-server.test.ts > continuation from a pinned, complete parent > refuses changed parent sourceId before private replay
+ FAIL  src/test/engagement-synthesis-continuation-server.test.ts > continuation from a pinned, complete parent > refuses changed parent sourceSha256 before private replay
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "rpc": [Function Mock],
+      },
+      Object {
+        "from": [Function Mock],
+        "rpc": [Function Mock],
+      },
+      Object {
+        "campaignId": "c7700000-0000-4000-8000-000000000001",
+        "requestId": "c7700000-0000-4000-8000-000000000004",
+        "throughSequence": 4,
+        "workspaceId": "c7700000-0000-4000-8000-000000000002",
+      },
+      AbortSignal {
+        Symbol(kEvents): undefined,
+        Symbol(events.maxEventTargetListeners): 0,
+        Symbol(events.maxEventTargetListenersWarned): false,
+        Symbol(kHandlers): undefined,
+        Symbol(kAborted): false,
+        Symbol(kReason): undefined,
+        Symbol(kComposite): false,
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/test/engagement-synthesis-continuation-server.test.ts:82:31
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-server.test.ts > continuation from a pinned, complete parent > refuses access loss at read 1 without returning a page
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "rpc": [Function Mock],
+      },
+      Object {
+        "from": [Function Mock],
+        "rpc": [Function Mock],
+      },
+      Object {
+        "campaignId": "c7700000-0000-4000-8000-000000000001",
+        "requestId": "c7700000-0000-4000-8000-000000000004",
+        "throughSequence": 4,
+        "workspaceId": "c7700000-0000-4000-8000-000000000002",
+      },
+      AbortSignal {
+        Symbol(kEvents): undefined,
+        Symbol(events.maxEventTargetListeners): 0,
+        Symbol(events.maxEventTargetListenersWarned): false,
+        Symbol(kHandlers): undefined,
+        Symbol(kAborted): false,
+        Symbol(kReason): undefined,
+        Symbol(kComposite): false,
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/test/engagement-synthesis-continuation-server.test.ts:127:47
+    125|     mocks.request.mockRejectedValueOnce(new SynthesisGenerationRequest…
+    126|     await expect(page()).rejects.toMatchObject({ status: 403 });
+    127|     if (read === 1) expect(mocks.history).not.toHaveBeenCalled();
+       |                                               ^
+    128|   });
+    129|   it("does not write after access is lost at the final preflight", asy…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-server.test.ts > continuation from a pinned, complete parent > refuses access loss at read 3 without returning a page
+AssertionError: promise resolved "{ schemaVersion: 1, …(10) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "campaignId": "c7700000-0000-4000-8000-000000000001",
++   "cancelled": false,
++   "entries": [
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 1",
++       "recordId": "item:c7700000-0000-4000-8000-000000000020",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 2",
++       "recordId": "item:c7700000-0000-4000-8000-000000000021",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 3",
++       "recordId": "item:c7700000-0000-4000-8000-000000000022",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 4",
++       "recordId": "item:c7700000-0000-4000-8000-000000000023",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 5",
++       "recordId": "item:c7700000-0000-4000-8000-000000000024",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 6",
++       "recordId": "item:c7700000-0000-4000-8000-000000000025",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 7",
++       "recordId": "item:c7700000-0000-4000-8000-000000000026",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 8",
++       "recordId": "item:c7700000-0000-4000-8000-000000000027",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 9",
++       "recordId": "item:c7700000-0000-4000-8000-000000000028",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 10",
++       "recordId": "item:c7700000-0000-4000-8000-000000000029",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 11",
++       "recordId": "item:c7700000-0000-4000-8000-000000000030",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 12",
++       "recordId": "item:c7700000-0000-4000-8000-000000000031",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 13",
++       "recordId": "item:c7700000-0000-4000-8000-000000000032",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 14",
++       "recordId": "item:c7700000-0000-4000-8000-000000000033",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 15",
++       "recordId": "item:c7700000-0000-4000-8000-000000000034",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 16",
++       "recordId": "item:c7700000-0000-4000-8000-000000000035",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 17",
++       "recordId": "item:c7700000-0000-4000-8000-000000000036",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 18",
++       "recordId": "item:c7700000-0000-4000-8000-000000000037",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 19",
++       "recordId": "item:c7700000-0000-4000-8000-000000000038",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 20",
++       "recordId": "item:c7700000-0000-4000-8000-000000000039",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 21",
++       "recordId": "item:c7700000-0000-4000-8000-000000000040",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 22",
++       "recordId": "item:c7700000-0000-4000-8000-000000000041",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 23",
++       "recordId": "item:c7700000-0000-4000-8000-000000000042",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 24",
++       "recordId": "item:c7700000-0000-4000-8000-000000000043",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 25",
++       "recordId": "item:c7700000-0000-4000-8000-000000000044",
++     },
++   ],
++   "interpretation": "not_assessed",
++   "nextOffset": 25,
++   "offset": 0,
++   "pageSize": 25,
++   "parent": {
++     "parentActorId": "c7700000-0000-4000-8000-000000000005",
++     "parentIntentSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++     "parentRequestId": "c7700000-0000-4000-8000-000000000004",
++     "segmentResultsManifestSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
++     "sourceId": "c7700000-0000-4000-8000-000000000006",
++     "sourceSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
++     "throughSequence": 4,
++   },
++   "schemaVersion": 1,
++   "total": 27,
++   "workspaceId": "c7700000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/engagement-synthesis-continuation-server.test.ts:126:24
+    124|     for (let n = 1; n < read; n++) mocks.request.mockResolvedValueOnce…
+    125|     mocks.request.mockRejectedValueOnce(new SynthesisGenerationRequest…
+    126|     await expect(page()).rejects.toMatchObject({ status: 403 });
+       |                        ^
+    127|     if (read === 1) expect(mocks.history).not.toHaveBeenCalled();
+    128|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-server.test.ts > continuation from a pinned, complete parent > does not write after access is lost at the final preflight
+AssertionError: promise resolved "{ request: { …(3) }, replayed: false }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "replayed": false,
++   "request": {
++     "actorId": "c7700000-0000-4000-8000-000000000003",
++     "id": "c7700000-0000-4000-8000-000000000009",
++     "intentText": "{
++   \"schemaVersion\": 1,
++   \"sourceId\": \"c7700000-0000-4000-8000-000000000006\",
++   \"sourceSha256\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",
++   \"connectionId\": \"c7700000-0000-4000-8000-000000000007\",
++   \"configurationRevisionId\": \"c7700000-0000-4000-8000-000000000008\",
++   \"configurationHash\": \"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",
++   \"modelId\": \"PRIVATE-model\",
++   \"taskByteLimit\": 65536
++ }",
++   },
+  }
+
+ ❯ src/test/engagement-synthesis-continuation-server.test.ts:131:26
+    129|   it("does not write after access is lost at the final preflight", asy…
+    130|     mocks.request.mockResolvedValueOnce(original).mockRejectedValueOnc…
+    131|     await expect(create()).rejects.toMatchObject({ status: 403 }); exp…
+       |                          ^
+    132|   });
+    133|   it.each(["manifest", "parent", "sequence", "frame", "target", "actor…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 32 passed (40)
+   Start at  00:22:06
+   Duration  746ms (transform 125ms, setup 54ms, import 171ms, tests 40ms, environment 322ms)
+

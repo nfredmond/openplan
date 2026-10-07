@@ -1,0 +1,232 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-continuation-server.test.ts (40 tests | 2 failed) 40ms
+     × refuses unsealed preparation not_prepared 7ms
+     × refuses unsealed preparation staging 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-server.test.ts > continuation from a pinned, complete parent > refuses unsealed preparation not_prepared
+ FAIL  src/test/engagement-synthesis-continuation-server.test.ts > continuation from a pinned, complete parent > refuses unsealed preparation staging
+AssertionError: promise resolved "{ schemaVersion: 1, …(10) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "campaignId": "c7700000-0000-4000-8000-000000000001",
++   "cancelled": false,
++   "entries": [
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 1",
++       "recordId": "item:c7700000-0000-4000-8000-000000000020",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 2",
++       "recordId": "item:c7700000-0000-4000-8000-000000000021",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 3",
++       "recordId": "item:c7700000-0000-4000-8000-000000000022",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 4",
++       "recordId": "item:c7700000-0000-4000-8000-000000000023",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 5",
++       "recordId": "item:c7700000-0000-4000-8000-000000000024",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 6",
++       "recordId": "item:c7700000-0000-4000-8000-000000000025",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 7",
++       "recordId": "item:c7700000-0000-4000-8000-000000000026",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 8",
++       "recordId": "item:c7700000-0000-4000-8000-000000000027",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 9",
++       "recordId": "item:c7700000-0000-4000-8000-000000000028",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 10",
++       "recordId": "item:c7700000-0000-4000-8000-000000000029",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 11",
++       "recordId": "item:c7700000-0000-4000-8000-000000000030",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 12",
++       "recordId": "item:c7700000-0000-4000-8000-000000000031",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 13",
++       "recordId": "item:c7700000-0000-4000-8000-000000000032",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 14",
++       "recordId": "item:c7700000-0000-4000-8000-000000000033",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 15",
++       "recordId": "item:c7700000-0000-4000-8000-000000000034",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 16",
++       "recordId": "item:c7700000-0000-4000-8000-000000000035",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 17",
++       "recordId": "item:c7700000-0000-4000-8000-000000000036",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 18",
++       "recordId": "item:c7700000-0000-4000-8000-000000000037",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 19",
++       "recordId": "item:c7700000-0000-4000-8000-000000000038",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 20",
++       "recordId": "item:c7700000-0000-4000-8000-000000000039",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 21",
++       "recordId": "item:c7700000-0000-4000-8000-000000000040",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 22",
++       "recordId": "item:c7700000-0000-4000-8000-000000000041",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 23",
++       "recordId": "item:c7700000-0000-4000-8000-000000000042",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 24",
++       "recordId": "item:c7700000-0000-4000-8000-000000000043",
++     },
++     {
++       "excerpt": "PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE contribution PRIVATE",
++       "excerptTruncated": true,
++       "kind": "item",
++       "label": "Comment 25",
++       "recordId": "item:c7700000-0000-4000-8000-000000000044",
++     },
++   ],
++   "interpretation": "not_assessed",
++   "nextOffset": 25,
++   "offset": 0,
++   "pageSize": 25,
++   "parent": {
++     "parentActorId": "c7700000-0000-4000-8000-000000000005",
++     "parentIntentSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++     "parentRequestId": "c7700000-0000-4000-8000-000000000004",
++     "segmentResultsManifestSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
++     "sourceId": "c7700000-0000-4000-8000-000000000006",
++     "sourceSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
++     "throughSequence": 4,
++   },
++   "schemaVersion": 1,
++   "total": 27,
++   "workspaceId": "c7700000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/engagement-synthesis-continuation-server.test.ts:102:61
+    100|   });
+    101|   it.each(["not_prepared", "staging"])("refuses unsealed preparation %…
+    102|     mocks.plan.mockResolvedValue(state); await expect(page()).rejects.…
+       |                                                             ^
+    103|     await expect(create()).rejects.toMatchObject({ status: 409 }); exp…
+    104|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 38 passed (40)
+   Start at  00:22:04
+   Duration  693ms (transform 124ms, setup 53ms, import 167ms, tests 40ms, environment 324ms)
+

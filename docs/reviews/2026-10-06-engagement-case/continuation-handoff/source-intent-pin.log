@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-continuation-records.test.ts (20 tests | 1 failed) 15ms
+     × refuses a changed identity, stage, resource limit or authority-bearing command {"stage":"context","requestId":"c7720000-0000-4000-8000-000000000006","parent":{"parentRequestId":"c7720000-0000-4000-8000-000000000001","parentActorId":"c7720000-0000-4000-8000-000000000002","parentIntentSha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","sourceId":"c7720000-0000-4000-8000-000000000003","sourceSha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","throughSequence":4,"segmentResultsManifestSha256":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},"frameByteLimit":4096,"intentText":"{\"schemaVersion\":1,\"sourceId\":\"c7720000-0000-4000-8000-000000000003\",\"sourceSha256\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"connectionId\":\"c7720000-0000-4000-8000-000000000004\",\"configurationRevisionId\":\"c7720000-0000-4000-8000-000000000005\",\"configurationHash\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"modelId\":\"synthetic-日本語\",\"taskByteLimit\":65536}","targetRecordId":"item:c7720000-0000-4000-8000-000000000007"} 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-records.test.ts > portable continuation contracts > refuses a changed identity, stage, resource limit or authority-bearing command {"stage":"context","requestId":"c7720000-0000-4000-8000-000000000006","parent":{"parentRequestId":"c7720000-0000-4000-8000-000000000001","parentActorId":"c7720000-0000-4000-8000-000000000002","parentIntentSha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","sourceId":"c7720000-0000-4000-8000-000000000003","sourceSha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","throughSequence":4,"segmentResultsManifestSha256":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},"frameByteLimit":4096,"intentText":"{\"schemaVersion\":1,\"sourceId\":\"c7720000-0000-4000-8000-000000000003\",\"sourceSha256\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"connectionId\":\"c7720000-0000-4000-8000-000000000004\",\"configurationRevisionId\":\"c7720000-0000-4000-8000-000000000005\",\"configurationHash\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"modelId\":\"synthetic-日本語\",\"taskByteLimit\":65536}","targetRecordId":"item:c7720000-0000-4000-8000-000000000007"}
+AssertionError: expected [Function] to throw an error
+ ❯ src/test/engagement-synthesis-continuation-records.test.ts:27:69
+     25|     { ...command, execute: true }, { ...command, parent: { ...parent, …
+     26|     "refuses a changed identity, stage, resource limit or authority-be…
+     27|       expect(() => synthesisContinuationCommandSchema.parse(value)).to…
+       |                                                                     ^
+     28|     });
+     29|   it("keeps the preview separate from meaning or complete contribution…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+   Start at  00:22:01
+   Duration  610ms (transform 38ms, setup 54ms, import 60ms, tests 15ms, environment 323ms)
+
