@@ -1,5 +1,11 @@
 # Execution permission recovery and remaining acceptance
 
+Later evidence on `8ca7dc23` confirms the attempt-limit correction and a fresh
+browser-to-worker handoff. It also identifies this note's `a0a2c622` request as
+the preserved failed October 2 plan. Read the
+[fresh request record](EXECUTION_BROWSER_8CA7.md) for that qualification and the
+remaining visual acceptance limits. The observations below retain their date.
+
 This is partial engineering evidence, recorded October 6, 2026 Pacific time.
 The production build is `00b849e75a3145f1f99d701520bfeddc3ffe18c8`, version
 0.66.0, served on port 3479 from the execution-controls worktree. The Next
