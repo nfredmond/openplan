@@ -1,8 +1,9 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { readPlanContextRecovery } from "@/lib/land-use-plans/plan-context-recovery";
 import { LandUsePlanWorkbench } from "@/components/land-use-plans/land-use-plan-workbench";
+import { syntheticPlanContext } from "./fixtures/land-use-plans/plan-context";
 
 const refreshMock = vi.fn();
 
@@ -21,7 +22,7 @@ vi.mock("@/components/models/study-area-picker", () => ({ StudyAreaPicker: () =>
 const WORKBENCH = {
   actorId: "55555555-5555-4555-8555-555555555555", descriptorHash: "a".repeat(64),
   plan: {
-    workspace_id: "66666666-6666-4666-8666-666666666666", plan_kind_key: "general",
+    descriptor_id: "local-unconfigured", workspace_id: "66666666-6666-4666-8666-666666666666", plan_kind_key: "general",
     id: "11111111-1111-4111-8111-111111111111",
     title: "County plan",
     authority_label: "County planning agency",
@@ -42,6 +43,7 @@ const WORKBENCH = {
     sourceUrls: [],
   },
   canWrite: true,
+  isHistoricalVersion: false,
   versions: [{ id: "22222222-2222-4222-8222-222222222222", version_number: 1, version_kind: "original", draft_revision: 7, state: "working", applicable_requirement_keys: [], content_hash: null, frozen_at: null, published_report_id: null }],
   activeVersion: { id: "22222222-2222-4222-8222-222222222222", version_number: 1, version_kind: "original", draft_revision: 7, state: "working", applicable_requirement_keys: [], content_hash: null, frozen_at: null, published_report_id: null },
   nodes: [
@@ -145,5 +147,103 @@ describe("LandUsePlanWorkbench content editing", () => {
     expect(await screen.findByText("Complete applicable sections: new_required")).toBeVisible();
     expect(screen.queryByText(/Complete applicable sections:.*locally_defined/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Freeze public draft" })).toBeDisabled();
+  });
+
+  it.each(["retained", "staff_assessed", "legacy"] as const)("separates %s reviewed identity and context from current request recovery", async custody => {
+    const context = syntheticPlanContext();
+    if (custody === "staff_assessed") {
+      const first = context.assessment.authorities[0];
+      first.jurisdiction = { country: "NZ", subdivision: "WGN" };
+      first.sourceUrls = ["https://example.test/authority"];
+      context.assessment.authorities.push({ ...first, id: "20000000-0000-4000-8000-000000000099", label: "SYNTHETIC consultation body", jurisdiction: null, sourceUrls: [] });
+      context.assessment.applicability = { status: "staff_assessed", explanation: "SYNTHETIC reviewed source finding", authorityIds: [first.id], sourceUrls: ["https://example.test/assessment"] };
+    }
+    const currentContext = syntheticPlanContext(); currentContext.place.label = "SYNTHETIC later area";
+    const newer = { ...WORKBENCH.activeVersion, id: "77777777-7777-4777-8777-777777777777", version_number: 2 };
+    const frozen = { ...WORKBENCH,
+      canWrite: false, isHistoricalVersion: true,
+      plan: { ...WORKBENCH.plan, title: "SYNTHETIC later title", descriptor_id: "current-edition", current_working_version_id: newer.id },
+      activeVersion: { ...WORKBENCH.activeVersion, state: "adopted" },
+      versions: [newer, { ...WORKBENCH.activeVersion, state: "adopted" }],
+      descriptor: { ...WORKBENCH.descriptor, id: "reviewed-edition", terminology: { ...WORKBENCH.descriptor.terminology, plan: "Reviewed plan wording" },
+        processSteps: [{ key: "setup", label: "Saved plan area", required: true, sourceUrls: [] }] },
+      frozenVersion: { plan: { id: WORKBENCH.plan.id, descriptorId: "reviewed-edition", planKindKey: "community",
+        title: "SYNTHETIC reviewed title", authorityLabel: "SYNTHETIC reviewed authority", geographyLabel: "SYNTHETIC reviewed area" },
+        descriptorCustody: custody !== "legacy" ? "frozen" : "not_retained",
+        context: custody !== "legacy" ? { status: "retained", context } : { status: "legacy" } },
+    };
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      if (init?.method) throw new Error("Reading reviewed context must not write");
+      return url.endsWith("/context") ? Response.json({ actorId: frozen.actorId, workspaceId: frozen.plan.workspace_id, planId: frozen.plan.id,
+        contextState: { status: "retained", context: currentContext }, contextHash: "b".repeat(64), descriptorId: frozen.plan.descriptor_id,
+        planKindKey: frozen.plan.plan_kind_key, versionId: newer.id, canWrite: true }) : Response.json(frozen);
+    }));
+    render(<LandUsePlanWorkbench planId={frozen.plan.id} versionId={frozen.activeVersion.id}/>);
+    expect(await screen.findByRole("heading", { level: 1, name: "SYNTHETIC reviewed title" })).toBeVisible();
+    expect(fetch).toHaveBeenCalledWith(`/api/land-use-plans/${frozen.plan.id}?versionId=${frozen.activeVersion.id}`, { cache: "no-store" });
+    const history = screen.getByRole("navigation", { name: "Plan version history" });
+    expect(within(history).getByText("Viewing version 1")).toHaveAttribute("aria-current", "page");
+    expect(within(history).getByText(/This historical view is read-only/)).toBeVisible();
+    for (const [name, href] of [["Open version 2 in a new tab", `/land-use-plans/${frozen.plan.id}?versionId=${newer.id}`], ["Open the current plan in a new tab", `/land-use-plans/${frozen.plan.id}`]]) {
+      const link = within(history).getByRole("link", { name });
+      expect(link).toHaveAttribute("href", href); expect(link).toHaveAttribute("target", "_blank"); expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    }
+    expect(screen.getByRole("button", { name: "Publish frozen plan" })).toBeDisabled();
+    expect(screen.queryByRole("heading", { level: 1, name: frozen.plan.title })).not.toBeInTheDocument();
+    expect(screen.getByText("SYNTHETIC reviewed authority · SYNTHETIC reviewed area")).toBeVisible();
+    expect(within(screen.getByRole("heading", { name: "Workflow" }).closest("section")!).getByText(/Saved plan area/)).toHaveTextContent(custody === "legacy" ? "Open" : "Complete");
+    const panel = screen.getByRole("region", { name: "Context retained with this version" });
+    expect(within(panel).queryByText("SYNTHETIC later area")).not.toBeInTheDocument();
+    if (custody !== "legacy") {
+      expect(within(panel).getByText(context.place.label)).toBeVisible();
+      expect(within(panel).getByText(context.assessment.authorities[0].label)).toBeVisible();
+      expect(within(panel).getByText(context.assessment.applicability.explanation)).toBeVisible();
+      if (custody === "staff_assessed") {
+        expect(within(panel).getByText("Staff assessed applicability.")).toBeVisible();
+        expect(within(panel).getByText("Assessed bodies: SYNTHETIC responsible body")).toBeVisible();
+        expect(within(panel).getByText("NZ / WGN")).toBeVisible();
+        for (const name of ["https://example.test/authority", "https://example.test/assessment"]) expect(within(panel).getByRole("link", { name })).toHaveAttribute("href", name);
+      } else expect(within(panel).getByText("Applicability remains unresolved.")).toBeVisible();
+      expect(screen.getByText(/checklist, terminology and source-review dates were saved with this version/)).toBeVisible();
+    } else {
+      expect(within(panel).getByText(/did not retain its plan context/)).toBeVisible();
+      expect(within(panel).queryByText(context.place.label)).not.toBeInTheDocument();
+      expect(screen.getByText(/did not retain its checklist or source-review dates/)).toBeVisible();
+    }
+    expect(screen.getByText("Current plan context and request recovery").closest("details")).not.toHaveAttribute("open");
+    await screen.findByText("Current saved context");
+    await screen.findByText("Saved context loaded.");
+    expect(screen.getByText("Plan area: SYNTHETIC later area")).not.toBeVisible();
+    expect(screen.getByRole("button", { name: "Save plan context" })).toBeDisabled();
+  });
+
+  it("keeps unsaved draft text in place when history opens in another tab", async () => {
+    const historicalId = "77777777-7777-4777-8777-777777777777";
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ ...WORKBENCH, versions: [
+      ...WORKBENCH.versions, { ...WORKBENCH.activeVersion, id: historicalId, version_number: 0, state: "superseded" },
+    ] })));
+    render(<LandUsePlanWorkbench planId={WORKBENCH.plan.id}/>);
+    const text = await screen.findByLabelText("Draft text");
+    fireEvent.change(text, { target: { value: "SYNTHETIC unsaved edit" } });
+    const link = screen.getByRole("link", { name: "Open version 0 in a new tab" });
+    expect(link).toHaveAttribute("href", `/land-use-plans/${WORKBENCH.plan.id}?versionId=${historicalId}`);
+    expect(link).toHaveAttribute("target", "_blank");
+    fireEvent.click(link);
+    expect(text).toHaveValue("SYNTHETIC unsaved edit");
+    expect(writes).toEqual([]);
+  });
+
+  it.each([true, false])("refuses form writes in a read-only working view, historical=%s", async historical => {
+    vi.stubGlobal("fetch", vi.fn(async (_url: string, init?: RequestInit) => {
+      if (init?.method) { writes.push(JSON.parse(String(init.body))); return Response.json({ updated: true }); }
+      return Response.json({ ...WORKBENCH, canWrite: false, isHistoricalVersion: historical });
+    }));
+    render(<LandUsePlanWorkbench planId={WORKBENCH.plan.id}/>);
+    const add = await screen.findByRole("button", { name: "Add content node" });
+    for (const name of ["Add content node", "Add implementation action", "Add relationship"]) expect(screen.getByRole("button", { name })).toBeDisabled();
+    // A synthetic submit bypasses the disabled button and reaches the shared write refusal.
+    expect(fireEvent.submit(add.closest("form")!)).toBe(false);
+    expect(await screen.findByText("This plan view is read-only.")).toBeVisible();
+    expect(writes).toEqual([]);
   });
 });

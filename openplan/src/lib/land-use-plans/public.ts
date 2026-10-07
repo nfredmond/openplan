@@ -1,28 +1,7 @@
 import { getJurisdictionPlanDescriptor } from "./registry";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { z } from "zod";
-import { hashFrozenRecord } from "./versioning";
 import { readFrozenPlanDescriptor } from "./descriptor-snapshot";
-import { readFrozenPlanContext } from "./context-snapshot";
-
-const frozenIdentitySchema = z.object({
-  plan: z.object({
-    id: z.string().uuid(), descriptorId: z.string().min(1), planKindKey: z.string().min(1),
-    title: z.string().min(1), authorityLabel: z.string().min(1), geographyLabel: z.string().min(1),
-  }),
-  version: z.object({ id: z.string().uuid(), versionNumber: z.number().int().positive() }),
-  nodes: z.array(z.unknown()), relationships: z.array(z.unknown()),
-  designations: z.array(z.unknown()), implementationActions: z.array(z.unknown()),
-});
-
-/** Public identity comes from the exact reviewed bytes, never a later draft. */
-function frozenPublicIdentity(snapshot: unknown, planId: string, versionId: string, versionNumber: number, contentHash: string) {
-  const parsed = frozenIdentitySchema.safeParse(snapshot);
-  if (!parsed.success || parsed.data.plan.id !== planId || parsed.data.version.id !== versionId
-    || parsed.data.version.versionNumber !== versionNumber || hashFrozenRecord(snapshot) !== contentHash) return null;
-  if (readFrozenPlanContext(snapshot as Record<string, unknown>).status === "invalid") return null;
-  return parsed.data.plan;
-}
+import { readFrozenPlanIdentity } from "./frozen-identity";
 
 export type PublishedLandUsePlanPacket = {
   descriptorCustody: "frozen" | "not_retained";
@@ -90,7 +69,7 @@ export async function loadPublishedLandUsePlanPacket(
   if (!version?.frozen_snapshot || !version.published_report_id || !version.content_hash) {
     return { ok: false, reason: "not_found" };
   }
-  const identity = frozenPublicIdentity(version.frozen_snapshot, plan.id, version.id, version.version_number, version.content_hash);
+  const identity = readFrozenPlanIdentity(version.frozen_snapshot, plan.id, version.id, version.version_number, version.content_hash);
   if (version.plan_id !== plan.id || !identity) return { ok: false, reason: "incomplete" };
 
   const decisionResult = await service.from("land_use_plan_decisions")
@@ -144,7 +123,7 @@ export async function loadPublicLandUsePlanReviewPacket(
   if (!plan || !version?.frozen_snapshot || version.content_hash !== release.version_content_hash) {
     return { ok: false, reason: "incomplete" };
   }
-  const identity = frozenPublicIdentity(version.frozen_snapshot, plan.id, version.id, version.version_number, version.content_hash);
+  const identity = readFrozenPlanIdentity(version.frozen_snapshot, plan.id, version.id, version.version_number, version.content_hash);
   if (version.plan_id !== plan.id || !identity) return { ok: false, reason: "incomplete" };
   const rules = readFrozenPlanDescriptor(version.frozen_snapshot as Record<string, unknown>, identity.descriptorId, identity.planKindKey);
   if (rules.status === "invalid") return { ok: false, reason: "incomplete" };

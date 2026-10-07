@@ -8,6 +8,8 @@ const state = vi.hoisted(() => ({
   rows: {} as Record<string, Array<Record<string, unknown>>>,
   queries: [] as Array<{ table: string; projection: string; filters: unknown[][] }>,
   rpc: vi.fn(), access: {} as Record<string, unknown>,
+  frozenReadError: false,
+  frozenOverride: undefined as Record<string, unknown> | null | undefined,
 }));
 
 function from(table: string) {
@@ -24,7 +26,11 @@ function from(table: string) {
     select(projection: string) { query.projection = projection; return chain; },
     eq(key: string, value: unknown) { query.filters.push([key, value]); return chain; },
     order() { return chain; }, limit() { return chain; }, in() { return chain; }, is() { return chain; },
-    async maybeSingle() { return { data: data()[0] ?? null, error: null }; },
+    async maybeSingle() {
+      if (table === "land_use_plan_versions" && state.frozenReadError) return { data: null, error: { message: "Synthetic read failure" } };
+      if (table === "land_use_plan_versions" && state.frozenOverride !== undefined) return { data: state.frozenOverride ? project(state.frozenOverride, query.projection) : null, error: null };
+      return { data: data()[0] ?? null, error: null };
+    },
     then(resolve: (value: { data: Array<Record<string, unknown>>; error: null }) => unknown) { return Promise.resolve(resolve({ data: data(), error: null })); },
   };
   return chain;
@@ -54,6 +60,7 @@ function rehash() {
 }
 
 beforeEach(() => {
+  state.frozenReadError = false; state.frozenOverride = undefined;
   state.queries.length = 0; state.rpc.mockReset().mockResolvedValue({ data: "synthetic-decision", error: null });
   snapshot = {
     descriptorSnapshot: structuredClone(getJurisdictionPlanDescriptor("local-unconfigured")!),
@@ -66,12 +73,132 @@ beforeEach(() => {
     authority_label: snapshot.plan.authorityLabel, geography_label: snapshot.plan.geographyLabel } };
   state.rows = {
     land_use_plans: [{ plan_context: null, plan_context_hash: null, descriptor_id: "local-unconfigured", plan_kind_key: "community", current_working_version_id: versionId }],
-    land_use_plan_versions: [{ id: versionId, version_number: 1, state: "public_review", frozen_snapshot: snapshot, published_report_id: null }],
+    land_use_plan_versions: [{ id: versionId, plan_id: planId, workspace_id: workspaceId, version_number: 1, state: "public_review", frozen_snapshot: snapshot, published_report_id: null }],
     kb_documents: [{ id: documentId, title: "Synthetic supporting document" }],
     land_use_plan_process_records: [{ process_key: "local_process", status: "complete", due_on: null, completed_on: "2026-10-07", evidence_document_id: documentId }],
     land_use_plan_review_releases: [{ id: releaseId, version_id: versionId, round_number: 1, outcome_snapshot: {}, outcome_hash: "b".repeat(64), closed_at: "2026-10-07T00:00:00Z" }],
   };
   rehash();
+});
+
+describe("frozen workbench rules and context", () => {
+  const read = () => detail(new NextRequest("http://localhost"), { params: Promise.resolve({ planId }) });
+
+  it("opens a selected historical version read-only while retaining an editable current draft", async () => {
+    Object.assign(state.access.plan as object, { current_working_version_id: documentId });
+    state.rows.land_use_plan_versions.push({ id: documentId, version_number: 2, state: "working" });
+    for (const selected of [undefined, documentId, versionId]) {
+      state.queries.length = 0;
+      const response = await detail(new NextRequest(`http://localhost${selected ? `?versionId=${selected}` : ""}`), { params: Promise.resolve({ planId }) });
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ activeVersion: { id: selected ?? documentId },
+        canWrite: selected !== versionId, isHistoricalVersion: selected === versionId });
+      expect(state.queries[0].filters).toEqual([["plan_id", planId]]);
+      expect(state.queries.find(query => query.table === "land_use_plan_content_nodes")?.filters).toEqual([["version_id", selected ?? documentId]]);
+    }
+  });
+
+  it("does not grant write access when the current version is selected by a reader", async () => {
+    state.access.canWrite = false;
+    const response = await detail(new NextRequest(`http://localhost?versionId=${versionId}`), { params: Promise.resolve({ planId }) });
+    expect(await response.json()).toMatchObject({ canWrite: false, isHistoricalVersion: false });
+  });
+
+  it("refuses an unavailable version without falling back to the current plan", async () => {
+    const response = await detail(new NextRequest(`http://localhost?versionId=${documentId}`), { params: Promise.resolve({ planId }) });
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: "The requested version is not available for this plan" });
+    expect(state.queries).toHaveLength(1);
+    expect(state.queries[0].filters).toEqual([["plan_id", planId]]);
+  });
+
+  it.each(["", "invalid", `${versionId}&versionId=${versionId}`])("refuses an invalid or repeated version query %s before reading records", async query => {
+    const response = await detail(new NextRequest(`http://localhost?versionId=${query}`), { params: Promise.resolve({ planId }) });
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Choose one valid plan version" });
+    expect(state.queries).toHaveLength(0);
+  });
+
+  it.each(["public_review", "adopted", "superseded", "repealed"])("reads the saved %s edition independently of current plan identity and installed rules", async stateName => {
+    snapshot.descriptorSnapshot!.terminology.plan = "SYNTHETIC reviewed wording";
+    snapshot.descriptorSnapshot!.id = "retired-reviewed-edition";
+    snapshot.plan.descriptorId = snapshot.descriptorSnapshot!.id;
+    snapshot.planContext = syntheticPlanContext(); rehash();
+    state.rows.land_use_plan_versions[0].state = stateName;
+    Object.assign(state.access.plan as object, { descriptor_id: "removed-current-edition", title: "Later draft title", geography_label: "Later area" });
+    const response = await read(); expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toMatchObject({ descriptor: snapshot.descriptorSnapshot, descriptorHash: hashFrozenRecord(snapshot.descriptorSnapshot),
+      frozenVersion: { plan: snapshot.plan, descriptorCustody: "frozen", context: { status: "retained", context: snapshot.planContext } },
+      plan: { descriptor_id: "removed-current-edition", title: "Later draft title" } });
+    const queries = state.queries.filter(query => query.table === "land_use_plan_versions");
+    expect(queries[0].projection).not.toContain("frozen_snapshot");
+    expect(queries[1].projection.split(", ")).toEqual(["id", "plan_id", "workspace_id", "version_number", "state", "content_hash", "frozen_snapshot"]);
+    expect(queries[1].filters).toEqual([["id", versionId], ["plan_id", planId], ["workspace_id", workspaceId]]);
+    expect(body.versions[0]).not.toHaveProperty("frozen_snapshot");
+  });
+
+  it("labels an unretained historical checklist and context without backfilling them", async () => {
+    delete snapshot.descriptorSnapshot; rehash();
+    const response = await read(); expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ descriptor: getJurisdictionPlanDescriptor(snapshot.plan.descriptorId),
+      frozenVersion: { descriptorCustody: "not_retained", context: { status: "legacy" } } });
+    expect(snapshot).not.toHaveProperty("descriptorSnapshot"); expect(snapshot).not.toHaveProperty("planContext");
+  });
+  it("keeps reviewed wording and dates when the same family remains installed", async () => {
+    snapshot.descriptorSnapshot!.disclosure = "SYNTHETIC reviewed scope";
+    snapshot.descriptorSnapshot!.verifiedAt = "2025-01-01"; rehash();
+    const response = await read(); expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ descriptor: snapshot.descriptorSnapshot, descriptorHash: hashFrozenRecord(snapshot.descriptorSnapshot) });
+  });
+
+  it("discloses a missing legacy reference without substituting the current plan's descriptor", async () => {
+    delete snapshot.descriptorSnapshot; snapshot.plan.descriptorId = "missing-legacy-reference"; rehash();
+    const response = await read(); expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "This version did not retain a checklist, and its descriptor reference is not installed" });
+  });
+
+  it.each(["plan", "version", "number", "rules", "kind", "context", "unhashed-content"])("refuses %s corruption before loading workbench records", async fault => {
+    if (fault === "plan") snapshot.plan.id = documentId;
+    if (fault === "version") snapshot.version.id = documentId;
+    if (fault === "number") snapshot.version.versionNumber = 99;
+    if (fault === "rules") snapshot.descriptorSnapshot!.id = "another-family";
+    if (fault === "kind") snapshot.plan.planKindKey = "unsupported-kind";
+    if (fault === "context") snapshot.planContext = { ...syntheticPlanContext(), savedBy: "invalid" };
+    if (fault === "unhashed-content") snapshot.nodes.push({ body: "Changed since review" });
+    else rehash();
+    expect((await read()).status).toBe(409);
+    expect(state.queries.every(query => query.table === "land_use_plan_versions")).toBe(true);
+  });
+
+  it.each([null, { id: documentId }, { plan_id: documentId }, { workspace_id: documentId },
+    { version_number: 99 }, { state: "working" }, { content_hash: null }, { content_hash: "c".repeat(64) }, { frozen_snapshot: null }])("refuses a missing or changed selected row %j", async patch => {
+    state.frozenOverride = patch ? { ...state.rows.land_use_plan_versions[0], ...patch } : null;
+    expect((await read()).status).toBe(409);
+  });
+
+  it("distinguishes a frozen read failure from a missing record", async () => {
+    state.frozenReadError = true;
+    const response = await read(); expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "Failed to load the frozen plan version" });
+  });
+  it.each(["id", "number", "state"])("binds a self-consistent fresh %s to the version selected by the workbench", async field => {
+    if (field === "id") snapshot.version.id = documentId;
+    if (field === "number") snapshot.version.versionNumber = 99;
+    rehash();
+    state.frozenOverride = { ...state.rows.land_use_plan_versions[0],
+      id: snapshot.version.id, version_number: snapshot.version.versionNumber, state: field === "state" ? "adopted" : "public_review" };
+    expect((await read()).status).toBe(409);
+  });
+  it("refuses a different valid snapshot returned after selecting the version hash", async () => {
+    const changed = structuredClone(snapshot); changed.plan.title = "SYNTHETIC different frozen text";
+    state.frozenOverride = { ...state.rows.land_use_plan_versions[0], frozen_snapshot: changed, content_hash: hashFrozenRecord(changed) };
+    expect((await read()).status).toBe(409);
+  });
+  it("refuses an unrecognized version state", async () => {
+    state.rows.land_use_plan_versions[0].state = "unrecognized";
+    expect((await read()).status).toBe(409);
+  });
 });
 
 describe("freezing a descriptor with authored content", () => {
@@ -93,7 +220,7 @@ describe("freezing a descriptor with authored content", () => {
     expect(state.queries[0].filters).toEqual([["id", versionId], ["plan_id", planId], ["state", "working"]]);
     const response = await detail(new NextRequest("http://localhost"), { params: Promise.resolve({ planId }) });
     expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({ actorId: documentId, plan: { workspace_id: workspaceId },
+    expect(await response.json()).toMatchObject({ actorId: documentId, frozenVersion: null, plan: { workspace_id: workspaceId },
       descriptorHash: hashFrozenRecord(getJurisdictionPlanDescriptor("local-unconfigured")), activeVersion: { draft_revision: 7 } });
   });
   it("sorts public policy links without mutating rows and retains only projected fields", async () => {

@@ -11,7 +11,7 @@ function fixture() {
   const version = { id: '10000000-0000-4000-8000-000000000001', draft_revision: 7, version_number: 1, version_kind: 'original', state: 'working', applicable_requirement_keys: ['local'], content_hash: null, frozen_at: null, published_report_id: null };
   const node = (id: string, title: string, kind = 'section') => ({ id, title, node_kind: kind, parent_node_id: null, requirement_key: kind === 'section' ? 'local' : null, body: `Saved ${title}`, sort_order: 0, evidence_document_id: null, evidence_url: null });
   return {
-    plan: { plan_kind_key: 'community', id: '10000000-0000-4000-8000-000000000002', workspace_id: '10000000-0000-4000-8000-000000000003', title: 'EXERCISE ONLY draft custody', authority_label: 'Local planning', geography_label: 'Fixture geography', geography_geojson: null, current_working_version_id: version.id, current_adopted_version_id: null },
+    plan: { descriptor_id: 'local-unconfigured', plan_kind_key: 'community', id: '10000000-0000-4000-8000-000000000002', workspace_id: '10000000-0000-4000-8000-000000000003', title: 'EXERCISE ONLY draft custody', authority_label: 'Local planning', geography_label: 'Fixture geography', geography_geojson: null, current_working_version_id: version.id, current_adopted_version_id: null },
     descriptor: { id: 'local-unconfigured', configured: false, disclosure: 'Local legal requirements are not configured.', verifiedAt: '', reviewDueAt: '', terminology: { plan: 'plan', section: 'section', adoptionInstrument: 'instrument', implementationReport: 'report' }, requirements: [{ key: 'local', label: 'Local content', applicability: 'locally_defined', sourceUrls: [] }], processSteps: [], sourceUrls: [] },
     actorId: '10000000-0000-4000-8000-000000000004', descriptorHash: 'a'.repeat(64), canWrite: true, versions: [version], activeVersion: version,
     nodes: [node('section-a', 'First section'), node('section-b', 'Second section'), node('policy-a', 'Policy', 'policy')],
@@ -156,7 +156,7 @@ describe('Live workbench draft custody', () => {
   it('blocks freezing until all edited content is actually saved', async () => {
     const { fields, buttons, writes } = await setup();
     const freeze = screen.getByRole('button', { name: 'Freeze public draft' });
-    expect(freeze).toBeEnabled();
+    await waitFor(() => expect(freeze).toBeEnabled());
     fireEvent.change(fields[1], { target: { value: 'Unsubmitted section' } });
     expect(freeze).toBeDisabled();
     expect(screen.queryByText('The public draft is ready to freeze.')).not.toBeInTheDocument();
@@ -165,7 +165,7 @@ describe('Live workbench draft custody', () => {
     expect(writes).toHaveLength(0);
     fireEvent.click(buttons[1]);
     await waitFor(() => expect(refresh).toHaveBeenCalled());
-    expect(freeze).toBeEnabled();
+    await waitFor(() => expect(freeze).toBeEnabled());
     expect(screen.getByText('The public draft is ready to freeze.')).toBeVisible();
     expect(screen.getByRole('status')).toHaveTextContent('Context, section and content-node changes are saved');
   });
