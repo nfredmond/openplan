@@ -57,6 +57,12 @@ ESLint and the product-direction check pass. This checkpoint does not include a
 new production build or browser journey. Full GitHub QA, shuffled tests, live
 isolation and restore checks remain separate requirements on the pushed head.
 
+The follow-up registers the native transaction suite in `test:rls-live`, whose
+file list is explicit. The first pushed checkpoint omitted that registration;
+its default unit run skips these two native exercises. The local isolated-stack
+evidence above remains valid, but GitHub's live-isolation check must run the
+updated command before it can cover this transaction.
+
 Four deliberate no-op controls survive. The final runs catch 71 targeted faults
 in permission, source identity, exact replay, receipt comparison, query scope,
 field projection, date and text validation, status ordering, locking, stored
