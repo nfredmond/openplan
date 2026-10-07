@@ -16,7 +16,37 @@ fails the focus assertion. The source is restored after each control.
 
 These tests cover DOM focus and retained contribution text, and assert that
 inspection sends no write requests. They do not prove screen-reader speech,
-mobile layout, meaningful thematic interpretation or human acceptance. The
-identified production build and T3 desktop/390px checks of the correction remain
-pending. The broader nonempty theme/citation and response-to-decision journey
+mobile layout, meaningful thematic interpretation or human acceptance. The broader nonempty theme/citation and response-to-decision journey
 remains open.
+
+## Corrected production acceptance
+
+Build 8ed6f3980191c6ce16fa36d886e522511de2838d passes production compilation
+and TypeScript with the checkout unchanged. Its isolated server on port 3500
+reports that commit; PID 3001010 resolves to this worktree's application package.
+The database URL points to the owned isolated stack on port 29821.
+
+T3 desktop entry starts at the application root, follows Overview and Engagement,
+selects the synthetic thematic workspace and campaign, then opens Analysis,
+saved source cc77a4d3 and staff review bf07f2a2. At 1440 by 900 CSS pixels,
+first and repeated inspection of comment 1 focus Selected contribution evidence.
+Shift+Tab twice returns to Inspect comment 1; Enter focuses the evidence again.
+The original contribution's final line remains in the retained text.
+
+At 390 by 844 CSS pixels, the campaign reload and saved-source navigation restore
+the selected review. First inspection, repeated inspection and Shift+Tab followed
+by Enter for comment 2 focus the retained evidence. Document width stays 390 CSS
+pixels. Both screenshots were inspected. T3 stores scaled images, 1280 by 800
+for desktop and 566 by 1224 for mobile; these are not native viewport pixels.
+
+A compact health-page snapshot exposes all nine accumulated console entries
+without dropping entries. Only one belongs to this build's journey: a CSS preload
+warning at 21:51:55Z. The earlier report-test exception and expected HTTP refusals
+remain retained history from other builds. No new JavaScript exception appears
+in this focus journey. The first long-page snapshot omitted all console entries
+and was not used to infer a clean console.
+
+No contribution, synthesis, approval, provider request or public response was
+created or changed. Workspace selection is the normal user setting change. This
+read-only focus correction produces no new export artifact. The pending parent
+integration and exact-head GitHub checks remain separate merge requirements.

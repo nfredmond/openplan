@@ -1,0 +1,147 @@
+{
+  "commit": "8ed6f3980191c6ce16fa36d886e522511de2838d",
+  "server": {
+    "port": 3500,
+    "pid": 3001010,
+    "cwd": "/home/nathaniel/.local/state/openplan/engagement-evidence-refocus-20261007/openplan"
+  },
+  "journey": "Root > Overview > Engagement > workspace picker > synthetic campaign > Analysis > saved source > staff review; 390px reload > saved source restores selected review",
+  "checks": {
+    "refocusDesktopFirst": {
+      "toolIcon": {
+        "_tag": "website",
+        "pageUrl": "http://openplan-history.localhost:3500/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7?tab=analysis"
+      },
+      "value": {
+        "documentWidth": 1440,
+        "finalLine": true,
+        "label": "Selected contribution evidence",
+        "tag": "SECTION",
+        "width": 1440
+      }
+    },
+    "refocusDesktopRepeated": {
+      "toolIcon": {
+        "_tag": "website",
+        "pageUrl": "http://openplan-history.localhost:3500/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7?tab=analysis"
+      },
+      "value": {
+        "finalLine": true,
+        "label": "Selected contribution evidence",
+        "tag": "SECTION"
+      }
+    },
+    "refocusDesktopKeyboard": {
+      "toolIcon": {
+        "_tag": "website",
+        "pageUrl": "http://openplan-history.localhost:3500/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7?tab=analysis"
+      },
+      "value": {
+        "finalLine": true,
+        "label": "Selected contribution evidence",
+        "tag": "SECTION"
+      }
+    },
+    "refocusMobileFirst": {
+      "toolIcon": {
+        "_tag": "website",
+        "pageUrl": "http://openplan-history.localhost:3500/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7?tab=analysis"
+      },
+      "value": {
+        "documentWidth": 390,
+        "label": "Selected contribution evidence",
+        "tag": "SECTION",
+        "text": "Comment 2SYNTHETIC browser test. No apoyo esta alternativa. Mantengan mi comentario completo y separado; esta prueba no representa una opinión pública real.Earlier machine contextNo contextual notes were retain",
+        "width": 390
+      }
+    },
+    "refocusMobileRepeated": {
+      "toolIcon": {
+        "_tag": "website",
+        "pageUrl": "http://openplan-history.localhost:3500/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7?tab=analysis"
+      },
+      "value": {
+        "documentWidth": 390,
+        "label": "Selected contribution evidence",
+        "tag": "SECTION",
+        "width": 390
+      }
+    },
+    "refocusMobileKeyboard": {
+      "toolIcon": {
+        "_tag": "website",
+        "pageUrl": "http://openplan-history.localhost:3500/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7?tab=analysis"
+      },
+      "value": {
+        "documentWidth": 390,
+        "label": "Selected contribution evidence",
+        "tag": "SECTION",
+        "width": 390
+      }
+    },
+    "refocusDiagnostics": {
+      "console": [
+        {
+          "level": "warning",
+          "text": "The resource http://openplan-history.localhost:3498/_next/static/css/4dba93c7b43fbc3d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+          "timestamp": "2026-10-07T21:15:30.959Z",
+          "source": "javascript"
+        },
+        {
+          "level": "warning",
+          "text": "The resource http://openplan-history.localhost:3499/_next/static/css/4dba93c7b43fbc3d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+          "timestamp": "2026-10-07T21:28:48.400Z",
+          "source": "javascript"
+        },
+        {
+          "level": "error",
+          "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3499/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'endsWith')\n    at window.fetch (<anonymous>:1:228)\n    at n (http://openplan-history.localhost:3499/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3499/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://…",
+          "timestamp": "2026-10-07T21:30:46.019Z",
+          "source": "console"
+        },
+        {
+          "level": "warning",
+          "text": "The resource http://openplan-history.localhost:3498/_next/static/css/4dba93c7b43fbc3d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+          "timestamp": "2026-10-07T21:33:09.931Z",
+          "source": "javascript"
+        },
+        {
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": "2026-10-07T21:36:38.811Z",
+          "source": "network"
+        },
+        {
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": "2026-10-07T21:36:38.903Z",
+          "source": "network"
+        },
+        {
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 409 (Conflict)",
+          "timestamp": "2026-10-07T21:36:39.016Z",
+          "source": "network"
+        },
+        {
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+          "timestamp": "2026-10-07T21:36:39.107Z",
+          "source": "network"
+        },
+        {
+          "level": "warning",
+          "text": "The resource http://openplan-history.localhost:3500/_next/static/css/4dba93c7b43fbc3d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+          "timestamp": "2026-10-07T21:51:55.212Z",
+          "source": "javascript"
+        }
+      ],
+      "omitted": [
+        "accessibilityTree (use interactiveElements locators or preview_evaluate)",
+        "console entries text after 500 characters",
+        "160 older network entries",
+        "160 older action timeline entries"
+      ]
+    }
+  }
+}
