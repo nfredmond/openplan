@@ -1,0 +1,85 @@
+{
+  "scope": "Simulated native RPC and HTTP authority checks; not native RLS or browser acceptance.",
+  "cases": [
+    {
+      "name": "harmless-comment",
+      "path": "openplan/src/lib/engagement/synthesis-execution-server.ts",
+      "test": "src/test/engagement-synthesis-execution-server.test.ts",
+      "pattern": null,
+      "expected": "pass",
+      "exitCode": 0,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-harmless-comment.log"
+    },
+    {
+      "name": "wrong-original-actor",
+      "path": "openplan/src/lib/engagement/synthesis-execution-server.ts",
+      "test": "src/test/engagement-synthesis-execution-server.test.ts",
+      "pattern": "refuses changed actorId",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-wrong-original-actor.log"
+    },
+    {
+      "name": "wrong-source",
+      "path": "openplan/src/lib/engagement/synthesis-execution-server.ts",
+      "test": "src/test/engagement-synthesis-execution-server.test.ts",
+      "pattern": "refuses changed sourceSha256",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-wrong-source.log"
+    },
+    {
+      "name": "wrong-receipt-hash",
+      "path": "openplan/src/lib/engagement/synthesis-execution-server.ts",
+      "test": "src/test/engagement-synthesis-execution-server.test.ts",
+      "pattern": "receipt with different intentSha256",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-wrong-receipt-hash.log"
+    },
+    {
+      "name": "lost-post-write-access",
+      "path": "openplan/src/lib/engagement/synthesis-execution-server.ts",
+      "test": "src/test/engagement-synthesis-execution-server.test.ts",
+      "pattern": "after current access is revoked",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-lost-post-write-access.log"
+    },
+    {
+      "name": "missing-browser-pin",
+      "path": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/execution/route.ts",
+      "test": "src/test/engagement-synthesis-execution-route.test.ts",
+      "pattern": "user-change",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-missing-browser-pin.log"
+    },
+    {
+      "name": "unregistered-agent-write",
+      "path": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/execution/route.ts",
+      "test": "src/test/engagement-synthesis-execution-route.test.ts",
+      "pattern": "unsupported agent authority",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-unregistered-agent-write.log"
+    },
+    {
+      "name": "retry-count-widened",
+      "path": "openplan/src/lib/engagement/synthesis-execution-records.ts",
+      "test": "src/test/engagement-synthesis-execution-server.test.ts",
+      "pattern": "rejects invalid authority",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-retry-count-widened.log"
+    }
+  ]
+}

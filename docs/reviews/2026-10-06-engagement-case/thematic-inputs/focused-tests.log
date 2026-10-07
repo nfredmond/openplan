@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+
+ Test Files  3 passed (3)
+      Tests  85 passed (85)
+   Start at  01:04:50
+   Duration  12.95s (transform 303ms, setup 120ms, import 513ms, tests 11.64s, environment 329ms)
+

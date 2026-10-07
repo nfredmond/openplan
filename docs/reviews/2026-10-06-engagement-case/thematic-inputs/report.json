@@ -1,0 +1,86 @@
+{
+  "checkedAt": 1791360406.3408382,
+  "results": [
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "expected": "pass"
+    },
+    {
+      "case": "inspected-intent",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "altered inspected requestIntentSha256",
+      "markerMatched": true
+    },
+    {
+      "case": "inspected-request",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "altered inspected thematicSha256",
+      "markerMatched": true
+    },
+    {
+      "case": "inspected-choice",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "altered inspected choiceText",
+      "markerMatched": true
+    },
+    {
+      "case": "late-access",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "late access loss",
+      "markerMatched": true
+    },
+    {
+      "case": "receipt-bytes",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "self-hashed substituted",
+      "markerMatched": true
+    },
+    {
+      "case": "receipt-actor",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "altered receipt createdBy",
+      "markerMatched": true
+    },
+    {
+      "case": "preview-hash",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "altered preview choiceSha256",
+      "markerMatched": true
+    },
+    {
+      "case": "choice-sequence",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "different selectionSequence",
+      "markerMatched": true
+    },
+    {
+      "case": "workspace-header",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "changed-workspace",
+      "markerMatched": true
+    },
+    {
+      "case": "agent-refusal",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "unregistered agent marker",
+      "markerMatched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "server": "e96435c973279f3c87908b4abd65b3d50333514596b4714cdffad56c2951e399",
+    "contract": "c5166c7b6e157a72ad269b6d3714984e6de9e3bbd7f711015edeed94770c891f",
+    "route": "3464cb22d136c49dc8e68565703030add3ff777e2716307995a6aa7535fcce6a"
+  }
+}

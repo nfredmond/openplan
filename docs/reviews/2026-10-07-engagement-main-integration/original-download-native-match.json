@@ -1,0 +1,27 @@
+{
+  "native": {
+    "reviewId": "bf07f2a2-24b9-47e2-ad9e-dbff95bace23",
+    "revision": 2,
+    "historyBytes": 1615,
+    "historySha256": "55a26c5c8288230fbd6298608aa647c12fd5979c72b0fd4f28fa55fc97d0ad7f",
+    "proposalBytes": 3726,
+    "proposalSha256": "9c9fde7e9b51b6bdebc8a056ee4142e0c139e03fb8f3574d671a3055a2349ae1",
+    "revisionSha256": "708702b22231e1284363ca17ab92853699e1a4a70eb1af1b7d53af9937bfc1e0"
+  },
+  "downloads": [
+    {
+      "kind": "proposal",
+      "file": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muym08m5-n-thematic-proposal-3620e480-3d20-4934-9d3d-e14fc640e22d.json",
+      "bytes": 3726,
+      "sha256": "9c9fde7e9b51b6bdebc8a056ee4142e0c139e03fb8f3574d671a3055a2349ae1",
+      "matchesNative": true
+    },
+    {
+      "kind": "history",
+      "file": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muym08v8-o-thematic-history-3620e480-3d20-4934-9d3d-e14fc640e22d.json",
+      "bytes": 1615,
+      "sha256": "55a26c5c8288230fbd6298608aa647c12fd5979c72b0fd4f28fa55fc97d0ad7f",
+      "matchesNative": true
+    }
+  ]
+}

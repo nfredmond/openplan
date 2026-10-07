@@ -1,0 +1,85 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-thematic-choices-server.test.ts (20 tests | 1 failed | 19 skipped) 454ms
+     × refuses late access loss before exposing prepared context or writing 452ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-thematic-choices-server.test.ts > retained thematic context choices > refuses late access loss before exposing prepared context or writing
+AssertionError: promise resolved "{ …(4) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "choice": {
++     "contextRequestId": "a0000000-0000-4000-8000-000000000080",
++     "finalCaptureSha256": "ef6e3f0cb9ff47808da1674bfffe8a10305ef20af6ff5c9477b5239f77d090e8",
++     "finalResultSha256": "c108b3f882dee7d966d982736213a582366f2808a9b259d99c4fcd3eb2ec0783",
++     "historyManifestSha256": "15b71930bff61811cfab96e928866cd89cd03ebceef52c0d47ad75e5e9f1e73e",
++     "schemaVersion": 1,
++     "selectionSequence": 100,
++     "targetRecordId": "answer:a0000000-0000-4000-8000-000000000007",
++   },
++   "choiceText": "{\"schemaVersion\":1,\"targetRecordId\":\"answer:a0000000-0000-4000-8000-000000000007\",\"contextRequestId\":\"a0000000-0000-4000-8000-000000000080\",\"selectionSequence\":100,\"historyManifestSha256\":\"15b71930bff61811cfab96e928866cd89cd03ebceef52c0d47ad75e5e9f1e73e\",\"finalCaptureSha256\":\"ef6e3f0cb9ff47808da1674bfffe8a10305ef20af6ff5c9477b5239f77d090e8\",\"finalResultSha256\":\"c108b3f882dee7d966d982736213a582366f2808a9b259d99c4fcd3eb2ec0783\"}",
++   "outputText": "{\"status\":\"complete\",\"coveredPartIds\":[\"97c0f9a6dacdbfc5a49ef591629e0ad80e251c61ab842989b355be3235aa19d6\",\"11f958b74ecb2a18fbe7c4f20596ed28109e4aaf69885c322fea794096187735\",\"06b7aefc24dbcffb76cc3a9e13ae04f644079c0ce3a8444addb9dcc002e5c499\",\"e981ed10a2aa39a949e2fb8173225fe3285c8b54ef45656d5f41326e39cf34ae\",\"22ee4d61e44420a543cbb024f9a938c365da1b2c2130e9b3f575a7eca0edd4bd\",\"e50a3c8aa35ce177fe4de77a31a0f84fd65e3b4878ea4c3f5c5c40d53cbcaaac\"],\"notes\":[],\"uncertainties\":[\"SYNTHETIC frame 0\",\"SYNTHETIC frame 1\",\"SYNTHETIC frame 2\",\"SYNTHETIC frame 3\",\"SYNTHETIC frame 4\",\"SYNTHETIC frame 5\",\"SYNTHETIC frame 6\",\"SYNTHETIC frame 7\",\"SYNTHETIC frame 8\",\"SYNTHETIC frame 9\",\"SYNTHETIC frame 10\",\"SYNTHETIC frame 11\",\"SYNTHETIC frame 12\",\"SYNTHETIC frame 13\",\"SYNTHETIC frame 14\",\"SYNTHETIC frame 15\",\"SYNTHETIC frame 16\",\"SYNTHETIC frame 17\",\"SYNTHETIC frame 18\",\"SYNTHETIC frame 19\",\"SYNTHETIC frame 20\",\"SYNTHETIC frame 21\",\"SYNTHETIC frame 22\",\"SYNTHETIC frame 23\",\"SYNTHETIC frame 24\",\"SYNTHETIC frame 25\",\"SYNTHETIC frame 26\",\"SYNTHETIC frame 27\",\"SYNTHETIC frame 28\",\"SYNTHETIC frame 29\",\"SYNTHETIC frame 30\",\"SYNTHETIC frame 31\",\"SYNTHETIC frame 32\",\"SYNTHETIC frame 33\",\"SYNTHETIC frame 34\",\"SYNTHETIC frame 35\",\"SYNTHETIC frame 36\",\"SYNTHETIC frame 37\",\"SYNTHETIC frame 38\",\"SYNTHETIC frame 39\",\"SYNTHETIC frame 40\",\"SYNTHETIC frame 41\",\"SYNTHETIC frame 42\",\"SYNTHETIC frame 43\",\"SYNTHETIC frame 44\",\"SYNTHETIC frame 45\",\"SYNTHETIC frame 46\",\"SYNTHETIC frame 47\",\"SYNTHETIC frame 48\",\"SYNTHETIC frame 49\",\"SYNTHETIC frame 50\",\"SYNTHETIC frame 51\",\"SYNTHETIC frame 52\",\"SYNTHETIC frame 53\",\"SYNTHETIC frame 54\",\"SYNTHETIC frame 55\",\"SYNTHETIC frame 56\",\"SYNTHETIC frame 57\",\"SYNTHETIC frame 58\",\"SYNTHETIC frame 59\",\"SYNTHETIC frame 60\",\"SYNTHETIC frame 61\",\"SYNTHETIC frame 62\",\"SYNTHETIC frame 63\",\"SYNTHETIC frame 64\",\"SYNTHETIC frame 65\",\"SYNTHETIC frame 66\",\"SYNTHETIC frame 67\",\"SYNTHETIC frame 68\",\"SYNTHETIC frame 69\",\"SYNTHETIC frame 70\",\"SYNTHETIC frame 71\",\"SYNTHETIC frame 72\",\"SYNTHETIC frame 73\",\"SYNTHETIC frame 74\",\"SYNTHETIC frame 75\",\"SYNTHETIC frame 76\",\"SYNTHETIC frame 77\",\"SYNTHETIC frame 78\",\"SYNTHETIC frame 79\",\"SYNTHETIC frame 80\",\"SYNTHETIC frame 81\",\"SYNTHETIC frame 82\",\"SYNTHETIC frame 83\",\"SYNTHETIC frame 84\",\"SYNTHETIC frame 85\",\"SYNTHETIC frame 86\",\"SYNTHETIC frame 87\",\"SYNTHETIC frame 88\",\"SYNTHETIC frame 89\",\"SYNTHETIC frame 90\",\"SYNTHETIC frame 91\",\"SYNTHETIC frame 92\",\"SYNTHETIC frame 93\",\"SYNTHETIC frame 94\",\"SYNTHETIC frame 95\",\"SYNTHETIC frame 96\",\"SYNTHETIC frame 97\",\"SYNTHETIC frame 98\",\"SYNTHETIC frame 99\"]}",
++   "request": {
++     "binding": {
++       "contextManifestSha256": "6b6f36aea0c86ff56a483ea7b4c908c9dd749b1a13ca8a20872d9d954402557a",
++       "frameByteLimit": 4096,
++       "parentRequestId": "a0000000-0000-4000-8000-000000000010",
++       "schemaVersion": 1,
++       "segmentResultsManifestSha256": "a2f82466d1a961a0c8d210d26a4eb9f3ae780d13554274feb719cb82c63dcf66",
++       "selectionSequence": 17,
++     },
++     "intent": {
++       "configurationHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
++       "configurationRevisionId": "a0000000-0000-4000-8000-000000000011",
++       "connectionId": "a0000000-0000-4000-8000-000000000081",
++       "modelId": "synthetic-context",
++       "schemaVersion": 1,
++       "sourceId": "d0000000-0000-4000-8000-000000000001",
++       "sourceSha256": "8387c70a69d32da7c7e443cebaf0a7095bea2d7d5168e0ebf8b0e8c92242150c",
++       "taskByteLimit": 65536,
++     },
++     "state": {
++       "campaignId": "c0000000-0000-4000-8000-000000000001",
++       "cancellation": null,
++       "request": {
++         "actorId": "9c9cc4cf-09bc-472d-bc63-66d6a73e1679",
++         "createdAt": "2026-09-30T00:00:00Z",
++         "id": "5ceb3444-5cee-4e67-85ed-2ab1b1a5fce2",
++         "intentSha256": "dfc229ba011a1ddb4ec041e5f73c47ab9ec6a3bc02a2ae4834b37d9bde2071a5",
++         "intentText": "{\"schemaVersion\":1,\"sourceId\":\"d0000000-0000-4000-8000-000000000001\",\"sourceSha256\":\"8387c70a69d32da7c7e443cebaf0a7095bea2d7d5168e0ebf8b0e8c92242150c\",\"connectionId\":\"a0000000-0000-4000-8000-000000000081\",\"configurationRevisionId\":\"a0000000-0000-4000-8000-000000000011\",\"configurationHash\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"modelId\":\"synthetic-context\",\"taskByteLimit\":65536}",
++       },
++       "schemaVersion": 1,
++       "thematic": {
++         "createdAt": "2026-09-30T00:00:00Z",
++         "parentRequestId": "a0000000-0000-4000-8000-000000000010",
++         "thematicSha256": "e452042d876649dac3ba2c54f6d1ea876f64e5824ae85c7ac2c628a9020a9bb7",
++         "thematicText": "{\"schemaVersion\":1,\"parentRequestId\":\"a0000000-0000-4000-8000-000000000010\",\"selectionSequence\":17,\"segmentResultsManifestSha256\":\"a2f82466d1a961a0c8d210d26a4eb9f3ae780d13554274feb719cb82c63dcf66\",\"contextManifestSha256\":\"6b6f36aea0c86ff56a483ea7b4c908c9dd749b1a13ca8a20872d9d954402557a\",\"frameByteLimit\":4096}",
++       },
++       "workspaceId": "a0000000-0000-4000-8000-000000000001",
++     },
++   },
+  }
+
+ ❯ src/test/engagement-synthesis-thematic-choices-server.test.ts:97:29
+     95|   it("refuses late access loss before exposing prepared context or wri…
+     96|     const f = await fixture(); f.options.denySecondRead = true;
+     97|     await expect(f.prepare()).rejects.toThrow("request unavailable"); …
+       |                             ^
+     98|   });
+     99|   it.each(["actor", "intent", "binding"])("refuses a changed %s on the…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 skipped (20)
+   Start at  01:06:39
+   Duration  963ms (transform 213ms, setup 57ms, import 301ms, tests 454ms, environment 0ms)
+

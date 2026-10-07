@@ -1,0 +1,49 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress.test.ts (20 tests | 2 failed) 13ms
+     × refuses contradictory counts or claim tiers: {"status":"ready_for_record_consolidation"} 3ms
+     × does not accept zero-task completion or unknown transport fields 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress.test.ts > private synthesis progress transport > refuses contradictory counts or claim tiers: {"status":"ready_for_record_consolidation"}
+AssertionError: expected [Function] to throw an error
+ ❯ src/test/engagement-synthesis-progress.test.ts:25:78
+     23|     { status: "empty_selection" }, { counts: [{ disposition: "claimed"…
+     24|   ])("refuses contradictory counts or claim tiers: %j", change => {
+     25|     expect(() => verifySynthesisProgress({ ...original, ...change }, s…
+       |                                                                              ^
+     26|   });
+     27|   it.each(["context", "thematic"] as const)("accepts completed unrevie…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/engagement-synthesis-progress.test.ts > private synthesis progress transport > does not accept zero-task completion or unknown transport fields
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ src/test/engagement-synthesis-progress.test.ts:39:135
+     37|   });
+     38|   it("does not accept zero-task completion or unknown transport fields…
+     39|     expect(() => verifySynthesisProgress({ ...original, status: "ready…
+       |                                                                                                                                       ^
+     40|     expect(() => verifySynthesisProgress({ ...original, providerSecret…
+     41|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 18 passed (20)
+   Start at  23:41:40
+   Duration  622ms (transform 38ms, setup 55ms, import 55ms, tests 13ms, environment 343ms)

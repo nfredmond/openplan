@@ -43,12 +43,13 @@ export async function readSynthesisThematicChoice(client: Client, rawScope: z.in
 }
 
 const createSchema = scopeSchema.extend({ actorId: id, contextRequestId: id, throughSequence: sequence, targetRecordId: target }).strict();
+const expectedSchema = z.object({ requestIntentSha256: hash, thematicSha256: hash, choiceText: z.string().max(4096) }).strict();
+const retainSchema = createSchema.extend({ expected: expectedSchema.optional() }).strict();
 
-/** Retain one reconstructed context at a time under the current staff client.
- * Each exact choice can be retried after interruption. Whole-source membership,
- * durable worker preparation and a sealed input plan remain separate work.
+/** Inspect the original completed context before staff chooses it. This read
+ * creates no choice, input seal, execution grant or semantic approval.
  */
-export async function retainSynthesisThematicChoice(client: Client, service: Service,
+export async function prepareSynthesisThematicChoice(client: Client, service: Service,
   raw: z.infer<typeof createSchema>, signal: AbortSignal,
 ) {
   signal.throwIfAborted(); const args = createSchema.parse(raw);
@@ -74,6 +75,32 @@ export async function retainSynthesisThematicChoice(client: Client, service: Ser
     selectionSequence: args.throughSequence, historyManifestSha256: history.sha256,
     finalCaptureSha256: last.captureSha256, finalResultSha256: last.resultSha256 });
   const choiceText = JSON.stringify(choice);
+  signal.throwIfAborted();
+  const current = await readSynthesisThematicRequest(client, scope, signal);
+  if (current.state.request.actorId !== args.actorId || current.state.request.intentText !== request.state.request.intentText ||
+    current.state.thematic.thematicText !== request.state.thematic.thematicText) {
+    throw new Error("Thematic request changed during context inspection");
+  }
+  signal.throwIfAborted();
+  return { request: current, choice, choiceText, outputText: history.finalOutputText };
+}
+
+/** Retain one reconstructed context under current staff access. Browser callers
+ * pin the inspected request and exact choice before the native write. Retries
+ * preserve the same bytes; complete membership and an input seal remain separate.
+ */
+export async function retainSynthesisThematicChoice(client: Client, service: Service,
+  raw: z.infer<typeof retainSchema>, signal: AbortSignal,
+) {
+  signal.throwIfAborted();
+  const { expected, ...args } = retainSchema.parse(raw);
+  const prepared = await prepareSynthesisThematicChoice(client, service, args, signal);
+  const { choiceText, request } = prepared;
+  if (expected && (expected.requestIntentSha256 !== request.state.request.intentSha256 ||
+    expected.thematicSha256 !== request.state.thematic.thematicSha256 || expected.choiceText !== choiceText)) {
+    throw new Error("Inspected thematic input differs from the requested choice");
+  }
+  const scope = { campaignId: args.campaignId, workspaceId: args.workspaceId, requestId: args.requestId };
   signal.throwIfAborted();
   const response = await client.rpc("retain_engagement_synthesis_thematic_choice", { p_campaign: args.campaignId,
     p_request: args.requestId, p_choice_text: choiceText }).abortSignal(synthesisWorkerRequestSignal(signal));

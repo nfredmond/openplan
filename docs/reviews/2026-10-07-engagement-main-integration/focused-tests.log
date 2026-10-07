@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-main-integration-20261007/openplan
+
+
+ Test Files  33 passed (33)
+      Tests  723 passed (723)
+   Start at  13:53:37
+   Duration  43.41s (transform 924ms, setup 1.13s, import 4.19s, tests 25.53s, environment 9.60s)
+

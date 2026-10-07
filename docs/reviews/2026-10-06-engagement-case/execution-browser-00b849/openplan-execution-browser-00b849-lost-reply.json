@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-07T05:59:22.550Z",
+  "focusEvents": [],
+  "records": [
+    {
+      "at": "2026-10-07T05:59:16.434Z",
+      "body": "{\"requestId\":\"a0a2c622-46cb-4498-b3b9-1d7da97526a6\",\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"requestIntentSha256\":\"26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925\",\"stage\":\"segment\",\"authorizationId\":\"11e52d39-a45e-49c9-99fe-65dc27e9815e\",\"intentText\":\"{\\\"schemaVersion\\\":1,\\\"headerSha256\\\":\\\"5b98d2efb625c05f90079c8fea0521ec3503c93411336fae06a4f6bc8cbeb52f\\\",\\\"maxAttempts\\\":4,\\\"maxOutputTokens\\\":2048,\\\"responseByteLimit\\\":65536,\\\"expiresAt\\\":\\\"2026-10-07T07:59:00.000Z\\\",\\\"chargesAcknowledged\\\":true,\\\"retryTaskIndex\\\":null,\\\"retryOfAttemptId\\\":null}\"}",
+      "method": "POST",
+      "response": {
+        "id": "11e52d39-a45e-49c9-99fe-65dc27e9815e",
+        "intentSha256": "472f72d6dad46ffca23520205e2f9ffa9d7e0c6d046d6334cbd93a7386a4aef6",
+        "intentText": "{\"schemaVersion\":1,\"headerSha256\":\"5b98d2efb625c05f90079c8fea0521ec3503c93411336fae06a4f6bc8cbeb52f\",\"maxAttempts\":4,\"maxOutputTokens\":2048,\"responseByteLimit\":65536,\"expiresAt\":\"2026-10-07T07:59:00.000Z\",\"chargesAcknowledged\":true,\"retryTaskIndex\":null,\"retryOfAttemptId\":null}",
+        "requestId": "a0a2c622-46cb-4498-b3b9-1d7da97526a6",
+        "schemaVersion": 1
+      },
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/execution",
+      "withheld": true
+    }
+  ],
+  "url": "http://openplan-execution.localhost:3479/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7?tab=analysis"
+}

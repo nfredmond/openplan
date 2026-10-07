@@ -1,0 +1,12 @@
+
+> openplan@0.67.0 test
+> vitest run --maxWorkers=1 src/test/planner-copy-says-the-plain-thing.test.ts src/test/reference-count-projection-guard.test.ts src/test/numbers-read-the-same-on-every-machine.test.ts src/test/engagement-synthesis-progress-plan.test.ts src/test/engagement-synthesis-progress-panel.test.tsx
+
+
+ RUN  v4.1.11 <app>
+
+
+ Test Files  5 passed (5)
+      Tests  39 passed (39)
+   Start at  00:04:46
+   Duration  7.16s (transform 259ms, setup 198ms, import 3.88s, tests 938ms, environment 1.65s)

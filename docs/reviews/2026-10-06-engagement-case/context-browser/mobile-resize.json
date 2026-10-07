@@ -1,0 +1,119 @@
+{
+  "buttons": [
+    {
+      "disabled": false,
+      "rect": {
+        "bottom": 147.09375,
+        "height": 78,
+        "left": 295,
+        "right": 333,
+        "top": 69.09375,
+        "width": 38,
+        "x": 295,
+        "y": 69.09375
+      },
+      "text": "Combine this contribution"
+    },
+    {
+      "disabled": false,
+      "rect": {
+        "bottom": 1402.546875,
+        "height": 78,
+        "left": 308,
+        "right": 346,
+        "top": 1324.546875,
+        "width": 38,
+        "x": 308,
+        "y": 1324.546875
+      },
+      "text": "Refresh preparation status"
+    },
+    {
+      "disabled": false,
+      "rect": {
+        "bottom": 1982.875,
+        "height": 58,
+        "left": 308,
+        "right": 346,
+        "top": 1924.875,
+        "width": 38,
+        "x": 308,
+        "y": 1924.875
+      },
+      "text": "Queue preparation"
+    },
+    {
+      "disabled": false,
+      "rect": {
+        "bottom": 2085.875,
+        "height": 78,
+        "left": 308,
+        "right": 346,
+        "top": 2007.875,
+        "width": 38,
+        "x": 308,
+        "y": 2007.875
+      },
+      "text": "Review execution permission"
+    },
+    {
+      "disabled": false,
+      "rect": {
+        "bottom": 2208.875,
+        "height": 98,
+        "left": 308,
+        "right": 346,
+        "top": 2110.875,
+        "width": 38,
+        "x": 308,
+        "y": 2110.875
+      },
+      "text": "Inspect saved analysis results"
+    },
+    {
+      "disabled": false,
+      "rect": {
+        "bottom": 2311.875,
+        "height": 78,
+        "left": 295,
+        "right": 333,
+        "top": 2233.875,
+        "width": 38,
+        "x": 295,
+        "y": 2233.875
+      },
+      "text": "Start another request"
+    },
+    {
+      "disabled": true,
+      "rect": {
+        "bottom": 3351.9375,
+        "height": 78,
+        "left": 295,
+        "right": 333,
+        "top": 3273.9375,
+        "width": 38,
+        "x": 295,
+        "y": 3273.9375
+      },
+      "text": "Cancel analysis request"
+    }
+  ],
+  "form": "Combine this contribution\n\nSave a request to combine this contribution with its complete saved context. Preparation and permission to send material to a provider are separate steps.\n\nAnalysis request saved. No provider execution is authorized.\n\nRequest daa0abcc-1942-4949-9afd-c7a30c4fed93 · Model synthetic\n\nPrepare this source for analysis\nRefresh preparation status\n\nPreparation organizes this saved source for analysis. It does not send contributions to a provider or approve findings.\n\nPreparation has not been queued\n\nQueue preparation\nReview execution permission\nInspect saved analysis results\nStart another request\nStop this analysis request\n\nCancellation prevents new work under this request. You can cancel while the original save is unconfirmed. Earlier contributions, approvals and results remain retained; a provider call already sent may still incur charges.\n\nReason for cancelling\nCancel analysis request",
+  "overflow": [],
+  "rect": {
+    "bottom": 3364.9375,
+    "height": 3308.84375,
+    "left": 282,
+    "right": 342,
+    "top": 56.09375,
+    "width": 60,
+    "x": 282,
+    "y": 56.09375
+  },
+  "viewport": {
+    "height": 844,
+    "scrollWidth": 390,
+    "width": 390
+  }
+}

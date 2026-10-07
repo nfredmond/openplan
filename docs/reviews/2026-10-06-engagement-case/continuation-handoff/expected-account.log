@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-continuation-route.test.ts (39 tests | 2 failed) 39ms
+     × refuses changed-user before creating a service client 5ms
+     × refuses missing-user before creating a service client 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-route.test.ts > staff continuation HTTP boundary > refuses changed-user before creating a service client
+ FAIL  src/test/engagement-synthesis-continuation-route.test.ts > staff continuation HTTP boundary > refuses missing-user before creating a service client
+AssertionError: expected 200 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 200
+
+ ❯ src/test/engagement-synthesis-continuation-route.test.ts:62:31
+     60|     if (kind.endsWith("workspace")) override["x-openplan-expected-work…
+     61|     for (const response of [await GET(get(query, override), context), …
+     62|       expect(response.status).toBe(["anonymous", "auth-error"].include…
+       |                               ^
+     63|       expect(response.headers.get("cache-control")).toBe("private, no-…
+     64|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 37 passed (39)
+   Start at  00:22:08
+   Duration  822ms (transform 163ms, setup 53ms, import 242ms, tests 39ms, environment 327ms)
+

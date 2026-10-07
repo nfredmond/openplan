@@ -1,0 +1,210 @@
+{
+  "recordedAt": "2026-10-07T09:08:55.872Z",
+  "applicationCommit": "9825bef75ee5621b7aa1729a42adcc220d15ead1",
+  "checkoutHeadDuringCollection": "613f1dbff6a1feed448753c2e82e0edff954806b",
+  "requestId": "3620e480-3d20-4934-9d3d-e14fc640e22d",
+  "collection": "T3 tab_b, available true and visible false. Existing front-door journey continued from chosen contexts. UI controls activated through DOM.",
+  "preparation": {
+    "enqueueStatus": 201,
+    "stage": "thematic",
+    "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+    "sealSha256": "29164cf2ede388b35cf460479ba7351c37a8034ecd975232f0c1e7afa4676dfd",
+    "attempt": 1,
+    "tasks": 2,
+    "savedBytes": 51113,
+    "worker": "Explicit request journal, no queue scan",
+    "replay": "Same acknowledged seal"
+  },
+  "execution": {
+    "calls": [
+      {
+        "body": "{\"requestId\":\"3620e480-3d20-4934-9d3d-e14fc640e22d\",\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"requestIntentSha256\":\"effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441\",\"stage\":\"thematic\",\"authorizationId\":\"5a9b38bb-2928-4ec7-be43-4c176f8c4ab1\",\"intentText\":\"{\\\"schemaVersion\\\":1,\\\"headerSha256\\\":\\\"a3fe69e60c9d63f670cc9fa2c69d928ab8907b5a9f1e12793856acfac7a83fdc\\\",\\\"maxAttempts\\\":2,\\\"maxOutputTokens\\\":2048,\\\"responseByteLimit\\\":65536,\\\"expiresAt\\\":\\\"2026-10-07T10:58:00.000Z\\\",\\\"chargesAcknowledged\\\":true,\\\"retryTaskIndex\\\":null,\\\"retryOfAttemptId\\\":null}\"}",
+        "method": "POST",
+        "reply": {
+          "id": "5a9b38bb-2928-4ec7-be43-4c176f8c4ab1",
+          "intentSha256": "b5246f3193b73d2b96a92aa7aa395332538eba65137c9b4e152248f362193b0e",
+          "intentText": "{\"schemaVersion\":1,\"headerSha256\":\"a3fe69e60c9d63f670cc9fa2c69d928ab8907b5a9f1e12793856acfac7a83fdc\",\"maxAttempts\":2,\"maxOutputTokens\":2048,\"responseByteLimit\":65536,\"expiresAt\":\"2026-10-07T10:58:00.000Z\",\"chargesAcknowledged\":true,\"retryTaskIndex\":null,\"retryOfAttemptId\":null}",
+          "requestId": "3620e480-3d20-4934-9d3d-e14fc640e22d",
+          "schemaVersion": 1
+        },
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/execution"
+      }
+    ],
+    "text": "\n\nSending contributions to a provider requires separate staff permission. Saving this allowance does not start a worker or approve findings.\n\nRefresh execution review\n\nExecution permission saved: 5a9b38bb-2928-4ec7-be43-4c176f8c4ab1. The original allowance remains saved in this browser. A configured worker must claim it before any provider call.\n\nProvider: SYNTHETIC local browser provider. Destination: http://127.0.0.1:34667/v1/\n\nModel: synthetic. 2 prepared tasks; 51,113 saved bytes.\n\nPrepared bytes describe saved material, not a token estimate or provider price. Workers recheck the complete original material before each call.\n\nSaved execution permissions\n\nReview earlier allowances before adding one. An allowance is not proof that a call ran or completed. Expiry does not tell you whether a provider call completed.\n\nNo saved permissions were found.\n\nNew execution allowance\nMaximum attempts\nOutput tokens per call\nResponse bytes per call\nPermission expires, local time\n\nThese resource limits are not a dollar ceiling. Check the provider’s terms and rates. A call already sent may incur charges even if its reply is lost. This form does not authorize retrying a task whose outcome is unknown.\n\nI authorize sending the saved contributions to this provider under these limits and accept the provider’s charges.\nSave execution permission\n\nOriginal allowance 5a9b38bb-2928-4ec7-be43-4c176f8c4ab1 remains saved in this browser. Retrying reuses its exact bytes and never renews its expiry.\n\nInspect retained allowance\nRetry original execution permission\nPreserve allowance recovery\n"
+  },
+  "progress": {
+    "controls": [
+      "Import 0 comments",
+      "Read original and review history",
+      "Review next contribution",
+      "Review execution permission",
+      "Refresh execution review",
+      "Inspect saved analysis results",
+      "Refresh results",
+      "Review cancellation options",
+      "Create staff review",
+      "Refresh staff reviews",
+      "Open staff review 17b5a959"
+    ],
+    "execution": "\n\nReview earlier allowances before adding one. An allowance is not proof that a call ran or completed. Expiry does not tell you whether a provider call completed.\n\nPermission 5a9b38bb-2928-4ec7-be43-4c176f8c4ab1\n\n2 attempts; 2048 output tokens and 65536 response bytes per call.\n\nExpires 10/7/2026, 3:58:00 AM. Workers still check current access and request state.\n\nOriginal allowance bytes\n",
+    "text": "\n\nThis reads saved output and its original saved material. It does not start a worker, retry a provider call or approve findings.\n\nRefresh results\nA machine draft is ready for staff review\n\nOpen a staff synthesis review below to inspect and explicitly import the proposal. It is not an approved or published finding.\n\nChecked 10/7/2026, 2:06:55 AM. This is a saved snapshot, not a live worker connection.\n\n2 tasks accounted for in this saved selection.\n\nComplete output checks\n2\n\nOutput checks establish retained bytes and required structure. They do not establish meaning, representative support, staff approval or publication.\n\nOriginal selection reference\n"
+  },
+  "preview": "Inspect and import a machine proposal\n\nImport replaces this draft’s title, notes and groups with the selected machine proposal. Earlier revisions and their approvals remain unchanged. Import does not approve, publish or run a model.\n\nRefresh proposal history\n\nRequested 10/7/2026, 1:05:46 AM. Inspect retained outputs to determine whether a complete proposal is available.\n\nInspect proposal 3620e480\n\nRequested 10/7/2026, 12:19:07 AM. Inspect retained outputs to determine whether a complete proposal is available.\n\nInspect proposal ebeb5886\n\nRequested 10/2/2026, 7:13:09 PM. Cancelled; retained history remains readable.\n\nInspect proposal b7ce8f81\n\nRequested 10/2/2026, 7:12:30 PM. Cancelled; retained history remains readable.\n\nInspect proposal db4c7393\n\nRequested 10/2/2026, 10:11:13 AM. Inspect retained outputs to determine whether a complete proposal is available.\n\nInspect proposal dd741df4\n\nComplete original proposal available for inspection.\n\nOriginal machine proposal\n\nMachine-generated, unreviewed wording. Citations identify retained evidence; they do not establish that the interpretation is accurate. Counts describe contributions, not distinct people or representative support.\n\nSYNTHETIC machine proposal for browser inspection\n\nSYNTHETIC retained worker output. Staff have not reviewed this interpretation.\n\n0 assigned contributions; 2 unassigned; 0 appear in more than one group.\n\nThematic uncertainty\nSYNTHETIC structural browser exercise; no semantic inference\n\nEarlier contextual uncertainty remains with each contribution below.\n\nUnassigned contributions and machine reasons (2)\nOriginal contributions and retained context\nFind a contribution\n\n2 matching contributions. Page 1 of 1.\n\nPrevious contributions\nNext contributions\nInspect comment 1\nInspect comment 2\nDownload original proposal JSON\nDownload original history JSON\nOriginal evidence references and bytes\n\nReplacement preview: revision 1, “SYNTHETIC retained thematic proposal inspection”, has 1 groups. The proposed draft has 0 groups. Complete earlier wording remains in revision history.\n\nSelect this proposal for the current draft",
+  "imported": {
+    "calls": [
+      {
+        "command": {
+          "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+          "expectedRevisionId": "bf07f2a2-24b9-47e2-ad9e-dbff95bace23",
+          "expectedRevisionSha256": "79a0155646504d6bffa4b46ee6a1fc5f011e389984eaeec60c4999e733f8bb55",
+          "operation": "import_thematic",
+          "proposal": {
+            "finalCaptureSha256": "05be83ab530e1f68d05060dd9d8ccd96b18921cf87d6ad9b525ada2895561c4a",
+            "historyManifestSha256": "55a26c5c8288230fbd6298608aa647c12fd5979c72b0fd4f28fa55fc97d0ad7f",
+            "proposalSha256": "9c9fde7e9b51b6bdebc8a056ee4142e0c139e03fb8f3574d671a3055a2349ae1",
+            "requestId": "3620e480-3d20-4934-9d3d-e14fc640e22d",
+            "selectionSequence": 2
+          },
+          "reason": "SYNTHETIC workflow verification: retain both source contributions as unassigned and preserve the original machine evidence. No interpretation, approval or publication is established.",
+          "requestId": "09af33a4-3c5c-472f-8703-7e7fcb77eeb6",
+          "reviewId": "bf07f2a2-24b9-47e2-ad9e-dbff95bace23",
+          "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+        },
+        "replyKeys": [
+          "reviewId",
+          "campaignId",
+          "workspaceId",
+          "sourceId",
+          "sourceSha256",
+          "requestId",
+          "preparationSha256",
+          "revisionNo",
+          "revisionSha256",
+          "createdAt",
+          "replayed"
+        ],
+        "status": 201,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews"
+      }
+    ],
+    "text": "\n\nCreate a private draft from this complete saved source. Historical categories begin unassessed. Staff wording and membership corrections retain their reasons and earlier versions.\n\nSaving a draft does not approve or publish findings. Contribution counts do not measure distinct people or representative support.\n\nReview saved, revision 1.\n\nCreate staff review\nRefresh staff reviews\n\nSYNTHETIC machine proposal for browser inspection · latest revision 2\n\nOpen staff review bf07f2a2\n\nSYNTHETIC machine proposal for browser inspection · latest revision 2\n\nOpen staff review 17b5a959\nSYNTHETIC machine proposal for browser inspection · revision 2\n\n0 assigned contributions; 2 unassigned; 0 appear in more than one group.\n\nSYNTHETIC retained worker output. Staff have not reviewed this interpretation.\n\nRevision SHA256: 708702b22231e1284363ca17ab92853699e1a4a70eb1af1b7d53af9937bfc1e0\n\nCorrection reason: SYNTHETIC workflow verification: retain both source contributions as unassigned and preserve the original machine evidence. No interpretation, approval or publication is established.\n\nOriginal preparation and unassigned membership\n\nThis revision retains an imported machine proposal. Later staff corrections and approvals remain separate from the original wording below.\n\nOriginal machine proposal\n\nMachine-generated, unreviewed wording. Citations identify retained evidence; they do not establish that the interpretation is accurate. Counts describe contributions, not distinct people or representative support.\n\nSYNTHETIC machine proposal for browser inspection\n\nSYNTHETIC retained worker output. Staff have not reviewed this interpretation.\n\n0 assigned contributions; 2 unassigned; 0 appear in more than one group.\n\nThematic uncertainty\nSYNTHETIC structural browser exercise; no semantic inference\n\nEarlier contextual uncertainty remains with each contribution below.\n\nUnassigned contributions and machine reasons (2)\nOriginal contributions and retained context\nFind a contribution\n\n2 matching contributions. Page 1 of 1.\n\nPrevious contributions\nNext contributions\nInspect comment 1\nInspect comment 2\nDownload original proposal JSON\nDownload original history JSON\nOriginal evidence references and bytes\nInspect machine proposals for this review\nStaff approval of revision 2\n\nStaff approval applies to this exact saved version. It does not publish findings, establish representative support or change unassessed interpretation.\n\nRevision 2 is unapproved.\n\nReason for approval or withdrawal\nApprove revision 2\nWithdraw approval of revision 2\nRefresh approval history\n\nNo approval events are saved for this review.\n\nResponse links\n\nLink a reviewed group to a staff response. This private record preserves the evidence and reason; it does not publish a response or authorize a decision.\n\nRefresh response choices and links\nResponse to link\nSelect a saved response\nReviewed group\nSelect a reviewed group\nInspect response link\nRetained response links\n\nNo links have been retained for this review.\n\nReasoned correction\n\nEdits are retained in this browser as you type. Save one correction at a time. Earlier saved versions remain unchanged.\n\nCorrection type\nReview title and notes\nEdit an existing group\nAdd a group\nRemove a group\nReview title\nStaff review notes\nReason for correction\nSave reasoned correction\nRevision history\nOpen revision 2\n\nSYNTHETIC workflow verification: retain both source contributions as unassigned and preserve the original machine evidence. No interpretation, approval or publication is established.\n\nOpen revision 1\n\nOriginal staff draft\n\n"
+  },
+  "mobile": {
+    "section": [
+      {
+        "left": 29,
+        "right": 355,
+        "width": 326
+      }
+    ],
+    "summaries": [],
+    "text": "Original machine proposal\n\nMachine-generated, unreviewed wording. Citations identify retained evidence; they do not establish that the interpretation is accurate. Counts describe contributions, not distinct people or representative support.\n\nSYNTHETIC machine proposal for browser inspection\n\nSYNTHETIC retained worker output. Staff have not reviewed this interpretation.\n\n0 assigned contributions; 2 unassigned; 0 appear in more than one group.\n\nThematic uncertainty\nSYNTHETIC structural browser exercise; no semantic inference\n\nEarlier contextual uncertainty remains with each contribution below.\n\nUnassigned contributions and machine reasons (2)\nInspect comment 1\n\nSYNTHETIC retained contribution awaiting staff interpretation\n\nInspect comment 2\n\nSYNTHETIC retained contribution awaiting staff interpretation\n\nOriginal contributions and retained context\nFind a contribution\n\n2 matching contributions. Page 1 of 1.\n\nPrevious contributions\nNext contributions\nInspect comment 1\nInspect comment 2\nDownload original proposal JSON\nDownload original history JSON\nOriginal evidence references and bytes",
+    "width": {
+      "document": 390,
+      "viewport": 390
+    }
+  },
+  "contribution": {
+    "selected": "Comment 2\n\nSYNTHETIC browser test. No apoyo esta alternativa. Mantengan mi comentario completo y separado; esta prueba no representa una opinión pública real.\n\nEarlier machine context\n\nNo contextual notes were retained.\n\nRetained contextual uncertainty\n\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nSYNTHETIC context uncertainty retained. Meaning is unassessed.\nOriginal context references",
+    "uncertaintyCount": 13
+  },
+  "downloads": [
+    {
+      "bytes": 3726,
+      "keys": [
+        "schemaVersion",
+        "status",
+        "sourceId",
+        "sourceSha256",
+        "inputManifestSha256",
+        "taskSha256",
+        "outputSha256",
+        "title",
+        "notes",
+        "groups",
+        "unassigned",
+        "assignedSourceCount",
+        "overlappingSourceCount",
+        "unassignedSourceIds",
+        "contextEvidence",
+        "thematicUncertainties"
+      ],
+      "kind": "proposal",
+      "sha256": "9c9fde7e9b51b6bdebc8a056ee4142e0c139e03fb8f3574d671a3055a2349ae1"
+    },
+    {
+      "bytes": 1615,
+      "keys": [
+        "schemaVersion",
+        "purpose",
+        "campaignId",
+        "workspaceId",
+        "requestId",
+        "thematicRequestSha256",
+        "headerSha256",
+        "throughSequence",
+        "status",
+        "storedFrameCount",
+        "verifiedTaskCount",
+        "entries"
+      ],
+      "kind": "history",
+      "sha256": "55a26c5c8288230fbd6298608aa647c12fd5979c72b0fd4f28fa55fc97d0ad7f"
+    }
+  ],
+  "desktop": {
+    "document": 1440,
+    "importReplies": [
+      {
+        "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+        "createdAt": "2026-10-07T09:07:40.553899+00:00",
+        "preparationSha256": "2b6e28c2c227644aa7e68bc63c20abbacbe6117f253c0c909d2d6b38d9dbd1a1",
+        "replayed": false,
+        "requestId": "09af33a4-3c5c-472f-8703-7e7fcb77eeb6",
+        "reviewId": "bf07f2a2-24b9-47e2-ad9e-dbff95bace23",
+        "revisionNo": 2,
+        "revisionSha256": "708702b22231e1284363ca17ab92853699e1a4a70eb1af1b7d53af9937bfc1e0",
+        "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+        "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+        "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+      }
+    ],
+    "section": [
+      {
+        "left": 74,
+        "right": 1360,
+        "width": 1286
+      }
+    ],
+    "unapproved": true,
+    "viewport": 1440
+  },
+  "reloaded": {
+    "proposalVisible": true,
+    "reviewText": "\n\nCreate a private draft from this complete saved source. Historical categories begin unassessed. Staff wording and membership corrections retain their reasons and earlier versions.\n\nSaving a draft does not approve or publish findings. Contribution counts do not measure distinct people or representative support.\n\nCreate staff review\nRefresh staff reviews\n\nSYNTHETIC machine proposal for browser inspection · latest revision 2\n\nOpen staff review bf07f2a2\n\nSYNTHETIC machine proposal for browser inspection · latest revision 2\n\nOpen staff review 17b5a959\nSYNTHETIC machine proposal for browser inspection · revision 2\n\n0 assigned contributions; 2 unassigned; 0 appear in more than one group.\n\nSYNTHETIC retained worker output. Staff have not reviewed this interpretation.\n\nRevision SHA256: 708702b22231e1284363ca17ab92853699e1a4a70eb1af1b7d53af9937bfc1e0\n\nCorrection reason: SYNTHETIC workflow verification: retain both source contributions as unassigned and preserve the original machine evidence. No interpretation, approval or publication is established.\n\nOriginal preparation and unassigned membership\n\nThis revision retains an imported machine proposal. Later staff corrections and approvals remain separate from the original wording below.\n\nOriginal machine proposal\n\nMachine-generated, unreviewed wording. Citations identify retained evidence; they do not establish that the interpretation is accurate. Counts describe contributions, not distinct people or representative support.\n\nSYNTHETIC machine proposal for browser inspection\n\nSYNTHETIC retained worker output. Staff have not reviewed this interpretation.\n\n0 assigned contributions; 2 unassigned; 0 appear in more than one group.\n\nThematic uncertainty\nSYNTHETIC structural browser exercise; no semantic inference\n\nEarlier contextual uncertainty remains with each contribution below.\n\nUnassigned contributions and machine reasons (2)\nOriginal contributions and retained context\nFind a contribution\n\n2 matching contributions. Page 1 of 1.\n\nPrevious contributions\nNext contributions\nInspect comment 1\nInspect comment 2\nDownload original proposal JSON\nDownload original history JSON\nOriginal evidence references and bytes\nInspect machine proposals for this review\nStaff approval of revision 2\n\nStaff approval applies to this exact saved version. It does not publish findings, establish representative support or change unassessed interpretation.\n\nRevision 2 is unapproved.\n\nReason for approval or withdrawal\nApprove revision 2\nWithdraw approval of revision 2\nRefresh approval history\n\nNo approval events are saved for this review.\n\nResponse links\n\nLink a reviewed group to a staff response. This private record preserves the evidence and reason; it does not publish a response or authorize a decision.\n\nRefresh response choices and links\nResponse to link\nSelect a saved response\nReviewed group\nSelect a reviewed group\nInspect response link\nRetained response links\n\nNo links have been retained for this review.\n\nReasoned correction\n\nEdits are retained in this browser as you type. Save one correction at a time. Earlier saved versions remain unchanged.\n\nCorrection type\nReview title and notes\nEdit an existing group\nAdd a group\nRemove a group\nReview title\nStaff review notes\nReason for correction\nSave reasoned correction\nRevision history\nOpen revision 2\n\nSYNTHETIC workflow verification: retain both source contributions as unassigned and preserve the original machine evidence. No interpretation, approval or publication is established.\n\nOpen revision 1\n\nOriginal staff draft\n\n",
+    "width": {
+      "document": 1440,
+      "viewport": 1440
+    }
+  },
+  "worker": {
+    "retained": 2,
+    "unobserved": 0,
+    "unprocessed": 0,
+    "outsideSchedule": 0,
+    "repeatedCommand": "Same two retained outputs, no new calls",
+    "providerCallsAfterReplay": 2,
+    "endpoint": "http://127.0.0.1:34667/v1/",
+    "provider": "Owned synthetic stub; one pinned thematic request; no paid provider"
+  },
+  "limits": [
+    "Synthetic structure and custody exercise, no model meaning or accuracy validation.",
+    "Screenshot capture fails; visual, pointer, keyboard and console acceptance remain open.",
+    "DOM geometry is not pixel acceptance.",
+    "Offered original proposal/history Blobs match retained hashes; completed filesystem downloads remain unobserved.",
+    "Both contributions are unassigned; no nonempty thematic groups or citations exercised.",
+    "No staff approval, publication, practitioner acceptance or release claim."
+  ],
+  "collectionEndedBeforeEdits": true
+}

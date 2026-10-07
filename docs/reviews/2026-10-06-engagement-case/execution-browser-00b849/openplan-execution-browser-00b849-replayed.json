@@ -1,0 +1,36 @@
+{
+  "at": "2026-10-07T05:59:46.927Z",
+  "records": [
+    {
+      "at": "2026-10-07T05:59:16.434Z",
+      "body": "{\"requestId\":\"a0a2c622-46cb-4498-b3b9-1d7da97526a6\",\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"requestIntentSha256\":\"26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925\",\"stage\":\"segment\",\"authorizationId\":\"11e52d39-a45e-49c9-99fe-65dc27e9815e\",\"intentText\":\"{\\\"schemaVersion\\\":1,\\\"headerSha256\\\":\\\"5b98d2efb625c05f90079c8fea0521ec3503c93411336fae06a4f6bc8cbeb52f\\\",\\\"maxAttempts\\\":4,\\\"maxOutputTokens\\\":2048,\\\"responseByteLimit\\\":65536,\\\"expiresAt\\\":\\\"2026-10-07T07:59:00.000Z\\\",\\\"chargesAcknowledged\\\":true,\\\"retryTaskIndex\\\":null,\\\"retryOfAttemptId\\\":null}\"}",
+      "method": "POST",
+      "response": {
+        "id": "11e52d39-a45e-49c9-99fe-65dc27e9815e",
+        "intentSha256": "472f72d6dad46ffca23520205e2f9ffa9d7e0c6d046d6334cbd93a7386a4aef6",
+        "intentText": "{\"schemaVersion\":1,\"headerSha256\":\"5b98d2efb625c05f90079c8fea0521ec3503c93411336fae06a4f6bc8cbeb52f\",\"maxAttempts\":4,\"maxOutputTokens\":2048,\"responseByteLimit\":65536,\"expiresAt\":\"2026-10-07T07:59:00.000Z\",\"chargesAcknowledged\":true,\"retryTaskIndex\":null,\"retryOfAttemptId\":null}",
+        "requestId": "a0a2c622-46cb-4498-b3b9-1d7da97526a6",
+        "schemaVersion": 1
+      },
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/execution",
+      "withheld": true
+    },
+    {
+      "at": "2026-10-07T05:59:38.339Z",
+      "body": "{\"requestId\":\"a0a2c622-46cb-4498-b3b9-1d7da97526a6\",\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"requestIntentSha256\":\"26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925\",\"stage\":\"segment\",\"authorizationId\":\"11e52d39-a45e-49c9-99fe-65dc27e9815e\",\"intentText\":\"{\\\"schemaVersion\\\":1,\\\"headerSha256\\\":\\\"5b98d2efb625c05f90079c8fea0521ec3503c93411336fae06a4f6bc8cbeb52f\\\",\\\"maxAttempts\\\":4,\\\"maxOutputTokens\\\":2048,\\\"responseByteLimit\\\":65536,\\\"expiresAt\\\":\\\"2026-10-07T07:59:00.000Z\\\",\\\"chargesAcknowledged\\\":true,\\\"retryTaskIndex\\\":null,\\\"retryOfAttemptId\\\":null}\"}",
+      "method": "POST",
+      "response": {
+        "id": "11e52d39-a45e-49c9-99fe-65dc27e9815e",
+        "intentSha256": "472f72d6dad46ffca23520205e2f9ffa9d7e0c6d046d6334cbd93a7386a4aef6",
+        "intentText": "{\"schemaVersion\":1,\"headerSha256\":\"5b98d2efb625c05f90079c8fea0521ec3503c93411336fae06a4f6bc8cbeb52f\",\"maxAttempts\":4,\"maxOutputTokens\":2048,\"responseByteLimit\":65536,\"expiresAt\":\"2026-10-07T07:59:00.000Z\",\"chargesAcknowledged\":true,\"retryTaskIndex\":null,\"retryOfAttemptId\":null}",
+        "requestId": "a0a2c622-46cb-4498-b3b9-1d7da97526a6",
+        "schemaVersion": 1
+      },
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/execution"
+    }
+  ],
+  "text": "Request details a0a2c622\nClose preparation a0a2c622\nPrepare this source for analysis\nRefresh preparation status\n\nPreparation organizes this saved source for analysis. It does not send contributions to a provider or approve findings.\n\nPreparation has not been queued\n\nQueue preparation\nReview execution permission\n\nSending contributions to a provider requires separate staff permission. Saving this allowance does not start a worker or approve findings.\n\nRefresh execution review\n\nExecution permission saved: 11e52d39-a45e-49c9-99fe-65dc27e9815e. The original allowance remains saved in this browser. A configured worker must claim it before any provider call.\n\nProvider: SYNTHETIC local browser provider. Destination: http://127.0.0.1:38741/v1/\n\nModel: synthetic. 4 prepared tasks; 43,932 saved bytes.\n\nPrepared bytes describe saved material, not a token estimate or provider price. Workers recheck the complete original material before each call.\n\nSaved execution permissions\n\nReview earlier allowances before adding one. An allowance is not proof that a call ran or completed. Expiry does not tell you whether a provider call completed.\n\nPermission 11e52d39-a45e-49c9-99fe-65dc27e9815e\n\n4 attempts; 2048 output tokens and 65536 response bytes per call.\n\nExpires 10/7/2026, 12:59:00 AM. Workers still check current access and request state.\n\nOriginal allowance bytes\n\nPermission e7b15e5b-af80-47ae-9ab6-1ae492fa388b\n\n4 attempts; 8192 output tokens and 65536 response bytes per call.\n\nExpires 10/2/2026, 11:06:22 AM. Expired allowance.\n\nOriginal allowance bytes\nNew execution allowance\nMaximum attempts\nOutput tokens per call\nResponse bytes per call\nPermission expires, local time\n\nThese resource limits are not a dollar ceiling. Check the provider’s terms and rates. A call already sent may incur charges even if its reply is lost. This form does not authorize retrying a task whose outcome is unknown.\n\nI authorize sending the saved contributions to this provider under these limits and accept the provider’s charges.\nSave execution permission\n\nOriginal allowance 11e52d39-a45e-49c9-99fe-65dc27e9815e remains saved in this browser. Retrying reuses its exact bytes and never renews its expiry.\n\nInspect retained allowance\nRetry original execution permission\nPreserve allowance recovery\nReview cancellation options\n",
+  "url": "http://openplan-execution.localhost:3479/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7?tab=analysis"
+}

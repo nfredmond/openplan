@@ -1,0 +1,87 @@
+{
+  "commit": "9825bef75ee5621b7aa1729a42adcc220d15ead1",
+  "observations": {
+    "readingDesktop9825": {
+      "alerts": [],
+      "buttons": [
+        {
+          "disabled": false,
+          "text": "Read saved context"
+        },
+        {
+          "disabled": false,
+          "text": "Download complete context"
+        }
+      ],
+      "read": {
+        "contextRequestId": "34ca0f3f-0547-4282-8108-f5fe51e4f51e",
+        "hashMatches": true,
+        "method": "GET",
+        "notes": 0,
+        "outputBytes": 2455,
+        "outputSha256": "6b103585bff5e7e8977cbe4f8197b9fc6ac3010cecc7851a64c61fd22f21a91e",
+        "status": 200,
+        "throughSequence": 13,
+        "uncertainties": 13
+      },
+      "textSha256": "62c8c8ec4fe3f06bee5e93499678fb6feaee5dbf3bd28b95c2ae8f5d5d82c0a2"
+    },
+    "readingMobile9825": {
+      "alerts": [],
+      "buttons": [
+        {
+          "left": 42,
+          "right": 214.25,
+          "text": "Read saved context",
+          "width": 172.25
+        },
+        {
+          "left": 42,
+          "right": 271.0625,
+          "text": "Download complete context",
+          "width": 229.0625
+        }
+      ],
+      "documentWidth": 390,
+      "headings": [
+        "Generated notes (0)",
+        "Recorded uncertainties (13)"
+      ],
+      "pendingCount": 0,
+      "reader": {
+        "left": 42,
+        "right": 342,
+        "width": 300
+      },
+      "uncertaintyCount": 13,
+      "viewportWidth": 390
+    },
+    "readingDownload9825": {
+      "boundary": "Offered native Blob bytes; completed filesystem download not observed",
+      "bytes": 2455,
+      "notes": 0,
+      "sha256": "6b103585bff5e7e8977cbe4f8197b9fc6ac3010cecc7851a64c61fd22f21a91e",
+      "status": "complete",
+      "type": "application/json",
+      "uncertainties": 13
+    }
+  },
+  "boundary": "Actual T3 DOM, original output checksum and offered download Blob. Images and console unavailable; completed file download not observed. No new choice, preparation or provider permission.",
+  "checkedAt": "2026-10-07T08:59:51.082218+00:00",
+  "navigation": [
+    "front door",
+    "Overview",
+    "Engagement",
+    "synthetic campaign",
+    "Analysis",
+    "saved source",
+    "open saved request disclosure",
+    "thematic request3620",
+    "context choices",
+    "contrasting contribution",
+    "Read saved context",
+    "Download complete context"
+  ],
+  "freshMobileReload": true,
+  "productionFixture": "Zero machine notes and 13 retained uncertainties. Nonempty notes and citations are component-tested, not demonstrated by this production fixture."
+}

@@ -1,0 +1,42 @@
+{
+  "baseline": "pass",
+  "harmless_reordering": "pass",
+  "mutations": [
+    {
+      "mutation": "changed retry",
+      "rejected": true,
+      "reason": "retry body differs"
+    },
+    {
+      "mutation": "automatic resend",
+      "rejected": true,
+      "reason": "automatic recovery POST"
+    },
+    {
+      "mutation": "duplicate authority",
+      "rejected": true,
+      "reason": "duplicate or different authority"
+    },
+    {
+      "mutation": "missing output",
+      "rejected": true,
+      "reason": "incomplete execution"
+    },
+    {
+      "mutation": "repeated request",
+      "rejected": true,
+      "reason": "restart contacts provider"
+    },
+    {
+      "mutation": "promoted meaning",
+      "rejected": true,
+      "reason": "interpretation promoted"
+    },
+    {
+      "mutation": "clipped retry",
+      "rejected": true,
+      "reason": "mobile retry clipped"
+    }
+  ],
+  "blind_category": "No independent rendering, access policy, semantics or human acceptance."
+}

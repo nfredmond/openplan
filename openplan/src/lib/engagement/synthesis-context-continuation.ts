@@ -1,19 +1,13 @@
 import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import { z } from "zod";
+import { synthesisContextOutputSchema as outputSchema } from "./synthesis-context-output";
 import frozenRecipe from "./synthesis-generation-context-v1.json";
 import { createSynthesisGenerationContextContent } from "./synthesis-generation-context-content";
 import { verifySynthesisContextRequest } from "./synthesis-context-requests-server";
 
 const digest = (text: string) => createHash("sha256").update(text, "utf8").digest("hex");
 const hash = z.string().regex(/^[a-f0-9]{64}$/), index = z.number().int().nonnegative().safe();
-// JSON Schema maxLength counts Unicode code points, not UTF-16 code units.
-const textSchema = z.string().min(1).refine(text => Array.from(text).length <= 4000, "Context text exceeds 4000 code points");
-const citationSchema = z.object({ partId: hash, quote: textSchema }).strict();
-const noteSchema = z.object({ id: index, text: textSchema,
-  citations: z.array(citationSchema).min(1), relatedNoteIds: z.array(index) }).strict();
-const outputSchema = z.object({ status: z.enum(["complete", "incomplete"]), coveredPartIds: z.array(hash),
-  notes: z.array(noteSchema), uncertainties: z.array(textSchema) }).strict();
 const observationSchema = z.object({ taskSha256: hash, outputText: z.string(), finishReason: z.string().nullable() }).strict();
 const resultSchema = z.object({ schemaVersion: z.literal(1), purpose: z.literal("private_synthesis_context_step_result"),
   requestId: z.string().uuid(), headerSha256: hash, frameIndex: index, taskSha256: hash,

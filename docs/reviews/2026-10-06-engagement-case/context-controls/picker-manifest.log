@@ -1,0 +1,230 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-continuation-panel.test.tsx (15 tests | 1 failed) 3426ms
+     × refuses a changed contribution page manifest and clears the form 1201ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-panel.test.tsx > contribution context handoff > refuses a changed contribution page manifest and clears the form
+TestingLibraryElementError: Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"Combine contribution context"[39m
+      [33mclass[39m=[32m"min-w-0 space-y-3 border-t border-border pt-3 [&_button]:h-auto [&_button]:min-h-10 [&_button]:max-w-full [&_button]:whitespace-normal"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+        [33mdata-size[39m=[32m"default"[39m
+        [33mdata-slot[39m=[32m"button"[39m
+        [33mdata-variant[39m=[32m"outline"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [0mChoose a contribution to combine[0m
+      [36m</button>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"min-w-0 space-y-3"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"max-w-prose text-sm"[39m
+        [36m>[39m
+          [0mCombine each contribution with its complete saved context before preparing themes. These previews help you choose a contribution; each request uses the complete saved material.[0m
+        [36m</p>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+          [33mdata-size[39m=[32m"default"[39m
+          [33mdata-slot[39m=[32m"button"[39m
+          [33mdata-variant[39m=[32m"outline"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mRefresh contribution choices[0m
+        [36m</button>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm"[39m
+        [36m>[39m
+          [0mShowing [0m
+          [0m27[0m
+          [0m of [0m
+          [0m27[0m
+          [0m contributions in this saved selection.[0m
+        [36m</p>[39m
+        [36m<ul[39m
+          [33mclass[39m=[32m"space-y-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"min-w-0 space-y-1 border-b border-border pb-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-pressed[39m=[32m"false"[39m
+              [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5 text-left"[39m
+              [33mdata-size[39m=[32m"default"[39m
+              [33mdata-slot[39m=[32m"button"[39m
+              [33mdata-variant[39m=[32m"outline"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mSynthetic contribution 1[0m
+            [36m</button>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"whitespace-pre-wrap break-words text-sm [overflow-wrap:anywhere]"[39m
+            [36m>[39m
+              [0mSynthetic original preview 1[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"break-all text-xs text-muted-foreground"[39m
+            [36m>[39m
+              [0mComment[0m
+              [0m · [0m
+              [0mitem:c7740000-0000-4000-8000-000000000020[0m
+            [36m</p>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"min-w-0 space-y-1 border-b border-border pb-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-pressed[39m=[32m"false"[39m
+              [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5 text-left"[39m
+              [33mdata-size[39m=[32m"default"[39m
+              [33mdata-slot[39m=[32m"button"[39m
+              [33mdata-variant[39m=[32m"outline"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mSynthetic contribution 2[0m
+            [36m</button>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"whitespace-pre-wrap break-words text-sm [overflow-wrap:anywhere]"[39m
+            [36m>[39m
+              [0mSynthetic original preview 2[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"break-all text-xs text-muted-foreground"[39m
+            [36m>[39m
+              [0mComment[0m
+              [0m · [0m
+              [0mitem:c7740000-0000-4000-8000-000000000021[0m
+            [36m</p>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"min-w-0 space-...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"Combine contribution context"[39m
+      [33mclass[39m=[32m"min-w-0 space-y-3 border-t border-border pt-3 [&_button]:h-auto [&_button]:min-h-10 [&_button]:max-w-full [&_button]:whitespace-normal"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+        [33mdata-size[39m=[32m"default"[39m
+        [33mdata-slot[39m=[32m"button"[39m
+        [33mdata-variant[39m=[32m"outline"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [0mChoose a contribution to combine[0m
+      [36m</button>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"min-w-0 space-y-3"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"max-w-prose text-sm"[39m
+        [36m>[39m
+          [0mCombine each contribution with its complete saved context before preparing themes. These previews help you choose a contribution; each request uses the complete saved material.[0m
+        [36m</p>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+          [33mdata-size[39m=[32m"default"[39m
+          [33mdata-slot[39m=[32m"button"[39m
+          [33mdata-variant[39m=[32m"outline"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mRefresh contribution choices[0m
+        [36m</button>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm"[39m
+        [36m>[39m
+          [0mShowing [0m
+          [0m27[0m
+          [0m of [0m
+          [0m27[0m
+          [0m contributions in this saved selection.[0m
+        [36m</p>[39m
+        [36m<ul[39m
+          [33mclass[39m=[32m"space-y-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"min-w-0 space-y-1 border-b border-border pb-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-pressed[39m=[32m"false"[39m
+              [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5 text-left"[39m
+              [33mdata-size[39m=[32m"default"[39m
+              [33mdata-slot[39m=[32m"button"[39m
+              [33mdata-variant[39m=[32m"outline"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mSynthetic contribution 1[0m
+            [36m</button>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"whitespace-pre-wrap break-words text-sm [overflow-wrap:anywhere]"[39m
+            [36m>[39m
+              [0mSynthetic original preview 1[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"break-all text-xs text-muted-foreground"[39m
+            [36m>[39m
+              [0mComment[0m
+              [0m · [0m
+              [0mitem:c7740000-0000-4000-8000-000000000020[0m
+            [36m</p>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"min-w-0 space-y-1 border-b border-border pb-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-pressed[39m=[32m"false"[39m
+              [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5 text-left"[39m
+              [33mdata-size[39m=[32m"default"[39m
+              [33mdata-slot[39m=[32m"button"[39m
+              [33mdata-variant[39m=[32m"outline"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mSynthetic contribution 2[0m
+            [36m</button>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"whitespace-pre-wrap break-words text-sm [overflow-wrap:anywhere]"[39m
+            [36m>[39m
+              [0mSynthetic original preview 2[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"break-all text-xs text-muted-foreground"[39m
+            [36m>[39m
+              [0mComment[0m
+              [0m · [0m
+              [0mitem:c7740000-0000-4000-8000-000000000021[0m
+            [36m</p>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"min-w-0 space-...
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/test/engagement-synthesis-continuation-panel.test.tsx:56:18
+     54|     if (field === "duplicate") value.entries[0] = entries[0];
+     55|     transport.mockResolvedValue(json(value)); fireEvent.click(screen.g…
+     56|     await screen.findByRole("alert"); expect(screen.queryByText("Scope…
+       |                  ^
+     57|     expect(screen.queryByRole("button", { name: "Synthetic contributio…
+     58|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 passed (15)
+   Start at  00:44:40
+   Duration  4.15s (transform 74ms, setup 54ms, import 195ms, tests 3.43s, environment 326ms)
+
