@@ -1,0 +1,175 @@
+{
+  "periodStart": "2026-09-06",
+  "examinedReflogTips": 618,
+  "supersededUnreachableTips": [
+    {
+      "orphan": "18c584adbf505ac795df2ff496e6ce3b69bbc754",
+      "title": "Fix contrast, sign-up redirect, landmarks and stat grids from the UI review",
+      "patchEquivalent": [
+        "04974b9b40a7fbb4e88bbd709aae9742cf646bc7"
+      ],
+      "sameTitle": [
+        "04974b9b40a7fbb4e88bbd709aae9742cf646bc7"
+      ],
+      "disposition": "Exact stable patch equivalent exists in main.",
+      "replacement": [
+        "04974b9b40a7fbb4e88bbd709aae9742cf646bc7"
+      ]
+    },
+    {
+      "orphan": "3c5dc71b0b6a773be931247edf49bd0860db0847",
+      "title": "Fix contrast, sign-up redirect, landmarks and stat grids from the UI review",
+      "patchEquivalent": [
+        "04974b9b40a7fbb4e88bbd709aae9742cf646bc7"
+      ],
+      "sameTitle": [
+        "04974b9b40a7fbb4e88bbd709aae9742cf646bc7"
+      ],
+      "disposition": "Exact stable patch equivalent exists in main.",
+      "replacement": [
+        "04974b9b40a7fbb4e88bbd709aae9742cf646bc7"
+      ]
+    },
+    {
+      "orphan": "4ff4721461a68ef5de5b1c60708301b80c1c5dd1",
+      "title": "Shared page header on eight index pages, labeled forms, announced errors and public page fixes",
+      "patchEquivalent": [],
+      "sameTitle": [
+        "8cb534f506dc26fc011843debe3db8bb31af2f78"
+      ],
+      "disposition": "Replacement adds browser evidence to two documentation rows; implementation patch unchanged.",
+      "replacement": [
+        "8cb534f506dc26fc011843debe3db8bb31af2f78"
+      ]
+    },
+    {
+      "orphan": "57f4dd65fac0e859ee19125f3c156672e3c89281",
+      "title": "Bind staff context requests to retained synthesis inputs",
+      "patchEquivalent": [],
+      "sameTitle": [
+        "6eb041f58af336cfec5044311ed3a5c0f8b039db"
+      ],
+      "disposition": "Replacement removes whitespace in a test and updates evidence hashes/documentation checks.",
+      "replacement": [
+        "6eb041f58af336cfec5044311ed3a5c0f8b039db"
+      ]
+    },
+    {
+      "orphan": "5f4d55bdb67922c855a6f1b40f9725974293907d",
+      "title": "Record whole-app UI/UX review and proposed work plan",
+      "patchEquivalent": [],
+      "sameTitle": [
+        "9921944c1bdea86be04cc83a294268c388d08c93"
+      ],
+      "disposition": "Replacement redacts a Mapbox access token from captured errors. Do not publish the superseded raw history.",
+      "replacement": [
+        "9921944c1bdea86be04cc83a294268c388d08c93"
+      ]
+    },
+    {
+      "orphan": "7ed9126d8c9662336fd285fe39e6af25594542f8",
+      "title": "Record whole-app UI/UX review and proposed work plan",
+      "patchEquivalent": [],
+      "sameTitle": [
+        "9921944c1bdea86be04cc83a294268c388d08c93"
+      ],
+      "disposition": "Replacement redacts a Mapbox access token from captured errors. Do not publish the superseded raw history.",
+      "replacement": [
+        "9921944c1bdea86be04cc83a294268c388d08c93"
+      ]
+    },
+    {
+      "orphan": "8e395d5bb18856129c7671fc3b20b2806f72fbca",
+      "title": "Retain thematic proposals as exact-parent staff review imports",
+      "patchEquivalent": [],
+      "sameTitle": [
+        "a77b3cc56f5a45fa118cde033d648bc6e7fb68f2"
+      ],
+      "disposition": "Replacement removes a SQL blank line and updates the evidence hash and formatting note.",
+      "replacement": [
+        "a77b3cc56f5a45fa118cde033d648bc6e7fb68f2"
+      ]
+    },
+    {
+      "orphan": "bca572eb0fdd8d9af691a095719ca769d428e6ff",
+      "title": "fixup! Record whole-app UI/UX review and proposed work plan",
+      "patchEquivalent": [],
+      "sameTitle": [],
+      "disposition": "Token-redaction fixup is folded into 9921944c. Do not restore its unsanitized parent.",
+      "replacement": [
+        "9921944c1bdea86be04cc83a294268c388d08c93"
+      ]
+    },
+    {
+      "orphan": "cc129d88e3574e24f26d27dfda4153c5e63c177e",
+      "title": "Add map attribution, no-data colour, portal error pages and a compact language picker",
+      "patchEquivalent": [
+        "e15e2b938bc19a7e336dc1d883145d5a251e032c"
+      ],
+      "sameTitle": [
+        "e15e2b938bc19a7e336dc1d883145d5a251e032c"
+      ],
+      "disposition": "Exact stable patch equivalent exists in main.",
+      "replacement": [
+        "e15e2b938bc19a7e336dc1d883145d5a251e032c"
+      ]
+    },
+    {
+      "orphan": "cd37b1460c4804d4da3f25c6572e360e1b16e920",
+      "title": "Prove response write permissions and concurrent source withdrawals",
+      "patchEquivalent": [
+        "b878d35d7b8070f23314b56b67191a630959536f"
+      ],
+      "sameTitle": [
+        "b878d35d7b8070f23314b56b67191a630959536f"
+      ],
+      "disposition": "Exact stable patch equivalent exists in main.",
+      "replacement": [
+        "b878d35d7b8070f23314b56b67191a630959536f"
+      ]
+    },
+    {
+      "orphan": "d35c000cd8b815707dc9aa381fe483b9eb295388",
+      "title": "Collapse the local-support check on project pages to one row that opens",
+      "patchEquivalent": [
+        "2402241129553ff85cad7df12d63e913a22da7c4"
+      ],
+      "sameTitle": [
+        "2402241129553ff85cad7df12d63e913a22da7c4"
+      ],
+      "disposition": "Exact stable patch equivalent exists in main.",
+      "replacement": [
+        "2402241129553ff85cad7df12d63e913a22da7c4"
+      ]
+    },
+    {
+      "orphan": "dc824caaa502867df846c9e696fc06935c881854",
+      "title": "Add map attribution, no-data colour, portal error pages and a compact language picker",
+      "patchEquivalent": [
+        "e15e2b938bc19a7e336dc1d883145d5a251e032c"
+      ],
+      "sameTitle": [
+        "e15e2b938bc19a7e336dc1d883145d5a251e032c"
+      ],
+      "disposition": "Exact stable patch equivalent exists in main.",
+      "replacement": [
+        "e15e2b938bc19a7e336dc1d883145d5a251e032c"
+      ]
+    },
+    {
+      "orphan": "ec9e4accd56bde12198e60109d451889af23c4a5",
+      "title": "Set a 12px type floor, fixed status colours and dark scopes for always-dark surfaces",
+      "patchEquivalent": [
+        "49deefd0cea09db5649be801d32bc879d2159a0d"
+      ],
+      "sameTitle": [
+        "49deefd0cea09db5649be801d32bc879d2159a0d"
+      ],
+      "disposition": "Exact stable patch equivalent exists in main.",
+      "replacement": [
+        "49deefd0cea09db5649be801d32bc879d2159a0d"
+      ]
+    }
+  ],
+  "result": "All 13 tips have merged replacements. No unique implementation remains only in the audited reflogs. Raw superseded token-bearing history stays local."
+}
