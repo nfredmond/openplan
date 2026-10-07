@@ -216,3 +216,31 @@ The [correction verification](thematic-inputs/reading/verification.json) records
 360 passing tests across 14 suites, full TypeScript and ESLint for all 11 changed
 TypeScript files. The harmless control passes 174 tests across six suites. These
 checks include the existing context continuation, history and worker behavior.
+
+## Identified reader at `9825bef7`
+
+The corrected [production build](thematic-inputs/reading/build-9825.json) passes
+from an unchanged, clean checkout. The owned server on port 3485 identifies
+`9825bef75ee5`; process 2974729 runs from the application worktree. The server is
+stopped after collection, before these documentation edits.
+
+The [reader record](thematic-inputs/reading/browser-9825.json) follows the front
+door and normal navigation to the saved thematic choice. Its read-only action
+returns the original context `34ca0f3f` at sequence 13. All 2,455 original bytes
+match SHA-256 `6b103585bff5e7e8977cbe4f8197b9fc6ac3010cecc7851a64c61fd22f21a91e`.
+The production DOM exposes all 13 recorded uncertainties that the earlier raw
+excerpt hid. It explicitly reports no generated notes. This fixture therefore
+does not establish production rendering of nonempty notes or quotations; those
+paths have component evidence.
+
+A fresh 390px reload reopens the same saved context. The document measures 390px,
+the reader 300px, and both read/download controls stay within the viewport. The
+offered download Blob contains the same 2,455 bytes and checksum, parses as the
+complete original JSON, and retains all 13 uncertainties. A completed downloaded
+file was not observed in the local Downloads or temporary directories. This is
+an offered-artifact check, not native file-download acceptance.
+
+T3 image capture still fails. Pixel review, console, keyboard and practitioner
+acceptance remain open. The readable-content defect is corrected in code and
+observed in the production DOM; these limits do not become interface acceptance.
+No new choice, preparation or provider permission is created by the reader check.
