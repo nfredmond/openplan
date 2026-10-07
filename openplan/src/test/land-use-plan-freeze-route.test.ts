@@ -103,6 +103,30 @@ describe("atomic plan freeze route", () => {
     mocks.rpc.mockClear(); tables.land_use_plan_content_nodes.data = [{ requirement_key: "local", body: " \n " }];
     expect((await post()).status).toBe(409); expect(mocks.rpc).not.toHaveBeenCalled();
   });
+  it("reports required rules absent from an older saved checklist before preparing a snapshot", async () => {
+    const current = getJurisdictionPlanDescriptor("us-ca-general-plan")!;
+    const required = current.requirements.filter(rule => rule.applicability === "required").map(rule => rule.key);
+    mocks.access.mockResolvedValue({ ok: true, access: { supabase: client, userId: actorId, canWrite: true,
+      plan: { id: planId, workspace_id: workspaceId, descriptor_id: current.id, plan_kind_key: "general" } } });
+    mocks.working.mockResolvedValue({ id: versionId, draft_revision: 7, applicable_requirement_keys: ["prior_rule"] });
+    tables.land_use_plan_content_nodes.data = [{ requirement_key: "prior_rule", body: "SYNTHETIC retained text" }];
+    tables.land_use_plan_process_records.data = current.processSteps.map(step => ({ process_key: step.key, status: "complete" }));
+    tables.land_use_plan_consultation_records.data = { status: "complete" };
+    const requestText = JSON.stringify({ ...command, expectedDescriptorHash: hashFrozenRecord(current) });
+    const response = await post(requestText);
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ blockers: [`Complete applicable sections: ${required.join(", ")}`] });
+    expect(mocks.snapshot).not.toHaveBeenCalled(); expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(queries.find(query => query.table === "land_use_plan_content_nodes")).toEqual({ table: "land_use_plan_content_nodes", projection: "requirement_key, body", filters: [["version_id", versionId], ["node_kind", "section"]] });
+
+    tables.land_use_plan_content_nodes.data = ["prior_rule", ...required].map(key => ({ requirement_key: key, body: "SYNTHETIC reviewed text" }));
+    const currentSnapshot = { ...snapshot, descriptorSnapshot: current,
+      plan: { ...snapshot.plan, descriptorId: current.id, planKindKey: "general" } };
+    mocks.snapshot.mockResolvedValue({ snapshot: currentSnapshot, hash: hashFrozenRecord(currentSnapshot) });
+    mocks.rpc.mockResolvedValue({ data: { ...result, contentHash: hashFrozenRecord(currentSnapshot) }, error: null });
+    expect((await post(requestText)).status).toBe(201);
+    expect(mocks.rpc).toHaveBeenCalledTimes(1);
+  });
   it.each(["land_use_plan_designations", "land_use_plan_implementation_actions"])("refuses missing %s", async table => {
     tables[table].data = []; expect((await post()).status).toBe(409); expect(mocks.rpc).not.toHaveBeenCalled();
   });

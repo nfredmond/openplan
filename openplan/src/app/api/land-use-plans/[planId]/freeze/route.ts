@@ -72,6 +72,7 @@ export async function POST(request: NextRequest, context: Context) {
       .filter((record) => record.status === "complete")
       .map((record) => record.process_key);
     const blockers = buildPublicDraftBlockers({
+      descriptor,
       applicableRequirementKeys: version.applicable_requirement_keys ?? [],
       completedRequirementKeys,
       hasDesignation: (designations.data ?? []).length > 0,

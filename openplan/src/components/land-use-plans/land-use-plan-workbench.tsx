@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { buildAdoptionBlockers, buildLandUsePlanWorkflow, buildPublicDraftBlockers, percentComplete } from "@/lib/land-use-plans/workflow";
-import { defaultApplicableRequirementKeys } from "@/lib/land-use-plans/registry";
 import { describePlanSourceReview } from "@/lib/land-use-plans/source-review";
 
 type WorkbenchData = {
@@ -122,10 +121,7 @@ export function LandUsePlanWorkbench({ planId }: { planId: string }) {
     const completed = data.nodes.filter((node) => node.node_kind === "section" && node.body?.trim()).map((node) => node.requirement_key).filter((key): key is string => Boolean(key));
     return buildLandUsePlanWorkflow({
       descriptor: data.descriptor as Parameters<typeof buildLandUsePlanWorkflow>[0]["descriptor"],
-      applicableRequirementKeys: [...new Set([
-        ...data.activeVersion.applicable_requirement_keys,
-        ...defaultApplicableRequirementKeys(data.descriptor),
-      ])],
+      applicableRequirementKeys: data.activeVersion.applicable_requirement_keys,
       completedRequirementKeys: completed,
       hasDesignation: data.designations.length > 0,
       hasImplementationAction: data.actions.length > 0,
@@ -145,10 +141,8 @@ export function LandUsePlanWorkbench({ planId }: { planId: string }) {
     const requiredReviewPrerequisiteKeys = data.descriptor.processSteps.filter((step) => step.required && step.reviewPrerequisite).map((step) => step.key);
     const completedProcessKeys = data.processRecords.filter((record) => record.status === "complete").map((record) => record.process_key);
     return buildPublicDraftBlockers({
-      applicableRequirementKeys: [...new Set([
-        ...data.activeVersion.applicable_requirement_keys,
-        ...defaultApplicableRequirementKeys(data.descriptor),
-      ])],
+      descriptor: data.descriptor,
+      applicableRequirementKeys: data.activeVersion.applicable_requirement_keys,
       completedRequirementKeys,
       hasDesignation: data.designations.length > 0,
       hasImplementationAction: data.actions.length > 0,

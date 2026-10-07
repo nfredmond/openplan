@@ -23,6 +23,7 @@ export type LandUsePlanWorkflowStep = {
 };
 
 export type PublicDraftReadinessInput = {
+  descriptor: Pick<JurisdictionPlanDescriptor, "requirements">;
   applicableRequirementKeys: readonly string[];
   completedRequirementKeys: readonly string[];
   hasDesignation: boolean;
@@ -32,6 +33,19 @@ export type PublicDraftReadinessInput = {
   requiresConsultation: boolean;
   consultationStatus: string | null;
 };
+
+/** Saved choices cannot waive required rules, including newly introduced ones. */
+export function applicablePlanRequirementKeys(
+  descriptor: Pick<JurisdictionPlanDescriptor, "requirements">,
+  savedKeys: readonly string[],
+): string[] {
+  return [...new Set([
+    ...savedKeys,
+    ...descriptor.requirements
+      .filter(requirement => requirement.applicability === "required")
+      .map(requirement => requirement.key),
+  ])];
+}
 
 export type AdoptionReadinessInput = {
   requiredPrerequisites: ReadonlyArray<{ key: string; label: string }>;
@@ -59,7 +73,7 @@ export function buildAdoptionBlockers(input: AdoptionReadinessInput): string[] {
 export function buildPublicDraftBlockers(input: PublicDraftReadinessInput): string[] {
   const completedRequirements = new Set(input.completedRequirementKeys);
   const completedProcesses = new Set(input.completedProcessKeys);
-  const missingRequirements = input.applicableRequirementKeys.filter(
+  const missingRequirements = applicablePlanRequirementKeys(input.descriptor, input.applicableRequirementKeys).filter(
     (key) => !completedRequirements.has(key),
   );
   const missingReviewSteps = input.requiredReviewPrerequisiteKeys.filter(
@@ -84,11 +98,7 @@ export function buildPublicDraftBlockers(input: PublicDraftReadinessInput): stri
 
 export function buildLandUsePlanWorkflow(input: LandUsePlanWorkflowInput): LandUsePlanWorkflowStep[] {
   const completedRequirements = new Set(input.completedRequirementKeys);
-  const applicable = input.applicableRequirementKeys.length
-    ? input.applicableRequirementKeys
-    : input.descriptor.requirements
-        .filter((requirement) => requirement.applicability === "required")
-        .map((requirement) => requirement.key);
+  const applicable = applicablePlanRequirementKeys(input.descriptor, input.applicableRequirementKeys);
   const contentComplete = applicable.every((key) => completedRequirements.has(key));
   const processByKey = new Map(input.processRecords.map((record) => [record.processKey, record.status]));
   const resolved = (key: string) => processByKey.get(key) === "complete";

@@ -1,0 +1,140 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "target": null,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "target": null,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "drops-saved-choices",
+      "target": "unions required rules",
+      "exitCode": 1,
+      "failedTests": [
+        "atomic plan freeze route requires readiness fields and refuses blank required content",
+        "Land Use Plans review and reporting completion shows every public-draft blocker beside the freeze control",
+        "Land Use Plans review and reporting completion unions required rules with saved choices without inventing optional applicability",
+        "Land Use Plans review and reporting completion keeps newly required content incomplete in both readiness and workflow progress"
+      ],
+      "matched": true
+    },
+    {
+      "case": "drops-new-required",
+      "target": "keeps newly required content",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing shows required sections missing from older choices without forcing unselected local content",
+        "atomic plan freeze route reports required rules absent from an older saved checklist before preparing a snapshot",
+        "Land Use Plans review and reporting completion unions required rules with saved choices without inventing optional applicability",
+        "Land Use Plans review and reporting completion keeps newly required content incomplete in both readiness and workflow progress"
+      ],
+      "matched": true
+    },
+    {
+      "case": "forces-optional",
+      "target": "unions required rules",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing shows required sections missing from older choices without forcing unselected local content",
+        "atomic plan freeze route sends the original request and canonical content through one scoped transaction",
+        "atomic plan freeze route requires readiness fields and refuses blank required content",
+        "atomic plan freeze route reports required rules absent from an older saved checklist before preparing a snapshot",
+        "atomic plan freeze route maps SQL PT400 to HTTP 400 without diagnostics",
+        "atomic plan freeze route maps SQL 42501 to HTTP 403 without diagnostics",
+        "atomic plan freeze route maps SQL PT404 to HTTP 404 without diagnostics",
+        "atomic plan freeze route maps SQL unknown to HTTP 503 without diagnostics",
+        "atomic plan freeze route keeps mismatched receipts unconfirmed {\"commandId\":\"10000000-0000-4000-8000-000000000009\"}",
+        "atomic plan freeze route keeps mismatched receipts unconfirmed {\"versionId\":\"10000000-0000-4000-8000-000000000009\"}",
+        "atomic plan freeze route keeps mismatched receipts unconfirmed {\"draftRevision\":8}",
+        "atomic plan freeze route keeps mismatched receipts unconfirmed {\"contentHash\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"}",
+        "atomic plan freeze route keeps mismatched receipts unconfirmed {\"frozenAt\":\"invalid\"}",
+        "atomic plan freeze route keeps mismatched receipts unconfirmed {\"reviewEventId\":\"invalid\"}",
+        "atomic plan freeze route keeps mismatched receipts unconfirmed {\"extra\":true}",
+        "atomic plan freeze route accepts a concurrent exact replay after fresh preparation",
+        "atomic plan freeze route keeps failed snapshot preparation unconfirmed",
+        "Land Use Plans review and reporting completion unions required rules with saved choices without inventing optional applicability"
+      ],
+      "matched": true
+    },
+    {
+      "case": "duplicates-choices",
+      "target": "unions required rules",
+      "exitCode": 1,
+      "failedTests": [
+        "Land Use Plans review and reporting completion unions required rules with saved choices without inventing optional applicability"
+      ],
+      "matched": true
+    },
+    {
+      "case": "changes-saved-order",
+      "target": "unions required rules",
+      "exitCode": 1,
+      "failedTests": [
+        "Land Use Plans review and reporting completion unions required rules with saved choices without inventing optional applicability"
+      ],
+      "matched": true
+    },
+    {
+      "case": "readiness-skips-union",
+      "target": "keeps newly required content",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing shows required sections missing from older choices without forcing unselected local content",
+        "atomic plan freeze route reports required rules absent from an older saved checklist before preparing a snapshot",
+        "Land Use Plans review and reporting completion keeps newly required content incomplete in both readiness and workflow progress"
+      ],
+      "matched": true
+    },
+    {
+      "case": "progress-skips-union",
+      "target": "keeps newly required content",
+      "exitCode": 1,
+      "failedTests": [
+        "Land Use Plans review and reporting completion keeps newly required content incomplete in both readiness and workflow progress"
+      ],
+      "matched": true
+    },
+    {
+      "case": "route-ignores-rules",
+      "target": "reports required rules absent",
+      "exitCode": 1,
+      "failedTests": [
+        "atomic plan freeze route reports required rules absent from an older saved checklist before preparing a snapshot"
+      ],
+      "matched": true
+    },
+    {
+      "case": "workbench-ignores-rules",
+      "target": "shows required sections missing",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing shows required sections missing from older choices without forcing unselected local content"
+      ],
+      "matched": true
+    },
+    {
+      "case": "workbench-forces-local",
+      "target": "shows required sections missing",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing shows required sections missing from older choices without forcing unselected local content"
+      ],
+      "matched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/lib/land-use-plans/workflow.ts": "a2d5657f8ca718311bd298cac3c439c72c6cbb21e1aacca084d25eb628ac5932",
+    "src/app/api/land-use-plans/[planId]/freeze/route.ts": "dfe557df9913b54c1ea29dee152fb052e51927e165ee71e00c08f6bfe45cc297",
+    "src/components/land-use-plans/land-use-plan-workbench.tsx": "82c2e6883d4eda2b4e30ee36187a18acab9e04a03a357483f06456dfb721f856"
+  },
+  "boundary": "Shared checklist computation, actual route with projected mock database reads, and mounted workbench DOM. Does not establish native database enforcement, concurrent freezes, rendered browser behavior, legal adequacy or planner acceptance."
+}

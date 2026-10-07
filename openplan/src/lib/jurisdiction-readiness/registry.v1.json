@@ -1,6 +1,6 @@
 {
   "schema": "openplan.jurisdiction-readiness.v1",
-  "registryVersion": "2026-09-05.1",
+  "registryVersion": "2026-10-07.1",
   "releaseVersion": "0.44.0",
   "reviewedAt": "2026-08-28",
   "reviewBy": "2026-09-28",
@@ -79,7 +79,7 @@
     {
       "id": "land-use-plan-registry",
       "path": "openplan/src/lib/land-use-plans/registry.ts",
-      "sha256": "70049a88d403f1ae9a25b00d16e60ae96482ef743fbf0ae494c329c24af0cfff"
+      "sha256": "770f857cae683b406fd1bc803b5807b7c1d18b53a757fdaee3044788dddc207e"
     },
     {
       "id": "crash-source-registry",
@@ -120,6 +120,11 @@
       "id": "comparable-observation-proof-v041",
       "path": "docs/ops/V041_COMPARABLE_OBSERVATION_PROOF_2026-08-28.md",
       "sha256": "d3e3b79737df7ef4fda5003a383212c05faf8df12d8609bef392160b59fcfe4d"
+    },
+    {
+      "id": "land-use-plan-kind-review-20261007",
+      "path": "docs/reviews/2026-10-07-land-use-authority/PLAN_KIND_RULES.md",
+      "sha256": "5e3e9a93ac795ab08880f41ade3a0247cf97fef92cf92290c3e04aecfe1985f4"
     }
   ],
   "claims": [
@@ -140,7 +145,7 @@
       "jobId": "land-use-plan",
       "status": "partial",
       "applicability": "A configured California general-plan descriptor supplies cited statewide requirements and process steps.",
-      "sourceIds": ["land-use-plan-registry"],
+      "sourceIds": ["land-use-plan-registry", "land-use-plan-kind-review-20261007"],
       "adapterIds": ["us-ca-general-plan"],
       "authorities": [
         {
@@ -162,7 +167,12 @@
           "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=8.&chapter=3.&division=1.&lawCode=GOV&part=&title=7."
         }
       ],
-      "limitations": ["The descriptor is scoped, does not determine legal sufficiency, and does not replace counsel or qualified planning review."]
+      "limitations": [
+        "The descriptor is scoped, does not determine legal sufficiency, and does not replace counsel or qualified planning review.",
+        "The installed workflow still uses the general-plan checklist for specific plans. Separate specific-plan rules are prepared but are not yet connected to production routes and forms.",
+        "The October 7 source review covers selected specific-plan provisions only. Earlier descriptor review dates remain unchanged; inherited duties, local overlays and complete legal applicability need further review.",
+        "Frozen versions preserve their retained rules. Earlier drafts still need explicit checklist reconciliation that preserves existing content."
+      ]
     },
     {
       "id": "US-CA/safety-analysis",

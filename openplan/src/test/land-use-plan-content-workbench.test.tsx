@@ -124,4 +124,26 @@ describe("LandUsePlanWorkbench content editing", () => {
     expect(screen.queryByText(/Sources reviewed/)).not.toBeInTheDocument();
     expect(screen.getByText(/source review is not established/i)).toBeVisible();
   });
+
+  it("shows required sections missing from older choices without forcing unselected local content", async () => {
+    const ready = { ...WORKBENCH,
+      descriptor: { ...WORKBENCH.descriptor, requirements: [
+        ...WORKBENCH.descriptor.requirements,
+        { key: "new_required", label: "New required part", applicability: "required", sourceUrls: [] },
+      ] },
+      activeVersion: { ...WORKBENCH.activeVersion, applicable_requirement_keys: ["prior_rule"] },
+      nodes: [{ ...WORKBENCH.nodes[0], requirement_key: "prior_rule", body: "SYNTHETIC saved text" }],
+      designations: [{ id: "map", designation_set_label: "SYNTHETIC map", public_field_keys: [] }],
+      actions: [{ id: "action", title: "SYNTHETIC action", status: "not_started" }],
+    };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => url.endsWith("/context")
+      ? Response.json({ actorId: ready.actorId, workspaceId: ready.plan.workspace_id, planId: ready.plan.id,
+        contextState: { status: "legacy" }, contextHash: null, descriptorId: ready.descriptor.id,
+        planKindKey: ready.plan.plan_kind_key, versionId: ready.activeVersion.id, canWrite: true })
+      : Response.json(ready)));
+    render(<LandUsePlanWorkbench planId={ready.plan.id} />);
+    expect(await screen.findByText("Complete applicable sections: new_required")).toBeVisible();
+    expect(screen.queryByText(/Complete applicable sections:.*locally_defined/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Freeze public draft" })).toBeDisabled();
+  });
 });

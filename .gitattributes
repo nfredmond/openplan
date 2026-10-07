@@ -7,3 +7,6 @@
 
 # Preserve raw plan-kind verification output.
 /docs/reviews/2026-10-07-land-use-authority/plan-kind-rules/** whitespace=-blank-at-eol,-blank-at-eof
+
+# Preserve captured readiness verification output.
+/docs/reviews/2026-10-07-land-use-authority/readiness-reconciliation/** whitespace=-blank-at-eol,-blank-at-eof
