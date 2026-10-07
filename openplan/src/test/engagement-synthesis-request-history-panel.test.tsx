@@ -16,6 +16,16 @@ function fixture() {
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
 
 describe("staff generation history", () => {
+  it("opens preparation from the selected history entry and closes it before revalidating history", async () => {
+    const f = fixture(), fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(json(f.page)).mockResolvedValueOnce(json(null)).mockResolvedValueOnce(json(f.page));
+    vi.stubGlobal("fetch", fetcher); render(<SynthesisRequestHistoryPanel {...f.props} />);
+    fireEvent.click(await screen.findByRole("button", { name: `Inspect preparation ${f.entry.requestId.slice(0, 8)}` }));
+    await screen.findByRole("button", { name: "Queue preparation" });
+    expect(String(fetcher.mock.calls[1][0])).toBe(`/api/engagement/campaigns/${f.props.campaignId}/synthesis/preparation?requestId=${f.entry.requestId}`);
+    fireEvent.click(screen.getByRole("button", { name: "Refresh generation requests" }));
+    await waitFor(() => expect(screen.queryByRole("region", { name: "Request preparation" })).toBeNull());
+    await screen.findByText(f.entry.requestId); expect(fetcher).toHaveBeenCalledTimes(3);
+  });
   it("reads the selected source with current account headers and displays original identity without claiming execution", async () => {
     const f = fixture(), fetcher = vi.fn<typeof fetch>().mockResolvedValue(json(f.page));
     vi.stubGlobal("fetch", fetcher); render(<SynthesisRequestHistoryPanel {...f.props} />);
