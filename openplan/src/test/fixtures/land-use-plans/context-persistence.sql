@@ -58,6 +58,7 @@ BEGIN
   PERFORM pg_temp.context_refuses(format('SELECT pg_temp.save_context(%L,%L,%L,%L,NULL,%L,NULL)',plan,version,actor,command,raw_command),'PT400','missing prepared context refused');
   PERFORM pg_temp.context_refuses(format('SELECT public.save_land_use_plan_context(%L,%L,%L,%L,NULL,%L,%L,%L,%L)',plan,version,actor,command,raw_command,prepared,'wrong-checklist','community'),'PT409','changed checklist refused');
   PERFORM pg_temp.context_refuses(format('SELECT public.save_land_use_plan_context(%L,%L,%L,%L,NULL,%L,%L,%L,%L)',plan,version,actor,command,raw_command,prepared,'local-unconfigured','wrong-kind'),'PT409','changed plan kind refused');
+  PERFORM pg_temp.context_refuses(format('SELECT pg_temp.save_context(%L,%L,%L,%L,NULL,%L,%L)',plan,version,actor,gen_random_uuid(),jsonb_set(raw_command::jsonb,'{place}','{"mode":"retained"}')::text,prepared),'PT409','cannot retain an absent study area');
   EXECUTE call_sql INTO result;
   SET LOCAL ROLE authenticated;
   PERFORM pg_temp.context_refuses(format('UPDATE public.land_use_plans SET descriptor_id=%L WHERE id=%L','wrong-checklist',plan),'42501','direct checklist change refused');
@@ -83,6 +84,10 @@ BEGIN
   replay := pg_temp.save_context(plan,version,actor,command,NULL,raw_command,NULL);
   PERFORM pg_temp.context_assert(replay-'replayed'=result-'replayed','old replay remains original');
   PERFORM pg_temp.context_assert((SELECT plan_context=second_result->'context' FROM public.land_use_plans WHERE id=plan),'old replay does not overwrite newer save');
+  PERFORM pg_temp.context_refuses(format('SELECT pg_temp.save_context(%L,%L,%L,%L,%L,%L,%L)',plan,version,actor,gen_random_uuid(),second_result->>'contextHash',jsonb_set(raw_command::jsonb,'{place}','{"mode":"retained"}')::text,jsonb_set(prepared,'{place,label}','"Substituted area"')),'PT409','retained area substitution refused');
+  second_result := pg_temp.save_context(plan,version,actor,gen_random_uuid(),second_result->>'contextHash',jsonb_set(raw_command::jsonb,'{place}','{"mode":"retained"}')::text,prepared);
+  PERFORM pg_temp.context_assert(second_result#>'{context,place}'=prepared->'place','retained area stays exact');
+  PERFORM pg_temp.context_assert((SELECT geography_label=prepared#>>'{place,label}' AND geography_geojson=prepared#>'{place,geometry}' FROM public.land_use_plans WHERE id=plan),'plan geography agrees with retained context');
   SET LOCAL ROLE postgres;
   UPDATE public.workspace_members SET role='owner' WHERE workspace_id=workspace AND user_id=member;
   UPDATE public.workspace_members SET role='viewer' WHERE workspace_id=workspace AND user_id=actor;

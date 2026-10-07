@@ -1,0 +1,42 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "matched": true,
+      "expected": "pass"
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "expected": "pass"
+    },
+    {
+      "case": "retained-gate",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "cannot retain an absent study area: accepted"
+    },
+    {
+      "case": "retained-place",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "retained area substitution refused: accepted"
+    },
+    {
+      "case": "geography-label",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "plan geography agrees with retained context"
+    },
+    {
+      "case": "geography-geometry",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "plan geography agrees with retained context"
+    }
+  ],
+  "restored": true,
+  "sourceSha256": "e6f53b47077007031dd6670925f4325cbffc71f42289ff2b4b49adced0175012"
+}

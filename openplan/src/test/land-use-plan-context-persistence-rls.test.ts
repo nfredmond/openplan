@@ -11,9 +11,11 @@ it.skipIf(!LIVE_RLS)("retains exact context commands with database attribution, 
   // This opt-in probes unapplied candidate DDL inside the same rollback-only transaction.
   const migration = process.env.OPENPLAN_CONTEXT_MIGRATION_PROBE === "1"
     ? readFileSync("supabase/migrations/20261016000002_land_use_plan_context.sql", "utf8") : "";
+  const retainedMigration = process.env.OPENPLAN_CONTEXT_RETAINED_MIGRATION_PROBE === "1"
+    ? readFileSync("supabase/migrations/20261016000006_land_use_plan_retained_study_area.sql", "utf8") : "";
   const fixture = readFileSync("src/test/fixtures/land-use-plans/context-persistence.sql", "utf8");
   const result = spawnSync("docker", ["exec", "-i", container, "psql", "-U", "postgres", "-d", "postgres", "-qAt", "-v", "ON_ERROR_STOP=1"], {
-    input: `BEGIN; SET LOCAL statement_timeout = '15s'; ${migration}\n${fixture}\nROLLBACK;`, encoding: "utf8", timeout: 25_000,
+    input: `BEGIN; SET LOCAL statement_timeout = '15s'; ${migration}\n${retainedMigration}\n${fixture}\nROLLBACK;`, encoding: "utf8", timeout: 25_000,
   });
   expect(result.error).toBeUndefined();
   expect(result.status, result.stderr).toBe(0);

@@ -75,6 +75,35 @@ describe("plan context route", () => {
         place: expect.objectContaining({ source: "uploaded_file", countryCode: null }) }),
       p_expected_descriptor_id: command.descriptorId, p_expected_plan_kind_key: command.planKindKey });
   });
+  it("retains exact saved geography during an authority-only edit without resolving it again", async () => {
+    const text = serializePlanContextSave({ ...command, place: { mode: "retained" }, expectedContextHash: outcome.contextHash });
+    const response = await post(text); expect(response.status).toBe(201);
+    expect(mocks.resolve).not.toHaveBeenCalled();
+    expect(mocks.rpc.mock.calls[0][1].p_prepared_context.place).toEqual(retained.place);
+    expect(queries[1]).toEqual({ table: "land_use_plans", projection: "plan_context,plan_context_hash,descriptor_id,plan_kind_key,current_working_version_id",
+      filters: [["id", planId], ["workspace_id", workspaceId]] });
+  });
+  it.each(["absent", "hash", "version", "descriptor", "kind"])("refuses retained geography when its %s precondition changed", async fault => {
+    if (fault === "absent") tables.land_use_plans.data = { ...planRow(), plan_context: null, plan_context_hash: null };
+    if (fault === "hash") tables.land_use_plans.data = { ...planRow(), plan_context_hash: "b".repeat(64) };
+    if (fault === "version") tables.land_use_plans.data = { ...planRow(), current_working_version_id: otherId };
+    if (fault === "descriptor") tables.land_use_plans.data = { ...planRow(), descriptor_id: "us-ca-general-plan" };
+    if (fault === "kind") tables.land_use_plans.data = { ...planRow(), plan_kind_key: "another-kind" };
+    expect((await post(serializePlanContextSave({ ...command, place: { mode: "retained" }, expectedContextHash: outcome.contextHash }))).status).toBe(409);
+    expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.resolve).not.toHaveBeenCalled();
+  });
+  it("requires an applicability assessment even when retaining an existing configured study area", async () => {
+    tables.land_use_plans.data = { ...planRow(), descriptor_id: "us-ca-general-plan", plan_kind_key: "comprehensive" };
+    expect((await post(serializePlanContextSave({ ...command, descriptorId: "us-ca-general-plan", planKindKey: "comprehensive", place: { mode: "retained" }, expectedContextHash: outcome.contextHash }))).status).toBe(409);
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it("replays a retained-area request before consulting today's mutable context", async () => {
+    tables.land_use_plan_context_commands.data = { command_id: commandId };
+    tables.land_use_plans = { data: null, error: new Error("Current context unavailable") };
+    mocks.rpc.mockResolvedValue({ data: { ...outcome, replayed: true }, error: null });
+    expect((await post(serializePlanContextSave({ ...command, place: { mode: "retained" }, expectedContextHash: outcome.contextHash }))).status).toBe(200);
+    expect(queries).toHaveLength(1); expect(mocks.rpc.mock.calls[0][1].p_prepared_context).toBeNull();
+  });
   it("normalizes form fields before retaining transport bytes", () => {
     const text = serializePlanContextSave({ ...command, place: { ...command.place, label: "  SYNTHETIC study  " } });
     expect(JSON.parse(text).place.label).toBe("SYNTHETIC study");
