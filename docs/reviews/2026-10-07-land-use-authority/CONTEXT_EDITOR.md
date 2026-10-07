@@ -96,9 +96,66 @@ behavior, accessibility, actual browser quota behavior, or practitioner/legal
 acceptance. Production build and HTTP evidence must identify their application
 commit separately. No release claim follows from this checkpoint alone.
 
+## Production build and recovery follow-up
+
+Application commit `c3d26729a599f4c40d9d0d043af92100a8345886` passed the
+[production build](context-editor/build.json) with an unchanged clean checkout.
+The owned server on port 3495 reported that commit; its Next process working
+directory matched this isolated worktree. The build used the isolated database
+with migrations through `20261016000006`. No demo or benefit-cost stack changed.
+The server stopped before this documentation update.
+
+The [production HTTP case](context-editor/native-http.json) passes 14 requests:
+explicit historical absence, uploaded study area, two responsible bodies,
+retained-area assessment change, deliberately dropped successful reply, exact
+retry, stale-base refusal and replacement geometry that preserves assessment.
+Native database reads establish one command and one revision for the retry.
+Those client recovery functions ran in Node with in-memory storage. They do not
+establish browser behavior. The completed producer journal is preserved and must
+not be rerun against its existing fixture.
+
+The separate [T3 desktop functional record](context-editor/browser-functional.json)
+starts with navigation through Overview and Land Use Plans to the synthetic plan.
+Fixture authentication uses a one-use loopback cookie handoff, so sign-in is not
+an accepted journey. A real input edit retains a browser draft. The test consumes
+a successful HTTP 201 response, then throws a synthetic transport error. The
+editor retains the original command and offers explicit retry. A fresh document
+finds both recovery copies. Explicit retry sends byte-identical JSON, receives
+HTTP 200 with `replayed: true`, and removes only the confirmed pending request.
+The first tab's draft remains byte-identical. Database command text and SHA-256
+match the browser request; there is one journal row. Draft revision advances
+from the native fixture's 4 to 5, with no additional revision for retry.
+
+Opening the older draft retains its original hash and disables save until review.
+The saved assessment identifies both bodies, including the unassessed tribal
+jurisdiction and unresolved applicability. Explicit synthetic review retains the
+old draft bytes in an archive and creates a draft with current preconditions.
+Neither restoration nor review sends another request. Keeping the reviewed copy
+aside returns the form to current saved context while preserving browser copies.
+The actual download action produces a parseable
+[1,407-byte draft](context-editor/synthetic-recovered-draft.json). This verifies
+the browser Blob contents, not an operating-system download.
+
+T3 semantic typing works, but its click tool sometimes reports success without
+activation. The functional record therefore uses DOM activation of observed
+links and buttons in T3. The viewport is 1280 by 800, with document width 1280.
+Resize to 390 by 844 times out on both attempts; reopening confirms the desktop
+viewport remains. Screenshot and recording tools fail. No fallback browser is
+used. Console observers report no warnings/errors during the bounded observed
+interactions; they do not cover initial document loading or the full browser log.
+Pointer, keyboard, mobile, visual and accessibility acceptance remain open.
+The fixture also lacks sections, GIS and implementation readiness, so its disabled
+freeze button cannot independently establish the context-only freeze gate.
+
+The authentication helper's first cross-origin fetch was refused by the existing
+content security policy. After that helper expired, a one-use navigation handoff
+succeeded and closed. No product security policy changed. Failed tool attempts
+remain part of the record. GitHub CI was still running at this evidence checkpoint;
+a build and functional case do not establish a passing release.
+
 ## Remaining M1 work
 
-Collect the identified-build rendered journeys and native HTTP follow-up. Connect
+Collect the identified-build rendered journeys. Connect
 atomic creation to these same fields and remove the workspace-home applicability
 assumption. Distinguish source-supported plan-kind rules, then verify the roadmap's
 cross-state, missing-home, uploaded, multistate and tribal cases through saved,
