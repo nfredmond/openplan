@@ -133,3 +133,26 @@ credential-change, foreign scope, duplicate/concurrency and immutable-history
 checks. Add the migration inventories and release documentation with the complete
 increment. The queue has no claim/status API or worker pickup yet; service reads
 must never interpret a queue record alone as fresh dispatch authority.
+
+## Role and time-bound follow-up
+
+`native-role-probe.sql` adds actual `authenticated`, `anon` and `service_role`
+execution checks in the same rollback-only transaction. Authenticated staff
+creates a new queue entry and recovers its original receipt for each stage.
+Other actors cannot replay it. Anonymous and service roles cannot invoke the
+staff enqueue function; direct authenticated table reads and updates fail.
+
+Fresh permissions expire naturally during the probe. A previously enqueued
+command still returns its exact receipt; an untouched expired allowance cannot
+create a queue entry. Cancellation likewise preserves exact old receipts and
+refuses fresh scheduling. These checks alter only temporary synthetic records.
+
+The baseline and harmless control pass. Six targeted role/current-authority/
+expiry mutations fail the intended assertions. The initial UPDATE probe also
+read a column, so removing UPDATE restrictions still failed for missing SELECT.
+The revised probe assigns a literal and isolates UPDATE permission. This initial
+weakness and final results remain in `native-role-controls.json`.
+
+These checks establish SQL role behavior and natural expiry, not browser/HTTP
+session isolation, concurrent workers or deployment recovery. Independent fixture
+construction, credential-change and concurrency coverage remain unfinished.
