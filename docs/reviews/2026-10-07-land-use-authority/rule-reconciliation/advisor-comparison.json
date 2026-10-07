@@ -1,0 +1,53 @@
+{
+  "unchanged": true,
+  "warnings": 8,
+  "errors": 1,
+  "findings": [
+    {
+      "name": "function_search_path_mutable",
+      "level": "WARN",
+      "object": "apply_engagement_item_vote_delta"
+    },
+    {
+      "name": "function_search_path_mutable",
+      "level": "WARN",
+      "object": "reap_model_run_if_stale"
+    },
+    {
+      "name": "function_search_path_mutable",
+      "level": "WARN",
+      "object": "set_rtp_financial_updated_at"
+    },
+    {
+      "name": "function_search_path_mutable",
+      "level": "WARN",
+      "object": "refuse_scenario_comparison_model_run_link_change"
+    },
+    {
+      "name": "function_search_path_mutable",
+      "level": "WARN",
+      "object": "refuse_project_decision_package_change"
+    },
+    {
+      "name": "rls_disabled_in_public",
+      "level": "ERROR",
+      "object": "spatial_ref_sys"
+    },
+    {
+      "name": "extension_in_public",
+      "level": "WARN",
+      "object": "postgis"
+    },
+    {
+      "name": "extension_in_public",
+      "level": "WARN",
+      "object": "pg_trgm"
+    },
+    {
+      "name": "extension_in_public",
+      "level": "WARN",
+      "object": "btree_gist"
+    }
+  ],
+  "boundary": "No new security advisor findings; existing findings remain. This is not a clean database audit."
+}

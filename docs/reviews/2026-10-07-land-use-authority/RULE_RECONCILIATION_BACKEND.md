@@ -67,11 +67,32 @@ across 26 suites. Six native suites containing seven cases skip in that ordinary
 invocation; the two new native cases pass separately as described above.
 TypeScript and changed-file ESLint also pass.
 
+## Installed isolated-stack checkpoint
+
+After integrating parent `418ba38f`, combined commit `37696014` installs migrations
+9 and 10 in order on the isolated restore target at API 29821 and database 29822.
+The CLI confirms all 380 earlier migrations matched before the two new files
+were copied. The [installation record](rule-reconciliation/install.log) names
+both applied migrations. No demo, hosted or production database changes.
+
+The [installed native suite](rule-reconciliation/installed-native.log) passes all
+13 cases across seven suites without migration probe flags. This joins context,
+draft revision, freeze, creation, cancellation, restored cascade ordering and
+reconciliation behavior. The [catalog check](rule-reconciliation/installed-catalog.txt)
+confirms both migration versions and service-only reconciliation execution.
+All 285 application tables retain RLS; the separate PostGIS spatial-reference
+table remains an extension-owned advisor finding.
+
+The [security advisor comparison](rule-reconciliation/advisor-comparison.json)
+retains the same eight warnings and one error before and after. No clean security
+audit is claimed. The full archive restore drill is still a separate GitHub gate.
+Migration probes that CREATE these installed objects must not run again on this
+stack. Installed native fixtures without probe flags remain repeatable.
+
 ## Remaining boundary
 
 The browser recovery library, explicit workbench action, unsaved-edit protection
-and earlier-section presentation remain unfinished. Installed migration upgrade,
-authenticated concurrent HTTP commands, identified desktop/390px evidence,
+and earlier-section presentation remain unfinished. Authenticated concurrent HTTP commands, identified desktop/390px evidence,
 console and downloaded-artifact review remain open. The user requires T3 preview
 only. Native tests and an available preview do not establish rendered acceptance.
 Parent PR126's complete corrected archive restore drill also remains pending.

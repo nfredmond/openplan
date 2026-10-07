@@ -67,3 +67,9 @@ The complete GitHub archive restore drill must still pass on the corrected
 commit. Local transaction probes do not replace an archive restore, current
 rendered workflow acceptance, practitioner review or V1 acceptance. The migration
 is not yet installed on the isolated local stack. No release or merge is claimed.
+
+
+The subsequent [combined installed checkpoint](RULE_RECONCILIATION_BACKEND.md#installed-isolated-stack-checkpoint)
+applies migrations 9 and 10 to the isolated stack and passes all 13 installed
+native cases. That supersedes the uninstalled state above. The full GitHub
+archive restore and rendered acceptance remain separate.
