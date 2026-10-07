@@ -429,3 +429,53 @@ The existing integration runtime remains on port 3504. The queue worktree will
 use its own build and port. The owned restore-target database has no active
 application query during preparation and records migrations through 00012.
 This catalog check alone does not establish restore behavior or live acceptance.
+
+
+## Identified-build queue acceptance, October 7
+
+Production build 27835bf6 passes webpack, TypeScript and generation of 137 static
+pages. Its owned runtime serves port 3505. Migration 00013 is installed through
+the Supabase CLI on the isolated restore-target stack, API port 29821. These
+facts supersede the preparation-only state above.
+
+T3 navigation reached the saved source and an expired allowance at desktop and
+390px widths. The scheduling review read an empty receipt and disabled fresh
+execution for that expired allowance. The mobile document had no horizontal
+overflow. This is agent inspection, not practitioner acceptance.
+
+A new synthetic request a9f14a6a-aa21-46d9-ae8f-fba7f612f776 was saved through
+T3, queued for preparation and prepared by its targeted journal. Its four-task
+plan was sealed. Staff controls saved allowance
+04d54d77-5d72-489f-9539-61649e541e03, then explicitly queued it after an empty
+custody lookup. A local synthetic provider accepted only exact prepared task
+bytes for this request, with no paid provider or participant data.
+
+The first worker process omitted the explicit loopback endpoint exception and
+returned one unconfirmed schedule. A direct diagnostic invocation reproduced
+`api_endpoint_denied`. Neither invocation reached the provider. Both had already
+retained native dispatch custody, leaving tasks 0 and 1 unobserved. The worker
+therefore did not resend them after the process configuration was corrected.
+Tasks 2 and 3 then reached the provider and retained structurally complete
+outputs. A further cursor-wrap and populated pass made no additional requests:
+the provider log remains at two calls. Task journals remain unobserved,
+unobserved, delivered and delivered. T3 reports two attempts without retained
+output and two complete output checks, with an incomplete-analysis warning.
+
+This proves explicit queue transport, two actual local calls, result inspection
+and replay without duplicate dispatch for this fixture. It does not prove
+all-task completion, recovery of the two missing outputs, semantic validity,
+context/thematic queue execution, concurrent coordinators or lost browser-reply
+recovery. The pre-transport refusal boundary needs further review. Do not erase
+or reinterpret the two unobserved attempts to obtain a complete result.
+
+Private synthetic scripts, exact task bytes, provider logs and journals remain
+under ~/.local/state/openplan/synthesis-queue-acceptance-20261007. The provider
+process uses tool session 52829 and port 34667. No continuous queue worker is
+installed. Empty service startup, SIGTERM and restart previously passed with an
+unchanged empty coordinator journal; that narrower evidence does not prove
+interruption recovery during a call.
+
+Integration PR #138 separately merged as main commit 4d6ef970 after all eight
+PR checks passed, including the full restore drill. Its post-merge CI, RLS,
+upgrade-path and worker runs were queued when this checkpoint was written.
+This queue candidate is not part of that merge and is not declared released.
