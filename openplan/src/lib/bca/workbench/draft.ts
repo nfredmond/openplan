@@ -3,7 +3,7 @@ import { bcaDocumentSchema, type BcaDocument } from "./schema";
 
 // Editing can temporarily violate calculation bounds. Retain the complete typed
 // structure without requiring a finished analysis, so a reload can repair it.
-function editableShape(schema: z.ZodType): z.ZodType {
+function editableShape(schema: z.core.$ZodType): z.ZodType {
   if (schema instanceof z.ZodString) return z.string();
   if (schema instanceof z.ZodNumber) return z.number().finite();
   if (schema instanceof z.ZodNullable) return editableShape(schema.unwrap()).nullable();
@@ -12,7 +12,8 @@ function editableShape(schema: z.ZodType): z.ZodType {
   if (schema instanceof z.ZodObject) {
     return z.object(Object.fromEntries(Object.entries(schema.shape).map(([key, field]) => [key, editableShape(field as z.ZodType)]))).strict();
   }
-  return schema;
+  if (schema instanceof z.ZodEnum || schema instanceof z.ZodLiteral) return schema;
+  throw new Error("Unsupported draft field schema");
 }
 export const bcaDraftSchema = editableShape(bcaDocumentSchema) as z.ZodType<BcaDocument>;
 export const bcaRetainedSaveSchema = z.object({
