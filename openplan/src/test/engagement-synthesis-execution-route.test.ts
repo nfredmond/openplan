@@ -1,11 +1,14 @@
 import { createHash } from "node:crypto";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ client: vi.fn(), service: vi.fn(), user: vi.fn(), access: vi.fn(), rpc: vi.fn(), info: vi.fn(), warn: vi.fn() }));
+const mocks = vi.hoisted(() => ({ client: vi.fn(), service: vi.fn(), preview: vi.fn(), user: vi.fn(), access: vi.fn(), rpc: vi.fn(), info: vi.fn(), warn: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.client, createServiceRoleClient: mocks.service }));
 vi.mock("@/lib/engagement/api", () => ({ loadCampaignAccess: mocks.access }));
 vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: () => ({ info: mocks.info, warn: mocks.warn }) }));
-import { POST } from "@/app/api/engagement/campaigns/[campaignId]/synthesis/execution/route";
+vi.mock("@/lib/engagement/synthesis-execution-preview-server", () => ({ readSynthesisExecutionPreview: mocks.preview }));
+import { GET, POST } from "@/app/api/engagement/campaigns/[campaignId]/synthesis/execution/route";
+import { SynthesisGenerationRequestError } from "@/lib/engagement/synthesis-generation-requests-server";
+import { z } from "zod";
 
 const id = (n: number) => `c7100000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const campaignId = id(1), workspaceId = id(2), requestId = id(3), actorId = id(4), sourceId = id(5), authorizationId = id(8);
@@ -24,12 +27,17 @@ const browserHeaders = { origin: "http://localhost", "content-type": "applicatio
 function post(body: unknown = command, headers: Record<string, string> = {}) {
   return new NextRequest(path, { method: "POST", headers: { ...browserHeaders, ...headers }, body: JSON.stringify(body) });
 }
+function get(query = `requestId=${requestId}&stage=segment`, headers: Record<string, string> = {}) {
+  return new NextRequest(`${path}?${query}`, { headers: { ...browserHeaders, ...headers } });
+}
 const state = { schemaVersion: 1, campaignId, workspaceId,
   request: { id: requestId, actorId, intentText: requestText, intentSha256: hash(requestText), createdAt: date }, cancellation: null };
 const client = { auth: { getUser: mocks.user }, rpc: (name: string, args: unknown) => ({ abortSignal: (signal: AbortSignal) => mocks.rpc(name, args, signal) }) };
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.client.mockResolvedValue(client);
+  mocks.service.mockReturnValue({ syntheticService: true });
+  mocks.preview.mockResolvedValue({ schemaVersion: 1, campaignId, workspaceId, requestId, stage: "segment" });
   mocks.user.mockResolvedValue({ data: { user: { id: actorId } }, error: null });
   mocks.access.mockResolvedValue({ campaign: { workspace_id: workspaceId }, allowed: true, error: null });
   mocks.rpc.mockImplementation(async name => ({ data: name === "read_engagement_synthesis_generation_request" ? state : receipt, error: null }));
@@ -60,11 +68,13 @@ describe("staff execution authorization HTTP boundary", () => {
       if (kind === "denied") mocks.access.mockResolvedValue({ campaign: { workspace_id: workspaceId }, allowed: false, error: null });
       if (kind.startsWith("user-")) headers["x-openplan-expected-user"] = kind.endsWith("missing") ? "" : id(99);
       if (kind.startsWith("workspace-")) headers["x-openplan-expected-workspace"] = kind.endsWith("missing") ? "" : id(99);
-      const response = await POST(post(command, headers), context);
-      expect(response.status).toBe(kind === "anonymous" || kind === "auth-error" ? 401 : kind === "access-error" ? 503 : 403);
-      expect(response.headers.get("cache-control")).toBe("private, no-store");
-      expect(JSON.stringify(await response.json())).not.toContain("PRIVATE");
+      for (const response of [await POST(post(command, headers), context), await GET(get(undefined, headers), context)]) {
+        expect(response.status).toBe(kind === "anonymous" || kind === "auth-error" ? 401 : kind === "access-error" ? 503 : 403);
+        expect(response.headers.get("cache-control")).toBe("private, no-store");
+        expect(JSON.stringify(await response.json())).not.toContain("PRIVATE");
+      }
       expect(mocks.rpc).not.toHaveBeenCalled();
+      expect(mocks.service).not.toHaveBeenCalled(); expect(mocks.preview).not.toHaveBeenCalled();
     });
   it.each(["x-openplan-assistant-execution-source", "x-openplan-assistant-input-hash", "x-openplan-assistant-approval-id"])("refuses unsupported agent authority %s", async header => {
     expect((await POST(post(command, { [header]: "" }), context)).status).toBe(403);
@@ -102,5 +112,28 @@ describe("staff execution authorization HTTP boundary", () => {
     const response = await POST(post(), context);
     expect(response.status).toBe(403); expect(JSON.stringify(await response.json())).not.toContain("PRIVATE");
     expect(mocks.info).not.toHaveBeenCalled(); expect(mocks.rpc).toHaveBeenCalledTimes(3);
+  });
+  it.each(["segment", "context", "thematic"])("reads a bounded %s preview under current staff scope", async stage => {
+    const response = await GET(get(`requestId=${requestId}&stage=${stage}`), context);
+    expect(response.status).toBe(200); expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(mocks.preview).toHaveBeenCalledExactlyOnceWith(client, { syntheticService: true }, { campaignId, workspaceId, requestId, stage }, expect.any(AbortSignal));
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it.each(["", `requestId=${requestId}`, `requestId=${requestId}&stage=unknown`, `requestId=${requestId}&stage=segment&stage=context`,
+    `requestId=${requestId}&stage=segment&extra=true`, `requestId=${requestId}&requestId=${id(99)}`, "requestId=invalid&stage=segment"])(
+    "refuses invalid preview query %s", async query => {
+      expect((await GET(get(query), context)).status).toBe(400);
+      expect(mocks.preview).not.toHaveBeenCalled(); expect(mocks.service).not.toHaveBeenCalled();
+    });
+  it("keeps malformed native evidence distinct from invalid input", async () => {
+    const invalid = z.string().safeParse(null);
+    if (invalid.success) throw new Error("Invalid fixture");
+    mocks.preview.mockRejectedValue(invalid.error);
+    const response = await GET(get(), context);
+    expect(response.status).toBe(503); expect(await response.json()).toMatchObject({ kind: "unavailable" });
+  });
+  it.each([["forbidden", 403], ["conflict", 409], ["unavailable", 503]] as const)("preserves preview %s refusal", async (kind, status) => {
+    mocks.preview.mockRejectedValue(new SynthesisGenerationRequestError(kind, status));
+    expect((await GET(get(), context)).status).toBe(status);
   });
 });

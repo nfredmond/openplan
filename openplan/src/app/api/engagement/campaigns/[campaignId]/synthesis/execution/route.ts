@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { readBytesWithLimitStreaming } from "@/lib/http/body-limit";
 import { authorizeSynthesisExecution } from "@/lib/engagement/synthesis-execution-server";
+import { readSynthesisExecutionPreview } from "@/lib/engagement/synthesis-execution-preview-server";
 import { synthesisExecutionCommandSchema, synthesisExecutionScopeSchema } from "@/lib/engagement/synthesis-execution-records";
 import { SynthesisGenerationRequestError } from "@/lib/engagement/synthesis-generation-requests-server";
 
@@ -20,6 +21,24 @@ const messages = {
 };
 const failure = (kind: keyof typeof messages, status: number) => NextResponse.json({ kind, error: messages[kind] }, { status, headers });
 type Context = { params: Promise<{ campaignId: string }> };
+
+async function staff(request: NextRequest, campaignId: string) {
+  const client = await createClient(), { data: { user }, error } = await client.auth.getUser();
+  if (error || !user) throw new SynthesisGenerationRequestError("forbidden", 401);
+  const access = await loadCampaignAccess(client, campaignId, user.id, "engagement.write");
+  if (access.error) throw new SynthesisGenerationRequestError("unavailable", 503);
+  if (!access.allowed || !access.campaign) throw new SynthesisGenerationRequestError("forbidden", 403);
+  const workspaceId = access.campaign.workspace_id;
+  if (request.headers.get("x-openplan-expected-user") !== user.id ||
+    request.headers.get("x-openplan-expected-workspace") !== workspaceId) throw new SynthesisGenerationRequestError("forbidden", 403);
+  return { client, workspaceId, actorId: user.id };
+}
+
+function classify(cause: unknown) {
+  return cause instanceof SynthesisGenerationRequestError ? cause
+    : cause instanceof z.ZodError || cause instanceof SyntaxError ? new SynthesisGenerationRequestError("invalid", 400)
+    : new SynthesisGenerationRequestError("unavailable", 503);
+}
 
 /** Record explicit staff authority. Durable workers independently recheck it
  * before every provider call. This route never starts a worker or sends data.
@@ -38,23 +57,42 @@ export async function POST(request: NextRequest, context: Context) {
     try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(body.bytes)); }
     catch { return failure("invalid", 400); }
     const command = commandSchema.parse(raw);
-    const client = await createClient(), { data: { user }, error } = await client.auth.getUser();
-    if (error || !user) return failure("forbidden", 401);
-    const access = await loadCampaignAccess(client, campaignId, user.id, "engagement.write");
-    if (access.error) return failure("unavailable", 503);
-    if (!access.allowed || !access.campaign) return failure("forbidden", 403);
-    const workspaceId = access.campaign.workspace_id;
-    if (request.headers.get("x-openplan-expected-user") !== user.id ||
-      request.headers.get("x-openplan-expected-workspace") !== workspaceId) return failure("forbidden", 403);
-    const receipt = await authorizeSynthesisExecution(client, { ...command, campaignId, workspaceId, actorId: user.id }, request.signal);
+    const { client, workspaceId, actorId } = await staff(request, campaignId);
+    const receipt = await authorizeSynthesisExecution(client, { ...command, campaignId, workspaceId, actorId }, request.signal);
     audit.info("authorization_retained", { requestId: command.requestId, authorizationId: receipt.id, stage: command.stage });
     // The native function returns the same receipt on creation and exact replay.
     return NextResponse.json(receipt, { status: 200, headers });
   } catch (cause) {
-    const failed = cause instanceof SynthesisGenerationRequestError ? cause
-      : cause instanceof z.ZodError || cause instanceof SyntaxError ? new SynthesisGenerationRequestError("invalid", 400)
-      : new SynthesisGenerationRequestError("unavailable", 503);
+    const failed = classify(cause);
     audit.warn("authorization_unconfirmed", { kind: failed.kind });
+    return failure(failed.kind, failed.status);
+  }
+}
+
+/** Current staff can inspect a retained prepared plan and its original provider
+ * choice. This bounded read never reconstructs or sends contribution content.
+ */
+export async function GET(request: NextRequest, context: Context) {
+  const audit = createApiAuditLogger("engagement.synthesis-execution.inspect", request);
+  try {
+    const { campaignId } = z.object({ campaignId: z.string().uuid() }).parse(await context.params);
+    const entries = [...request.nextUrl.searchParams];
+    if (entries.length !== 2 || entries.filter(([key]) => key === "requestId").length !== 1 ||
+      entries.filter(([key]) => key === "stage").length !== 1) return failure("invalid", 400);
+    const query = z.object({ requestId: z.string().uuid(), stage: z.enum(["segment", "context", "thematic"]) }).strict().parse(Object.fromEntries(entries));
+    const { client, workspaceId } = await staff(request, campaignId);
+    let summary;
+    try { summary = await readSynthesisExecutionPreview(client, createServiceRoleClient(), { ...query, campaignId, workspaceId }, request.signal); }
+    catch (cause) {
+      // Malformed native records are unavailable evidence, not bad user input.
+      if (cause instanceof z.ZodError || cause instanceof SyntaxError) throw new SynthesisGenerationRequestError("unavailable", 503);
+      throw cause;
+    }
+    audit.info("authorization_plan_read", { requestId: query.requestId, stage: query.stage });
+    return NextResponse.json(summary, { headers });
+  } catch (cause) {
+    const failed = classify(cause);
+    audit.warn("authorization_plan_unavailable", { kind: failed.kind });
     return failure(failed.kind, failed.status);
   }
 }

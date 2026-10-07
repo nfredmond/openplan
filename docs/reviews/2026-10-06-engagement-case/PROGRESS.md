@@ -132,3 +132,32 @@ Existing worker journals own execution and result recovery. Context and thematic
 continuation, reviewed proposal import, response/decision links, usable exports
 and second-staff continuation still need the complete case evidence. The roadmap
 continues to own sequencing; this note does not declare those outcomes complete.
+
+## Prepared execution preview checkpoint
+
+The authenticated GET route now reads the existing segment, context or thematic
+plan before staff authorizes execution. It checks the original request before
+and after the read, validates retained header and seal hashes, and requires the
+complete count/byte prefix. Provider metadata queries select only the fields
+needed to show the original destination, model, revision and current status.
+A cancelled request or changed provider remains visible with its actual status;
+an incomplete plan fails the read instead of reporting zero work.
+
+The preview, authority adapter and HTTP suites pass 102 checks. TypeScript and
+targeted ESLint pass. A harmless comment passes; removing intent binding,
+complete-count validation, provider workspace scope, the explicit projection or
+the final access check fails the respective preview check. See
+[preview mutation receipts](execution-preview-mutations.json).
+
+A read-only native check signs in as the synthetic original requester against
+the isolated restore-target stack on port 29821. Existing sealed plans return
+4 segment tasks, 13 context frames and 5 thematic tasks. The check grants no
+authority, starts no worker and calls no provider. The sanitized
+[native preview receipt](execution-native-preview.json) identifies file hashes
+because this check precedes the preview commit. These bounded header/seal reads
+do not establish full input reconstruction or scientific validity. Browser
+authorization controls and native grant recovery remain open.
+
+Nathaniel confirms that the separate benefit-cost agent owns
+`work/bca-workbench-20261006`. Its worktree is excluded from these edits and must
+be included in the next integration audit.
