@@ -30,7 +30,10 @@ map, export presentation or accessibility evidence needed to make it usable.
 
 - 181 land-use unit/component checks pass in 14 suites. The native persistence
   suite remains separately gated and is skipped in that ordinary run.
-- Full TypeScript checking and changed-file ESLint pass.
+- Full TypeScript checking and changed-file ESLint pass. The [clean production
+  build](context-snapshot/build-status.json) passes at `40328201`, with the
+  checkout unchanged throughout collection. No server journey is collected for
+  this build.
 - [Controls](context-snapshot/controls.json) retain one harmless change and 12
   faults. Each fault fails its intended assertion. The
   [runner](context-snapshot/controls.py) restores source bytes after every case.
