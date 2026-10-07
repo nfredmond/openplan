@@ -1,0 +1,23 @@
+{
+  "cases": [
+    {
+      "case": "harmless worker comment",
+      "exitCode": 0,
+      "expectedOutcome": true,
+      "reasonConfirmed": true
+    },
+    {
+      "case": "missing claimed_at reader",
+      "exitCode": 1,
+      "expectedOutcome": true,
+      "reasonConfirmed": true
+    },
+    {
+      "case": "missing initial_lease_until reader",
+      "exitCode": 1,
+      "expectedOutcome": true,
+      "reasonConfirmed": true
+    }
+  ],
+  "boundary": "The unchanged scan detects absent column names, not correctness of how a worker uses those fields."
+}
