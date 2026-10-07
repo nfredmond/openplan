@@ -93,3 +93,42 @@ passing full-gate claim; the corrected commit requires a fresh run.
 The main-branch QA workflow `37567988907` passes after PR #115. Its separate live
 RLS workflow is still running when this checkpoint is recorded. This does not
 replace verification of the new branch.
+
+The main live RLS run `37567988750` subsequently passes: 91 files, 1,422
+checks and 125 skipped. Its log is retained locally at
+`/tmp/openplan-main-rls-b028.log`. Skipped cases do not supply acceptance evidence.
+
+## Execution authority adapter in progress
+
+The separate `engagement-execution-controls-20261006` checkout starts at
+`6bedf6b8`, preserving the request-controls build during its full gate. The new
+authenticated execution route calls the existing segment, context or thematic
+authorization function. It does not start workers, access a service key or send
+contributions to a provider. The original request is checked before and after
+the write against the actual actor, campaign, workspace, source and intent hash.
+Browser account/workspace pins, same-origin writes and explicit refusal of
+unregistered agent commands remain required. Original grant bytes and identifiers
+survive expiry and cancellation for exact acknowledgement recovery. Native
+functions retain responsibility for new-grant eligibility and worker dispatch.
+
+The worker authorization schema moves unchanged to a browser-compatible records
+module. The existing worker import remains available. Three existing loader and
+authority suites pass 172 checks. The new HTTP and adapter suites pass 61 checks.
+Their harmless comment passes; deliberate removal of original-actor, source,
+receipt-hash, post-write access, browser-account, agent-write and single-retry
+checks fails the corresponding test. See [mutation receipts](execution-mutations.json).
+These tests simulate RPC responses and establish neither native RLS nor provider
+execution. The route has no visible staff control yet. Full type/build checks,
+native authorization recovery and identified-build browser evidence remain open.
+
+The next staff control must show the actual saved destination/model, the sealed
+plan's task count, exact grant limits and expiry before explicit acknowledgement.
+Attempt, output-token and response-byte limits are not a dollar ceiling. A
+bounded plan read can inspect retained header/seal identity; the durable worker
+must still reconstruct original inputs before dispatch. The browser must retain
+the exact grant before POST and preserve it on a lost reply, access change,
+storage failure or reload. It must not silently create a second allowance.
+Existing worker journals own execution and result recovery. Context and thematic
+continuation, reviewed proposal import, response/decision links, usable exports
+and second-staff continuation still need the complete case evidence. The roadmap
+continues to own sequencing; this note does not declare those outcomes complete.
