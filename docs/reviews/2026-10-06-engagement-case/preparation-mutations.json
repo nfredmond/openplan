@@ -1,0 +1,26 @@
+[
+  {
+    "name": "harmless-comment",
+    "exitCode": 0,
+    "expectedPass": true,
+    "matched": true
+  },
+  {
+    "name": "wrong-actor-accepted",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "name": "another-staff-can-queue",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "name": "stale-preparation-on-history-refresh",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  }
+]

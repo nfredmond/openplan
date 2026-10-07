@@ -18,6 +18,12 @@ export async function GET(request: NextRequest) {
   try {
     const scope = listSchema.parse(Object.fromEntries(request.nextUrl.searchParams));
     const { client, userId } = await providerUser();
+    // Recovery views pin both identities. Preserve the existing settings reader
+    // while refusing a pinned request after its browser account or workspace changes.
+    const expectedUser = request.headers.get("x-openplan-expected-user");
+    const expectedWorkspace = request.headers.get("x-openplan-expected-workspace");
+    if ((expectedUser !== null || expectedWorkspace !== null) &&
+      (expectedUser !== userId || expectedWorkspace !== scope.workspaceId)) return providerJson({ error: "provider_browser_scope_changed" }, 403);
     const member = await client.from("workspace_members").select("workspace_id,role").eq("workspace_id", scope.workspaceId).eq("user_id", userId).maybeSingle();
     providerRpcError(member.error);
     if (!member.data || member.data.workspace_id !== scope.workspaceId || !["owner", "admin", "member", "viewer"].includes(member.data.role)) return providerJson({ error: "workspace_not_found" }, 404);

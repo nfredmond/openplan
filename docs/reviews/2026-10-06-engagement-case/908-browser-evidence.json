@@ -1,0 +1,388 @@
+{
+  "build": "90858445d8c6a756b7eebff7e3dfddefba42e1d2",
+  "checkedAt": "2026-10-07T04:53:41.367Z",
+  "target": "Owned isolated API 29821; production app 3479",
+  "scope": "Synthetic engineering acceptance. No provider calls, semantic or practitioner acceptance.",
+  "steps": {
+    "creationLostReply": {
+      "proof": [
+        {
+          "at": "2026-10-07T04:50:50.693Z",
+          "receipt": {
+            "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+            "cancellation": null,
+            "replayed": false,
+            "request": {
+              "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+              "createdAt": "2026-10-07T04:50:50.687638+00:00",
+              "id": "6c96a132-cf6d-4674-b2d6-58242d94e1d4",
+              "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+              "intentText": "{\"schemaVersion\":1,\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"connectionId\":\"7b257b91-c86c-43a9-b1bb-ef6255bf65bf\",\"configurationRevisionId\":\"910024eb-a147-4a91-a3b9-2e4476636731\",\"configurationHash\":\"d5256a2cbe32cfb78dac66bb5ae786cfbaaa75959089c77da1c880d069031915\",\"modelId\":\"synthetic\",\"taskByteLimit\":65536}"
+            },
+            "schemaVersion": 1,
+            "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+          },
+          "request": {
+            "intentText": "{\"schemaVersion\":1,\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"connectionId\":\"7b257b91-c86c-43a9-b1bb-ef6255bf65bf\",\"configurationRevisionId\":\"910024eb-a147-4a91-a3b9-2e4476636731\",\"configurationHash\":\"d5256a2cbe32cfb78dac66bb5ae786cfbaaa75959089c77da1c880d069031915\",\"modelId\":\"synthetic\",\"taskByteLimit\":65536}",
+            "operation": "create",
+            "requestId": "6c96a132-cf6d-4674-b2d6-58242d94e1d4"
+          },
+          "status": 201
+        }
+      ],
+      "text": "\n\nSave a request for this complete source. Preparation and permission to send contributions to a provider are separate steps. You can also review contributions manually below.\n\nSYNTHETIC acceptance: committed reply withheld once\n\nSaved API connection\nChoose a saved API\nSYNTHETIC local browser provider\nSYNTHETIC local browser provider\n\nDestination: http://127.0.0.1:34667/v1/\n\nAnalysis model\nChoose a model\nsynthetic\n\nThis workflow currently uses saved OpenAI-compatible APIs. Installed provider connections are available for supported project tasks. Saving this request does not send data, start a model, or accept provider charges.\n\nRefresh analysis providers\nSave analysis request\nManage saved APIs in settings\n\nUnconfirmed request 6c96a132-cf6d-4674-b2d6-58242d94e1d4. Its original intent remains saved in this browser. Retry this same command or inspect saved request history.\n\nInspect the original request before retrying\nRetry saved analysis request\nPreserve request recovery copy\nStop this analysis request\n\nCancellation prevents new work under this request. You can cancel while the original save is unconfirmed. Earlier contributions, approvals and results remain retained; a provider call already sent may still incur charges.\n\nReason for cancelling\nCancel analysis request\nBrowse saved generation requests\nStaff synthesis reviews\n\nCreate a private draft from this complete saved source. Historical categories begin unassessed. Staff wording and membership corrections retain their reasons and earlier versions.\n\nSaving a draft does not approve or publish findings. Contribution counts do not measure distinct people or representative support.\n\nCreate staff review\nRefresh staff reviews\n\nSYNTHETIC machine proposal for browser inspection \u00b7 latest revision 2\n\nOpen staff review 17b5a959"
+    },
+    "creationAfterReload": {
+      "text": "\n\nSave a request for this complete source. Preparation and permission to send contributions to a provider are separate steps. You can also review contributions manually below.\n\nSaved API connection\nChoose a saved API\nSYNTHETIC local browser provider\nSYNTHETIC local browser provider\n\nThis workflow currently uses saved OpenAI-compatible APIs. Installed provider connections are available for supported project tasks. Saving this request does not send data, start a model, or accept provider charges.\n\nRefresh analysis providers\nSave analysis request\nManage saved APIs in settings\n\nUnconfirmed request 6c96a132-cf6d-4674-b2d6-58242d94e1d4. Its original intent remains saved in this browser. Retry this same command or inspect saved request history.\n\nInspect the original request before retrying\nRetry saved analysis request\nPreserve request recovery copy\nStop this analysis request\n\nCancellation prevents new work under this request. You can cancel while the original save is unconfirmed. Earlier contributions, approvals and results remain retained; a provider call already sent may still incur charges.\n\nReason for cancelling\nCancel analysis request\nBrowse saved generation requests\nStaff synthesis reviews\n\nCreate a private draft from this complete saved source. Historical categories begin unassessed. Staff wording and membership corrections retain their reasons and earlier versions.\n\nSaving a draft does not approve or publish findings. Contribution counts do not measure distinct people or representative support.\n\nCreate staff review\nRefresh staff reviews\n\nSYNTHETIC machine proposal for browser inspection \u00b7 latest revision 2\n\nOpen staff review 17b5a959"
+    },
+    "cancelUnconfirmed": {
+      "receipts": [
+        {
+          "at": "2026-10-07T04:51:17.724Z",
+          "command": {
+            "cancellationId": "444b6382-000f-4342-9cf4-039ed3db39e2",
+            "operation": "cancel",
+            "reason": "SYNTHETIC acceptance: cancel the request whose creation reply was lost.",
+            "requestId": "6c96a132-cf6d-4674-b2d6-58242d94e1d4"
+          },
+          "receipt": {
+            "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+            "cancellation": {
+              "createdAt": "2026-10-07T04:51:17.718433+00:00",
+              "id": "444b6382-000f-4342-9cf4-039ed3db39e2",
+              "receiptSha256": "44cafa891a4edc5ef14453912b4df8d7782d809b49ffad0329512ee9a6efa697",
+              "receiptText": "{\"id\": \"444b6382-000f-4342-9cf4-039ed3db39e2\", \"reason\": \"SYNTHETIC acceptance: cancel the request whose creation reply was lost.\", \"actorId\": \"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\", \"requestId\": \"6c96a132-cf6d-4674-b2d6-58242d94e1d4\", \"campaignId\": \"71e5671b-d3df-43aa-ba1c-75dfce09e0d7\", \"cancelledAt\": \"2026-10-07T04:51:17.718363+00:00\", \"workspaceId\": \"6674ea52-e439-4e82-9c4e-15b11cdf9ca7\", \"schemaVersion\": 1, \"requestExisted\": true}"
+            },
+            "replayed": false,
+            "request": {
+              "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+              "createdAt": "2026-10-07T04:50:50.687638+00:00",
+              "id": "6c96a132-cf6d-4674-b2d6-58242d94e1d4",
+              "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+              "intentText": "{\"schemaVersion\":1,\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"connectionId\":\"7b257b91-c86c-43a9-b1bb-ef6255bf65bf\",\"configurationRevisionId\":\"910024eb-a147-4a91-a3b9-2e4476636731\",\"configurationHash\":\"d5256a2cbe32cfb78dac66bb5ae786cfbaaa75959089c77da1c880d069031915\",\"modelId\":\"synthetic\",\"taskByteLimit\":65536}"
+            },
+            "schemaVersion": 1,
+            "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+          },
+          "status": 201
+        }
+      ],
+      "text": "\n\nSave a request for this complete source. Preparation and permission to send contributions to a provider are separate steps. You can also review contributions manually below.\n\nCancellation saved for this analysis request.\n\nRequest 6c96a132-cf6d-4674-b2d6-58242d94e1d4 \u00b7 Model synthetic\n\nPrepare this source for analysis\nRefresh preparation status\n\nPreparation organizes this saved source for analysis. It does not send contributions to a provider or approve findings.\n\nPreparation has not been queued\n\nCancellation is saved. Earlier preparation and results remain retained.\n\nQueue preparation\nStart another request\n\nConfirmed request recovery copy 6c96a132-cf6d-4674-b2d6-58242d94e1d4. Its original intent remains saved in this browser. Retry this same command or inspect saved request history.\n\nInspect the original request before retrying\nRetry saved analysis request\nPreserve request recovery copy\nStop this analysis request\n\nCancellation prevents new work under this request. You can cancel while the original save is unconfirmed. Earlier contributions, approvals and results remain retained; a provider call already sent may still incur charges.\n\nCancellation saved. Earlier requests and results remain retained.\n\nCancellation is saved for this request.\n\nBrowse saved generation requests\nStaff synthesis reviews\n\nCreate a private draft from this complete saved source. Historical categories begin unassessed. Staff wording and membership corrections retain their reasons and earlier versions.\n\nSaving a draft does not approve or publish findings. Contribution counts do not measure distinct people or representative support.\n\nCreate staff review\nRefresh staff reviews\n\nSYNTHETIC machine proposal for browser inspection \u00b7 latest revision 2\n\nOpen staff review 17b5a959"
+    },
+    "creationReplayAfterCancel": {
+      "queueDisabled": true,
+      "receipts": [
+        {
+          "at": "2026-10-07T04:51:17.724Z",
+          "command": {
+            "cancellationId": "444b6382-000f-4342-9cf4-039ed3db39e2",
+            "operation": "cancel",
+            "reason": "SYNTHETIC acceptance: cancel the request whose creation reply was lost.",
+            "requestId": "6c96a132-cf6d-4674-b2d6-58242d94e1d4"
+          },
+          "receipt": {
+            "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+            "cancellation": {
+              "createdAt": "2026-10-07T04:51:17.718433+00:00",
+              "id": "444b6382-000f-4342-9cf4-039ed3db39e2",
+              "receiptSha256": "44cafa891a4edc5ef14453912b4df8d7782d809b49ffad0329512ee9a6efa697",
+              "receiptText": "{\"id\": \"444b6382-000f-4342-9cf4-039ed3db39e2\", \"reason\": \"SYNTHETIC acceptance: cancel the request whose creation reply was lost.\", \"actorId\": \"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\", \"requestId\": \"6c96a132-cf6d-4674-b2d6-58242d94e1d4\", \"campaignId\": \"71e5671b-d3df-43aa-ba1c-75dfce09e0d7\", \"cancelledAt\": \"2026-10-07T04:51:17.718363+00:00\", \"workspaceId\": \"6674ea52-e439-4e82-9c4e-15b11cdf9ca7\", \"schemaVersion\": 1, \"requestExisted\": true}"
+            },
+            "replayed": false,
+            "request": {
+              "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+              "createdAt": "2026-10-07T04:50:50.687638+00:00",
+              "id": "6c96a132-cf6d-4674-b2d6-58242d94e1d4",
+              "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+              "intentText": "{\"schemaVersion\":1,\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"connectionId\":\"7b257b91-c86c-43a9-b1bb-ef6255bf65bf\",\"configurationRevisionId\":\"910024eb-a147-4a91-a3b9-2e4476636731\",\"configurationHash\":\"d5256a2cbe32cfb78dac66bb5ae786cfbaaa75959089c77da1c880d069031915\",\"modelId\":\"synthetic\",\"taskByteLimit\":65536}"
+            },
+            "schemaVersion": 1,
+            "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+          },
+          "status": 201
+        },
+        {
+          "at": "2026-10-07T04:51:20.663Z",
+          "command": {
+            "intentText": "{\"schemaVersion\":1,\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"connectionId\":\"7b257b91-c86c-43a9-b1bb-ef6255bf65bf\",\"configurationRevisionId\":\"910024eb-a147-4a91-a3b9-2e4476636731\",\"configurationHash\":\"d5256a2cbe32cfb78dac66bb5ae786cfbaaa75959089c77da1c880d069031915\",\"modelId\":\"synthetic\",\"taskByteLimit\":65536}",
+            "operation": "create",
+            "requestId": "6c96a132-cf6d-4674-b2d6-58242d94e1d4"
+          },
+          "receipt": {
+            "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+            "cancellation": {
+              "createdAt": "2026-10-07T04:51:17.718433+00:00",
+              "id": "444b6382-000f-4342-9cf4-039ed3db39e2",
+              "receiptSha256": "44cafa891a4edc5ef14453912b4df8d7782d809b49ffad0329512ee9a6efa697",
+              "receiptText": "{\"id\": \"444b6382-000f-4342-9cf4-039ed3db39e2\", \"reason\": \"SYNTHETIC acceptance: cancel the request whose creation reply was lost.\", \"actorId\": \"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\", \"requestId\": \"6c96a132-cf6d-4674-b2d6-58242d94e1d4\", \"campaignId\": \"71e5671b-d3df-43aa-ba1c-75dfce09e0d7\", \"cancelledAt\": \"2026-10-07T04:51:17.718363+00:00\", \"workspaceId\": \"6674ea52-e439-4e82-9c4e-15b11cdf9ca7\", \"schemaVersion\": 1, \"requestExisted\": true}"
+            },
+            "replayed": true,
+            "request": {
+              "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+              "createdAt": "2026-10-07T04:50:50.687638+00:00",
+              "id": "6c96a132-cf6d-4674-b2d6-58242d94e1d4",
+              "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+              "intentText": "{\"schemaVersion\":1,\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"connectionId\":\"7b257b91-c86c-43a9-b1bb-ef6255bf65bf\",\"configurationRevisionId\":\"910024eb-a147-4a91-a3b9-2e4476636731\",\"configurationHash\":\"d5256a2cbe32cfb78dac66bb5ae786cfbaaa75959089c77da1c880d069031915\",\"modelId\":\"synthetic\",\"taskByteLimit\":65536}"
+            },
+            "schemaVersion": 1,
+            "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+          },
+          "status": 200
+        }
+      ],
+      "text": "\n\nSave a request for this complete source. Preparation and permission to send contributions to a provider are separate steps. You can also review contributions manually below.\n\nCancellation saved for this analysis request.\n\nRequest 6c96a132-cf6d-4674-b2d6-58242d94e1d4 \u00b7 Model synthetic\n\nPrepare this source for analysis\nRefresh preparation status\n\nPreparation organizes this saved source for analysis. It does not send contributions to a provider or approve findings.\n\nPreparation has not been queued\n\nCancellation is saved. Earlier preparation and results remain retained.\n\nQueue preparation\nStart another request\nStop this analysis request\n\nCancellation prevents new work under this request. You can cancel while the original save is unconfirmed. Earlier contributions, approvals and results remain retained; a provider call already sent may still incur charges.\n\nCancellation saved. Earlier requests and results remain retained.\n\nCancellation is saved for this request.\n\nBrowse saved generation requests\nStaff synthesis reviews\n\nCreate a private draft from this complete saved source. Historical categories begin unassessed. Staff wording and membership corrections retain their reasons and earlier versions.\n\nSaving a draft does not approve or publish findings. Contribution counts do not measure distinct people or representative support.\n\nCreate staff review\nRefresh staff reviews\n\nSYNTHETIC machine proposal for browser inspection \u00b7 latest revision 2\n\nOpen staff review 17b5a959"
+    },
+    "preparedMobileText": {
+      "at": "2026-10-07T04:51:55.903Z",
+      "scrollWidth": 390,
+      "text": "Prepare this source for analysis\nRefresh preparation status\n\nPreparation organizes this saved source for analysis. It does not send contributions to a provider or approve findings.\n\nPreparation complete\n\nAttempt 1. Last updated 10/6/2026, 9:00:11 PM.",
+      "width": 390
+    },
+    "contextPreparedText": {
+      "at": "2026-10-07T04:53:11.249Z",
+      "receipts": [
+        {
+          "at": "2026-10-07T04:52:50.959Z",
+          "method": "POST",
+          "receipt": {
+            "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+            "attempts": 0,
+            "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+            "cancelled": false,
+            "createdAt": "2026-10-07T04:52:50.955222+00:00",
+            "failureCode": null,
+            "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+            "leaseUntil": null,
+            "replayed": false,
+            "requestId": "359abb88-65b5-4682-8ad2-ff786adfad25",
+            "schemaVersion": 1,
+            "sealSha256": null,
+            "stage": "context",
+            "status": "queued",
+            "updatedAt": "2026-10-07T04:52:50.955222+00:00",
+            "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+          },
+          "status": 201,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/preparation"
+        },
+        {
+          "at": "2026-10-07T04:53:07.634Z",
+          "method": "GET",
+          "receipt": {
+            "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+            "attempts": 1,
+            "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+            "cancelled": false,
+            "createdAt": "2026-10-07T04:52:50.955222+00:00",
+            "failureCode": null,
+            "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+            "leaseUntil": null,
+            "requestId": "359abb88-65b5-4682-8ad2-ff786adfad25",
+            "schemaVersion": 1,
+            "sealSha256": "48d7a4656b4f187ee625abd5c4f7c204b10d1150959d5bfbd8cab618cb15649e",
+            "stage": "context",
+            "status": "prepared",
+            "updatedAt": "2026-10-07T04:53:05.177624+00:00",
+            "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+          },
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/preparation?requestId=359abb88-65b5-4682-8ad2-ff786adfad25"
+        }
+      ],
+      "text": "Combined context\nRequest saved\n\n10/2/2026, 10:11:03 AM \u00b7 Requested by you\n\nRequest details 359abb88\nClose preparation 359abb88\nPrepare this source for analysis\nRefresh preparation status\n\nPreparation organizes this saved source for analysis. It does not send contributions to a provider or approve findings.\n\nPreparation command confirmed. Provider execution still requires separate authorization.\n\nPreparation complete\n\nAttempt 1. Last updated 10/6/2026, 9:53:05 PM.\n\nReview cancellation options",
+      "width": 1440
+    },
+    "thematicPreparedText": {
+      "at": "2026-10-07T04:53:34.925Z",
+      "receipts": [
+        {
+          "at": "2026-10-07T04:52:50.959Z",
+          "method": "POST",
+          "receipt": {
+            "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+            "attempts": 0,
+            "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+            "cancelled": false,
+            "createdAt": "2026-10-07T04:52:50.955222+00:00",
+            "failureCode": null,
+            "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+            "leaseUntil": null,
+            "replayed": false,
+            "requestId": "359abb88-65b5-4682-8ad2-ff786adfad25",
+            "schemaVersion": 1,
+            "sealSha256": null,
+            "stage": "context",
+            "status": "queued",
+            "updatedAt": "2026-10-07T04:52:50.955222+00:00",
+            "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+          },
+          "status": 201,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/preparation"
+        },
+        {
+          "at": "2026-10-07T04:53:07.634Z",
+          "method": "GET",
+          "receipt": {
+            "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+            "attempts": 1,
+            "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+            "cancelled": false,
+            "createdAt": "2026-10-07T04:52:50.955222+00:00",
+            "failureCode": null,
+            "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+            "leaseUntil": null,
+            "requestId": "359abb88-65b5-4682-8ad2-ff786adfad25",
+            "schemaVersion": 1,
+            "sealSha256": "48d7a4656b4f187ee625abd5c4f7c204b10d1150959d5bfbd8cab618cb15649e",
+            "stage": "context",
+            "status": "prepared",
+            "updatedAt": "2026-10-07T04:53:05.177624+00:00",
+            "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+          },
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/preparation?requestId=359abb88-65b5-4682-8ad2-ff786adfad25"
+        },
+        {
+          "at": "2026-10-07T04:53:12.889Z",
+          "method": "GET",
+          "receipt": null,
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/preparation?requestId=dd741df4-7b58-4313-877e-55490ca40346"
+        },
+        {
+          "at": "2026-10-07T04:53:17.839Z",
+          "method": "POST",
+          "receipt": {
+            "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+            "attempts": 0,
+            "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+            "cancelled": false,
+            "createdAt": "2026-10-07T04:53:17.835667+00:00",
+            "failureCode": null,
+            "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+            "leaseUntil": null,
+            "replayed": false,
+            "requestId": "dd741df4-7b58-4313-877e-55490ca40346",
+            "schemaVersion": 1,
+            "sealSha256": null,
+            "stage": "thematic",
+            "status": "queued",
+            "updatedAt": "2026-10-07T04:53:17.835667+00:00",
+            "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+          },
+          "status": 201,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/preparation"
+        },
+        {
+          "at": "2026-10-07T04:53:23.773Z",
+          "method": "GET",
+          "receipt": {
+            "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+            "attempts": 1,
+            "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+            "cancelled": false,
+            "createdAt": "2026-10-07T04:53:17.835667+00:00",
+            "failureCode": null,
+            "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+            "leaseUntil": "2026-10-07T04:55:22.854094+00:00",
+            "requestId": "dd741df4-7b58-4313-877e-55490ca40346",
+            "schemaVersion": 1,
+            "sealSha256": null,
+            "stage": "thematic",
+            "status": "running",
+            "updatedAt": "2026-10-07T04:53:22.854095+00:00",
+            "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+          },
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/preparation?requestId=dd741df4-7b58-4313-877e-55490ca40346"
+        },
+        {
+          "at": "2026-10-07T04:53:30.607Z",
+          "method": "GET",
+          "receipt": {
+            "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+            "attempts": 1,
+            "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+            "cancelled": false,
+            "createdAt": "2026-10-07T04:53:17.835667+00:00",
+            "failureCode": null,
+            "intentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+            "leaseUntil": null,
+            "requestId": "dd741df4-7b58-4313-877e-55490ca40346",
+            "schemaVersion": 1,
+            "sealSha256": "0e4b77be197d86e079de48438b8199f0c2d0b8f649d721e94a88b54fe6026a84",
+            "stage": "thematic",
+            "status": "prepared",
+            "updatedAt": "2026-10-07T04:53:24.270496+00:00",
+            "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+          },
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/preparation?requestId=dd741df4-7b58-4313-877e-55490ca40346"
+        }
+      ],
+      "text": "Themes\nRequest saved\n\n10/2/2026, 10:11:13 AM \u00b7 Requested by you\n\nRequest details dd741df4\nClose preparation dd741df4\nPrepare this source for analysis\nRefresh preparation status\n\nPreparation organizes this saved source for analysis. It does not send contributions to a provider or approve findings.\n\nPreparation command confirmed. Provider execution still requires separate authorization.\n\nPreparation complete\n\nAttempt 1. Last updated 10/6/2026, 9:53:24 PM.\n\nReview cancellation options",
+      "width": 1440
+    }
+  },
+  "screenshots": {
+    "lostReplyScreenshot": {
+      "path": "908-lostReplyScreenshot.png",
+      "metadata": {
+        "mimeType": "image/png",
+        "width": 1280,
+        "height": 800
+      },
+      "sha256": "74b51d1cadf4121b882dcf301199287764d5c1263e54bd803623f4d5e9181503"
+    },
+    "cancelMobileScreenshot": {
+      "path": "908-cancelMobileScreenshot.png",
+      "metadata": {
+        "mimeType": "image/png",
+        "width": 566,
+        "height": 1224
+      },
+      "sha256": "0db1d939d6ff5c747cb6ea32d1a99a04d61c2bd06d54f4a9f696eafe2acbaf12"
+    },
+    "preparedMobileScreenshot": {
+      "path": "908-preparedMobileScreenshot.png",
+      "metadata": {
+        "mimeType": "image/png",
+        "width": 566,
+        "height": 1224
+      },
+      "sha256": "4b48b475eeaa11ad859c192b66ad465cbb49afe2c6c304d445c7831c5c060a6b"
+    },
+    "contextPreparedScreenshot": {
+      "path": "908-contextPreparedScreenshot.png",
+      "metadata": {
+        "mimeType": "image/png",
+        "width": 1280,
+        "height": 800
+      },
+      "sha256": "fb3ddcedc7b4e05222a86915cd5da75044bcf8050d64fca71b5bd60c7bd3fc3b"
+    },
+    "thematicPreparedScreenshot": {
+      "path": "908-thematicPreparedScreenshot.png",
+      "metadata": {
+        "mimeType": "image/png",
+        "width": 1280,
+        "height": 800
+      },
+      "sha256": "a27d481b488569264682e8cd3138a0e115b3d4b09f63ccb9d7f7941192380df8"
+    }
+  },
+  "consoleEntries": [
+    {
+      "level": "error",
+      "text": "Electron sandboxed_renderer.bundle.js script failed to run",
+      "timestamp": "2026-10-07T04:21:13.130Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "TypeError: Cannot destructure property 'preloadScripts' of 'binding.startupData' as it is null.\n    at node:electron/js2c/sandbox_bundle:2:124925\n    at node:electron/js2c/sandbox_bundle:2:125860\n    at ___electron_webpack_init__ (node:electron/js2c/sandbox_bundle:2:125864)\n    at node:electron/js2c/sandbox_bundle:2:125987",
+      "timestamp": "2026-10-07T04:21:13.130Z",
+      "source": "console"
+    }
+  ]
+}

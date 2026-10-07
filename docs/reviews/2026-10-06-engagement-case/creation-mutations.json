@@ -1,0 +1,20 @@
+[
+  {
+    "name": "creation-harmless-comment",
+    "exitCode": 0,
+    "expectedPass": true,
+    "matched": true
+  },
+  {
+    "name": "foreign-provider-workspace",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "name": "provider-browser-pin-bypassed",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  }
+]

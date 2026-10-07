@@ -1,0 +1,26 @@
+{
+  "scope": "Simulated component checks after wording changes. Native permissions and rendered acceptance remain separate.",
+  "cases": [
+    {
+      "name": "harmless-copy-comment",
+      "expected": "pass",
+      "exitCode": 0,
+      "matched": true,
+      "log": "/tmp/openplan-harmless-copy-comment.log"
+    },
+    {
+      "name": "copy-retains-actor-check",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-copy-retains-actor-check.log"
+    },
+    {
+      "name": "copy-retains-cancellation",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-copy-retains-cancellation.log"
+    }
+  ]
+}
