@@ -1,0 +1,6 @@
+BEGIN
+ALTER TABLE
+ALTER TABLE
+COMMENT
+ERROR:  Context hash does not cover retained JSON
+CONTEXT:  PL/pgSQL function inline_code_block line 9 at RAISE

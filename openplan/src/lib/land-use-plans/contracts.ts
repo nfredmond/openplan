@@ -163,6 +163,8 @@ export type JurisdictionPlanDescriptor = {
     country: string;
     subdivision?: string;
   };
+  /** Adapter vocabulary for supported responsible bodies; absent means unconfigured. */
+  authorityKinds?: string[];
   authorityScope: string;
   configured: boolean;
   verifiedAt: string;

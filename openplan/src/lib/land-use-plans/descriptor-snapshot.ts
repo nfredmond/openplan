@@ -5,6 +5,7 @@ const text = z.string().min(1);
 const sources = z.array(z.url({ protocol: /^https?$/ }));
 const descriptorSchema = z.object({
   id: text, jurisdictionLabel: text, authorityScope: text, configured: z.boolean(),
+  authorityKinds: z.array(text).min(1).optional(),
   jurisdictionCoverage: z.object({ country: text, subdivision: text.optional() }).strict().optional(),
   verifiedAt: z.string().date(), reviewDueAt: z.string().date(),
   terminology: z.object({ plan: text, section: text, adoptionInstrument: text, implementationReport: text }).strict(),

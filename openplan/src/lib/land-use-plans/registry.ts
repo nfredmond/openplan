@@ -68,6 +68,7 @@ const CALIFORNIA: JurisdictionPlanDescriptor = {
   jurisdictionCoverage: { country: "US", subdivision: "CA" },
   authorityScope: "Local planning agencies governed by the cited California statutes",
   configured: true,
+  authorityKinds: ["city", "county"],
   verifiedAt: "2026-08-23",
   reviewDueAt: "2027-01-15",
   terminology: {

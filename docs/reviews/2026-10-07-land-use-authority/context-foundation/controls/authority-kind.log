@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 2 failed) 21ms
+     × refuses configured scope with unsupported authority kind 3ms
+     × checks every selected authority while preserving other responsibilities without assigning them law 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > plan-owned applicability > refuses configured scope with unsupported authority kind
+AssertionError: the given combination of arguments (null and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ src/test/land-use-plan-context.test.ts:33:46
+     31|   if(field==="kind") a.kind="sovereign nation";
+     32|   if(field==="sources") a.sourceUrls=[];
+     33|   expect(planApplicabilityBlocker(value,ca)).toContain("outside this c…
+       |                                              ^
+     34|  });
+     35|  it("checks every selected authority while preserving other responsibi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > plan-owned applicability > checks every selected authority while preserving other responsibilities without assigning them law
+AssertionError: the given combination of arguments (null and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ src/test/land-use-plan-context.test.ts:39:91
+     37|   expect(planApplicabilityBlocker(value,ca)).toBeNull();
+     38|   if(value.applicability.status!=="staff_assessed") throw Error("fixtu…
+     39|   value.applicability.authorityIds.push(id(2));expect(planApplicabilit…
+       |                                                                                           ^
+     40|  });
+     41|  it("refuses missing configured authority coverage instead of acceptin…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 19 passed (21)
+   Start at  03:04:08
+   Duration  684ms (transform 95ms, setup 54ms, import 128ms, tests 21ms, environment 321ms)
+
