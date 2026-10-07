@@ -1,0 +1,270 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-public-identity.test.ts (32 tests | 2 failed) 31ms
+     × refuses a self-hashed wrong-kind descriptor instead of substituting live rules 6ms
+     × refuses a self-hashed wrong-kind descriptor instead of substituting live rules 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-public-identity.test.ts > adopted public frozen identity > refuses a self-hashed wrong-kind descriptor instead of substituting live rules
+AssertionError: expected { ok: true, packet: { …(7) } } to deeply equal { ok: false, reason: 'incomplete' }
+
+- Expected
++ Received
+
+  {
+-   "ok": false,
+-   "reason": "incomplete",
++   "ok": true,
++   "packet": {
++     "content": {
++       "descriptorSnapshot": {
++         "authorityScope": "Planner-defined local authority",
++         "configured": false,
++         "disclosure": "Local legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.",
++         "id": "local-unconfigured",
++         "jurisdictionLabel": "Local requirements not configured",
++         "planKinds": [
++           {
++             "key": "other",
++             "label": "Other kind",
++           },
++         ],
++         "processSteps": [
++           {
++             "adoptionPrerequisite": true,
++             "key": "local_process",
++             "label": "Locally defined review and adoption process",
++             "required": true,
++             "sourceUrls": [],
++           },
++         ],
++         "requirements": [
++           {
++             "applicability": "locally_defined",
++             "key": "locally_defined",
++             "label": "Locally defined content",
++             "sourceUrls": [],
++           },
++         ],
++         "reviewDueAt": "2027-01-15",
++         "sourceUrls": [],
++         "terminology": {
++           "adoptionInstrument": "adoption instrument",
++           "implementationReport": "implementation report",
++           "plan": "land use plan",
++           "section": "section",
++         },
++         "verifiedAt": "2026-08-23",
++       },
++       "designations": [],
++       "implementationActions": [],
++       "nodes": [
++         {
++           "body": "Retain these words.",
++           "title": "Original policy",
++         },
++       ],
++       "plan": {
++         "authorityLabel": "SYNTHETIC reviewed authority",
++         "descriptorId": "local-unconfigured",
++         "geographyLabel": "SYNTHETIC reviewed area",
++         "id": "10000000-0000-4000-8000-000000000001",
++         "planKindKey": "community",
++         "title": "SYNTHETIC reviewed title",
++       },
++       "relationships": [],
++       "version": {
++         "applicableRequirementKeys": [
++           "locally_defined",
++         ],
++         "basedOnVersionId": null,
++         "id": "10000000-0000-4000-8000-000000000002",
++         "versionKind": "original",
++         "versionNumber": 1,
++       },
++     },
++     "decision": {
++       "decided_on": "2026-10-07",
++       "decision_body": "Synthetic body",
++       "decision_kind": "adoption",
++       "effective_on": null,
++       "instrument_identifier": "TEST",
++       "instrument_type": "Synthetic instrument",
++       "version_content_hash": "dcda3219e5a75ab009e72b51e7ca95086f898cb939aa0abb9916249ed126c891",
++       "vote": null,
++     },
++     "descriptor": {
++       "disclosure": "Local legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.",
++       "reviewDueAt": "2027-01-15",
++       "sourceUrls": [],
++       "terminology": {
++         "adoptionInstrument": "adoption instrument",
++         "implementationReport": "implementation report",
++         "plan": "land use plan",
++         "section": "section",
++       },
++       "verifiedAt": "2026-08-23",
++     },
++     "descriptorCustody": "frozen",
++     "plan": {
++       "authorityLabel": "SYNTHETIC reviewed authority",
++       "geographyLabel": "SYNTHETIC reviewed area",
++       "id": "10000000-0000-4000-8000-000000000001",
++       "planKindKey": "community",
++       "title": "SYNTHETIC reviewed title",
++     },
++     "privacy": "Consultation records, confidential notes, and sensitive-location information are excluded from this packet.",
++     "version": {
++       "contentHash": "dcda3219e5a75ab009e72b51e7ca95086f898cb939aa0abb9916249ed126c891",
++       "frozenAt": "2026-10-07T00:00:00Z",
++       "id": "10000000-0000-4000-8000-000000000002",
++       "versionNumber": 1,
++     },
++   },
+  }
+
+ ❯ src/test/land-use-plan-public-identity.test.ts:129:26
+    127|     database.rows.land_use_plan_review_releases.version_content_hash =…
+    128|     database.rows.land_use_plan_decisions.version_content_hash = hash;
+    129|     expect(await load()).toEqual({ ok: false, reason: "incomplete" });
+       |                          ^
+    130|   });
+    131|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-plan-public-identity.test.ts > review public frozen identity > refuses a self-hashed wrong-kind descriptor instead of substituting live rules
+AssertionError: expected { ok: true, packet: { …(7) } } to deeply equal { ok: false, reason: 'incomplete' }
+
+- Expected
++ Received
+
+  {
+-   "ok": false,
+-   "reason": "incomplete",
++   "ok": true,
++   "packet": {
++     "content": {
++       "descriptorSnapshot": {
++         "authorityScope": "Planner-defined local authority",
++         "configured": false,
++         "disclosure": "Local legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.",
++         "id": "local-unconfigured",
++         "jurisdictionLabel": "Local requirements not configured",
++         "planKinds": [
++           {
++             "key": "other",
++             "label": "Other kind",
++           },
++         ],
++         "processSteps": [
++           {
++             "adoptionPrerequisite": true,
++             "key": "local_process",
++             "label": "Locally defined review and adoption process",
++             "required": true,
++             "sourceUrls": [],
++           },
++         ],
++         "requirements": [
++           {
++             "applicability": "locally_defined",
++             "key": "locally_defined",
++             "label": "Locally defined content",
++             "sourceUrls": [],
++           },
++         ],
++         "reviewDueAt": "2027-01-15",
++         "sourceUrls": [],
++         "terminology": {
++           "adoptionInstrument": "adoption instrument",
++           "implementationReport": "implementation report",
++           "plan": "land use plan",
++           "section": "section",
++         },
++         "verifiedAt": "2026-08-23",
++       },
++       "designations": [],
++       "implementationActions": [],
++       "nodes": [
++         {
++           "body": "Retain these words.",
++           "title": "Original policy",
++         },
++       ],
++       "plan": {
++         "authorityLabel": "SYNTHETIC reviewed authority",
++         "descriptorId": "local-unconfigured",
++         "geographyLabel": "SYNTHETIC reviewed area",
++         "id": "10000000-0000-4000-8000-000000000001",
++         "planKindKey": "community",
++         "title": "SYNTHETIC reviewed title",
++       },
++       "relationships": [],
++       "version": {
++         "applicableRequirementKeys": [
++           "locally_defined",
++         ],
++         "basedOnVersionId": null,
++         "id": "10000000-0000-4000-8000-000000000002",
++         "versionKind": "original",
++         "versionNumber": 1,
++       },
++     },
++     "descriptor": {
++       "disclosure": "Local legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.",
++       "reviewDueAt": "2027-01-15",
++       "sourceUrls": [],
++       "terminology": {
++         "adoptionInstrument": "adoption instrument",
++         "implementationReport": "implementation report",
++         "plan": "land use plan",
++         "section": "section",
++       },
++       "verifiedAt": "2026-08-23",
++     },
++     "descriptorCustody": "frozen",
++     "plan": {
++       "authorityLabel": "SYNTHETIC reviewed authority",
++       "geographyLabel": "SYNTHETIC reviewed area",
++       "id": "10000000-0000-4000-8000-000000000001",
++       "planKindKey": "community",
++       "title": "SYNTHETIC reviewed title",
++     },
++     "privacy": "Consultation records, confidential notes, and sensitive-location information are excluded from this review release.",
++     "release": {
++       "id": "10000000-0000-4000-8000-000000000003",
++       "outcomeHash": null,
++       "reviewCloseOn": "2026-10-31",
++       "reviewMethod": "external_process",
++       "reviewOpenOn": "2026-10-01",
++       "roundNumber": 1,
++       "status": "closed",
++     },
++     "version": {
++       "contentHash": "dcda3219e5a75ab009e72b51e7ca95086f898cb939aa0abb9916249ed126c891",
++       "frozenAt": "2026-10-07T00:00:00Z",
++       "id": "10000000-0000-4000-8000-000000000002",
++       "versionNumber": 1,
++     },
++   },
+  }
+
+ ❯ src/test/land-use-plan-public-identity.test.ts:129:26
+    127|     database.rows.land_use_plan_review_releases.version_content_hash =…
+    128|     database.rows.land_use_plan_decisions.version_content_hash = hash;
+    129|     expect(await load()).toEqual({ ok: false, reason: "incomplete" });
+       |                          ^
+    130|   });
+    131|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  2 failed | 51 passed (53)
+   Start at  02:39:23
+   Duration  2.42s (transform 124ms, setup 150ms, import 322ms, tests 237ms, environment 1.30s)
+

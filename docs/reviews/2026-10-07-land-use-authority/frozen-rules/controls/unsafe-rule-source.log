@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-descriptor-snapshot.test.ts (5 tests | 1 failed) 16ms
+     × refuses unsafe source links and unrecognized descriptor fields 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-descriptor-snapshot.test.ts > frozen plan descriptor custody > refuses unsafe source links and unrecognized descriptor fields
+AssertionError: expected [Function] to throw an error
+ ❯ src/test/land-use-plan-descriptor-snapshot.test.ts:30:109
+     28|   it("refuses unsafe source links and unrecognized descriptor fields",…
+     29|     const original = getJurisdictionPlanDescriptor("local-unconfigured…
+     30|     expect(() => snapshotPlanDescriptor({ ...original, sourceUrls: ["j…
+       |                                                                                                             ^
+     31|     const altered = { ...original, unrecordedRule: true };
+     32|     expect(() => snapshotPlanDescriptor(altered, "community")).toThrow…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 52 passed (53)
+   Start at  02:39:29
+   Duration  2.49s (transform 128ms, setup 149ms, import 321ms, tests 249ms, environment 1.33s)
+

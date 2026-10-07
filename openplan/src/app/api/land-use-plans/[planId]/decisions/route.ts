@@ -5,11 +5,17 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadLandUsePlanAccess } from "@/lib/land-use-plans/api";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { readFrozenPlanDescriptor } from "@/lib/land-use-plans/descriptor-snapshot";
+import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
 import { buildAdoptionBlockers } from "@/lib/land-use-plans/workflow";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const paramsSchema = z.object({ planId: z.string().uuid() });
+const frozenScopeSchema = z.object({
+  plan: z.object({ id: z.string().uuid(), descriptorId: z.string().min(1), planKindKey: z.string().min(1) }),
+  version: z.object({ id: z.string().uuid(), versionNumber: z.number().int().positive() }),
+});
 const payloadSchema = z.discriminatedUnion("operation", [
   z.object({
     operation: z.literal("adopt"),
@@ -48,7 +54,7 @@ export async function POST(request: NextRequest, context: Context) {
   const payload = parsed.data;
 
   const { data: version, error: versionError } = await access.supabase.from("land_use_plan_versions")
-    .select("id, state, content_hash, frozen_snapshot, published_report_id")
+    .select("id, version_number, state, content_hash, frozen_snapshot, published_report_id")
     .eq("id", payload.versionId).eq("plan_id", access.plan.id).maybeSingle();
   if (versionError) return NextResponse.json({ error: "Failed to verify the frozen version" }, { status: 500 });
   if (!version || version.content_hash !== payload.versionContentHash) {
@@ -57,6 +63,19 @@ export async function POST(request: NextRequest, context: Context) {
 
   if (payload.operation === "adopt") {
     if (version.state !== "public_review") return NextResponse.json({ error: "Only the frozen public-review version can be adopted" }, { status: 409 });
+    const frozenScope = frozenScopeSchema.safeParse(version.frozen_snapshot);
+    if (!frozenScope.success || frozenScope.data.plan.id !== access.plan.id || frozenScope.data.version.id !== version.id
+      || frozenScope.data.version.versionNumber !== version.version_number || hashFrozenRecord(version.frozen_snapshot) !== payload.versionContentHash) {
+      return NextResponse.json({ error: "The frozen plan content or identity could not be verified" }, { status: 409 });
+    }
+    const rules = readFrozenPlanDescriptor(version.frozen_snapshot as Record<string, unknown>, frozenScope.data.plan.descriptorId, frozenScope.data.plan.planKindKey);
+    if (rules.status === "invalid") return NextResponse.json({ error: "The saved checklist is malformed or belongs to another descriptor or plan kind" }, { status: 409 });
+    const descriptor = rules.status === "retained" ? rules.descriptor : getJurisdictionPlanDescriptor(frozenScope.data.plan.descriptorId);
+    if (!descriptor) return NextResponse.json({ error: "The descriptor reference for this legacy version is not installed" }, { status: 409 });
+    const installed = getJurisdictionPlanDescriptor(descriptor.id);
+    if (rules.status === "retained" && (!installed || hashFrozenRecord(installed) !== hashFrozenRecord(descriptor))) {
+      return NextResponse.json({ error: "The installed descriptor differs from the reviewed checklist. Reconcile the source changes before recording adoption." }, { status: 409 });
+    }
     const [documentResult, processResult, releaseResult] = await Promise.all([
       access.supabase.from("kb_documents").select("id, title").eq("id", payload.supportingDocumentId).eq("workspace_id", access.plan.workspace_id).eq("status", "ready").maybeSingle(),
       access.supabase.from("land_use_plan_process_records").select("process_key, status, due_on, completed_on, evidence_document_id").eq("version_id", version.id),
@@ -66,8 +85,6 @@ export async function POST(request: NextRequest, context: Context) {
     if (documentResult.error || processResult.error || releaseResult.error) return NextResponse.json({ error: "Failed to verify adoption evidence and review history" }, { status: 500 });
     const document = documentResult.data;
     if (!document) return NextResponse.json({ error: "Select a ready supporting document in this workspace" }, { status: 400 });
-    const descriptor = getJurisdictionPlanDescriptor(access.plan.descriptor_id);
-    if (!descriptor) return NextResponse.json({ error: "Plan descriptor is not installed" }, { status: 409 });
     const processByKey = new Map((processResult.data ?? []).map((record) => [record.process_key, record]));
     const requiredPrerequisites = descriptor.processSteps
       .filter((step) => step.required && step.adoptionPrerequisite)
@@ -92,6 +109,9 @@ export async function POST(request: NextRequest, context: Context) {
       planId: access.plan.id,
       versionId: version.id,
       versionContentHash: payload.versionContentHash,
+      descriptorSnapshot: descriptor,
+      descriptorSha256: hashFrozenRecord(descriptor),
+      descriptorCustody: rules.status === "retained" ? "frozen" : "current_reference_not_retained_at_review",
       reviewReleaseId: release.id,
       reviewRound: release.round_number,
       reviewOutcomeHash: release.outcome_hash,

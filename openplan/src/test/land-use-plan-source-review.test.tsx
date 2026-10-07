@@ -1,13 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import PublishedLandUsePlanPage from "@/app/(published)/published-plans/[planId]/page";
-import { loadPublishedLandUsePlanPacket, type PublishedLandUsePlanPacket } from "@/lib/land-use-plans/public";
+import PublicLandUsePlanReviewPage from "@/app/(published)/review/land-use-plans/[shareToken]/page";
+import { loadPublishedLandUsePlanPacket, loadPublicLandUsePlanReviewPacket, type PublishedLandUsePlanPacket } from "@/lib/land-use-plans/public";
 
-vi.mock("@/lib/land-use-plans/public", () => ({ loadPublishedLandUsePlanPacket: vi.fn() }));
+vi.mock("@/lib/land-use-plans/public", () => ({ loadPublishedLandUsePlanPacket: vi.fn(), loadPublicLandUsePlanReviewPacket: vi.fn() }));
 vi.mock("@/components/land-use-plans/public-designation-map", () => ({ PublicDesignationMap: () => null }));
 
 function packet(sourceUrls: string[]): PublishedLandUsePlanPacket {
   return {
+    descriptorCustody: "frozen",
     plan: { id: "test-plan", title: "Test published plan", planKindKey: "area", authorityLabel: "Test authority", geographyLabel: "Test area" },
     version: { id: "test-version", versionNumber: 1, contentHash: "test-hash", frozenAt: null },
     decision: { decision_kind: "adopt", decision_body: "Test body", instrument_type: "test", instrument_identifier: "test", vote: null, decided_on: "2026-08-01", effective_on: null, version_content_hash: "test-hash" },
@@ -18,11 +20,28 @@ function packet(sourceUrls: string[]): PublishedLandUsePlanPacket {
 }
 
 describe("published plan source-review disclosure", () => {
+  it.each(["frozen", "not_retained"] as const)("discloses %s rules on the public review page", async custody => {
+    const value = { ...packet([]), descriptorCustody: custody, release: { id: "synthetic-release", roundNumber: 1,
+      reviewOpenOn: "2026-10-07", reviewCloseOn: "2026-10-08", reviewMethod: "external_process", status: "open" as const, outcomeHash: null } };
+    vi.mocked(loadPublicLandUsePlanReviewPacket).mockResolvedValue({ ok: true, packet: value });
+    render(await PublicLandUsePlanReviewPage({ params: Promise.resolve({ shareToken: "synthetic-token" }) }));
+    expect(screen.getByText(custody === "frozen" ? /checklist, terminology and source-review dates were saved with this version/i : /may differ from what reviewers saw/i)).toBeVisible();
+  });
   it("withholds review dates when the descriptor has no sources", async () => {
     vi.mocked(loadPublishedLandUsePlanPacket).mockResolvedValue({ ok: true, packet: packet([]) });
     render(await PublishedLandUsePlanPage({ params: Promise.resolve({ planId: "test-plan" }) }));
     expect(screen.queryByText(/Sources reviewed/)).not.toBeInTheDocument();
     expect(screen.getByText(/source review is not established/i)).toBeVisible();
+    expect(screen.getByText(/checklist, terminology and source-review dates were saved with this version/i)).toBeVisible();
+  });
+
+  it("identifies an unsaved legacy descriptor as a current registry reference", async () => {
+    const legacy = packet(["https://example.test/official-source"]);
+    legacy.descriptorCustody = "not_retained";
+    vi.mocked(loadPublishedLandUsePlanPacket).mockResolvedValue({ ok: true, packet: legacy });
+    render(await PublishedLandUsePlanPage({ params: Promise.resolve({ planId: "test-plan" }) }));
+    expect(screen.getByText(/may differ from what reviewers saw/i)).toBeVisible();
+    expect(screen.queryByText(/checklist, terminology and source-review dates were saved with this version/i)).not.toBeInTheDocument();
   });
 
   it("preserves the recorded review date beside a sourced descriptor", async () => {

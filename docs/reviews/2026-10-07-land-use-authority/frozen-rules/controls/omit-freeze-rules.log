@@ -1,0 +1,79 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts (11 tests | 1 failed) 34ms
+     × includes the exact descriptor in the returned snapshot and content hash 14ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-frozen-rules-integration.test.ts > freezing a descriptor with authored content > includes the exact descriptor in the returned snapshot and content hash
+AssertionError: expected undefined to deeply equal { id: 'local-unconfigured', …(11) }
+
+- Expected:
+{
+  "authorityScope": "Planner-defined local authority",
+  "configured": false,
+  "disclosure": "Local legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.",
+  "id": "local-unconfigured",
+  "jurisdictionLabel": "Local requirements not configured",
+  "planKinds": [
+    {
+      "key": "comprehensive",
+      "label": "Comprehensive plan",
+    },
+    {
+      "key": "area",
+      "label": "Area or neighborhood plan",
+    },
+    {
+      "key": "community",
+      "label": "Community plan",
+    },
+  ],
+  "processSteps": [
+    {
+      "adoptionPrerequisite": true,
+      "key": "local_process",
+      "label": "Locally defined review and adoption process",
+      "required": true,
+      "sourceUrls": [],
+    },
+  ],
+  "requirements": [
+    {
+      "applicability": "locally_defined",
+      "key": "locally_defined",
+      "label": "Locally defined content",
+      "sourceUrls": [],
+    },
+  ],
+  "reviewDueAt": "2027-01-15",
+  "sourceUrls": [],
+  "terminology": {
+    "adoptionInstrument": "adoption instrument",
+    "implementationReport": "implementation report",
+    "plan": "land use plan",
+    "section": "section",
+  },
+  "verifiedAt": "2026-08-23",
+}
+
++ Received:
+undefined
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts:71:49
+     69|   it("includes the exact descriptor in the returned snapshot and conte…
+     70|     const result = await buildFrozenSnapshot(state.access as unknown a…
+     71|     expect(result?.snapshot.descriptorSnapshot).toEqual(getJurisdictio…
+       |                                                 ^
+     72|     expect(result?.hash).toBe(hashFrozenRecord(result?.snapshot));
+     73|     const withoutRules = { ...result?.snapshot }; delete withoutRules.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 52 passed (53)
+   Start at  02:39:10
+   Duration  2.46s (transform 132ms, setup 152ms, import 331ms, tests 242ms, environment 1.32s)
+

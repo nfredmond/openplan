@@ -1,6 +1,9 @@
 import { createHash } from "node:crypto";
+import type { JurisdictionPlanDescriptor } from "./contracts";
 
 export type FrozenPlanContent = {
+  /** Absent in historical versions; never backfilled from today's registry. */
+  descriptorSnapshot?: JurisdictionPlanDescriptor;
   plan: {
     id: string;
     descriptorId: string;

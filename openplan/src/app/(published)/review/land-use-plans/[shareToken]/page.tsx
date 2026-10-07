@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { PublicDesignationMap } from "@/components/land-use-plans/public-designation-map";
 import { loadPublicLandUsePlanReviewPacket } from "@/lib/land-use-plans/public";
+import { describeDescriptorCustody } from "@/lib/land-use-plans/descriptor-snapshot";
 
 export const metadata = {
   title: "Land use plan public review",
@@ -50,6 +51,6 @@ export default async function LandUsePlanReviewPage({ params }: { params: Promis
     </header>
     <section className="mt-8 space-y-8"><h2 className="text-3xl font-semibold">Draft plan content</h2>{sections.map((section, index) => <ContentBranch key={section.id ?? index} node={section} nodes={nodes}/>)}</section>
     <section className="mt-10 border-t pt-8"><h2 className="text-3xl font-semibold">Mapped designations</h2>{designations.map((designation, index) => <article className="mt-5 rounded-lg border p-4" key={designation.id ?? index}><h3 className="text-xl font-semibold">{designation.designation_set_label ?? "Mapped designations"}</h3><p className="mt-1 break-all text-xs text-muted-foreground">Frozen GIS feature hash: {designation.layer_version_evidence?.feature_hash ?? "unavailable"}</p>{designation.id ? <PublicDesignationMap endpoint={`/api/public/land-use-plan-reviews/${shareToken}/map/${designation.id}`} bbox={designation.layer_version_evidence?.bbox} label={designation.designation_set_label ?? "Mapped designations"}/> : null}{designation.map_note ? <p className="mt-3">{designation.map_note}</p> : null}</article>)}</section>
-    <aside className="mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"><p>{packet.descriptor?.disclosure ?? "Local legal requirements were not configured for this plan."}</p><p className="mt-3 text-sm">{packet.privacy}</p>{packet.release.status === "closed" ? <p className="mt-3 text-sm">This closed release remains available to the public. Outcome hash: {packet.release.outcomeHash}</p> : null}</aside>
+    <aside className="mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"><p className="mb-3 text-sm">{describeDescriptorCustody(packet.descriptorCustody)}</p><p>{packet.descriptor?.disclosure ?? "Local legal requirements were not configured for this plan."}</p><p className="mt-3 text-sm">{packet.privacy}</p>{packet.release.status === "closed" ? <p className="mt-3 text-sm">This closed release remains available to the public. Outcome hash: {packet.release.outcomeHash}</p> : null}</aside>
   </main>;
 }

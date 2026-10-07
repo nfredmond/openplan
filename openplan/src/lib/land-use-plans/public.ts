@@ -2,6 +2,7 @@ import { getJurisdictionPlanDescriptor } from "./registry";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { hashFrozenRecord } from "./versioning";
+import { readFrozenPlanDescriptor } from "./descriptor-snapshot";
 
 const frozenIdentitySchema = z.object({
   plan: z.object({
@@ -22,6 +23,7 @@ function frozenPublicIdentity(snapshot: unknown, planId: string, versionId: stri
 }
 
 export type PublishedLandUsePlanPacket = {
+  descriptorCustody: "frozen" | "not_retained";
   plan: { id: string; title: string; planKindKey: string; authorityLabel: string; geographyLabel: string };
   version: { id: string; versionNumber: number; contentHash: string; frozenAt: string | null };
   decision: {
@@ -46,6 +48,7 @@ export type PublishedLandUsePlanPacket = {
 };
 
 export type PublicLandUsePlanReviewPacket = {
+  descriptorCustody: PublishedLandUsePlanPacket["descriptorCustody"];
   release: {
     id: string;
     roundNumber: number;
@@ -97,10 +100,13 @@ export async function loadPublishedLandUsePlanPacket(
     return { ok: false, reason: "incomplete" };
   }
 
-  const descriptor = getJurisdictionPlanDescriptor(identity.descriptorId);
+  const rules = readFrozenPlanDescriptor(version.frozen_snapshot as Record<string, unknown>, identity.descriptorId, identity.planKindKey);
+  if (rules.status === "invalid") return { ok: false, reason: "incomplete" };
+  const descriptor = rules.status === "retained" ? rules.descriptor : getJurisdictionPlanDescriptor(identity.descriptorId);
   return {
     ok: true,
     packet: {
+      descriptorCustody: rules.status === "retained" ? "frozen" : "not_retained",
       plan: { id: identity.id, title: identity.title, planKindKey: identity.planKindKey, authorityLabel: identity.authorityLabel, geographyLabel: identity.geographyLabel },
       version: { id: version.id, versionNumber: version.version_number, contentHash: version.content_hash, frozenAt: version.frozen_at },
       decision,
@@ -138,10 +144,13 @@ export async function loadPublicLandUsePlanReviewPacket(
   }
   const identity = frozenPublicIdentity(version.frozen_snapshot, plan.id, version.id, version.version_number, version.content_hash);
   if (version.plan_id !== plan.id || !identity) return { ok: false, reason: "incomplete" };
-  const descriptor = getJurisdictionPlanDescriptor(identity.descriptorId);
+  const rules = readFrozenPlanDescriptor(version.frozen_snapshot as Record<string, unknown>, identity.descriptorId, identity.planKindKey);
+  if (rules.status === "invalid") return { ok: false, reason: "incomplete" };
+  const descriptor = rules.status === "retained" ? rules.descriptor : getJurisdictionPlanDescriptor(identity.descriptorId);
   return {
     ok: true,
     packet: {
+      descriptorCustody: rules.status === "retained" ? "frozen" : "not_retained",
       release: {
         id: release.id,
         roundNumber: release.round_number,

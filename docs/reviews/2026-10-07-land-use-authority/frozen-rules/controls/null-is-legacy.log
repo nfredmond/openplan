@@ -1,0 +1,217 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-descriptor-snapshot.test.ts (5 tests | 1 failed) 18ms
+     × distinguishes a legacy omission from a malformed saved record 5ms
+ ❯ src/test/land-use-plan-public-identity.test.ts (32 tests | 2 failed) 31ms
+     × refuses a self-hashed null descriptor instead of substituting live rules 6ms
+     × refuses a self-hashed null descriptor instead of substituting live rules 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-descriptor-snapshot.test.ts > frozen plan descriptor custody > distinguishes a legacy omission from a malformed saved record
+AssertionError: expected { status: 'legacy' } to deeply equal { status: 'invalid' }
+
+- Expected
++ Received
+
+  {
+-   "status": "invalid",
++   "status": "legacy",
+  }
+
+ ❯ src/test/land-use-plan-descriptor-snapshot.test.ts:25:103
+     23|   it("distinguishes a legacy omission from a malformed saved record", …
+     24|     expect(readFrozenPlanDescriptor({}, "local-unconfigured", "communi…
+     25|     expect(readFrozenPlanDescriptor({ descriptorSnapshot: null }, "loc…
+       |                                                                                                       ^
+     26|   });
+     27|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/test/land-use-plan-public-identity.test.ts > adopted public frozen identity > refuses a self-hashed null descriptor instead of substituting live rules
+AssertionError: expected { ok: true, packet: { …(7) } } to deeply equal { ok: false, reason: 'incomplete' }
+
+- Expected
++ Received
+
+  {
+-   "ok": false,
+-   "reason": "incomplete",
++   "ok": true,
++   "packet": {
++     "content": {
++       "descriptorSnapshot": null,
++       "designations": [],
++       "implementationActions": [],
++       "nodes": [
++         {
++           "body": "Retain these words.",
++           "title": "Original policy",
++         },
++       ],
++       "plan": {
++         "authorityLabel": "SYNTHETIC reviewed authority",
++         "descriptorId": "local-unconfigured",
++         "geographyLabel": "SYNTHETIC reviewed area",
++         "id": "10000000-0000-4000-8000-000000000001",
++         "planKindKey": "community",
++         "title": "SYNTHETIC reviewed title",
++       },
++       "relationships": [],
++       "version": {
++         "applicableRequirementKeys": [
++           "locally_defined",
++         ],
++         "basedOnVersionId": null,
++         "id": "10000000-0000-4000-8000-000000000002",
++         "versionKind": "original",
++         "versionNumber": 1,
++       },
++     },
++     "decision": {
++       "decided_on": "2026-10-07",
++       "decision_body": "Synthetic body",
++       "decision_kind": "adoption",
++       "effective_on": null,
++       "instrument_identifier": "TEST",
++       "instrument_type": "Synthetic instrument",
++       "version_content_hash": "871565d5e722d367c481d303add59a6dd9ad8dab12c25fd3c53e3002e914952f",
++       "vote": null,
++     },
++     "descriptor": {
++       "disclosure": "Local legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.",
++       "reviewDueAt": "2027-01-15",
++       "sourceUrls": [],
++       "terminology": {
++         "adoptionInstrument": "adoption instrument",
++         "implementationReport": "implementation report",
++         "plan": "land use plan",
++         "section": "section",
++       },
++       "verifiedAt": "2026-08-23",
++     },
++     "descriptorCustody": "not_retained",
++     "plan": {
++       "authorityLabel": "SYNTHETIC reviewed authority",
++       "geographyLabel": "SYNTHETIC reviewed area",
++       "id": "10000000-0000-4000-8000-000000000001",
++       "planKindKey": "community",
++       "title": "SYNTHETIC reviewed title",
++     },
++     "privacy": "Consultation records, confidential notes, and sensitive-location information are excluded from this packet.",
++     "version": {
++       "contentHash": "871565d5e722d367c481d303add59a6dd9ad8dab12c25fd3c53e3002e914952f",
++       "frozenAt": "2026-10-07T00:00:00Z",
++       "id": "10000000-0000-4000-8000-000000000002",
++       "versionNumber": 1,
++     },
++   },
+  }
+
+ ❯ src/test/land-use-plan-public-identity.test.ts:129:26
+    127|     database.rows.land_use_plan_review_releases.version_content_hash =…
+    128|     database.rows.land_use_plan_decisions.version_content_hash = hash;
+    129|     expect(await load()).toEqual({ ok: false, reason: "incomplete" });
+       |                          ^
+    130|   });
+    131|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/test/land-use-plan-public-identity.test.ts > review public frozen identity > refuses a self-hashed null descriptor instead of substituting live rules
+AssertionError: expected { ok: true, packet: { …(7) } } to deeply equal { ok: false, reason: 'incomplete' }
+
+- Expected
++ Received
+
+  {
+-   "ok": false,
+-   "reason": "incomplete",
++   "ok": true,
++   "packet": {
++     "content": {
++       "descriptorSnapshot": null,
++       "designations": [],
++       "implementationActions": [],
++       "nodes": [
++         {
++           "body": "Retain these words.",
++           "title": "Original policy",
++         },
++       ],
++       "plan": {
++         "authorityLabel": "SYNTHETIC reviewed authority",
++         "descriptorId": "local-unconfigured",
++         "geographyLabel": "SYNTHETIC reviewed area",
++         "id": "10000000-0000-4000-8000-000000000001",
++         "planKindKey": "community",
++         "title": "SYNTHETIC reviewed title",
++       },
++       "relationships": [],
++       "version": {
++         "applicableRequirementKeys": [
++           "locally_defined",
++         ],
++         "basedOnVersionId": null,
++         "id": "10000000-0000-4000-8000-000000000002",
++         "versionKind": "original",
++         "versionNumber": 1,
++       },
++     },
++     "descriptor": {
++       "disclosure": "Local legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.",
++       "reviewDueAt": "2027-01-15",
++       "sourceUrls": [],
++       "terminology": {
++         "adoptionInstrument": "adoption instrument",
++         "implementationReport": "implementation report",
++         "plan": "land use plan",
++         "section": "section",
++       },
++       "verifiedAt": "2026-08-23",
++     },
++     "descriptorCustody": "not_retained",
++     "plan": {
++       "authorityLabel": "SYNTHETIC reviewed authority",
++       "geographyLabel": "SYNTHETIC reviewed area",
++       "id": "10000000-0000-4000-8000-000000000001",
++       "planKindKey": "community",
++       "title": "SYNTHETIC reviewed title",
++     },
++     "privacy": "Consultation records, confidential notes, and sensitive-location information are excluded from this review release.",
++     "release": {
++       "id": "10000000-0000-4000-8000-000000000003",
++       "outcomeHash": null,
++       "reviewCloseOn": "2026-10-31",
++       "reviewMethod": "external_process",
++       "reviewOpenOn": "2026-10-01",
++       "roundNumber": 1,
++       "status": "closed",
++     },
++     "version": {
++       "contentHash": "871565d5e722d367c481d303add59a6dd9ad8dab12c25fd3c53e3002e914952f",
++       "frozenAt": "2026-10-07T00:00:00Z",
++       "id": "10000000-0000-4000-8000-000000000002",
++       "versionNumber": 1,
++     },
++   },
+  }
+
+ ❯ src/test/land-use-plan-public-identity.test.ts:129:26
+    127|     database.rows.land_use_plan_review_releases.version_content_hash =…
+    128|     database.rows.land_use_plan_decisions.version_content_hash = hash;
+    129|     expect(await load()).toEqual({ ok: false, reason: "incomplete" });
+       |                          ^
+    130|   });
+    131|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 2 passed (4)
+      Tests  3 failed | 50 passed (53)
+   Start at  02:39:18
+   Duration  2.44s (transform 131ms, setup 150ms, import 330ms, tests 249ms, environment 1.31s)
+

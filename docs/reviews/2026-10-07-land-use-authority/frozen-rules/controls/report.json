@@ -1,0 +1,145 @@
+{
+  "controls": [
+    {
+      "name": "harmless-comments",
+      "exitCode": 0,
+      "expected": "pass",
+      "target": ""
+    },
+    {
+      "name": "omit-freeze-rules",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "includes the exact descriptor"
+    },
+    {
+      "name": "retain-mutable-reference",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "copies every rule"
+    },
+    {
+      "name": "unsupported-kind",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "does not claim a descriptor for a plan kind"
+    },
+    {
+      "name": "null-is-legacy",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "refuses a self-hashed null descriptor"
+    },
+    {
+      "name": "wrong-rule-id",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "refuses a self-hashed wrong-id descriptor"
+    },
+    {
+      "name": "wrong-rule-kind",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "refuses a self-hashed wrong-kind descriptor"
+    },
+    {
+      "name": "missing-rule-date",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "refuses a self-hashed missing-source-date descriptor"
+    },
+    {
+      "name": "unsafe-rule-source",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "refuses unsafe source links"
+    },
+    {
+      "name": "live-public-rules",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "uses saved descriptor wording and dates"
+    },
+    {
+      "name": "skip-installed-comparison",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "requires reassessment when the installed descriptor differs"
+    },
+    {
+      "name": "skip-adoption-hash",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "refuses substituted frozen bytes"
+    },
+    {
+      "name": "skip-adoption-plan",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "refuses substituted frozen plan"
+    },
+    {
+      "name": "skip-adoption-version",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "refuses substituted frozen version"
+    },
+    {
+      "name": "skip-adoption-number",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "refuses substituted frozen number"
+    },
+    {
+      "name": "omit-manifest-rules",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "retains the reviewed rules and their hash"
+    },
+    {
+      "name": "omit-manifest-rule-hash",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "retains the reviewed rules and their hash"
+    },
+    {
+      "name": "promote-legacy-rules",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "records legacy adoption with an explicitly current"
+    },
+    {
+      "name": "skip-process-evidence",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "keeps required recorded process evidence"
+    },
+    {
+      "name": "hide-published-disclosure",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "identifies an unsaved legacy descriptor"
+    },
+    {
+      "name": "hide-review-disclosure",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "discloses"
+    },
+    {
+      "name": "reconstruct-invalid-rules",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "refuses a malformed saved checklist"
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/lib/land-use-plans/descriptor-snapshot.ts": "61b263fb7ca1de84d22e48bed4d51bae10e85d59766318c9a4f93f0504646383",
+    "src/lib/land-use-plans/api.ts": "3fbb1275f007af31d0ebfa80fe11304f4d26ea4e9da4e211739139f7fc4c5e32",
+    "src/lib/land-use-plans/public.ts": "94b60d61ac984fb33343bb53ece1a88a9b8100fbdf0be6d83e68616075b2b24e",
+    "src/app/api/land-use-plans/[planId]/decisions/route.ts": "3d21c4c3a65ca96323a497227f92befac18158e3c3d18e4e39dceeae4f467e46",
+    "src/app/(published)/published-plans/[planId]/page.tsx": "a83886f904d9fa2fae5f3c0f514e68c20e7e6566d68777412cb4d349cca9027b",
+    "src/app/(published)/review/land-use-plans/[shareToken]/page.tsx": "e4e8e872450f318d4be087b150b40ace202a692455443c29d2aafa124b6c701a"
+  }
+}

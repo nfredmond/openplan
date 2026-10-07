@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createClient } from "@/lib/supabase/server";
 import { hashFrozenPlanContent, type FrozenPlanContent } from "./versioning";
+import { getJurisdictionPlanDescriptor } from "./registry";
+import { snapshotPlanDescriptor } from "./descriptor-snapshot";
 
 export type LandUsePlanAccess = {
   supabase: Awaited<ReturnType<typeof createClient>>;
@@ -91,6 +93,9 @@ export async function buildFrozenSnapshot(
     applicable_requirement_keys: string[];
   }
 ): Promise<{ snapshot: FrozenPlanContent; hash: string } | null> {
+  const descriptor = getJurisdictionPlanDescriptor(access.plan.descriptor_id);
+  if (!descriptor || !descriptor.planKinds.some(kind => kind.key === access.plan.plan_kind_key)) return null;
+  const descriptorSnapshot = snapshotPlanDescriptor(descriptor, access.plan.plan_kind_key);
   const supabase = access.supabase;
   const [nodes, relationships, designations, actions] = await Promise.all([
     supabase
@@ -133,6 +138,7 @@ export async function buildFrozenSnapshot(
   if (frozenDesignations.some((designation) => !designation.layer_version_evidence?.feature_hash)) return null;
 
   const snapshot: FrozenPlanContent = {
+    descriptorSnapshot,
     plan: {
       id: access.plan.id,
       descriptorId: access.plan.descriptor_id,
