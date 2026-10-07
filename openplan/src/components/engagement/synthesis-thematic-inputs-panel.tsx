@@ -58,11 +58,11 @@ function Inputs({ userId, workspaceId, campaignId, sourceId, sourceSha256, reque
   useEffect(() => { onReadyChange(complete); }, [complete, onReadyChange]);
   useEffect(() => () => onReadyChange(false), [onReadyChange]);
   const chosen = data?.rows.find(row => row.recordId === selected);
-  if (actorId !== userId) return <p className="text-sm">Only this theme request’s author can select its context inputs. Saved preparation and results remain available below.</p>;
-  return <section aria-label="Context inputs for themes" className="min-w-0 space-y-3 border-t border-border pt-3 [&_button]:h-auto [&_button]:min-h-10 [&_button]:max-w-full [&_button]:whitespace-normal">
+  if (actorId !== userId) return <p className="text-sm">Only this theme request’s author can choose its context. Saved preparation and results remain available below.</p>;
+  return <section aria-label="Context choices for themes" className="min-w-0 space-y-3 border-t border-border pt-3 [&_button]:h-auto [&_button]:min-h-10 [&_button]:max-w-full [&_button]:whitespace-normal">
     <Button type="button" variant="outline" aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>Choose context for themes</Button>
     {expanded ? <div className="min-w-0 space-y-3">
-      <p className="max-w-prose text-sm">Select one completed context for every contribution in this saved source. This chooses input for theme preparation; it does not approve the generated wording or authorize provider execution.</p>
+      <p className="max-w-prose text-sm">Select one completed context for every contribution in this saved source. This chooses the context used to prepare themes; it does not approve the generated wording or authorize provider execution.</p>
       <Button type="button" variant="outline" disabled={busy} onClick={() => void load()}>Refresh context choices</Button>
       {busy ? <p role="status">Reading contribution choices…</p> : null}{error ? <p role="alert">{error}</p> : null}
       {data ? <p className="text-sm">{data.rows.filter(row => row.choice).length.toLocaleString("en-US")} selected among {data.rows.length.toLocaleString("en-US")} loaded contributions. The source contains {data.total.toLocaleString("en-US")} contributions.</p> : null}
@@ -73,7 +73,7 @@ function Inputs({ userId, workspaceId, campaignId, sourceId, sourceSha256, reque
         <p className="whitespace-pre-wrap break-words text-sm [overflow-wrap:anywhere]">{row.excerpt || "No plain-text preview. Inspect the complete saved source."}{row.excerptTruncated ? "…" : ""}</p>
       </li>)}</ul>
       {data?.next !== null && data?.next !== undefined ? <Button type="button" variant="outline" disabled={busy} onClick={() => void load(data.next!)}>Load more contributions</Button> : null}
-      {complete ? <p role="status">Every source contribution has a saved context choice. Preparation must still verify the complete input and its original records.</p> : null}
+      {complete ? <p role="status">Every source contribution has a saved context choice. Preparation must still verify every choice against the original contributions and saved context.</p> : null}
       {chosen && data && !busy ? <SynthesisThematicContextChoice {...scope} userId={userId} targetRecordId={chosen.recordId}
         label={chosen.label} thematicSha256={data.thematicSha256} saved={chosen.choice} onAccessLost={loseAccess} onSaved={choice => {
           const current = retained.current;

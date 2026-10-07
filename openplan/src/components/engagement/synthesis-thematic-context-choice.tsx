@@ -49,7 +49,7 @@ function Choice({ userId, workspaceId, campaignId, sourceId, sourceSha256, reque
       signal: AbortSignal.any([controller.signal, AbortSignal.timeout(35_000)]), isCurrent });
     if (!isCurrent()) throw new Error("The selected contribution changed");
     if ([401, 403].includes(response.status)) { loseAccess(); throw new Error("Current staff access could not be confirmed. Reopen this consultation."); }
-    if (!response.ok) throw new Error("Saved context could not be read. Refresh this read before choosing an input.");
+    if (!response.ok) throw new Error("Saved context could not be read. Refresh this read before choosing context.");
     return response.json() as Promise<unknown>;
   }, [userId, workspaceId, loseAccess]);
 
@@ -125,14 +125,14 @@ function Choice({ userId, workspaceId, campaignId, sourceId, sourceSha256, reque
     } finally { writing.current = false; if (current()) setBusy(false); }
   }
   function preserve() {
-    try { preservePendingThematicChoice(localStorage, recoveryScope); restore(); setError(null); setNotice("Recovery copy preserved in this browser. Refresh choices to check the saved server record; preservation does not change it."); }
+    try { preservePendingThematicChoice(localStorage, recoveryScope); restore(); setError(null); setNotice("Recovery copy preserved in this browser. Refresh choices to check the saved server choice; preservation does not change it."); }
     catch (cause) { setError(message(cause)); }
   }
   return <section aria-label={`Context choice for ${label}`} className="min-w-0 space-y-3 border-t border-border pt-3">
     <h5 className="break-words font-semibold">Context for {label}</h5>
     {error ? <p role="alert">{error}</p> : null}{notice ? <p role="status">{notice}</p> : null}{busy ? <p role="status">Checking saved context…</p> : null}
     {saved ? <div className="space-y-2">
-      <p className="text-sm">A context choice is saved for this contribution. It is fixed for this theme request. Start another theme request to use different input.</p>
+      <p className="text-sm">A context choice is saved for this contribution. It is fixed for this theme request. Start another theme request to use different context.</p>
       <Button type="button" variant="outline" disabled={busy} onClick={() => void inspectSaved()}>Read saved context</Button>
       <details><summary className="cursor-pointer">Saved context choice reference</summary><pre className="whitespace-pre-wrap break-all text-xs">{saved.choiceText}</pre></details>
     </div> : null}
@@ -150,13 +150,13 @@ function Choice({ userId, workspaceId, campaignId, sourceId, sourceSha256, reque
         <Button type="button" variant="outline" disabled={busy} className="text-left" onClick={() => void inspect(entry)}>
           Inspect context {entry.requestId.slice(0, 8)} saved {new Date(entry.createdAt).toLocaleString("en-US")}
         </Button>
-        {entry.cancelled ? <p className="text-sm">Cancellation recorded. Earlier completed output may still be inspected.</p> : null}
+        {entry.cancelled ? <p className="text-sm">This context request was cancelled. Earlier completed output may still be inspected.</p> : null}
       </li>)}</ul>
       {cursor ? <Button type="button" variant="outline" disabled={busy} onClick={() => void discover(cursor)}>Check older context requests</Button> : null}
     </> : null}
     {preview ? <div className="space-y-2">
         <SynthesisContextOutputReader outputText={preview.outputText} outputSha256={preview.outputSha256} contextRequestId={preview.command.contextRequestId} />
-        {preview.cancelled ? <p className="text-sm">This theme request is cancelled. Start another request to choose inputs.</p> : null}
+        {preview.cancelled ? <p className="text-sm">This theme request is cancelled. Start another request to choose context.</p> : null}
         {!saved && !pending ? <Button type="button" disabled={busy || !storageReady || storageBlocked || preview.cancelled} onClick={() => void save()}>Use this context</Button> : null}
       </div> : null}
     {copies.length ? <details><summary className="cursor-pointer">Preserved context choice copies ({copies.length})</summary>

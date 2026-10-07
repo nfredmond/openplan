@@ -290,3 +290,26 @@ exercise nonempty thematic groups or citations and does not validate meaning.
 The owned application and synthetic provider units are stopped after collection,
 before these evidence edits. The result extends the software workflow evidence;
 it does not approve or publish findings, close M9b, or declare a release.
+
+## Plain-language CI correction
+
+At `0186fb40`, both GitHub QA and shuffled tests fail the same plain-language
+count assertion. Each run reports 18,828 passing tests, one failing test and
+1,529 skipped tests. The added interface copy raises the counts for “input”
+and “record.” This is a reproducible copy regression, not an established
+order-dependence defect. The shuffled seed is 257316.
+
+The correction names context choices, contributions and reported uncertainties
+directly. It preserves the staff-review caveat, the distinction between choosing
+context and authorizing execution, and the need to verify every choice against
+its original contribution. No baseline count or guard is changed.
+
+The plain-language suite and both affected interface suites pass 38 tests.
+Changed-file ESLint passes. The existing reader control set passes its harmless
+case and detects all eleven faults. Two further mutations remove the approval
+caveat or uncertainty total; each fails its intended assertion. All source is
+restored byte for byte. The [control report](thematic-inputs/copy-followup/report.json)
+and [copy assertions](thematic-inputs/copy-followup/copy-assertions.json) retain
+those outcomes. These component checks do not establish new production browser
+acceptance for the revised wording. Earlier identified-build evidence remains
+tied to its original commits. Fresh exact-head CI is required.

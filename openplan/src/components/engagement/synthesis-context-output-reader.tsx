@@ -15,7 +15,7 @@ function Reader({ outputText, contextRequestId }: { outputText: string; contextR
   const [noteLimit, setNoteLimit] = useState(20), [uncertaintyLimit, setUncertaintyLimit] = useState(20);
   return <div className="min-w-0 space-y-3 text-sm">
     <p className="font-medium">Completed context, machine wording not reviewed</p>
-    <p>This wording needs staff review. Choosing it as input does not approve its meaning.</p>
+    <p>This wording needs staff review. Choosing it for theme preparation does not approve its meaning.</p>
     <h6 className="font-semibold">Generated notes ({output.notes.length.toLocaleString("en-US")})</h6>
     {output.notes.length === 0 ? <p>No context notes were generated. This does not establish that the contribution raises no issues.</p> : null}
     <ol className="space-y-3">{output.notes.slice(0, noteLimit).map(note => <li key={note.id} className="min-w-0 space-y-1">
@@ -30,10 +30,10 @@ function Reader({ outputText, contextRequestId }: { outputText: string; contextR
     </li>)}</ol>
     {output.notes.length > noteLimit ? <><p>Showing {noteLimit} of {output.notes.length} generated notes.</p>
       <Button type="button" variant="outline" onClick={() => setNoteLimit(value => value + 20)}>Show more context notes</Button></> : null}
-    <h6 className="font-semibold">Recorded uncertainties ({output.uncertainties.length.toLocaleString("en-US")})</h6>
-    {output.uncertainties.length === 0 ? <p>The machine recorded no uncertainties. Staff still need to check the original contribution.</p> : null}
+    <h6 className="font-semibold">Reported uncertainties ({output.uncertainties.length.toLocaleString("en-US")})</h6>
+    {output.uncertainties.length === 0 ? <p>The machine reported no uncertainties. Staff still need to check the original contribution.</p> : null}
     <ul className="space-y-2">{output.uncertainties.slice(0, uncertaintyLimit).map((text, index) => <li key={index} className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{text}</li>)}</ul>
-    {output.uncertainties.length > uncertaintyLimit ? <><p>Showing {uncertaintyLimit} of {output.uncertainties.length} recorded uncertainties.</p>
+    {output.uncertainties.length > uncertaintyLimit ? <><p>Showing {uncertaintyLimit} of {output.uncertainties.length} reported uncertainties.</p>
       <Button type="button" variant="outline" onClick={() => setUncertaintyLimit(value => value + 20)}>Show more uncertainties</Button></> : null}
     <Button type="button" variant="outline" onClick={() => {
       const url = URL.createObjectURL(new Blob([outputText], { type: "application/json" })), anchor = document.createElement("a");

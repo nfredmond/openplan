@@ -1,0 +1,96 @@
+{
+  "checkedAt": 1791366286.2268598,
+  "results": [
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "expected": "pass"
+    },
+    {
+      "case": "full-output-hash",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "verifies complete output beyond",
+      "markerMatched": true
+    },
+    {
+      "case": "completed-output",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "self-hashed incomplete",
+      "markerMatched": true
+    },
+    {
+      "case": "original-api-output",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "returns a bounded preview",
+      "markerMatched": true
+    },
+    {
+      "case": "saved-choice-custody",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "self-hashed replacement",
+      "markerMatched": true
+    },
+    {
+      "case": "wording-display",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "shows generated wording",
+      "markerMatched": true
+    },
+    {
+      "case": "uncertainty-display",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "shows generated wording",
+      "markerMatched": true
+    },
+    {
+      "case": "notes-pagination",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "pages notes and uncertainties",
+      "markerMatched": true
+    },
+    {
+      "case": "reader-reset",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "pages notes and uncertainties",
+      "markerMatched": true
+    },
+    {
+      "case": "original-download",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "downloads the exact original",
+      "markerMatched": true
+    },
+    {
+      "case": "quotation-required",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "malformed, truncated, partial and uncited",
+      "markerMatched": true
+    },
+    {
+      "case": "codepoint-bound",
+      "exitCode": 1,
+      "expected": "targeted failure",
+      "testPattern": "matches Unicode code-point",
+      "markerMatched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/components/engagement/synthesis-context-output-reader.tsx": "befe7f049e4ddcde64bcfda29094956c6c14bb189808eda7f48fe168cee73cb9",
+    "src/components/engagement/synthesis-thematic-context-choice.tsx": "2ff2e3ad7e80b0a6ce016ff6d3f7f4a343ad04588071c66c22aeee5aee11cca9",
+    "src/lib/engagement/synthesis-thematic-choice-command.ts": "83069d5ed432cfbfee7f24e9259e0fee1174530031f50c3ab1cc1a475223d8d8",
+    "src/app/api/engagement/campaigns/[campaignId]/synthesis/thematic-choices/route.ts": "b36e5de702f9bf78b38f19aa2c240b14a499491c17ef97224a5cd1b22a86979f",
+    "src/lib/engagement/synthesis-context-output.ts": "ffea10bbdc05d4d7414b21ca503872c7bc658ae4bca3910ee89e418e9114351b",
+    "src/lib/engagement/synthesis-context-continuation.ts": "5378322082bf3d09fb6b9610b177f117e90c8f2bdffcb1f70c57ef221a29a5b3"
+  }
+}

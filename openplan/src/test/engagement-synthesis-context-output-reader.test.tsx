@@ -18,7 +18,7 @@ describe("original context reading", () => {
     expect(screen.getByText("SYNTHETIC context note 0")).toBeVisible(); expect(screen.getByText("SYNTHETIC uncertainty 0")).toBeVisible();
     const quote = screen.getByText("SYNTHETIC source quotation 0"); expect(quote.closest("details")).not.toHaveAttribute("open");
     fireEvent.click(screen.getByText("Source quotations for note 0")); expect(quote.closest("details")).toHaveAttribute("open");
-    expect(screen.getByText(/Choosing it as input does not approve its meaning/)).toBeTruthy();
+    expect(screen.getByText(/Choosing it for theme preparation does not approve its meaning/)).toBeTruthy();
   });
   it("keeps absent notes and uncertainties explicit without implying no issues", () => {
     render(<SynthesisContextOutputReader {...props(0)} />);
@@ -28,7 +28,7 @@ describe("original context reading", () => {
   it("pages notes and uncertainties independently without omitting their totals", () => {
     const view = render(<SynthesisContextOutputReader {...props(21)} />);
     expect(screen.getByText("Showing 20 of 21 generated notes.")).toBeTruthy(); expect(screen.queryByText("SYNTHETIC context note 20")).toBeNull();
-    expect(screen.getByText("Showing 20 of 21 recorded uncertainties.")).toBeTruthy();
+    expect(screen.getByText("Showing 20 of 21 reported uncertainties.")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Show more context notes" })); expect(screen.getByText("SYNTHETIC context note 20")).toBeTruthy();
     expect(screen.queryByText("SYNTHETIC uncertainty 20")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Show more uncertainties" })); expect(screen.getByText("SYNTHETIC uncertainty 20")).toBeTruthy();
