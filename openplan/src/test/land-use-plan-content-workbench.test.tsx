@@ -192,7 +192,7 @@ describe("LandUsePlanWorkbench content editing", () => {
     expect(screen.queryByRole("heading", { level: 1, name: frozen.plan.title })).not.toBeInTheDocument();
     expect(screen.getByText("SYNTHETIC reviewed authority · SYNTHETIC reviewed area")).toBeVisible();
     expect(within(screen.getByRole("heading", { name: "Workflow" }).closest("section")!).getByText(/Saved plan area/)).toHaveTextContent(custody === "legacy" ? "Open" : "Complete");
-    const panel = screen.getByRole("region", { name: "Context retained with this version" });
+    const panel = screen.getByRole("region", { name: custody === "legacy" ? "Context not retained with this version" : "Context retained with this version" });
     expect(within(panel).queryByText("SYNTHETIC later area")).not.toBeInTheDocument();
     if (custody !== "legacy") {
       expect(within(panel).getByText(context.place.label)).toBeVisible();

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -28,7 +29,7 @@ function FrozenContentBranch({ node, nodes, depth = 0, ancestors = new Set<strin
   return <article className={depth ? "ml-4 mt-5 border-l pl-4" : "mt-6"}><Heading className={depth === 0 ? "text-xl font-semibold" : "text-lg font-semibold"}>{text(node, "title") ?? "Untitled plan content"}</Heading>{text(node, "body") ? <p className="mt-2 whitespace-pre-wrap leading-relaxed">{text(node, "body")}</p> : null}{children.map((child, index) => <FrozenContentBranch key={child.id ?? index} node={child} nodes={nodes} depth={depth + 1} ancestors={nextAncestors}/>)}</article>;
 }
 
-export function LandUsePlanReportDetail({ report, plan, artifact }: { report: Report; plan: Plan; artifact: Artifact }) {
+export function LandUsePlanReportDetail({ report, plan, artifact, retainedContext }: { report: Report; plan: Plan; artifact: Artifact; retainedContext?: ReactNode }) {
   const metadata = artifact.metadata_json ?? {};
   const implementation = metadata.kind === "land_use_plan_implementation_report";
   const frozen = metadata.frozenSnapshot && typeof metadata.frozenSnapshot === "object" ? metadata.frozenSnapshot as Record<string, unknown> : null;
@@ -37,8 +38,9 @@ export function LandUsePlanReportDetail({ report, plan, artifact }: { report: Re
   const actions = implementation ? records(snapshot?.actions) : records(frozen?.implementationActions);
   const topLevelNodes = nodes.filter((node) => !node.parent_node_id);
 
-  return <div className="mx-auto w-full max-w-4xl p-5 md:p-10 print:max-w-none print:p-0">
-    <header className="border-b pb-7"><p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{implementation ? "Implementation report" : "Adopted plan report"}</p><h1 className="mt-2 text-4xl font-semibold">{report.title}</h1><p className="mt-3 text-lg">{plan.title}</p><p className="mt-1 text-muted-foreground">{plan.authority_label} · {plan.geography_label}</p><p className="mt-4">{report.summary}</p><div className="mt-5 flex flex-wrap gap-3 print:hidden"><Button onClick={() => window.print()}>Print report</Button><Button asChild variant="outline"><a href={`/api/reports/${report.id}/provenance`}>Download source JSON</a></Button><Button asChild variant="outline"><Link href={`/land-use-plans/${plan.id}`}>Open plan workbench</Link></Button></div></header>
+  return <div className="mx-auto min-w-0 w-full max-w-4xl [overflow-wrap:anywhere] p-5 md:p-10 print:max-w-none print:p-0">
+    <header className="border-b pb-7"><p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{implementation ? "Implementation report" : "Adopted plan report"}</p><h1 className="mt-2 text-4xl font-semibold">{report.title}</h1><p className="mt-3 text-lg">{plan.title}</p><p className="mt-1 text-muted-foreground">{plan.authority_label} · {plan.geography_label}</p><p className="mt-4">{report.summary}</p><div className="mt-5 flex flex-wrap gap-3 print:hidden"><Button onClick={() => window.print()}>Print report</Button><Button asChild variant="outline"><a href={`/api/reports/${report.id}/provenance`} download={`openplan-report-${report.id}-provenance.json`}>Download source JSON</a></Button><Button asChild variant="outline"><Link href={`/land-use-plans/${plan.id}`}>Open plan workbench</Link></Button></div></header>
+    {retainedContext ? <div className="mt-8">{retainedContext}</div> : null}
     {implementation ? <section className="mt-8"><h2 className="text-2xl font-semibold">Reporting period</h2><p className="mt-2">{text(snapshot ?? {}, "reportingPeriodStart") ?? "Start unavailable"} through {text(snapshot ?? {}, "reportingPeriodEnd") ?? "end unavailable"}</p><p className="mt-2 break-all text-xs text-muted-foreground">Adopted plan hash: {text(snapshot ?? {}, "adoptedVersionContentHash") ?? "unavailable"}</p></section> : <section className="mt-8"><h2 className="text-2xl font-semibold">Frozen plan content</h2><p className="mt-2 break-all text-xs text-muted-foreground">Plan content hash: {text(metadata, "contentHash") ?? "unavailable"}</p>{topLevelNodes.map((node, index) => <FrozenContentBranch key={node.id ?? index} node={node} nodes={nodes}/>)}</section>}
     <section className="mt-9 border-t pt-7"><h2 className="text-2xl font-semibold">{implementation ? "Frozen action-status snapshot" : "Implementation program"}</h2>{actions.length ? actions.map((action, index) => <article className="mt-4 rounded-lg border p-4" key={text(action, "id") ?? index}><h3 className="font-semibold">{text(action, "title") ?? "Untitled action"}</h3><p className="mt-1 text-sm">Status: {(text(action, "status") ?? "no status").replaceAll("_", " ")}{text(action, "due_on") ? ` · due ${text(action, "due_on")}` : ""}</p>{text(action, "description") ? <p className="mt-2">{text(action, "description")}</p> : null}</article>) : <p className="mt-3">No implementation actions were present in this frozen report.</p>}</section>
     <footer className="mt-10 border-t pt-5 text-xs text-muted-foreground"><p>Generated {artifact.generated_at}. Consultation details, confidential notes, and sensitive-location flags are not part of this report.</p><p className="mt-2 break-all">Report ID {report.id}</p></footer>
