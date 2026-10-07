@@ -2,3 +2,7 @@
 ALTER TABLE public.land_use_plans DROP CONSTRAINT land_use_plans_workspace_id_fkey, ADD CONSTRAINT land_use_plans_workspace_id_fkey FOREIGN KEY(workspace_id) REFERENCES public.workspaces(id) ON DELETE CASCADE;
 ALTER TABLE public.land_use_plan_versions DROP CONSTRAINT land_use_plan_versions_workspace_id_fkey, ADD CONSTRAINT land_use_plan_versions_workspace_id_fkey FOREIGN KEY(workspace_id) REFERENCES public.workspaces(id) ON DELETE CASCADE;
 ALTER TABLE public.land_use_plan_versions DROP CONSTRAINT land_use_plan_versions_plan_id_workspace_id_fkey, ADD CONSTRAINT land_use_plan_versions_plan_id_workspace_id_fkey FOREIGN KEY(plan_id,workspace_id) REFERENCES public.land_use_plans(id,workspace_id) ON DELETE CASCADE;
+-- A restored archive can install GIS parent cascades after feature cascades too.
+ALTER TABLE public.workspace_gis_layer_versions DROP CONSTRAINT workspace_gis_layer_versions_workspace_id_fkey, ADD CONSTRAINT workspace_gis_layer_versions_workspace_id_fkey FOREIGN KEY(workspace_id) REFERENCES public.workspaces(id) ON DELETE CASCADE;
+ALTER TABLE public.workspace_gis_layer_versions DROP CONSTRAINT workspace_gis_layer_versions_layer_id_fkey, ADD CONSTRAINT workspace_gis_layer_versions_layer_id_fkey FOREIGN KEY(layer_id) REFERENCES public.workspace_gis_layers(id) ON DELETE CASCADE;
+ALTER TABLE public.workspace_gis_layers DROP CONSTRAINT workspace_gis_layers_workspace_id_fkey, ADD CONSTRAINT workspace_gis_layers_workspace_id_fkey FOREIGN KEY(workspace_id) REFERENCES public.workspaces(id) ON DELETE CASCADE;
