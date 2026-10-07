@@ -68,6 +68,27 @@ cleanup, labeled controls, bounded imports and preservation of newer edits. The
 new control uses the existing component system and adds no dependency. Mounted
 checks cannot establish focus order, keyboard usability, contrast or mobile layout.
 
+## Identified build and interrupted T3 check
+
+The [production build](rule-reconciliation-ui/build-status.json) passes on clean
+`866be9e0` with unchanged source. It runs alone under an 8 GiB service limit;
+the final journal reports a 6.2 GiB peak. The [server identity](rule-reconciliation-ui/server-identity.json)
+binds port 3498, PID 3978857, checkout and health response to that commit.
+
+The [T3 record](rule-reconciliation-ui/t3-attempt.json) starts from the landing
+page at 1280 by 800. Its screenshot fails with the existing preview-client error.
+Normal sign-in with the isolated synthetic account reaches the dashboard without
+a displayed alert. Clicking the Land Use Plans navigation link returns, but the
+subsequent URL wait times out. T3 then reports no connected automation host and
+instructs the caller not to retry. The authenticated plan journey does not finish.
+No alternative browser is used. There is no current-source 390px, console or
+downloaded-artifact acceptance.
+
+The owner stops the test server after that disconnect. Port 3498 is clear and
+the service has no remaining main process. Exit 143 follows the requested stop;
+the server's memory peak is 227,524,608 bytes. BCA, engagement and demo services
+remain untouched.
+
 ## Boundaries
 
 Mounted tests use synthetic plans and mocked transport. They do not prove live
@@ -78,8 +99,8 @@ Future fields outside those structures must join the guard explicitly. Page
 closure or navigation recovery for all ordinary staff forms is not implemented
 by this change.
 
-Current-source build, authenticated HTTP concurrency, desktop and 390px T3
-navigation, console review and downloaded-file checks remain separate work.
+Authenticated HTTP concurrency, desktop and 390px T3 navigation, console review
+and downloaded-file checks remain separate work.
 The user requires T3 preview only. Prior snapshot failures and an available
 preview are not rendered acceptance. GitHub checks must pass on the pushed
 checkpoint before any merge. This is not a release or completion of M1 or V1.

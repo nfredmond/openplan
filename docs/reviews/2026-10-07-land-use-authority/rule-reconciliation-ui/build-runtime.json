@@ -1,0 +1,14 @@
+{
+  "unit": "openplan-reconciliation-ui-build-866be9e0-20261007.service",
+  "memoryMaxBytes": 8589934592,
+  "memorySwapMaxBytes": 536870912,
+  "cpuQuota": "200%",
+  "observedMemoryPeakBytes": 6689693696,
+  "observedWhileRunning": true,
+  "finalJournalMemoryPeak": "6.2G",
+  "serverStopped": true,
+  "serverExitStatus": 143,
+  "serverStopCause": "Owner requested normal systemd stop after T3 host disconnected",
+  "serverMemoryPeakBytes": 227524608,
+  "port3498Closed": true
+}
