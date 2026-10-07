@@ -45,7 +45,8 @@ export default async function PublishedLandUsePlanPage({ params }: { params: Pro
   const applicableKeys = Array.isArray(version.applicableRequirementKeys)
     ? new Set(version.applicableRequirementKeys.filter((key): key is string => typeof key === "string"))
     : null;
-  const sections = nodes.filter((node) => node.node_kind === "section" && (applicableKeys ? Boolean(node.requirement_key && applicableKeys.has(node.requirement_key)) : Boolean(node.body)));
+  // Root policies and goals are authored content even when they have no checklist section.
+  const roots = nodes.filter((node) => !node.parent_node_id && (node.node_kind !== "section" || (applicableKeys ? Boolean(node.requirement_key && applicableKeys.has(node.requirement_key)) : Boolean(node.body))));
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-12 print:max-w-none">
@@ -67,7 +68,7 @@ export default async function PublishedLandUsePlanPage({ params }: { params: Pro
 
       <section className="mt-8 space-y-8">
         <h2 className="text-3xl font-semibold">Plan content</h2>
-        {sections.map((section, index) => <ContentBranch key={section.id ?? index} node={section} nodes={nodes}/>)}
+        {roots.map((node, index) => <ContentBranch key={node.id ?? index} node={node} nodes={nodes}/>)}
       </section>
 
       <section className="mt-10 border-t pt-8"><h2 className="text-3xl font-semibold">Mapped designations</h2>{designations.map((designation, index) => <div key={designation.id ?? index} className="mt-4 rounded-lg border p-4"><h3 className="font-semibold">{designation.designation_set_label ?? "Designation layer"}</h3><p className="mt-1 break-all text-sm text-muted-foreground">Frozen GIS feature hash {designation.layer_version_evidence?.feature_hash ?? "unavailable"}</p>{designation.id ? <PublicDesignationMap endpoint={`/api/public/land-use-plans/${planId}/map/${designation.id}`} bbox={designation.layer_version_evidence?.bbox} label={designation.designation_set_label ?? "Mapped designations"}/> : null}{designation.map_note ? <p className="mt-2">{designation.map_note}</p> : null}</div>)}</section>

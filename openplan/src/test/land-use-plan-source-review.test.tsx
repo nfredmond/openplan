@@ -50,7 +50,44 @@ describe("published plan source-review disclosure", () => {
     it.each([{}, { planContext: null }])("discloses unretained context without substituting display labels", async content => {
       await show(content);
       expect(screen.getByText(/This version did not retain its plan context/)).toBeVisible();
+      expect(screen.getByRole("region", { name: "Context not retained with this version" })).toBeVisible();
+      expect(screen.queryByText(/These are the saved area and staff assessment/)).toBeNull();
       expect(screen.queryByRole("heading", { name: "Responsible bodies" })).toBeNull();
+    });
+    it("renders root policies and nested content once while retaining checklist selection", async () => {
+      await show({ version: { applicableRequirementKeys: ["selected"] }, nodes: [
+        { id: "section", node_kind: "section", requirement_key: "selected", title: "Selected section" },
+        { id: "nested-section", parent_node_id: "section", node_kind: "section", requirement_key: "selected", title: "Nested section" },
+        { id: "nested-policy", parent_node_id: "nested-section", node_kind: "policy", title: "Nested policy", body: "Nested policy text" },
+        { id: "root-goal", node_kind: "goal", title: "Root goal", body: "Root goal text" },
+        { id: "root-policy", node_kind: "policy", title: "Root policy", body: "Root policy text" },
+        { id: "root-child", parent_node_id: "root-policy", node_kind: "objective", title: "Policy objective", body: "Objective text" },
+        { id: "unselected", node_kind: "section", requirement_key: "not-selected", title: "Unselected section", body: "Unselected text" },
+        { id: "unselected-child", parent_node_id: "unselected", node_kind: "policy", title: "Unselected child", body: "Unselected child text" },
+      ] });
+      for (const title of ["Selected section", "Nested section", "Nested policy", "Root goal", "Root policy", "Policy objective"]) {
+        expect(screen.getAllByRole("heading", { name: title })).toHaveLength(1);
+      }
+      for (const text of ["Nested policy text", "Root goal text", "Root policy text", "Objective text"]) expect(screen.getByText(text)).toBeVisible();
+      expect(screen.queryByText("Unselected text")).toBeNull();
+      expect(screen.queryByText("Unselected child text")).toBeNull();
+    });
+    it("keeps legacy authored sections and root policies when checklist keys were not retained", async () => {
+      await show({ nodes: [
+        { id: "legacy", node_kind: "section", title: "Legacy section", body: "Legacy section text" },
+        { id: "empty", node_kind: "section", title: "Empty template section", body: null },
+        { id: "policy", node_kind: "policy", title: "Legacy root policy", body: "Legacy root policy text" },
+      ] });
+      expect(screen.getByText("Legacy section text")).toBeVisible();
+      expect(screen.getByText("Legacy root policy text")).toBeVisible();
+      expect(screen.queryByRole("heading", { name: "Empty template section" })).toBeNull();
+    });
+    it("shows the frozen implementation action and its recorded status", async () => {
+      await show({ implementationActions: [{ id: "action", title: "SYNTHETIC action", description: "SYNTHETIC action text", responsible_party: "SYNTHETIC responsible party", due_on: "2027-01-10", status: "in_progress" }] });
+      expect(screen.getByRole("heading", { name: "Implementation program" })).toBeVisible();
+      expect(screen.getByRole("heading", { name: "SYNTHETIC action" })).toBeVisible();
+      expect(screen.getByText("SYNTHETIC action text")).toBeVisible();
+      expect(screen.getByText("SYNTHETIC responsible party · 2027-01-10 · in progress")).toBeVisible();
     });
     it("withholds an invalid saved assessment in a malformed reader result", async () => {
       await show({ planContext: { ...syntheticPlanContext(), savedBy: "invalid" } });

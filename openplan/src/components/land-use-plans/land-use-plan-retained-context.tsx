@@ -4,9 +4,10 @@ type Props = { value: { status: "retained"; context: SavedPlanContext } | { stat
 
 /** Present the reviewed assessment separately from current plan context and retry controls. */
 export function LandUsePlanRetainedContext({ value }: Props) {
-  return <section aria-label="Context retained with this version" className="min-w-0 space-y-4 rounded-xl border border-border bg-card p-5">
-    <div><h2 className="text-lg font-semibold">Context retained with this version</h2>
-      <p className="mt-1 text-sm text-muted-foreground">These are the saved area and staff assessment reviewed with this version. They do not establish legal sufficiency.</p></div>
+  const title = value.status === "legacy" ? "Context not retained with this version" : "Context retained with this version";
+  return <section aria-label={title} className="min-w-0 space-y-4 rounded-xl border border-border bg-card p-5">
+    <div><h2 className="text-lg font-semibold">{title}</h2>
+      {value.status === "retained" ? <p className="mt-1 text-sm text-muted-foreground">These are the saved area and staff assessment reviewed with this version. They do not establish legal sufficiency.</p> : null}</div>
     {value.status === "legacy" ? <p className="text-sm">This version did not retain its plan context. Current plan context cannot establish what reviewers saw.</p> : <>
       <div><h3 className="font-medium">Plan area</h3><p className="break-words text-sm">{value.context.place.label}</p>
         <p className="text-sm text-muted-foreground">Area source: {value.context.place.source}. Study geometry and legal authority are different facts.</p></div>
