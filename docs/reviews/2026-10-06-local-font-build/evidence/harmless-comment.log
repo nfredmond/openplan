@@ -1,0 +1,12 @@
+
+> openplan@0.67.0 test
+> vitest run --maxWorkers=1 src/test/font-preload-source.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  23:57:51
+   Duration  531ms (transform 27ms, setup 53ms, import 9ms, tests 3ms, environment 319ms)

@@ -19,6 +19,13 @@ License, Version 2.0. The vendored archive was obtained from
 
 ## Runtime dependencies, source data and optional models
 
+Space Grotesk 2.000 and JetBrains Mono 2.211 are bundled under the SIL Open Font
+License 1.1 in `openplan/src/app/fonts/`. Each family retains its original license
+and copyright notice. `provenance.json` records the pinned Google Fonts source,
+retrieval date and SHA-256 for each unmodified font and notice. These files keep
+the application build independent of Google Fonts downloads; the Apache license
+does not replace their font licenses.
+
 The repository license does not replace the licenses or service terms of Mapbox, basemap/source providers, Python/Node dependencies, ODM integrations, installed agent backends or model weights. Preserve required notices and source-specific attribution with imported/exported material. Record dataset version, retrieval date, permitted redistribution and any restricted original versus public derivative. Public availability alone is not a redistribution grant.
 
 TimesFM is researched, not bundled or deployed here. Nathaniel selected 3.0 only. Its current pretrained weights have separate noncommercial/nonproduction terms, unlike this repository's Apache source license. The [dated assessment](docs/reviews/2026-09-04-pre-handoff/TIMESFM_TECHNICAL_RESEARCH.md) and roadmap S2a record the conditions for any future work. Payment, team size or local hosting does not establish permission.

@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
 import { DEFAULT_PALETTE, PALETTES } from "@/lib/theme/palettes";
 import { OPENPLAN_OG_IMAGE_PATH, OPENPLAN_SITE_NAME, resolveSiteOrigin } from "@/lib/public-page-metadata";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const spaceGrotesk = localFont({
+  src: "./fonts/spacegrotesk/SpaceGrotesk[wght].ttf",
+  weight: "400 700",
+  style: "normal",
   display: "swap",
   variable: "--font-display",
 });
@@ -19,9 +20,10 @@ const spaceGrotesk = Space_Grotesk({
  */
 const PALETTE_IDS = PALETTES.map((palette) => palette.id);
 
-const jetBrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
+const jetBrainsMono = localFont({
+  src: "./fonts/jetbrainsmono/JetBrainsMono[wght].ttf",
+  weight: "400 500",
+  style: "normal",
   display: "swap",
   variable: "--font-mono-sys",
 });

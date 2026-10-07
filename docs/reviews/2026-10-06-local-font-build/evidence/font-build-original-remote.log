@@ -1,0 +1,45 @@
+
+> openplan@0.67.0 build
+> NODE_OPTIONS="$NODE_OPTIONS --max-old-space-size=6144" next build --webpack
+
+▲ Next.js 16.3.8 (webpack)
+- Environments: .env.local
+✓ Running next.config.ts took 16ms
+
+  Creating an optimized production build ...
+Font network access disabled for verification
+
+Retrying 1/3...
+Font network access disabled for verification
+
+Retrying 1/3...
+Font network access disabled for verification
+
+Retrying 2/3...
+Font network access disabled for verification
+
+Retrying 2/3...
+Font network access disabled for verification
+
+Retrying 3/3...
+Font network access disabled for verification
+
+Retrying 3/3...
+Error: Font network access disabled for verification
+    at client.request (../../t3-restart-recovery-20261006/block-google-fonts.cjs:9:13)
+    at new Promise (<anonymous>)
+Error: Font network access disabled for verification
+    at client.request (../../t3-restart-recovery-20261006/block-google-fonts.cjs:9:13)
+    at new Promise (<anonymous>)
+Failed to compile.
+
+src/app/layout.tsx
+`next/font` error:
+Failed to fetch `JetBrains Mono` from Google Fonts.
+
+src/app/layout.tsx
+`next/font` error:
+Failed to fetch `Space Grotesk` from Google Fonts.
+
+
+> Build failed because of webpack errors

@@ -1,0 +1,22 @@
+{
+  "started": 1791356319.1567774,
+  "state": "finished",
+  "results": [
+    {
+      "name": "original-remote",
+      "exitCode": 1,
+      "blockedFontRequests": 8,
+      "expected": "font network refusal",
+      "log": "font-build-original-remote.log"
+    },
+    {
+      "name": "local-fonts",
+      "exitCode": 0,
+      "blockedFontRequests": 0,
+      "expected": "pass",
+      "log": "font-build-local-fonts.log"
+    }
+  ],
+  "restored": true,
+  "finished": 1791356457.3045144
+}
