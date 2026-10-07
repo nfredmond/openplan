@@ -1,0 +1,43 @@
+{
+  "baseline": "891a0d89a848133d44b9e4f314a76a922cd71ace",
+  "files": {
+    "workers/activitysim_worker/main.py": "78e51a202170b60fdd81de5655c47a07e3e1c3648832250237af702c7bd96f4f",
+    "workers/activitysim_worker/runtime.py": "ea1a78065316185785458dc2738ce5ad5405810bccc9a142d6b3dd689e747900",
+    "workers/activitysim_worker/Dockerfile": "ae9d9ddafedf28d6b5eaaa767e321d561a0237dc96e70182dd2a14bf787a966c",
+    "workers/county_onramp_worker/main.py": "823d89525347b72cd8092986933cd76358a1baf26cae6a56b72c36400eac9d4d",
+    "scripts/modeling/bootstrap_county_validation_onramp.py": "7fc57cc55c1bbfc6de237cc535427b897a1e0be2ca6b5121fdcc020d8e0a7c2a",
+    "scripts/modeling/validation_instrument_v2.py": "67256b4a54d5157fcc9b24172bb58f877e4b465b3adc3c4b9736d29e20e18fb4",
+    "workers/aequilibrae_worker/model_validation_core_v5.py": "17f3e71b15e17a564de26817a094dd8711665f5d245455d057d5031daef51cc4",
+    "scripts/modeling/run_comparable_observation_study.py": "1b6d45bbe5e041ad3c9dbf6c43872afb686bcc4db757ba745b9dea878836226b"
+  },
+  "frozen_audits": {
+    "06007": {
+      "sha256": "e306890edad12356e462fd45bd16a3e436424372eb297180568f92d876ea004b",
+      "matched_one_direction_with_bidirectional_candidate": 0
+    },
+    "06039": {
+      "sha256": "29fd8372922c3a98143a5163f502506aa47266102760167237685512d8430f48",
+      "matched_one_direction_with_bidirectional_candidate": 0
+    },
+    "06047": {
+      "sha256": "fdb8849e0c7eda893dd0b8a40355d64a1714d7ff51cb171acc223135cdf72f19",
+      "matched_one_direction_with_bidirectional_candidate": 0
+    },
+    "06053": {
+      "sha256": "4d534acd6583b616117b1a5930f9822ad1238e1a9805ce3fff05ff66d098a754",
+      "matched_one_direction_with_bidirectional_candidate": 0
+    },
+    "06057": {
+      "sha256": "2a98168a8e4c0475f2c99501f7596ae8aea2f9741229dc58fd3872b2e69cd191",
+      "matched_one_direction_with_bidirectional_candidate": 0
+    },
+    "06069": {
+      "sha256": "75d363e309e6cb584e4fa2863298ba59bfb657ca1a5fa7789515b4d27541a61c",
+      "matched_one_direction_with_bidirectional_candidate": 0
+    },
+    "06107": {
+      "sha256": "cef4647d4717c0001d573d3bdc90683b028bdce92c89d9f8bf5e5da2dead7494",
+      "matched_one_direction_with_bidirectional_candidate": 0
+    }
+  }
+}

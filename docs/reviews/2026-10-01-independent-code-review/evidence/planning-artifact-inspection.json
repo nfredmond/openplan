@@ -1,0 +1,62 @@
+{
+  "entries": [
+    "project/",
+    "checksums.sha256",
+    "manifest.json",
+    "project/project.gpkg",
+    "project/project.json",
+    "README.txt"
+  ],
+  "statusRows": [
+    [
+      "activitysim_links",
+      "unavailable",
+      null
+    ],
+    [
+      "aequilibrae_links",
+      "unavailable",
+      null
+    ],
+    [
+      "crash_ksi",
+      "unavailable",
+      null
+    ],
+    [
+      "engagement_geometry",
+      "unavailable",
+      null
+    ],
+    [
+      "land_use_designations",
+      "unavailable",
+      null
+    ],
+    [
+      "project_area",
+      "included",
+      1
+    ],
+    [
+      "project_corridors",
+      "included",
+      1
+    ],
+    [
+      "project_location",
+      "included",
+      1
+    ]
+  ],
+  "pointLongitudeLatitude": [
+    -82.9988,
+    39.9612
+  ],
+  "omittedInvalidCorridors": 1,
+  "sqliteIntegrity": "ok",
+  "hashesMatch": true,
+  "unicodePreserved": true,
+  "harmlessZipCommentSurvived": true,
+  "alteredProjectBytesRejected": "checksum mismatch: project/project.json"
+}

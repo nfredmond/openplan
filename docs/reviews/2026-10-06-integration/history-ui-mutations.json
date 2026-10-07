@@ -1,0 +1,58 @@
+{
+  "sourceSha256": "8d3959c3accfc0e1209a3784a9b086b551f969ab033a700816ee407bbc2844d0",
+  "cases": [
+    {
+      "case": "harmless comment",
+      "expected": "pass",
+      "exitCode": 0,
+      "expectedOutcome": true,
+      "logSha256": "19fee27c9385ce94bc090d215f8753f5216b4d1d9b7e5eeed23ad4dc6648622c",
+      "expectedBehaviorFailure": false
+    },
+    {
+      "case": "bypass source verification",
+      "expected": "assertion failure",
+      "exitCode": 1,
+      "expectedOutcome": true,
+      "logSha256": "168025985ed153d426221fe0797aaf05845b30c546034abf58884d43dbdb0f24",
+      "expectedBehaviorFailure": true
+    },
+    {
+      "case": "erase cancellation meaning",
+      "expected": "assertion failure",
+      "exitCode": 1,
+      "expectedOutcome": true,
+      "logSha256": "9550eccca67549d74f2221298c60ec68ff3f50565b012b26763d98b61de88878",
+      "expectedBehaviorFailure": true
+    },
+    {
+      "case": "omit account revocation notification",
+      "expected": "assertion failure",
+      "exitCode": 1,
+      "expectedOutcome": true,
+      "logSha256": "0f30e056aeba3662f2d241d54ea9d6e487e2af80fd7155c0b3571a513b943136",
+      "expectedBehaviorFailure": true
+    },
+    {
+      "case": "omit source hash query",
+      "expected": "assertion failure",
+      "exitCode": 1,
+      "expectedOutcome": true,
+      "logSha256": "38ad633477da0edb3b11c7295fac72f1b60e1f0682ad099fb6c3833b24dceb1f",
+      "expectedBehaviorFailure": true
+    },
+    {
+      "case": "replace older page instead of append",
+      "expected": "assertion failure",
+      "exitCode": 1,
+      "expectedOutcome": true,
+      "logSha256": "18542ad5fe7cc0c5fcd7487cb32e2be3c56abaf4a09ed5090dadfe368161a340",
+      "expectedBehaviorFailure": true
+    }
+  ],
+  "blindCategories": [
+    "Mocked HTTP, not native RLS or a rendered browser.",
+    "No real provider execution, cross-tab storage or practitioner acceptance."
+  ],
+  "instrumentNote": "The initial summary recognized only AssertionError. Two intended DOM query failures use TestingLibraryElementError. Their logs were inspected and classified without rerunning or changing the tested code."
+}

@@ -1,16 +1,16 @@
 # OpenPlan roadmap to v1
 
 <!-- openplan-active-roadmap
-reviewed_commit: e6d25edd
+reviewed_commit: 380aad49770d856a9c4b577ccc9793baf39d3ddf
 current_release: v0.66.0
-review_by: 2026-10-05
+review_by: 2026-11-06
 paths:
 - AGENTS.md
 - CLAUDE.md
 - docs/product/V1_PRODUCT_CONTRACT.md
 - docs/product/AGENT_OPERATING_RULES.md
 - docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
-- docs/reviews/product-direction/2026-09-07-work-program-review.md
+- docs/reviews/product-direction/2026-10-06-integration-review.md
 - openplan/scripts/ops/product-direction-review.mjs
 - openplan/src/test/product-direction-review-guard.test.ts
 - openplan/src/lib/safety/sources/registry.ts
@@ -32,7 +32,57 @@ npm_commands:
 - qa:gate
 -->
 
-Current queue, updated September 7, 2026 through OWP preparation and first engagement workflow engineering. The September 6 development handoff at `cc6c3feb` remains historical context. Findings R1-R13 refer to the [comprehensive review](reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md). Historical releases and scientific outcomes remain in their dated records. The latest twelve-journey run finished nine passes and three partial outcomes; v0.44 ships as a development increment under the September 7 policy. Its later report correction has separate verification, not a complete passing rerun.
+Current queue, reassessed October 6, 2026 by two independent contexts at
+`380aad49`. The September 6 handoff at `cc6c3feb` and R1-R13
+[comprehensive review](reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md) remain
+historical evidence. The latest recorded twelve-journey campaign has nine passes
+and three partial outcomes. Later bounded releases and corrections do not
+constitute a complete passing rerun.
+
+## October 6 development checkpoint
+
+The [integration audit](reviews/2026-10-06-integration/INTEGRATION.md) accounts for
+September 6 through October 6 branches, worktrees and original review evidence.
+The package remains v0.66.0 with unreleased work. This checkpoint does not alter
+the full v1 contract or redate the September strategic review.
+
+The immediate workflow sequence is below. M1/G1 geography and authority work,
+M3 independent operation, and S1 scientific evidence preparation continue
+alongside it. Their position in this list does not defer them until every agency
+workflow is finished. The [October independent review](reviews/product-direction/2026-10-06-integration-review.md)
+records the evidence and remaining disagreements.
+
+1. **M0:** merge the remaining staff-synthesis foundation and original independent
+   review, with combined QA, live isolation and populated upgrade evidence. Keep
+   all source history and record any remaining local-only files.
+2. **M9b:** saved-request discovery now has [desktop, 390px and native-read evidence](reviews/2026-10-06-integration/INTEGRATION.md).
+   Finish explicit creation, preparation, cancellation, provider authorization and proposal import
+   as one recoverable staff workflow. Validate real navigation at desktop and
+   390px. Existing worker/API checks do not close this visible outcome.
+3. **M2/M9/A0:** finish the engagement source-to-response-to-decision journey and
+   its usable public/internal artifacts, retaining installed/API provider choice.
+   Join the existing v0.64 response/decision links and exports; do not rebuild them.
+   Address reproducible access, recovery and accessibility defects as found.
+4. **M2d/M10–M14:** deepen the existing OWP, contract, capital, prior-RTP,
+   recipient-reporting and procurement workflows. Each increment must complete
+   a planner outcome across its existing records, with sourced applicability.
+5. **M1/M3–M8/S1–S3/V1:** retain nationwide and California coverage, independent
+   operation/recovery, the full aerial requirements, and separate scientific
+   acceptance of both demand models. Freeze adequate independent evidence before
+   new national accuracy claims. No release count or date substitutes for these.
+
+This sequence selects the next bounded outcome. The milestone definitions below
+remain binding and the capability registry retains its current evidence grades.
+
+The next staff-generation increment starts from a retained source and saves a
+staff-authored request with its original intent. Reuse the existing request and
+preparation recovery modules. A page reload or lost reply must recover that same
+request. Show preparation progress and cancellation separately from provider
+authorization. A stopped worker must leave a recoverable job; an uncertain reply
+must never cause a new request or a second provider call. Finish with a reviewed
+proposal imported into the existing staff review. Verify root, context and theme
+stages, account changes, unavailable storage, interruption and narrow-screen use.
+Preserve the complete source and its uncertainty throughout.
 
 ## September 7 release-policy correction
 
@@ -666,7 +716,11 @@ A0a proves one direct API choice and one local CLI backend on the same existing 
 
 ## W1. Nat Ford Planning website presents OpenPlan as the main product
 
-This is a companion adoption task in `nfredmond/nat-ford-website`, not a new OpenPlan module or a paid-access requirement. It can begin before M15's hosted trials; enable trial links only when their actual destination is accepted.
+This historical companion task is on hold under Nathaniel's current instructions.
+Nat Ford is on indefinite pause. General OpenPlan development does not authorize
+new Nat Ford marketing or client work; ask before resuming W1. Preserve the scope
+below as history. OpenPlan source, installation and release documentation can
+continue independently. Trial links require an accepted actual destination.
 
 - **Outcome:** an agency/consultant visitor quickly understands OpenPlan, finds how to get/install it, and sees optional implementation, annual administration and customization. Independent free use needs no sales contact.
 - **Gap/evidence:** `NAT_FORD_WEBSITE_REFRESH_BRIEF.md` identifies website main 08348b08 and the sampled homepage, OpenPlan page, navigation and instruction/test mismatch. OpenPlan already has prominent content; the refresh should sharpen that existing work and provide a direct installation route. Current live visual/deployment identity remains unverified.

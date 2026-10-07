@@ -1,0 +1,298 @@
+{
+  "recordedAt": "2026-10-03T03:43:12.580609+00:00",
+  "base": "9d02019b",
+  "scope": "Current-staff generation request discovery for one retained source across all three stages; authenticated HTTP read only",
+  "migration": "20261015000013_engagement_synthesis_request_discovery.sql",
+  "migrationCreation": "Supabase CLI generated20261003032513; renamed to follow existing future-dated012 history before application. Only013 applied on owned29822.",
+  "checks": {
+    "nativeCandidate": {
+      "tests": 21,
+      "baseline": 1,
+      "harmless": 1,
+      "targetedFaults": 19,
+      "seconds": 37.041,
+      "peakMemory": "416.9MiB",
+      "swap": 0
+    },
+    "httpAndPageUnitTests": 48,
+    "mutations": [
+      {
+        "mutation": "harmless wording",
+        "exitCode": 0,
+        "expected": "survived",
+        "valid": true
+      },
+      {
+        "mutation": "source scope",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "duplicate identity",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "page order",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "prior cursor",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "microsecond precision",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "stage parent",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "self parent",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "tail cursor",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "page bound",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "fraction bound",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "unknown query",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "duplicate query",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "partial cursor",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "auth error",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "staff permission",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "access error",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "access denied",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "expected actor",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "expected workspace",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "RPC name",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "RPC campaign",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "RPC source",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "RPC cursor",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "request abort",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "native deadline",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "pre-dispatch abort",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "late acknowledgement",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "private cache",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "native forbidden",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "native invalid",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      },
+      {
+        "mutation": "verify response",
+        "exitCode": 1,
+        "expected": "assertion failure",
+        "valid": true
+      }
+    ],
+    "static": "whole-package types, focused strict lint and configured deadcode pass;58.744s,4.8GiB,0swap",
+    "advisors": {
+      "sameAsPreparationQueue": true,
+      "findings": 9,
+      "newFunctionFindings": 0,
+      "unresolvedExistingObjects": [
+        {
+          "name": "refuse_project_decision_package_change",
+          "finding": "function_search_path_mutable",
+          "level": "WARN"
+        },
+        {
+          "name": "refuse_scenario_comparison_model_run_link_change",
+          "finding": "function_search_path_mutable",
+          "level": "WARN"
+        },
+        {
+          "name": "reap_model_run_if_stale",
+          "finding": "function_search_path_mutable",
+          "level": "WARN"
+        },
+        {
+          "name": "set_rtp_financial_updated_at",
+          "finding": "function_search_path_mutable",
+          "level": "WARN"
+        },
+        {
+          "name": "apply_engagement_item_vote_delta",
+          "finding": "function_search_path_mutable",
+          "level": "WARN"
+        },
+        {
+          "name": "spatial_ref_sys",
+          "finding": "rls_disabled_in_public",
+          "level": "ERROR"
+        },
+        {
+          "name": "postgis",
+          "finding": "extension_in_public",
+          "level": "WARN"
+        },
+        {
+          "name": "pg_trgm",
+          "finding": "extension_in_public",
+          "level": "WARN"
+        },
+        {
+          "name": "btree_gist",
+          "finding": "extension_in_public",
+          "level": "WARN"
+        }
+      ]
+    }
+  },
+  "retainedFailures": [
+    "Requester-filter fault hides the earlier segment author before departure probing. The expected failure now names the actual tail-page count check.",
+    "Microsecond-removal fault correctly rejects a valid page with an application Error. The mutation harness initially required AssertionError; its accepted failure now names the precise order error.",
+    "Initial TypeScript run rejects BigInt literal for the project target and an optional-field test query union. BigInt constructor and explicit string-record cases pass.",
+    "Initial explicit local DB URL requests TLS on a stack without TLS. Verified loopback29822 URL now explicitly disables SSL for that local target only."
+  ],
+  "limits": [
+    "HTTP unit tests mock native transport; actual installed Next HTTP checks and production build remain pending.",
+    "Native tests roll back tied-time synthetic records and use actual create commands. They do not establish concurrent membership-transition timing, arbitrary-history capacity or browser usability.",
+    "Cancellation before request creation has no retained source and is not listed here. Its exact read/cancellation recovery remains available by request ID.",
+    "Page verification cannot prove that native code returned every eligible record; the separate native inventory and paging tests protect that boundary.",
+    "No provider execution, staff approval, semantic quality, public release or full-v1 claim.",
+    "All nine existing security-advisor findings remain unresolved; no new-function finding."
+  ],
+  "logs": {
+    "staff-request-history-advisors.log": "600629ad0a0a7b719b7c0733330be849194552e08b317f5cd6d6c192986fdf2c",
+    "staff-request-history-deadcode.log": "98717233ea4d47395e2696ee2b8062278835f21bca48a58ea440201e1930ce52",
+    "staff-request-history-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staff-request-history-migration-final.log": "74f016d85740b41b830383b6ba167d6cfc6cae06d20eef3e471a948a56a652bf",
+    "staff-request-history-migration-list.log": "15382fb47ebd5160f018588267e7ca8c040be80cd28ed38e96ca0404ab5cd58a",
+    "staff-request-history-migration.log": "c8a3bd9184216c15691a3a8b2c404567b9f30aeacb44ad74b16f2a73a378c174",
+    "staff-request-history-mutations-initial.log": "2359d81deb204cda355fb694a1b2acb82e0c6b97cceafa9a65a075b9c16399c2",
+    "staff-request-history-mutations.log": "24ccf5031df04f4be3358fd9cf9cf4c7f497790f9ac9737edccf329ee734d91b",
+    "staff-request-history-tests-final.log": "e380d525af5ab10f0c7c41c640142a613a51637f60d4d314a9c8fdcff29761dd",
+    "staff-request-history-tests.log": "b74bb7cd63f06f8dbd38d62d553fe2795315b6c92438ecd27b9ab3f89e4a8630",
+    "staff-request-history-types-initial.log": "20f9fa245cfb64977bc78e77c44850d035d13101534b37b1b8e00187fbd0427e",
+    "staff-request-history-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "nativeLogs": {
+    "staff-request-discovery-native.log": "60db581412ad4cf8bf26006ac193071d9577eb5c0cafd99c467604fbfa8d6fbb",
+    "staff-request-discovery-native-final.log": "3a06a909eac18aa5cef76b829ce0ebe2d74c9d4e04ef29df7a6bc3f4bdb4626f"
+  }
+}

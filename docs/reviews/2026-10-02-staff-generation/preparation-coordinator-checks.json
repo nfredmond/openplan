@@ -1,0 +1,509 @@
+{
+  "sourceBase": "cca57be3",
+  "tests": {
+    "coordinator": 30,
+    "combined": 259,
+    "lint": "pass",
+    "wholePackageTypes": "pass"
+  },
+  "sources": {
+    "openplan/src/lib/engagement/synthesis-preparation-coordinator.ts": "1baed0d1fee8d33963a24e34212ca74b0971811e7ca1baf9df855a2d63b8e4e6",
+    "openplan/src/test/engagement-synthesis-preparation-coordinator.test.ts": "f7d45eab97f9a42a2b96b98665e16a3048ae99154d7cb50478ed06e88906ef3c"
+  },
+  "mutations": {
+    "sourceSha256": "1baed0d1fee8d33963a24e34212ca74b0971811e7ca1baf9df855a2d63b8e4e6",
+    "results": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "expectedSurvivor": true,
+        "assertionFailure": false,
+        "logSha256": "3de7a0838ac58107bcbef18304b271d5c17191b479304a266024b2db2f18faa2"
+      },
+      {
+        "name": "target",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "4f11165e5416a9a4562b2433f77247e92e3098127e32ad84b541a71439d6e32b"
+      },
+      {
+        "name": "version",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "9e583172feafa3d997bff440553e9a77a35859f0ffb19a3184adb61034e33e58"
+      },
+      {
+        "name": "strict",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "f90f9db572fa65c4136edad9b70b41351b61a547c8a89c4b457ac87426406289"
+      },
+      {
+        "name": "directory-order",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "e82fb8bc58fd515fbd2d52dfdabc9bd403acbb00fdddf3c69955f7727b0073e3"
+      },
+      {
+        "name": "request-unique",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "8a33d878d013aad2cb6affe0c511c3fe40ac77f69adede73847e5a8b0ecaefa8"
+      },
+      {
+        "name": "path",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "8d41ef86ba940594dd1faca7bb9781c99ce04bf261efa70b9b5288fb3cb8e56f"
+      },
+      {
+        "name": "read-bound",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "29a57537990a5bfc3e6b9d933f79c0089a1aad2b0e94dd67dc29562d02f35861"
+      },
+      {
+        "name": "read-error",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "765a23a0d880a169266cf0d1feaec70ecf04be06363fd22acc4417389eb13adb"
+      },
+      {
+        "name": "lock",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "7d9ad550d7c2fe18d8bc85670ef585b3cbe25f657798d8f8a9a49ee6ba0b9c6c"
+      },
+      {
+        "name": "initial-save",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "d04a820afd60fdab114e17408266600609f2093810fa30cf599efa92fbfa4b8c"
+      },
+      {
+        "name": "fresh-save",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "8bd9956088b3726a1a4176219c81b7c733c7969ef2cb2fa11ad9ec894c82d6d9"
+      },
+      {
+        "name": "attempt-save",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "1c582604a460c83af020e55f2da5193d2d84edcc35b1fafd325314a241e04429"
+      },
+      {
+        "name": "directory-reuse",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "4ac35104e8a01acff3ba4aea7bdfb4da4e5433627e20d4343897fa3d20c24118"
+      },
+      {
+        "name": "result-request",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "b3f0fdf16278506eda48bfe478269ff23736d34bd0536acd32fb122f54ad2162"
+      },
+      {
+        "name": "result-outcome",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "8b2048b24056991503e668c30c6462653026ab24648701d70e42bc27e7724a6d"
+      },
+      {
+        "name": "result-state",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "c9d0846e610329fa028e08d39c182e3aa2d3477cbd5ea6bfc90e791f8f97cd71"
+      },
+      {
+        "name": "unknown-retention",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "0f1e92970c1cd0730ab0c4305bf2208ffb753a6fbb5a52bdaec88fbfb701251b"
+      },
+      {
+        "name": "retry-cursor",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "08938ca947b33e87789bef0f53c24488b275fa282b57ba096b2a52516a160830"
+      },
+      {
+        "name": "retry-page",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "558e42a890c2b2e0cb1f58f1674f60c4ae5e373e099be7c4aaba85d3c0da1d28"
+      },
+      {
+        "name": "retry-wrap",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "77aca82188bf8a790c07e975bd9a72bfdb10b38eae2d5149e36dc4637d4d1fab"
+      },
+      {
+        "name": "retry-before-discovery",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "36c53526e2c3c630267d771946ddddd1ea9e0b943c3b8289b0c6757f636de70a"
+      },
+      {
+        "name": "request-dedup",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "b62620d1041d81b7cead294e20dfbf680f11c71cdd324bb4afd767a7552c880d"
+      },
+      {
+        "name": "queue-cursor",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "0ad00a93cdabd951dfadecf2b20dc84a909b04c9e5c77d013ed4af88e23d7b3e"
+      },
+      {
+        "name": "stage-driver",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "782c173b11a88de88eec5e6203a5b682f694094a58a96bdd0de4c9d85c58bfee"
+      },
+      {
+        "name": "write-bound",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "7a9aa2da81b8e32a932540b4895526c4af64f5a52dbefd7475ffc9b62b976b3c"
+      },
+      {
+        "name": "terminal-retention",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "77d6f646896d9ebf87c80039ec160e965d9b9af26c588c6390dcfcab27854fc4"
+      },
+      {
+        "name": "abort-fences",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "eb95ec72fce0fb4dbda2b32e962a676d146ec7bb7d2e2b1c301c64cf8333b34a"
+      }
+    ],
+    "restored": true,
+    "blindCategory": "Actual filesystem and lock, mocked discovery and attempt execution; not native claim recovery or process-crash proof."
+  },
+  "initialMutationResults": [
+    {
+      "sourceSha256": "1baed0d1fee8d33963a24e34212ca74b0971811e7ca1baf9df855a2d63b8e4e6",
+      "results": [
+        {
+          "name": "harmless",
+          "exit": 0,
+          "expectedSurvivor": true,
+          "assertionFailure": false,
+          "logSha256": "b75457e29ef9eafeaa42d1c5808c722a90c19e8c8a0f8a315a558ec10e1d7d4e"
+        },
+        {
+          "name": "target",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "03586cdb2ea89705b4858ad0f0989dc856ec6d1c086bb283ff2932cef15cb1c2"
+        },
+        {
+          "name": "version",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "c4e9c12568f59995c72cef309f0133b1e4b4fe1d05c48893ef169ccbfebc6743"
+        },
+        {
+          "name": "strict",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "11225d94e0f31b3ff80e458af37bfbf04b5e394a0f814c91d36e9836bcdad1ab"
+        },
+        {
+          "name": "directory-order",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "cdef9dcaa1c09b911b309f0047eb0a42a6f2f0375e3bf0173fdbe078fbc3407f"
+        },
+        {
+          "name": "request-unique",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "a0423a9dc1146bb17c6a7a7d185a616c967400160515a655ba9e6be8535e4b0d"
+        },
+        {
+          "name": "path",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "a602be61e24bd0246894775aa1c495c7a0d0f438468ea5097a2d109e9e0b54ab"
+        },
+        {
+          "name": "read-bound",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "f1d0473594ee1201bf8890a441d85ba78f2733e663d57f8656edb132e469e1d3"
+        },
+        {
+          "name": "read-error",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "c414e1ed3f4da4c866d85cd2d31b275f5454298c78f4a75d7bed34da971e6481"
+        },
+        {
+          "name": "lock",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "eb8ef0ba2cbfd5ce3973ded205c214ff4188e8b1d27f1daf491e03c3ee624325"
+        },
+        {
+          "name": "initial-save",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": false,
+          "logSha256": "fa2a2bfae67ac180e0d8d073779b0337d73947cddf70671d8a4ca905f2001b3d"
+        }
+      ],
+      "restored": true,
+      "blindCategory": "Actual filesystem and lock, mocked discovery and attempt execution; not native claim recovery or process-crash proof."
+    },
+    {
+      "sourceSha256": "1baed0d1fee8d33963a24e34212ca74b0971811e7ca1baf9df855a2d63b8e4e6",
+      "results": [
+        {
+          "name": "harmless",
+          "exit": 0,
+          "expectedSurvivor": true,
+          "assertionFailure": false,
+          "logSha256": "61e43c7c08ffe36d74be5e58b796745f9fd33d451736e7f2fc7d6929c9e875b9"
+        },
+        {
+          "name": "target",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "6bc1dc9e7e92d172e0b8f6c732038ce2d081a50f6051b6d01bdbd4ebe2923bd7"
+        },
+        {
+          "name": "version",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "ccccaa0da725ed31f6bb04f54e6c464442a83744bab3121508a215365845249d"
+        },
+        {
+          "name": "strict",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "065519c4200613b3f94514f578c8bac76643e5caabdd248bc6d3ecfba08312d9"
+        },
+        {
+          "name": "directory-order",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "e32465767ccfc897491e625a96edaed345806d9c4e163c67567190173769a0eb"
+        },
+        {
+          "name": "request-unique",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "1988f2bcb3bcbda7ebb4e9d6bdcafa56500b1f2ffcb5c7cc93b2b1dbb84c9c20"
+        },
+        {
+          "name": "path",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "9d7e2dfd139c7b7dfd491344256d2a6fa91724497a5e018f6daf3b328df80e14"
+        },
+        {
+          "name": "read-bound",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "3ecf245765145342354a53840a9353027186c0bea00bbbb492c5db2e3f9a245b"
+        },
+        {
+          "name": "read-error",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "171727ebf59ac07e605b90bea0e9e68b448e7998ce3be8f69e5c0da8fe3625fe"
+        },
+        {
+          "name": "lock",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "1c5533bd0db2f1b5fc5a50fabfc824f082d6f2ed8904dc43754443f0377977e1"
+        },
+        {
+          "name": "initial-save",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "e183d585b7fec2860de404c889309a76ab2202f4bd95994fc701fde1ef9c6a08"
+        },
+        {
+          "name": "fresh-save",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "b07ecb5a74684aeb92e545371873b9cf062a7ea2df482e469d91b1059946a961"
+        },
+        {
+          "name": "attempt-save",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "931858009c23dfbdec07d8f330625123c350e45332a9a7a57d2819a8a2f36615"
+        },
+        {
+          "name": "directory-reuse",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "e716141cf66d7f20a1c22e28be18a178bbfb99dd540eab9b0e00147a06f87a89"
+        },
+        {
+          "name": "result-request",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "0282110c500b8d1c08546642f63d68dd1c1ec08bde0bb61d01e1488426ef26f3"
+        },
+        {
+          "name": "result-outcome",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "b07f59352fbc40ba5064e9517f0777d397817af56c095c58051d942bac99f383"
+        },
+        {
+          "name": "result-state",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "78affa2f67d39de88e375be248f63d42f286e403acaff178054d58370f12eb25"
+        },
+        {
+          "name": "unknown-retention",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "2e464cb3bbd182c9fc7f99199101c3837ae7c5735c9ad6cc40253a069e8fbcf7"
+        },
+        {
+          "name": "retry-cursor",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "1cc2f97e9f9e15299787e97b15196cf928c51222cf118171969f3f9bed2a53c7"
+        },
+        {
+          "name": "retry-page",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "fc00b8c7aec752cde90949df0d8174259664e834f930cd3a39ff8c84f1b789bf"
+        },
+        {
+          "name": "retry-wrap",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "d7b6e3508cc26e3ff42109d9db02896ced0a8dbfc4dcc2022b7e0d1c51d55666"
+        },
+        {
+          "name": "retry-before-discovery",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "6688ec8232ef173b9c5bfb64672cce985a16b92f7685c8e9697b1278bbda6091"
+        },
+        {
+          "name": "request-dedup",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": false,
+          "logSha256": "5fe10353b7589221f40b3c04ae7f787811c45a7de52392e6307af3215d228d65"
+        }
+      ],
+      "restored": true,
+      "blindCategory": "Actual filesystem and lock, mocked discovery and attempt execution; not native claim recovery or process-crash proof."
+    }
+  ],
+  "native": {
+    "startedAt": "2026-10-03T02:32:36.181Z",
+    "sourceBase": "cca57be3",
+    "checks": [
+      "lost native completion reply remains pending while unrelated request completes",
+      "fresh child recovers exact saved completion and retains the terminal child journal",
+      "abrupt child exit after native claim preserves both scheduled identities and resumes the original token",
+      "all new requests prepare once through real stage driver and journal",
+      "no new provider authorization"
+    ],
+    "status": "passed",
+    "cleanup": true,
+    "finishedAt": "2026-10-03T02:32:38.812Z"
+  },
+  "nativeFault": {
+    "fault": "remove unconfirmed attempts from the active index",
+    "sourceSha256": "1baed0d1fee8d33963a24e34212ca74b0971811e7ca1baf9df855a2d63b8e4e6",
+    "exit": 1,
+    "logSha256": "96df8daea59a014c7db77a4eea5f7f9cae6afa642c159a64209e06b15b72fc08",
+    "output": "Expected values to be strictly equal:\n\n0 !== 1",
+    "restored": true
+  },
+  "nativeFaultCleanup": true,
+  "logs": {
+    "staff-preparation-coordinator-final-tests.log": "bef2d5fa7e21cd2edd8c2b32199bb99a1c297d8ffe712f542526d2368b9fa5f7",
+    "staff-preparation-coordinator-final-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staff-preparation-coordinator-final-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staff-preparation-coordinator-native.log": "b4dd1b5a42e24f47b58c83e04dff98141d6e054254ad142727a18f749a3685fb",
+    "staff-preparation-coordinator-native-fault.log": "96df8daea59a014c7db77a4eea5f7f9cae6afa642c159a64209e06b15b72fc08"
+  },
+  "setupFailure": "First test file write used the wrong working directory and failed; initial test invocation found no test file. The corrected invocation and final suite pass.",
+  "limitations": [
+    "Unit tests use real private files and flock but mock discovery and individual attempt execution.",
+    "Native journey restricts database discovery to four newly created synthetic requests. It does not inventory all existing queued records or test cross-host coordination.",
+    "Native tests cover separate child processes, not host reboot or power loss.",
+    "The 16 MiB active index is an explicit fail-closed memory bound. It does not discard custody when full and is not a campaign capacity acceptance result.",
+    "Superseded unconfirmed outcomes remain pending and retain their child journals. Rotating retry pages lets unrelated work continue; pending custody is not a statement of current native request status.",
+    "No installed CLI, daemon lifecycle, staff browser controls, provider grant, model call, language quality or full QA claim."
+  ]
+}

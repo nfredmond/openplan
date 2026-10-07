@@ -1,0 +1,381 @@
+{
+  "recordedAt": "2026-10-03T04:09:47.767440+00:00",
+  "baseline": "0799cda3c22a1d31222c67c169acab14df1daf57",
+  "scope": "Recoverable browser enqueue and observed-attempt retry of synthesis preparation. No generation creation, execution authority or visible controls.",
+  "checks": {
+    "recoveryTests": 36,
+    "combinedTests": 132,
+    "combinedFiles": 4,
+    "typescript": "pass whole package",
+    "lint": "pass changed files, max warnings zero",
+    "deadcode": "pass configured error policy; existing warning classes retained",
+    "browserBundle": {
+      "status": "pass",
+      "bytes": 550501,
+      "inputFiles": [
+        "node_modules/zod/v4/core/core.js",
+        "node_modules/zod/v4/core/util.js",
+        "node_modules/zod/v4/core/errors.js",
+        "node_modules/zod/v4/core/parse.js",
+        "node_modules/zod/v4/core/regexes.js",
+        "node_modules/zod/v4/core/checks.js",
+        "node_modules/zod/v4/core/doc.js",
+        "node_modules/zod/v4/core/versions.js",
+        "node_modules/zod/v4/core/schemas.js",
+        "node_modules/zod/v4/locales/ar.js",
+        "node_modules/zod/v4/locales/az.js",
+        "node_modules/zod/v4/locales/be.js",
+        "node_modules/zod/v4/locales/bg.js",
+        "node_modules/zod/v4/locales/ca.js",
+        "node_modules/zod/v4/locales/cs.js",
+        "node_modules/zod/v4/locales/da.js",
+        "node_modules/zod/v4/locales/de.js",
+        "node_modules/zod/v4/locales/el.js",
+        "node_modules/zod/v4/locales/en.js",
+        "node_modules/zod/v4/locales/eo.js",
+        "node_modules/zod/v4/locales/es.js",
+        "node_modules/zod/v4/locales/fa.js",
+        "node_modules/zod/v4/locales/fi.js",
+        "node_modules/zod/v4/locales/fr.js",
+        "node_modules/zod/v4/locales/fr-CA.js",
+        "node_modules/zod/v4/locales/he.js",
+        "node_modules/zod/v4/locales/hr.js",
+        "node_modules/zod/v4/locales/hu.js",
+        "node_modules/zod/v4/locales/hy.js",
+        "node_modules/zod/v4/locales/id.js",
+        "node_modules/zod/v4/locales/is.js",
+        "node_modules/zod/v4/locales/it.js",
+        "node_modules/zod/v4/locales/ja.js",
+        "node_modules/zod/v4/locales/ka.js",
+        "node_modules/zod/v4/locales/km.js",
+        "node_modules/zod/v4/locales/kh.js",
+        "node_modules/zod/v4/locales/ko.js",
+        "node_modules/zod/v4/locales/lt.js",
+        "node_modules/zod/v4/locales/mk.js",
+        "node_modules/zod/v4/locales/ms.js",
+        "node_modules/zod/v4/locales/nl.js",
+        "node_modules/zod/v4/locales/no.js",
+        "node_modules/zod/v4/locales/ota.js",
+        "node_modules/zod/v4/locales/ps.js",
+        "node_modules/zod/v4/locales/pl.js",
+        "node_modules/zod/v4/locales/pt.js",
+        "node_modules/zod/v4/locales/ro.js",
+        "node_modules/zod/v4/locales/ru.js",
+        "node_modules/zod/v4/locales/sl.js",
+        "node_modules/zod/v4/locales/sv.js",
+        "node_modules/zod/v4/locales/ta.js",
+        "node_modules/zod/v4/locales/th.js",
+        "node_modules/zod/v4/locales/tr.js",
+        "node_modules/zod/v4/locales/uk.js",
+        "node_modules/zod/v4/locales/ua.js",
+        "node_modules/zod/v4/locales/ur.js",
+        "node_modules/zod/v4/locales/uz.js",
+        "node_modules/zod/v4/locales/vi.js",
+        "node_modules/zod/v4/locales/zh-CN.js",
+        "node_modules/zod/v4/locales/zh-TW.js",
+        "node_modules/zod/v4/locales/yo.js",
+        "node_modules/zod/v4/locales/index.js",
+        "node_modules/zod/v4/core/registries.js",
+        "node_modules/zod/v4/core/api.js",
+        "node_modules/zod/v4/core/to-json-schema.js",
+        "node_modules/zod/v4/core/json-schema-processors.js",
+        "node_modules/zod/v4/core/json-schema-generator.js",
+        "node_modules/zod/v4/core/json-schema.js",
+        "node_modules/zod/v4/core/index.js",
+        "node_modules/zod/v4/classic/checks.js",
+        "node_modules/zod/v4/classic/iso.js",
+        "node_modules/zod/v4/classic/errors.js",
+        "node_modules/zod/v4/classic/parse.js",
+        "node_modules/zod/v4/classic/schemas.js",
+        "node_modules/zod/v4/classic/compat.js",
+        "node_modules/zod/v4/classic/from-json-schema.js",
+        "node_modules/zod/v4/classic/coerce.js",
+        "node_modules/zod/v4/classic/external.js",
+        "node_modules/zod/index.js",
+        "src/lib/engagement/synthesis-preparation-state.ts",
+        "src/lib/engagement/synthesis-preparation-recovery.ts"
+      ],
+      "harmlessControl": "pass",
+      "nodeBuiltinFault": "refused node:crypto resolution",
+      "limit": "Bundle resolution only. No real browser storage, native endpoint, account switch or visible UI journey."
+    },
+    "verifierExtraction": "Function body unchanged from baseline; original source-preparation module byte-identical."
+  },
+  "mutations": [
+    {
+      "mutation": "harmless wording",
+      "exitCode": 0,
+      "expected": "survived",
+      "valid": true
+    },
+    {
+      "mutation": "version",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "strict authority fields",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "strict command fields",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "attempt nonnegative",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "attempt exact integer",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "command request binding",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "command stage binding",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "command intent binding",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "stored scope",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "unresolved replacement",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "durable readback",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "saved before send",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "durable send",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "caller abort",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "deadline",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "pretransport abort",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "late transport",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "late body",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "method",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "actor header",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "workspace header",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "exact payload",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "private cache",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "http refusal",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "receipt actor",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "receipt intent",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "receipt stage",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "enqueue replay",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "retry sequence",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "cleanup stale copy",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "cleanup readback",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "latest scope",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive memory",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive raw",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive readback",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive active changed",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive removal",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive list isolation",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    },
+    {
+      "mutation": "archive parsed scope",
+      "exitCode": 1,
+      "expected": "assertion failure",
+      "valid": true
+    }
+  ],
+  "initialFindings": [
+    "One archive test expected one byte copy while stored schema ordering differed from its input object. Fixture now reads the actual retained copy; original failed log retained.",
+    "Initial extraction reused the existing synthesis-preparation.ts name. Diff review caught it before commit; original restored byte-for-byte from HEAD and new module named synthesis-preparation-state.ts.",
+    "Removing safe() alone survives because Zod int() already rejects unsafe integers. Initial result retained; combined integer-constraint removal fails intended malformed-command assertions.",
+    "Abort checks separately assert transport and body-read counts, so a later abort check cannot hide a missing earlier one."
+  ],
+  "limits": [
+    "Mocked Storage and fetch do not prove real browser quota, multi-tab atomicity, restart, navigation, or native endpoint authorization.",
+    "Browser-target bundling proves dependency resolution only, not a visible browser journey or final production webpack build.",
+    "Source/hash/stage custody binds local commands, not independently verified source membership or permission. Native authorization remains authoritative.",
+    "No migration, provider call, queue write, account change, main landing, tag, release or demo change in this checkpoint.",
+    "Generation creation/cancellation recovery, visible staff controls, explicit provider execution consent, full branch QA and v1 acceptance remain open."
+  ],
+  "resources": {
+    "policy": "one heavy check at a time; MemoryMax8G, MemorySwapMax0, CPUQuota200%, one Vitest worker",
+    "crashCause": "unknown"
+  },
+  "files": {
+    "openplan/src/lib/engagement/synthesis-preparation-recovery.ts": "6d6e9607c988697402c710483413c939cd18083eadca01c7a04ec930dfef50bb",
+    "openplan/src/lib/engagement/synthesis-preparation-state.ts": "c4eb4fc017e65603a27b1399797fad6837dc3c25656a71e9420950569d45e4e2",
+    "openplan/src/lib/engagement/synthesis-preparation-server.ts": "e3bb302d4e3379be019a7427cfb727d1cca58a5ddeca01b1fbb125b69263101e",
+    "openplan/src/test/engagement-synthesis-preparation-recovery.test.ts": "df58c03ba9caaffbee84d18cd71316995e44d39ea01cfad987c98b84276afb15"
+  },
+  "privateEvidenceDirectory": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27",
+  "logs": {
+    "staff-preparation-browser-tests.log": "c9a6370575e1aa5df60fbf1ea3fddb4c00eb632941c2b0c5888881061f78df48",
+    "staff-preparation-browser-tests-final.log": "5ffa2d0c3085369fa56f99cf03886ce97e1839cc20e83b7517549056589592b5",
+    "staff-preparation-browser-mutations-initial.json": "f238fc12dcc5f7f785de4d0eb86f4e7378f60639c0ce22965485555400633da3",
+    "staff-preparation-browser-mutations.json": "70d530c680b92b132ee6260b905f6d7faecf85e97f5e19d343da092f1e3ba463",
+    "staff-preparation-browser-mutations.py": "c307c84a06e8e1a10c0b58831c89ac7d85c6de1abf20c27320549688ea10407b",
+    "staff-preparation-browser-mutations-final.log": "0417c71efdd1b3e3147602630883c5df0a028ddd0fea7b20b81d8b6eab7c4bce",
+    "staff-preparation-browser-static.log": "4dd42e82f5d3cebeda33bba3a38013e974c309a9cd01caac3da57ccae57d9cd6",
+    "staff-preparation-browser-bundle.json": "d7f13b57e3089a36d20a05756fc8f6054753a46c8a3d9606cfd8579e17b75ff1",
+    "staff-preparation-browser-bundle.cjs": "039fd8f55c1a1febbb33f9f59f1c84e708c99725712c36f545d4872a36b11938"
+  }
+}

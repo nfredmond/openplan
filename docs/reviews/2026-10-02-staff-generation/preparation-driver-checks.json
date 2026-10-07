@@ -1,0 +1,402 @@
+{
+  "sourceBase": "231445df",
+  "tests": {
+    "inputs": 31,
+    "driver": 9,
+    "combined": 229,
+    "lint": "pass",
+    "wholePackageTypes": "pass"
+  },
+  "sources": {
+    "openplan/src/lib/engagement/synthesis-preparation-candidates.ts": "874f0b55cc32ae7695bf8f423a75613ced83c10d549a97a0a77f8c0a7a833b84",
+    "openplan/src/lib/engagement/synthesis-preparation-driver.ts": "c19b365940cf7db8cd290ca23fbbdc7efd6b5a1730dd6ce8190ac4c6224f7310",
+    "openplan/src/lib/engagement/synthesis-preparation-inputs.ts": "843b10a61f014cb739578b43ffe5a9dc4dad24325de331b2ee66bed3e69d28e4",
+    "openplan/src/lib/engagement/synthesis-preparation-journal.ts": "9216f1921533450179ccb08c57cf7ef66078545a472f484dbfc03905b9cd478a",
+    "openplan/src/lib/engagement/synthesis-preparation-server.ts": "82a2202fdfa57a7e9b3b32e1bdaa7362c38d90577b6e1182208b972a0a67d028",
+    "openplan/src/lib/engagement/synthesis-preparation-worker.ts": "6d753d7ce27801fe2fc34555afd55bdb05ab98a462262250c9d3aab649824582"
+  },
+  "mutations": {
+    "sources": {
+      "inputs": "843b10a61f014cb739578b43ffe5a9dc4dad24325de331b2ee66bed3e69d28e4",
+      "driver": "c19b365940cf7db8cd290ca23fbbdc7efd6b5a1730dd6ce8190ac4c6224f7310"
+    },
+    "results": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "expectedSurvivor": true,
+        "assertionFailure": false,
+        "logSha256": "432e9390b24449ec01b724ce2d58ff48ae6a4b5cf068b80cfaf1fcfa9e79bdc1"
+      },
+      {
+        "name": "request-actor",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "7f068bfe6aee05ee918c80833021c4c2765856833a61434737704466018f5546"
+      },
+      {
+        "name": "request-intent",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "71f49215e83e501c0a443241fe15cb620c17cfc3dfc3590fd2d9ef660922e458"
+      },
+      {
+        "name": "request-source",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "89e8f5060f8f78f0e48d96622260ff8587b5e867359d8ad85ad3a0ae5dd25a60"
+      },
+      {
+        "name": "request-scope",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "af3596ecd3ab4a5cdec0e7439645fda49efd5ca56d778f577a274027ddaf64a2"
+      },
+      {
+        "name": "source-id",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "7c71d5e81933a9b4b84b312dfc057b233813b08387e243ea12c1ed0aa218e4fb"
+      },
+      {
+        "name": "source-campaign",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "1a0c8f32d28629bd72bcc263ff48ef35610c989229fb36a18d4232250a48f0f9"
+      },
+      {
+        "name": "source-workspace",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "72c9372f814e06605e786cdc45ee8390608f75389dc2d2e2776cccfc2816362f"
+      },
+      {
+        "name": "source-hash",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "904a97e7d4e216927c2962a53041f2441fda707201c309ed45bef2dd94e26780"
+      },
+      {
+        "name": "source-bytes",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "61d97329fe56fe22ec32ce6f9ab752e5de6e773346ddeae0687b7e82a93fb83a"
+      },
+      {
+        "name": "stage-segment",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "09575d367c07a84f868f7936c18944fa42a99e13d1339fcad08f02f6acbe4d34"
+      },
+      {
+        "name": "stage-context",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "48297f3c98d0205c7745cbeb2863c9e930c7b41760e29d08693886428f61c7b9"
+      },
+      {
+        "name": "stage-thematic",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "3499868e0a8dc74a24e039ef8b6a7e362be753c2a12b460fed86e255b3f8b14e"
+      },
+      {
+        "name": "extension-id",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "b5cd0fed39494f62b10bec369b21118028f0092583a4c6a8459d680591e3dca9"
+      },
+      {
+        "name": "parent-source",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "d8b70303043e83555f480e06386d8401ebed2d6b5949b2bbd800d7f86f74459f"
+      },
+      {
+        "name": "parent-hash",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "ad895c96a3c783287012fea45f19fb145f3aad7615badd2bc5d88283e4da9a36"
+      },
+      {
+        "name": "read-error",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "b858a29d58750569aaf472a2dfe4d9c8704789e7b330ba98389b63ea77b5b0d9"
+      },
+      {
+        "name": "read-projection",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "3204444aa213cd423abe2ea62c5026d663671a2a5f432ed4fbda262391a68f52"
+      },
+      {
+        "name": "input-renewals",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "73171385bb8119124a0ac5de7f6ccdc2cedde4d8e0ad64e1e8e450098fd09a35"
+      },
+      {
+        "name": "segment-source",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "42796d358fc5dee58a9303679417cd54dfdf2025f1174df0836f2f7391b6b0df"
+      },
+      {
+        "name": "parent-actor",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "9c541b7287236cd9f41036454e3c0b6ae599b2b057e92cc5e18f05056baa7a29"
+      },
+      {
+        "name": "context-sequence",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "6f6601ece77979fb39ae63c0da46989a36b4cf4202678908aeaca59d9f371c59"
+      },
+      {
+        "name": "context-content",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "71704bb8190427f5056c1dd04e479c8f4ccad6a17999dc85b551a53e64d360cf"
+      },
+      {
+        "name": "thematic-tail",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "ffd1a633ef79de9c3fb9ebbcbb84a1f22fe3debf778a8f881fbcaedd446ce9c5"
+      },
+      {
+        "name": "thematic-answers",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "abfa6feb7f0118fdf3038c58c7b773bf26dae658ad82d6814f305321824a6d88"
+      },
+      {
+        "name": "thematic-seal",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "5969b048f2fe22bf0f93b0cebf036851839768c1f32981f66288ae43537fba47"
+      },
+      {
+        "name": "thematic-errors",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "ac82f63edd3250743f62d75010d7235c79c85ccd4a0031f65f2a11e447eb9d65"
+      },
+      {
+        "name": "driver-abort",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "a4d7c2d720e0f550cd3a509eedb859e7a7f9e23a549c381b3552718c7cfa85dc"
+      },
+      {
+        "name": "cancelled",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "94c2e223e6a377709226a24423c68fa6092e10e5f02c9f263c8f602de4241f4c"
+      },
+      {
+        "name": "unsealed",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "91d3c0194158d4d87cd83e3124edf9c92ffd602b94803cd50dc1c1efd712cd7b"
+      },
+      {
+        "name": "final-renewal",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "6e299f0ce5084a47ae65e5fe25d51412c23c0b2dd0918c3ecc15abfce2aa0168"
+      },
+      {
+        "name": "receipt",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "b09acf5fbd6d2dc0c9a2049b6dcf4b671e33a951b1d8565f2fcb3039e14a8da0"
+      },
+      {
+        "name": "input-deadline",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "8817a29100cb2ce40839e847392463dfdd582fa7a37423e21e0c0d16c891b06f"
+      }
+    ],
+    "restored": true,
+    "blindCategory": "Mocked read and staging boundaries; does not prove native permissions, retained byte reconstruction or process recovery."
+  },
+  "extraMutations": {
+    "results": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "expectedSurvivor": true,
+        "assertionFailure": false,
+        "logSha256": "5c31db728293a922754a1f0ca9d27589d38d383feb2da20f2b7bc61b00ed205a"
+      },
+      {
+        "name": "read-deadline-fence",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "efdaf91c299f14719d84030ca5c036358ddb877264f25527feed46820ce26176"
+      },
+      {
+        "name": "claim-validation",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "0f3a29e19057d832cb1e7e04952a5747d888dc811fe8fb8d96cb1e38de74fc02"
+      },
+      {
+        "name": "target-signal",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "3eb429c1b49575eb8dabab896dcb2c6f47c7625d5c38fe5e7aff52fcc3c9ba3a"
+      }
+    ],
+    "restored": true
+  },
+  "initialMutationResult": {
+    "sources": {
+      "inputs": "843b10a61f014cb739578b43ffe5a9dc4dad24325de331b2ee66bed3e69d28e4",
+      "driver": "c19b365940cf7db8cd290ca23fbbdc7efd6b5a1730dd6ce8190ac4c6224f7310"
+    },
+    "results": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "expectedSurvivor": true,
+        "assertionFailure": false,
+        "logSha256": "80ebd41af0a62cfdf45c605a9f4834876778fe7da7aabb3ad878269a0851c214"
+      },
+      {
+        "name": "request-actor",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "ea8f3d7b3d7cb19b85d16287fc683da4ac1455a91cc69c3844e28a7d226a3ebb"
+      },
+      {
+        "name": "request-intent",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "9925d3bae7d5a19f13dbc9ee32da43a20f03ec62964fd5f878f01d3d3865ca5f"
+      },
+      {
+        "name": "request-source",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "09f6b18ec694dfd75969db1ffcd51e970b04c04bd806aa34a341e099ad886feb"
+      },
+      {
+        "name": "request-scope",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "b14370528ea3a12d86b5d5bc3d64d1ca3da717a2dd2c3d95621ef4b378346528"
+      },
+      {
+        "name": "source-id",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "e72d3795d13fb09bf51ad566dca8c72bec3b9a058cd7534ff583b3b2713141ec"
+      },
+      {
+        "name": "source-campaign",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "e913601af659379a4dc472d92155e5228a472034b7b0027e5561b26c9ddfc593"
+      },
+      {
+        "name": "source-workspace",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "assertionFailure": true,
+        "logSha256": "7e12c86802b298445fb75b3cbca0f0379e198127d4dbc317dd5f8d3c7665f6dd"
+      },
+      {
+        "name": "source-hash",
+        "exit": 0,
+        "expectedSurvivor": false,
+        "assertionFailure": false,
+        "logSha256": "f6228e074bfddb6f5af8e5838f2b634965f2e97692be58ad15d009cf35cdef02"
+      }
+    ],
+    "restored": true,
+    "blindCategory": "Mocked read and staging boundaries; does not prove native permissions, retained byte reconstruction or process recovery."
+  },
+  "native": {
+    "startedAt": "2026-10-03T02:12:30.254Z",
+    "sourceBase": "231445df",
+    "checks": [
+      "segment reconstructs retained inputs, seals the native plan and acknowledges one journaled attempt",
+      "context reconstructs retained inputs, seals the native plan and acknowledges one journaled attempt",
+      "new thematic choices reconstruct the original retained context histories with exact matching bytes",
+      "thematic reconstructs retained inputs, seals the native plan and acknowledges one journaled attempt",
+      "all newly prepared requests have zero provider authorizations"
+    ],
+    "status": "passed",
+    "cleanup": true,
+    "finishedAt": "2026-10-03T02:12:32.593Z"
+  },
+  "nativeFault": {
+    "fault": "omit last thematic contribution before sealing",
+    "sourceSha256": "c19b365940cf7db8cd290ca23fbbdc7efd6b5a1730dd6ce8190ac4c6224f7310",
+    "exit": 1,
+    "logSha256": "0bb9c281b0802839988c04becdb5e2aef7a6e77d754fdd5d75df56fe70cc09f6",
+    "output": "Thematic input membership is incomplete or differs from the complete source",
+    "restored": true
+  },
+  "nativeFaultCleanup": true,
+  "logs": {
+    "staff-preparation-driver-final-tests.log": "58952b07287b925272f178be6dff2c5e94a29f74970a00ba1cd94eb850040922",
+    "staff-preparation-driver-final-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staff-preparation-driver-final-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staff-preparation-driver-native.log": "565b58a225cbb5e705af5c786c1825308d45bc4d118d4740629a4e135f0b08b5",
+    "staff-preparation-driver-native-fault.log": "0bb9c281b0802839988c04becdb5e2aef7a6e77d754fdd5d75df56fe70cc09f6"
+  },
+  "limitations": [
+    "New input reader uses immutable service reads between native current-request lease checks. Parent cancellation is not represented as a history result.",
+    "Mocked driver tests verify calls and pure reconstruction, not the downstream database implementation. Native journey covers a small retained synthetic source.",
+    "Actual native fault rejects the incomplete inventory in TypeScript before the native seal write. It does not independently test the SQL membership guard.",
+    "No provider call, permission grant, language-quality assessment, browser journey, campaign capacity claim, host-reboot test or full QA claim.",
+    "Queue coordination, installed preparation CLI and staff controls remain unfinished."
+  ]
+}

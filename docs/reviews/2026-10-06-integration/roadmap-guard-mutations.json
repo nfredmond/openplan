@@ -1,0 +1,23 @@
+{
+  "cases": [
+    {
+      "case": "harmless overdue date",
+      "exitCode": 0,
+      "expectedOutcome": true,
+      "reasonConfirmed": true
+    },
+    {
+      "case": "missing evidence path",
+      "exitCode": 1,
+      "expectedOutcome": true,
+      "reasonConfirmed": true
+    },
+    {
+      "case": "invalid calendar date",
+      "exitCode": 1,
+      "expectedOutcome": true,
+      "reasonConfirmed": true
+    }
+  ],
+  "boundary": "Calendar expiry remains advisory; missing references and malformed dates still fail. Does not assess strategic adequacy."
+}

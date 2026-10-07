@@ -20,6 +20,19 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Internal staff-generation work adds exact request HTTP recovery and an explicit
+preparation queue with stage identity, worker leases, interruption recovery and
+original completion seals. Apply
+`20261015000012_engagement_synthesis_preparation_queue.sql` after the earlier
+unreleased migrations, followed by
+`20261015000013_engagement_synthesis_request_discovery.sql` for staff request
+history and `20261015000014_engagement_synthesis_preparation_recovery.sql`
+for retained worker outcomes that finish after lease expiry. A superseded token,
+cancelled request or revoked requester still cannot finish. Staff can browse saved requests from each saved campaign source,
+including stages, original authors and cancellation status. The preparation
+worker supports explicit queued jobs; browser creation/preparation controls
+remain unfinished. Preparation grants no provider execution or spending authority.
+
 Transient unavailable synthesis proposal, review and approval reads now use
 bounded authenticated GET retries. Write recovery remains separate; exhausted
 reads keep an explicit unavailable state.

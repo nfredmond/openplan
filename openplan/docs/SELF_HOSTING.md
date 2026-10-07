@@ -188,6 +188,21 @@ claim or recovery cycle. The [runbook](ops/RUNBOOK.md#translation-recovery-worke
 explains interrupted attempts and retained output. Manual translation wording
 and saved reads do not require new provider usage.
 
+**Synthesis preparation worker.** Apply migrations through
+`20261015000012_engagement_synthesis_preparation_queue.sql`, then run
+`npm run worker:synthesis-preparation` from `openplan/`. It prepares explicitly
+enqueued segment, context and thematic requests using retained inputs. It does
+not create provider authorization or make model calls. Staff generation controls
+remain under development. Add `-- --once` for one bounded recovery/discovery pass.
+
+Use the app's Supabase URL and service credential. Keep
+`OPENPLAN_SYNTHESIS_PREPARATION_WORK_DIR` on private durable storage; the worker
+partitions that absolute root by database target. The default root is
+`~/.local/state/openplan/synthesis-preparation-worker`. SIGINT and SIGTERM stop
+active work and polling. Restart with the same root and database to recover
+pending attempts. The [preparation runbook](ops/RUNBOOK.md#synthesis-preparation-worker)
+defines exit codes, retained custody, limits and supervisor requirements.
+
 **Saved API generation worker.** The retained API-job worker
 can be started with `npm run worker:provider-api` from `openplan/`, after applying
 migration `20261012000002_assistant_api_turns.sql`. `npm run worker:provider-api --

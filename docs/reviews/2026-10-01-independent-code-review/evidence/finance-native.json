@@ -1,0 +1,19 @@
+{
+  "baseline": "891a0d89a848133d44b9e4f314a76a922cd71ace",
+  "matchedControlAccepted": true,
+  "harmlessNoteAccepted": true,
+  "negativeRejected": "23514",
+  "priorAllocationPreserved": [
+    {
+      "category_id": "control",
+      "amount": 100
+    }
+  ],
+  "foreignWorkspacePeriodRejected": "23503",
+  "sameWorkspaceWrongFundAccepted": true,
+  "periodAllocationCount": 2,
+  "fixtureWorkspaceIds": [
+    "354d7afc-7bff-41c0-b0e9-d8d5c9b9e21b",
+    "7704818f-f442-438b-9637-b068741b35c4"
+  ]
+}

@@ -6,6 +6,8 @@
 Use this index to distinguish current instructions and priorities from historical
 evidence. The application is in `openplan/` beneath the repository root.
 
+The [October 6 integration audit](reviews/2026-10-06-integration/INTEGRATION.md) records worktree custody and the next development boundary. The [original October independent review](reviews/2026-10-01-independent-code-review/FINAL_REPORT.md) is preserved beside its later [fix disposition](reviews/2026-10-01-independent-fixes/DISPOSITION.md).
+
 ## Current authorities
 
 | Question | Read |
@@ -14,7 +16,7 @@ evidence. The application is in `openplan/` beneath the repository root.
 | What must v1 deliver? | [V1 product contract](product/V1_PRODUCT_CONTRACT.md) |
 | What is next, and what establishes completion? | [Roadmap](ROADMAP.md), the sole active queue |
 | What works, and what remains unproved? | [Capability matrix](product/US_PLANNING_CAPABILITY_MATRIX.md) and [known limitations](ops/KNOWN_ISSUES.md) |
-| Why this direction? | [September 7 OWP direction review](reviews/product-direction/2026-09-07-work-program-review.md), [comprehensive review](reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md), and preserved independent reports linked there |
+| Why this direction? | [October 6 integration and v1 review](reviews/product-direction/2026-10-06-integration-review.md), [historical September OWP review](reviews/product-direction/2026-09-07-work-program-review.md), and preserved independent reports linked there |
 | How is it implemented? | [Architecture](ARCHITECTURE.md) and current source |
 | What shipped? | [Changelog](../CHANGELOG.md), Git tags and the release's actual CI/acceptance evidence |
 

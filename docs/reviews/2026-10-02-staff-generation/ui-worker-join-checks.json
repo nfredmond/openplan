@@ -1,0 +1,23 @@
+{
+  "parents": [
+    "34775168e232998b08d33f07c03f3420342f9481",
+    "d494a7b8cd84aa9196f57965cf493a81a8fa7c37"
+  ],
+  "merge": "clean, no conflict edits",
+  "checks": {
+    "tests": 400,
+    "files": 17,
+    "nativeTestsSkipped": 34,
+    "vendorTests": 18,
+    "registryAudit": "zero known advisories",
+    "peakMemory": "1GiB",
+    "swap": 0,
+    "seconds": 50.345
+  },
+  "logs": {
+    "staff-join-install.log": "3db769faa4395acb8b52c097bb5496776aa2add12ddcf50f95e266decddf9fab",
+    "staff-join-audit.log": "4c5f5bb05b3435043f92ee276bc6943327549fe9ed82c2957edb016ac9bdfd2c",
+    "staff-join-tests.log": "af9437ce7aa52ed74e961b06cc57f91321726e1eef7d892832102e851f1fe7e5"
+  },
+  "limits": "Combined focused tests only. No new visible controls, native rerun, combined production build or browser acceptance yet. PR114 exact-source CI is independent and remains running."
+}

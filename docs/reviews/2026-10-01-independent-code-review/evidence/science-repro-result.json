@@ -1,0 +1,52 @@
+{
+  "directional_case": {
+    "match": "matched",
+    "aggregation": "one_direction",
+    "actual_eastbound": 100,
+    "actual_westbound": 900,
+    "reported_modeled_value": 1000.0,
+    "raw_ape": 900.0,
+    "direction_status": "compatible",
+    "outcome": "inconclusive"
+  },
+  "no_op_control": {
+    "match": "matched",
+    "aggregation": "one_direction",
+    "actual_eastbound": 100,
+    "actual_westbound": 900,
+    "reported_modeled_value": 1000.0,
+    "raw_ape": 900.0,
+    "direction_status": "compatible",
+    "outcome": "inconclusive"
+  },
+  "targeted_fault_control": {
+    "detected": true,
+    "message": "total-volume evidence changed: 0.0"
+  },
+  "cancel_case": {
+    "descendant_wrote_after_cancel": true,
+    "cancel_elapsed_seconds": 1.5,
+    "final_status": "cancelled",
+    "callbacks": [
+      "running",
+      "heartbeat",
+      "heartbeat",
+      "cancelled"
+    ]
+  },
+  "cancel_no_op": {
+    "descendant_wrote_after_cancel": true,
+    "cancel_elapsed_seconds": 1.496,
+    "final_status": "cancelled",
+    "callbacks": [
+      "running",
+      "heartbeat",
+      "heartbeat",
+      "cancelled"
+    ]
+  },
+  "cancel_targeted_control": {
+    "detected": true,
+    "message": "cancellation branch did not produce cancelled"
+  }
+}

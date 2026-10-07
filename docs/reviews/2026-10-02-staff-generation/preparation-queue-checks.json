@@ -1,0 +1,117 @@
+{
+  "baseCommit": "e93b808daae3a5ce24d2285fe71312b5e44469a4",
+  "candidateTests": 29,
+  "initialInstalledTests": 34,
+  "initialInstalledIncludesDriftTests": 5,
+  "finalInstalledQueueTests": 34,
+  "harmlessControls": 1,
+  "finalTargetedFaults": 32,
+  "schemaTests": 34,
+  "lint": "passed",
+  "typecheck": {
+    "exitCode": 0,
+    "memoryPeak": "1.8 GiB",
+    "swapBytes": 0
+  },
+  "nativeResources": {
+    "memoryPeak": "445.3 MiB",
+    "swapBytes": 0
+  },
+  "nativeHttp": {
+    "requestId": "7d5f55e2-b53c-4940-ac06-d3510860d330",
+    "startedAt": "2026-10-02T23:57:03.141Z",
+    "sourceBase": "e93b808d",
+    "candidateMigration": "20261015000012",
+    "checks": [
+      "new request remains unqueued until explicit enqueue",
+      "exact enqueue acknowledgement recovery",
+      "two concurrent workers produce exactly one active first attempt",
+      "lost claim acknowledgement recovers original token and attempt",
+      "current worker renews the same lease",
+      "existing TypeScript driver retains complete native segment preparation",
+      "completion recovers the exact original seal after lost acknowledgement",
+      "staff status exposes prepared result without worker token",
+      "later cancellation preserves exact completion recovery",
+      "preparation creates no provider execution authorization"
+    ],
+    "status": "passed",
+    "finishedAt": "2026-10-02T23:57:03.304Z"
+  },
+  "fileSha256": {
+    "openplan/supabase/migrations/20261015000012_engagement_synthesis_preparation_queue.sql": "e20a17ee504fc69acaa788762ddba9c36ec746039406cfb4f36235af729ada16",
+    "openplan/src/test/engagement-synthesis-preparation-queue-rls.test.ts": "8bd73ddd3667ab53e571487a51316eff6717b154a0f383c396c4722cc3dc8375",
+    "openplan/src/test/fixtures/engagement/synthesis-preparation-queue.sql": "581adf828332c9dc1fd83c0a79973b114a633f59c2a7809508acc45974e252fc"
+  },
+  "localEvidenceSha256": {
+    "staff-preparation-queue-initial.log": "388bdeed7bc058977f0664ae4727d554f71f61a71b8830970c37014422d0273b",
+    "staff-preparation-queue-expanded.log": "c80c9a4f323fe2f2f65be55fb83cfe804259403c711b6889377f04c251280380",
+    "staff-preparation-queue-candidate.log": "b06b67e1e12e9f5bcde9afc36758708b83ad0d2368729ba7d4a98d02d1949047",
+    "staff-preparation-queue-installed.log": "f7c30fd1080bf1752c6097fb5b30d882df9f50b9b1939f0fe92d32f40d8f92fd",
+    "staff-preparation-queue-final.log": "88ca2e893bfa199c0ac846292f003502dd636d47a7914500844d4cc2776cd83e",
+    "staff-preparation-schema-before.log": "04c281676d47318ed61d8b4ff85dc59815b51d2b901c83de82d7968995af7bf7",
+    "staff-preparation-schema-after.log": "feacccc639bde17fe4f0ef088e1797dd16e52eddc2f6bbb4c484bccb9fb56683",
+    "staff-preparation-queue-types.log": "73bfdcb966d1d49b46c7a7ccc2b8aafd3a7a0165465cd107b3da91f6893b5077",
+    "staff-preparation-queue-http.ts": "2cd2e1c5b9edc5bb7ca83a22c7411a5d925f995513f8179513abc671999af803",
+    "staff-preparation-queue-http.log": "8849bf012f3cec66ae569e492cfdb12ba534c7e0d431b18fcd406b9e30b1a918",
+    "staff-preparation-advisors.json": "5918c279293209aeba369ea13b21468379d2cdca6ae378231d7706c045687bf3"
+  },
+  "advisor": {
+    "totalFindings": 9,
+    "preparationObjectFindings": [],
+    "unresolvedExistingObjects": [
+      {
+        "name": "refuse_project_decision_package_change",
+        "finding": "function_search_path_mutable",
+        "level": "WARN"
+      },
+      {
+        "name": "refuse_scenario_comparison_model_run_link_change",
+        "finding": "function_search_path_mutable",
+        "level": "WARN"
+      },
+      {
+        "name": "reap_model_run_if_stale",
+        "finding": "function_search_path_mutable",
+        "level": "WARN"
+      },
+      {
+        "name": "set_rtp_financial_updated_at",
+        "finding": "function_search_path_mutable",
+        "level": "WARN"
+      },
+      {
+        "name": "apply_engagement_item_vote_delta",
+        "finding": "function_search_path_mutable",
+        "level": "WARN"
+      },
+      {
+        "name": "spatial_ref_sys",
+        "finding": "rls_disabled_in_public",
+        "level": "ERROR"
+      },
+      {
+        "name": "postgis",
+        "finding": "extension_in_public",
+        "level": "WARN"
+      },
+      {
+        "name": "pg_trgm",
+        "finding": "extension_in_public",
+        "level": "WARN"
+      },
+      {
+        "name": "btree_gist",
+        "finding": "extension_in_public",
+        "level": "WARN"
+      }
+    ]
+  },
+  "limits": [
+    "Queue worker polling/heartbeat/restart not yet connected",
+    "No application HTTP preparation route or browser controls yet",
+    "No full QA or full native suite at this checkpoint",
+    "Native HTTP uses synthetic input, no provider dispatch or semantic-quality claim",
+    "Failure-code and mutually-exclusive-outcome faults also encounter database constraint backstops; their probes detect the native error contract",
+    "Large-source memory cost, simultaneous cancellation races and full installed CLI provider choice remain separate boundaries"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "baseline": [
+    {
+      "name": "safe",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "literal traversal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "encoded traversal",
+      "expected": false,
+      "actual": true
+    }
+  ],
+  "noOp": [
+    {
+      "name": "safe",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "literal traversal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "encoded traversal",
+      "expected": false,
+      "actual": true
+    }
+  ],
+  "isolatedCandidate": [
+    {
+      "name": "safe",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "literal traversal",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "encoded traversal",
+      "expected": false,
+      "actual": false
+    }
+  ],
+  "sdkRequests": [
+    {
+      "method": "POST",
+      "path": "/storage/v1/object/sign/kb-documents/foreign/file.pdf"
+    }
+  ]
+}

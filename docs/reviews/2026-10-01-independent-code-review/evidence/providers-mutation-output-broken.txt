@@ -1,0 +1,27 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/independent-review-20261001-01
+
+ ❯ docs/reviews/2026-10-01-independent-code-review/evidence/providers-native-recovery.test.ts (2 tests | 1 failed) 94ms
+     × invalid trimmed answer remains a completed local journal after cancellation and repeated recovery 40ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/reviews/2026-10-01-independent-code-review/evidence/providers-native-recovery.test.ts > Native invalid result recovery observation > invalid trimmed answer remains a completed local journal after cancellation and repeated recovery
+Error: unexpected success
+ ❯ exercise docs/reviews/2026-10-01-independent-code-review/evidence/providers-native-recovery.test.ts:34:64
+     32|     for(let cycle=0;cycle<3;cycle++){
+     33|       if(cycle===1)state='cancelled';
+     34|       try{await connectorCycle(config,directory,options);throw new Err…
+       |                                                                ^
+     35|     }
+     36|     const pending=JSON.parse(await readFile(join(directory,'pending.js…
+ ❯ docs/reviews/2026-10-01-independent-code-review/evidence/providers-native-recovery.test.ts:42:123
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 5 passed (6)
+   Start at  20:19:06
+   Duration  536ms (transform 286ms, setup 0ms, import 533ms, tests 114ms, environment 0ms)
+

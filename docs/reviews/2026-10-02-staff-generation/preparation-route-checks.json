@@ -1,0 +1,232 @@
+{
+  "baseCommit": "4cdf9506a4d3a272b247e9980ea4e5325e3c2d50",
+  "focused": {
+    "routeTests": 38,
+    "combinedTests": 160,
+    "files": 4,
+    "exit": 0
+  },
+  "lint": "strict changed-file pass",
+  "types": "whole-package pass; peak1.8GiB; swap0",
+  "mutations": {
+    "sourceSha256": "0ae15a332582cae694d5e120dfbca2ba72720ad32fdd54fe14e06a1b2784c61f",
+    "results": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "expectedSurvivor": true,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-harmless.log",
+        "sha256": "fc32c68344c93836dda63f47a3d8b3ee7ce9071927f18f4122093e206f0a5b61",
+        "assertionFailure": false
+      },
+      {
+        "name": "auth-error",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-auth-error.log",
+        "sha256": "65bce9c08419d9c9a10d604f697b5ebe2615f47b58669ff2ee4e5f35dd9361f5",
+        "assertionFailure": true
+      },
+      {
+        "name": "access-error",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-access-error.log",
+        "sha256": "40348a8347f2130f3428d7d44d258e7aa1468c1ebdd604740425cc7e5bb581fb",
+        "assertionFailure": true
+      },
+      {
+        "name": "permission",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-permission.log",
+        "sha256": "5517422250b8dac779b14e87e55d34d00dc8519b511463ecb907a281358c32ba",
+        "assertionFailure": true
+      },
+      {
+        "name": "expected-user",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-expected-user.log",
+        "sha256": "08c9f251b29f3ad2e78f71f98f1ea65ae0f686a79ba4c624d6001f320b65e79a",
+        "assertionFailure": true
+      },
+      {
+        "name": "expected-workspace",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-expected-workspace.log",
+        "sha256": "a84228ee3f325562916feffa75e0422f2721e913e25a770b0278ff86c733c2a3",
+        "assertionFailure": true
+      },
+      {
+        "name": "agent-marker",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-agent-marker.log",
+        "sha256": "ac472db1334f5ec8b57692782d058f54a74e82d4ff2231671d37e172b87dafdd",
+        "assertionFailure": true
+      },
+      {
+        "name": "origin",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-origin.log",
+        "sha256": "f7a5bf6e12cfd08ba1058f4b30b36c9541e84502df6cb2f44d567c35f8b63e75",
+        "assertionFailure": true
+      },
+      {
+        "name": "stream-bound",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-stream-bound.log",
+        "sha256": "19f9d4673cfcfff5635c81b788c6393b36c9e7b2d205fa15fda113d8511e55ff",
+        "assertionFailure": true
+      },
+      {
+        "name": "utf8-drop-invalid",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-utf8-drop-invalid.log",
+        "sha256": "0122d8c5fc19528402e0061fce1d23b021187fd51d7af7162485262afa141f8e",
+        "assertionFailure": true
+      },
+      {
+        "name": "actor-binding",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-actor-binding.log",
+        "sha256": "c8721f39ff62b5cb760ba6d002d2818feeed06c28d3e2b3d7f8c288bdfe57e04",
+        "assertionFailure": true
+      },
+      {
+        "name": "workspace-binding",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-workspace-binding.log",
+        "sha256": "be027d876af84a5da864950af1e3ecb735ebc6fb281dac595fc6b8ba2474ab13",
+        "assertionFailure": true
+      },
+      {
+        "name": "replay-status",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-replay-status.log",
+        "sha256": "ca4ce18ae6d1c557a658caf5374ba7c895c0422210f9cb662d1318a4fede9039",
+        "assertionFailure": true
+      },
+      {
+        "name": "no-store",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-no-store.log",
+        "sha256": "bb2aadbb61b3bfdb4739ac2eef55468d6aad16af267af4cc83410395cd7f3fcf",
+        "assertionFailure": true
+      },
+      {
+        "name": "query-count",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-query-count.log",
+        "sha256": "2ff5e5ee5e58298698286f51dc6e325ffb4e63125e8aeb5c8f8cffc3e543ba58",
+        "assertionFailure": true
+      },
+      {
+        "name": "query-key",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-query-key.log",
+        "sha256": "a267fb40f971b5da265e71edf21a2da4eaf0e940a2e283a612a108a56fd107c9",
+        "assertionFailure": true
+      },
+      {
+        "name": "native-status",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-native-status.log",
+        "sha256": "7ee461a708ace172769135562ad5ae1bac35471a362be2bb1615b62f86d2bf14",
+        "assertionFailure": true
+      },
+      {
+        "name": "unknown-error",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-unknown-error.log",
+        "sha256": "4b8d736c0fef8005390b52d40a148cfcb674f9656e18b1756ad90c69f7ab57a1",
+        "assertionFailure": true
+      },
+      {
+        "name": "audit-private",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-audit-private.log",
+        "sha256": "a2af17797b0dd3a29671680861b3c8a636a3ff239df87fb44b0e7e188128bf20",
+        "assertionFailure": true
+      },
+      {
+        "name": "read-return",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-read-return.log",
+        "sha256": "8ebd0e31dfac64ff356bf0eb363c41449c26a0728d5a7ce811440814161eb270",
+        "assertionFailure": true
+      },
+      {
+        "name": "write-return",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-write-return.log",
+        "sha256": "e99a0f06c7201e821bf57e15d5b29cd5a2ab4a2e6c1ec56ff0939ba3d45dd672",
+        "assertionFailure": true
+      },
+      {
+        "name": "permission-action",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-permission-action.log",
+        "sha256": "4d470dfe3585991870fec2b45f9b497508eb317c4e77b01a8aee50e89775c747",
+        "assertionFailure": true
+      },
+      {
+        "name": "strict-command",
+        "exit": 1,
+        "expectedSurvivor": false,
+        "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutation-strict-command.log",
+        "sha256": "03b23d3adef9b4b873a83c31007f8c2788642c8ac93035d57a0d2c5d304edad3",
+        "assertionFailure": true
+      }
+    ],
+    "restored": true,
+    "blindCategory": "Actual Next handlers and adapter over mocked authenticated RPC. No live RLS, worker preparation, provider execution or browser recovery proof."
+  },
+  "files": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-mutations.py",
+      "sha256": "5f34cbfee3c655980745d8ec9e265c8475488e9d5ed98f722e6c56670182d977"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-tests.log",
+      "sha256": "59a0513e9906d273ab7ef11eae24128519af02b24c7e3238cc0fe0a4b662a4ed"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-combined-tests.log",
+      "sha256": "1844d74b77a7dac6104ac23acd1dbdbcb558098902a82e801e58078cecec4019"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/staff-preparation-route-types.log",
+      "sha256": "acf062e2b7ffaafd757809f53fc7f1fe2b338b0ee17f40353bf6719d2568c8cc"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/synthesis-staff-generation-2026-10-02/openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/preparation/route.ts",
+      "sha256": "0ae15a332582cae694d5e120dfbca2ba72720ad32fdd54fe14e06a1b2784c61f"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/synthesis-staff-generation-2026-10-02/openplan/src/test/engagement-synthesis-preparation-route.test.ts",
+      "sha256": "0a21b1423cbd76ef44da7281342c7bea5f85975f7b413fa7b676afa4c8c60a8f"
+    }
+  ],
+  "limits": [
+    "Actual Next handlers and typed adapter run over mocked authenticated RPC. Native app HTTP journey is pending.",
+    "No worker execution, provider grant, browser control or full-QA claim."
+  ]
+}

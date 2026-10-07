@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createSynthesisGenerationPlan } from "@/lib/engagement/synthesis-generation-plan";
 import { retainSynthesisGenerationPlan } from "@/lib/engagement/synthesis-generation-plan-server";
@@ -34,9 +34,15 @@ function fixture() {
     } else throw new Error(`Unexpected RPC ${name}`);
     return { data: state(), error: null as { message: string } | null };
   });
-  return { rpc, state, service: { rpc } as unknown as Pick<SupabaseClient, "rpc">, cancel: () => { cancelled = true; } };
+  const signals: AbortSignal[] = [];
+  const service = { rpc: (name: string, args: Record<string, unknown>) => {
+    const response = rpc(name, args);
+    return Object.assign(response, { abortSignal: (signal: AbortSignal) => { signals.push(signal); return response; } });
+  } } as unknown as Pick<SupabaseClient, "rpc">;
+  return { rpc, state, service, signals, cancel: () => { cancelled = true; } };
 }
 describe("synthesis plan staging driver", () => {
+  afterEach(() => vi.restoreAllMocks());
   it("stages exact packets and reopens the same completion without repeating work", async () => {
     const f = fixture();
     const result = await retainSynthesisGenerationPlan(f.service, request, saved, sourceScope);
@@ -99,4 +105,56 @@ describe("synthesis plan staging driver", () => {
     await expect(retainSynthesisGenerationPlan(f.service, request, saved, sourceScope, later.signal)).rejects.toThrow("stop before next packet");
     expect(f.rpc).toHaveBeenCalledTimes(1);
   });
+  it.each([false, true])("passes a fresh ten-second deadline to every RPC, worker signal %s", async workerSignal => {
+    const deadlines: AbortController[] = [];
+    const timeout = vi.spyOn(AbortSignal, "timeout").mockImplementation(() => {
+      const controller = new AbortController(); deadlines.push(controller); return controller.signal;
+    });
+    const f = fixture(), worker = new AbortController();
+    await retainSynthesisGenerationPlan(f.service, request, saved, sourceScope, workerSignal ? worker.signal : undefined);
+    expect(f.signals).toHaveLength(f.rpc.mock.calls.length);
+    expect(timeout.mock.calls).toEqual(f.rpc.mock.calls.map(() => [10000]));
+    expect(new Set(f.signals).size).toBe(f.signals.length);
+    deadlines[0].abort(new Error("SYNTHETIC first deadline"));
+    expect(f.signals[0].aborted).toBe(true);
+    expect(f.signals.slice(1).every(signal => !signal.aborted)).toBe(true);
+    if (workerSignal) {
+      worker.abort(new Error("SYNTHETIC worker stop"));
+      expect(f.signals.every(signal => signal.aborted)).toBe(true);
+    }
+  });
+  it.each(["cancelled preparation", "seal"])("refuses a late %s acknowledgement after worker stop", async boundary => {
+    const f = fixture(), worker = new AbortController(), actual = f.rpc.getMockImplementation()!;
+    f.rpc.mockImplementation(async (name, args) => {
+      const final = boundary === "cancelled preparation" ? name === "prepare_engagement_synthesis_generation_plan" : name === "seal_engagement_synthesis_generation_plan";
+      if (final && boundary === "cancelled preparation") f.cancel();
+      const response = await actual(name, args);
+      if (final) worker.abort(new Error("SYNTHETIC stop before acknowledgement"));
+      return response;
+    });
+    await expect(retainSynthesisGenerationPlan(f.service, request, saved, sourceScope, worker.signal)).rejects.toThrow("stop before acknowledgement");
+    expect(f.signals.at(-1)?.aborted).toBe(true);
+    if (boundary === "cancelled preparation") expect(f.rpc).toHaveBeenCalledTimes(1);
+    else {
+      expect(f.state().seal).not.toBeNull();
+      f.rpc.mockImplementation(actual); f.rpc.mockClear();
+      expect((await retainSynthesisGenerationPlan(f.service, request, saved, sourceScope)).state.seal).not.toBeNull();
+      expect(f.rpc).toHaveBeenCalledTimes(1);
+    }
+  });
+  it("refuses a late seal after its deadline even without a worker signal", async () => {
+    const deadlines: AbortController[] = [];
+    vi.spyOn(AbortSignal, "timeout").mockImplementation(() => {
+      const controller = new AbortController(); deadlines.push(controller); return controller.signal;
+    });
+    const f = fixture(), actual = f.rpc.getMockImplementation()!;
+    f.rpc.mockImplementation(async (name, args) => {
+      const response = await actual(name, args);
+      if (name === "seal_engagement_synthesis_generation_plan") deadlines.at(-1)!.abort(new Error("SYNTHETIC deadline passed"));
+      return response;
+    });
+    await expect(retainSynthesisGenerationPlan(f.service, request, saved, sourceScope)).rejects.toThrow("deadline passed");
+    expect(f.state().seal).not.toBeNull();
+  });
+
 });

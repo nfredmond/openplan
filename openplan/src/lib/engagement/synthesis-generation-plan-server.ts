@@ -13,7 +13,10 @@ export async function retainSynthesisGenerationPlan(
   const plan = createSynthesisGenerationPlan(request, saved, scope);
   const call = async (name: string, args: Record<string, unknown>) => {
     signal?.throwIfAborted();
-    const { data, error } = await service.rpc(name, args);
+    const deadline = AbortSignal.timeout(10000);
+    const requestSignal = signal ? AbortSignal.any([signal, deadline]) : deadline;
+    const { data, error } = await service.rpc(name, args).abortSignal(requestSignal);
+    requestSignal.throwIfAborted();
     if (error) throw new Error("Synthesis plan acknowledgement unavailable; resume the same request");
     return verifySynthesisGenerationPlanState(plan, data);
   };

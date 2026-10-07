@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
+import { synthesisGenerationRequestIntentSchema as intentSchema } from "./synthesis-generation-request-records";
 import { createSynthesisGenerationInput } from "./synthesis-generation-input";
 import { createSynthesisGenerationRecords } from "./synthesis-generation-records";
 import { createSynthesisGenerationTasks } from "./synthesis-generation-tasks";
@@ -9,13 +10,8 @@ import type { SynthesisSourceScope } from "./synthesis-sources-server";
 const digest = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const natural = z.number().int().nonnegative().safe();
-const intentSchema = z.object({
-  schemaVersion: z.literal(1), sourceId: z.string().uuid(), sourceSha256: hash,
-  connectionId: z.string().uuid(), configurationRevisionId: z.string().uuid(), configurationHash: hash,
-  modelId: z.string().min(1).max(160).regex(/^\S+$/), taskByteLimit: z.number().int().min(4096).max(1_048_576),
-}).strict();
 const requestSchema = z.object({ id: z.string().uuid(), intentText: z.string(), intentSha256: hash }).strict();
-export { intentSchema as synthesisGenerationRequestIntentSchema };
+export { synthesisGenerationRequestIntentSchema } from "./synthesis-generation-request-records";
 const stateSchema = z.object({
   schemaVersion: z.literal(1), requestId: z.string().uuid(), headerText: z.string(), headerSha256: hash,
   nextIndex: natural, taskBytes: natural, tailSha256: hash, cancelled: z.boolean(),

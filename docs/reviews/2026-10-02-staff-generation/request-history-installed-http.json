@@ -1,0 +1,103 @@
+{
+  "recordedAt": "2026-10-03T03:51:13.502486+00:00",
+  "applicationHead": "2debaf9b49b34e7131afef17c3220ded793b2d7d",
+  "build": {
+    "result": "passed",
+    "seconds": 144.235,
+    "peakMemory": "6.3GiB",
+    "swap": 0
+  },
+  "identity": {
+    "healthCommit": "2debaf9b49b3",
+    "processCwd": "/home/nathaniel/.local/state/openplan/synthesis-staff-generation-2026-10-02/openplan",
+    "whichOpenplan": "matched owned checkout"
+  },
+  "serverMetrics": [
+    "MainPID=2455443",
+    "MemoryPeak=190173184",
+    "MemorySwapPeak=0",
+    "CPUUsageNSec=1336335000"
+  ],
+  "http": {
+    "startedAt": "2026-10-03T03:50:03.685Z",
+    "head": "2debaf9b49b34e7131afef17c3220ded793b2d7d",
+    "target": "http://staff-generation-20261002.localhost:3478",
+    "checks": [
+      {
+        "label": "history page 1",
+        "status": 200
+      },
+      {
+        "label": "history page 2",
+        "status": 200
+      },
+      {
+        "label": "complete source inventory matches actual database IDs, authors and intent hashes"
+      },
+      {
+        "label": "wrong source hash refused",
+        "status": 503
+      },
+      {
+        "label": "foreign source refused",
+        "status": 403
+      },
+      {
+        "label": "partial cursor refused",
+        "status": 400
+      },
+      {
+        "label": "unknown query refused",
+        "status": 400
+      },
+      {
+        "label": "changed account refused",
+        "status": 403
+      },
+      {
+        "label": "changed workspace refused",
+        "status": 403
+      },
+      {
+        "label": "missing account binding refused",
+        "status": 403
+      },
+      {
+        "label": "anonymous refused",
+        "status": 401
+      },
+      {
+        "label": "cancellation flags match retained native receipts"
+      }
+    ],
+    "status": "passed",
+    "totalRequests": 40,
+    "pages": 2,
+    "stageCounts": {
+      "segment": 34,
+      "context": 3,
+      "thematic": 3
+    },
+    "finishedAt": "2026-10-03T03:50:04.409Z"
+  },
+  "installedNativeBaseline": "passes with013 installed and candidate flag unset;20 separate mutation/control cases excluded in this repeat",
+  "joinChecks": "50 request-history/locale tests and18 vendor tests/full registry audit pass after joining6f3ffa7b",
+  "initialFailure": "The first server launch lacked OPENPLAN_COMMIT_SHA. Identity reported unknown and the HTTP check stopped before history reads. Restarted only the owned server with the actual compiled commit stamp; confirmed process cwd and matching identity before repeating.",
+  "limits": [
+    "Read-only installed HTTP and synthetic retained records. No visible staff controls or browser usability acceptance yet.",
+    "No full staff-branch QA/RLS/restore or release claim. The existing nine advisor findings remain unresolved.",
+    "Database inventory comparison covers this40-request source, not arbitrary-history capacity or concurrent membership-transition timing.",
+    "No provider calls, new generation requests or executions were created by this read-only check."
+  ],
+  "logs": {
+    "staff-request-history-build.log": "a07dd25c8f3510de20bbf4e5115535cc00d4f2dac9c01164c31f6e04a7e458da",
+    "staff-request-history-http.cjs": "8d000907945149bfae0bec4b6edb01d1a3fbf2cdbcc8c1678aca8bc1dcd41277",
+    "staff-request-history-http.json": "63d3aa43241eca004a5cd02cb8cc450524d099b936d4253c6e6b5958f5d2d67f",
+    "staff-request-history-http.log": "174f5f29be429b10b2f908a4d60294b9ee0c1cbc64bb7c2e223f2a8e142aed0d",
+    "staff-request-history-http-initial.json": "4b5b9db516df11cd0247dfba9c1d311b686d18576f646cfe9e8470787da4d610",
+    "staff-request-history-http-server.log": "9148f71e4608e8a59be6023c7036e502e55fed843b6beefe2ec0d1c11eca7eff",
+    "staff-request-discovery-installed.log": "99aedce236ddb3ac69026262acf19a3e7935bc17efb19037cfce0426eec4b344",
+    "staff-runner-join-tests.log": "9f869ff6c4b2a867373292cceff1b6cac1c097c94a67bbf84abeee8e73bcb4ff",
+    "staff-runner-join-audit.log": "2e9fad44129822a873f517dcbdcf62f2dd42e5dced602defc27b70517df0338a"
+  }
+}

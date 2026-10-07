@@ -522,10 +522,11 @@ const EXPECTED = {
   // Installed isolated catalog confirms 276 application RLS tables and 14 views.
   // 20261015000009 adds private thematic dynamic attempt inputs.
   // Installed isolated catalog confirms 277 application RLS tables and 14 views.
-  relations: 291,
-  tables: 277,
+  // Explicit preparation jobs and immutable worker claim attempts add two RLS tables.
+  relations: 293,
+  tables: 279,
   views: 14,
-  rlsEnabledTables: 277,
+  rlsEnabledTables: 279,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

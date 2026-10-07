@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-06 America/Los_Angeles",
+  "commit": "b720ba361822",
+  "checkout": "/home/nathaniel/.local/state/openplan/synthesis-history-ui-20261006",
+  "url": "http://localhost:3479",
+  "databasePort": 29821,
+  "synthetic": true,
+  "journey": [
+    "Home",
+    "Sign in to existing workspace",
+    "Dashboard",
+    "Engagement",
+    "Synthetic campaign",
+    "Analysis",
+    "Open saved source cc77a4d3",
+    "Browse saved generation requests",
+    "Load older generation requests",
+    "Request details b7ce8f81"
+  ],
+  "desktop": {
+    "width": 1440,
+    "height": 900,
+    "documentWidth": 1440
+  },
+  "mobile": {
+    "width": 390,
+    "height": 844,
+    "documentWidth": 390,
+    "historyWidth": 327.4784
+  },
+  "native": {
+    "cancelledMatches": true,
+    "exactIdOrder": true,
+    "pages": [
+      25,
+      16
+    ],
+    "scope": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+    "sourceHash": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+    "statuses": [
+      200,
+      200
+    ],
+    "terminalCursor": null
+  },
+  "connectionFailure": {
+    "alert": "Saved generation requests could not be confirmed. Refresh the list to check current access and the saved source.",
+    "emptyClaim": false,
+    "rows": 0
+  },
+  "nativeRefusal": {
+    "historyPresent": false,
+    "privateRequestVisible": false,
+    "retainedTextVisible": false,
+    "status": 403
+  },
+  "console": {
+    "applicationErrorsBeforeIntentionalRefusal": 0,
+    "knownWarnings": "Unused font preloads. Native refusal intentionally produces an HTTP 403 diagnostic.",
+    "scope": "Snapshot console history is bounded; no claim about unobserved earlier activity."
+  },
+  "limits": [
+    "Synthetic local software behavior, not public participant or practicing-planner acceptance.",
+    "Read-only request discovery; no provider execution, request creation, or preparation control acceptance.",
+    "Desktop and 390px viewport inspection, not complete accessibility conformance."
+  ],
+  "productionFollowThrough": {
+    "commit": "923b5c5a8a80d8386b000f53d047a454cacdd1e7",
+    "checkout": "/home/nathaniel/.local/state/openplan/october-integration-20261006/openplan",
+    "buildId": "C3FZrAOEO0wbpZp9gqWZf",
+    "processCwdAndHealthMatch": true,
+    "navigation": [
+      "Dashboard",
+      "Engagement",
+      "Campaign",
+      "Analysis",
+      "Saved source",
+      "Saved generation requests"
+    ],
+    "firstPage": 25,
+    "allPages": 41,
+    "terminalOlderButton": false,
+    "desktopWidth": 1440,
+    "desktopDocumentWidth": 1440,
+    "mobileWidth": 390,
+    "mobileDocumentWidth": 390,
+    "console": "No new application errors observed after production navigation. The tab retains an earlier 02:11:08Z HMR connection refusal after its development server stopped.",
+    "serverStoppedAfterJourney": true,
+    "images": [
+      "images/production-desktop.png",
+      "images/production-390px.png"
+    ]
+  }
+}

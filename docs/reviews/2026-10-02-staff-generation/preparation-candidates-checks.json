@@ -1,0 +1,279 @@
+{
+  "sourceBase": "f439dac966c25b98eff0f32e1d329c34254a9b74",
+  "unitTests": 26,
+  "combinedTests": 153,
+  "lint": "pass",
+  "wholePackageTypes": "pass",
+  "checks": {
+    "mutations": {
+      "sourceSha256": "874f0b55cc32ae7695bf8f423a75613ced83c10d549a97a0a77f8c0a7a833b84",
+      "results": [
+        {
+          "name": "harmless",
+          "exit": 0,
+          "expectedSurvivor": true,
+          "assertionFailure": false,
+          "logSha256": "41985f505a66f09af9a30d4c1cc67718340e4572a1b4c4afa4987c53fe2a4e2a"
+        },
+        {
+          "name": "table",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "efb051050dd52ca67999c886248e7e8aa615d6224efe10afd2703bc726246599"
+        },
+        {
+          "name": "projection",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "7b96a920babac48aa0c76f835a76938c5edaa87061aa17ac0569c22774149f93"
+        },
+        {
+          "name": "filter",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "192cf93a2bf69d35eff1b34405f35397fdf99894a548ef06dd80d9eea23bcaa1"
+        },
+        {
+          "name": "sort",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "63ea8928b152d14883acb818e26199e0692916021bee7495a2ca5f0ae0c0fb2f"
+        },
+        {
+          "name": "query-limit",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "9a5d0e5a11457167470fd48cd091fe10c7310d84429ed2000cbff4338621daa8"
+        },
+        {
+          "name": "cursor-query",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "1501e5f3889783794b47bbe6b03e97fd41267d3322ca750eb1123f131abae785"
+        },
+        {
+          "name": "ordered-page",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "6a1909f114a73a737c13c16caa4c503e8b66d7531381bf42a9794a9ae48a43f7"
+        },
+        {
+          "name": "expired-page",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "3b4fd802c0e5d7a7e7256a1844c57315cdb2aa9108f10448997fd5347b30506d"
+        },
+        {
+          "name": "short-page",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "6132fc43ecefc5dc3209d3bba9de48cadf77f7f8ca42d961f10db7c7123dffa0"
+        },
+        {
+          "name": "error",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "f503bb86927c866e4406692f6614fceaf3166c18230750e78f9821fe8b8ad4a4"
+        },
+        {
+          "name": "post-abort",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "cadd0396d3e3ae3cf5e5edd3912b8cecf7da97bce2bd6f72bf4ad436d3cacc8d"
+        },
+        {
+          "name": "pre-abort",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "c88c91c6e4b0ba47d2d51dcd57b3d066eb26536ac4f81aff053bfddd0873b3a2"
+        },
+        {
+          "name": "timeout",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "ed5a7ba8696830b1d88b1f991d3aad4886b8488089f3cfab5e80d1bfcd11f46c"
+        },
+        {
+          "name": "case-normalization",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "a3d6f2e8bf887f4d7734fe5287818f9c7d4b4e80c1e9f90d22a6b54ed9f4d32e"
+        },
+        {
+          "name": "uuid-validation",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "b5741eef53bf49e132cbc9394bd1b279a0b6426a3d9e5057ced33c650653726a"
+        },
+        {
+          "name": "row-limit",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "b35a2d151b315dd4ad4c6857851edc34b779f51bad74ddfce26602b7390230bf"
+        },
+        {
+          "name": "queued-lease",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "9c82005f4d1c7cbdc3b102ee001b4242fb29bea54a2946d49c55d6dd1b1e53ff"
+        },
+        {
+          "name": "strict-row",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "466935554726a0987c96d4121c13d7f9441b2fe3a6c77ba6a0101163b61dc785"
+        },
+        {
+          "name": "running-date",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "d590b454d49777465ddbaadf124c5f8b885c193883fea63bd6b8cb273056ee16"
+        }
+      ],
+      "restored": true,
+      "blindCategory": "Mocked database builder checks query and reply validation, not native permissions, real paging, lease eligibility or worker dispatch."
+    },
+    "initialMutationFailure": {
+      "sourceSha256": "874f0b55cc32ae7695bf8f423a75613ced83c10d549a97a0a77f8c0a7a833b84",
+      "results": [
+        {
+          "name": "harmless",
+          "exit": 0,
+          "expectedSurvivor": true,
+          "assertionFailure": false,
+          "logSha256": "19a0a5af5feb6c55a6407b3fb402ef7f53c671588d4899f78125ffb0b45d9793"
+        },
+        {
+          "name": "table",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "7ab38d76327a99177b843bcfa3b5df44cec11704a39aa7b493594c20d688e231"
+        },
+        {
+          "name": "projection",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "60169aa2b7d952464f03f89e9e8198dbdf5b80c0ef7d51210fea4d106d492bf3"
+        },
+        {
+          "name": "filter",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "06cab0c232eada7a20d761de5c170fad802797ae20b9569626483c4f7ef189ce"
+        },
+        {
+          "name": "sort",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "bb425bdab5ae49b2c78de196d7c4756eca1018b9d3886a575c19dcd8d1a38ea5"
+        },
+        {
+          "name": "query-limit",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "f58f08cbd47aa790dfe40a6b381dd4005cf447fbada57bc1e558e5837784bdfd"
+        },
+        {
+          "name": "cursor-query",
+          "exit": 1,
+          "expectedSurvivor": false,
+          "assertionFailure": true,
+          "logSha256": "bf4c8eb3021ab7edb4629260045e7bcceef060d094ac10c92c99e58e3654ec32"
+        },
+        {
+          "name": "ordered-page",
+          "exit": 0,
+          "expectedSurvivor": false,
+          "assertionFailure": false,
+          "logSha256": "185d8d59c531924347f1d02ed4aea6705510de5eb8e85107ae7f052835cfbb52"
+        }
+      ],
+      "restored": true,
+      "blindCategory": "Mocked database builder checks query and reply validation, not native permissions, real paging, lease eligibility or worker dispatch."
+    },
+    "native": {
+      "startedAt": "2026-10-03T01:25:05.186Z",
+      "sourceBase": "f439dac9",
+      "ids": {
+        "queued": "e385f929-080d-4095-90e5-bae66d1e2dd1",
+        "running": "af989f4c-ad10-4f03-9521-e97ab40b8359",
+        "failed": "33651460-5023-47fe-a0ba-20e4c4cd9957",
+        "unqueued": "2fa7ec4f-5cdb-4514-9591-d7f97113d9d6",
+        "cancelled": "6a75848b-21d7-41c1-b58e-19138320eca8"
+      },
+      "checks": [
+        "real query includes explicit queued job and excludes active lease, failed, unqueued and cancelled jobs",
+        "one-row HTTP pages traverse the same full candidate inventory and terminate on empty page",
+        "advanced discovery clock does not override native active lease",
+        "actual expired lease returns to discovery and native reclaim starts attempt2",
+        "discovery and claims create no execution authorization"
+      ],
+      "status": "passed",
+      "cleanup": true,
+      "reducedPages": 4,
+      "finishedAt": "2026-10-03T01:27:06.580Z"
+    },
+    "nativeFault": {
+      "startedAt": "2026-10-03T01:27:14.754Z",
+      "sourceBase": "f439dac9",
+      "ids": {
+        "queued": "01a85a0c-8395-45db-81ce-cda1db7ff8a0",
+        "running": "5b12ae13-4f20-4d7f-bc7e-9f6767a3f3e4",
+        "failed": "1b634c73-7ff0-4cb7-81cc-f1be5237256b",
+        "unqueued": "91384363-260a-4c0f-b896-c7dd60c12d26",
+        "cancelled": "28d9592d-b60c-4a8b-a36e-c7e4f8344781"
+      },
+      "checks": [
+        "real query includes explicit queued job and excludes active lease, failed, unqueued and cancelled jobs"
+      ],
+      "status": "failed",
+      "cleanup": true,
+      "reducedPages": 1,
+      "finishedAt": "2026-10-03T01:27:14.920Z"
+    },
+    "faultSourceRestoration": {
+      "restoredSha256": "874f0b55cc32ae7695bf8f423a75613ced83c10d549a97a0a77f8c0a7a833b84",
+      "restored": true
+    }
+  },
+  "resources": {
+    "native": "83.6MiB, zero swap, 121.974sec",
+    "types": "1.8GiB, zero swap",
+    "finalTests": "286MiB, zero swap,3.409sec"
+  },
+  "limits": [
+    "Discovery only, not autonomous preparation or provider dispatch. Durable claim-token journal, stage reconstruction and installed command remain incomplete.",
+    "Native short-page check lowers the outgoing HTTP limit to one. It does not change the server configuration or establish campaign capacity.",
+    "Candidate discovery is a hint. Native claim remains authoritative for clock, cancellation and access.",
+    "A scan is not an immutable snapshot. Caller must continue short pages and wrap after empty pages; candidate changes may wait until the next pass.",
+    "No visible UI, full QA, semantic-quality or v1 acceptance claim."
+  ],
+  "sourceHashes": {
+    "openplan/src/lib/engagement/synthesis-preparation-candidates.ts": "874f0b55cc32ae7695bf8f423a75613ced83c10d549a97a0a77f8c0a7a833b84",
+    "openplan/src/test/engagement-synthesis-preparation-candidates.test.ts": "3c39c8fb384ff784a1b63c57845a9204367adaf1a5446329323b1730716449af"
+  }
+}

@@ -68,7 +68,8 @@ async function exercise(comment = "") {
     };
     let loseResponse = true, retainedThrough = 0;
     const starts: number[] = [];
-    const service = { rpc: async (name: string, args: Record<string, unknown>) => {
+    const service = { rpc: (name: string, args: Record<string, unknown>) => ({ abortSignal: async (signal: AbortSignal) => {
+      signal.throwIfAborted();
       const keys = signatures[name]; if (!keys) throw new Error("Unexpected planning RPC");
       expect(Object.keys(args)).toEqual(keys);
       const data = await rpc(`${name}(${keys.map(key => typeof args[key] === "number" ? String(args[key]) : literal(String(args[key]))).join(",")})`);
@@ -77,7 +78,7 @@ async function exercise(comment = "") {
         if (loseResponse) { loseResponse = false; retainedThrough = data.nextIndex; return { data: null, error: { message: "SYNTHETIC acknowledgement lost after commit" } }; }
       }
       return { data, error: null };
-    } } as unknown as Pick<SupabaseClient, "rpc">;
+    } }) } as unknown as Pick<SupabaseClient, "rpc">;
     await expect(retainSynthesisGenerationPlan(service, driverRequest, saved, selectedScope)).rejects.toThrow("acknowledgement unavailable");
     expect(retainedThrough).toBeGreaterThan(0);
     const resumed = await retainSynthesisGenerationPlan(service, driverRequest, saved, selectedScope);
