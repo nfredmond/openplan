@@ -1,0 +1,59 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-designation-map-recovery.test.tsx (6 tests | 1 failed) 144ms
+     × does not draw after the map unmounts 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-designation-map-recovery.test.tsx > designation map refresh recovery > does not draw after the map unmounts
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "features": Array [
+          Object {
+            "geometry": Object {
+              "coordinates": Array [
+                -121.5,
+                38.5,
+              ],
+              "type": "Point",
+            },
+            "id": "f1",
+            "properties": Object {
+              "attributes": Object {
+                "designation": "SYNTHETIC retained use",
+              },
+              "label": "SYNTHETIC retained use",
+            },
+            "type": "Feature",
+          },
+        ],
+        "type": "FeatureCollection",
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/test/land-use-designation-map-recovery.test.tsx:63:31
+     61|     const view = show(); await event("load"); view.unmount();
+     62|     await act(async () => { resolveOld(new Response(JSON.stringify(pay…
+     63|     expect(mocks.setData).not.toHaveBeenCalled(); expect(mocks.remove)…
+       |                               ^
+     64|   });
+     65| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  12:30:57
+   Duration  704ms (transform 56ms, setup 54ms, import 79ms, tests 144ms, environment 329ms)
+

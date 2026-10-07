@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 4 failed) 231ms
+     × reads the adopted report edition using current scoped permission 18ms
+     × reads the superseded report edition using current scoped permission 2ms
+     × reads the repealed report edition using current scoped permission 1ms
+     × retains the public reader's default client and field allowlist 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > reads the adopted report edition using current scoped permission
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > reads the superseded report edition using current scoped permission
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > reads the repealed report edition using current scoped permission
+AssertionError: expected '{"type":"FeatureCollection","features…' not to contain 'PRIVATE'
+
+Expected: "PRIVATE"
+Received: "{"type":"FeatureCollection","features":[{"type":"Feature","id":"33000000-0000-4000-8000-000000000009","geometry":{"type":"Point","coordinates":[-121.5,38.5]},"properties":{"featureIndex":0,"attributes":{"designation":"SYNTHETIC mixed use","owner":"PRIVATE OWNER","sensitive":"PRIVATE LOCATION"}}}],"matchedCount":1,"returnedCount":1,"tooDenseToDraw":false,"limit":1000,"designationLabel":"SYNTHETIC retained designations","legendField":"designation","coverageNotes":[],"reportId":"33000000-0000-4000-8000-000000000001","versionId":"33000000-0000-4000-8000-000000000003","contentHash":"d850f13307eaef7b901f3368f84fcf3aa3a0a156e1274ffe713c48b681c3a734"}"
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:70:38
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > retains the public reader's default client and field allowlist
+AssertionError: expected '{"ok":true,"payload":{"type":"Feature…' not to contain 'PRIVATE'
+
+Expected: "PRIVATE"
+Received: "{"ok":true,"payload":{"type":"FeatureCollection","features":[{"type":"Feature","id":"33000000-0000-4000-8000-000000000009","geometry":{"type":"Point","coordinates":[-121.5,38.5]},"properties":{"featureIndex":0,"attributes":{"designation":"SYNTHETIC mixed use","owner":"PRIVATE OWNER","sensitive":"PRIVATE LOCATION"}}}],"matchedCount":1,"returnedCount":1,"tooDenseToDraw":false,"limit":1000,"designationLabel":"SYNTHETIC retained designations","legendField":"designation","coverageNotes":[]}}"
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:148:40
+    146|     const result = await loadPublicDesignationMap(frozen, designationI…
+    147|     expect(result.ok).toBe(true); expect(mocks.service).toHaveBeenCall…
+    148|     expect(JSON.stringify(result)).not.toContain("PRIVATE");
+       |                                        ^
+    149|   });
+    150| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 45 passed (49)
+   Start at  12:30:31
+   Duration  1.02s (transform 146ms, setup 55ms, import 304ms, tests 231ms, environment 334ms)
+

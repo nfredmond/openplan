@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 2 failed) 214ms
+     × refuses a designation missing layer_version_id 4ms
+     × refuses a designation missing layer_version_evidence 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses a designation missing layer_version_id
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses a designation missing layer_version_evidence
+AssertionError: expected 404 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 404
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:109:38
+    107|   it.each(["layer_version_id", "layer_version_evidence"])("refuses a d…
+    108|     delete (frozen.designations as Record<string, unknown>[])[0][field…
+    109|     expect((await request()).status).toBe(503); expect(mocks.rpc).not.…
+       |                                      ^
+    110|   });
+    111|   it("refuses a designation not retained in the report", async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 47 passed (49)
+   Start at  12:32:23
+   Duration  983ms (transform 141ms, setup 54ms, import 294ms, tests 214ms, environment 325ms)
+

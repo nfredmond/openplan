@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 1 failed) 209ms
+     × refuses an incomplete feature list instead of drawing a subset 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses an incomplete feature list instead of drawing a subset
+AssertionError: expected 200 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 200
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:133:73
+    131|   });
+    132|   it("refuses an incomplete feature list instead of drawing a subset",…
+    133|     featureRows![0].matched_count = 2; expect((await request()).status…
+       |                                                                         ^
+    134|   });
+    135|   it("accepts the native zero-count sentinel as an empty map", async (…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  12:30:39
+   Duration  999ms (transform 152ms, setup 56ms, import 309ms, tests 209ms, environment 331ms)
+

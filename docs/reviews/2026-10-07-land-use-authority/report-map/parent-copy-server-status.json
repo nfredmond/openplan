@@ -1,0 +1,8 @@
+{
+  "unit": "openplan-report-copy-eef8c13d-prod-20261007.service",
+  "beforeStop": "MainPID=1580293\nResult=success\nMemoryPeak=272433152\n",
+  "portAfterStop": "State Recv-Q Send-Q Local Address:Port Peer Address:Port\n",
+  "stopExitCode": 0,
+  "afterStop": "ActiveState=failed\nResult=timeout\nExecMainCode=2\nExecMainStatus=9\n",
+  "limitation": "Systemd stop returned 0, but Next did not exit within 90 seconds and was killed. No graceful shutdown claim."
+}

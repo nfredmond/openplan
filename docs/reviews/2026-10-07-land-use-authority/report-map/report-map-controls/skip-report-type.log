@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (48 tests | 1 failed) 211ms
+     × refuses unrelated report type before reading features 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses unrelated report type before reading features
+AssertionError: expected 200 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 200
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:102:73
+    100|     ["changed GIS feature hash", 503, () => { rows.workspace_gis_layer…
+    101|   ] as const)("refuses %s before reading features", async (_name, stat…
+    102|     mutate(); const response = await request(); expect(response.status…
+       |                                                                         ^
+    103|     expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.service).no…
+    104|     expect(JSON.stringify(await response.json())).not.toContain("PRIVA…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 47 passed (48)
+   Start at  12:28:16
+   Duration  978ms (transform 141ms, setup 54ms, import 298ms, tests 211ms, environment 320ms)
+

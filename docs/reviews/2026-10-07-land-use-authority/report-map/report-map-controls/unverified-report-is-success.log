@@ -1,0 +1,43 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (48 tests | 6 failed) 221ms
+     × refuses missing artifact before reading features 4ms
+     × refuses unrelated report type before reading features 1ms
+     × refuses wrong native workspace before reading features 1ms
+     × refuses altered saved geometry reference before reading features 1ms
+     × refuses wrong report pointer before reading features 1ms
+     × refuses unfrozen version before reading features 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses missing artifact before reading features
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses unrelated report type before reading features
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses wrong native workspace before reading features
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses altered saved geometry reference before reading features
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses wrong report pointer before reading features
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses unfrozen version before reading features
+AssertionError: expected 200 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 200
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:102:73
+    100|     ["changed GIS feature hash", 503, () => { rows.workspace_gis_layer…
+    101|   ] as const)("refuses %s before reading features", async (_name, stat…
+    102|     mutate(); const response = await request(); expect(response.status…
+       |                                                                         ^
+    103|     expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.service).no…
+    104|     expect(JSON.stringify(await response.json())).not.toContain("PRIVA…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 42 passed (48)
+   Start at  12:28:06
+   Duration  1.01s (transform 149ms, setup 58ms, import 304ms, tests 221ms, environment 333ms)
+

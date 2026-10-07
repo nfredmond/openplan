@@ -1,0 +1,34 @@
+{
+  "build": {
+    "commit": "416def7b9b5ec67eadcbeab895ee8056bded5f5c",
+    "startedEpoch": 1791402295.741855,
+    "state": "finished",
+    "exitCode": 0,
+    "finishedEpoch": 1791402418.0895107,
+    "finalCommit": "416def7b9b5ec67eadcbeab895ee8056bded5f5c",
+    "checkoutUnchanged": true
+  },
+  "unit": "openplan-report-map-416def7b-prod-20261007.service",
+  "pid": "1632361",
+  "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan",
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-07T19:46:59.224Z",
+    "deployment": {
+      "commit": "416def7b9b5e",
+      "version": "0.67.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  },
+  "beforeStop": "MainPID=1632361\nResult=success\nMemoryPeak=261177344\n",
+  "stopStartedEpoch": 1791402536.5552943,
+  "browserBeforeStop": "T3 navigated from report to /api/health; report connections no longer held by active document",
+  "stopExitCode": 0,
+  "stopFinishedEpoch": 1791402536.5850255,
+  "afterStop": "ActiveState=inactive\nResult=success\nExecMainCode=0\nExecMainStatus=0\n",
+  "portAfterStop": "State Recv-Q Send-Q Local Address:Port Peer Address:Port\n"
+}
