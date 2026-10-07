@@ -125,3 +125,11 @@ follow-up. Current GitHub checks must be inspected separately before merging.
 Source-specific distinctions between plan kinds, complete public/export context,
 practicing-planner observation and the remaining M1 cases remain open. This
 checkpoint does not declare a development release or v1 complete.
+
+## Subsequent T3 acceptance
+
+The [creation, context and stop recovery journey](CREATION_CONTEXT_ACCEPTANCE.md)
+records synthetic desktop and 390px acceptance, exact native retries, retained
+authority and draft copies, and a corrected context-button overflow. Its source
+identities and remaining M1 boundaries are explicit. Earlier blocked browser
+attempts above remain historical evidence.

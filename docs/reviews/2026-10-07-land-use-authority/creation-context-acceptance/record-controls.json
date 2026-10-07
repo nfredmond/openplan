@@ -1,0 +1,186 @@
+{
+  "checks": {
+    "kind change clears review": true,
+    "unresolved configured checklist sends nothing": true,
+    "creation exact retry": true,
+    "creation native command custody": true,
+    "context exact retry": true,
+    "context native command custody": true,
+    "specific checklist": true,
+    "one plan and version": true,
+    "single context revision advance": true,
+    "retained study area": true,
+    "uploaded area infers no jurisdiction": true,
+    "separate authorities": true,
+    "selected authority and sources retained": true,
+    "context hash and native result": true,
+    "stale draft requires review": true,
+    "explicit review enables save without posting": true,
+    "reproduced and fixed mobile overflow": true,
+    "original bases preserved": true,
+    "identified corrected build": true,
+    "stop withholds creation then retries exact bytes": true,
+    "lost stop retains intent": true,
+    "native cancellation without plan": true,
+    "stopped copy requires new review": true
+  },
+  "harmlessControl": "passed",
+  "targetedFaults": [
+    {
+      "fault": "kind review",
+      "failed": [
+        "kind change clears review"
+      ]
+    },
+    {
+      "fault": "extra creation command",
+      "failed": [
+        "creation native command custody"
+      ]
+    },
+    {
+      "fault": "duplicate revision",
+      "failed": [
+        "single context revision advance"
+      ]
+    },
+    {
+      "fault": "stale save enabled",
+      "failed": [
+        "stale draft requires review"
+      ]
+    },
+    {
+      "fault": "mobile clipping",
+      "failed": [
+        "reproduced and fixed mobile overflow"
+      ]
+    },
+    {
+      "fault": "silent review post",
+      "failed": [
+        "explicit review enables save without posting"
+      ]
+    },
+    {
+      "fault": "wrong build",
+      "failed": [
+        "identified corrected build"
+      ]
+    },
+    {
+      "fault": "lost stop intent",
+      "failed": [
+        "lost stop retains intent"
+      ]
+    },
+    {
+      "fault": "creation after stop",
+      "failed": [
+        "native cancellation without plan"
+      ]
+    },
+    {
+      "fault": "stopped draft auto-reviewed",
+      "failed": [
+        "stopped copy requires new review"
+      ]
+    },
+    {
+      "fault": "changed retry bytes",
+      "failed": [
+        "creation exact retry"
+      ]
+    },
+    {
+      "fault": "missing checklist section",
+      "failed": [
+        "specific checklist"
+      ]
+    },
+    {
+      "fault": "unresolved request sent",
+      "failed": [
+        "unresolved configured checklist sends nothing"
+      ]
+    },
+    {
+      "fault": "context retry changed",
+      "failed": [
+        "context exact retry"
+      ]
+    },
+    {
+      "fault": "missing context command",
+      "failed": [
+        "context native command custody",
+        "context hash and native result"
+      ]
+    },
+    {
+      "fault": "wrong plan",
+      "failed": [
+        "one plan and version"
+      ]
+    },
+    {
+      "fault": "geometry changed",
+      "failed": [
+        "retained study area"
+      ]
+    },
+    {
+      "fault": "inferred uploaded country",
+      "failed": [
+        "retained study area",
+        "uploaded area infers no jurisdiction",
+        "context hash and native result"
+      ]
+    },
+    {
+      "fault": "inferred tribal jurisdiction",
+      "failed": [
+        "separate authorities",
+        "context hash and native result"
+      ]
+    },
+    {
+      "fault": "source lost",
+      "failed": [
+        "selected authority and sources retained",
+        "context hash and native result"
+      ]
+    },
+    {
+      "fault": "saved hash changed",
+      "failed": [
+        "context hash and native result"
+      ]
+    },
+    {
+      "fault": "old copies lost",
+      "failed": [
+        "original bases preserved"
+      ]
+    },
+    {
+      "fault": "stop retry changed",
+      "failed": [
+        "stop withholds creation then retries exact bytes"
+      ]
+    }
+  ],
+  "downloads": [
+    {
+      "name": "browser-download-muydzc41-a-openplan-plan-creation.json",
+      "bytes": 1720,
+      "sha256": "239f09a18a6dbb11eb1ff7918e1e083e5037e136649200599e075bb4ba43d775"
+    },
+    {
+      "name": "browser-download-muye19gn-b-openplan-context-draft.json",
+      "bytes": 1687,
+      "sha256": "35a187cba72cb35b3026277c7f1c7dd2f71944597312e89dbe5b198d032c2acf"
+    }
+  ],
+  "blindCategory": "Checks recorded observations only. Does not rerun product mutations, browser events, or native producers."
+}

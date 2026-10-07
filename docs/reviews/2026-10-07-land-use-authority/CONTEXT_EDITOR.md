@@ -164,3 +164,11 @@ atomic creation to these same fields and remove the workspace-home applicability
 assumption. Distinguish source-supported plan-kind rules, then verify the roadmap's
 cross-state, missing-home, uploaded, multistate and tribal cases through saved,
 public and exported context. Practitioner and counsel review remain separate.
+
+## Subsequent T3 acceptance
+
+The [creation, context and stop recovery journey](CREATION_CONTEXT_ACCEPTANCE.md)
+records synthetic desktop and 390px acceptance, exact native retries, retained
+authority and draft copies, and a corrected context-button overflow. Its source
+identities and remaining M1 boundaries are explicit. Earlier blocked browser
+attempts above remain historical evidence.
