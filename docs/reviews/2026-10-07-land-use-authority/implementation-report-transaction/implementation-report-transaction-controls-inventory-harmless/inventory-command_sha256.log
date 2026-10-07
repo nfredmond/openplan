@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/a-column-nothing-reads-is-a-question.test.ts (5 tests | 1 failed) 780ms
+     × finds no unread column that is not accounted for 209ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/a-column-nothing-reads-is-a-question.test.ts > a column the application never reads has to say why > finds no unread column that is not accounted for
+AssertionError: these columns exist and nothing in the application ever names them. Each is either dead schema, something written and never surfaced, or a capability the schema implies and the code never built. Read it, delete it, or add it to UNREAD_COLUMNS with which of the three it is.: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "land_use_plan_implementation_report_commands.command_sha256",
++ ]
+
+ ❯ src/test/a-column-nothing-reads-is-a-question.test.ts:418:7
+    416|         "code never built. Read it, delete it, or add it to UNREAD_COL…
+    417|         "it is."
+    418|     ).toEqual([]);
+       |       ^
+    419|   });
+    420|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  13:45:43
+   Duration  1.29s (transform 50ms, setup 54ms, import 36ms, tests 780ms, environment 328ms)
+

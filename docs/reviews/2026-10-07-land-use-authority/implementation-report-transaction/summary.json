@@ -1,0 +1,697 @@
+{
+  "sourceCommit": "3556f5f8b11f210da7907ea444339d4a87e2cc4d",
+  "tests": {
+    "serverHelper": 56,
+    "nativeExercises": 2,
+    "schemaInventory": 5,
+    "total": 63
+  },
+  "controls": {
+    "survived": 4,
+    "caught": 71
+  },
+  "finalCases": [
+    {
+      "name": "sql-harmless",
+      "observed": "survived",
+      "expectedEvidence": "",
+      "exitCode": 0,
+      "valid": true,
+      "seconds": 4.124,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "store-harmless",
+      "observed": "survived",
+      "expectedEvidence": "",
+      "exitCode": 0,
+      "valid": true,
+      "seconds": 1.132,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "schema-harmless",
+      "observed": "survived",
+      "expectedEvidence": "",
+      "exitCode": 0,
+      "valid": true,
+      "seconds": 1.156,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-permission",
+      "observed": "caught",
+      "expectedEvidence": "viewer denied: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.044,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-actor-replay",
+      "observed": "caught",
+      "expectedEvidence": "different writer cannot recover another actor command: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.061,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-exact-retry",
+      "observed": "caught",
+      "expectedEvidence": "changed retry bytes denied: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.042,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-replay-result",
+      "observed": "caught",
+      "expectedEvidence": "exact replay after current state changes",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.299,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-current-pointer",
+      "observed": "caught",
+      "expectedEvidence": "changed current adopted pointer: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.086,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-version-state",
+      "observed": "caught",
+      "expectedEvidence": "superseded selected version: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 3.997,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-version-hash",
+      "observed": "caught",
+      "expectedEvidence": "changed adopted hash: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 3.894,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-source-json",
+      "observed": "caught",
+      "expectedEvidence": "stored adopted snapshot mismatch: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 3.909,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-source-hash",
+      "observed": "caught",
+      "expectedEvidence": "changed adopted snapshot bytes: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.181,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-source-plan",
+      "observed": "caught",
+      "expectedEvidence": "retained source identity mismatch: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.264,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-source-version",
+      "observed": "caught",
+      "expectedEvidence": "retained source identity mismatch: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.744,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-source-number",
+      "observed": "caught",
+      "expectedEvidence": "retained source identity mismatch: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.122,
+      "phase": "implementation-report-transaction-controls"
+    },
+    {
+      "name": "sql-date-order",
+      "observed": "caught",
+      "expectedEvidence": "invalid command field: unexpected 23514",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 5.265,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-extra-fields",
+      "observed": "caught",
+      "expectedEvidence": "invalid command field: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.209,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-title-length",
+      "observed": "caught",
+      "expectedEvidence": "invalid command field: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.116,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-title-trim",
+      "observed": "caught",
+      "expectedEvidence": "invalid command field: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 3.993,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-summary-length",
+      "observed": "caught",
+      "expectedEvidence": "invalid command field: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 3.961,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-command-id",
+      "observed": "caught",
+      "expectedEvidence": "invalid command field: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.14,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-action-order",
+      "observed": "caught",
+      "expectedEvidence": "retained bytes and ordered actions",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 3.973,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-action-status",
+      "observed": "caught",
+      "expectedEvidence": "Committed status was not captured",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.319,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-private-projection",
+      "observed": "caught",
+      "expectedEvidence": "public action projection",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.14,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-artifact-hash",
+      "observed": "caught",
+      "expectedEvidence": "artifact retains exact snapshot",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.324,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-register-hash",
+      "observed": "caught",
+      "expectedEvidence": "register matches artifact",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.24,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-fallback-summary",
+      "observed": "caught",
+      "expectedEvidence": "report date and fallback summary",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.39,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-no-plan-lock",
+      "observed": "caught",
+      "expectedEvidence": "Report accepted while peer held SELECT id FROM public.land_use_plans",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.075,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-no-permission-lock",
+      "observed": "caught",
+      "expectedEvidence": "Report accepted while peer held SELECT user_id",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.21,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-no-version-lock",
+      "observed": "caught",
+      "expectedEvidence": "Report accepted while peer held SELECT id FROM public.land_use_plan_versions",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.294,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "sql-no-append-only",
+      "observed": "caught",
+      "expectedEvidence": "receipt append-only: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.141,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-receipt-read-error",
+      "observed": "caught",
+      "expectedEvidence": "refuses unavailable or mismatched receipt discovery",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.172,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-receipt-identity",
+      "observed": "caught",
+      "expectedEvidence": "refuses unavailable or mismatched receipt discovery",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.161,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-version-read-error",
+      "observed": "caught",
+      "expectedEvidence": "refuses unavailable version reads",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.195,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-version-id",
+      "observed": "caught",
+      "expectedEvidence": "refuses missing or altered adopted sources",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.192,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-version-plan",
+      "observed": "caught",
+      "expectedEvidence": "refuses missing or altered adopted sources",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.217,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-version-workspace",
+      "observed": "caught",
+      "expectedEvidence": "refuses missing or altered adopted sources",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.202,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-version-state",
+      "observed": "caught",
+      "expectedEvidence": "refuses missing or altered adopted sources",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.177,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-version-hash",
+      "observed": "caught",
+      "expectedEvidence": "refuses missing or altered adopted sources",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.159,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-frozen-identity",
+      "observed": "caught",
+      "expectedEvidence": "refuses missing or altered adopted sources",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.106,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-raw-sha",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.148,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-replay-confirmation",
+      "observed": "caught",
+      "expectedEvidence": "requires replay confirmation",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.175,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-receipt-projection",
+      "observed": "caught",
+      "expectedEvidence": "verifies the selected adopted source",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.184,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-version-projection",
+      "observed": "caught",
+      "expectedEvidence": "verifies the selected adopted source",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.199,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-scope-filter",
+      "observed": "caught",
+      "expectedEvidence": "verifies the selected adopted source",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.19,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-exact-rpc-bytes",
+      "observed": "caught",
+      "expectedEvidence": "verifies the selected adopted source",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.153,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "store-byte-limit",
+      "observed": "caught",
+      "expectedEvidence": "refuses invalid command",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.168,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-match-actorId",
+      "observed": "caught",
+      "expectedEvidence": "refuses substituted receipt",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.187,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-match-workspaceId",
+      "observed": "caught",
+      "expectedEvidence": "refuses substituted receipt",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.155,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-match-planId",
+      "observed": "caught",
+      "expectedEvidence": "refuses substituted receipt",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.172,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-match-commandId",
+      "observed": "caught",
+      "expectedEvidence": "refuses substituted receipt",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.176,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-match-versionId",
+      "observed": "caught",
+      "expectedEvidence": "refuses substituted receipt",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.172,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-match-adoptedVersionContentHash",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.213,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-match-reportingPeriodStart",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.179,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-match-reportingPeriodEnd",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.208,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-match-title",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.182,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-match-summary",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.169,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-title-trim",
+      "observed": "caught",
+      "expectedEvidence": "refuses invalid command",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.137,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-date-order",
+      "observed": "caught",
+      "expectedEvidence": "refuses invalid command",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.164,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-unicode",
+      "observed": "caught",
+      "expectedEvidence": "refuses invalid command",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.184,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-title-bound",
+      "observed": "caught",
+      "expectedEvidence": "refuses invalid command",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.185,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "schema-summary-bound",
+      "observed": "caught",
+      "expectedEvidence": "refuses invalid command",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.192,
+      "phase": "implementation-report-transaction-controls-sql-date-order"
+    },
+    {
+      "name": "inventory-harmless",
+      "observed": "survived",
+      "expectedEvidence": "",
+      "exitCode": 0,
+      "valid": true,
+      "seconds": 1.878,
+      "phase": "implementation-report-transaction-controls-inventory-harmless"
+    },
+    {
+      "name": "inventory-command_text",
+      "observed": "caught",
+      "expectedEvidence": "land_use_plan_implementation_report_commands.command_text",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.847,
+      "phase": "implementation-report-transaction-controls-inventory-harmless"
+    },
+    {
+      "name": "inventory-command_sha256",
+      "observed": "caught",
+      "expectedEvidence": "land_use_plan_implementation_report_commands.command_sha256",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.815,
+      "phase": "implementation-report-transaction-controls-inventory-harmless"
+    },
+    {
+      "name": "sql-invoker",
+      "observed": "caught",
+      "expectedEvidence": "invoker function",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.126,
+      "phase": "implementation-report-transaction-controls-inventory-harmless"
+    },
+    {
+      "name": "sql-private-rpc",
+      "observed": "caught",
+      "expectedEvidence": "authenticated RPC denied",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.129,
+      "phase": "implementation-report-transaction-controls-inventory-harmless"
+    },
+    {
+      "name": "sql-rls",
+      "observed": "caught",
+      "expectedEvidence": "journal RLS",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.279,
+      "phase": "implementation-report-transaction-controls-inventory-harmless"
+    },
+    {
+      "name": "sql-private-table",
+      "observed": "caught",
+      "expectedEvidence": "journal private",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.242,
+      "phase": "implementation-report-transaction-controls-inventory-harmless"
+    },
+    {
+      "name": "sql-journal-grant",
+      "observed": "caught",
+      "expectedEvidence": "journal has no update grant",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.241,
+      "phase": "implementation-report-transaction-controls-inventory-harmless"
+    },
+    {
+      "name": "schema-receipt-shape",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.18,
+      "phase": "implementation-report-transaction-controls-schema-receipt-shape"
+    },
+    {
+      "name": "store-error-PT400",
+      "observed": "caught",
+      "expectedEvidence": "maps native PT400",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.177,
+      "phase": "implementation-report-transaction-controls-schema-receipt-shape"
+    },
+    {
+      "name": "store-error-42501",
+      "observed": "caught",
+      "expectedEvidence": "maps native 42501",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.174,
+      "phase": "implementation-report-transaction-controls-schema-receipt-shape"
+    },
+    {
+      "name": "store-error-PT404",
+      "observed": "caught",
+      "expectedEvidence": "maps native PT404",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.199,
+      "phase": "implementation-report-transaction-controls-schema-receipt-shape"
+    },
+    {
+      "name": "store-error-PT409",
+      "observed": "caught",
+      "expectedEvidence": "maps native PT409",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.164,
+      "phase": "implementation-report-transaction-controls-schema-receipt-shape"
+    }
+  ],
+  "limits": [
+    "No new route or form connection",
+    "No new build or T3 journey",
+    "Migration only exercised in rolled-back probes",
+    "GitHub checks pending on pushed head"
+  ],
+  "evidenceCustody": "The first private output name collided with the earlier report-reader control directory. Earlier committed script and index were restored byte-for-byte; current controls use a distinct transaction prefix and unrelated copied logs are excluded."
+}

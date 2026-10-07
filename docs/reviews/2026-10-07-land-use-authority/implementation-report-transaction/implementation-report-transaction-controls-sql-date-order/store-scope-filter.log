@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-store.test.ts (56 tests | 1 failed) 33ms
+   × verifies the selected adopted source and sends exact request bytes to one transaction 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > verifies the selected adopted source and sends exact request bytes to one transaction
+AssertionError: expected [ { …(3) }, { …(3) } ] to deeply equal [ { …(3) }, { …(3) } ]
+
+- Expected
++ Received
+
+@@ -4,14 +4,10 @@
+        [
+          "plan_id",
+          "35000000-0000-4000-8000-000000000001",
+        ],
+        [
+-         "workspace_id",
+-         "35000000-0000-4000-8000-000000000002",
+-       ],
+-       [
+          "command_id",
+          "35000000-0000-4000-8000-000000000005",
+        ],
+      ],
+      "projection": "command_id",
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:45:19
+     43| it("verifies the selected adopted source and sends exact request bytes…
+     44|   expect(await executeImplementationReport(client, scope, raw)).toEqua…
+     45|   expect(queries).toEqual([
+       |                   ^
+     46|     { table: "land_use_plan_implementation_report_commands", projectio…
+     47|     { table: "land_use_plan_versions", projection: "id, workspace_id, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 55 passed (56)
+   Start at  13:44:29
+   Duration  657ms (transform 96ms, setup 58ms, import 131ms, tests 33ms, environment 339ms)
+

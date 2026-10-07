@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-store.test.ts (56 tests | 1 failed) 34ms
+   × maps native PT409 to conflict 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > maps native PT409 to conflict
+AssertionError: expected Error: unavailable { …(2) } to match object { kind: 'conflict', status: 409, …(1) }
+
+- Expected
++ Received
+
+- {
+-   "kind": "conflict",
+-   "message": "conflict",
+-   "status": 409,
++ ImplementationReportError {
++   "kind": "unavailable",
++   "status": 503,
+  }
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:93:65
+     91|   "maps native %s to %s", async (code, kind, status) => {
+     92|     rpc.mockResolvedValue({ data: null, error: { code, message: "Priva…
+     93|     await expect(executeImplementationReport(client, scope, raw)).reje…
+       |                                                                 ^
+     94|   });
+     95| it.each(["actorId", "workspaceId", "planId", "commandId", "versionId"]…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 55 passed (56)
+   Start at  13:46:24
+   Duration  644ms (transform 91ms, setup 56ms, import 130ms, tests 34ms, environment 329ms)
+

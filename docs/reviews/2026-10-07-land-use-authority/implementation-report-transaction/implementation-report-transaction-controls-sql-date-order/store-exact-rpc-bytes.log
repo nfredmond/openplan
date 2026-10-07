@@ -1,0 +1,49 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-store.test.ts (56 tests | 1 failed) 31ms
+   × verifies the selected adopted source and sends exact request bytes to one transaction 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > verifies the selected adopted source and sends exact request bytes to one transaction
+AssertionError: expected "vi.fn()" to be called once with arguments: [ …(2) ]
+
+Received:
+
+  1st vi.fn() call:
+
+@@ -2,12 +2,10 @@
+    "create_land_use_plan_implementation_report",
+    {
+      "p_actor_id": "35000000-0000-4000-8000-000000000003",
+      "p_adopted_snapshot_text": "{\"designations\":[],\"implementationActions\":[],\"nodes\":[],\"plan\":{\"authorityLabel\":\"SYNTHETIC authority\",\"descriptorId\":\"local-unconfigured\",\"geographyLabel\":\"SYNTHETIC area\",\"id\":\"35000000-0000-4000-8000-000000000001\",\"planKindKey\":\"community\",\"title\":\"SYNTHETIC adopted plan\"},\"relationships\":[],\"version\":{\"id\":\"35000000-0000-4000-8000-000000000004\",\"versionNumber\":1}}",
+      "p_command_id": "35000000-0000-4000-8000-000000000005",
+-     "p_command_text": " 
+- {\"operation\":\"generate\",\"commandId\":\"35000000-0000-4000-8000-000000000005\",\"versionId\":\"35000000-0000-4000-8000-000000000004\",\"expectedVersionHash\":\"a92f35d3788c8e92430534b9ff64a0bbe5ec7e41c5ca3d60b204f97caf661cef\",\"reportingPeriodStart\":\"2026-01-01\",\"reportingPeriodEnd\":\"2026-10-07\",\"title\":\"SYNTHETIC report\",\"summary\":null}
+- ",
++     "p_command_text": "{\"operation\":\"generate\",\"commandId\":\"35000000-0000-4000-8000-000000000005\",\"versionId\":\"35000000-0000-4000-8000-000000000004\",\"expectedVersionHash\":\"a92f35d3788c8e92430534b9ff64a0bbe5ec7e41c5ca3d60b204f97caf661cef\",\"reportingPeriodStart\":\"2026-01-01\",\"reportingPeriodEnd\":\"2026-10-07\",\"title\":\"SYNTHETIC report\",\"summary\":null}",
+      "p_plan_id": "35000000-0000-4000-8000-000000000001",
+      "p_workspace_id": "35000000-0000-4000-8000-000000000002",
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:50:15
+     48|       filters: [["id", command.versionId], ["plan_id", scope.planId], …
+     49|   ]);
+     50|   expect(rpc).toHaveBeenCalledExactlyOnceWith("create_land_use_plan_im…
+       |               ^
+     51|     p_workspace_id: scope.workspaceId, p_actor_id: scope.actorId, p_co…
+     52|     p_command_text: raw, p_adopted_snapshot_text: serializeFrozenRecor…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 55 passed (56)
+   Start at  13:44:30
+   Duration  648ms (transform 88ms, setup 54ms, import 127ms, tests 31ms, environment 335ms)
+

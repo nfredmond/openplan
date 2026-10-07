@@ -1,0 +1,58 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-store.test.ts (56 tests | 2 failed) 32ms
+   × refuses invalid command before database access, case 12 5ms
+   × accepts supported Unicode and counts Unicode code points consistently with PostgreSQL 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses invalid command before database access, case 12
+AssertionError: expected Error: unavailable { …(2) } to match object { kind: 'invalid', status: 400 }
+
+- Expected
++ Received
+
+- {
+-   "kind": "invalid",
+-   "status": 400,
++ ImplementationReportError {
++   "kind": "unavailable",
++   "status": 503,
+  }
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:116:66
+    114|   JSON.stringify({ ...command, extra: true }), JSON.stringify({ ...com…
+    115|   "refuses invalid command before database access, case %#", async tex…
+    116|     await expect(executeImplementationReport(client, scope, text)).rej…
+       |                                                                  ^
+    117|     expect(from).not.toHaveBeenCalled(); expect(rpc).not.toHaveBeenCal…
+    118|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > accepts supported Unicode and counts Unicode code points consistently with PostgreSQL
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:125:104
+    123| it("accepts supported Unicode and counts Unicode code points consisten…
+    124|   expect(implementationReportCommandSchema.safeParse({ ...command, tit…
+    125|   expect(implementationReportCommandSchema.safeParse({ ...command, tit…
+       |                                                                                                        ^
+    126| });
+    127|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 54 passed (56)
+   Start at  13:44:47
+   Duration  661ms (transform 97ms, setup 56ms, import 133ms, tests 32ms, environment 338ms)
+

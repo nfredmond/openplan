@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-store.test.ts (56 tests | 1 failed) 32ms
+   × refuses missing or altered adopted sources even when a substituted version is internally consistent 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses missing or altered adopted sources even when a substituted version is internally consistent
+AssertionError: expected Error: unavailable { …(2) } to match object { kind: 'conflict' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "kind": "conflict",
++ ImplementationReportError {
++   "kind": "unavailable",
+  }
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:77:124
+     75|   const changedHash = hashFrozenRecord(substituted);
+     76|   retained.data = { ...retained.data, id: id(9), frozen_snapshot: subs…
+     77|   await expect(executeImplementationReport(client, scope, JSON.stringi…
+       |                                                                                                                            ^
+     78|   expect(rpc).not.toHaveBeenCalled();
+     79| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 55 passed (56)
+   Start at  13:44:17
+   Duration  667ms (transform 97ms, setup 57ms, import 137ms, tests 32ms, environment 333ms)
+

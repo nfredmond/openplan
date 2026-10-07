@@ -1,0 +1,223 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-store.test.ts (56 tests | 23 failed) 36ms
+   × verifies the selected adopted source and sends exact request bytes to one transaction 5ms
+   × accepts a concurrent exact replay after preparing the same adopted source 0ms
+   × maps native PT400 to invalid 3ms
+   × maps native 42501 to forbidden 1ms
+   × maps native PT404 to missing 1ms
+   × maps native XX000 to unavailable 1ms
+   × refuses substituted receipt actorId 1ms
+   × refuses substituted receipt workspaceId 1ms
+   × refuses substituted receipt planId 0ms
+   × refuses substituted receipt commandId 0ms
+   × refuses substituted receipt versionId 1ms
+   × refuses incomplete or inconsistent receipts {"commandSha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"} 1ms
+   × refuses incomplete or inconsistent receipts {"adoptedVersionContentHash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"} 0ms
+   × refuses incomplete or inconsistent receipts {"reportingPeriodStart":"2026-01-02"} 0ms
+   × refuses incomplete or inconsistent receipts {"reportingPeriodEnd":"2026-10-08"} 0ms
+   × refuses incomplete or inconsistent receipts {"title":"Other title"} 0ms
+   × refuses incomplete or inconsistent receipts {"summary":"Other summary"} 0ms
+   × refuses incomplete or inconsistent receipts {"generatedAt":"invalid"} 0ms
+   × refuses incomplete or inconsistent receipts {"reportId":"invalid"} 0ms
+   × refuses incomplete or inconsistent receipts {"artifactId":"invalid"} 1ms
+   × refuses incomplete or inconsistent receipts {"implementationReportId":"invalid"} 0ms
+   × refuses incomplete or inconsistent receipts {"contentHash":"invalid"} 0ms
+   × refuses incomplete or inconsistent receipts {"extra":true} 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 23 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > verifies the selected adopted source and sends exact request bytes to one transaction
+Error: conflict
+ ❯ executeImplementationReport src/lib/land-use-plans/implementation-report-store.ts:39:13
+     37|       || version.state !== "adopted" || version.content_hash !== comma…
+     38|       || !readFrozenPlanIdentity(version.frozen_snapshot, scope.planId…
+     39|       throw new ImplementationReportError("conflict");
+       |             ^
+     40|     }
+     41|     snapshotText = serializeFrozenRecord(version.frozen_snapshot);
+ ❯ src/test/land-use-implementation-report-store.test.ts:44:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/23]⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > accepts a concurrent exact replay after preparing the same adopted source
+Error: conflict
+ ❯ executeImplementationReport src/lib/land-use-plans/implementation-report-store.ts:39:13
+     37|       || version.state !== "adopted" || version.content_hash !== comma…
+     38|       || !readFrozenPlanIdentity(version.frozen_snapshot, scope.planId…
+     39|       throw new ImplementationReportError("conflict");
+       |             ^
+     40|     }
+     41|     snapshotText = serializeFrozenRecord(version.frozen_snapshot);
+ ❯ src/test/land-use-implementation-report-store.test.ts:62:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/23]⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > maps native PT400 to invalid
+AssertionError: expected Error: conflict { …(2) } to match object { kind: 'invalid', status: 400, …(1) }
+
+- Expected
++ Received
+
+- {
+-   "kind": "invalid",
+-   "message": "invalid",
+-   "status": 400,
++ ImplementationReportError {
++   "kind": "conflict",
++   "status": 409,
+  }
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:93:65
+     91|   "maps native %s to %s", async (code, kind, status) => {
+     92|     rpc.mockResolvedValue({ data: null, error: { code, message: "Priva…
+     93|     await expect(executeImplementationReport(client, scope, raw)).reje…
+       |                                                                 ^
+     94|   });
+     95| it.each(["actorId", "workspaceId", "planId", "commandId", "versionId"]…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/23]⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > maps native 42501 to forbidden
+AssertionError: expected Error: conflict { …(2) } to match object { Object (kind, status, ...) }
+
+- Expected
++ Received
+
+- {
+-   "kind": "forbidden",
+-   "message": "forbidden",
+-   "status": 403,
++ ImplementationReportError {
++   "kind": "conflict",
++   "status": 409,
+  }
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:93:65
+     91|   "maps native %s to %s", async (code, kind, status) => {
+     92|     rpc.mockResolvedValue({ data: null, error: { code, message: "Priva…
+     93|     await expect(executeImplementationReport(client, scope, raw)).reje…
+       |                                                                 ^
+     94|   });
+     95| it.each(["actorId", "workspaceId", "planId", "commandId", "versionId"]…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/23]⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > maps native PT404 to missing
+AssertionError: expected Error: conflict { …(2) } to match object { kind: 'missing', status: 404, …(1) }
+
+- Expected
++ Received
+
+- {
+-   "kind": "missing",
+-   "message": "missing",
+-   "status": 404,
++ ImplementationReportError {
++   "kind": "conflict",
++   "status": 409,
+  }
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:93:65
+     91|   "maps native %s to %s", async (code, kind, status) => {
+     92|     rpc.mockResolvedValue({ data: null, error: { code, message: "Priva…
+     93|     await expect(executeImplementationReport(client, scope, raw)).reje…
+       |                                                                 ^
+     94|   });
+     95| it.each(["actorId", "workspaceId", "planId", "commandId", "versionId"]…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/23]⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > maps native XX000 to unavailable
+AssertionError: expected Error: conflict { …(2) } to match object { kind: 'unavailable', …(2) }
+
+- Expected
++ Received
+
+- {
+-   "kind": "unavailable",
+-   "message": "unavailable",
+-   "status": 503,
++ ImplementationReportError {
++   "kind": "conflict",
++   "status": 409,
+  }
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:93:65
+     91|   "maps native %s to %s", async (code, kind, status) => {
+     92|     rpc.mockResolvedValue({ data: null, error: { code, message: "Priva…
+     93|     await expect(executeImplementationReport(client, scope, raw)).reje…
+       |                                                                 ^
+     94|   });
+     95| it.each(["actorId", "workspaceId", "planId", "commandId", "versionId"]…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/23]⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses substituted receipt actorId
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses substituted receipt workspaceId
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses substituted receipt planId
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses substituted receipt commandId
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses substituted receipt versionId
+AssertionError: expected Error: conflict { …(2) } to match object { kind: 'unavailable' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "kind": "unavailable",
++ ImplementationReportError {
++   "kind": "conflict",
+  }
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:97:63
+     95| it.each(["actorId", "workspaceId", "planId", "commandId", "versionId"]…
+     96|   rpc.mockResolvedValue({ data: { ...receipt, [key]: id(9) }, error: n…
+     97|   await expect(executeImplementationReport(client, scope, raw)).reject…
+       |                                                               ^
+     98| });
+     99| it.each([{ commandSha256: "b".repeat(64) }, { adoptedVersionContentHas…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/23]⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"commandSha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"adoptedVersionContentHash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"reportingPeriodStart":"2026-01-02"}
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"reportingPeriodEnd":"2026-10-08"}
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"title":"Other title"}
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"summary":"Other summary"}
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"generatedAt":"invalid"}
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"reportId":"invalid"}
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"artifactId":"invalid"}
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"implementationReportId":"invalid"}
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"contentHash":"invalid"}
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"extra":true}
+AssertionError: expected Error: conflict { …(2) } to match object { kind: 'unavailable' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "kind": "unavailable",
++ ImplementationReportError {
++   "kind": "conflict",
+  }
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:104:65
+    102|   "refuses incomplete or inconsistent receipts %j", async patch => {
+    103|     rpc.mockResolvedValue({ data: { ...receipt, ...patch }, error: nul…
+    104|     await expect(executeImplementationReport(client, scope, raw)).reje…
+       |                                                                 ^
+    105|   });
+    106| it("requires replay confirmation when a command was already found", as…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/23]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  23 failed | 33 passed (56)
+   Start at  13:44:27
+   Duration  679ms (transform 87ms, setup 53ms, import 123ms, tests 36ms, environment 330ms)
+

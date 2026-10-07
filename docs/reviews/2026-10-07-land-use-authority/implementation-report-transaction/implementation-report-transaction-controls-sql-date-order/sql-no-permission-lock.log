@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+stderr | src/test/land-use-implementation-report-transaction-rls.test.ts > serializes report creation and action status edits in both native session orders
+{
+  syntheticFixtureIds: {
+    ACTOR: 'e9d8c646-2405-4fbb-9d8b-c431a09a37de',
+    WORKSPACE: '5ef9a07b-65aa-49cc-af53-6efab7c9bd96',
+    PLAN: 'dcf282d9-f651-4b89-96fe-7ea8e499fd95',
+    VERSION: 'a407981b-7f89-416d-a055-ca09405fcaaf',
+    COMMAND: '89a29a79-9b04-4717-9129-a343c2828bba',
+    ACTION: 'fb5123df-1cce-4f1b-8dfb-fcf4a6d517e4'
+  },
+  nativeError: "ERROR:  Report accepted while peer held SELECT user_id FROM public.workspace_members WHERE workspace_id='5ef9a07b-65aa-49cc-af53-6efab7c9bd96' AND user_id='e9d8c646-2405-4fbb-9d8b-c431a09a37de' FOR NO KEY UPDATE\n" +
+    'CONTEXT:  PL/pgSQL function inline_code_block line 22 at RAISE\n',
+  cleanupError: ''
+}
+
+ ❯ src/test/land-use-implementation-report-transaction-rls.test.ts (2 tests | 1 failed) 3167ms
+   × serializes report creation and action status edits in both native session orders 1510ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-transaction-rls.test.ts > serializes report creation and action status edits in both native session orders
+AssertionError: ERROR:  Report accepted while peer held SELECT user_id FROM public.workspace_members WHERE workspace_id='5ef9a07b-65aa-49cc-af53-6efab7c9bd96' AND user_id='e9d8c646-2405-4fbb-9d8b-c431a09a37de' FOR NO KEY UPDATE
+CONTEXT:  PL/pgSQL function inline_code_block line 22 at RAISE
+: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ src/test/land-use-implementation-report-transaction-rls.test.ts:50:81
+     48|     if (result?.status !== 0 || cleanup.status !== 0) console.error({ …
+     49|   }
+     50|   expect(result?.error).toBeUndefined(); expect(result?.status, result…
+       |                                                                                 ^
+     51|   expect(result?.stdout).toContain("implementation report locks verifi…
+     52|   expect(cleanup?.error).toBeUndefined(); expect(cleanup?.status, clea…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  13:44:01
+   Duration  3.70s (transform 38ms, setup 54ms, import 37ms, tests 3.17s, environment 342ms)
+

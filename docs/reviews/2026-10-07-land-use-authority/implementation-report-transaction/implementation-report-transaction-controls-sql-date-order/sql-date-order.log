@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-transaction-rls.test.ts (2 tests | 1 failed) 4228ms
+   × creates one implementation report atomically and replays only exact currently permitted requests 1660ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-transaction-rls.test.ts > creates one implementation report atomically and replays only exact currently permitted requests
+AssertionError: ERROR:  invalid command field: unexpected 23514 new row for relation "land_use_plan_implementation_reports" violates check constraint "land_use_plan_implementation_reports_check"
+CONTEXT:  PL/pgSQL function pg_temp_8.report_refuses(text,text,text) line 5 at RAISE
+SQL statement "SELECT pg_temp.report_refuses(format('SELECT public.create_land_use_plan_implementation_report(%L,%L,%L,%L,%L,%L)',plan,workspace,actor,command_id,item::text,snapshot_text),'PT400','invalid command field')"
+PL/pgSQL function inline_code_block line 73 at PERFORM
+: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ src/test/land-use-implementation-report-transaction-rls.test.ts:17:78
+     15|     input: `BEGIN; SET LOCAL statement_timeout='15s'; ${migration}\n${…
+     16|   });
+     17|   expect(result.error).toBeUndefined(); expect(result.status, result.s…
+       |                                                                              ^
+     18|   expect(result.stdout).toContain("atomic implementation report verifi…
+     19| }, 30_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  13:43:06
+   Duration  4.74s (transform 37ms, setup 54ms, import 38ms, tests 4.23s, environment 327ms)
+

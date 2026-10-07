@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-store.test.ts (56 tests | 1 failed) 31ms
+   × refuses missing or altered adopted sources when the command hash differs from a valid retained source 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses missing or altered adopted sources when the command hash differs from a valid retained source
+AssertionError: expected Error: unavailable { …(2) } to match object { kind: 'conflict' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "kind": "conflict",
++ ImplementationReportError {
++   "kind": "unavailable",
+  }
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:81:127
+     79| });
+     80| it("refuses missing or altered adopted sources when the command hash d…
+     81|   await expect(executeImplementationReport(client, scope, JSON.stringi…
+       |                                                                                                                               ^
+     82|   expect(rpc).not.toHaveBeenCalled();
+     83| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 55 passed (56)
+   Start at  13:44:22
+   Duration  642ms (transform 82ms, setup 55ms, import 117ms, tests 31ms, environment 345ms)
+

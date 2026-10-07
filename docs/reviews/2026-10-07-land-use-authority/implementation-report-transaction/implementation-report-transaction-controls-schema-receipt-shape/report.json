@@ -1,0 +1,50 @@
+{
+  "results": [
+    {
+      "name": "schema-receipt-shape",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.18
+    },
+    {
+      "name": "store-error-PT400",
+      "observed": "caught",
+      "expectedEvidence": "maps native PT400",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.177
+    },
+    {
+      "name": "store-error-42501",
+      "observed": "caught",
+      "expectedEvidence": "maps native 42501",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.174
+    },
+    {
+      "name": "store-error-PT404",
+      "observed": "caught",
+      "expectedEvidence": "maps native PT404",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.199
+    },
+    {
+      "name": "store-error-PT409",
+      "observed": "caught",
+      "expectedEvidence": "maps native PT409",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.164
+    }
+  ],
+  "restored": {
+    "supabase/migrations/20261016000012_land_use_plan_implementation_report_commands.sql": "4deac02d24f1941af8d7805a5991551cd682feb0998103cf9cfa9b1e1e0acf69",
+    "src/lib/land-use-plans/implementation-report-store.ts": "3e947452a0eb04450aeb4577d5fabe61e20fc206e1c7eb41dbc62b875ee82b01",
+    "src/lib/land-use-plans/implementation-report-command.ts": "1cc62c19245c2b9dfa47f9e51b97d9213cf386f242ff9a20254591529d67bdb2",
+    "src/test/a-column-nothing-reads-is-a-question.test.ts": "f625305f3059a652bd37833122afb2571a183b56bb89d88cb2d04e9cbbfac189"
+  }
+}
