@@ -8,6 +8,8 @@ evidence. The application is in `openplan/` beneath the repository root.
 
 The [October 6 integration audit](reviews/2026-10-06-integration/INTEGRATION.md) records worktree custody and the next development boundary. The [original October independent review](reviews/2026-10-01-independent-code-review/FINAL_REPORT.md) is preserved beside its later [fix disposition](reviews/2026-10-01-independent-fixes/DISPOSITION.md).
 
+- [Land-use restore cascade correction](reviews/2026-10-07-land-use-authority/RESTORE_CASCADE_FAILURE.md): reproduced restore failures, additive migration and remaining full-drill boundary.
+
 ## Current authorities
 
 | Question | Read |

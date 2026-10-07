@@ -1,0 +1,4 @@
+-- Recreate equivalent constraints after their child constraints. All changes roll back.
+ALTER TABLE public.land_use_plans DROP CONSTRAINT land_use_plans_workspace_id_fkey, ADD CONSTRAINT land_use_plans_workspace_id_fkey FOREIGN KEY(workspace_id) REFERENCES public.workspaces(id) ON DELETE CASCADE;
+ALTER TABLE public.land_use_plan_versions DROP CONSTRAINT land_use_plan_versions_workspace_id_fkey, ADD CONSTRAINT land_use_plan_versions_workspace_id_fkey FOREIGN KEY(workspace_id) REFERENCES public.workspaces(id) ON DELETE CASCADE;
+ALTER TABLE public.land_use_plan_versions DROP CONSTRAINT land_use_plan_versions_plan_id_workspace_id_fkey, ADD CONSTRAINT land_use_plan_versions_plan_id_workspace_id_fkey FOREIGN KEY(plan_id,workspace_id) REFERENCES public.land_use_plans(id,workspace_id) ON DELETE CASCADE;

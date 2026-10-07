@@ -29,6 +29,11 @@ Creation now uses the plan area and assessed bodies instead of office location.
 The form retains incomplete drafts and exact requests, with explicit retry after
 an uncertain reply. Rendered desktop/mobile acceptance remains open.
 
+Parent deletion now tolerates restored foreign-key cascade order while preserving
+direct frozen-content and receipt protections. Migration
+`20261016000009_land_use_plan_cascade_guards.sql` applies this correction.
+The complete restore drill remains pending on the corrected commit.
+
 Apply these additive migrations in order before using these candidate changes:
 
 - `20261016000002_land_use_plan_context.sql` adds nullable historical context and
