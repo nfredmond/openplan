@@ -1,5 +1,25 @@
 import { getJurisdictionPlanDescriptor } from "./registry";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { z } from "zod";
+import { hashFrozenRecord } from "./versioning";
+
+const frozenIdentitySchema = z.object({
+  plan: z.object({
+    id: z.string().uuid(), descriptorId: z.string().min(1), planKindKey: z.string().min(1),
+    title: z.string().min(1), authorityLabel: z.string().min(1), geographyLabel: z.string().min(1),
+  }),
+  version: z.object({ id: z.string().uuid(), versionNumber: z.number().int().positive() }),
+  nodes: z.array(z.unknown()), relationships: z.array(z.unknown()),
+  designations: z.array(z.unknown()), implementationActions: z.array(z.unknown()),
+});
+
+/** Public identity comes from the exact reviewed bytes, never a later draft. */
+function frozenPublicIdentity(snapshot: unknown, planId: string, versionId: string, versionNumber: number, contentHash: string) {
+  const parsed = frozenIdentitySchema.safeParse(snapshot);
+  if (!parsed.success || parsed.data.plan.id !== planId || parsed.data.version.id !== versionId
+    || parsed.data.version.versionNumber !== versionNumber || hashFrozenRecord(snapshot) !== contentHash) return null;
+  return parsed.data.plan;
+}
 
 export type PublishedLandUsePlanPacket = {
   plan: { id: string; title: string; planKindKey: string; authorityLabel: string; geographyLabel: string };
@@ -47,15 +67,16 @@ export async function loadPublishedLandUsePlanPacket(
 ): Promise<{ ok: true; packet: PublishedLandUsePlanPacket } | { ok: false; reason: "not_found" | "read_failure" | "incomplete" }> {
   const service = createServiceRoleClient();
   const planResult = await service.from("land_use_plans")
-    .select("id, title, descriptor_id, plan_kind_key, authority_label, geography_label, current_adopted_version_id")
+    .select("id, current_adopted_version_id")
     .eq("id", planId).maybeSingle();
   if (planResult.error) return { ok: false, reason: "read_failure" };
   const plan = planResult.data;
   if (!plan?.current_adopted_version_id) return { ok: false, reason: "not_found" };
 
   const versionResult = await service.from("land_use_plan_versions")
-    .select("id, version_number, state, content_hash, frozen_snapshot, frozen_at, published_report_id")
+    .select("id, plan_id, version_number, state, content_hash, frozen_snapshot, frozen_at, published_report_id")
     .eq("id", plan.current_adopted_version_id)
+    .eq("plan_id", plan.id)
     .eq("state", "adopted")
     .not("published_report_id", "is", null)
     .maybeSingle();
@@ -64,6 +85,8 @@ export async function loadPublishedLandUsePlanPacket(
   if (!version?.frozen_snapshot || !version.published_report_id || !version.content_hash) {
     return { ok: false, reason: "not_found" };
   }
+  const identity = frozenPublicIdentity(version.frozen_snapshot, plan.id, version.id, version.version_number, version.content_hash);
+  if (version.plan_id !== plan.id || !identity) return { ok: false, reason: "incomplete" };
 
   const decisionResult = await service.from("land_use_plan_decisions")
     .select("decision_kind, decision_body, instrument_type, instrument_identifier, vote, decided_on, effective_on, version_content_hash")
@@ -74,11 +97,11 @@ export async function loadPublishedLandUsePlanPacket(
     return { ok: false, reason: "incomplete" };
   }
 
-  const descriptor = getJurisdictionPlanDescriptor(plan.descriptor_id);
+  const descriptor = getJurisdictionPlanDescriptor(identity.descriptorId);
   return {
     ok: true,
     packet: {
-      plan: { id: plan.id, title: plan.title, planKindKey: plan.plan_kind_key, authorityLabel: plan.authority_label, geographyLabel: plan.geography_label },
+      plan: { id: identity.id, title: identity.title, planKindKey: identity.planKindKey, authorityLabel: identity.authorityLabel, geographyLabel: identity.geographyLabel },
       version: { id: version.id, versionNumber: version.version_number, contentHash: version.content_hash, frozenAt: version.frozen_at },
       decision,
       descriptor: descriptor ? { terminology: descriptor.terminology, disclosure: descriptor.disclosure, sourceUrls: descriptor.sourceUrls, verifiedAt: descriptor.verifiedAt, reviewDueAt: descriptor.reviewDueAt } : null,
@@ -101,7 +124,7 @@ export async function loadPublicLandUsePlanReviewPacket(
 
   const [planResult, versionResult] = await Promise.all([
     service.from("land_use_plans")
-      .select("id, title, descriptor_id, plan_kind_key, authority_label, geography_label")
+      .select("id")
       .eq("id", release.plan_id).maybeSingle(),
     service.from("land_use_plan_versions")
       .select("id, plan_id, version_number, content_hash, frozen_snapshot, frozen_at")
@@ -113,7 +136,9 @@ export async function loadPublicLandUsePlanReviewPacket(
   if (!plan || !version?.frozen_snapshot || version.content_hash !== release.version_content_hash) {
     return { ok: false, reason: "incomplete" };
   }
-  const descriptor = getJurisdictionPlanDescriptor(plan.descriptor_id);
+  const identity = frozenPublicIdentity(version.frozen_snapshot, plan.id, version.id, version.version_number, version.content_hash);
+  if (version.plan_id !== plan.id || !identity) return { ok: false, reason: "incomplete" };
+  const descriptor = getJurisdictionPlanDescriptor(identity.descriptorId);
   return {
     ok: true,
     packet: {
@@ -126,7 +151,7 @@ export async function loadPublicLandUsePlanReviewPacket(
         status: release.status as "open" | "closed",
         outcomeHash: release.outcome_hash,
       },
-      plan: { id: plan.id, title: plan.title, planKindKey: plan.plan_kind_key, authorityLabel: plan.authority_label, geographyLabel: plan.geography_label },
+      plan: { id: identity.id, title: identity.title, planKindKey: identity.planKindKey, authorityLabel: identity.authorityLabel, geographyLabel: identity.geographyLabel },
       version: { id: version.id, versionNumber: version.version_number, contentHash: version.content_hash, frozenAt: version.frozen_at },
       descriptor: descriptor ? { terminology: descriptor.terminology, disclosure: descriptor.disclosure, sourceUrls: descriptor.sourceUrls, verifiedAt: descriptor.verifiedAt, reviewDueAt: descriptor.reviewDueAt } : null,
       content: version.frozen_snapshot as Record<string, unknown>,

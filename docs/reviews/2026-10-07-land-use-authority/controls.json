@@ -1,0 +1,60 @@
+{
+  "sourceSha256": "6d5aac5027dd6d238be0181736aae6136554e5f41c25d780552f9b6b25b32232",
+  "controls": [
+    {
+      "name": "harmless-comment",
+      "exitCode": 0,
+      "expected": "pass",
+      "target": null
+    },
+    {
+      "name": "legacy-live-identity",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "uses the reviewed identity and descriptor after later draft edits"
+    },
+    {
+      "name": "skip-checksum",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "refuses changed frozen content"
+    },
+    {
+      "name": "skip-plan-identity",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "self-hashed snapshot for another plan"
+    },
+    {
+      "name": "skip-version-identity",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "self-hashed snapshot for another version"
+    },
+    {
+      "name": "skip-version-number",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "self-hashed snapshot for another number"
+    },
+    {
+      "name": "skip-row-owner",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "version row belonging to another plan"
+    },
+    {
+      "name": "omit-frozen-column",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "uses the reviewed identity and descriptor after later draft edits"
+    },
+    {
+      "name": "skip-owner-query",
+      "exitCode": 1,
+      "expected": "fail",
+      "target": "uses the reviewed identity and descriptor after later draft edits"
+    }
+  ],
+  "restored": true
+}
