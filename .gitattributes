@@ -13,3 +13,6 @@
 
 # Preserve captured readiness verification output.
 /docs/reviews/2026-10-07-land-use-authority/readiness-reconciliation/** whitespace=-blank-at-eol,-blank-at-eof
+
+# Preserve the original engagement integration test output.
+/docs/reviews/2026-10-07-engagement-main-integration/*.log whitespace=-blank-at-eof
