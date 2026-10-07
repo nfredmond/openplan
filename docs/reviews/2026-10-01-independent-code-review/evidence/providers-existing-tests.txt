@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/independent-review-20261001-01/openplan
+
+
+ Test Files  4 passed (4)
+      Tests  126 passed (126)
+   Start at  20:17:56
+   Duration  1.62s (transform 872ms, setup 325ms, import 1.50s, tests 849ms, environment 1.72s)
+

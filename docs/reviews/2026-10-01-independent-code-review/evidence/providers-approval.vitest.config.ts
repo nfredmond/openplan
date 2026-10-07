@@ -1,0 +1,4 @@
+import path from 'node:path';
+const mutant = process.env.OPENPLAN_REVIEW_MUTANT;
+const overrides = mutant === 'approval' ? [{ find: '@/lib/assistant/action-approval-server', replacement: path.resolve('docs/reviews/2026-10-01-independent-code-review/evidence/providers-mutant.ts') }] : mutant === 'output' ? [{ find: '@/lib/assistant/provider-project-task', replacement: path.resolve('docs/reviews/2026-10-01-independent-code-review/evidence/providers-mutant.ts') }] : [];
+export default { test: { environment: 'node', include: ['docs/reviews/2026-10-01-independent-code-review/evidence/providers-*.test.ts'] }, resolve: { alias: [...overrides, { find: '@', replacement: path.resolve('openplan/src') }, { find: 'zod', replacement: path.resolve('openplan/node_modules/zod/index.js') }, { find: 'vitest', replacement: path.resolve('openplan/node_modules/vitest/dist/index.js') }, { find: 'next/server', replacement: path.resolve('openplan/node_modules/next/server.js') }] } };

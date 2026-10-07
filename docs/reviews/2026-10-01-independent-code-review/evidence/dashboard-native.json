@@ -1,0 +1,14 @@
+{
+  "baselineError": {
+    "code": "42703",
+    "details": null,
+    "hint": null,
+    "message": "column project_submittals.workspace_id does not exist"
+  },
+  "harmlessControlCode": "42703",
+  "validProjectionControl": {
+    "error": null,
+    "rowCount": 0
+  },
+  "query": ".from(\"project_submittals\")\n      .select(\"id, project_id, submittal_type, status, updated_at\")\n      .eq(\"workspace_id\", workspaceId)\n      .order(\"updated_at\", { ascending: false })\n      .limit(200)"
+}

@@ -1,0 +1,400 @@
+INFO: Open of `docs/reviews/2026-10-01-independent-code-review/evidence/planning-synthetic.gpkg'
+      using driver `GPKG' successful.
+
+Layer name: safety_crash_ksi
+Metadata:
+  IDENTIFIER=Observed project crash and KSI points
+  DESCRIPTION=Approved project-scoped observed collision points; empty is disclosed in openplan_layer_status
+Geometry: Point
+Feature Count: 0
+Layer SRS WKT:
+GEOGCRS["WGS 84",
+    ENSEMBLE["World Geodetic System 1984 ensemble",
+        MEMBER["World Geodetic System 1984 (Transit)"],
+        MEMBER["World Geodetic System 1984 (G730)"],
+        MEMBER["World Geodetic System 1984 (G873)"],
+        MEMBER["World Geodetic System 1984 (G1150)"],
+        MEMBER["World Geodetic System 1984 (G1674)"],
+        MEMBER["World Geodetic System 1984 (G1762)"],
+        MEMBER["World Geodetic System 1984 (G2139)"],
+        MEMBER["World Geodetic System 1984 (G2296)"],
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[2.0]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Horizontal component of 3D system."],
+        AREA["World."],
+        BBOX[-90,-180,90,180]],
+    ID["EPSG",4326]]
+Data axis to CRS axis mapping: 2,1
+FID Column = fid
+Geometry Column = geom
+crash_id: String (0.0) NOT NULL
+severity: String (0.0) NOT NULL
+source_id: String (0.0) NOT NULL
+collision_date: String (0.0)
+evidence_status: String (0.0) NOT NULL DEFAULT 'observed'
+
+Layer name: engagement_geometry
+Metadata:
+  IDENTIFIER=Publishable approved engagement geometry
+  DESCRIPTION=Geometry only. Comment text, submitter identity, moderation notes, and private records are excluded.
+Geometry: Unknown (any)
+Feature Count: 0
+Layer SRS WKT:
+GEOGCRS["WGS 84",
+    ENSEMBLE["World Geodetic System 1984 ensemble",
+        MEMBER["World Geodetic System 1984 (Transit)"],
+        MEMBER["World Geodetic System 1984 (G730)"],
+        MEMBER["World Geodetic System 1984 (G873)"],
+        MEMBER["World Geodetic System 1984 (G1150)"],
+        MEMBER["World Geodetic System 1984 (G1674)"],
+        MEMBER["World Geodetic System 1984 (G1762)"],
+        MEMBER["World Geodetic System 1984 (G2139)"],
+        MEMBER["World Geodetic System 1984 (G2296)"],
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[2.0]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Horizontal component of 3D system."],
+        AREA["World."],
+        BBOX[-90,-180,90,180]],
+    ID["EPSG",4326]]
+Data axis to CRS axis mapping: 2,1
+FID Column = fid
+Geometry Column = geom
+engagement_item_id: String (0.0) NOT NULL
+source_type: String (0.0) NOT NULL
+created_at: DateTime NOT NULL
+moderation_status: String (0.0) NOT NULL DEFAULT 'approved'
+
+Layer name: aequilibrae_links
+Metadata:
+  IDENTIFIER=Supplied AequilibraE link results
+  DESCRIPTION=Exact supplied AequilibraE link geometries and attributes; never combined with ActivitySim
+Geometry: Line String
+Feature Count: 0
+Layer SRS WKT:
+GEOGCRS["WGS 84",
+    ENSEMBLE["World Geodetic System 1984 ensemble",
+        MEMBER["World Geodetic System 1984 (Transit)"],
+        MEMBER["World Geodetic System 1984 (G730)"],
+        MEMBER["World Geodetic System 1984 (G873)"],
+        MEMBER["World Geodetic System 1984 (G1150)"],
+        MEMBER["World Geodetic System 1984 (G1674)"],
+        MEMBER["World Geodetic System 1984 (G1762)"],
+        MEMBER["World Geodetic System 1984 (G2139)"],
+        MEMBER["World Geodetic System 1984 (G2296)"],
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[2.0]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Horizontal component of 3D system."],
+        AREA["World."],
+        BBOX[-90,-180,90,180]],
+    ID["EPSG",4326]]
+Data axis to CRS axis mapping: 2,1
+FID Column = fid
+Geometry Column = geom
+feature_id: String (0.0) NOT NULL
+attributes_json: String (0.0) NOT NULL
+
+Layer name: activitysim_links
+Metadata:
+  IDENTIFIER=Supplied ActivitySim link results
+  DESCRIPTION=Exact supplied ActivitySim link geometries and attributes; never combined with AequilibraE
+Geometry: Line String
+Feature Count: 0
+Layer SRS WKT:
+GEOGCRS["WGS 84",
+    ENSEMBLE["World Geodetic System 1984 ensemble",
+        MEMBER["World Geodetic System 1984 (Transit)"],
+        MEMBER["World Geodetic System 1984 (G730)"],
+        MEMBER["World Geodetic System 1984 (G873)"],
+        MEMBER["World Geodetic System 1984 (G1150)"],
+        MEMBER["World Geodetic System 1984 (G1674)"],
+        MEMBER["World Geodetic System 1984 (G1762)"],
+        MEMBER["World Geodetic System 1984 (G2139)"],
+        MEMBER["World Geodetic System 1984 (G2296)"],
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[2.0]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Horizontal component of 3D system."],
+        AREA["World."],
+        BBOX[-90,-180,90,180]],
+    ID["EPSG",4326]]
+Data axis to CRS axis mapping: 2,1
+FID Column = fid
+Geometry Column = geom
+feature_id: String (0.0) NOT NULL
+attributes_json: String (0.0) NOT NULL
+
+Layer name: land_use_designations
+Metadata:
+  IDENTIFIER=Supplied land-use designations
+  DESCRIPTION=Exact supplied land-use designation geometries and attributes
+Geometry: Unknown (any)
+Feature Count: 0
+Layer SRS WKT:
+GEOGCRS["WGS 84",
+    ENSEMBLE["World Geodetic System 1984 ensemble",
+        MEMBER["World Geodetic System 1984 (Transit)"],
+        MEMBER["World Geodetic System 1984 (G730)"],
+        MEMBER["World Geodetic System 1984 (G873)"],
+        MEMBER["World Geodetic System 1984 (G1150)"],
+        MEMBER["World Geodetic System 1984 (G1674)"],
+        MEMBER["World Geodetic System 1984 (G1762)"],
+        MEMBER["World Geodetic System 1984 (G2139)"],
+        MEMBER["World Geodetic System 1984 (G2296)"],
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[2.0]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Horizontal component of 3D system."],
+        AREA["World."],
+        BBOX[-90,-180,90,180]],
+    ID["EPSG",4326]]
+Data axis to CRS axis mapping: 2,1
+FID Column = fid
+Geometry Column = geom
+feature_id: String (0.0) NOT NULL
+attributes_json: String (0.0) NOT NULL
+
+Layer name: project_area
+Metadata:
+  IDENTIFIER=Project study area
+  DESCRIPTION=Stored project place-of-record boundary; empty when unavailable
+Geometry: Unknown (any)
+Feature Count: 1
+Extent: (-83.100000, 39.900000) - (-82.900000, 40.000000)
+Layer SRS WKT:
+GEOGCRS["WGS 84",
+    ENSEMBLE["World Geodetic System 1984 ensemble",
+        MEMBER["World Geodetic System 1984 (Transit)"],
+        MEMBER["World Geodetic System 1984 (G730)"],
+        MEMBER["World Geodetic System 1984 (G873)"],
+        MEMBER["World Geodetic System 1984 (G1150)"],
+        MEMBER["World Geodetic System 1984 (G1674)"],
+        MEMBER["World Geodetic System 1984 (G1762)"],
+        MEMBER["World Geodetic System 1984 (G2139)"],
+        MEMBER["World Geodetic System 1984 (G2296)"],
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[2.0]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Horizontal component of 3D system."],
+        AREA["World."],
+        BBOX[-90,-180,90,180]],
+    ID["EPSG",4326]]
+Data axis to CRS axis mapping: 2,1
+FID Column = fid
+Geometry Column = geom
+project_id: String (0.0) NOT NULL
+project_name: String (0.0) NOT NULL
+project_status: String (0.0) NOT NULL
+place_label: String (0.0)
+place_source: String (0.0)
+place_kind: String (0.0)
+place_ref: String (0.0)
+country_code: String (0.0)
+subdivision_code: String (0.0)
+place_set_at: DateTime
+
+Layer name: project_location
+Metadata:
+  IDENTIFIER=Project location
+  DESCRIPTION=Stored project site marker; empty when unavailable
+Geometry: Point
+Feature Count: 1
+Extent: (-82.998800, 39.961200) - (-82.998800, 39.961200)
+Layer SRS WKT:
+GEOGCRS["WGS 84",
+    ENSEMBLE["World Geodetic System 1984 ensemble",
+        MEMBER["World Geodetic System 1984 (Transit)"],
+        MEMBER["World Geodetic System 1984 (G730)"],
+        MEMBER["World Geodetic System 1984 (G873)"],
+        MEMBER["World Geodetic System 1984 (G1150)"],
+        MEMBER["World Geodetic System 1984 (G1674)"],
+        MEMBER["World Geodetic System 1984 (G1762)"],
+        MEMBER["World Geodetic System 1984 (G2139)"],
+        MEMBER["World Geodetic System 1984 (G2296)"],
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[2.0]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Horizontal component of 3D system."],
+        AREA["World."],
+        BBOX[-90,-180,90,180]],
+    ID["EPSG",4326]]
+Data axis to CRS axis mapping: 2,1
+FID Column = fid
+Geometry Column = geom
+project_id: String (0.0) NOT NULL
+project_name: String (0.0) NOT NULL
+project_status: String (0.0) NOT NULL
+updated_at: DateTime NOT NULL
+
+Layer name: project_corridors
+Metadata:
+  IDENTIFIER=Project corridors
+  DESCRIPTION=Stored project cartographic corridors; invalid shapes are disclosed in project_info
+Geometry: Line String
+Feature Count: 1
+Extent: (-83.100000, 39.900000) - (-83.000000, 40.000000)
+Layer SRS WKT:
+GEOGCRS["WGS 84",
+    ENSEMBLE["World Geodetic System 1984 ensemble",
+        MEMBER["World Geodetic System 1984 (Transit)"],
+        MEMBER["World Geodetic System 1984 (G730)"],
+        MEMBER["World Geodetic System 1984 (G873)"],
+        MEMBER["World Geodetic System 1984 (G1150)"],
+        MEMBER["World Geodetic System 1984 (G1674)"],
+        MEMBER["World Geodetic System 1984 (G1762)"],
+        MEMBER["World Geodetic System 1984 (G2139)"],
+        MEMBER["World Geodetic System 1984 (G2296)"],
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[2.0]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Horizontal component of 3D system."],
+        AREA["World."],
+        BBOX[-90,-180,90,180]],
+    ID["EPSG",4326]]
+Data axis to CRS axis mapping: 2,1
+FID Column = fid
+Geometry Column = geom
+corridor_id: String (0.0) NOT NULL
+project_id: String (0.0) NOT NULL
+corridor_name: String (0.0) NOT NULL
+corridor_type: String (0.0) NOT NULL
+los_grade: String (0.0)
+updated_at: DateTime NOT NULL
+
+Layer name: project_info
+Metadata:
+  IDENTIFIER=OpenPlan project export manifest
+  DESCRIPTION=Contents, coordinate reference system, and explicit geometry coverage limits
+Geometry: None
+Feature Count: 1
+Layer SRS WKT:
+(unknown)
+FID Column = fid
+project_id: String (0.0) NOT NULL
+workspace_id: String (0.0) NOT NULL
+project_name: String (0.0) NOT NULL
+project_summary: String (0.0)
+project_status: String (0.0) NOT NULL
+plan_type: String (0.0) NOT NULL
+delivery_phase: String (0.0) NOT NULL
+project_created_at: DateTime NOT NULL
+project_updated_at: DateTime NOT NULL
+crs: String (0.0) NOT NULL
+generated_at: DateTime NOT NULL
+project_area_coverage: String (0.0) NOT NULL
+project_location_coverage: String (0.0) NOT NULL
+corridor_count: Integer64 (0.0) NOT NULL
+omitted_corridor_count: Integer64 (0.0) NOT NULL
+coverage_limits: String (0.0) NOT NULL
+
+Layer name: openplan_layer_status
+Metadata:
+  IDENTIFIER=OpenPlan layer availability and selection status
+  DESCRIPTION=Explicitly distinguishes included, unavailable, reference-only, and not-selected evidence so absence never reads as zero
+Geometry: None
+Feature Count: 8
+Layer SRS WKT:
+(unknown)
+FID Column = fid
+layer_key: String (0.0) UNIQUE NOT NULL
+status: String (0.0) NOT NULL
+record_count: Integer64 (0.0)
+stable_evidence_id: String (0.0)
+evidence_schema_version: String (0.0) NOT NULL
+source_kind: String (0.0)
+source_label: String (0.0) NOT NULL
+source_citation: String (0.0)
+as_of_date: String (0.0)
+retrieved_at: String (0.0)
+evidence_status: String (0.0) NOT NULL
+claim_tier: String (0.0)
+uncertainty_json: String (0.0) NOT NULL
+limits_json: String (0.0) NOT NULL
+revision_token: String (0.0)
+checksum_sha256: String (0.0)
+support_status: String (0.0) NOT NULL
+support_reason: String (0.0)
+detail: String (0.0) NOT NULL
+generated_at: DateTime NOT NULL

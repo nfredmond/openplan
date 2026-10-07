@@ -1,0 +1,43 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/independent-review-20261001-01
+
+ ❯ docs/reviews/2026-10-01-independent-code-review/evidence/providers-approval.test.ts (4 tests | 1 failed) 33ms
+     × rejects a changed signed note before a financial write 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/reviews/2026-10-01-independent-code-review/evidence/providers-approval.test.ts > Review observation: financial fields outside approved payload > rejects a changed signed note before a financial write
+AssertionError: expected { status: 200, consumed: true, …(1) } to deeply equal { status: 403, consumed: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "consumed": false,
+-   "status": 403,
+-   "writes": [],
++   "consumed": true,
++   "status": 200,
++   "writes": [
++     {
++       "created_by": "22222222-2222-4222-8222-222222222222",
++       "funding_need_amount": 9999999,
++       "local_match_need_amount": null,
++       "notes": "Changed note",
++       "project_id": "44444444-4444-4444-8444-444444444444",
++       "workspace_id": "33333333-3333-4333-8333-333333333333",
++     },
++   ],
+  }
+
+ ❯ docs/reviews/2026-10-01-independent-code-review/evidence/providers-approval.test.ts:36:151
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 5 passed (6)
+   Start at  20:19:04
+   Duration  662ms (transform 415ms, setup 0ms, import 703ms, tests 136ms, environment 0ms)
+

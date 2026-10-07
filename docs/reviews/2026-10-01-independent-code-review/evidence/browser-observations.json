@@ -1,0 +1,37 @@
+{
+  "identity": "891a0d89a848133d44b9e4f314a76a922cd71ace; identified next dev checkout on port3197",
+  "database": "Owned independent-review-20261001-01 API29971; 358 baseline migrations",
+  "journey": [
+    "Home",
+    "Create free workspace",
+    "Register synthetic account",
+    "Sign in with keyboard Enter",
+    "Dashboard",
+    "Projects navigation",
+    "Open Start a project dialog",
+    "Escape dismisses dialog and restores focus to Start a project"
+  ],
+  "boundaries": [
+    "No actual project saved",
+    "No full OWP/RTP/engagement workflow",
+    "No screen-reader or practicing planner observation",
+    "No production-build acceptance"
+  ],
+  "screens": {
+    "home-390": {
+      "sourcePath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-localhost-muqe7umt-57d88130.png",
+      "reviewCopy": "evidence/home-390.png"
+    },
+    "dashboard-390": {
+      "sourcePath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-localhost-muqed0jt-f8a54f61.png",
+      "reviewCopy": "evidence/dashboard-390.png"
+    },
+    "dashboard-desktop": {
+      "sourcePath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-localhost-muqedjsj-d38c9d63.png",
+      "reviewCopy": "evidence/dashboard-desktop.png"
+    }
+  },
+  "dashboardText": "WORKSPACE\n\nOverview\nWorkspace setup & health\nMy Work\nProjects\nReports\nPlanner Agent Activity\n\nPLANS & PROGRAMMING\n\nRegional Plan (RTP)\nLand Use Plans\nPlans\nProgramming Cycles\n\nFUNDING\n\nGrants\nInvoices & Reimbursements\n\nANALYSIS & MODELING\n\nTravel modeling\nCorridor Analysis\nSafety\n\nCOMMUNITY\n\nEngagement\n\nLIBRARY\n\nData Hub\nDocuments\nAerial Imagery\nHelp\nTheme\nIndependent synthetic review\nSIGN OUT\n\nDASHBOARD VIEW\n\nCurrent work, recent changes, and the command board.\n\nOverview\nInsights\n\nGET STARTED\n\nSet up Independent synthetic review\n\nYour workspace is ready and empty. These are the things that are actually configured — or not — and what each one turns on.\n\n1\nTurn on your AI assistant\nSTART HERE\n\nNot on yet. Add an Anthropic key in Workspace setup & health.\n\nWithout a key, the Planner Agent, narrative drafting, and comment translation are unavailable — everything else in OpenPlan still works. OpenPlan itself is free — the key is your workspace's own account with the AI provider, and usage is billed by that provider, not by OpenPlan.\n\nOpen integration setup\n2\nTell OpenPlan where you work\nNEXT\n\nNot set. Choose it in Workspace setup & health.\n\nMaps, jurisdiction rules, equity data, and study-area defaults across OpenPlan all read this one setting. Until it is set, maps open on a neutral continental view, no jurisdiction-specific stage-gate rules are bound, and equity layers stay empty.\n\nOpen where-you-work setting\n3\nRun your first screening\nNEXT\n\nNo analysis runs yet.\n\nCorridor Analysis scores a corridor or study area against the open data available for it and saves the run to this workspace, where reports, comparisons, and grant narratives can draw on it. Results are screening-grade — they support prioritization and narrative, not final engineering.\n\nOpen Corridor Analysis\nInvite your team\nOPTIONAL\n\nA workspace works fine alone, and teammates can join at any time.\n\nEveryone you invite works in this same workspace — the same projects, runs, engagement campaigns, and packets — with the role you give them. Invitations are links you send yourself; OpenPlan does not email them.\n\nOpen the team panel\n\nNew to OpenPlan? The Help page explains what each module does and lists the full getting-started steps.\n\nWORKSPACE DASHBOARD\nROLE\nOWNER\nIndependent synthetic review\n\nUse this overview to see current work, recent activity, and the next planning tasks that need attention.\n\nTOTAL RUNS\n\n0\n\n0 completed runs in this workspace\n\nRUN COMPLETION RATE\n\nN/A\n\n0/0 runs completed\n\nREPORT GENERATION RATE\n\nN/A\n\n0/0 runs exported\n\nTIME TO FIRST RESULT\n\nNot available\n\nFirst run at Not available\n\nWHERE TO START\n\nWhat is worth your attention today\n\nA quick read of the workspace, then straight into whatever needs you — a project, a corridor study, or a report.\n\nLook over your active projects and anything that has changed recently.\nProjects is where a piece of work lives. Corridor Analysis is where you study a corridor.\nNo corridor studies yet. Corridor Analysis will run your first one in a few minutes.\n\nWHAT NEEDS ATTENTION\n\nWhere the work is right now\n\nThis snapshot could not read project submittals, so those records were not counted at all. Nothing needing attention turned up in the records this snapshot could read, which is not the same as nothing needing attention — the unreadable records were not counted at all.\n\nSTABLE\n\nREPORT PACKETS\n\n0\n\n0 out of date, 0 not generated yet, 0 ready to review.\n\nREPORTS NEEDING ACTION\n\n0\n\nOnly the ones that need something from you: 0 to regenerate, 0 to generate, 0 waiting on funding, 0 still in review.\n\nPLANS TO FINISH SETTING UP\n\n0\n\n0 plans in total, 0 active projects.\n\nOPEN GRANT OPPORTUNITIES\n\n0\n\n0 closing within 14 days.\n\nINVOICING TO CHASE\n\n0\n\nNo awards are waiting to be invoiced, and no invoices are waiting on you.\n\nENGAGEMENT MODERATION\n\n0\n\nComments pending or flagged across 0 campaigns, with 0 approved comments available to draw from.\n\nCRASH DATA PULLS\n\n0\n\n0 pulls ready, 0 pulls failed, 0 study areas with no registere…",
+  "consoleErrors": [],
+  "consoleWarnings": []
+}

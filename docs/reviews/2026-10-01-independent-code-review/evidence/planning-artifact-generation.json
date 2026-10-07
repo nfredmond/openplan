@@ -1,0 +1,18 @@
+{
+  "baseline": "891a0d89a848133d44b9e4f314a76a922cd71ace",
+  "zipBytes": 9071,
+  "zipSha256": "4543462a5f3df5c63b37c3d004d0377404091da3986a9203b36960b39e289e87",
+  "manifestSha256": "31e15988c02efaa5160a5ea057dfb3268165b969f6acf7c4e620efa868009a1e",
+  "checksumsSha256": "6b820e228c84552677e0a5f69e7dcd50d8d60cd8ffad25f0f82c8d383f234c04",
+  "deterministic": true,
+  "gpkgSummary": {
+    "projectAreaCount": 1,
+    "projectLocationCount": 1,
+    "corridorCount": 1,
+    "omittedCorridorCount": 1,
+    "coverageLimits": [
+      "Stored project geometry and exact supplied crash/KSI, model-link, land-use, and approved engagement geometry are included when available; every expected layer is disclosed in openplan_layer_status",
+      "1 corridor was recorded but invalid; omitted"
+    ]
+  }
+}

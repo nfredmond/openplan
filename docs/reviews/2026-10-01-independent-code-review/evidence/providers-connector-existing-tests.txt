@@ -1,0 +1,33 @@
+✔ CLI imports only the supplied connection into private files without logging its token (139.794031ms)
+✔ CLI refuses extra provider-endpoint arguments and does not echo secrets (161.085327ms)
+✔ one-shot polling distinguishes an idle reply from an unavailable app (264.48987ms)
+✔ connector configuration pins the project and refuses public HTTP, secrets in URL and arbitrary runtime endpoints (1.546338ms)
+✔ the original packet hash, selected project, account mode and complete prompt must match (1.455466ms)
+✔ HTTP delivery uses only the pinned bearer, omits cookies and refuses redirects (2.466895ms)
+✔ the real HTTP client never forwards its bearer to a redirect destination (28.863345ms)
+✔ HTTP responses are bounded and error bodies never escape through diagnostics (2.863684ms)
+✔ private saved files refuse group-readable credentials (6.559828ms)
+✔ an OS lock excludes another connector and releases cleanly without stale PID recovery (20.83743ms)
+✔ a model answer is synced before delivery and native temporary work is removed (5.657255ms)
+✔ a lost delivery response resends the identical result without inspecting or generating again (2.503504ms)
+✔ restart during generation records interruption and never silently regenerates (2.677423ms)
+✔ auth-mode and project mismatches stop before model generation (1.421372ms)
+✔ missing native login is reported without claiming it is connected (0.753742ms)
+✔ expired, cancelled and unreadable attempts do not start a model (5.17231ms)
+✔ cancellation aborts only the owned native turn and retains an interruption (7.749424ms)
+✔ an unrelated acknowledgement cannot discard undelivered output (2.920852ms)
+✔ a confirmed cancellation clears only that attempt so the connector can continue (3.366492ms)
+✔ a conflict for a different attempt preserves the completed delivery (2.806035ms)
+✔ versioned setup binds the provider and keeps legacy Codex setup readable (0.603829ms)
+✔ versioned jobs require their exact provider while legacy jobs remain Codex only (0.537314ms)
+✔ Claude delivery retains its provider and resends the identical answer after response loss (2.647185ms)
+✔ Claude refuses another provider result without saving its answer (1.768648ms)
+✔ changing the provider cannot replay a saved Claude journal through a Codex connection (0.885441ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 644.332452

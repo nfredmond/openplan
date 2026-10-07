@@ -1,0 +1,97 @@
+{
+  "started_at_utc": "2026-10-02T03:11:53Z",
+  "local_date": "2026-10-01",
+  "baseline": "891a0d89a848133d44b9e4f314a76a922cd71ace",
+  "branch": "review/independent-20261001-01",
+  "worktree": "/home/nathaniel/.local/state/openplan/independent-review-20261001-01",
+  "release_commit": "bc47c0ce580ee24f1a3808978535f52218e796d4",
+  "canonical_status": "## main...origin/main\n?? .directory",
+  "worktrees": "worktree /home/nathaniel/code/openplan\nHEAD 891a0d89a848133d44b9e4f314a76a922cd71ace\nbranch refs/heads/main\n\nworktree /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10\nHEAD e006b98bd8aeedbde48a74bec2169e1f1d01c9ad\nbranch refs/heads/work/engagement-response-snapshots\n\nworktree /home/nathaniel/.local/state/openplan/assistant-audit-outcomes-2026-09-10\nHEAD d87a04d4271ee7e46e21d09e4fc63cd3fec6f5b3\nbranch refs/heads/work/assistant-audit-outcomes\n\nworktree /home/nathaniel/.local/state/openplan/contract-reconciliation-2026-09-07\nHEAD 76f019bfb80300434c23273db07c43610cbf1625\nbranch refs/heads/work/contract-reconciliation\n\nworktree /home/nathaniel/.local/state/openplan/dependency-patch-2026-09-10\nHEAD 5d7ccdb067bb4db639132889f8efd5db160dfc6b\nbranch refs/heads/fix/development-dependency-advisories\n\nworktree /home/nathaniel/.local/state/openplan/engagement-first-workflow-2026-09-06\nHEAD 860260baa7a84ceacd354d12006fa9d503721037\nbranch refs/heads/work/engagement-first-workflow\n\nworktree /home/nathaniel/.local/state/openplan/engagement-response-writes-2026-09-12\nHEAD 88fb20b619f9108c29c7102ca20fb6423f553e45\nbranch refs/heads/work/engagement-response-writes\n\nworktree /home/nathaniel/.local/state/openplan/engagement-write-recovery-2026-09-12\nHEAD 3f70af98e6fb06b4c0f932769e10f880711d46ec\nbranch refs/heads/work/engagement-write-recovery\n\nworktree /home/nathaniel/.local/state/openplan/explicit-agent-consent-2026-09-10\nHEAD 4d02130b24c7b83ff9111c3bbe058fdfe7f67b86\nbranch refs/heads/work/explicit-agent-consent\n\nworktree /home/nathaniel/.local/state/openplan/independent-review-20261001-01\nHEAD 891a0d89a848133d44b9e4f314a76a922cd71ace\nbranch refs/heads/review/independent-20261001-01\n\nworktree /home/nathaniel/.local/state/openplan/m11-delivery-closeout-2026-09-08\nHEAD 5850d63e99b755f5c2da2ca930ae67768a5f25d4\nbranch refs/heads/work/m11-delivery-closeout\n\nworktree /home/nathaniel/.local/state/openplan/m2d3-reimbursement-2026-09-09\nHEAD 88de2d23ff174de8ef7bcf1eeeb76a47d656a1a0\nbranch refs/heads/work/m2d3-reimbursement\n\nworktree /home/nathaniel/.local/state/openplan/m2d4-closeout-review-2026-09-09\nHEAD 8015a05f15028387e56fcbe952639c23c7f01d9b\nbranch refs/heads/work/m2d4-closeout-review\n\nworktree /home/nathaniel/.local/state/openplan/m2d4-multi-carryover-2026-09-09\nHEAD 3a752db6c7c249c45fa245530f4b52fda6a54251\nbranch refs/heads/work/m2d4-multi-carryover\n\nworktree /home/nathaniel/.local/state/openplan/m2d4-period-closure-2026-09-09\nHEAD b0c6c05854a7bef44d1440ef5ed89621332b63e7\nbranch refs/heads/work/m2d4-period-closure\n\nworktree /home/nathaniel/.local/state/openplan/m2d4-refund-matching-2026-09-09\nHEAD 609347ade35418765b459c8ba1b6bdb2a07cff2d\nbranch refs/heads/work/m2d4-refund-matching\n\nworktree /home/nathaniel/.local/state/openplan/m2d4-settlement-2026-09-09\nHEAD 5dffba4bc4813cdee6ac17825b45aa4b629768a2\nbranch refs/heads/work/m2d4-settlement\n\nworktree /home/nathaniel/.local/state/openplan/owp-full-recovery-2026-09-09\nHEAD 051b735fa444fab5287357b30dc2eaafe6783bcf\nbranch refs/heads/work/owp-full-recovery\n\nworktree /home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06\nHEAD 398d8f0df8178cf4c56eca21110c09e139c4d60d\nbranch refs/heads/work/owp-preparation\n\nworktree /home/nathaniel/.local/state/openplan/owp-reporting-2026-09-07\nHEAD dfdb9845974ad870db159a0576eedbb087a38150\nbranch refs/heads/fix/owp-staff-workspace\n\nworktree /home/nathaniel/.local/state/openplan/owp-review-2026-09-07\nHEAD e204cdeeaffdf3ac8fca51c067c0c4e38e1a9814\nbranch refs/heads/work/owp-review\n\nworktree /home/nathaniel/.local/state/openplan/planner-action-followup-recovery-2026-09-10\nHEAD 3ffd2a415f6561cfb37f52e2ce1eeef251522db5\nbranch refs/heads/work/planner-action-followup-recovery\n\nworktree /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13\nHEAD 891a0d89a848133d44b9e4f314a76a922cd71ace\nbranch refs/heads/work/engagement-synthesis-generation\n\nworktree /home/nathaniel/.local/state/openplan/translation-resolution-qa-20260913-125bf2a3\nHEAD 5a93ae99c32412ccf6a9620d705a4cc9de63f81c\ndetached\n\nworktree /home/nathaniel/.local/state/openplan/v047-release-2026-09-09\nHEAD f65a27db9432c1f0a460bfe8b966a8c1446327bd\nbranch refs/heads/work/v047-release\n\nworktree /home/nathaniel/.local/state/openplan/v048-release-2026-09-09\nHEAD e39258b92f119d5b7d8326155f99188d43a7eaf3\nbranch refs/heads/work/v048-release\n\nworktree /home/nathaniel/.local/state/openplan/workspace-switch-v0581-2026-09-13\nHEAD ef16f166447ab477ea36588a5c01620f61560b19\nbranch refs/heads/fix/workspace-switch-v0581\n\nworktree /home/nathaniel/.local/state/openplan/write-outcome-truth-2026-09-10\nHEAD 3a6099c119a65dd93ed85ef7f16eb1b641f27a6d\nbranch refs/heads/work/write-outcome-truth",
+  "relevant_processes": [
+    {
+      "pid": 3110,
+      "name": "MainThread",
+      "cwd": "/home/nathaniel/apps/openplan/openplan"
+    },
+    {
+      "pid": 3556,
+      "name": "esbuild",
+      "cwd": "/home/nathaniel/apps/openplan/openplan"
+    },
+    {
+      "pid": 1954412,
+      "name": "next-server (v1",
+      "cwd": "/home/nathaniel/apps/openplan/openplan"
+    },
+    {
+      "pid": 2170747,
+      "name": "codex",
+      "cwd": "/home/nathaniel/code/openplan"
+    },
+    {
+      "pid": 2712785,
+      "name": "codex",
+      "cwd": "/home/nathaniel/code/openplan"
+    },
+    {
+      "pid": 2712981,
+      "name": "node_repl",
+      "cwd": "/home/nathaniel/code/openplan"
+    },
+    {
+      "pid": 2712985,
+      "name": "MainThread",
+      "cwd": "/home/nathaniel/code/openplan"
+    },
+    {
+      "pid": 2713153,
+      "name": "node_repl",
+      "cwd": "/home/nathaniel/code/openplan"
+    },
+    {
+      "pid": 2715901,
+      "name": "codex-code-mode",
+      "cwd": "/home/nathaniel/code/openplan"
+    },
+    {
+      "pid": 2799845,
+      "name": "codex",
+      "cwd": "/home/nathaniel/code/openplan"
+    },
+    {
+      "pid": 2799993,
+      "name": "node_repl",
+      "cwd": "/home/nathaniel/code/openplan"
+    },
+    {
+      "pid": 2800000,
+      "name": "MainThread",
+      "cwd": "/home/nathaniel/code/openplan"
+    },
+    {
+      "pid": 2800093,
+      "name": "node_repl",
+      "cwd": "/home/nathaniel/code/openplan"
+    },
+    {
+      "pid": 2802973,
+      "name": "codex-code-mode",
+      "cwd": "/home/nathaniel/code/openplan"
+    },
+    {
+      "pid": 2834243,
+      "name": "bash",
+      "cwd": "/home/nathaniel/.local/state/openplan/independent-review-20261001-01"
+    },
+    {
+      "pid": 2834306,
+      "name": "python3",
+      "cwd": "/home/nathaniel/.local/state/openplan/independent-review-20261001-01"
+    },
+    {
+      "pid": 3142293,
+      "name": "codex",
+      "cwd": "/home/nathaniel/code/openplan"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "allocation": {
+    "control": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "boundary": [
+      0.01,
+      0.01,
+      0.01,
+      -0.01
+    ],
+    "larger": [
+      333333.34,
+      333333.34,
+      333333.34,
+      -0.01
+    ],
+    "harmless": "survived",
+    "targetedFault": {
+      "detected": true,
+      "reason": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   0,\n+   0,\n+   0,\n+   0\n-   1,\n-   1,\n-   1,\n-   1\n  ]\n"
+    }
+  },
+  "reporting": {
+    "available": 250,
+    "defaultCapRead": 250,
+    "reducedCapRead": 50,
+    "reducedCapCalls": [
+      [
+        0,
+        199
+      ]
+    ],
+    "harmless": "survived",
+    "targetedFault": {
+      "detected": true,
+      "reason": "Expected values to be strictly equal:\n\n0 !== 250\n"
+    }
+  }
+}
