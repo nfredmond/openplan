@@ -20,6 +20,9 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Engagement review filters and exported summaries now call reviewed contributions
+Approved. Approval does not establish public release.
+
 Engagement review files now identify contribution intake sources and count
 records by source. Staff-authored notes remain distinct from resident submissions
 in PDF and workbook output. Existing saved files keep their original contents.
