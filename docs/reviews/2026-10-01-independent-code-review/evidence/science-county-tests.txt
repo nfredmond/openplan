@@ -1,0 +1,26 @@
+....2026-10-01 20:19:08,591 INFO Starting county onramp job 123e4567-e89b-12d3-a456-426614174001
+2026-10-01 20:19:08,592 INFO Bootstrap command: worker-test 123e4567-e89b-12d3-a456-426614174001
+2026-10-01 20:19:08,597 INFO Cancelled county onramp job 123e4567-e89b-12d3-a456-426614174001
+2026-10-01 20:19:08,597 INFO Starting county onramp job 123e4567-e89b-12d3-a456-426614174004
+2026-10-01 20:19:08,597 INFO Bootstrap command: worker-test 123e4567-e89b-12d3-a456-426614174004
+2026-10-01 20:19:08,597 INFO Completed county onramp job 123e4567-e89b-12d3-a456-426614174004
+2026-10-01 20:19:08,597 INFO Job 123e4567-e89b-12d3-a456-426614174004 stdout: second complete
+.2026-10-01 20:19:08,598 ERROR County onramp job 123e4567-e89b-12d3-a456-426614174001 failed
+Traceback (most recent call last):
+  File "/home/nathaniel/.local/state/openplan/independent-review-20261001-01/workers/county_onramp_worker/main.py", line 391, in _run_job
+    command, manifest_path = _build_bootstrap_command(job)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+FileNotFoundError: missing bootstrap
+.....
+----------------------------------------------------------------------
+Ran 10 tests in 0.013s
+
+OK

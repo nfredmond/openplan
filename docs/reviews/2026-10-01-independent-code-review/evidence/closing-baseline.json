@@ -1,0 +1,62 @@
+{
+  "closed_at_utc": "2026-10-02T03:35:38.263278+00:00",
+  "checkouts": {
+    "canonical": {
+      "path": "/home/nathaniel/code/openplan",
+      "head": {
+        "exit_code": 0,
+        "output": "891a0d89a848133d44b9e4f314a76a922cd71ace"
+      },
+      "branch": {
+        "exit_code": 0,
+        "output": "main"
+      },
+      "status": {
+        "exit_code": 0,
+        "output": "?? .directory\n?? docs/reviews/2026-10-01-ui-ux-review/"
+      }
+    },
+    "development": {
+      "path": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13",
+      "head": {
+        "exit_code": 0,
+        "output": "891a0d89a848133d44b9e4f314a76a922cd71ace"
+      },
+      "branch": {
+        "exit_code": 0,
+        "output": "work/engagement-synthesis-generation"
+      },
+      "status": {
+        "exit_code": 0,
+        "output": "M docs/README.md\n M openplan/package.json\n M openplan/src/lib/engagement/synthesis-context-continuation.ts\n M openplan/src/test/engagement-synthesis-generation-worker-live.test.ts\n M openplan/src/test/fixtures/engagement/synthesis-context-job.ts\n M openplan/src/test/fixtures/engagement/synthesis-context-worker.ts\n?? docs/reviews/2026-10-01-context-history/\n?? openplan/src/lib/engagement/synthesis-context-history-inputs.ts\n?? openplan/src/lib/engagement/synthesis-context-history-server.ts\n?? openplan/src/test/engagement-synthesis-context-history-inputs.test.ts\n?? openplan/src/test/engagement-synthesis-context-history-rls.test.ts\n?? openplan/src/test/engagement-synthesis-context-history-server.test.ts\n?? openplan/src/test/fixtures/engagement/synthesis-context-history.sql\n?? openplan/src/test/fixtures/engagement/synthesis-context-history.ts"
+      }
+    },
+    "review": {
+      "path": "/home/nathaniel/.local/state/openplan/independent-review-20261001-01",
+      "head": {
+        "exit_code": 0,
+        "output": "891a0d89a848133d44b9e4f314a76a922cd71ace"
+      },
+      "branch": {
+        "exit_code": 0,
+        "output": "review/independent-20261001-01"
+      },
+      "status": {
+        "exit_code": 0,
+        "output": "?? docs/reviews/2026-10-01-independent-code-review/"
+      }
+    }
+  },
+  "remote_refs": {
+    "exit_code": 0,
+    "output": "891a0d89a848133d44b9e4f314a76a922cd71ace\trefs/heads/main\nbaea1d528aacdaeec86a317994865ea05d7d7371\trefs/tags/v0.66.0\nbc47c0ce580ee24f1a3808978535f52218e796d4\trefs/tags/v0.66.0^{}"
+  },
+  "release": {
+    "exit_code": 0,
+    "output": "{\"isDraft\":false,\"isPrerelease\":false,\"publishedAt\":\"2026-10-01T03:59:19Z\",\"tagName\":\"v0.66.0\",\"targetCommitish\":\"bc47c0ce580ee24f1a3808978535f52218e796d4\",\"url\":\"https://github.com/nfredmond/openplan/releases/tag/v0.66.0\"}"
+  },
+  "ci": {
+    "exit_code": 0,
+    "output": "[{\"conclusion\":\"success\",\"createdAt\":\"2026-10-01T18:37:49Z\",\"databaseId\":36908250224,\"headSha\":\"891a0d89a848133d44b9e4f314a76a922cd71ace\",\"name\":\"Restore Drill\",\"status\":\"completed\",\"url\":\"https://github.com/nfredmond/openplan/actions/runs/36908250224\"},{\"conclusion\":\"success\",\"createdAt\":\"2026-10-01T17:08:08Z\",\"databaseId\":36897139318,\"headSha\":\"891a0d89a848133d44b9e4f314a76a922cd71ace\",\"name\":\"Upgrade Path\",\"status\":\"completed\",\"url\":\"https://github.com/nfredmond/openplan/actions/runs/36897139318\"},{\"conclusion\":\"success\",\"createdAt\":\"2026-10-01T17:02:25Z\",\"databaseId\":36896434012,\"headSha\":\"891a0d89a848133d44b9e4f314a76a922cd71ace\",\"name\":\"RLS Isolation\",\"status\":\"completed\",\"url\":\"https://github.com/nfredmond/openplan/actions/runs/36896434012\"},{\"conclusion\":\"success\",\"createdAt\":\"2026-10-01T16:40:53Z\",\"databaseId\":36893808893,\"headSha\":\"891a0d89a848133d44b9e4f314a76a922cd71ace\",\"name\":\"QA Harness Nightly\",\"status\":\"completed\",\"url\":\"https://github.com/nfredmond/openplan/actions/runs/36893808893\"},{\"conclusion\":\"success\",\"createdAt\":\"2026-10-01T04:05:22Z\",\"databaseId\":36813483653,\"headSha\":\"891a0d89a848133d44b9e4f314a76a922cd71ace\",\"name\":\"RLS Isolation\",\"status\":\"completed\",\"url\":\"https://github.com/nfredmond/openplan/actions/runs/36813483653\"},{\"conclusion\":\"success\",\"createdAt\":\"2026-10-01T04:05:22Z\",\"databaseId\":36813483582,\"headSha\":\"891a0d89a848133d44b9e4f314a76a922cd71ace\",\"name\":\"CI\",\"status\":\"completed\",\"url\":\"https://github.com/nfredmond/openplan/actions/runs/36813483582\"}]"
+  }
+}

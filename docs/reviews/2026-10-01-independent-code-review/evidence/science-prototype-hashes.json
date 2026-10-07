@@ -1,0 +1,30 @@
+[
+  {
+    "path": "openplan/src/lib/engagement/synthesis-context-history-inputs.ts",
+    "manifest_sha256": "7612da8dfde28ef7b40b5a5c532845e7e07213785eb5e62094662abc60607050",
+    "snapshot_sha256": "7612da8dfde28ef7b40b5a5c532845e7e07213785eb5e62094662abc60607050",
+    "current_sha256": "ec37b5e9bbac227cdf97f7469acf716fa593713c1e2b73142d5e9ac387f43b63",
+    "equal": false
+  },
+  {
+    "path": "openplan/src/lib/engagement/synthesis-context-history-server.ts",
+    "manifest_sha256": "74dba9fb8106a5c4f189581a9ea633fcf5f8c7d9170ec6b5dc63b73282d288d6",
+    "snapshot_sha256": "74dba9fb8106a5c4f189581a9ea633fcf5f8c7d9170ec6b5dc63b73282d288d6",
+    "current_sha256": "ff692b3cfb57c1c9b59da4b9bb94a06b4db742b6691d3ac6f7a6eb6568d89129",
+    "equal": false
+  },
+  {
+    "path": "openplan/src/test/engagement-synthesis-context-history-inputs.test.ts",
+    "manifest_sha256": "f3d52f59adc4494736af4ab409b9fc6ee4e926e1033ed45d332cae6aaf7a4e6b",
+    "snapshot_sha256": "f3d52f59adc4494736af4ab409b9fc6ee4e926e1033ed45d332cae6aaf7a4e6b",
+    "current_sha256": "0cf3ed5267d4033d4fca1c588ce130bd5d95136d9eab7a1fc838973d74cc0718",
+    "equal": false
+  },
+  {
+    "path": "openplan/src/test/fixtures/engagement/synthesis-context-history.ts",
+    "manifest_sha256": "8a43c6680eec836bb3d630c038a3b73af9b3ddc4ba91252554612c12776d1044",
+    "snapshot_sha256": "8a43c6680eec836bb3d630c038a3b73af9b3ddc4ba91252554612c12776d1044",
+    "current_sha256": "82df701526bde1f7518bba0bf305fbb206e214dcd469b442e7b71132b701867d",
+    "equal": false
+  }
+]

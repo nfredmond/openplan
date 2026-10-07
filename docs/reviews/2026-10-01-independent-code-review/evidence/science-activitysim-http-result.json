@@ -1,0 +1,22 @@
+{
+  "baseline": {
+    "configured_token_refusal": 401,
+    "tokenless_remote_http_status": 200,
+    "unrelated_record_deleted": true,
+    "request_command_executed": true,
+    "runtime_status": "succeeded",
+    "network_listener_opened": false
+  },
+  "harmless_comment": {
+    "configured_token_refusal": 401,
+    "tokenless_remote_http_status": 200,
+    "unrelated_record_deleted": true,
+    "request_command_executed": true,
+    "runtime_status": "succeeded",
+    "network_listener_opened": false
+  },
+  "targeted_auth_branch_control": {
+    "detected": true,
+    "message": "{'error': 'Unauthorized'}"
+  }
+}

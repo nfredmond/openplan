@@ -1,0 +1,8 @@
+
+> openplan@0.66.0 product:direction:check
+> node scripts/ops/product-direction-review.mjs --check
+
+Review reminder: jurisdiction readiness registry review expired on 2026-09-28
+Review reminder: latest review covers v0.44.0; package is v0.66.0
+Review reminder: latest direction review predates substantive changes: .github/workflows/ci.yml, .github/workflows/production-health.yml, .github/workflows/restore-drill.yml, AGENTS.md, CONTRIBUTING.md, README.md, docs/README.md, docs/ops/CONTRACT_RECONCILIATION.md
+Product direction records checked; review deadline 2026-10-05: docs/reviews/product-direction/2026-09-07-work-program-review.md (2 independent contexts, review v0.44.0, package v0.66.0).

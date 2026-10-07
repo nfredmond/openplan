@@ -1,0 +1,4 @@
+approval: harmless source comment survived; all observation controls retained.
+approval: targeted mutation failed named behavior assertion, not test startup. See exact output.
+output: harmless source comment survived; all observation controls retained.
+output: targeted mutation failed named behavior assertion, not test startup. See exact output.
