@@ -14,7 +14,8 @@ requirement satisfies another requirement.
 The working view will list missing current sections, newly required applicability
 keys, and earlier sections whose keys are absent from the current checklist.
 Staff explicitly confirms the selected rules before applying the change. The
-action adds blank sections and required keys. It preserves every existing node,
+action adds blank sections and the checklist's non-conditional default keys,
+including required and locally defined content. It preserves every existing node,
 title, body, evidence link, policy relationship, map designation, implementation
 action and earlier version. Earlier sections remain editable and visibly labeled.
 This action makes a draft ready for further writing; it does not complete its
@@ -42,7 +43,9 @@ after the installed rules or current draft changes.
 The database transaction rechecks current membership and locks the plan and
 working version. It verifies the selected descriptor, expected revision and
 command bytes before changing anything. It appends only missing keyed sections
-and unions required keys with existing applicable keys. Conditional sections stay
+and unions non-conditional defaults with existing applicable keys, matching new
+plan creation. Locally defined content remains distinct from a configured legal
+requirement. Conditional sections stay
 visible without becoming applicable automatically. It does not change plan
 identity, frozen snapshots, existing section text or map/evidence records.
 

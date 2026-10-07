@@ -10,7 +10,7 @@ The [October 6 integration audit](reviews/2026-10-06-integration/INTEGRATION.md)
 
 ## Current authorities
 
-The October 7 land-use checkpoints record [frozen staff history](reviews/2026-10-07-land-use-authority/FROZEN_WORKBENCH.md), [plan-kind connections](reviews/2026-10-07-land-use-authority/PLAN_KIND_CONNECTIONS.md) and the remaining [older-draft reconciliation design](reviews/2026-10-07-land-use-authority/DRAFT_RULE_RECONCILIATION_DESIGN.md). These remain M1 work with explicit native and rendered acceptance limits.
+The October 7 land-use checkpoints record [frozen staff history](reviews/2026-10-07-land-use-authority/FROZEN_WORKBENCH.md), [plan-kind connections](reviews/2026-10-07-land-use-authority/PLAN_KIND_CONNECTIONS.md), [reconciliation backend](reviews/2026-10-07-land-use-authority/RULE_RECONCILIATION_BACKEND.md) and the remaining [older-draft reconciliation design](reviews/2026-10-07-land-use-authority/DRAFT_RULE_RECONCILIATION_DESIGN.md). These remain M1 work with explicit native and rendered acceptance limits.
 
 | Question | Read |
 |---|---|

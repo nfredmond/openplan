@@ -35,6 +35,10 @@ for the specific plan kind, including distinct California general-plan and
 specific-plan requirements. Changing a kind requires another checklist review.
 Earlier frozen editions remain unchanged. Existing authored drafts are not
 automatically converted; explicit reconciliation remains in development.
+The reconciliation API now appends missing blank sections and selected default
+keys without rewriting earlier content. Migration
+`20261016000010_land_use_plan_rule_reconciliation.sql` adds its private receipt
+journal. The workbench action and browser recovery remain unfinished.
 
 Apply these additive migrations in order before using these candidate changes:
 
