@@ -6,6 +6,16 @@ import * as XLSX from 'xlsx';
 import { buildCampaignReviewHtml,buildCampaignReviewWorkbook,parseReviewSnapshot,renderCampaignReviewFiles,campaignQuestionSummary,campaignReviewMap,type EngagementReviewSnapshot } from '@/lib/engagement/review-export';
 const snapshot:EngagementReviewSnapshot={schema:1,capturedAt:'2026-09-06T12:00:00Z',scope:'internal',filters:{},campaign:{id:'demo',title:'Demonstration only',summary:null,configurationVersionId:null},items:[{id:'one',status:'pending',body:'=HYPERLINK("https://invalid.test")',title:'<script>bad()</script>',configuration_version_id:null}],sessions:[{id:'session',status:'pending'}],answers:[{id:'answer1',session_id:'session',answer_text:'Repeated answer'},{id:'answer2',session_id:'session',answer_text:'Repeated answer'}],responses:[],definitions:[]};
 describe('campaign review records',()=>{
+ it.each(['internal','public'] as const)('keeps approval separate from publication in %s files',async(scope)=>{
+  const source:EngagementReviewSnapshot={...snapshot,scope,items:[{id:'approved-note',status:'approved',body:'Retained note'}],sessions:[],answers:[]};
+  const page=document.createElement('div');page.innerHTML=buildCampaignReviewHtml(source,'checksum');
+  expect([...page.querySelectorAll('th')].map(node=>node.textContent)).toContain('Approved');
+  expect([...page.querySelectorAll('th')].map(node=>node.textContent)).not.toContain('Published');
+  const workbook=XLSX.read(await buildCampaignReviewWorkbook(source,'checksum'),{type:'buffer'});
+  const meaning=XLSX.utils.sheet_to_json<{Field:string;Value:string}>(workbook.Sheets['Read me']).find(row=>row.Field==='Meaning')?.Value;
+  expect(meaning).toContain('Approval does not establish public release.');
+  expect(XLSX.utils.sheet_to_json<{status:string}>(workbook.Sheets.Contributions)[0].status).toBe('approved');
+ });
  it.each(['internal','public'] as const)('distinguishes staff notes and intake methods in %s review files',async(scope)=>{
   const types=['internal','internal','public','meeting','email',undefined,'<new>'];
   const source:EngagementReviewSnapshot={...snapshot,scope,items:types.map((source_type,index)=>({id:`origin-${index}`,status:'approved',body:`Retained ${index}`,source_type})),sessions:[],answers:[]};
