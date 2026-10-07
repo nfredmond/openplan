@@ -15,7 +15,7 @@ const receipt = { schemaVersion: 1, queueId: command.queueId, commandText,
   commandSha256: createHash("sha256").update(commandText).digest("hex"), createdAt: "2026-10-07T23:00:00Z" };
 const headers = { origin: "http://localhost", "content-type": "application/json", "x-openplan-expected-user": actorId, "x-openplan-expected-workspace": workspaceId };
 const context = { params: Promise.resolve({ campaignId }) };
-function request(body: string | Uint8Array = commandText, extra: Record<string, string> = {}) {
+function request(body: string | Uint8Array<ArrayBuffer> = commandText, extra: Record<string, string> = {}) {
   return new NextRequest(`http://localhost/api/engagement/campaigns/${campaignId}/synthesis/execution/queue`, {
     method: "POST", headers: { ...headers, ...extra }, body,
   });

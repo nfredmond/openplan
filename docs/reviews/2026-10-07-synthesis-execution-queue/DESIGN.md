@@ -242,3 +242,26 @@ A full package type check with a 4 GB JavaScript heap limit exhausted that limit
 before producing diagnostics. It is not a passing type check. The process was
 confirmed absent before considering another run. Full package checking remains
 open; focused tests do not substitute for it.
+
+## Queue-to-scheduler binding checkpoint
+
+The worker adapter verifies each queue receipt again, reads the retained request
+and permission, and compares their exact hashes and scope before selecting the
+contribution, context or thematic scheduler. It uses the existing CLI root plus
+target hash and permission ID. Queue IDs never create fresh task directories.
+The existing scheduler retains responsibility for current authority, task claims,
+unknown dispatch and output recovery. A coordinator still needs to journal the
+queue entry before invoking this adapter.
+
+Ten adapter tests cover all three stages, canonical journal paths, query
+projections and changed request/permission records. Together with the 15 route
+tests, all 25 pass. ESLint passes. The harmless control passes; removing authority
+binding, replacing the permission directory with a queue directory or routing
+thematic work incorrectly causes assertion failures. `driver-controls.json`
+retains the results. Schedulers are mocked here; this does not establish real
+provider execution, restart recovery or concurrent worker safety.
+
+The 6 GB heap retry completed and reported one route-test type error: its
+Uint8Array annotation allowed SharedArrayBuffer while NextRequest requires an
+ArrayBuffer-backed body. The fixture now declares the narrower type. The route
+tests pass after correction. Another full type check remains required.
