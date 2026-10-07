@@ -291,3 +291,29 @@ The new coordinator still needs full package checking. Real provider interruptio
 multiple worker processes, live status reporting and desktop/mobile staff
 acceptance remain open. `schedule_returned` is a coordinator observation, not a
 claim that all outputs were delivered, analyzed or approved.
+
+## Worker command checkpoint
+
+`npm run worker:synthesis-execution` polls explicit queue pages. `--once` runs
+one bounded page, and `--help` works without credentials. The worker shares
+`OPENPLAN_SYNTHESIS_GENERATION_WORK_DIR` with the single-grant CLI, defaults to
+`~/.local/state/openplan/synthesis-generation-worker`, and keeps its coordinator
+under the target hash in `queue-coordinator`. Use the same absolute private root
+for service and CLI recovery. Do not delete or rotate task journals after an
+unknown dispatch. SIGINT and SIGTERM cancel in-flight work and interrupt waits.
+
+The command requires the candidate queue migration, normal worker database
+credentials and the existing provider configuration. It has not been installed
+as a running service or pointed at retained allowances. Production operator
+configuration, restore inventory and acceptance remain incomplete. Starting it
+discovers only explicit queue entries; historical permission is not a backlog.
+
+All 24 options/lifecycle tests pass, as do changed-file ESLint and an actual CLI
+help invocation with no environment file. A first test run found an incorrect
+coordinator import copied from the preparation pattern; fixing the module path
+resolved it. The harmless control passes. Removing absolute-root validation,
+target partitioning, unconfirmed-status handling or shutdown acknowledgement
+checks causes assertion failures. `service-controls.json` retains the evidence.
+Mocks cover loop control and delays, not OS signals, real provider dispatch,
+process crash recovery or deployed service health. The full type check through
+d3dd40d4 passes; the new command and service still need full checking.
