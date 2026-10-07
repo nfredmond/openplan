@@ -71,3 +71,13 @@ its request. Installed descriptor changes need reconciliation, not a new inferre
 approval. Agent writes require an approved registered action or an executable
 refusal. Until those pieces are connected, this revision counter does not repair
 the existing multi-request freeze route.
+
+## Installed-stack follow-up
+
+After commit `1035268d`, the exact migration is [installed](draft-revision/migration-up.log)
+only on `openplan-restore-target-2026091050`. The draft-revision and existing
+context-persistence suites pass against that installed schema without candidate
+DDL. This supersedes the earlier unapplied status for that isolated target.
+Do not use the draft-revision candidate probe flag on that target again.
+[Atomic freeze persistence](FREEZE_TRANSACTION.md) is the next candidate and
+retains its separate unapplied status.
