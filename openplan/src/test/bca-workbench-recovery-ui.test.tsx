@@ -1,0 +1,58 @@
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { BcaWorkbench } from "@/components/grants/bca-workbench/workbench";
+import { exampleBcaDocument } from "@/lib/bca/workbench/document";
+import { readBcaDraft } from "@/lib/bca/workbench/draft";
+const project = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const user = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+const id = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+const key = `openplan:bca:${user}:${project}`;
+const props = {projectId:project,projectName:"Synthetic project",userId:user,canSave:true,models:[],modelReadFailed:false};
+beforeEach(() => sessionStorage.clear());
+afterEach(cleanup);
+it("keeps unfinished edits and all evidence through unmount and reload", async () => {
+  const doc = exampleBcaDocument(project);
+  sessionStorage.setItem(key, JSON.stringify({document:doc,pending:null}));
+  const view = render(<BcaWorkbench {...props}/>);
+  fireEvent.change(screen.getByLabelText("Analysis title"), {target:{value:""}});
+  await waitFor(() => expect(JSON.parse(sessionStorage.getItem(key)!).document.title).toBe(""));
+  view.unmount();
+  render(<BcaWorkbench {...props}/>);
+  expect(screen.getByLabelText("Analysis title")).toHaveValue("");
+  const recovered = JSON.parse(sessionStorage.getItem(key)!).document;
+  expect(recovered.flows).toEqual(doc.flows);
+  expect(recovered.evidence).toEqual(doc.evidence);
+  expect(screen.getByRole("button", {name:"Save a version"})).toBeDisabled();
+  fireEvent.change(screen.getByLabelText("Analysis title"), {target:{value:"Repaired title"}});
+  expect(screen.getByRole("button", {name:"Save a version"})).toBeEnabled();
+});
+it("retains invalid year edits but rejects malformed nested shapes", () => {
+  const doc = exampleBcaDocument(project);
+  doc.endYear = 1900;
+  expect(readBcaDraft(JSON.stringify({document:doc}),project).document?.flows).toEqual(doc.flows);
+  expect(readBcaDraft(JSON.stringify({document:{...doc,flows:[{bad:true}]}}),project).unreadable).toBe(true);
+});
+it("does not overwrite unreadable storage and independently recovers a valid pending save", async () => {
+  const doc = exampleBcaDocument(project);
+  const raw = JSON.stringify({document:{bad:true},pending:{id,document:doc}});
+  sessionStorage.setItem(key,raw);
+  render(<BcaWorkbench {...props}/>);
+  expect(screen.getByRole("button", {name:"Retry retained save"})).toBeDisabled();
+  expect(screen.getByLabelText("Analysis title")).toHaveValue(doc.title);
+  await waitFor(() => expect(screen.getByRole("button", {name:"Download original and resume draft storage"})).toBeEnabled());
+  expect(sessionStorage.getItem(key)).toBe(raw);
+});
+it("restores an exported retained request and retries its original identity and exact document", async () => {
+  const doc = exampleBcaDocument(project);
+  const request = {id,document:doc};
+  const fetcher = vi.fn().mockResolvedValue({ok:true,json:async()=>({version:{id,created_by:user,created_at:"2026-10-06T00:00:00Z",document_json:doc}})});
+  vi.stubGlobal("fetch",fetcher);
+  render(<BcaWorkbench {...props}/>);
+  fireEvent.change(screen.getByLabelText("Import analysis JSON file"), {target:{files:[{size:100,text:async()=>JSON.stringify(request)}]}});
+  await waitFor(()=>expect(screen.getByRole("button", {name:"Retry retained save"})).toBeEnabled());
+  expect(screen.getByLabelText("Analysis title")).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", {name:"Retry retained save"}));
+  await waitFor(()=>expect(fetcher).toHaveBeenCalledOnce());
+  expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual(request);
+  await waitFor(()=>expect(screen.getByRole("button", {name:"Save a version"})).toBeEnabled());
+});
