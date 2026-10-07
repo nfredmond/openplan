@@ -33,7 +33,7 @@ export async function LandUsePlanReportPage({ report }: { report: Report }) {
     ? artifact.metadata_json as Record<string, unknown> : {};
   const snapshot = await loadAdoptedReportSnapshot(supabase, report, metadata);
   if (!snapshot) {
-    return <div className="mx-auto max-w-3xl p-8"><h1 className="text-3xl font-semibold">This plan report could not be verified</h1><p role="alert" className="mt-4">The saved report does not match its recorded plan version. OpenPlan withheld the report content. This does not mean the agency withdrew the plan.</p></div>;
+    return <div className="mx-auto max-w-3xl p-8"><h1 className="text-3xl font-semibold">This plan report could not be verified</h1><p role="alert" className="mt-4">The saved report does not match its frozen plan version. OpenPlan withheld the report content. This does not mean the agency withdrew the plan.</p></div>;
   }
   const { identity, frozen } = snapshot;
   return <LandUsePlanReportDetail report={report}

@@ -90,3 +90,24 @@ trees, print/PDF, implementation-report custody, publication concurrency/recover
 remaining M1 geography cases and practitioner/counsel acceptance remain open.
 This checkpoint does not close M1 or declare a release or V1 acceptance.
 [Artifact hashes](report-adoption/sha256.json) retain the evidence for this step.
+
+## Follow-up on the plain-language CI failure
+
+GitHub QA at `c75b352a` fails one plain-language guard, with 18,916 other tests
+passing and 1,544 skipped. Five new uses of "record" exceed the existing 249-use
+baseline. The [local reproduction](report-copy/before.log) finds the same count.
+The report now says "Saved adoption decision," "adoption details" and "frozen
+plan version." The existing baseline stays unchanged. The relationship label
+also says "Relationship saved as."
+
+[Forty-seven focused tests](report-copy/controls/baseline.log) pass. The
+[controls](report-copy/controls/report.json) include a surviving harmless comment
+and ten failures covering missing disclosures, omitted relationship kinds,
+removed caveats and a reintroduced jargon term. Original source bytes restore.
+These component and source checks do not prove layout, native authorization or
+practitioner understanding. New-build browser evidence remains pending; the
+screenshots above identify the earlier build and wording.
+
+The older `797d3ea6` live-RLS retry and archive-restore run now pass. The failed
+first RLS attempt remains a port-conflict result. Subsequent live jobs keep their
+own outcomes; a new push does not establish that CI passed.
