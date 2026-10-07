@@ -30,6 +30,75 @@ async function choose(f: ReturnType<typeof fixture>) {
 }
 
 describe("staff analysis request creation", () => {
+  it("restores an unsent choice after remount but waits for fresh provider metadata", async () => {
+    const f = fixture(), choiceMemory = { scope: f.scope, current: null };
+    let finish!: (value: Response) => void;
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(json(f.page))
+      .mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    vi.stubGlobal("fetch", fetcher);
+    const view = render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await choose(f); view.unmount();
+    render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    expect(screen.getByLabelText("Analysis model")).toHaveValue("synthetic-model");
+    expect(screen.getByRole("button", { name: "Save analysis request" })).toBeDisabled();
+    await act(async () => finish(json(f.page)));
+    expect(screen.getByLabelText("Saved API connection")).toHaveValue(f.connection.id);
+    expect(screen.getByRole("button", { name: "Save analysis request" })).toBeEnabled();
+    expect(fetcher.mock.calls.every(([, init]) => init?.method !== "POST")).toBe(true);
+  });
+  it("does not silently replace a retained provider revision after remount", async () => {
+    const f = fixture(), choiceMemory = { scope: f.scope, current: null };
+    const revisionId = randomUUID();
+    const changed = { ...f.connection, current_revision_id: revisionId, current_revision: { ...f.revision,
+      id: revisionId, configuration_hash: "c".repeat(64), configuration: { ...f.revision.configuration, endpoint: "http://replacement.invalid/v1" } } };
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(json(f.page))
+      .mockResolvedValueOnce(json({ ...f.page, connections: [changed] }));
+    vi.stubGlobal("fetch", fetcher);
+    const view = render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await choose(f); view.unmount();
+    render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await screen.findByText("The selected API changed or is unavailable. Choose its current revision before saving a new request.");
+    expect(screen.getByText("Destination: http://synthetic.invalid/v1")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Save analysis request" })).toBeDisabled();
+    expect(screen.getByLabelText("Saved API connection")).toHaveValue("");
+    expect(fetcher.mock.calls.every(([, init]) => init?.method !== "POST")).toBe(true);
+  });
+  it.each(["userId", "workspaceId", "campaignId", "sourceId", "sourceSha256"] as const)("does not restore choices for a different %s", async field => {
+    const f = fixture(), choiceMemory = { scope: f.scope, current: null };
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockResolvedValue(json(f.page)));
+    const view = render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await choose(f); view.unmount();
+    render(<SynthesisGenerationCreatePanel {...f.props} {...{ [field]: field === "sourceSha256" ? "c".repeat(64) : randomUUID() }} choiceMemory={choiceMemory} />);
+    expect(screen.getByRole("button", { name: "Optional generated analysis" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByLabelText("Analysis model")).toBeNull();
+  });
+  it.each([401, 403])("forgets the unsent choice after provider access fails with %s", async status => {
+    const f = fixture(), choiceMemory = { scope: f.scope, current: null };
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockResolvedValueOnce(json(f.page)).mockResolvedValueOnce(json({}, status)));
+    const view = render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await choose(f);
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analysis providers" }));
+    await waitFor(() => expect(f.props.onAccessLost).toHaveBeenCalledOnce());
+    view.unmount(); render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    expect(screen.getByRole("button", { name: "Optional generated analysis" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByLabelText("Analysis model")).toBeNull();
+  });
+  it("retires an unsent choice once its exact request becomes the recovery record", async () => {
+    const f = fixture(), choiceMemory = { scope: f.scope, current: null };
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async (_url, init) => {
+      if (init?.method === "POST") throw new Error("SYNTHETIC lost reply");
+      return json(f.page);
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const view = render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await choose(f); fireEvent.click(screen.getByRole("button", { name: "Save analysis request" }));
+    await screen.findByText("SYNTHETIC lost reply");
+    expect(choiceMemory.current).toBeNull();
+    view.unmount(); render(<SynthesisGenerationCreatePanel {...f.props} choiceMemory={choiceMemory} />);
+    await screen.findByRole("button", { name: "Retry saved analysis request" });
+    expect(screen.getByRole("button", { name: "Save analysis request" })).toBeDisabled();
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+  });
   it("requires a fresh selection when paging returns a changed revision of the chosen connection", async () => {
     const f = fixture();
     const preceding = Array.from({ length: 49 }, (_, index) => {
