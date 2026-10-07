@@ -1,0 +1,4 @@
+ERROR:  journal RLS
+CONTEXT:  PL/pgSQL function pg_temp_1.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert((SELECT relrowsecurity FROM pg_class WHERE oid='public.land_use_plan_creation_commands'::regclass),'journal RLS')"
+PL/pgSQL function inline_code_block line 20 at PERFORM

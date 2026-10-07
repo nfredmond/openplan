@@ -1,0 +1,4 @@
+ERROR:  individual deletion retains creation identity: accepted
+CONTEXT:  PL/pgSQL function pg_temp_42.creation_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.creation_refuses(format('DELETE FROM public.land_use_plans WHERE id=%L',result->>'planId'),'23503','individual deletion retains creation identity')"
+PL/pgSQL function inline_code_block line 78 at PERFORM

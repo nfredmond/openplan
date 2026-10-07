@@ -73,6 +73,9 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "land_use_plan_creation_commands.command_text", category: "READ_IN_SQL", reason: "The native creation command compares original bytes before returning its retained receipt, preserving the request identity before a plan exists." },
+  { column: "land_use_plan_creation_commands.descriptor_text", category: "WRITE_ONLY", reason: "Original descriptor bytes are retained for creation audit and generate descriptor_sha256. Runtime replay returns the original receipt rather than reading those rules again." },
+  { column: "land_use_plan_creation_commands.descriptor_sha256", category: "WRITE_ONLY", reason: "Generated digest supports native audit of the original descriptor bytes. Runtime receipts retain the matching descriptorHash but do not select this generated column." },
   { column: "land_use_plan_context_commands.command_sha256", category: "WRITE_ONLY", reason: "Generated digest retained for command audit and native custody checks. Runtime replay compares exact command_text; it does not currently display or return this digest." },
   { column: "land_use_plan_context_commands.command_text", category: "READ_IN_SQL", reason: "save_land_use_plan_context compares exact command bytes on replay, preventing reuse of one command ID for a different assessment." },
   { column: "land_use_plan_context_commands.expected_context_hash", category: "READ_IN_SQL", reason: "The native context command compares the original precondition on replay before returning the retained save receipt." },

@@ -41,6 +41,14 @@ Apply these additive migrations in order before using these candidate changes:
 - `20261016000006_land_use_plan_retained_study_area.sql` preserves an unchanged
   saved boundary during authority edits and aligns the plan's displayed geography.
 
+The backend creation checkpoint adds
+`20261016000007_land_use_plan_creation_commands.sql`. It creates a plan, first
+version, checklist, assessed context and immutable retry receipt in one
+permission-checked transaction. Individual plan deletion cannot erase that
+creation identity and make an old retry create another plan; workspace deletion
+still removes its owned records. The existing route and creator are not connected
+to this transaction yet, so their workspace-home restriction remains.
+
 The migrations are installed only on the isolated verification stack. The
 [context editor evidence](docs/reviews/2026-10-07-land-use-authority/CONTEXT_EDITOR.md)
 distinguishes unit/native checks and partial desktop behavior from unresolved

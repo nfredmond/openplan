@@ -1,0 +1,4 @@
+ERROR:  different staff replay: accepted
+CONTEXT:  PL/pgSQL function pg_temp_38.creation_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.creation_refuses(replace(statement,actor::text,member::text),'PT409','different staff replay')"
+PL/pgSQL function inline_code_block line 64 at PERFORM

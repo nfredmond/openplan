@@ -528,10 +528,12 @@ const EXPECTED = {
   // 20261016000002/00004 add private context/freeze command journals.
   // Installed isolated catalog: 282 RLS application tables, 14 views,
   // 758 policies. Both new journals have zero client policies.
-  relations: 296,
-  tables: 282,
+  // 20261016000007 adds one private creation journal with no client policies.
+  // Installed isolated catalog: 283 RLS application tables, 14 views, 758 policies.
+  relations: 297,
+  tables: 283,
   views: 14,
-  rlsEnabledTables: 282,
+  rlsEnabledTables: 283,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

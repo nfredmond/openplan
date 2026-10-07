@@ -1,0 +1,4 @@
+ERROR:  complete initial sections retain labels and order
+CONTEXT:  PL/pgSQL function pg_temp_83.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert((SELECT jsonb_agg(jsonb_build_object('key',requirement_key,'label',title) ORDER BY sort_order) FROM public.land_use_plan_content_nodes WHERE version_id=(result->>'versionId')::uuid)='[{"key":"required","label":"Required section"},{"key":"conditional","label":"Conditional section"}]'::jsonb,'complete initial sections retain labels and order')"
+PL/pgSQL function inline_code_block line 56 at PERFORM

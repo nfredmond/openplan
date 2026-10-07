@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan
+
+ ❯ src/test/land-use-plan-creation-rls.test.ts (1 test | 1 failed) 1383ms
+   × creates complete plan context atomically and retains exact scoped recovery under native permissions 1382ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-creation-rls.test.ts > creates complete plan context atomically and retains exact scoped recovery under native permissions
+AssertionError: ERROR:  workspace 7ace6f5f-a73c-4dfe-8afb-681acacc4191 would be left without an owner
+CONTEXT:  PL/pgSQL function enforce_workspace_owner_floor() line 19 at RAISE
+SQL statement "UPDATE public.workspace_members SET role='viewer' WHERE workspace_id=workspace AND user_id=actor"
+PL/pgSQL function inline_code_block line 66 at SQL statement
+: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ src/test/land-use-plan-creation-rls.test.ts:15:76
+     13|   const result=spawnSync("docker",["exec","-i",container,"psql","-U","…
+     14|     input:`BEGIN; SET LOCAL statement_timeout='15s'; ${migration}\n${f…
+     15|   expect(result.error).toBeUndefined();expect(result.status,result.std…
+       |                                                                            ^
+     16| },30_000);
+     17|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  06:07:51
+   Duration  1.96s (transform 38ms, setup 54ms, import 37ms, tests 1.38s, environment 327ms)
+

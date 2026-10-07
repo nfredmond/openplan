@@ -1,0 +1,4 @@
+ERROR:  atomic plan context and active version
+CONTEXT:  PL/pgSQL function pg_temp_99.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert((SELECT current_working_version_id::text=result->>'versionId' AND geography_label='SYNTHETIC area' AND geography_geojson=prepared#>'{place,geometry}' AND plan_context=result->'context' AND plan_context_hash=result->>'contextHash' FROM public.land_use_plans WHERE id=(result->>'planId')::uuid),'atomic plan context and active version')"
+PL/pgSQL function inline_code_block line 53 at PERFORM

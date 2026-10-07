@@ -1,0 +1,64 @@
+import pathlib,subprocess,json,hashlib,os
+app=pathlib.Path('/home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan');out=pathlib.Path('/tmp/openplan-plan-creation-controls');out.mkdir(exist_ok=False)
+paths={'store':'src/lib/land-use-plans/create-store.ts','command':'src/lib/land-use-plans/create-command.ts','sql':'supabase/migrations/20261016000007_land_use_plan_creation_commands.sql'}
+original={k:(app/p).read_bytes() for k,p in paths.items()};fixture=(app/'src/test/fixtures/land-use-plans/creation.sql').read_text();rows=[]
+def run(name,key=None,old=None,new=None,target=None,native=False):
+ try:
+  if key:
+   s=original[key].decode();assert s.count(old)==1,(name,s.count(old));(app/paths[key]).write_text(s.replace(old,new))
+  elif name=='harmless':
+   for k,p in paths.items():(app/p).write_bytes(original[k]+(b'\n-- Harmless creation control.\n' if k=='sql' else b'\n// Harmless creation control.\n'))
+  if native:
+   sql=(app/paths['sql']).read_text();r=subprocess.run(['docker','exec','-i','supabase_db_openplan-restore-target-2026091050','psql','-U','postgres','-d','postgres','-qAt','-v','ON_ERROR_STOP=1'],input='BEGIN; SET LOCAL statement_timeout=\'15s\';\n'+sql+'\n'+fixture+'\nROLLBACK;',text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=25);failed=[]
+   matched=(r.returncode==0 and 'atomic plan creation verified' in r.stdout) if not target else r.returncode!=0 and target in r.stdout
+  else:
+   r=subprocess.run(['npm','exec','--','vitest','run','src/test/land-use-plan-creation.test.ts','--maxWorkers=1','--reporter=json',f'--outputFile={out/name}.json'],cwd=app,env={**os.environ,'NODE_OPTIONS':'--max-old-space-size=6144'},text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=45)
+   report=json.loads((out/(name+'.json')).read_text());failed=[a['fullName'] for f in report['testResults'] for a in f['assertionResults'] if a['status']=='failed'];matched=r.returncode==0 if not target else r.returncode!=0 and any(target in title for title in failed)
+  (out/(name+'.log')).write_text(r.stdout);rows.append({'case':name,'native':native,'exitCode':r.returncode,'matched':matched,'target':target,'failedTests':failed});print(name,matched,flush=True)
+  if not matched:raise RuntimeError(name)
+ finally:
+  for k,p in paths.items():(app/p).write_bytes(original[k])
+try:
+ run('baseline');run('harmless');run('native-baseline',native=True)
+ run('native-harmless','sql','-- Creation owns one command before a plan exists.','-- Harmless creation documentation change.',native=True)
+ cases=[
+ ('normalized-bytes','store','!parsed.success || !isDeepStrictEqual(parsed.data, raw)','!parsed.success','refuses malformed'),
+ ('missing-projection','store','select("command_id")','select("actor_id")','keeps exact normalized bytes'),
+ ('missing-workspace-scope','store','.eq("workspace_id", scope.workspaceId)','', 'keeps exact normalized bytes'),
+ ('lookup-error','store','lookup.error || (lookup.data && lookup.data.command_id !== command.commandId)','(lookup.data && lookup.data.command_id !== command.commandId)','refuses an unreadable'),
+ ('lookup-mismatch','store','lookup.error || (lookup.data && lookup.data.command_id !== command.commandId)','lookup.error','refuses an unreadable'),
+ ('fresh-rules-hash','store','if (hashFrozenRecord(snapshot) !== command.expectedDescriptorHash)','if (false)','refuses changed descriptor'),
+ ('replay-lookup','store','if (!lookup.data) {','if (true) {','replays original context'),
+ ('changed-command-bytes','store','p_command_text: commandText','p_command_text: JSON.stringify(command)','keeps exact normalized bytes'),
+ ('replay-flag','store','|| (lookup.data && !result.data.replayed)','', 'rejects a fresh outcome'),
+ ]
+ for case in cases:run(*case)
+ for key in ['actorId','workspaceId','commandId','descriptorId','planKindKey','descriptorHash','title','authorityLabel']:
+  rhs={'actorId':'scope.actorId','workspaceId':'scope.workspaceId','descriptorHash':'command.expectedDescriptorHash'}.get(key,'command.'+key)
+  run('receipt-'+key,'command',f'result.{key} !== {rhs}','false',f'rejects substituted {key}')
+ run('receipt-assessment','command','!same(result.context.assessment, command.assessment)','false','rejects changed authority')
+ run('receipt-captured-place','command','return same(place, placeOfRecordFromCapturedArea(command.place));','return true;','rejects changed authority')
+ run('receipt-attribution','command','result.context.savedBy !== scope.actorId','false','rejects changed authority')
+ for key,rhs in [('source','TIGERWEB_GEOGRAPHY_SOURCE'),('kind','command.place.kind'),('ref','command.place.geoid'),('label','command.place.label'),('countryCode','"US"'),('subdivisionCode','subdivisionCodeFromTigerwebGeoid(command.place.kind, command.place.geoid)')]:
+  run('selected-'+key,'command',f'place.{key} === {rhs}','true','verifies selected-place identity')
+ sqlcases=[
+ ('native-viewer','role IN (\'owner\',\'admin\',\'member\')','role IN (\'owner\',\'admin\',\'member\',\'viewer\')','viewer denied: accepted'),
+ ('native-author','previous.actor_id IS DISTINCT FROM p_actor_id OR ','','different staff replay: accepted'),
+ ('native-bytes','previous.command_text IS DISTINCT FROM p_command_text','false','changed bytes replay: accepted'),
+ ('native-attribution',"'savedBy',p_actor_id","'savedBy','00000000-0000-0000-0000-000000000000'",'native context attribution'),
+ ('native-assessment',"AND p_prepared_context->'assessment'=command->'assessment'",'','assessment substitution: accepted'),
+ ('native-geometry',"p_prepared_context#>'{place,geometry}'=command#>'{place,geometry}'",'true','geometry substitution: accepted'),
+ ('native-jurisdiction',"AND p_prepared_context#>'{place,countryCode}'='null'::jsonb",'','invented jurisdiction: accepted'),
+ ('native-rules-hash',"AND command->>'expectedDescriptorHash'=descriptor_hash",'','changed descriptor bytes: accepted'),
+ ('native-conditional',"WHERE r->>'applicability'<>'conditional'",'WHERE true','initial version requirements'),
+ ('native-sections',"SELECT p_workspace_id,version_id,'section',r->>'key',r->>'label',(position-1)::integer,p_actor_id", "SELECT p_workspace_id,version_id,'section',r->>'key','Wrong section label',(position-1)::integer,p_actor_id",'complete initial sections'),
+ ('native-activation','SET current_working_version_id=version_id','SET current_working_version_id=NULL','atomic plan context and active version'),
+ ('native-privacy','REVOKE ALL ON public.land_use_plan_creation_commands FROM PUBLIC, anon, authenticated, service_role;','GRANT SELECT ON public.land_use_plan_creation_commands TO authenticated;','journal private'),
+ ('native-rls','ALTER TABLE public.land_use_plan_creation_commands ENABLE ROW LEVEL SECURITY;','ALTER TABLE public.land_use_plan_creation_commands DISABLE ROW LEVEL SECURITY;','journal RLS'),
+ ('native-invoker','RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER','RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER','invoker function'),
+ ('native-execute','GRANT EXECUTE ON FUNCTION public.create_land_use_plan_with_context(uuid,uuid,uuid,text,jsonb,text) TO service_role;','GRANT EXECUTE ON FUNCTION public.create_land_use_plan_with_context(uuid,uuid,uuid,text,jsonb,text) TO service_role, authenticated;','authenticated RPC permission'),
+ ('native-immutability','BEFORE UPDATE OR DELETE ON public.land_use_plan_creation_commands','BEFORE DELETE ON public.land_use_plan_creation_commands','journal append-only: accepted'),
+ ]
+ for name,old,new,target in sqlcases:run(name,'sql',old,new,target,True)
+finally:
+ (out/'report.json').write_text(json.dumps({'results':rows,'restored':all((app/p).read_bytes()==original[k] for k,p in paths.items()),'sourceSha256':{paths[k]:hashlib.sha256(v).hexdigest() for k,v in original.items()}},indent=2)+'\n')

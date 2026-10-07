@@ -1,0 +1,4 @@
+ERROR:  initial version requirements
+CONTEXT:  PL/pgSQL function pg_temp_50.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert((SELECT applicable_requirement_keys=ARRAY['required']::text[] AND created_by=actor AND state='working' FROM public.land_use_plan_versions WHERE id=(result->>'versionId')::uuid),'initial version requirements')"
+PL/pgSQL function inline_code_block line 54 at PERFORM
