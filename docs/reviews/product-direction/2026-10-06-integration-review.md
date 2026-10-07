@@ -31,7 +31,7 @@ decisions:
 - complete-engagement-case-through-existing-decisions-and-files
 - continue-geography-operations-and-science-alongside-workflows
 paths:
-- docs/reviews/2026-10-06-integration/independent/packet.md
+- docs/reviews/2026-10-06-integration/independent/packet.txt
 - docs/reviews/2026-10-06-integration/independent/review-a.md
 - docs/reviews/2026-10-06-integration/independent/review-b.md
 - docs/reviews/2026-10-06-integration/INTEGRATION.md
