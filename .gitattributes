@@ -10,3 +10,6 @@
 
 # Preserve captured readiness verification output.
 /docs/reviews/2026-10-07-land-use-authority/readiness-reconciliation/** whitespace=-blank-at-eol,-blank-at-eof
+
+# Retain transaction-test output, including request whitespace and Vitest padding.
+/docs/reviews/2026-10-07-land-use-authority/implementation-report-transaction/**/*.log whitespace=-blank-at-eol,-blank-at-eof
