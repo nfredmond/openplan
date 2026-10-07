@@ -1,0 +1,116 @@
+{
+  "applicationCommit": "c047153ad120ff638da80f4f8a1dd00af88db11b",
+  "workspaceId": "d7e4658e-41d7-44cd-bed3-5dbe025e0457",
+  "planId": "29d17983-a3c1-4b03-8622-180e6b83bd36",
+  "versionId": "0caf2f7b-e3ec-4e49-93d2-76386251cfbb",
+  "requests": [
+    {
+      "path": "/api/land-use-plans",
+      "method": "POST",
+      "bodySha256": "de6b352ea19f551faa44e027e67344350a55c3b5854bd4895c9ba145e490de12",
+      "status": 201,
+      "privateNoStore": true,
+      "replyIntentionallyDropped": true
+    },
+    {
+      "path": "/api/land-use-plans",
+      "method": "POST",
+      "bodySha256": "de6b352ea19f551faa44e027e67344350a55c3b5854bd4895c9ba145e490de12",
+      "status": 200,
+      "privateNoStore": true
+    },
+    {
+      "path": "/api/land-use-plans/creation-requests/cc1d8ab9-a26e-4bfa-9511-50c6a27a2e0b/stop",
+      "method": "POST",
+      "bodySha256": "de6b352ea19f551faa44e027e67344350a55c3b5854bd4895c9ba145e490de12",
+      "status": 200,
+      "privateNoStore": true
+    },
+    {
+      "path": "/api/land-use-plans/creation-requests/6997c1db-0cef-4e64-a62e-06074689aa7a/stop",
+      "method": "POST",
+      "bodySha256": "d30fada9255ef6ddca4cd7bc33912c0c4a1d0d158589b7369ac40ad331ec4e27",
+      "status": 200,
+      "privateNoStore": true,
+      "replyIntentionallyDropped": true
+    },
+    {
+      "path": "/api/land-use-plans/creation-requests/6997c1db-0cef-4e64-a62e-06074689aa7a/stop",
+      "method": "POST",
+      "bodySha256": "d30fada9255ef6ddca4cd7bc33912c0c4a1d0d158589b7369ac40ad331ec4e27",
+      "status": 200,
+      "privateNoStore": true
+    },
+    {
+      "path": "/api/land-use-plans",
+      "method": "POST",
+      "bodySha256": "d30fada9255ef6ddca4cd7bc33912c0c4a1d0d158589b7369ac40ad331ec4e27",
+      "status": 409,
+      "privateNoStore": true
+    },
+    {
+      "path": "/api/land-use-plans",
+      "method": "POST",
+      "bodySha256": "59eb16dceca2df02b7ca60d4de591bf322a85e3bd81b93d1c5cb260d1f112dc4",
+      "status": 409,
+      "privateNoStore": true
+    },
+    {
+      "path": "/api/land-use-plans",
+      "method": "POST",
+      "bodySha256": "de6b352ea19f551faa44e027e67344350a55c3b5854bd4895c9ba145e490de12",
+      "status": 403,
+      "privateNoStore": true
+    },
+    {
+      "path": "/api/land-use-plans",
+      "method": "POST",
+      "bodySha256": "de6b352ea19f551faa44e027e67344350a55c3b5854bd4895c9ba145e490de12",
+      "status": 403,
+      "privateNoStore": true
+    },
+    {
+      "path": "/api/land-use-plans",
+      "method": "POST",
+      "bodySha256": "de6b352ea19f551faa44e027e67344350a55c3b5854bd4895c9ba145e490de12",
+      "status": 403,
+      "privateNoStore": true
+    },
+    {
+      "path": "/api/land-use-plans",
+      "method": "POST",
+      "bodySha256": "de6b352ea19f551faa44e027e67344350a55c3b5854bd4895c9ba145e490de12",
+      "status": 403,
+      "privateNoStore": true
+    },
+    {
+      "path": "/api/land-use-plans/creation-requests/6997c1db-0cef-4e64-a62e-06074689aa7a/stop",
+      "method": "POST",
+      "bodySha256": "99c74014c26b6a74e221d76667e63d78a3aaec452fe436398d3e9f6d81c50af4",
+      "status": 409,
+      "privateNoStore": true
+    },
+    {
+      "path": "/api/land-use-plans/creation-requests/6997c1db-0cef-4e64-a62e-06074689aa7a/stop",
+      "method": "POST",
+      "bodySha256": "d30fada9255ef6ddca4cd7bc33912c0c4a1d0d158589b7369ac40ad331ec4e27",
+      "status": 403,
+      "privateNoStore": true
+    },
+    {
+      "path": "/land-use-plans",
+      "method": "GET",
+      "bodySha256": null,
+      "status": 200,
+      "privateNoStore": false
+    }
+  ],
+  "onePlanAndVersion": true,
+  "exactCreationRetry": true,
+  "exactStopRetry": true,
+  "importedReceiptReconfirmed": true,
+  "stoppedRequestCannotCreate": true,
+  "authenticatedPageResponds": true,
+  "fixturesPreserved": true,
+  "boundary": "Synthetic authenticated production HTTP and native database assertions. Recovery helpers use in-memory Node storage. No rendered browser, native browser storage, downloaded artifact, accessibility, legal, practitioner or scientific acceptance."
+}

@@ -89,14 +89,38 @@ The completed concurrency producer has a retained private journal and must not
 run again. Installed fixture suites remain repeatable inside rolled-back
 transactions. Historical control scripts are preserved as `.txt` files.
 
-## Unproved boundaries
+## Production checks and remaining acceptance
+
+The [production build](creation-workflow/build-status.json) passes on clean,
+unchanged application commit `c047153ad120ff638da80f4f8a1dd00af88db11b`.
+The owned server's process directory and health identity match that build.
+[Authenticated HTTP evidence](creation-workflow/native-http.json) covers 14
+requests against the installed isolated database. It deliberately drops one
+creation reply and one stop reply, then recovers their outcomes through exact
+retries. Native reads confirm one plan and version, the exact creation bytes,
+aligned context and geometry, and one cancellation. A stopped request receives
+409 if it later attempts creation. Changed bytes, account/workspace mismatches,
+foreign origin and agent-write headers receive the expected refusals. Importing
+a confirmed receipt requires another server response. The authenticated index
+returns its creation form. These checks use the real HTTP routes and database,
+but run the recovery helpers in Node with in-memory storage.
 
 Mounted tests use a simulated DOM and do not establish layout, keyboard access,
 native browser storage or usable downloaded files. Database tests do not prove
-the HTTP path. Neither replaces an identified production-build journey from
+the HTTP path by themselves. Neither replaces a production-build journey from
 real navigation at desktop and 390px, with console and artifact review.
-Those checks remain open at this checkpoint. T3 preview reports available but
-its screenshot attempts fail. No alternate browser has been opened.
+Those checks remain open. The [fresh T3 tab](creation-workflow/browser-failure.json)
+loads the landing page at 1280px and reports available, but screenshot and
+text-only snapshot attempts both fail. No alternate browser has been opened.
+The owned server is stopped before this evidence update; its process ID is zero.
+Systemd records exit 143 following the explicit stop, not a running-server crash.
+
+The [integration audit](creation-workflow/integration-audit.json) after the
+application push accounts for 57 local branches, 58 remote branches and 46
+worktrees. Every local branch matches its remote. Eight remote tips remain
+outside main, including this branch. Only the unrelated canonical `.directory`
+file is dirty; there are no stashes. That audit precedes this documentation-only
+follow-up. Current GitHub checks must be inspected separately before merging.
 
 Source-specific distinctions between plan kinds, complete public/export context,
 practicing-planner observation and the remaining M1 cases remain open. This
