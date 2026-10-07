@@ -75,7 +75,7 @@ function Queue({ scope, authorizationId, authorizationIntentSha256, expiresAt, u
       <p>A configured execution worker can process an explicitly queued allowance. Queue custody does not prove that a call ran or that outputs are complete.</p>
       {busy ? <p role="status">Checking execution scheduling…</p> : null}
       {error ? <p role="alert">{error}</p> : null}
-      {queued ? <p role="status">Original execution request is queued. Inspect saved results for provider-call and output status.</p> : checked ? <p>No server queue receipt was found for this allowance.</p> : null}
+      {queued ? <p role="status">Original execution request is queued. Inspect saved results for provider-call and output status.</p> : pending ? <p>Scheduling receipt is unconfirmed. Keep the original command and review scheduling or retry that command.</p> : checked ? <p>No server queue receipt was found for this allowance.</p> : null}
       {pending ? <details><summary>Original scheduling command</summary><pre className="whitespace-pre-wrap break-all text-xs">{pending}</pre></details> : null}
       {blocked ? <Button type="button" variant="outline" disabled={busy} onClick={() => {
         try { preservePendingSynthesisQueue(localStorage, bound); setPending(null); setBlocked(false); setChecked(false); void review(); }

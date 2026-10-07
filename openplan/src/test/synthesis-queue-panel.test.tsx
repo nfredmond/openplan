@@ -32,10 +32,23 @@ describe("explicit staff scheduling", () => {
     expect((screen.getByRole("button", { name: "Request execution under this allowance" }) as HTMLButtonElement).disabled).toBe(true); expect(posts()).toHaveLength(0);
   });
   it("retries the original command after a lost reply even after expiry", async () => {
-    retainPendingSynthesisQueue(localStorage, bound, bytes); mount("2020-01-01T00:00:00Z"); review(); await screen.findByText(/No server queue receipt/);
+    retainPendingSynthesisQueue(localStorage, bound, bytes); mount("2020-01-01T00:00:00Z"); review(); await screen.findByText(/Scheduling receipt is unconfirmed/);
     transport.mockRejectedValueOnce(new Error("lost reply")); fireEvent.click(screen.getByRole("button", { name: "Retry original execution request" })); await screen.findByText("lost reply");
     fireEvent.click(screen.getByRole("button", { name: "Retry original execution request" })); await screen.findByText(/Original execution request is queued/);
     expect(posts().map(([, init]) => init?.body)).toEqual([bytes, bytes]);
+  });
+  it("replaces the earlier empty lookup with uncertainty after a lost write reply", async () => {
+    mount(); review(); await screen.findByText(/No server queue receipt/);
+    transport.mockRejectedValueOnce(new Error("lost acknowledgement"));
+    fireEvent.click(screen.getByRole("button", { name: "Request execution under this allowance" }));
+    await screen.findByText("lost acknowledgement");
+    expect(screen.getByText(/Scheduling receipt is unconfirmed/)).toBeTruthy();
+    expect(screen.queryByText(/No server queue receipt/)).toBeNull();
+    const original = String(posts()[0][1]?.body);
+    fireEvent.click(screen.getByRole("button", { name: "Retry original execution request" }));
+    await screen.findByText(/Original execution request is queued/);
+    expect(screen.queryByText(/Scheduling receipt is unconfirmed/)).toBeNull();
+    expect(posts().map(([, init]) => init?.body)).toEqual([original, original]);
   });
   it("keeps failed lookup distinct from an empty queue", async () => {
     transport.mockResolvedValue(json({}, 503)); mount(); review(); await screen.findByRole("alert");

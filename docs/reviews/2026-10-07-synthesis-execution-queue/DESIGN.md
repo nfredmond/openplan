@@ -515,3 +515,38 @@ All 27 request-panel tests and changed-file lint pass. A harmless comment passes
 restoring the old assertion fails three tests. `save-notice-controls.json`
 retains the results. Browser verification of the new wording awaits the next
 identified build; the prior screenshot remains evidence for the prior build.
+
+
+## Complete segment queue and lost acknowledgement
+
+Build 87d8a3c3 passes webpack, TypeScript and 137 static pages. Its owned runtime
+PID 155763 serves port 3505 from this worktree; health reports that commit. T3
+reloaded it, navigated through the saved source and generation history, and
+recovered the earlier request's queue receipt. At 390px the document width is
+390px. The corrected save notice was then observed when creating a new request.
+
+Fresh request 8ef00aba-f68d-472b-a142-80d16e5f7b84 uses the same retained synthetic
+source. T3 saved its four-attempt allowance c843181c-7985-4e35-868a-e86ee003364b
+and explicitly queued it. A one-use browser fetch wrapper withheld the successful
+POST acknowledgement. The original command remained available, and retrying it
+recovered queue df7ba3b6-4cc9-4a80-b9f6-8b1ba2d23c12. The wrapper was removed
+before retry. Native inspection confirms exactly one queue record and four
+attempts, indices 0 through 3, all under that allowance.
+
+With the exact local endpoint configured, the queue worker made four calls to a
+synthetic provider restricted to prepared task bytes. All four private journals
+are delivered. T3 reports four complete output checks and offers context
+combination, while preserving the meaning and approval caveats. A cursor wrap and
+another populated pass produce no more calls. `segment-browser-acceptance.json`
+and `segment-native-evidence.json` retain identifiers and measured counts.
+This is structural synthetic segment acceptance, not semantic, context, thematic,
+practitioner or public-participant acceptance. The earlier two unobserved attempts
+remain unchanged.
+
+The lost-reply exercise exposed a stale empty-lookup message after the write.
+The panel now displays an unconfirmed scheduling receipt whenever it retains a
+command without a confirmed receipt. Fresh empty lookups still display their
+original empty state. All nine panel tests and lint pass. A harmless comment
+passes, and removing the pending-command distinction causes the regression tests
+to fail. `uncertain-receipt-controls.json` records this check. The latest wording
+correction requires a new browser build; 87d8a3c3 remains the running build.

@@ -1,0 +1,57 @@
+{
+  "at": "2026-10-07T23:54:18.224203+00:00",
+  "build": "87d8a3c3",
+  "requestId": "8ef00aba-f68d-472b-a142-80d16e5f7b84",
+  "authorizationId": "c843181c-7985-4e35-868a-e86ee003364b",
+  "queueId": "df7ba3b6-4cc9-4a80-b9f6-8b1ba2d23c12",
+  "providerCalls": {
+    "calls": [
+      {
+        "at": "2026-10-07T23:53:56.062Z",
+        "taskIndex": 0,
+        "taskSha256": "578e1b7a697aa6006ded7e58360b880e3cc67af14975e4ceb3df29382831d31d"
+      },
+      {
+        "at": "2026-10-07T23:53:56.193Z",
+        "taskIndex": 1,
+        "taskSha256": "cff151a3a1e27ddcef86672fb300a337bef8b7239fafcb13c203e7acd3a5a557"
+      },
+      {
+        "at": "2026-10-07T23:53:56.316Z",
+        "taskIndex": 2,
+        "taskSha256": "c7bf49c3e7c6836af2038d2278e8593392221200750b63f7c625e88515c87ca2"
+      },
+      {
+        "at": "2026-10-07T23:53:56.449Z",
+        "taskIndex": 3,
+        "taskSha256": "6342d8b71a7cfe377f26df6029388e3a12fb5dbdbc9bc75027b57b98d53eeeea"
+      }
+    ]
+  },
+  "providerRequestCount": 4,
+  "journals": [
+    {
+      "phase": "delivered",
+      "taskIndex": 0,
+      "attemptId": "ab534900-5a5c-4244-b239-165a10d8e93a"
+    },
+    {
+      "phase": "delivered",
+      "taskIndex": 1,
+      "attemptId": "41e1559d-9d1a-4b4f-8d1b-1e6398df4d88"
+    },
+    {
+      "phase": "delivered",
+      "taskIndex": 2,
+      "attemptId": "551f8720-004e-4b3e-b210-44187b1cd5a4"
+    },
+    {
+      "phase": "delivered",
+      "taskIndex": 3,
+      "attemptId": "2ab37e25-cecf-41e8-b1ce-f009d136ee62"
+    }
+  ],
+  "lostAcknowledgement": "Successful queue POST response withheld in T3 fetch wrapper; retry original command recovered receipt; wrapper restored before retry.",
+  "replay": "Second queue traversal leaves provider requests at four",
+  "remainingUiIssue": "After lost POST reply, stale No server queue receipt was found message remains until recovery. Correct historical lookup wording or invalidate it after write starts."
+}
