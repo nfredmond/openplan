@@ -123,3 +123,7 @@ These synthetic agent journeys do not establish practitioner or counsel
 acceptance, all geography cases, screen-reader or all-browser behavior, frozen
 edition and publication presentation, or scientific validity. Current GitHub
 checks, main integration and release disposition remain separate work.
+
+The subsequent [checklist wording correction](CONTEXT_COPY_CI.md) retains a
+full-QA failure, unchanged copy guard, corrected sentence and its own build and
+T3 rendering evidence. It does not relabel the earlier source-specific journey.

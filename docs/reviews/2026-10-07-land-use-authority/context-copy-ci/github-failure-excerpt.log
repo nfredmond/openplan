@@ -1,0 +1,33 @@
+2026-10-07T17:42:51.7326895Z  FAIL  src/test/planner-copy-says-the-plain-thing.test.ts > planner copy says the plain thing > uses no term from the ledger more often than the recorded baseline
+2026-10-07T17:42:51.7332568Z AssertionError: A term of art moved in the wrong direction. If a count ROSE, a lane is saying the machine's word for something a planner already has a word for — src/test/helpers/jargon-ledger.ts says what to say instead. If a count FELL, good: lower the number in BASELINE in the same commit, so the improvement is banked and cannot silently come back.: expected { posture: 50, packet: 128, …(42) } to deeply equal { artifact: 43, attribute: 4, …(42) }
+2026-10-07T17:42:51.7333369Z 
+2026-10-07T17:42:51.7333447Z - Expected
+2026-10-07T17:42:51.7333606Z + Received
+2026-10-07T17:42:51.7333680Z 
+2026-10-07T17:42:51.7333780Z @@ -30,11 +30,11 @@
+2026-10-07T17:42:51.7333944Z     "preset": 13,
+2026-10-07T17:42:51.7334116Z     "provenance": 11,
+2026-10-07T17:42:51.7334277Z     "readiness": 33,
+2026-10-07T17:42:51.7334431Z     "record": 249,
+2026-10-07T17:42:51.7334585Z     "registry": 17,
+2026-10-07T17:42:51.7334742Z -   "resolve": 3,
+2026-10-07T17:42:51.7334891Z +   "resolve": 4,
+2026-10-07T17:42:51.7335039Z     "scaffold": 3,
+2026-10-07T17:42:51.7335189Z     "schema": 5,
+2026-10-07T17:42:51.7335335Z     "signal": 8,
+2026-10-07T17:42:51.7335481Z     "spine": 9,
+2026-10-07T17:42:51.7335641Z     "study area": 21,
+2026-10-07T17:42:51.7335725Z 
+2026-10-07T17:42:51.7335972Z  ❯ src/test/planner-copy-says-the-plain-thing.test.ts:283:7
+2026-10-07T17:42:51.7366386Z     281|         "FELL, good: lower the number in BASELINE in the same commit, …
+2026-10-07T17:42:51.7367260Z     282|         "improvement is banked and cannot silently come back."
+2026-10-07T17:42:51.7367925Z     283|     ).toEqual(BASELINE);
+2026-10-07T17:42:51.7368414Z        |       ^
+2026-10-07T17:42:51.7368805Z     284|   });
+2026-10-07T17:42:51.7369182Z     285| });
+2026-10-07T17:42:51.7369456Z 
+2026-10-07T17:42:51.7369789Z ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+2026-10-07T17:42:51.7370084Z 
+2026-10-07T17:42:51.7374140Z 
+2026-10-07T17:42:51.7417912Z  Test Files  1 failed | 1462 passed | 92 skipped (1555)
+2026-10-07T17:42:51.7506235Z       Tests  1 failed | 18847 passed | 1544 skipped (20392)
