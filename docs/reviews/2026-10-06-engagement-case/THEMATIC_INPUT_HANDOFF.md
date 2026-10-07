@@ -145,3 +145,43 @@ T3 reports an available but hidden preview after an explicit open. Its image
 capture still fails. No image, console or current thematic UI acceptance is
 claimed. The complete thematic journey, usable artifacts and human evidence
 remain open; this follow-up does not release a version or close M9b.
+
+## Production recovery at `53a6fae7`
+
+The clean, unchanged [production build](thematic-inputs/ui/build-53a6.json)
+passes. The owned server on port 3485 reports `53a6fae7ffea`; process 2826346
+runs from this application's worktree. The server is stopped after collection,
+before documentation or further code edits.
+
+The [browser recovery record](thematic-inputs/ui/browser-53a6.json) follows the
+front door, Overview, Engagement, the synthetic campaign, Analysis, the saved
+source and its disclosed request history. One selected context out of two keeps
+preparation disabled. The unselected contrasting contribution has no eligible
+context on the first history page. The older page finds `34ca0f3f`; inspection
+confirms its 13-frame result.
+
+An explicit choice returns native 201, with its acknowledgement withheld from
+the interface. The browser retains the exact command and offers manual retry.
+After reload, discovery confirms both saved server choices and independently
+enables preparation; the original uncertain command remains available beside its
+saved reference. Explicit retry returns 200 with replay status, identical body
+hash `a48743fc87ae05a75036998321231433bd7133b73db845dfde3a67f0e05bacd5`,
+and the same receipt. Recovery clears after that verified reply. No preparation
+is queued and no provider permission is granted. The earlier one-choice native
+record remains a dated pre-save observation; the fixture now has two choices.
+
+A fresh 390px reload has a 390px document and a 300px input section. Its measured
+buttons stay within the viewport. Both server choices survive reload. These DOM
+and storage observations do not establish pixels, keyboard, pointer or console
+acceptance. T3 image capture fails at desktop and mobile widths.
+
+Inspection also finds an unresolved usability defect. The bounded raw-JSON
+preview begins with covered-part identifiers, which can consume all 1600
+characters before any wording appears. The next correction must show generated
+notes and uncertainties while preserving the complete original output and its
+checksums. This checkpoint remains unfinished for interface acceptance.
+
+The [fresh integration audit](thematic-inputs/ui/integration-audit-53a6.json)
+accounts for 42 worktrees and 53 local branches. Every local branch matches its
+GitHub branch, with no stashes or missing remotes. Five engagement branches remain
+outside main. Only the canonical checkout's unrelated `.directory` is untracked.
