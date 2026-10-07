@@ -1,5 +1,5 @@
 import { createServiceRoleClient } from "../../src/lib/supabase/server";
-import { runSynthesisExecutionService, synthesisExecutionOptions } from "../../src/lib/engagement/synthesis-execution-service";
+import { runSynthesisExecutionService, synthesisExecutionOptions, synthesisExecutionDiagnostics } from "../../src/lib/engagement/synthesis-execution-service";
 
 async function main() {
   const options = synthesisExecutionOptions(process.argv.slice(2), process.env);
@@ -12,6 +12,7 @@ async function main() {
   try {
     const status = await runSynthesisExecutionService({ ...options, service: createServiceRoleClient(), signal: stopping.signal,
       report: result => {
+        for (const diagnostic of synthesisExecutionDiagnostics(result)) console.error(diagnostic);
         const unconfirmed = result.outcomes.filter(item => item.state === "unconfirmed").length;
         console.log(`Execution pass: ${result.outcomes.length} queue entries visited; ${unconfirmed} schedules unconfirmed. Cursor ${result.queueWrapped ? "wrapped" : "continues"}. Inspect retained task results for output status. This is not full source completion or staff approval.`);
       },

@@ -6,6 +6,12 @@ import { providerApiWorkerTarget } from "@/lib/assistant/provider-api-worker";
 import { runSynthesisExecutionQueuePass } from "./synthesis-execution-queue-coordinator";
 
 type Pass = Awaited<ReturnType<typeof runSynthesisExecutionQueuePass>>;
+/** Diagnostics never grant retries or imply that a refused call was unsent. */
+export function synthesisExecutionDiagnostics(result: Pass): string[] {
+  return result.outcomes.filter(item => item.state === "unconfirmed" && item.reason === "endpoint_policy")
+    .map(item => `Queue ${item.queueId}: provider endpoint policy refused execution. Check the worker process OPENPLAN_AI_LOCAL_ENDPOINTS and outbound host policy. Preserve its journals and inspect saved task results before any retry; dispatch may already be retained.`);
+}
+
 export function synthesisExecutionOptions(argv: string[], environment: Partial<NodeJS.ProcessEnv>) {
   if (argv.length === 1 && argv[0] === "--help") return { help: true as const };
   if (argv.length > 1 || (argv.length === 1 && argv[0] !== "--once")) throw new Error("execution_worker_options_invalid");

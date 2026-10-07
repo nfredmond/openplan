@@ -1,4 +1,6 @@
 // @vitest-environment node
+import { ProviderApiTransportError } from "../lib/assistant/provider-api-transport";
+import { synthesisExecutionDiagnostics } from "../lib/engagement/synthesis-execution-service";
 import { createHash } from "node:crypto";
 import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -45,6 +47,21 @@ describe("durable execution page coordinator", () => {
     const f = await fixture(); mocks.run.mockRejectedValueOnce(new Error("unknown"));
     expect((await f.run()).outcomes.map(x => x.state)).toEqual(["unconfirmed", "schedule_returned"]);
     expect(mocks.run).toHaveBeenCalledTimes(2);
+  });
+  it.each(["api_endpoint_denied", "api_endpoint_policy_invalid"])("reports safe operator guidance for %s", async code => {
+    const f = await fixture(); mocks.run.mockRejectedValueOnce(new ProviderApiTransportError(code));
+    const result = await f.run();
+    expect(result.outcomes[0]).toEqual({ queueId: id(1), state: "unconfirmed", reason: "endpoint_policy" });
+    expect(synthesisExecutionDiagnostics(result)).toEqual([`Queue ${id(1)}: provider endpoint policy refused execution. Check the worker process OPENPLAN_AI_LOCAL_ENDPOINTS and outbound host policy. Preserve its journals and inspect saved task results before any retry; dispatch may already be retained.`]);
+    expect(mocks.run).toHaveBeenCalledTimes(2);
+  });
+  it.each([new Error("secret provider body"), new ProviderApiTransportError("secret provider body"),
+    { code: "api_endpoint_denied", message: "secret provider body" }])("does not publish unknown or forged error details", async error => {
+    const f = await fixture(); mocks.run.mockRejectedValueOnce(error);
+    const result = await f.run();
+    expect(result.outcomes[0]).toEqual({ queueId: id(1), state: "unconfirmed" });
+    expect(synthesisExecutionDiagnostics(result)).toEqual([]);
+    expect(JSON.stringify(result)).not.toContain("secret");
   });
   it("resumes an interrupted entry before discovery with unchanged command", async () => {
     const f = await fixture(); mocks.run.mockImplementationOnce(async () => f.controller.abort());

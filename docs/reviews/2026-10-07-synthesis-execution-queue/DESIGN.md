@@ -479,3 +479,23 @@ Integration PR #138 separately merged as main commit 4d6ef970 after all eight
 PR checks passed, including the full restore drill. Its post-merge CI, RLS,
 upgrade-path and worker runs were queued when this checkpoint was written.
 This queue candidate is not part of that merge and is not declared released.
+
+
+## Operator diagnosis after the populated pass
+
+The coordinator now exposes a fixed `endpoint_policy` reason only for typed
+transport errors `api_endpoint_denied` and `api_endpoint_policy_invalid`. The
+CLI names the queue entry and directs operators to the worker process endpoint
+and outbound-host policy. It also warns that dispatch may already be retained
+and requires preserving journals and inspecting results before retrying.
+Unknown errors remain unconfirmed without arbitrary error text, URLs, secrets
+or source material in the report. This diagnostic changes no dispatch authority,
+worker journal state or retry rule.
+
+All 40 coordinator and execution-service tests pass together. Changed-file lint
+and whitespace checks pass. A harmless comment passes; removing diagnosis fails
+two assertions, while classifying unknown or forged errors as policy refusals
+fails three assertions. `diagnostic-controls.json` retains those results. These
+tests use real private journals with mocked schedulers. They do not establish
+live CLI output on a new refusal or solve the pre-dispatch validation boundary.
+The production browser build remains 27835bf6 pending a later rebuild.
