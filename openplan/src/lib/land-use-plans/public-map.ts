@@ -1,4 +1,4 @@
-import { createServiceRoleClient } from "@/lib/supabase/server";
+import { createServiceRoleClient, type createClient } from "@/lib/supabase/server";
 import { WORKSPACE_GIS_BBOX_DRAW_LIMIT } from "@/lib/workspace-gis/coverage";
 
 type Bbox = [number, number, number, number];
@@ -35,21 +35,26 @@ export async function loadPublicDesignationMap(
   frozenSnapshot: Record<string, unknown>,
   designationId: string,
   bbox: Bbox,
+  scope?: { client: Awaited<ReturnType<typeof createClient>>; workspaceId: string },
 ) {
   const designation = (records(frozenSnapshot.designations) as FrozenDesignation[])
     .find((candidate) => candidate.id === designationId);
   const versionId = designation?.layer_version_id;
   const expectedFeatureHash = designation?.layer_version_evidence?.feature_hash;
-  if (!designation || !versionId || !expectedFeatureHash) return { ok: false as const, reason: "not_found" as const };
+  if (!designation) return { ok: false as const, reason: "not_found" as const };
+  if (!versionId || !expectedFeatureHash) return { ok: false as const, reason: "incomplete" as const };
   const publicFields = Array.isArray(designation.public_field_keys)
     ? designation.public_field_keys.filter((field): field is string => typeof field === "string")
     : [];
 
-  const service = createServiceRoleClient();
-  const versionResult = await service.from("workspace_gis_layer_versions")
-    .select("id, feature_hash, ingest_status").eq("id", versionId).eq("ingest_status", "ready").maybeSingle();
+  const service = scope?.client ?? createServiceRoleClient();
+  let query = service.from("workspace_gis_layer_versions")
+    .select("id, workspace_id, feature_hash, ingest_status").eq("id", versionId).eq("ingest_status", "ready");
+  if (scope) query = query.eq("workspace_id", scope.workspaceId);
+  const versionResult = await query.maybeSingle();
   if (versionResult.error) return { ok: false as const, reason: "read_failure" as const };
-  if (!versionResult.data || versionResult.data.feature_hash !== expectedFeatureHash) {
+  if (!versionResult.data || versionResult.data.id !== versionId || versionResult.data.ingest_status !== "ready"
+    || versionResult.data.feature_hash !== expectedFeatureHash || (scope && versionResult.data.workspace_id !== scope.workspaceId)) {
     return { ok: false as const, reason: "incomplete" as const };
   }
   const { data, error } = await service.rpc("workspace_gis_features_in_bbox", {
@@ -59,7 +64,15 @@ export async function loadPublicDesignationMap(
   });
   if (error) return { ok: false as const, reason: "read_failure" as const };
   const rows = (data ?? []) as BboxRow[];
-  const matchedCount = Number.parseInt(String(rows[0]?.matched_count ?? 0), 10) || 0;
+  // The RPC returns a count row even for an empty view. Missing or inconsistent
+  // counts cannot establish that no features intersect the requested geography.
+  const rawCount = rows[0]?.matched_count;
+  const matchedCount = typeof rawCount === "number" ? rawCount
+    : typeof rawCount === "string" && /^\d+$/.test(rawCount) ? Number(rawCount) : Number.NaN;
+  if (!Number.isSafeInteger(matchedCount) || matchedCount < 0
+    || rows.some(row => String(row.matched_count) !== String(rawCount))) {
+    return { ok: false as const, reason: "incomplete" as const };
+  }
   const tooDenseToDraw = publicMapIsTooDense(matchedCount);
   const features = tooDenseToDraw ? [] : rows.flatMap((row) => {
     if (!row.id || !row.geometry_geojson || typeof row.geometry_geojson !== "object") return [];
@@ -67,6 +80,7 @@ export async function loadPublicDesignationMap(
     const attributes = pickPublicAttributes(source, publicFields);
     return [{ type: "Feature" as const, id: row.id, geometry: row.geometry_geojson, properties: { featureIndex: row.feature_index ?? 0, attributes } }];
   });
+  if (!tooDenseToDraw && features.length !== matchedCount) return { ok: false as const, reason: "incomplete" as const };
   return {
     ok: true as const,
     payload: {

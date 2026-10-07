@@ -1,11 +1,12 @@
 import { LandUsePlanReportDetail } from "@/components/reports/land-use-plan-report-detail";
 import { LandUsePlanReportAdoption } from "@/components/reports/land-use-plan-report-adoption";
 import { LandUsePlanPublicContext } from "@/components/land-use-plans/land-use-plan-public-context";
-import { readFrozenPlanIdentity } from "@/lib/land-use-plans/frozen-identity";
+import { loadAdoptedReportSnapshot } from "@/lib/land-use-plans/report-snapshot";
 import { createClient } from "@/lib/supabase/server";
 
 type Report = {
   id: string;
+  workspace_id: string;
   land_use_plan_id?: string | null;
   title: string;
   report_type: string;
@@ -30,25 +31,13 @@ export async function LandUsePlanReportPage({ report }: { report: Report }) {
   const artifact = artifactsResult.data;
   const metadata = artifact.metadata_json && typeof artifact.metadata_json === "object" && !Array.isArray(artifact.metadata_json)
     ? artifact.metadata_json as Record<string, unknown> : {};
-  const frozen = metadata.frozenSnapshot && typeof metadata.frozenSnapshot === "object" && !Array.isArray(metadata.frozenSnapshot)
-    ? metadata.frozenSnapshot as Record<string, unknown> : null;
-  const versionId = typeof metadata.versionId === "string" ? metadata.versionId : null;
-  // Bind this artifact to its recorded version, including superseded historical editions.
-  const versionResult = versionId ? await supabase.from("land_use_plan_versions")
-    .select("id, plan_id, version_number, state, content_hash, published_report_id")
-    .eq("id", versionId).eq("plan_id", report.land_use_plan_id).maybeSingle() : null;
-  const version = versionResult?.data;
-  const identity = report.report_type === "land_use_plan_packet" && metadata.kind !== "land_use_plan_implementation_report"
-    && metadata.landUsePlanId === report.land_use_plan_id && frozen && !versionResult?.error
-    && version && version.id === versionId && version.plan_id === report.land_use_plan_id
-    && ["adopted", "superseded", "repealed"].includes(version.state)
-    && version.published_report_id === report.id && metadata.contentHash === version.content_hash && version.content_hash
-    ? readFrozenPlanIdentity(frozen, report.land_use_plan_id, version.id, version.version_number, version.content_hash) : null;
-  if (!identity || !frozen || !version) {
+  const snapshot = await loadAdoptedReportSnapshot(supabase, report, metadata);
+  if (!snapshot) {
     return <div className="mx-auto max-w-3xl p-8"><h1 className="text-3xl font-semibold">This plan report could not be verified</h1><p role="alert" className="mt-4">The saved report does not match its recorded plan version. OpenPlan withheld the report content. This does not mean the agency withdrew the plan.</p></div>;
   }
+  const { identity, frozen } = snapshot;
   return <LandUsePlanReportDetail report={report}
     plan={{ id: identity.id, title: identity.title, authority_label: identity.authorityLabel, geography_label: identity.geographyLabel }}
     artifact={artifact} retainedContext={<LandUsePlanPublicContext snapshot={frozen} />}
-    retainedAdoption={await LandUsePlanReportAdoption({ supabase, metadata, planId: identity.id, versionId: version.id, contentHash: version.content_hash })} />;
+    retainedAdoption={await LandUsePlanReportAdoption({ supabase, metadata, planId: identity.id, versionId: snapshot.versionId, contentHash: snapshot.contentHash })} />;
 }

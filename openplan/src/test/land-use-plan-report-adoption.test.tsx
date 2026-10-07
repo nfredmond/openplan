@@ -10,7 +10,7 @@ const planId = "22000000-0000-4000-8000-000000000001";
 const versionId = "22000000-0000-4000-8000-000000000002";
 const reportId = "22000000-0000-4000-8000-000000000003";
 const otherId = "22000000-0000-4000-8000-000000000004";
-const report = { id: reportId, land_use_plan_id: planId, title: "SYNTHETIC report title", report_type: "land_use_plan_packet", summary: "Long hash " + "a".repeat(64), generated_at: "2026-10-07" };
+const report = { id: reportId, workspace_id: otherId, land_use_plan_id: planId, title: "SYNTHETIC report title", report_type: "land_use_plan_packet", summary: "Long hash " + "a".repeat(64), generated_at: "2026-10-07" };
 let frozen: Record<string, unknown>;
 let metadata: Record<string, unknown>;
 let rows: Record<string, Record<string, unknown> | null>;
@@ -28,7 +28,7 @@ beforeEach(() => {
   rows = {
     land_use_plans: { id: planId, title: "SYNTHETIC later title", authority_label: "SYNTHETIC later authority", geography_label: "SYNTHETIC later geography" },
     report_artifacts: { id: "artifact", generated_at: "2026-10-07", metadata_json: metadata },
-    land_use_plan_versions: { id: versionId, plan_id: planId, version_number: 2, state: "adopted", content_hash: hashFrozenRecord(frozen), published_report_id: reportId },
+    land_use_plan_versions: { id: versionId, workspace_id: otherId, plan_id: planId, version_number: 2, state: "adopted", content_hash: hashFrozenRecord(frozen), published_report_id: reportId },
   };
   manifest = { planId, versionId, versionContentHash: metadata.contentHash, reviewReleaseId: otherId,
     decision: { kind: "amendment", body: "SYNTHETIC recorded decision body", instrumentType: "SYNTHETIC resolution", instrumentIdentifier: "TEST-2", vote: "SYNTHETIC no actual vote", decidedOn: "2026-10-07", effectiveOn: "2026-10-08" },
