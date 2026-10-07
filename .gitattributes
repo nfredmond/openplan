@@ -4,3 +4,6 @@
 
 # Preserve captured verification output, including tool-generated padding.
 /docs/reviews/2026-10-07-land-use-authority/creation-workflow/** whitespace=-blank-at-eol,-blank-at-eof
+
+# Preserve raw plan-kind verification output.
+/docs/reviews/2026-10-07-land-use-authority/plan-kind-rules/** whitespace=-blank-at-eol,-blank-at-eof
