@@ -46,7 +46,7 @@ function Cancellation({ userId, workspaceId, campaignId, sourceId, sourceSha256,
       retainPendingSynthesisGeneration(localStorage, command); setPending(command);
       const result = await sendPendingSynthesisGeneration(localStorage, command, fetch, controller.signal);
       if (!isCurrent()) return;
-      restore(); setNotice(result.cleanupError ?? "Cancellation recorded. Earlier requests and results remain retained."); onCancelled(result);
+      restore(); setNotice(result.cleanupError ?? "Cancellation saved. Earlier requests and results remain retained."); onCancelled(result);
     } catch (cause) {
       if (isCurrent()) {
         if (cause instanceof SynthesisGenerationSaveError && [401, 403].includes(cause.status)) { setPending(null); setCopies([]); setReason(""); setBlocked(true); onAccessLost(); }
@@ -65,9 +65,9 @@ function Cancellation({ userId, workspaceId, campaignId, sourceId, sourceSha256,
   const pendingHere = pending?.command.requestId === requestId;
   return <section aria-label="Cancel analysis request" className="min-w-0 space-y-3 border-t border-border pt-3 [&_button]:h-auto [&_button]:min-h-10 [&_button]:max-w-full [&_button]:whitespace-normal">
     <h4 className="font-semibold">Stop this analysis request</h4>
-    <p className="max-w-prose text-sm">Cancellation prevents new work under this request. It can be recorded while the original save is unconfirmed. Earlier contributions, approvals and results remain retained; a provider call already sent may still incur charges.</p>
+    <p className="max-w-prose text-sm">Cancellation prevents new work under this request. You can cancel while the original save is unconfirmed. Earlier contributions, approvals and results remain retained; a provider call already sent may still incur charges.</p>
     {error ? <p role="alert">{error}</p> : null}{notice ? <p role="status">{notice}</p> : null}
-    {cancelled ? <p>Cancellation is recorded for this request.</p> : actorId !== userId ? <p>Only the original staff requester can cancel this request.</p> : <>
+    {cancelled ? <p>Cancellation is saved for this request.</p> : actorId !== userId ? <p>Only the original staff requester can cancel this request.</p> : <>
       <label className="block text-sm">Reason for cancelling<Textarea className="mt-1" maxLength={4000} value={reason} disabled={busy || Boolean(pending) || blocked} onChange={event => setReason(event.target.value)} /></label>
       <Button type="button" variant="outline" disabled={!ready || blocked || busy || Boolean(pending) || !reason.trim()} onClick={cancel}>Cancel analysis request</Button>
     </>}

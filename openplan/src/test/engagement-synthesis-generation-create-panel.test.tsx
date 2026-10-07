@@ -98,9 +98,9 @@ describe("staff analysis request creation", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save analysis request" }));
     fireEvent.change(await screen.findByLabelText("Reason for cancelling"), { target: { value: "SYNTHETIC stop while save is uncertain" } });
     fireEvent.click(screen.getByRole("button", { name: "Cancel analysis request" }));
-    await screen.findByText("Cancellation is recorded for this request.");
+    await screen.findByText("Cancellation is saved for this request.");
     await act(async () => finishCreate(json(f.receipt(createBody))));
-    expect(screen.getByText("Cancellation is recorded for this request.")).toBeTruthy();
+    expect(screen.getByText("Cancellation is saved for this request.")).toBeTruthy();
     expect(await screen.findByRole("button", { name: "Queue preparation" })).toBeDisabled();
   });
   it("pins provider choice and retains exact intent before saving, then offers preparation without executing it", async () => {

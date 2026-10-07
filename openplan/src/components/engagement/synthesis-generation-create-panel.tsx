@@ -116,7 +116,7 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
       {error ? <p role="alert">{error}</p> : null}{choicesError ? <p role="alert">{choicesError}</p> : null}
       {blocked ? <p>Browser recovery needs attention. Preserve the original before saving another request.</p> : null}
       {receipt ? <div className="space-y-3">
-        <p role="status">{receipt.cancellation ? "Cancellation recorded for this analysis request." : "Analysis request saved. No provider execution is authorized."}</p>
+        <p role="status">{receipt.cancellation ? "Cancellation saved for this analysis request." : "Analysis request saved. No provider execution is authorized."}</p>
         <p className="text-sm break-all">Request {receipt.state.request?.id ?? receipt.cancellation?.requestId}{receipt.intent ? ` · Model ${receipt.intent.modelId}` : ""}</p>
         {receipt.cleanupError ? <p role="alert">{receipt.cleanupError}</p> : null}
         {receipt.state.request ? <SynthesisPreparationPanel {...scope} requestId={receipt.state.request.id} intentSha256={receipt.state.request.intentSha256}
@@ -136,7 +136,7 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
         <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" disabled={loading || busy} onClick={() => void loadChoices()}>Refresh analysis providers</Button>
           {next !== null ? <Button type="button" variant="outline" disabled={loading || busy} onClick={() => void loadChoices(next)}>Load more analysis providers</Button> : null}
           <Button type="button" disabled={!canCreate} onClick={create}>Save analysis request</Button></div>
-        <a className="text-sm underline" href="/workspace">Manage saved APIs in workspace settings</a>
+        <a className="text-sm underline" href="/workspace">Manage saved APIs in settings</a>
         {loading ? <p role="status">Reading saved API choices…</p> : null}
         {!loading && !choicesError && !connections.some(row => !row.revoked_at && row.current_revision) ? <p>No saved API choices are available. Staff review remains available below.</p> : null}
       </>}
