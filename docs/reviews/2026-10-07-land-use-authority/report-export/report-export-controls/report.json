@@ -1,0 +1,300 @@
+{
+  "state": "complete",
+  "cases": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "bypass-all-verification",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds implementation download with missing register"
+    },
+    {
+      "name": "bypass-implementation",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds implementation download with changed saved status"
+    },
+    {
+      "name": "bypass-decision",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds adoption download with changed retained decision"
+    },
+    {
+      "name": "bypass-auth-error",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds failed authentication with user present"
+    },
+    {
+      "name": "ignore-artifact-plan-signal",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds adoption download with wrong kind with artifact plan"
+    },
+    {
+      "name": "ignore-artifact-kind-signal",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds adoption download with wrong kind with artifact kind"
+    },
+    {
+      "name": "force-unrelated-validation",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "preserves unrelated report downloads"
+    },
+    {
+      "name": "omit-artifact-projection",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "downloads the retained adopted plan"
+    },
+    {
+      "name": "omit-artifact-filter",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "downloads the retained adopted plan"
+    },
+    {
+      "name": "reverse-artifact-order",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "downloads the retained adopted plan"
+    },
+    {
+      "name": "omit-artifact-limit",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "downloads the retained adopted plan"
+    },
+    {
+      "name": "omit-attachment-header",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "downloads the retained adopted plan"
+    },
+    {
+      "name": "omit-no-store",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "downloads the retained adopted plan"
+    },
+    {
+      "name": "false-content-type",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "downloads the retained adopted plan"
+    },
+    {
+      "name": "false-success-invalid-id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "rejects invalid report id"
+    },
+    {
+      "name": "false-success-signed-out",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds signed out"
+    },
+    {
+      "name": "false-success-report-error",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds report error"
+    },
+    {
+      "name": "false-success-report-missing",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds missing report"
+    },
+    {
+      "name": "false-success-membership",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds missing membership"
+    },
+    {
+      "name": "false-success-artifact-error",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds artifact error"
+    },
+    {
+      "name": "false-success-artifact-missing",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds missing artifact"
+    },
+    {
+      "name": "extracted-legacy-not-disclosed",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "discloses a legacy"
+    },
+    {
+      "name": "extracted-partial-record-as-legacy",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds manifest without hash"
+    },
+    {
+      "name": "extracted-partial-record-as-legacy-2",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds hash without manifest"
+    },
+    {
+      "name": "extracted-ignore-native-plan_id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native plan"
+    },
+    {
+      "name": "extracted-ignore-native-version_id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native version"
+    },
+    {
+      "name": "extracted-ignore-native-version_content_hash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native content hash"
+    },
+    {
+      "name": "extracted-ignore-native-adoption_manifest_hash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native manifest hash"
+    },
+    {
+      "name": "extracted-ignore-native-review_release_id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong native review release"
+    },
+    {
+      "name": "extracted-ignore-manifest-planId",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong manifest plan"
+    },
+    {
+      "name": "extracted-ignore-manifest-versionId",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong manifest version"
+    },
+    {
+      "name": "extracted-ignore-manifest-versionContentHash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong manifest content hash"
+    },
+    {
+      "name": "extracted-ignore-manifest-reviewReleaseId",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong artifact review release"
+    },
+    {
+      "name": "extracted-ignore-full-record-decision",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed artifact decision"
+    },
+    {
+      "name": "extracted-ignore-full-record-evidence",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed ancillary evidence"
+    },
+    {
+      "name": "extracted-order-sensitive-comparison",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "accepts reordered native keys"
+    },
+    {
+      "name": "extracted-ignore-read-error",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds unreadable native decision"
+    },
+    {
+      "name": "extracted-fabricate-missing-native",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds missing native decision"
+    },
+    {
+      "name": "extracted-accept-invalid-date",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds invalid decision shape"
+    },
+    {
+      "name": "extracted-accept-invalid-hash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds invalid manifest hash"
+    },
+    {
+      "name": "extracted-omit-vote-missing",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "labels missing vote and effective date"
+    },
+    {
+      "name": "extracted-omit-effective-missing",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "labels missing vote and effective date"
+    },
+    {
+      "name": "extracted-omit-native-projection",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders the retained decision"
+    },
+    {
+      "name": "extracted-omit-query-plan_id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders the retained decision"
+    },
+    {
+      "name": "extracted-omit-query-version_id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders the retained decision"
+    },
+    {
+      "name": "extracted-omit-query-adoption_manifest_hash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders the retained decision"
+    }
+  ],
+  "restored": true,
+  "sourceHashes": {
+    "src/app/api/reports/[reportId]/provenance/route.ts": "f270d8202c3d0fbedaf981bca6fa8623e946ef0fbdd21f8ae07d466e1b8d9fca",
+    "src/lib/land-use-plans/report-adoption.ts": "057735f0c2d5667c8af38a8980977d97cdbec1d467a155fa439791b3a4ed790d",
+    "src/components/reports/land-use-plan-report-adoption.tsx": "de33e19bb72d29a2e1701cdaaf623392067cc16400846fbf0b7016847d5b06bc"
+  },
+  "blindCategory": "Projected query mocks and component output, not live RLS, download transport, printer behavior or practitioner acceptance."
+}
