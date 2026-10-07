@@ -7,11 +7,15 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { readBytesWithLimitStreaming } from "@/lib/http/body-limit";
 import { authorizeSynthesisExecution } from "@/lib/engagement/synthesis-execution-server";
 import { readSynthesisExecutionPreview } from "@/lib/engagement/synthesis-execution-preview-server";
-import { synthesisExecutionCommandSchema, synthesisExecutionScopeSchema } from "@/lib/engagement/synthesis-execution-records";
+import { readSynthesisExecutionHistory } from "@/lib/engagement/synthesis-execution-history-server";
+import { synthesisExecutionCommandSchema, synthesisExecutionScopeSchema, synthesisExecutionCursorSchema } from "@/lib/engagement/synthesis-execution-records";
 import { SynthesisGenerationRequestError } from "@/lib/engagement/synthesis-generation-requests-server";
 
 const commandSchema = synthesisExecutionScopeSchema.omit({ campaignId: true, workspaceId: true, actorId: true })
   .extend(synthesisExecutionCommandSchema.shape).strict();
+const historyQuerySchema = z.object({ mode: z.literal("history"), requestId: z.string().uuid(),
+  beforeId: synthesisExecutionCursorSchema.shape.id.optional(), beforeCreatedAt: synthesisExecutionCursorSchema.shape.createdAt.optional(),
+}).strict().refine(query => Boolean(query.beforeId) === Boolean(query.beforeCreatedAt), "Both cursor fields are required");
 const headers = { "Cache-Control": "private, no-store" };
 const messages = {
   invalid: "Review the exact authorization and its resource limits before trying again.",
@@ -77,18 +81,24 @@ export async function GET(request: NextRequest, context: Context) {
   try {
     const { campaignId } = z.object({ campaignId: z.string().uuid() }).parse(await context.params);
     const entries = [...request.nextUrl.searchParams];
-    if (entries.length !== 2 || entries.filter(([key]) => key === "requestId").length !== 1 ||
-      entries.filter(([key]) => key === "stage").length !== 1) return failure("invalid", 400);
-    const query = z.object({ requestId: z.string().uuid(), stage: z.enum(["segment", "context", "thematic"]) }).strict().parse(Object.fromEntries(entries));
+    if (new Set(entries.map(([key]) => key)).size !== entries.length) return failure("invalid", 400);
+    const raw = Object.fromEntries(entries);
+    const query = raw.mode === "history" ? historyQuerySchema.parse(raw)
+      : z.object({ requestId: z.string().uuid(), stage: z.enum(["segment", "context", "thematic"]) }).strict().parse(raw);
     const { client, workspaceId } = await staff(request, campaignId);
     let summary;
-    try { summary = await readSynthesisExecutionPreview(client, createServiceRoleClient(), { ...query, campaignId, workspaceId }, request.signal); }
+    try {
+      summary = "mode" in query
+        ? await readSynthesisExecutionHistory(client, createServiceRoleClient(), { campaignId, workspaceId, requestId: query.requestId,
+          before: query.beforeId && query.beforeCreatedAt ? { id: query.beforeId, createdAt: query.beforeCreatedAt } : null }, request.signal)
+        : await readSynthesisExecutionPreview(client, createServiceRoleClient(), { ...query, campaignId, workspaceId }, request.signal);
+    }
     catch (cause) {
       // Malformed native records are unavailable evidence, not bad user input.
       if (cause instanceof z.ZodError || cause instanceof SyntaxError) throw new SynthesisGenerationRequestError("unavailable", 503);
       throw cause;
     }
-    audit.info("authorization_plan_read", { requestId: query.requestId, stage: query.stage });
+    audit.info("authorization_plan_read", { requestId: query.requestId, ...("stage" in query ? { stage: query.stage } : { mode: query.mode }) });
     return NextResponse.json(summary, { headers });
   } catch (cause) {
     const failed = classify(cause);

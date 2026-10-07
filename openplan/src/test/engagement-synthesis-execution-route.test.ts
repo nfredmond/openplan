@@ -1,11 +1,12 @@
 import { createHash } from "node:crypto";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ client: vi.fn(), service: vi.fn(), preview: vi.fn(), user: vi.fn(), access: vi.fn(), rpc: vi.fn(), info: vi.fn(), warn: vi.fn() }));
+const mocks = vi.hoisted(() => ({ client: vi.fn(), service: vi.fn(), preview: vi.fn(), history: vi.fn(), user: vi.fn(), access: vi.fn(), rpc: vi.fn(), info: vi.fn(), warn: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.client, createServiceRoleClient: mocks.service }));
 vi.mock("@/lib/engagement/api", () => ({ loadCampaignAccess: mocks.access }));
 vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: () => ({ info: mocks.info, warn: mocks.warn }) }));
 vi.mock("@/lib/engagement/synthesis-execution-preview-server", () => ({ readSynthesisExecutionPreview: mocks.preview }));
+vi.mock("@/lib/engagement/synthesis-execution-history-server", () => ({ readSynthesisExecutionHistory: mocks.history }));
 import { GET, POST } from "@/app/api/engagement/campaigns/[campaignId]/synthesis/execution/route";
 import { SynthesisGenerationRequestError } from "@/lib/engagement/synthesis-generation-requests-server";
 import { z } from "zod";
@@ -38,12 +39,35 @@ beforeEach(() => {
   mocks.client.mockResolvedValue(client);
   mocks.service.mockReturnValue({ syntheticService: true });
   mocks.preview.mockResolvedValue({ schemaVersion: 1, campaignId, workspaceId, requestId, stage: "segment" });
+  mocks.history.mockResolvedValue({ schemaVersion: 1, campaignId, workspaceId, requestId, entries: [], nextCursor: null });
   mocks.user.mockResolvedValue({ data: { user: { id: actorId } }, error: null });
   mocks.access.mockResolvedValue({ campaign: { workspace_id: workspaceId }, allowed: true, error: null });
   mocks.rpc.mockImplementation(async name => ({ data: name === "read_engagement_synthesis_generation_request" ? state : receipt, error: null }));
 });
 
 describe("staff execution authorization HTTP boundary", () => {
+  it.each([false, true])("discovers saved authority with an optional exact cursor: %s", async older => {
+    const cursor = older ? { id: id(9), createdAt: "2026-10-02T12:00:00.123456+00:00" } : null;
+    const params = new URLSearchParams({ mode: "history", requestId,
+      ...(cursor ? { beforeId: cursor.id, beforeCreatedAt: cursor.createdAt } : {}) });
+    const response = await GET(get(params.toString()), context);
+    expect(response.status).toBe(200); expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(mocks.history).toHaveBeenCalledExactlyOnceWith(client, { syntheticService: true },
+      { campaignId, workspaceId, requestId, before: cursor }, expect.any(AbortSignal));
+    expect(mocks.preview).not.toHaveBeenCalled(); expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it.each([`mode=history&requestId=${requestId}&beforeId=${id(9)}`,
+    `mode=history&requestId=${requestId}&beforeCreatedAt=2026-10-02T00:00:00Z`,
+    `mode=history&requestId=${requestId}&stage=segment`, `mode=history&requestId=${requestId}&mode=history`,
+    `mode=history&requestId=${requestId}&beforeId=invalid&beforeCreatedAt=invalid`])("refuses malformed history cursor %s", async query => {
+    expect((await GET(get(query), context)).status).toBe(400);
+    expect(mocks.service).not.toHaveBeenCalled(); expect(mocks.history).not.toHaveBeenCalled();
+  });
+  it("keeps malformed private history unavailable rather than reporting an empty list", async () => {
+    mocks.history.mockRejectedValue(new SyntaxError("PRIVATE malformed grant"));
+    const response = await GET(get(`mode=history&requestId=${requestId}`), context);
+    expect(response.status).toBe(503); expect(JSON.stringify(await response.json())).not.toContain("PRIVATE");
+  });
   it.each(["segment", "context", "thematic"])("retains exact %s authority without service access or provider execution", async stage => {
     const response = await POST(post({ ...command, stage }), context);
     expect(response.status).toBe(200); expect(await response.json()).toEqual(receipt);
@@ -68,13 +92,14 @@ describe("staff execution authorization HTTP boundary", () => {
       if (kind === "denied") mocks.access.mockResolvedValue({ campaign: { workspace_id: workspaceId }, allowed: false, error: null });
       if (kind.startsWith("user-")) headers["x-openplan-expected-user"] = kind.endsWith("missing") ? "" : id(99);
       if (kind.startsWith("workspace-")) headers["x-openplan-expected-workspace"] = kind.endsWith("missing") ? "" : id(99);
-      for (const response of [await POST(post(command, headers), context), await GET(get(undefined, headers), context)]) {
+      for (const response of [await POST(post(command, headers), context), await GET(get(undefined, headers), context),
+        await GET(get(`mode=history&requestId=${requestId}`, headers), context)]) {
         expect(response.status).toBe(kind === "anonymous" || kind === "auth-error" ? 401 : kind === "access-error" ? 503 : 403);
         expect(response.headers.get("cache-control")).toBe("private, no-store");
         expect(JSON.stringify(await response.json())).not.toContain("PRIVATE");
       }
       expect(mocks.rpc).not.toHaveBeenCalled();
-      expect(mocks.service).not.toHaveBeenCalled(); expect(mocks.preview).not.toHaveBeenCalled();
+      expect(mocks.service).not.toHaveBeenCalled(); expect(mocks.preview).not.toHaveBeenCalled(); expect(mocks.history).not.toHaveBeenCalled();
     });
   it.each(["x-openplan-assistant-execution-source", "x-openplan-assistant-input-hash", "x-openplan-assistant-approval-id"])("refuses unsupported agent authority %s", async header => {
     expect((await POST(post(command, { [header]: "" }), context)).status).toBe(403);

@@ -161,3 +161,41 @@ authorization controls and native grant recovery remain open.
 Nathaniel confirms that the separate benefit-cost agent owns
 `work/bca-workbench-20261006`. Its worktree is excluded from these edits and must
 be included in the next integration audit.
+
+## Execution discovery and browser recovery checkpoint
+
+Saved execution authority is discoverable through a bounded current-staff read.
+The private query selects request identity, original intent/hash and creation
+time, with no credential columns. Pages use creation time and UUID together;
+the cursor preserves native fractional-second precision. Access is checked
+before and after the query. Expired grants and cancellation remain visible as
+history. An unavailable read never becomes an empty list.
+
+Browser recovery retains the exact allowance before POST and checks its original
+receipt bytes and checksum. A confirmed command stays in its slot until staff
+explicitly preserves it. Confirmation does not silently permit a new allowance.
+Lost replies, old expiry, access errors, replaced commands and storage failures
+retain the original recovery path. Preservation saves unreadable originals and
+newer in-memory commands before releasing the slot, and does not cancel native
+authority or resolve an unknown provider outcome.
+
+Five focused files pass 143 checks. TypeScript and targeted ESLint pass. Harmless
+comments pass. Targeted mutations fail for missing private-query scope or
+projection, unstable pagination, lost access, erased cancellation, missing
+browser pins, incomplete cursors, replacement allowances, failed readback,
+incorrect receipt checksums, automatic cleanup and archive races. See
+[history mutations](execution-history-mutations.json) and
+[recovery mutations](execution-recovery-mutations.json). An initial wrong-request
+mutation removed only a redundant check and remained rejected by the receipt
+parser. The revised mutation removes both bindings and fails the intended check.
+All mutations are restored. These are simulated boundary checks, not native RLS
+or browser acceptance of execution controls.
+
+The owned isolated stack returns one existing original grant for each synthetic
+segment, context and thematic plan. Authenticated exact replay returns the same
+ID, original intent bytes and checksum for each. See the
+[history read](execution-native-history.json) and
+[original grant replay](execution-native-replay.json). No new authority is
+created, no worker is started and no provider is called. The route and browser
+recovery still need a visible staff review control and its identified-build
+journey. New-grant native recovery and the full engagement case remain open.

@@ -1,0 +1,115 @@
+{
+  "scope": "Simulated native RPC and HTTP authority checks; not native RLS or browser acceptance.",
+  "cases": [
+    {
+      "name": "history-harmless-comment",
+      "path": "openplan/src/lib/engagement/synthesis-execution-history-server.ts",
+      "test": "src/test/engagement-synthesis-execution-history.test.ts",
+      "pattern": null,
+      "expected": "pass",
+      "exitCode": 0,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-history-harmless-comment.log"
+    },
+    {
+      "name": "history-wrong-request",
+      "path": "openplan/src/lib/engagement/synthesis-execution-history-server.ts",
+      "test": "src/test/engagement-synthesis-execution-history.test.ts",
+      "pattern": "private grant data: request",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-history-wrong-request.log"
+    },
+    {
+      "name": "history-missing-projection",
+      "path": "openplan/src/lib/engagement/synthesis-execution-history-server.ts",
+      "test": "src/test/engagement-synthesis-execution-history.test.ts",
+      "pattern": "without credentials",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-history-missing-projection.log"
+    },
+    {
+      "name": "history-missing-filter",
+      "path": "openplan/src/lib/engagement/synthesis-execution-history-server.ts",
+      "test": "src/test/engagement-synthesis-execution-history.test.ts",
+      "pattern": "without credentials",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-history-missing-filter.log"
+    },
+    {
+      "name": "history-missing-order",
+      "path": "openplan/src/lib/engagement/synthesis-execution-history-server.ts",
+      "test": "src/test/engagement-synthesis-execution-history.test.ts",
+      "pattern": "without credentials",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-history-missing-order.log"
+    },
+    {
+      "name": "history-lost-access",
+      "path": "openplan/src/lib/engagement/synthesis-execution-history-server.ts",
+      "test": "src/test/engagement-synthesis-execution-history.test.ts",
+      "pattern": "access changes during",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-history-lost-access.log"
+    },
+    {
+      "name": "history-erased-cancellation",
+      "path": "openplan/src/lib/engagement/synthesis-execution-history-server.ts",
+      "test": "src/test/engagement-synthesis-execution-history.test.ts",
+      "pattern": "retains cancellation arriving",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-history-erased-cancellation.log"
+    },
+    {
+      "name": "history-no-cursor",
+      "path": "openplan/src/lib/engagement/synthesis-execution-history-server.ts",
+      "test": "src/test/engagement-synthesis-execution-history.test.ts",
+      "pattern": "timestamp precision",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-history-no-cursor.log"
+    },
+    {
+      "name": "history-route-harmless-comment",
+      "path": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/execution/route.ts",
+      "test": "src/test/engagement-synthesis-execution-route.test.ts",
+      "pattern": null,
+      "expected": "pass",
+      "exitCode": 0,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-history-route-harmless-comment.log"
+    },
+    {
+      "name": "history-route-no-user-pin",
+      "path": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/execution/route.ts",
+      "test": "src/test/engagement-synthesis-execution-route.test.ts",
+      "pattern": "user-change",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-history-route-no-user-pin.log"
+    },
+    {
+      "name": "history-route-incomplete-cursor",
+      "path": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/execution/route.ts",
+      "test": "src/test/engagement-synthesis-execution-route.test.ts",
+      "pattern": "malformed history cursor",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-history-route-incomplete-cursor.log"
+    }
+  ]
+}

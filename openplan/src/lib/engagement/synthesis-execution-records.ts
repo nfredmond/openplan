@@ -21,6 +21,13 @@ export const synthesisExecutionCommandSchema = z.object({ authorizationId: id, i
 const receiptSchema = z.object({ schemaVersion: z.literal(1), id, requestId: id,
   intentText: z.string().max(4096), intentSha256: hash }).strict();
 
+export const synthesisExecutionCursorSchema = z.object({ id, createdAt: z.string().datetime({ offset: true }) }).strict();
+export const synthesisExecutionHistorySchema = z.object({ schemaVersion: z.literal(1), campaignId: id, workspaceId: id,
+  requestId: id, actorId: id, sourceId: id, sourceSha256: hash, requestIntentSha256: hash, cancelled: z.boolean(),
+  entries: z.array(receiptSchema.extend({ createdAt: z.string().datetime({ offset: true }) }).strict()).max(25),
+  nextCursor: synthesisExecutionCursorSchema.nullable(),
+}).strict();
+
 /** Parse the exact saved authorization. This neither verifies its checksum nor
  * establishes current access, provider prices, dispatch or accepted analysis.
  */
