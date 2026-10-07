@@ -51,6 +51,7 @@ export function GrantsPageIntroHeader({
   return (
     <PageHeader
       title={navLabel("/grants")}
+      actions={<a className="inline-flex min-h-11 items-center rounded-md border border-input px-4 py-2 text-sm font-medium" href="#grants-benefit-cost">Prepare a benefit-cost analysis</a>}
       description="Every grant you are watching, chasing, or already won — with the money you are still owed — in one place instead of a spreadsheet and a folder of emails."
     >
       <div className="module-summary-grid cols-6">

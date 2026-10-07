@@ -223,7 +223,8 @@ const EXPECTED_RESTRICTIVE_POLICIES = 251;
 // finalize a bundle. The exact guided-run link table and the two governed-
 // package tables add three role-aware INSERT policies, so no restrictive gate
 // is needed.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 277;
+// BCA input versions add one role-aware INSERT; native catalog confirms 278 writes.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 278;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

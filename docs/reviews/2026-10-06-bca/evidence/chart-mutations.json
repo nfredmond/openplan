@@ -1,0 +1,16 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "exit": 0,
+      "expectedOutcomeObserved": true
+    },
+    {
+      "case": "zero-bar",
+      "exit": 1,
+      "expectedOutcomeObserved": true
+    }
+  ],
+  "restored": true,
+  "limits": "DOM bar widths, not visual accessibility acceptance."
+}

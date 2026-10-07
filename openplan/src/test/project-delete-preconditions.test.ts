@@ -69,6 +69,16 @@ describe("project delete preconditions", () => {
     expect(assessment.hasCommitments).toBe(false);
   });
 
+  it("preserves immutable BCA versions without suggesting removal of their history", () => {
+    const assessment = assessProjectDelete({ project_bca_versions: 2 }, { projectId: "p1" });
+    expect(assessment.deletable).toBe(false);
+    expect(assessment.blockers[0]).toMatchObject({
+      table: "project_bca_versions", count: 2, behavior: "cascade", href: "/grants/bca/p1",
+    });
+    expect(assessment.alternative).toContain("Saved benefit-cost analyses stay intact");
+    expect(assessment.alternative).not.toContain("remove the attached records");
+  });
+
   it("refuses a project that carries work, and says where it lives", () => {
     const assessment = assessProjectDelete({ reports: 2, model_runs: 5 }, { projectId: "p1" });
 
