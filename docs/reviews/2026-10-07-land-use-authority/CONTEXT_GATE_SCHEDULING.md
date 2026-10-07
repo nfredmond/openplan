@@ -32,3 +32,11 @@ seed `175639`. Changed-file ESLint passes. No new production build or native
 database run is necessary for this test-only correction. The existing build
 and workflow evidence retain their original scope. Fresh complete GitHub
 checks and rendered acceptance remain required before landing the PR.
+
+## Draft-custody assertion follow-up
+
+The [next shuffled job](https://github.com/nfredmond/openplan/actions/runs/37637839003/job/112848630728) at `4cabefbb` passes the corrected context-editor test but fails the draft-custody test's initial freeze-button assertion, with seed `717404`. It passes 18,643 tests and skips 1,534. The [failure excerpt](creation-workflow/draft-gate-scheduling/ci-failure-excerpt.log) preserves that separate failure. The complete QA job passes at this commit.
+
+The draft-custody test now waits for the enabled freeze button before editing and after saving. Its checks still require immediate blocking for unsaved content and no freeze request while blocked. Production code is unchanged.
+
+The [six controls](creation-workflow/draft-gate-scheduling/controls/report.json) pass baseline, harmless comment and a controlled 50-millisecond initial context notification delay. The old assertion fails under that delay. A permanently blocked context gate and a workbench that ignores dirty content each fail the named test. Source bytes are restored. This isolates the assertion's timing assumption, not the complete GitHub scheduler. The [three related suites](creation-workflow/draft-gate-scheduling/shuffled.log) pass all 44 tests with CI's seed. Browser acceptance remains open.

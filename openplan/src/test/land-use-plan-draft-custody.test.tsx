@@ -156,7 +156,7 @@ describe('Live workbench draft custody', () => {
   it('blocks freezing until all edited content is actually saved', async () => {
     const { fields, buttons, writes } = await setup();
     const freeze = screen.getByRole('button', { name: 'Freeze public draft' });
-    expect(freeze).toBeEnabled();
+    await waitFor(() => expect(freeze).toBeEnabled());
     fireEvent.change(fields[1], { target: { value: 'Unsubmitted section' } });
     expect(freeze).toBeDisabled();
     expect(screen.queryByText('The public draft is ready to freeze.')).not.toBeInTheDocument();
@@ -165,7 +165,7 @@ describe('Live workbench draft custody', () => {
     expect(writes).toHaveLength(0);
     fireEvent.click(buttons[1]);
     await waitFor(() => expect(refresh).toHaveBeenCalled());
-    expect(freeze).toBeEnabled();
+    await waitFor(() => expect(freeze).toBeEnabled());
     expect(screen.getByText('The public draft is ready to freeze.')).toBeVisible();
     expect(screen.getByRole('status')).toHaveTextContent('Context, section and content-node changes are saved');
   });
