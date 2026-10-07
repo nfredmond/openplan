@@ -1,0 +1,105 @@
+{
+  "scope": "Simulated native RPC and HTTP authority checks; not native RLS or browser acceptance.",
+  "cases": [
+    {
+      "name": "panel-harmless-comment",
+      "path": "openplan/src/components/engagement/synthesis-execution-panel.tsx",
+      "test": "src/test/engagement-synthesis-execution-panel.test.tsx",
+      "pattern": null,
+      "expected": "pass",
+      "exitCode": 0,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-panel-harmless-comment.log"
+    },
+    {
+      "name": "panel-unacknowledged-allowance",
+      "path": "openplan/src/components/engagement/synthesis-execution-panel.tsx",
+      "test": "src/test/engagement-synthesis-execution-panel.test.tsx",
+      "pattern": "requires explicit charge acknowledgement",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-panel-unacknowledged-allowance.log"
+    },
+    {
+      "name": "panel-automatic-replay",
+      "path": "openplan/src/components/engagement/synthesis-execution-panel.tsx",
+      "test": "src/test/engagement-synthesis-execution-panel.test.tsx",
+      "pattern": "without writing and retries only",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-panel-automatic-replay.log"
+    },
+    {
+      "name": "panel-erased-recovery-error",
+      "path": "openplan/src/components/engagement/synthesis-execution-panel.tsx",
+      "test": "src/test/engagement-synthesis-execution-panel.test.tsx",
+      "pattern": "preserves unreadable recovery",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-panel-erased-recovery-error.log"
+    },
+    {
+      "name": "panel-private-preview-remains",
+      "path": "openplan/src/components/engagement/synthesis-execution-panel.tsx",
+      "test": "src/test/engagement-synthesis-execution-panel.test.tsx",
+      "pattern": "clears private values",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-panel-private-preview-remains.log"
+    },
+    {
+      "name": "browser-harmless-comment",
+      "path": "openplan/src/lib/engagement/synthesis-execution-browser.ts",
+      "test": "src/test/engagement-synthesis-execution-browser.test.ts",
+      "pattern": null,
+      "expected": "pass",
+      "exitCode": 0,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-browser-harmless-comment.log"
+    },
+    {
+      "name": "browser-wrong-source",
+      "path": "openplan/src/lib/engagement/synthesis-execution-browser.ts",
+      "test": "src/test/engagement-synthesis-execution-browser.test.ts",
+      "pattern": "substituted sourceSha256",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-browser-wrong-source.log"
+    },
+    {
+      "name": "browser-wrong-stage",
+      "path": "openplan/src/lib/engagement/synthesis-execution-browser.ts",
+      "test": "src/test/engagement-synthesis-execution-browser.test.ts",
+      "pattern": "different preparation stage",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-browser-wrong-stage.log"
+    },
+    {
+      "name": "browser-unchecked-hash",
+      "path": "openplan/src/lib/engagement/synthesis-execution-browser.ts",
+      "test": "src/test/engagement-synthesis-execution-browser.test.ts",
+      "pattern": "altered history hash",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-browser-unchecked-hash.log"
+    },
+    {
+      "name": "browser-unchecked-cursor",
+      "path": "openplan/src/lib/engagement/synthesis-execution-browser.ts",
+      "test": "src/test/engagement-synthesis-execution-browser.test.ts",
+      "pattern": "altered history cursor-id",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-browser-unchecked-cursor.log"
+    }
+  ]
+}

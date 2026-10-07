@@ -1,0 +1,168 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-server.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts (23 tests | 4 failed) 23ms
+     × brackets segment history with current native access and omits private text 9ms
+     × refuses an invalid retained plan before reporting unstarted work 3ms
+     × keeps task counts unknown for not_prepared segment preparation 1ms
+     × keeps task counts unknown for staging segment preparation 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > brackets segment history with current native access and omits private text
+AssertionError: expected "vi.fn()" to be called once with arguments: [ Array(3) ]
+
+Number of calls: 0
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts:46:49
+     44|     expect(result.counts.map(row => row.count)).toEqual([1, 1, 1]);
+     45|     expect(JSON.stringify(result)).not.toContain("PRIVATE");
+     46|     if (stage === "segment") expect(mocks.plan).toHaveBeenCalledExactl…
+       |                                                 ^
+     47|     else expect(mocks.plan).not.toHaveBeenCalled();
+     48|     expect(client.rpc).not.toHaveBeenCalled(); expect(service.rpc).not…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > refuses an invalid retained plan before reporting unstarted work
+AssertionError: promise resolved "{ …(17) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "actorId": "c7610000-0000-4000-8000-000000000004",
++   "campaignId": "c7610000-0000-4000-8000-000000000001",
++   "cancelled": false,
++   "checkedAt": "2026-10-07T06:41:44.686Z",
++   "counts": [
++     {
++       "count": 1,
++       "disposition": "validated_output",
++     },
++     {
++       "count": 1,
++       "disposition": "awaiting_result",
++     },
++     {
++       "count": 1,
++       "disposition": "not_started",
++     },
++   ],
++   "interpretation": "not_assessed",
++   "manifestSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
++   "requestId": "c7610000-0000-4000-8000-000000000003",
++   "requestIntentSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
++   "schemaVersion": 1,
++   "selectionSequence": 2,
++   "sourceId": "c7610000-0000-4000-8000-000000000005",
++   "sourceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++   "stage": "segment",
++   "status": "incomplete",
++   "taskCount": 3,
++   "workspaceId": "c7610000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts:64:23
+     62|   it("refuses an invalid retained plan before reporting unstarted work…
+     63|     mocks.plan.mockRejectedValue(new Error("Saved analysis plan differ…
+     64|     await expect(run()).rejects.toThrow("plan differs");
+       |                       ^
+     65|   });
+     66|   it.each(["not_prepared", "staging"])("keeps task counts unknown for …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > keeps task counts unknown for not_prepared segment preparation
+AssertionError: expected { …(17) } to match object { status: 'not_prepared', …(3) }
+(13 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "counts": [],
+-   "selectionSequence": null,
+-   "status": "not_prepared",
+-   "taskCount": null,
++   "counts": [
++     {
++       "count": 1,
++       "disposition": "validated_output",
++     },
++     {
++       "count": 1,
++       "disposition": "awaiting_result",
++     },
++     {
++       "count": 1,
++       "disposition": "not_started",
++     },
++   ],
++   "selectionSequence": 2,
++   "status": "incomplete",
++   "taskCount": 3,
+  }
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts:68:25
+     66|   it.each(["not_prepared", "staging"])("keeps task counts unknown for …
+     67|     mocks.plan.mockResolvedValue(preparation);
+     68|     expect(await run()).toMatchObject({ status: preparation, taskCount…
+       |                         ^
+     69|   });
+     70|   it.each(["requester", "campaign", "workspace", "selection", "job", "…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-server.test.ts > compact progress from original-output reconstruction > keeps task counts unknown for staging segment preparation
+AssertionError: expected { …(17) } to match object { status: 'staging', …(3) }
+(13 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "counts": [],
+-   "selectionSequence": null,
+-   "status": "staging",
+-   "taskCount": null,
++   "counts": [
++     {
++       "count": 1,
++       "disposition": "validated_output",
++     },
++     {
++       "count": 1,
++       "disposition": "awaiting_result",
++     },
++     {
++       "count": 1,
++       "disposition": "not_started",
++     },
++   ],
++   "selectionSequence": 2,
++   "status": "incomplete",
++   "taskCount": 3,
+  }
+
+ ❯ src/test/engagement-synthesis-progress-server.test.ts:68:25
+     66|   it.each(["not_prepared", "staging"])("keeps task counts unknown for …
+     67|     mocks.plan.mockResolvedValue(preparation);
+     68|     expect(await run()).toMatchObject({ status: preparation, taskCount…
+       |                         ^
+     69|   });
+     70|   it.each(["requester", "campaign", "workspace", "selection", "job", "…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 19 passed (23)
+   Start at  23:41:44
+   Duration  587ms (transform 61ms, setup 54ms, import 87ms, tests 23ms, environment 326ms)

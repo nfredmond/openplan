@@ -1,0 +1,315 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-panel.test.tsx
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-panel.test.tsx (11 tests | 1 failed) 1409ms
+     × refuses a response from another source 1012ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-panel.test.tsx > saved analysis progress view > refuses a response from another source
+TestingLibraryElementError: Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"Saved analysis results"[39m
+      [33mclass[39m=[32m"min-w-0 space-y-3 border-t border-border pt-3"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal text-left"[39m
+        [33mdata-size[39m=[32m"default"[39m
+        [33mdata-slot[39m=[32m"button"[39m
+        [33mdata-variant[39m=[32m"outline"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [0mInspect saved analysis results[0m
+      [36m</button>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"min-w-0 space-y-3"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"max-w-prose text-sm text-muted-foreground"[39m
+        [36m>[39m
+          [0mThis reads saved output and its original records. It does not start a worker, retry a provider call or approve findings.[0m
+        [36m</p>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+          [33mdata-size[39m=[32m"default"[39m
+          [33mdata-slot[39m=[32m"button"[39m
+          [33mdata-variant[39m=[32m"outline"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mRefresh results[0m
+        [36m</button>[39m
+        [36m<h4[39m
+          [33mclass[39m=[32m"font-semibold"[39m
+        [36m>[39m
+          [0mAnalysis results are incomplete[0m
+        [36m</h4>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"max-w-prose text-sm"[39m
+        [36m>[39m
+          [0mReview the task states below. A missing reply does not establish whether a provider call is still running or stopped. Do not resend an uncertain call.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+        [36m>[39m
+          [0mChecked [0m
+          [36m<time[39m
+            [33mdatetime[39m=[32m"2026-10-07T01:00:00Z"[39m
+          [36m>[39m
+            [0m10/6/2026, 6:00:00 PM[0m
+          [36m</time>[39m
+          [0m. This is a saved snapshot, not a live worker connection.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm"[39m
+        [36m>[39m
+          [0m3[0m
+          [0m tasks accounted for in this saved selection.[0m
+        [36m</p>[39m
+        [36m<dl[39m
+          [33mclass[39m=[32m"space-y-2 text-sm"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex min-w-0 flex-wrap justify-between gap-x-4 gap-y-1"[39m
+          [36m>[39m
+            [36m<dt[39m
+              [33mclass[39m=[32m"min-w-0 break-words"[39m
+            [36m>[39m
+              [0mComplete output checks[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0m1[0m
+            [36m</dd>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex min-w-0 flex-wrap justify-between gap-x-4 gap-y-1"[39m
+          [36m>[39m
+            [36m<dt[39m
+              [33mclass[39m=[32m"min-w-0 break-words"[39m
+            [36m>[39m
+              [0mSelected attempt without retained output[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0m1[0m
+            [36m</dd>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex min-w-0 flex-wrap justify-between gap-x-4 gap-y-1"[39m
+          [36m>[39m
+            [36m<dt[39m
+              [33mclass[39m=[32m"min-w-0 break-words"[39m
+            [36m>[39m
+              [0mNo selected attempt[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0m1[0m
+            [36m</dd>[39m
+          [36m</div>[39m
+        [36m</dl>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"max-w-prose text-sm text-muted-foreground"[39m
+        [36m>[39m
+          [0mOutput checks establish retained bytes and required structure. They do not establish meaning, representative support, staff approval or publication.[0m
+        [36m</p>[39m
+        [36m<details[39m
+          [33mclass[39m=[32m"text-sm"[39m
+        [36m>[39m
+          [36m<summary[39m
+            [33mclass[39m=[32m"cursor-pointer py-1"[39m
+          [36m>[39m
+            [0mOriginal selection reference[0m
+          [36m</summary>[39m
+          [36m<dl[39m
+            [33mclass[39m=[32m"mt-2 space-y-1 break-all"[39m
+          [36m>[39m
+            [36m<dt>[39m
+              [0mRequest[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0mc7630000-0000-4000-8000-000000000003[0m
+            [36m</dd>[39m
+            [36m<dt>[39m
+              [0mSelection sequence[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0m2[0m
+            [36m</dd>[39m
+            [36m<dt>[39m
+              [0mHistory SHA-256[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0mcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc[0m
+            [36m</dd>[39m
+          [36m</dl>[39m
+        [36m</details>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"Saved analysis results"[39m
+      [33mclass[39m=[32m"min-w-0 space-y-3 border-t border-border pt-3"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal text-left"[39m
+        [33mdata-size[39m=[32m"default"[39m
+        [33mdata-slot[39m=[32m"button"[39m
+        [33mdata-variant[39m=[32m"outline"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [0mInspect saved analysis results[0m
+      [36m</button>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"min-w-0 space-y-3"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"max-w-prose text-sm text-muted-foreground"[39m
+        [36m>[39m
+          [0mThis reads saved output and its original records. It does not start a worker, retry a provider call or approve findings.[0m
+        [36m</p>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+          [33mdata-size[39m=[32m"default"[39m
+          [33mdata-slot[39m=[32m"button"[39m
+          [33mdata-variant[39m=[32m"outline"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mRefresh results[0m
+        [36m</button>[39m
+        [36m<h4[39m
+          [33mclass[39m=[32m"font-semibold"[39m
+        [36m>[39m
+          [0mAnalysis results are incomplete[0m
+        [36m</h4>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"max-w-prose text-sm"[39m
+        [36m>[39m
+          [0mReview the task states below. A missing reply does not establish whether a provider call is still running or stopped. Do not resend an uncertain call.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+        [36m>[39m
+          [0mChecked [0m
+          [36m<time[39m
+            [33mdatetime[39m=[32m"2026-10-07T01:00:00Z"[39m
+          [36m>[39m
+            [0m10/6/2026, 6:00:00 PM[0m
+          [36m</time>[39m
+          [0m. This is a saved snapshot, not a live worker connection.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm"[39m
+        [36m>[39m
+          [0m3[0m
+          [0m tasks accounted for in this saved selection.[0m
+        [36m</p>[39m
+        [36m<dl[39m
+          [33mclass[39m=[32m"space-y-2 text-sm"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex min-w-0 flex-wrap justify-between gap-x-4 gap-y-1"[39m
+          [36m>[39m
+            [36m<dt[39m
+              [33mclass[39m=[32m"min-w-0 break-words"[39m
+            [36m>[39m
+              [0mComplete output checks[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0m1[0m
+            [36m</dd>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex min-w-0 flex-wrap justify-between gap-x-4 gap-y-1"[39m
+          [36m>[39m
+            [36m<dt[39m
+              [33mclass[39m=[32m"min-w-0 break-words"[39m
+            [36m>[39m
+              [0mSelected attempt without retained output[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0m1[0m
+            [36m</dd>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex min-w-0 flex-wrap justify-between gap-x-4 gap-y-1"[39m
+          [36m>[39m
+            [36m<dt[39m
+              [33mclass[39m=[32m"min-w-0 break-words"[39m
+            [36m>[39m
+              [0mNo selected attempt[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0m1[0m
+            [36m</dd>[39m
+          [36m</div>[39m
+        [36m</dl>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"max-w-prose text-sm text-muted-foreground"[39m
+        [36m>[39m
+          [0mOutput checks establish retained bytes and required structure. They do not establish meaning, representative support, staff approval or publication.[0m
+        [36m</p>[39m
+        [36m<details[39m
+          [33mclass[39m=[32m"text-sm"[39m
+        [36m>[39m
+          [36m<summary[39m
+            [33mclass[39m=[32m"cursor-pointer py-1"[39m
+          [36m>[39m
+            [0mOriginal selection reference[0m
+          [36m</summary>[39m
+          [36m<dl[39m
+            [33mclass[39m=[32m"mt-2 space-y-1 break-all"[39m
+          [36m>[39m
+            [36m<dt>[39m
+              [0mRequest[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0mc7630000-0000-4000-8000-000000000003[0m
+            [36m</dd>[39m
+            [36m<dt>[39m
+              [0mSelection sequence[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0m2[0m
+            [36m</dd>[39m
+            [36m<dt>[39m
+              [0mHistory SHA-256[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0mcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc[0m
+            [36m</dd>[39m
+          [36m</dl>[39m
+        [36m</details>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/test/engagement-synthesis-progress-panel.test.tsx:66:18
+     64|   it("refuses a response from another source", async () => {
+     65|     transport.mockResolvedValue(json({ ...summary, sourceSha256: "d".r…
+     66|     await screen.findByRole("alert"); expect(screen.queryByText(/tasks…
+       |                  ^
+     67|   });
+     68|   it("ignores late denial from a previous account", async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  23:42:25
+   Duration  2.12s (transform 60ms, setup 55ms, import 150ms, tests 1.41s, environment 349ms)

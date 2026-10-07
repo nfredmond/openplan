@@ -1,0 +1,99 @@
+{
+  "at": "2026-10-07T06:15:03.024Z",
+  "boundary": "Read-only historical source/plan reconstruction. Does not repair or authorize any record.",
+  "results": [
+    {
+      "requestId": "a0a2c622-46cb-4498-b3b9-1d7da97526a6",
+      "retainedHeaderHash": "5b98d2efb625c05f90079c8fea0521ec3503c93411336fae06a4f6bc8cbeb52f",
+      "reconstructedHeaderHash": "9dd3b1f1a84b7fb2a6af8265ff87f446ba41ac7ab2ad752cb05ae57efbc2e590",
+      "exactHeaderText": false,
+      "differences": [
+        {
+          "key": "taskManifestSha256",
+          "retained": "dbb0d6471de9c9dcf186370fc81632d63d319116afe17a87c6058514ce505898",
+          "reconstructed": "411fafe274d77efb72bca4a75b3b05cf3f9653ff066e3cedcedc496c007033da"
+        },
+        {
+          "key": "tailSha256",
+          "retained": "4bac81769de5fe2273ae732516642e697d676420272a586ef6e5afcf9d79ebb4",
+          "reconstructed": "6079489e92a0f7783963fda252e8b6d621aa657fdecc3586aec34a95474e214d"
+        }
+      ],
+      "tasks": [
+        {
+          "index": 0,
+          "exactBytes": false,
+          "retainedHash": "9aa994f69ea188e09efd1e48cbe1aa6f0c02ede995dbbeac4d44be478c85360f",
+          "reconstructedHash": "578e1b7a697aa6006ded7e58360b880e3cc67af14975e4ceb3df29382831d31d",
+          "retainedBytes": 9728,
+          "reconstructedBytes": 9728
+        },
+        {
+          "index": 1,
+          "exactBytes": false,
+          "retainedHash": "a1edb323f943abe98ffba15586903d80958509a1e87b97ea0d80801175689a19",
+          "reconstructedHash": "cff151a3a1e27ddcef86672fb300a337bef8b7239fafcb13c203e7acd3a5a557",
+          "retainedBytes": 13758,
+          "reconstructedBytes": 13758
+        },
+        {
+          "index": 2,
+          "exactBytes": false,
+          "retainedHash": "f9b73efe784dc8ff7e1a2002c1c742c0fcaf352b67a6a71ac7acb1f92a6326b6",
+          "reconstructedHash": "c7bf49c3e7c6836af2038d2278e8593392221200750b63f7c625e88515c87ca2",
+          "retainedBytes": 12718,
+          "reconstructedBytes": 12718
+        },
+        {
+          "index": 3,
+          "exactBytes": false,
+          "retainedHash": "dde4b827eb071eb1be07fd49d9df500832e63e783e6801d5fe2cc6059fa003a6",
+          "reconstructedHash": "6342d8b71a7cfe377f26df6029388e3a12fb5dbdbc9bc75027b57b98d53eeeea",
+          "retainedBytes": 7728,
+          "reconstructedBytes": 7728
+        }
+      ]
+    },
+    {
+      "requestId": "54c0e22b-2fde-45b6-8b0c-94a2ffc2928f",
+      "retainedHeaderHash": "966d0224d377bf08fa68b97c1524619714a3ed4c326d9166ffed431674b72fa9",
+      "reconstructedHeaderHash": "966d0224d377bf08fa68b97c1524619714a3ed4c326d9166ffed431674b72fa9",
+      "exactHeaderText": true,
+      "differences": [],
+      "tasks": [
+        {
+          "index": 0,
+          "exactBytes": true,
+          "retainedHash": "578e1b7a697aa6006ded7e58360b880e3cc67af14975e4ceb3df29382831d31d",
+          "reconstructedHash": "578e1b7a697aa6006ded7e58360b880e3cc67af14975e4ceb3df29382831d31d",
+          "retainedBytes": 9728,
+          "reconstructedBytes": 9728
+        },
+        {
+          "index": 1,
+          "exactBytes": true,
+          "retainedHash": "cff151a3a1e27ddcef86672fb300a337bef8b7239fafcb13c203e7acd3a5a557",
+          "reconstructedHash": "cff151a3a1e27ddcef86672fb300a337bef8b7239fafcb13c203e7acd3a5a557",
+          "retainedBytes": 13758,
+          "reconstructedBytes": 13758
+        },
+        {
+          "index": 2,
+          "exactBytes": true,
+          "retainedHash": "c7bf49c3e7c6836af2038d2278e8593392221200750b63f7c625e88515c87ca2",
+          "reconstructedHash": "c7bf49c3e7c6836af2038d2278e8593392221200750b63f7c625e88515c87ca2",
+          "retainedBytes": 12718,
+          "reconstructedBytes": 12718
+        },
+        {
+          "index": 3,
+          "exactBytes": true,
+          "retainedHash": "6342d8b71a7cfe377f26df6029388e3a12fb5dbdbc9bc75027b57b98d53eeeea",
+          "reconstructedHash": "6342d8b71a7cfe377f26df6029388e3a12fb5dbdbc9bc75027b57b98d53eeeea",
+          "retainedBytes": 7728,
+          "reconstructedBytes": 7728
+        }
+      ]
+    }
+  ]
+}

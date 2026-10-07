@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-thematic-choice-route.test.ts (34 tests | 1 failed | 33 skipped) 17ms
+     × refuses changed-workspace before privileged reconstruction 16ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-thematic-choice-route.test.ts > staff thematic input HTTP boundary > refuses changed-workspace before privileged reconstruction
+AssertionError: expected 200 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 200
+
+ ❯ src/test/engagement-synthesis-thematic-choice-route.test.ts:79:31
+     77|     if (kind.endsWith("workspace")) override["x-openplan-expected-work…
+     78|     for (const response of [await GET(get(query, override), context), …
+     79|       expect(response.status).toBe(["anonymous", "auth-error"].include…
+       |                               ^
+     80|       expect(response.headers.get("cache-control")).toBe("private, no-…
+     81|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 33 skipped (34)
+   Start at  01:06:44
+   Duration  775ms (transform 148ms, setup 53ms, import 219ms, tests 17ms, environment 331ms)
+

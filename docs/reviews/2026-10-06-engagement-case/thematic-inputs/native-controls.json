@@ -1,0 +1,25 @@
+{
+  "checkedAt": 1791360423.6577463,
+  "results": [
+    {
+      "case": "native-harmless",
+      "exitCode": 0,
+      "expected": 0,
+      "markerMatched": true
+    },
+    {
+      "case": "native-choice-fault",
+      "exitCode": 1,
+      "expected": 1,
+      "markerMatched": true
+    },
+    {
+      "case": "native-restored",
+      "exitCode": 0,
+      "expected": 0,
+      "markerMatched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": "e96435c973279f3c87908b4abd65b3d50333514596b4714cdffad56c2951e399"
+}

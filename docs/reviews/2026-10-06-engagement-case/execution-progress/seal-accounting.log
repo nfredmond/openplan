@@ -1,0 +1,60 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-plan.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts (16 tests | 2 failed) 305ms
+     × rejects a sealed missing task, extra task and missing header 11ms
+     × rejects a rehashed seal with altered task accounting 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > rejects a sealed missing task, extra task and missing header
+AssertionError: promise resolved "'sealed'" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+"sealed"
+
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts:70:84
+     68|   });
+     69|   it("rejects a sealed missing task, extra task and missing header", a…
+     70|     const missing = fixture(); missing.data.tasks.pop(); await expect(…
+       |                                                                                    ^
+     71|     const extra = fixture(); extra.data.tasks.push({ ...extra.data.tas…
+     72|     const header = fixture(); header.data.header = null; await expect(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > rejects a rehashed seal with altered task accounting
+AssertionError: promise resolved "'sealed'" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+"sealed"
+
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts:80:25
+     78|     const f = fixture(), seal = JSON.parse(String(f.data.seal!.receipt…
+     79|     const text = JSON.stringify(seal); f.data.seal!.receipt_text = tex…
+     80|     await expect(f.run()).rejects.toThrow();
+       |                         ^
+     81|   });
+     82| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 passed (16)
+   Start at  23:41:46
+   Duration  957ms (transform 118ms, setup 53ms, import 164ms, tests 305ms, environment 338ms)

@@ -11,6 +11,7 @@ const entrySchema = z.object({ requestId: id, actorId: id, intentSha256: hash, c
 const pageSchema = scopeSchema.extend({ schemaVersion: z.literal(1), pageSize: z.literal(25),
   entries: z.array(entrySchema).max(25), nextCursor: synthesisRequestHistoryCursorSchema.nullable(),
 }).strict();
+export const synthesisRequestHistoryPageSchema = pageSchema;
 export type SynthesisRequestHistoryScope = z.infer<typeof scopeSchema>;
 export type SynthesisRequestHistoryCursor = z.infer<typeof synthesisRequestHistoryCursorSchema>;
 export type SynthesisRequestHistoryPage = z.infer<typeof pageSchema>;

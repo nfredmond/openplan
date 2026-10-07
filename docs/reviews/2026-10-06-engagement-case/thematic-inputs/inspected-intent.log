@@ -1,0 +1,56 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-thematic-choices-server.test.ts (20 tests | 1 failed | 19 skipped) 556ms
+     × refuses an altered inspected requestIntentSha256 before the write 555ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-thematic-choices-server.test.ts > retained thematic context choices > refuses an altered inspected requestIntentSha256 before the write
+AssertionError: promise resolved "{ record: { …(10) }, choice: { …(7) } }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "choice": {
++     "contextRequestId": "a0000000-0000-4000-8000-000000000080",
++     "finalCaptureSha256": "f429b63b4e41e854b340b302f06a395a2ef79de9ee84b6ed6e3a0ebb5fc330bd",
++     "finalResultSha256": "d7bb166263bcc6aeaa512bc3a0f44fc89b5e3a8bbb6bac2dcf48d9d8ac933f58",
++     "historyManifestSha256": "4b2a638387eb4a9b7375f9dc1d006b270c054df5ac7a590670662e56ad968e95",
++     "schemaVersion": 1,
++     "selectionSequence": 100,
++     "targetRecordId": "answer:a0000000-0000-4000-8000-000000000007",
++   },
++   "record": {
++     "campaignId": "c0000000-0000-4000-8000-000000000001",
++     "choiceSha256": "c7fd94e3ad76abac8c8904aab1d96755302fa0b004cfc05848b5923ba10ce3d8",
++     "choiceText": "{\"schemaVersion\":1,\"targetRecordId\":\"answer:a0000000-0000-4000-8000-000000000007\",\"contextRequestId\":\"a0000000-0000-4000-8000-000000000080\",\"selectionSequence\":100,\"historyManifestSha256\":\"4b2a638387eb4a9b7375f9dc1d006b270c054df5ac7a590670662e56ad968e95\",\"finalCaptureSha256\":\"f429b63b4e41e854b340b302f06a395a2ef79de9ee84b6ed6e3a0ebb5fc330bd\",\"finalResultSha256\":\"d7bb166263bcc6aeaa512bc3a0f44fc89b5e3a8bbb6bac2dcf48d9d8ac933f58\"}",
++     "createdAt": "2026-09-30T00:00:00Z",
++     "createdBy": "9b8e2328-bd0a-440e-b289-efd992d3add5",
++     "replayed": false,
++     "requestId": "1cd19535-d0c2-437b-8b36-cc0325367d3b",
++     "schemaVersion": 1,
++     "targetRecordId": "answer:a0000000-0000-4000-8000-000000000007",
++     "workspaceId": "a0000000-0000-4000-8000-000000000001",
++   },
+  }
+
+ ❯ src/test/engagement-synthesis-thematic-choices-server.test.ts:79:118
+     77|       choiceText: prepared.choiceText };
+     78|     expected[key] = key === "choiceText" ? prepared.choiceText + " " :…
+     79|     await expect(retainSynthesisThematicChoice(f.client, f.f.service, …
+       |                                                                                                                      ^
+     80|       .rejects.toThrow("Inspected thematic input differs");
+     81|     expect(f.writes()).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 skipped (20)
+   Start at  01:06:35
+   Duration  1.01s (transform 208ms, setup 56ms, import 301ms, tests 556ms, environment 0ms)
+

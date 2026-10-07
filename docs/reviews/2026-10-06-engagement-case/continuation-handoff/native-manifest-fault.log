@@ -1,0 +1,9 @@
+/home/nathaniel/.local/state/openplan/t3-restart-recovery-20261006/continuation-native.mts:53
+ if(!rejected)throw new Error("Invalid parent accepted: "+label); evidence.refusals.push({label,rejected});
+                    ^
+
+Error: Invalid parent accepted: different parent manifest
+    at <anonymous> (/home/nathaniel/.local/state/openplan/t3-restart-recovery-20261006/continuation-native.mts:53:21)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v24.21.0

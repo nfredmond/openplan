@@ -1,0 +1,36 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress.test.ts (20 tests | 1 failed) 13ms
+     × keeps unsealed thematic task counts unknown 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress.test.ts > private synthesis progress transport > keeps unsealed thematic task counts unknown
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ src/test/engagement-synthesis-progress.test.ts:36:103
+     34|       taskCount: null, selectionSequence: null, counts: [] };
+     35|     expect(verifySynthesisProgress(next, { ...scope, stage: "thematic"…
+     36|     expect(() => verifySynthesisProgress({ ...next, taskCount: 0 }, { …
+       |                                                                                                       ^
+     37|   });
+     38|   it("does not accept zero-task completion or unknown transport fields…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+   Start at  23:41:41
+   Duration  550ms (transform 36ms, setup 55ms, import 54ms, tests 13ms, environment 328ms)

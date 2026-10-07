@@ -1,0 +1,10 @@
+{
+  "broken": {
+    "exitCode": 1,
+    "expectedFailureFound": true
+  },
+  "restored": true,
+  "baseline": {
+    "exitCode": 0
+  }
+}

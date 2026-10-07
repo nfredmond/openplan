@@ -1,0 +1,137 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-generation-create-panel.test.tsx (27 tests | 1 failed) 3030ms
+     × retains a selected contribution before sending and retries it after remount without changing provider or parent 1140ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-generation-create-panel.test.tsx > context request through the shared staff form > retains a selected contribution before sending and retries it after remount without changing provider or parent
+AssertionError: expected false to be true // Object.is equality
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div />[39m
+    [36m<div>[39m
+      [36m<section[39m
+        [33maria-label[39m=[32m"New context request"[39m
+        [33mclass[39m=[32m"min-w-0 space-y-3 rounded border border-border p-3 [&_button]:h-auto [&_button]:min-h-10 [&_button]:max-w-full [&_button]:whitespace-normal"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-expanded[39m=[32m"true"[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+          [33mdata-size[39m=[32m"default"[39m
+          [33mdata-slot[39m=[32m"button"[39m
+          [33mdata-variant[39m=[32m"outline"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mCombine this contribution[0m
+        [36m</button>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0 space-y-3"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"max-w-prose text-sm"[39m
+          [36m>[39m
+            [0mSave a request to combine this contribution with its complete saved context. Preparation and permission to send material to a provider are separate steps.[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-3"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mrole[39m=[32m"status"[39m
+            [36m>[39m
+              [0mAnalysis request saved. No provider execution is authorized.[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-sm break-all"[39m
+            [36m>[39m
+              [0mRequest [0m
+              [0m9ab1b62c-a950-4fff-ba98-467bb530d253[0m
+              [0m · Model synthetic-model[0m
+            [36m</p>[39m
+            [36m<section[39m
+              [33maria-label[39m=[32m"Request preparation"[39m
+              [33mclass[39m=[32m"min-w-0 space-y-3 rounded border border-border p-3"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-wrap items-center justify-between gap-2"[39m
+              [36m>[39m
+                [36m<h4[39m
+                  [33mclass[39m=[32m"font-semibold"[39m
+                [36m>[39m
+                  [0mPrepare this source for analysis[0m
+                [36m</h4>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+                  [33mdata-size[39m=[32m"default"[39m
+                  [33mdata-slot[39m=[32m"button"[39m
+                  [33mdata-variant[39m=[32m"outline"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mRefresh preparation status[0m
+                [36m</button>[39m
+              [36m</div>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"max-w-prose text-sm text-muted-foreground"[39m
+              [36m>[39m
+                [0mPreparation organizes this saved source for analysis. It does not send contributions to a provider or approve findings.[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mrole[39m=[32m"alert"[39m
+              [36m>[39m
+                [0mPreparation status is unavailable. Refresh to check it; an unavailable read does not mean preparation has not started.[0m
+              [36m</p>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-wrap gap-2"[39m
+              [36m/>[39m
+              [36m<section[39m
+                [33maria-label[39m=[32m"Execution permission"[39m
+                [33mclass[39m=[32m"min-w-0 space-y-3 border-t border-border pt-3"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal"[39m
+                  [33mdata-size[39m=[32m"default"[39m
+                  [33mdata-slot[39m=[32m"button"[39m
+                  [33mdata-variant[39m=[32m"outline"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mReview execution permission[0m
+                [36m</button>[39m
+              [36m</section>[39m
+              [36m<section[39m
+                [33maria-label[39m=[32m"Saved analysis results"[39m
+                [33mclass[39m=[32m"min-w-0 space-y-3 border-t border-border pt-3"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:...
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/test/engagement-synthesis-generation-create-panel.test.tsx:326:107
+    324|     expect(JSON.parse(first!).parent).toEqual(continuation.parent);
+    325|     fireEvent.click(screen.getByRole("button", { name: "Inspect saved …
+    326|     await waitFor(() => expect(fetcher.mock.calls.some(([url]) => Stri…
+       |                                                                                                           ^
+    327|   });
+    328| });
+ ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 26 passed (27)
+   Start at  00:44:34
+   Duration  3.87s (transform 152ms, setup 51ms, import 294ms, tests 3.03s, environment 343ms)
+

@@ -1,0 +1,12 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress.test.ts src/test/engagement-synthesis-progress-server.test.ts src/test/engagement-synthesis-progress-plan.test.ts src/test/engagement-synthesis-progress-route.test.ts src/test/engagement-synthesis-progress-panel.test.tsx
+
+
+ RUN  v4.1.11 <app>
+
+
+ Test Files  5 passed (5)
+      Tests  92 passed (92)
+   Start at  23:41:35
+   Duration  3.58s (transform 178ms, setup 180ms, import 498ms, tests 766ms, environment 1.64s)

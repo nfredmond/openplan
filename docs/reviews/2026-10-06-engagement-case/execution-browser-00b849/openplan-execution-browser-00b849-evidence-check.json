@@ -1,0 +1,27 @@
+{
+  "status": "pass",
+  "harmless": "inventory ordering changes survive",
+  "mutations": [
+    {
+      "mutation": "changed retry bytes",
+      "failure": "retry command bytes changed"
+    },
+    {
+      "mutation": "automatic reload save",
+      "failure": "reload sent an automatic POST"
+    },
+    {
+      "mutation": "duplicate allowance",
+      "failure": "unexpected native allowance change: segment"
+    },
+    {
+      "mutation": "new execution attempt",
+      "failure": "native execution changed: segment/attempts"
+    },
+    {
+      "mutation": "changed download command",
+      "failure": "download command differs"
+    }
+  ],
+  "blindCategory": "Compares captured synthetic native receipts, counts and application-generated Blob bytes. Does not establish independent screenshot correctness, download file delivery, another actor, practitioner acceptance, worker execution or scientific validity."
+}

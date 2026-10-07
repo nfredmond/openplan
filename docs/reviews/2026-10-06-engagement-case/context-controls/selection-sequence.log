@@ -1,0 +1,128 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-continuation-recovery.test.ts (28 tests | 2 failed) 58ms
+     × keeps custody after altered child sequence 11ms
+     × checks thematic binding hashes and the parent sequence 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-recovery.test.ts > context and thematic browser custody > keeps custody after altered child sequence
+AssertionError: promise resolved "{ …(4) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "cancellation": null,
++   "cleanupError": null,
++   "intent": {
++     "configurationHash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
++     "configurationRevisionId": "c7730000-0000-4000-8000-000000000008",
++     "connectionId": "c7730000-0000-4000-8000-000000000007",
++     "modelId": "synthetic-日本語",
++     "schemaVersion": 1,
++     "sourceId": "c7730000-0000-4000-8000-000000000004",
++     "sourceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++     "taskByteLimit": 65536,
++   },
++   "state": {
++     "campaignId": "c7730000-0000-4000-8000-000000000003",
++     "cancellation": null,
++     "replayed": true,
++     "request": {
++       "actorId": "c7730000-0000-4000-8000-000000000001",
++       "createdAt": "2026-10-07T00:00:00Z",
++       "id": "c7730000-0000-4000-8000-000000000009",
++       "intentSha256": "681fb8330cc2e42d6f0b8d3ed3e56f0c7317ecf9255ad059c47256d22bb640c6",
++       "intentText": "{
++   \"schemaVersion\": 1,
++   \"sourceId\": \"c7730000-0000-4000-8000-000000000004\",
++   \"sourceSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",
++   \"connectionId\": \"c7730000-0000-4000-8000-000000000007\",
++   \"configurationRevisionId\": \"c7730000-0000-4000-8000-000000000008\",
++   \"configurationHash\": \"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",
++   \"modelId\": \"synthetic-日本語\",
++   \"taskByteLimit\": 65536
++ }
++ ",
++     },
++     "schemaVersion": 1,
++     "workspaceId": "c7730000-0000-4000-8000-000000000002",
++   },
+  }
+
+ ❯ src/test/engagement-synthesis-continuation-recovery.test.ts:115:124
+    113|     if (field === "scope") value.workspaceId = id(99);
+    114|     const raw = field === "replayed" ? { ...value, replayed: undefined…
+    115|     await expect(sendPendingSynthesisGeneration(storage, f.pending, vi…
+       |                                                                                                                            ^
+    116|     expect(read(storage)).toEqual(f.pending);
+    117|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-recovery.test.ts > context and thematic browser custody > checks thematic binding hashes and the parent sequence
+AssertionError: promise resolved "{ …(3) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "cancellation": null,
++   "intent": {
++     "configurationHash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
++     "configurationRevisionId": "c7730000-0000-4000-8000-000000000008",
++     "connectionId": "c7730000-0000-4000-8000-000000000007",
++     "modelId": "synthetic-日本語",
++     "schemaVersion": 1,
++     "sourceId": "c7730000-0000-4000-8000-000000000004",
++     "sourceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++     "taskByteLimit": 65536,
++   },
++   "state": {
++     "campaignId": "c7730000-0000-4000-8000-000000000003",
++     "cancellation": null,
++     "replayed": true,
++     "request": {
++       "actorId": "c7730000-0000-4000-8000-000000000001",
++       "createdAt": "2026-10-07T00:00:00Z",
++       "id": "c7730000-0000-4000-8000-000000000009",
++       "intentSha256": "681fb8330cc2e42d6f0b8d3ed3e56f0c7317ecf9255ad059c47256d22bb640c6",
++       "intentText": "{
++   \"schemaVersion\": 1,
++   \"sourceId\": \"c7730000-0000-4000-8000-000000000004\",
++   \"sourceSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",
++   \"connectionId\": \"c7730000-0000-4000-8000-000000000007\",
++   \"configurationRevisionId\": \"c7730000-0000-4000-8000-000000000008\",
++   \"configurationHash\": \"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",
++   \"modelId\": \"synthetic-日本語\",
++   \"taskByteLimit\": 65536
++ }
++ ",
++     },
++     "schemaVersion": 1,
++     "workspaceId": "c7730000-0000-4000-8000-000000000002",
++   },
+  }
+
+ ❯ src/test/engagement-synthesis-continuation-recovery.test.ts:123:129
+    121|     expect((await inspectSynthesisContinuation(f.state, bound, f.nativ…
+    122|     await expect(inspectSynthesisContinuation({ ...f.state, thematic: …
+    123|     await expect(inspectSynthesisContinuation(f.state, bound, { ...f.n…
+       |                                                                                                                                 ^
+    124|   });
+    125|   it("keeps confirmed receipt separate from failed cleanup and never c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 26 passed (28)
+   Start at  00:44:33
+   Duration  666ms (transform 54ms, setup 53ms, import 75ms, tests 58ms, environment 325ms)
+

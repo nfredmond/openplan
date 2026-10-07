@@ -1,0 +1,75 @@
+{
+  "checks": [
+    {
+      "name": "harmless-comment",
+      "expected": "pass",
+      "exitCode": 0,
+      "log": "/tmp/openplan-form-mutation-harmless-comment.log",
+      "observedReason": "Both focused files pass all 34 tests with added comments."
+    },
+    {
+      "name": "different-scope-restored",
+      "expected": "fail",
+      "exitCode": 1,
+      "log": "/tmp/openplan-form-mutation-different-scope-restored.log",
+      "observedReason": "Each changed scope field incorrectly restores an expanded private choice."
+    },
+    {
+      "name": "owner-drops-unsent-choice",
+      "expected": "fail",
+      "exitCode": 1,
+      "log": "/tmp/openplan-form-mutation-owner-drops-unsent-choice.log",
+      "observedReason": "The source inspector returns without the opened creation controls or its choice."
+    },
+    {
+      "name": "denied-source-keeps-choice",
+      "expected": "fail",
+      "exitCode": 1,
+      "log": "/tmp/openplan-form-mutation-denied-source-keeps-choice.log",
+      "observedReason": "A source denied with 403 incorrectly restores the expanded choice after retry."
+    },
+    {
+      "name": "stale-denial-erases-current-choice",
+      "expected": "fail",
+      "exitCode": 1,
+      "log": "/tmp/openplan-form-mutation-stale-denial-erases-current-choice.log",
+      "observedReason": "A late denial removes the creation controls on a subsequent successful read."
+    },
+    {
+      "name": "refresh-erases-unsent-choice",
+      "expected": "fail",
+      "exitCode": 1,
+      "log": "/tmp/openplan-form-mutation-refresh-erases-unsent-choice.log",
+      "observedReason": "The restored analysis model control disappears during provider refresh."
+    },
+    {
+      "name": "changed-revision-accepted",
+      "expected": "fail",
+      "exitCode": 1,
+      "log": "/tmp/openplan-form-mutation-changed-revision-accepted.log",
+      "observedReason": "The changed-provider warning is absent because a replacement revision is accepted."
+    },
+    {
+      "name": "submitted-choice-retained",
+      "expected": "fail",
+      "exitCode": 1,
+      "log": "/tmp/openplan-form-mutation-submitted-choice-retained.log",
+      "observedReason": "The original unsent choice remains instead of yielding to the retained command."
+    },
+    {
+      "name": "denied-provider-keeps-choice",
+      "expected": "fail",
+      "exitCode": 1,
+      "log": "/tmp/openplan-form-mutation-denied-provider-keeps-choice.log",
+      "observedReason": "Denied provider reads incorrectly retain the expanded choice after remount."
+    }
+  ],
+  "blindCategory": "Synthetic React and fetch checks do not establish real browser focus, native authorization, or practitioner acceptance.",
+  "parentCommit": "c8177f056fcfcd2e49f13ac143ca7cbaffc0d2b1",
+  "restoredFiles": {
+    "openplan/src/components/engagement/engagement-synthesis-sources.tsx": "31e104eb7e23e24667a549911c958f8a2fc0209321b5ace2e1ef8430a27f0a9c",
+    "openplan/src/components/engagement/synthesis-generation-create-panel.tsx": "9d9e54be73306ff2d1889b8ffb51f36fa72117176df3cb8889a141db03bb6932",
+    "openplan/src/test/engagement-synthesis-generation-create-panel.test.tsx": "f9d8cea154bcd21d9be750a272db561f61bcea3b0dad8086d33bc6d1e03ca1ec",
+    "openplan/src/test/engagement-synthesis-source-panel.test.tsx": "36bdecd0d7a5f3dcc721c31d6c4fd948db4588a5593087fcaa5ee511ad9336de"
+  }
+}

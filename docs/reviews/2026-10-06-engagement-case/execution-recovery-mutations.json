@@ -1,0 +1,85 @@
+{
+  "scope": "Simulated native RPC and HTTP authority checks; not native RLS or browser acceptance.",
+  "cases": [
+    {
+      "name": "recovery-harmless-comment",
+      "path": "openplan/src/lib/engagement/synthesis-execution-recovery.ts",
+      "test": "src/test/engagement-synthesis-execution-recovery.test.ts",
+      "pattern": null,
+      "expected": "pass",
+      "exitCode": 0,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-recovery-harmless-comment.log"
+    },
+    {
+      "name": "recovery-allowance-replaced",
+      "path": "openplan/src/lib/engagement/synthesis-execution-recovery.ts",
+      "test": "src/test/engagement-synthesis-execution-recovery.test.ts",
+      "pattern": "retains original whitespace",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-recovery-allowance-replaced.log"
+    },
+    {
+      "name": "recovery-missing-readback",
+      "path": "openplan/src/lib/engagement/synthesis-execution-recovery.ts",
+      "test": "src/test/engagement-synthesis-execution-recovery.test.ts",
+      "pattern": "failed-readback command",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-recovery-missing-readback.log"
+    },
+    {
+      "name": "recovery-no-checksum",
+      "path": "openplan/src/lib/engagement/synthesis-execution-recovery.ts",
+      "test": "src/test/engagement-synthesis-execution-recovery.test.ts",
+      "pattern": "acknowledgement: hash",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-recovery-no-checksum.log"
+    },
+    {
+      "name": "recovery-clears-confirmed",
+      "path": "openplan/src/lib/engagement/synthesis-execution-recovery.ts",
+      "test": "src/test/engagement-synthesis-execution-recovery.test.ts",
+      "pattern": "keeps it after confirmation",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-recovery-clears-confirmed.log"
+    },
+    {
+      "name": "recovery-ignores-newer-command",
+      "path": "openplan/src/lib/engagement/synthesis-execution-recovery.ts",
+      "test": "src/test/engagement-synthesis-execution-recovery.test.ts",
+      "pattern": "newer command when an older response",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-recovery-ignores-newer-command.log"
+    },
+    {
+      "name": "recovery-loses-original-archive",
+      "path": "openplan/src/lib/engagement/synthesis-execution-recovery.ts",
+      "test": "src/test/engagement-synthesis-execution-recovery.test.ts",
+      "pattern": "archives unreadable originals",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-recovery-loses-original-archive.log"
+    },
+    {
+      "name": "recovery-archive-race",
+      "path": "openplan/src/lib/engagement/synthesis-execution-recovery.ts",
+      "test": "src/test/engagement-synthesis-execution-recovery.test.ts",
+      "pattern": "archive overwrite race",
+      "expected": "fail",
+      "exitCode": 1,
+      "matched": true,
+      "log": "/tmp/openplan-execution-mutation-recovery-archive-race.log"
+    }
+  ]
+}

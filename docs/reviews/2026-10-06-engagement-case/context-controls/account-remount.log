@@ -1,0 +1,31 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-continuation-panel.test.tsx (15 tests | 1 failed) 2515ms
+     × does not render old private results or a late denial after a changed account 106ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-panel.test.tsx > contribution context handoff > does not render old private results or a late denial after a changed account
+Error: expect(element).toHaveAttribute("aria-expanded", "false") // element.getAttribute("aria-expanded") === "false"
+
+Expected the element to have attribute:
+  aria-expanded="false"
+Received:
+  aria-expanded="true"
+ ❯ src/test/engagement-synthesis-continuation-panel.test.tsx:73:86
+     71|     expect(signal?.aborted).toBe(true); await act(async () => resolve(…
+     72|     expect(props.onAccessLost).not.toHaveBeenCalled(); expect(screen.q…
+     73|     expect(screen.getByRole("button", { name: "Choose a contribution t…
+       |                                                                                      ^
+     74|   });
+     75|   it("closes private choices and aborts an outstanding read", async ()…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 passed (15)
+   Start at  00:44:50
+   Duration  3.24s (transform 72ms, setup 53ms, import 191ms, tests 2.51s, environment 333ms)
+

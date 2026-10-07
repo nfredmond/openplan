@@ -1,0 +1,65 @@
+{
+  "checkedAt": 1791357730.536219,
+  "controls": [
+    {
+      "case": "harmless comments",
+      "exitCode": 0,
+      "log": "harmless.log",
+      "expected": "pass"
+    },
+    {
+      "case": "source-intent-pin",
+      "exitCode": 1,
+      "log": "source-intent-pin.log",
+      "expected": "targeted failure"
+    },
+    {
+      "case": "page-duplicates",
+      "exitCode": 1,
+      "log": "page-duplicates.log",
+      "expected": "targeted failure"
+    },
+    {
+      "case": "manifest-pin",
+      "exitCode": 1,
+      "log": "manifest-pin.log",
+      "expected": "targeted failure"
+    },
+    {
+      "case": "sealed-plan",
+      "exitCode": 1,
+      "log": "sealed-plan.log",
+      "expected": "targeted failure"
+    },
+    {
+      "case": "initial-access",
+      "exitCode": 1,
+      "log": "initial-access.log",
+      "expected": "targeted failure"
+    },
+    {
+      "case": "whole-membership",
+      "exitCode": 1,
+      "log": "whole-membership.log",
+      "expected": "targeted failure"
+    },
+    {
+      "case": "expected-account",
+      "exitCode": 1,
+      "log": "expected-account.log",
+      "expected": "targeted failure"
+    },
+    {
+      "case": "agent-refusal",
+      "exitCode": 1,
+      "log": "agent-refusal.log",
+      "expected": "targeted failure"
+    }
+  ],
+  "restored": true,
+  "sha256": {
+    "records": "16331a71cb86103f3e4818e4027fcbf1d363369f7dbb08b0b551deaf63391737",
+    "server": "ee92e36cb4c011b477a05a2de375048f3707597afc95ea6f11df2f92e3334d1d",
+    "route": "aeae90cbb25f0a7d60c669ad235d80f7a6a416634e82dcd4058c5eaf90ce0c71"
+  }
+}

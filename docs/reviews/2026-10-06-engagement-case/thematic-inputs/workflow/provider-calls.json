@@ -1,0 +1,20 @@
+[
+  {
+    "at": "2026-10-07T09:06:42.513Z",
+    "requestId": "3620e480-3d20-4934-9d3d-e14fc640e22d",
+    "taskIndex": 0,
+    "stage": "frame",
+    "headerSha256": "01c18441cb780452c52abe84a8f6e52343685e8145298d35bd12fef64066e4ce",
+    "taskSha256": "7ab9c64b2d3ae4282771b430c8eb428f89a89928be7a1201cfa63eaec7e2585b",
+    "outputSha256": "addb8d1d884714464670a68d98b0c941f7c7f938fd9d344fd6ccd6a115814d2a"
+  },
+  {
+    "at": "2026-10-07T09:06:43.144Z",
+    "requestId": "3620e480-3d20-4934-9d3d-e14fc640e22d",
+    "taskIndex": 1,
+    "stage": "proposal",
+    "headerSha256": "01c18441cb780452c52abe84a8f6e52343685e8145298d35bd12fef64066e4ce",
+    "taskSha256": "bdefd71b437f14cd6c4cfa126b3bcc03fd087ad16f7d89fa0fb59b2a2f992cf5",
+    "outputSha256": "b8c55dd8fff04262b2b06c5614867fa0d7a045dc09b4ea8c70b80c2a9f7de4a8"
+  }
+]

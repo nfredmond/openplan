@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-07T06:25:01.137Z",
+  "boundary": "DOM geometry only; T3 screenshot and console acceptance unavailable.",
+  "documentWidth": 390,
+  "head": "8ca7dc23d332b9a6a500d61afcdef1a29c21d18e",
+  "posts": 1,
+  "retry": {
+    "bottom": 434.5,
+    "left": 257,
+    "right": 535.078125,
+    "top": 394.5,
+    "width": 278.078125
+  },
+  "url": "http://openplan-execution.localhost:3479/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7?tab=analysis",
+  "width": 390
+}

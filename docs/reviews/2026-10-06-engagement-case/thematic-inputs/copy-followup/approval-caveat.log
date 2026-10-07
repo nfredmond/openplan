@@ -1,0 +1,121 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-context-output-reader.test.tsx (4 tests | 1 failed) 1257ms
+     × shows generated wording and uncertainties beyond the raw excerpt, with inspectable quotations 139ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-context-output-reader.test.tsx > original context reading > shows generated wording and uncertainties beyond the raw excerpt, with inspectable quotations
+TestingLibraryElementError: Unable to find an element with the text: /Choosing it for theme preparation does not approve its meaning/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-w-0 space-y-3 text-sm"[39m
+    [36m>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"font-medium"[39m
+      [36m>[39m
+        [0mCompleted context, machine wording not reviewed[0m
+      [36m</p>[39m
+      [36m<p>[39m
+        [0mThis wording needs staff review. Choosing it for theme preparation approves its meaning.[0m
+      [36m</p>[39m
+      [36m<h6[39m
+        [33mclass[39m=[32m"font-semibold"[39m
+      [36m>[39m
+        [0mGenerated notes ([0m
+        [0m1[0m
+        [0m)[0m
+      [36m</h6>[39m
+      [36m<ol[39m
+        [33mclass[39m=[32m"space-y-3"[39m
+      [36m>[39m
+        [36m<li[39m
+          [33mclass[39m=[32m"min-w-0 space-y-1"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+          [36m>[39m
+            [0mSYNTHETIC context note 0[0m
+          [36m</p>[39m
+          [36m<details[39m
+            [33mopen[39m=[32m""[39m
+          [36m>[39m
+            [36m<summary[39m
+              [33mclass[39m=[32m"cursor-pointer"[39m
+            [36m>[39m
+              [0mSource quotations for note [0m
+              [0m0[0m
+            [36m</summary>[39m
+            [36m<blockquote[39m
+              [33mclass[39m=[32m"my-2 border-l border-border pl-3"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+              [36m>[39m
+                [0mSYNTHETIC source quotation 0[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-all font-mono text-xs"[39m
+              [36m>[39m
+                [0mSource part [0m
+                [0mdd0ddf1a11cb08c97b045cecb2c1a12c218455888157869859338fb819a8e89f[0m
+              [36m</p>[39m
+            [36m</blockquote>[39m
+          [36m</details>[39m
+        [36m</li>[39m
+      [36m</ol>[39m
+      [36m<h6[39m
+        [33mclass[39m=[32m"font-semibold"[39m
+      [36m>[39m
+        [0mReported uncertainties ([0m
+        [0m1[0m
+        [0m)[0m
+      [36m</h6>[39m
+      [36m<ul[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<li[39m
+          [33mclass[39m=[32m"whitespace-pre-wrap break-words [overflow-wrap:anywhere]"[39m
+        [36m>[39m
+          [0mSYNTHETIC uncertainty 0[0m
+        [36m</li>[39m
+      [36m</ul>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+        [33mdata-size[39m=[32m"default"[39m
+        [33mdata-slot[39m=[32m"button"[39m
+        [33mdata-variant[39m=[32m"outline"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [0mDownload complete context[0m
+      [36m</button>[39m
+      [36m<p>[39m
+        [0mThe private file preserves the original machine output and source references. It is not an approved finding.[0m
+      [36m</p>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/engagement-synthesis-context-output-reader.test.tsx:21:19
+     19|     const quote = screen.getByText("SYNTHETIC source quotation 0"); ex…
+     20|     fireEvent.click(screen.getByText("Source quotations for note 0"));…
+     21|     expect(screen.getByText(/Choosing it for theme preparation does no…
+       |                   ^
+     22|   });
+     23|   it("keeps absent notes and uncertainties explicit without implying n…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  02:44:57
+   Duration  1.97s (transform 49ms, setup 52ms, import 168ms, tests 1.26s, environment 335ms)
+

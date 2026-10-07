@@ -1,0 +1,82 @@
+{
+  "checkedAt": "2026-10-07T04:57:38.124Z",
+  "target": "owned local API 29821",
+  "fixture": "Existing synthetic retained plans",
+  "boundary": "Authenticated native bounded reads only. No grants, worker execution, provider calls, browser or semantic acceptance.",
+  "results": [
+    {
+      "schemaVersion": 1,
+      "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+      "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7",
+      "requestId": "54c0e22b-2fde-45b6-8b0c-94a2ffc2928f",
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+      "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+      "requestIntentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+      "cancelled": false,
+      "entries": [
+        {
+          "schemaVersion": 1,
+          "id": "fa98350d-33a6-40e0-b36a-b198c9d3ee5f",
+          "requestId": "54c0e22b-2fde-45b6-8b0c-94a2ffc2928f",
+          "intentText": "{\"schemaVersion\":1,\"headerSha256\":\"966d0224d377bf08fa68b97c1524619714a3ed4c326d9166ffed431674b72fa9\",\"maxAttempts\":4,\"maxOutputTokens\":8192,\"responseByteLimit\":65536,\"expiresAt\":\"2026-10-02T18:11:02.533Z\",\"chargesAcknowledged\":true,\"retryTaskIndex\":null,\"retryOfAttemptId\":null}",
+          "intentSha256": "e8f5120d749c0767f4e9e7c0d020f221db90da32cc5f99850e53ade27f73ea9e",
+          "createdAt": "2026-10-02T17:11:02.541844+00:00"
+        }
+      ],
+      "nextCursor": null,
+      "stage": "segment"
+    },
+    {
+      "schemaVersion": 1,
+      "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+      "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7",
+      "requestId": "359abb88-65b5-4682-8ad2-ff786adfad25",
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+      "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+      "requestIntentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+      "cancelled": false,
+      "entries": [
+        {
+          "schemaVersion": 1,
+          "id": "c2633365-3dc5-4fb3-b1e8-1e3e7253e5e7",
+          "requestId": "359abb88-65b5-4682-8ad2-ff786adfad25",
+          "intentText": "{\"schemaVersion\":1,\"headerSha256\":\"af2826ea1866a2fa4be6f409450c26e08f9687bc4f3865a42e79924d4afb01af\",\"maxAttempts\":13,\"maxOutputTokens\":8192,\"responseByteLimit\":65536,\"expiresAt\":\"2026-10-02T18:11:03.931Z\",\"chargesAcknowledged\":true,\"retryTaskIndex\":null,\"retryOfAttemptId\":null}",
+          "intentSha256": "818d27a2db75be3bbb7e2d5a0e9233cbf48fad76e6701b0bea74203076545254",
+          "createdAt": "2026-10-02T17:11:03.935884+00:00"
+        }
+      ],
+      "nextCursor": null,
+      "stage": "context"
+    },
+    {
+      "schemaVersion": 1,
+      "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+      "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7",
+      "requestId": "dd741df4-7b58-4313-877e-55490ca40346",
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+      "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+      "requestIntentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+      "cancelled": false,
+      "entries": [
+        {
+          "schemaVersion": 1,
+          "id": "68c8bdef-6ed8-4d49-8bae-9b9dbcf2318a",
+          "requestId": "dd741df4-7b58-4313-877e-55490ca40346",
+          "intentText": "{\"schemaVersion\":1,\"headerSha256\":\"93c182d79c3b5e1e3aff5ab2547bc73c271dd12455bba07e0045b6f699cca0bf\",\"maxAttempts\":5,\"maxOutputTokens\":8192,\"responseByteLimit\":65536,\"expiresAt\":\"2026-10-02T18:11:16.238Z\",\"chargesAcknowledged\":true,\"retryTaskIndex\":null,\"retryOfAttemptId\":null}",
+          "intentSha256": "58b2e4d56863449e1b7e813a3bdab08b453e0b04d17cfa9e3aa1b4c0b72379c0",
+          "createdAt": "2026-10-02T17:11:16.243248+00:00"
+        }
+      ],
+      "nextCursor": null,
+      "stage": "thematic"
+    }
+  ],
+  "baseCommit": "7692b52a",
+  "filesSha256": {
+    "openplan/src/lib/engagement/synthesis-execution-history-server.ts": "8605b0247572333a14b45d43914414ea61fee583940088eb7d24e2a4cce956d4",
+    "openplan/src/lib/engagement/synthesis-execution-records.ts": "b6771a07151dfd424a89cadfe8d188e722a9a5bb22d6ae7f23660f0f93d47f96"
+  }
+}

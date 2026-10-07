@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+
+ Test Files  3 passed (3)
+      Tests  99 passed (99)
+   Start at  00:21:59
+   Duration  1.83s (transform 216ms, setup 119ms, import 396ms, tests 76ms, environment 971ms)
+

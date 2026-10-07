@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "name": "approval-caveat",
+      "exitCode": 1,
+      "detected": true
+    },
+    {
+      "name": "uncertainty-total",
+      "exitCode": 1,
+      "detected": true
+    }
+  ],
+  "restored": true,
+  "sha256": "befe7f049e4ddcde64bcfda29094956c6c14bb189808eda7f48fe168cee73cb9"
+}

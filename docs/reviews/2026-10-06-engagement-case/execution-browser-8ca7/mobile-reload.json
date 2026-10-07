@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-07T06:26:12.855Z",
+  "boundary": "DOM after reload at 390px. No screenshot, console, pointer or keyboard acceptance.",
+  "documentWidth": 390,
+  "head": "8ca7dc23d332b9a6a500d61afcdef1a29c21d18e",
+  "restored": true,
+  "retry": {
+    "bottom": 441.71875,
+    "left": 42,
+    "right": 320.078125,
+    "top": 401.71875,
+    "width": 278.078125
+  },
+  "surfaceLeft": "0px",
+  "url": "http://openplan-execution.localhost:3479/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7?tab=analysis",
+  "width": 390
+}

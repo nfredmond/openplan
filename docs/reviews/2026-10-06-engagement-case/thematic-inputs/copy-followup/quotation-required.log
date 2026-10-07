@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-context-continuation.test.ts (18 tests | 1 failed | 17 skipped) 375ms
+     × leaves malformed, truncated, partial and uncited outputs unaccepted 374ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-context-continuation.test.ts > context continuation protocol > leaves malformed, truncated, partial and uncited outputs unaccepted
+AssertionError: expected [Function] to throw an error
+ ❯ src/test/engagement-synthesis-context-continuation.test.ts:121:41
+    119|     }
+    120|     const p = processor(f), r = response(p); r.output.notes[0].citatio…
+    121|     expect(() => p.accept(r.observe())).toThrow(); expect(p.retained()…
+       |                                         ^
+    122|   });
+    123|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 skipped (18)
+   Start at  02:44:43
+   Duration  1.14s (transform 164ms, setup 56ms, import 224ms, tests 375ms, environment 327ms)
+

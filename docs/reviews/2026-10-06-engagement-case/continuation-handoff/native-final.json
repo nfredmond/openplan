@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-10-07T07:24:17.960Z",
+  "target": "Owned restore-target API29821",
+  "parent": {
+    "parentRequestId": "3ebc394b-35de-48c2-b65d-65dce0d7c0cb",
+    "parentActorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+    "parentIntentSha256": "26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925",
+    "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+    "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+    "throughSequence": 4,
+    "segmentResultsManifestSha256": "e64166f3561b16a3dd80ab8595fa65eee5ff8e5475cdc4991f7c1aafca0aba2a"
+  },
+  "page": {
+    "total": 2,
+    "returned": 2,
+    "nextOffset": null,
+    "recordIds": [
+      "item:26e3f37d-ef2c-4080-834f-a3351692a484",
+      "item:99fa474c-7e7f-4ec5-8f80-8be07c2dd4d2"
+    ]
+  },
+  "results": [
+    {
+      "stage": "context",
+      "requestId": "a3bafbc5-f432-44a1-9fe3-53ea246d8c25",
+      "firstReplayed": true,
+      "retryReplayed": true,
+      "intentSha256": "26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925",
+      "commandSha256": "4670c8764de7c352d4ff250a649107fdb8752c94172b4c273155fd3c7e12ae8d",
+      "savedStateSha256": "c8cd4433cc7a5ced3948b25a05e9fad3cbe079710053df97f4aebf13352a21bd",
+      "sameSavedBytes": true
+    },
+    {
+      "stage": "thematic",
+      "requestId": "ebeb5886-8d10-49d7-961d-dc61cdc89d3f",
+      "firstReplayed": true,
+      "retryReplayed": true,
+      "intentSha256": "26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925",
+      "commandSha256": "9a8ec9df7233161ef526dde2ee13cad3ede3869375c43f568859091c973926f3",
+      "savedStateSha256": "1986eb69a5eeeba5aecfb4eb1cdc75e1b51cbe1d184600f7fda1d5bcb7b340fb",
+      "sameSavedBytes": true
+    }
+  ],
+  "refusals": [
+    {
+      "label": "different parent manifest",
+      "rejected": true
+    },
+    {
+      "label": "different source",
+      "rejected": true
+    },
+    {
+      "label": "unknown contribution",
+      "rejected": true
+    }
+  ],
+  "boundary": "Native current-staff child creation and exact replay only. The first saved reply is deliberately withheld from the simulated caller. No browser, provider dispatch, thematic selection, meaning, human or release acceptance."
+}

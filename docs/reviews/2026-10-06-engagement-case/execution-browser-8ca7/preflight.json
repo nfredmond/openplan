@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-07T06:19:51.576Z",
+  "requestId": "3ebc394b-35de-48c2-b65d-65dce0d7c0cb",
+  "authorizationId": "6be8af02-f007-4343-826e-6ed8bdbe5f59",
+  "intentSha256": "00257fe99421f644603452755e241e4dca4d214d36b7c663b5d0b9a378d76b4c",
+  "taskCount": 4,
+  "attemptsBefore": 0,
+  "endpoint": "http://127.0.0.1:38741/v1/",
+  "expiresAt": "2026-10-07T08:18:00.000Z",
+  "boundary": "One already retained synthetic browser allowance; no new permission, queue discovery or paid provider."
+}

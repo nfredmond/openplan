@@ -1,0 +1,79 @@
+{
+  "applicationCommit": "338ff24e6bc652865b6b21d0883a9bb6bb7be394",
+  "boundary": "Real authenticated HTTP from a synthetic signed-in browser. Direct fetch, not a thematic UI journey, browser recovery, keyboard, screenshot or console acceptance.",
+  "deniedRead": {
+    "cacheControl": "private, no-store",
+    "hasChoice": false,
+    "status": 403
+  },
+  "reads": [
+    {
+      "cacheControl": "private, no-store",
+      "choiceSha256": "ee093f95efbc5c2679bc02e04758ba50cb77e22e43f4c0fa3692440912c1dd51",
+      "keys": [
+        "schemaVersion",
+        "campaignId",
+        "workspaceId",
+        "actorId",
+        "command",
+        "choiceSha256",
+        "cancelled",
+        "outputExcerpt",
+        "outputExcerptTruncated",
+        "outputBytes",
+        "outputSha256",
+        "interpretation"
+      ],
+      "outputBytes": 3326,
+      "outputExcerptLength": 1600,
+      "outputExcerptTruncated": true,
+      "outputSha256": "62fb33f5df6f583bb41a7848c5d3d888ba3aca4d5596bebb88383cc10dfc6479",
+      "status": 200
+    }
+  ],
+  "savedAfter": {
+    "cacheControl": "private, no-store",
+    "choiceSha256": "ee093f95efbc5c2679bc02e04758ba50cb77e22e43f4c0fa3692440912c1dd51",
+    "exactBytes": true,
+    "status": 200
+  },
+  "selection": {
+    "contextRequestId": "359abb88-65b5-4682-8ad2-ff786adfad25",
+    "requestId": "3620e480-3d20-4934-9d3d-e14fc640e22d",
+    "targetRecordId": "item:26e3f37d-ef2c-4080-834f-a3351692a484",
+    "throughSequence": 13
+  },
+  "writes": [
+    {
+      "cacheControl": "private, no-store",
+      "choiceSha256": "ee093f95efbc5c2679bc02e04758ba50cb77e22e43f4c0fa3692440912c1dd51",
+      "exactBytes": true,
+      "name": "exact replay",
+      "replayed": true,
+      "requestId": "3620e480-3d20-4934-9d3d-e14fc640e22d",
+      "status": 200,
+      "targetRecordId": "item:26e3f37d-ef2c-4080-834f-a3351692a484"
+    },
+    {
+      "cacheControl": "private, no-store",
+      "error": "The context choice could not be confirmed. Keep its original command and inspect saved history before retrying.",
+      "exactBytes": false,
+      "name": "changed inspected choice",
+      "status": 503
+    },
+    {
+      "cacheControl": "private, no-store",
+      "error": "Current staff access in the selected account and workspace is required.",
+      "exactBytes": false,
+      "name": "changed workspace",
+      "status": 403
+    },
+    {
+      "cacheControl": "private, no-store",
+      "error": "Current staff access in the selected account and workspace is required.",
+      "exactBytes": false,
+      "name": "unregistered assistant",
+      "status": 403
+    }
+  ]
+}

@@ -93,3 +93,136 @@ passing full-gate claim; the corrected commit requires a fresh run.
 The main-branch QA workflow `37567988907` passes after PR #115. Its separate live
 RLS workflow is still running when this checkpoint is recorded. This does not
 replace verification of the new branch.
+
+The main live RLS run `37567988750` subsequently passes: 91 files, 1,422
+checks and 125 skipped. Its log is retained locally at
+`/tmp/openplan-main-rls-b028.log`. Skipped cases do not supply acceptance evidence.
+
+## Execution authority adapter in progress
+
+The separate `engagement-execution-controls-20261006` checkout starts at
+`6bedf6b8`, preserving the request-controls build during its full gate. The new
+authenticated execution route calls the existing segment, context or thematic
+authorization function. It does not start workers, access a service key or send
+contributions to a provider. The original request is checked before and after
+the write against the actual actor, campaign, workspace, source and intent hash.
+Browser account/workspace pins, same-origin writes and explicit refusal of
+unregistered agent commands remain required. Original grant bytes and identifiers
+survive expiry and cancellation for exact acknowledgement recovery. Native
+functions retain responsibility for new-grant eligibility and worker dispatch.
+
+The worker authorization schema moves unchanged to a browser-compatible records
+module. The existing worker import remains available. Three existing loader and
+authority suites pass 172 checks. The new HTTP and adapter suites pass 61 checks.
+Their harmless comment passes; deliberate removal of original-actor, source,
+receipt-hash, post-write access, browser-account, agent-write and single-retry
+checks fails the corresponding test. See [mutation receipts](execution-mutations.json).
+These tests simulate RPC responses and establish neither native RLS nor provider
+execution. The route has no visible staff control yet. Full type/build checks,
+native authorization recovery and identified-build browser evidence remain open.
+
+The next staff control must show the actual saved destination/model, the sealed
+plan's task count, exact grant limits and expiry before explicit acknowledgement.
+Attempt, output-token and response-byte limits are not a dollar ceiling. A
+bounded plan read can inspect retained header/seal identity; the durable worker
+must still reconstruct original inputs before dispatch. The browser must retain
+the exact grant before POST and preserve it on a lost reply, access change,
+storage failure or reload. It must not silently create a second allowance.
+Existing worker journals own execution and result recovery. Context and thematic
+continuation, reviewed proposal import, response/decision links, usable exports
+and second-staff continuation still need the complete case evidence. The roadmap
+continues to own sequencing; this note does not declare those outcomes complete.
+
+## Prepared execution preview checkpoint
+
+The authenticated GET route now reads the existing segment, context or thematic
+plan before staff authorizes execution. It checks the original request before
+and after the read, validates retained header and seal hashes, and requires the
+complete count/byte prefix. Provider metadata queries select only the fields
+needed to show the original destination, model, revision and current status.
+A cancelled request or changed provider remains visible with its actual status;
+an incomplete plan fails the read instead of reporting zero work.
+
+The preview, authority adapter and HTTP suites pass 102 checks. TypeScript and
+targeted ESLint pass. A harmless comment passes; removing intent binding,
+complete-count validation, provider workspace scope, the explicit projection or
+the final access check fails the respective preview check. See
+[preview mutation receipts](execution-preview-mutations.json).
+
+A read-only native check signs in as the synthetic original requester against
+the isolated restore-target stack on port 29821. Existing sealed plans return
+4 segment tasks, 13 context frames and 5 thematic tasks. The check grants no
+authority, starts no worker and calls no provider. The sanitized
+[native preview receipt](execution-native-preview.json) identifies file hashes
+because this check precedes the preview commit. These bounded header/seal reads
+do not establish full input reconstruction or scientific validity. Browser
+authorization controls and native grant recovery remain open.
+
+Nathaniel confirms that the separate benefit-cost agent owns
+`work/bca-workbench-20261006`. Its worktree is excluded from these edits and must
+be included in the next integration audit.
+
+## Execution discovery and browser recovery checkpoint
+
+Saved execution authority is discoverable through a bounded current-staff read.
+The private query selects request identity, original intent/hash and creation
+time, with no credential columns. Pages use creation time and UUID together;
+the cursor preserves native fractional-second precision. Access is checked
+before and after the query. Expired grants and cancellation remain visible as
+history. An unavailable read never becomes an empty list.
+
+Browser recovery retains the exact allowance before POST and checks its original
+receipt bytes and checksum. A confirmed command stays in its slot until staff
+explicitly preserves it. Confirmation does not silently permit a new allowance.
+Lost replies, old expiry, access errors, replaced commands and storage failures
+retain the original recovery path. Preservation saves unreadable originals and
+newer in-memory commands before releasing the slot, and does not cancel native
+authority or resolve an unknown provider outcome.
+
+Five focused files pass 143 checks. TypeScript and targeted ESLint pass. Harmless
+comments pass. Targeted mutations fail for missing private-query scope or
+projection, unstable pagination, lost access, erased cancellation, missing
+browser pins, incomplete cursors, replacement allowances, failed readback,
+incorrect receipt checksums, automatic cleanup and archive races. See
+[history mutations](execution-history-mutations.json) and
+[recovery mutations](execution-recovery-mutations.json). An initial wrong-request
+mutation removed only a redundant check and remained rejected by the receipt
+parser. The revised mutation removes both bindings and fails the intended check.
+All mutations are restored. These are simulated boundary checks, not native RLS
+or browser acceptance of execution controls.
+
+The owned isolated stack returns one existing original grant for each synthetic
+segment, context and thematic plan. Authenticated exact replay returns the same
+ID, original intent bytes and checksum for each. See the
+[history read](execution-native-history.json) and
+[original grant replay](execution-native-replay.json). No new authority is
+created, no worker is started and no provider is called. The route and browser
+recovery still need a visible staff review control and its identified-build
+journey. New-grant native recovery and the full engagement case remain open.
+
+## Visible execution review candidate
+
+The preparation inspector now opens an execution review for its original request.
+It reads saved permissions and the sealed plan, shows the actual destination and
+model, and requires explicit charge acknowledgement plus attempt, output-token,
+response-byte and expiry limits. The text states that these limits are not a
+dollar ceiling. Other staff can inspect history but cannot grant authority for
+the requester. Saving an allowance does not start a worker. The existing durable
+worker and its dispatch checks remain responsible for execution.
+
+Confirmed and uncertain allowances remain available for exact retry. A reload
+does not automatically send them. Unreadable recovery remains visibly blocked
+while the separate history/plan read refreshes; the first component test exposed
+and corrected a disappearing recovery error. Old permissions remain visible
+when preparation is unavailable, with new authority disabled. Cancellation,
+revoked provider choices, zero tasks, changed scope and access failure also
+prevent new authority.
+
+The component, browser verifier and existing creation/history/preparation suites
+pass 73 checks. The preparation, component and copy-guard run passes 35 checks.
+Targeted ESLint and TypeScript pass. Harmless comments survive and targeted
+mutations expose missing charge acknowledgement, automatic replay, hidden
+recovery errors, retained private display after lost access, and incorrect scope,
+stage, checksum or cursor handling. See [panel mutations](execution-panel-mutations.json).
+These checks use simulated transport. The production build, full gate, new native
+authorization journey and desktop/390px evidence for this candidate are pending.

@@ -1,0 +1,38 @@
+
+> openplan@0.67.0 test
+> vitest run --maxWorkers=1 src/test/numbers-read-the-same-on-every-machine.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/numbers-read-the-same-on-every-machine.test.ts (2 tests | 1 failed) 166ms
+     × has no formatter in the app that falls back to the machine's locale 162ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  00:04:54
+   Duration  717ms (transform 31ms, setup 54ms, import 14ms, tests 166ms, environment 326ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/numbers-read-the-same-on-every-machine.test.ts > numbers and dates read the same on every machine > has no formatter in the app that falls back to the machine's locale
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "components/engagement/synthesis-progress-panel.tsx: .toLocaleString()",
++ ]
+
+ ❯ src/test/numbers-read-the-same-on-every-machine.test.ts:70:23
+     68|     );
+     69|     expect(sourceFiles(SRC).length).toBeGreaterThan(500);
+     70|     expect(offenders).toEqual([]);
+       |                       ^
+     71|   });
+     72| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
