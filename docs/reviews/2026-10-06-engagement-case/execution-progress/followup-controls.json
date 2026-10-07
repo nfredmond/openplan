@@ -1,0 +1,36 @@
+{
+  "results": [
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "expected": "pass"
+    },
+    {
+      "name": "unpinned-count",
+      "exitCode": 1,
+      "expected": "assertion failure"
+    },
+    {
+      "name": "internal-wording",
+      "exitCode": 1,
+      "expected": "assertion failure"
+    },
+    {
+      "name": "unknown-as-zero",
+      "exitCode": 1,
+      "expected": "assertion failure"
+    },
+    {
+      "name": "header-projection",
+      "exitCode": 1,
+      "expected": "assertion failure"
+    },
+    {
+      "name": "opaque-projection",
+      "exitCode": 1,
+      "expected": "assertion failure"
+    }
+  ],
+  "restored": true,
+  "blindCategory": "Static and mocked checks do not establish native query results, rendering or human acceptance."
+}

@@ -1,0 +1,12 @@
+
+> openplan@0.67.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress.test.ts src/test/engagement-synthesis-progress-server.test.ts src/test/engagement-synthesis-progress-plan.test.ts src/test/engagement-synthesis-progress-route.test.ts src/test/engagement-synthesis-progress-panel.test.tsx src/test/engagement-synthesis-preparation-panel.test.tsx src/test/engagement-synthesis-execution-panel.test.tsx src/test/bca-workbench-engine.test.ts src/test/bca-workbench-quantity-ui.test.tsx src/test/bca-workbench-recovery-ui.test.tsx src/test/bca-workbench-route.test.ts src/test/planner-copy-says-the-plain-thing.test.ts src/test/reference-count-projection-guard.test.ts src/test/numbers-read-the-same-on-every-machine.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+
+ Test Files  14 passed (14)
+      Tests  155 passed (155)
+   Start at  00:05:21
+   Duration  14.47s (transform 480ms, setup 477ms, import 5.11s, tests 2.97s, environment 4.60s)

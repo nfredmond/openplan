@@ -42,7 +42,7 @@ describe("saved analysis progress view", () => {
     transport.mockResolvedValue(json({ ...summary, stage: "thematic", status: "inputs_not_sealed", interpretation: "machine_unreviewed",
       taskCount: null, selectionSequence: null, counts: [] }));
     mount({ ...scope, stage: "thematic" }); open();
-    await screen.findByText("The complete task count is not available until input preparation finishes.");
+    await screen.findByText("The complete task count is not available until preparation finishes.");
     expect(screen.queryByText(/0 tasks accounted/)).toBeNull();
   });
   it("clears old results immediately while refreshing and leaves unavailable results explicit", async () => {

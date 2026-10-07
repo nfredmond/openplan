@@ -69,7 +69,7 @@ function Progress({ userId, workspaceId, campaignId, requestId, actorId, sourceI
     <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal text-left" aria-expanded={expanded}
       onClick={() => { setSummary(null); setError(null); setExpanded(current => !current); }}>Inspect saved analysis results</Button>
     {expanded ? <div className="min-w-0 space-y-3">
-      <p className="max-w-prose text-sm text-muted-foreground">This reads saved output and its original records. It does not start a worker, retry a provider call or approve findings.</p>
+      <p className="max-w-prose text-sm text-muted-foreground">This reads saved output and its original saved material. It does not start a worker, retry a provider call or approve findings.</p>
       <Button type="button" variant="outline" disabled={busy} onClick={() => void refresh()}>Refresh results</Button>
       {busy ? <p role="status">Checking saved analysis results…</p> : null}
       {error ? <p role="alert">{error}</p> : null}
@@ -78,10 +78,10 @@ function Progress({ userId, workspaceId, campaignId, requestId, actorId, sourceI
         <p className="max-w-prose text-sm">{outcome.next}</p>
         <p className="text-sm text-muted-foreground">Checked <time dateTime={summary.checkedAt}>{new Date(summary.checkedAt).toLocaleString("en-US")}</time>. This is a saved snapshot, not a live worker connection.</p>
         {summary.cancelled ? <p className="text-sm">Cancellation is saved. Earlier results remain available; cancellation does not prove that a call already sent stopped.</p> : null}
-        {summary.taskCount === null ? <p className="text-sm">The complete task count is not available until input preparation finishes.</p> : <>
-          <p className="text-sm">{summary.taskCount.toLocaleString()} tasks accounted for in this saved selection.</p>
+        {summary.taskCount === null ? <p className="text-sm">The complete task count is not available until preparation finishes.</p> : <>
+          <p className="text-sm">{summary.taskCount.toLocaleString("en-US")} tasks accounted for in this saved selection.</p>
           <dl className="space-y-2 text-sm">{summary.counts.map(row => <div key={row.disposition} className="flex min-w-0 flex-wrap justify-between gap-x-4 gap-y-1">
-            <dt className="min-w-0 break-words">{taskLabels[row.disposition]}</dt><dd>{row.count.toLocaleString()}</dd>
+            <dt className="min-w-0 break-words">{taskLabels[row.disposition]}</dt><dd>{row.count.toLocaleString("en-US")}</dd>
           </div>)}</dl>
         </>}
         <p className="max-w-prose text-sm text-muted-foreground">Output checks establish retained bytes and required structure. They do not establish meaning, representative support, staff approval or publication.</p>

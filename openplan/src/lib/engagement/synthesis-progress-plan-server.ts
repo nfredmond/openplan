@@ -14,17 +14,20 @@ const taskSchema = z.object({ request_id: id, task_index: natural, task_text: z.
  */
 export async function readSynthesisProgressPlan(service: Pick<SupabaseClient, "from">, plan: SynthesisGenerationPlan, signal: AbortSignal) {
   const requestId = plan.header.requestId;
-  async function row(table: string, columns: string) {
+  async function row(query: PromiseLike<{ data: unknown; error: unknown }>) {
     signal.throwIfAborted();
-    const result = await service.from(table).select(columns).eq("request_id", requestId)
-      .abortSignal(synthesisWorkerRequestSignal(signal)).maybeSingle();
+    const result = await query;
     signal.throwIfAborted();
     if (result.error) throw new Error("Saved analysis plan unavailable");
     return result.data;
   }
   // A seal observed first must already have every immutable task and header.
-  const rawSeal = await row("engagement_synthesis_generation_plan_seals", "request_id,receipt_text,receipt_sha256");
-  const rawHeader = await row("engagement_synthesis_generation_plans", "request_id,header_text,header_sha256");
+  const rawSeal = await row(service.from("engagement_synthesis_generation_plan_seals")
+    .select("request_id,receipt_text,receipt_sha256").eq("request_id", requestId)
+    .abortSignal(synthesisWorkerRequestSignal(signal)).maybeSingle());
+  const rawHeader = await row(service.from("engagement_synthesis_generation_plans")
+    .select("request_id,header_text,header_sha256").eq("request_id", requestId)
+    .abortSignal(synthesisWorkerRequestSignal(signal)).maybeSingle());
   const seal = rawSeal === null ? null : sealSchema.parse(rawSeal);
   if (seal && seal.request_id !== requestId) throw new Error("Saved analysis seal scope differs");
   if (rawHeader === null) {
