@@ -578,3 +578,24 @@ directory under the queue acceptance root. Its current tool session is 97446 on
 port 34667. It checks the pinned frame sequence and preceding output. This fixture
 has not yet reached it successfully. The browser still runs build 87d8a3c3;
 worker code runs the queue branch checkpoint 4ce39f57.
+
+
+## Explicit task budget for new requests
+
+The shared segment, context and thematic create form now exposes the existing
+request taskByteLimit, from 4,096 to 1,048,576 bytes. Its default remains 65,536.
+The explanation includes instructions, complete material and preceding output,
+states that source text is not shortened, and distinguishes this bound from
+token or price limits. A retained request displays its original budget in a
+locked field. Changing the form for a new request does not change old intent,
+provider permission or retry scope.
+
+All 32 create-panel tests and changed-file lint pass. The selected 131,072-byte
+budget survives a lost reply and remount as exact saved intent. Empty, fractional,
+under-minimum and over-maximum budgets disable saving. A harmless comment passes;
+ignoring the selected budget and removing invalid-budget gating fail assertions.
+`task-budget-controls.json` records those controls. This is a bounded recovery
+mechanism, not proof that any declared budget will accommodate every continuation.
+The same long context contribution still needs a new identified-build journey
+with a separately saved budget. Precise staff-facing resource diagnosis and the
+context/thematic queue acceptance remain unfinished.

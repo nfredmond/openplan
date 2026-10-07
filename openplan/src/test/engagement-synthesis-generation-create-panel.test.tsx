@@ -212,6 +212,34 @@ describe("staff analysis request creation", () => {
     await screen.findByText("Analysis request saved. Saving a request does not grant provider execution permission."); expect(postCount).toBe(2);
   });
 
+  it("retains the chosen task budget across a lost reply and remount", async () => {
+    const f = fixture(); let original = "";
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async (url, init) => {
+      if (init?.method === "POST") {
+        if (!original) { original = String(init.body); throw new Error("lost budget reply"); }
+        expect(init.body).toBe(original); return json(f.receipt(original));
+      }
+      return json(String(url).includes("/synthesis/preparation") ? null : f.page);
+    });
+    vi.stubGlobal("fetch", fetcher); const view = render(<SynthesisGenerationCreatePanel {...f.props} />); await choose(f);
+    fireEvent.change(screen.getByLabelText("Maximum task bytes"), { target: { value: "131072" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save analysis request" })); await screen.findByText("lost budget reply");
+    expect(JSON.parse(JSON.parse(original).intentText).taskByteLimit).toBe(131072);
+    view.unmount(); render(<SynthesisGenerationCreatePanel {...f.props} />);
+    const retry = await screen.findByRole("button", { name: "Retry saved analysis request" });
+    expect(screen.getByLabelText("Maximum task bytes")).toBeDisabled();
+    expect(screen.getByLabelText("Maximum task bytes")).toHaveValue(131072);
+    fireEvent.click(retry); await screen.findByText("Analysis request saved. Saving a request does not grant provider execution permission.");
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(2);
+  });
+  it.each(["", "4095", "1048577", "65536.5"])("refuses invalid task budget %s before sending", async value => {
+    const f = fixture(), fetcher = vi.fn<typeof fetch>().mockResolvedValue(json(f.page));
+    vi.stubGlobal("fetch", fetcher); render(<SynthesisGenerationCreatePanel {...f.props} />); await choose(f);
+    fireEvent.change(screen.getByLabelText("Maximum task bytes"), { target: { value } });
+    expect(screen.getByRole("button", { name: "Save analysis request" })).toBeDisabled();
+    expect(screen.getByText("Enter a whole number from 4,096 to 1,048,576 bytes.")).toBeTruthy();
+    expect(fetcher.mock.calls.some(([, init]) => init?.method === "POST")).toBe(false);
+  });
   it("does not send when storage cannot retain the exact command", async () => {
     const f = fixture(), fetcher = vi.fn<typeof fetch>().mockResolvedValue(json(f.page)); vi.stubGlobal("fetch", fetcher);
     render(<SynthesisGenerationCreatePanel {...f.props} />); await choose(f);

@@ -14,7 +14,7 @@ import type { SynthesisContinuationProposal } from "@/lib/engagement/synthesis-c
 import { SynthesisPreparationPanel } from "./synthesis-preparation-panel";
 import { SynthesisGenerationCancelPanel } from "./synthesis-generation-cancel-panel";
 
-type GenerationChoice = { expanded: boolean; selection: ApiListedConnection | null; modelId: string };
+type GenerationChoice = { expanded: boolean; selection: ApiListedConnection | null; modelId: string; taskBytes?: string };
 export type SynthesisGenerationChoiceMemory = { scope: SynthesisGenerationClientScope; current: GenerationChoice | null };
 type Props = SynthesisGenerationClientScope & { onAccessLost: () => void; onCreated: () => void; choiceMemory?: SynthesisGenerationChoiceMemory; continuation?: SynthesisContinuationProposal };
 type Receipt = Awaited<ReturnType<typeof sendPendingSynthesisGeneration>>;
@@ -43,6 +43,8 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
   const [copies, setCopies] = useState<ReturnType<typeof listPreservedSynthesisGeneration>>([]);
   const [connections, setConnections] = useState<ApiListedConnection[]>([]), [next, setNext] = useState<number | null>(null);
   const [selection, setSelection] = useState<ApiListedConnection | null>(memory.current?.selection ?? null), [modelId, setModelId] = useState(memory.current?.modelId ?? "");
+  const [taskBytes, setTaskBytes] = useState(memory.current?.taskBytes ?? "65536");
+  const taskBudget = synthesisGenerationRequestIntentSchema.shape.taskByteLimit.safeParse(Number(taskBytes));
   const [loading, setLoading] = useState(false), [choicesError, setChoicesError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null), [receipt, setReceipt] = useState<Receipt | null>(null);
   const activeRead = useRef<AbortController | null>(null), activeWrite = useRef<AbortController | null>(null), mounted = useRef(false), writing = useRef(false);
@@ -87,7 +89,7 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
   const revision = connection?.current_revision;
   const selectionCurrent = Boolean(connection && !connection.revoked_at && revision && connections.some(row => row.id === connection.id &&
     !row.revoked_at && row.current_revision_id === revision.id && row.current_revision?.configuration_hash === revision.configuration_hash));
-  const canCreate = ready && !blocked && !pending && !receipt && !busy && !loading && !choicesError && selectionCurrent && revision?.configuration.modelIds.includes(modelId);
+  const canCreate = taskBudget.success && ready && !blocked && !pending && !receipt && !busy && !loading && !choicesError && selectionCurrent && revision?.configuration.modelIds.includes(modelId);
 
   async function send(command: PendingSynthesisGenerationCommand) {
     if (writing.current) return;
@@ -108,15 +110,15 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
     } finally { writing.current = false; if (isCurrent()) setBusy(false); }
   }
   function choose(next: Partial<GenerationChoice>) {
-    const value = { expanded, selection, modelId, ...next };
+    const value = { expanded, selection, modelId, taskBytes, ...next };
     memory.current = pending || receipt ? null : value;
-    setExpanded(value.expanded); setSelection(value.selection); setModelId(value.modelId);
+    setExpanded(value.expanded); setSelection(value.selection); setModelId(value.modelId); setTaskBytes(value.taskBytes ?? "65536");
   }
   function create() {
     if (!canCreate || !connection || !revision) return;
     try {
       const intentText = JSON.stringify(synthesisGenerationRequestIntentSchema.parse({ schemaVersion: 1, sourceId, sourceSha256,
-        connectionId: connection.id, configurationRevisionId: revision.id, configurationHash: revision.configuration_hash, modelId, taskByteLimit: 65_536 }));
+        connectionId: connection.id, configurationRevisionId: revision.id, configurationHash: revision.configuration_hash, modelId, taskByteLimit: Number(taskBytes) }));
       const requestId = crypto.randomUUID();
       void send({ version: 1, ...scope, intentText, command: continuation
         ? { operation: "continue", requestId, intentText, continuation }
@@ -154,6 +156,10 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
           <label className="block text-sm">Analysis model<select className={inputClass} disabled={busy || Boolean(pending) || blocked} value={modelId} onChange={event => choose({ modelId: event.target.value })}>
             <option value="">Choose a model</option>{revision.configuration.modelIds.map(model => <option key={model} value={model}>{model}</option>)}
           </select></label></> : null}
+        <label className="block text-sm">Maximum task bytes<input className={inputClass} type="number" min="4096" max="1048576" step="1"
+          disabled={busy || Boolean(pending) || blocked} value={pending ? synthesisGenerationRequestIntentSchema.parse(JSON.parse(pending.intentText)).taskByteLimit : taskBytes} onChange={event => choose({ taskBytes: event.target.value })} /></label>
+        <p className="text-sm text-muted-foreground">This limit includes instructions, saved material and preceding output. Work stops if the complete task exceeds it; source text is not shortened. Larger limits may increase provider usage. This is not a token or price limit. A saved request keeps its original limit when retried.</p>
+        {!taskBudget.success ? <p role="alert">Enter a whole number from 4,096 to 1,048,576 bytes.</p> : null}
         <p className="text-sm text-muted-foreground">This workflow currently uses saved OpenAI-compatible APIs. Installed provider connections are available for supported project tasks. Saving this request does not send data, start a model, or accept provider charges.</p>
         <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" disabled={loading || busy} onClick={() => void loadChoices()}>Refresh analysis providers</Button>
           {next !== null ? <Button type="button" variant="outline" disabled={loading || busy} onClick={() => void loadChoices(next)}>Load more analysis providers</Button> : null}
