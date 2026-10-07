@@ -1,0 +1,137 @@
+{
+  "results": [
+    {
+      "name": "sql-harmless",
+      "observed": "survived",
+      "expectedEvidence": "",
+      "exitCode": 0,
+      "valid": true,
+      "seconds": 4.124
+    },
+    {
+      "name": "store-harmless",
+      "observed": "survived",
+      "expectedEvidence": "",
+      "exitCode": 0,
+      "valid": true,
+      "seconds": 1.132
+    },
+    {
+      "name": "schema-harmless",
+      "observed": "survived",
+      "expectedEvidence": "",
+      "exitCode": 0,
+      "valid": true,
+      "seconds": 1.156
+    },
+    {
+      "name": "sql-permission",
+      "observed": "caught",
+      "expectedEvidence": "viewer denied: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.044
+    },
+    {
+      "name": "sql-actor-replay",
+      "observed": "caught",
+      "expectedEvidence": "different writer cannot recover another actor command: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.061
+    },
+    {
+      "name": "sql-exact-retry",
+      "observed": "caught",
+      "expectedEvidence": "changed retry bytes denied: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.042
+    },
+    {
+      "name": "sql-replay-result",
+      "observed": "caught",
+      "expectedEvidence": "exact replay after current state changes",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.299
+    },
+    {
+      "name": "sql-current-pointer",
+      "observed": "caught",
+      "expectedEvidence": "changed current adopted pointer: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.086
+    },
+    {
+      "name": "sql-version-state",
+      "observed": "caught",
+      "expectedEvidence": "superseded selected version: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 3.997
+    },
+    {
+      "name": "sql-version-hash",
+      "observed": "caught",
+      "expectedEvidence": "changed adopted hash: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 3.894
+    },
+    {
+      "name": "sql-source-json",
+      "observed": "caught",
+      "expectedEvidence": "stored adopted snapshot mismatch: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 3.909
+    },
+    {
+      "name": "sql-source-hash",
+      "observed": "caught",
+      "expectedEvidence": "changed adopted snapshot bytes: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.181
+    },
+    {
+      "name": "sql-source-plan",
+      "observed": "caught",
+      "expectedEvidence": "retained source identity mismatch: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.264
+    },
+    {
+      "name": "sql-source-version",
+      "observed": "caught",
+      "expectedEvidence": "retained source identity mismatch: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.744
+    },
+    {
+      "name": "sql-source-number",
+      "observed": "caught",
+      "expectedEvidence": "retained source identity mismatch: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.122
+    },
+    {
+      "name": "sql-date-order",
+      "observed": "unexpected failure",
+      "expectedEvidence": "invalid command field: accepted",
+      "exitCode": 1,
+      "valid": false,
+      "seconds": 4.235
+    }
+  ],
+  "restored": {
+    "supabase/migrations/20261016000012_land_use_plan_implementation_report_commands.sql": "4deac02d24f1941af8d7805a5991551cd682feb0998103cf9cfa9b1e1e0acf69",
+    "src/lib/land-use-plans/implementation-report-store.ts": "3e947452a0eb04450aeb4577d5fabe61e20fc206e1c7eb41dbc62b875ee82b01",
+    "src/lib/land-use-plans/implementation-report-command.ts": "1cc62c19245c2b9dfa47f9e51b97d9213cf386f242ff9a20254591529d67bdb2"
+  }
+}

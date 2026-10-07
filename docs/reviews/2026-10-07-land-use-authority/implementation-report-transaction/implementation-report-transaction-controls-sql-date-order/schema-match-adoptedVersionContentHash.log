@@ -1,0 +1,52 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-store.test.ts (56 tests | 1 failed) 33ms
+   × refuses incomplete or inconsistent receipts {"adoptedVersionContentHash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"} 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses incomplete or inconsistent receipts {"adoptedVersionContentHash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
+AssertionError: promise resolved "{ …(17) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "actorId": "35000000-0000-4000-8000-000000000003",
++   "adoptedVersionContentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
++   "artifactId": "35000000-0000-4000-8000-000000000007",
++   "commandId": "35000000-0000-4000-8000-000000000005",
++   "commandSha256": "cf9b50d1313004bd5d582041b5279b0a864a4a9abcdb3bb3e175f228b4ab65db",
++   "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++   "generatedAt": "2026-10-07T00:00:00.123456Z",
++   "implementationReportId": "35000000-0000-4000-8000-000000000008",
++   "planId": "35000000-0000-4000-8000-000000000001",
++   "replayed": false,
++   "reportId": "35000000-0000-4000-8000-000000000006",
++   "reportingPeriodEnd": "2026-10-07",
++   "reportingPeriodStart": "2026-01-01",
++   "summary": null,
++   "title": "SYNTHETIC report",
++   "versionId": "35000000-0000-4000-8000-000000000004",
++   "workspaceId": "35000000-0000-4000-8000-000000000002",
+  }
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:104:65
+    102|   "refuses incomplete or inconsistent receipts %j", async patch => {
+    103|     rpc.mockResolvedValue({ data: { ...receipt, ...patch }, error: nul…
+    104|     await expect(executeImplementationReport(client, scope, raw)).reje…
+       |                                                                 ^
+    105|   });
+    106| it("requires replay confirmation when a command was already found", as…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 55 passed (56)
+   Start at  13:44:38
+   Duration  686ms (transform 108ms, setup 58ms, import 149ms, tests 33ms, environment 342ms)
+

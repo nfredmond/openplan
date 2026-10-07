@@ -73,6 +73,8 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "land_use_plan_implementation_report_commands.command_text", category: "READ_IN_SQL", reason: "The implementation report transaction compares exact original request bytes before replaying its retained receipt." },
+  { column: "land_use_plan_implementation_report_commands.command_sha256", category: "WRITE_ONLY", reason: "The generated digest preserves original command identity for audit. The server verifies the matching commandSha256 in the retained receipt." },
   { column: "land_use_plan_rule_reconciliation_commands.command_text", category: "READ_IN_SQL", reason: "reconcile_land_use_plan_rules compares exact original command bytes before returning the retained receipt." },
   { column: "land_use_plan_rule_reconciliation_commands.command_sha256", category: "WRITE_ONLY", reason: "Generated digest supports command audit. Native replay compares exact command_text; the application does not display this digest." },
   { column: "land_use_plan_rule_reconciliation_commands.descriptor_text", category: "WRITE_ONLY", reason: "Original rules are retained for audit and generate descriptor_sha256. Replay returns the original receipt without consulting current rules." },

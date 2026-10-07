@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-store.test.ts (56 tests | 1 failed) 32ms
+   × refuses invalid command before database access, case 4 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses invalid command before database access, case 4
+AssertionError: expected Error: unavailable { …(2) } to match object { kind: 'invalid', status: 400 }
+
+- Expected
++ Received
+
+- {
+-   "kind": "invalid",
+-   "status": 400,
++ ImplementationReportError {
++   "kind": "unavailable",
++   "status": 503,
+  }
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:116:66
+    114|   JSON.stringify({ ...command, extra: true }), JSON.stringify({ ...com…
+    115|   "refuses invalid command before database access, case %#", async tex…
+    116|     await expect(executeImplementationReport(client, scope, text)).rej…
+       |                                                                  ^
+    117|     expect(from).not.toHaveBeenCalled(); expect(rpc).not.toHaveBeenCal…
+    118|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 55 passed (56)
+   Start at  13:44:49
+   Duration  664ms (transform 88ms, setup 54ms, import 127ms, tests 32ms, environment 345ms)
+

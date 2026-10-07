@@ -1,97 +1,52 @@
-import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-
-import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { readBytesWithLimitStreaming } from "@/lib/http/body-limit";
+import { requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 import { loadLandUsePlanAccess } from "@/lib/land-use-plans/api";
+import { IMPLEMENTATION_REPORT_COMMAND_LIMIT, implementationReportCommandSchema } from "@/lib/land-use-plans/implementation-report-command";
+import { executeImplementationReport, ImplementationReportError } from "@/lib/land-use-plans/implementation-report-store";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 
-const paramsSchema = z.object({ planId: z.string().uuid() });
-const payloadSchema = z.object({
-  reportingPeriodStart: z.string().date(),
-  reportingPeriodEnd: z.string().date(),
-  title: z.string().trim().min(1).max(180),
-  summary: z.string().max(20_000).nullable().optional(),
-}).strict().refine((value) => value.reportingPeriodEnd >= value.reportingPeriodStart, {
-  message: "Reporting period end must not precede its start",
-  path: ["reportingPeriodEnd"],
-});
+const paramsSchema = z.object({ planId: z.string().uuid() }).strict();
+const headers = { "Cache-Control": "private, no-store" };
 type Context = { params: Promise<{ planId: string }> };
 
 export async function POST(request: NextRequest, context: Context) {
   const audit = createApiAuditLogger("land-use-plans.implementation-reports", request);
   audit.info("land_use_plan_implementation_report_requested");
-  const params = paramsSchema.safeParse(await context.params);
-  if (!params.success) return NextResponse.json({ error: "Invalid plan id" }, { status: 400 });
-  const body = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
-  if (!body.ok) return body.response;
-  const parsed = payloadSchema.safeParse(body.data);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid implementation report", issues: parsed.error.issues }, { status: 400 });
-  const loaded = await loadLandUsePlanAccess(params.data.planId, { write: true });
-  if (!loaded.ok) return loaded.response;
-  const { access } = loaded;
-  if (!access.plan.current_adopted_version_id) return NextResponse.json({ error: "Adopt the plan before generating an implementation report" }, { status: 409 });
-  const { data: version, error: versionError } = await access.supabase.from("land_use_plan_versions")
-    .select("id, content_hash, state").eq("id", access.plan.current_adopted_version_id).eq("state", "adopted").maybeSingle();
-  if (versionError) return NextResponse.json({ error: "Failed to verify the adopted version" }, { status: 500 });
-  if (!version?.content_hash) return NextResponse.json({ error: "The adopted version is not frozen" }, { status: 409 });
-  const { data: actions, error: actionsError } = await access.supabase.from("land_use_plan_implementation_actions")
-    .select("id, title, description, responsible_party, due_on, status, project_id, program_id, evidence_document_id, updated_at")
-    .eq("version_id", version.id).order("id");
-  if (actionsError) return NextResponse.json({ error: "Failed to read implementation status" }, { status: 500 });
-  const snapshot = {
-    planId: access.plan.id,
-    adoptedVersionId: version.id,
-    adoptedVersionContentHash: version.content_hash,
-    reportingPeriodStart: parsed.data.reportingPeriodStart,
-    reportingPeriodEnd: parsed.data.reportingPeriodEnd,
-    actions: actions ?? [],
-  };
-  const contentHash = createHash("sha256").update(JSON.stringify(snapshot)).digest("hex");
-
-  const { data: report, error: reportError } = await access.supabase.from("reports").insert({
-    workspace_id: access.plan.workspace_id,
-    project_id: null,
-    land_use_plan_id: access.plan.id,
-    title: parsed.data.title,
-    report_type: "land_use_plan_implementation_report",
-    status: "generated",
-    summary: parsed.data.summary ?? `Implementation status for ${parsed.data.reportingPeriodStart} through ${parsed.data.reportingPeriodEnd}.`,
-    created_by: access.userId,
-    generated_at: new Date().toISOString(),
-    latest_artifact_kind: "html",
-  }).select("id").single();
-  if (reportError) return NextResponse.json({ error: "Failed to create implementation report" }, { status: 500 });
-  const { error: artifactError } = await access.supabase.from("report_artifacts").insert({
-    report_id: report.id,
-    artifact_kind: "html",
-    generated_by: access.userId,
-    metadata_json: {
-      kind: "land_use_plan_implementation_report",
-      landUsePlanId: access.plan.id,
-      contentHash,
-      snapshot,
-      summary: parsed.data.summary ?? null,
-      confidentialityExclusions: ["land_use_plan_consultation_records", "confidential_notes", "sensitive_location_flags"],
-    },
-  });
-  if (artifactError) {
-    const cleanup = await access.supabase.from("reports").delete().eq("id", report.id).select("id");
-    if (cleanup.error) audit.error("land_use_plan_implementation_report_cleanup_failed", { error: cleanup.error });
-    return NextResponse.json({ error: "Failed to freeze implementation report artifact" }, { status: 500 });
+  try {
+    const { planId } = paramsSchema.parse(await context.params);
+    if (["x-openplan-assistant-execution-source", "x-openplan-assistant-input-hash", "x-openplan-assistant-approval-id"].some(key => request.headers.has(key))) {
+      throw new ImplementationReportError("forbidden");
+    }
+    try { requireProviderBrowserOrigin(request); } catch { throw new ImplementationReportError("forbidden"); }
+    const loaded = await loadLandUsePlanAccess(planId, { write: true });
+    if (!loaded.ok) { loaded.response.headers.set("Cache-Control", headers["Cache-Control"]); return loaded.response; }
+    const { access } = loaded;
+    if (request.headers.get("x-openplan-expected-user") !== access.userId
+      || request.headers.get("x-openplan-expected-workspace") !== access.plan.workspace_id) throw new ImplementationReportError("forbidden");
+    const body = await readBytesWithLimitStreaming(request, IMPLEMENTATION_REPORT_COMMAND_LIMIT);
+    if (!body.ok) { body.response.headers.set("Cache-Control", headers["Cache-Control"]); return body.response; }
+    let commandText: string;
+    try { commandText = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(body.bytes); }
+    catch { throw new ImplementationReportError("invalid"); }
+    const command = implementationReportCommandSchema.parse(JSON.parse(commandText));
+    const scope = { planId, workspaceId: access.plan.workspace_id, actorId: access.userId };
+    const result = await executeImplementationReport(createServiceRoleClient(), scope, commandText);
+    audit.info("land_use_plan_implementation_report_retained", { planId, commandId: command.commandId, reportId: result.reportId, replayed: result.replayed });
+    return NextResponse.json(result, { status: result.replayed ? 200 : 201, headers });
+  } catch (error) {
+    const failed = error instanceof ImplementationReportError ? error : error instanceof z.ZodError || error instanceof SyntaxError
+      ? new ImplementationReportError("invalid") : new ImplementationReportError("unavailable");
+    audit.warn("land_use_plan_implementation_report_unconfirmed", { kind: failed.kind });
+    const messages = {
+      invalid: "The saved report request is invalid. Keep a copy before reviewing the plan.",
+      forbidden: "Current staff access in the same account and workspace is required. Report generation is not available to agents.",
+      missing: "This plan is no longer available in the selected workspace.",
+      conflict: "The adopted plan changed or this request conflicts with an earlier command. Keep the request and review the plan before generating another report.",
+      unavailable: "OpenPlan could not confirm the report. Keep this exact request and check again before generating another report.",
+    };
+    return NextResponse.json({ kind: failed.kind, error: messages[failed.kind] }, { status: failed.status, headers });
   }
-  const { data: implementationReport, error } = await access.supabase.from("land_use_plan_implementation_reports").insert({
-    workspace_id: access.plan.workspace_id,
-    plan_id: access.plan.id,
-    adopted_version_id: version.id,
-    reporting_period_start: parsed.data.reportingPeriodStart,
-    reporting_period_end: parsed.data.reportingPeriodEnd,
-    summary: parsed.data.summary ?? null,
-    action_status_snapshot: actions ?? [],
-    content_hash: contentHash,
-    report_id: report.id,
-    generated_by: access.userId,
-  }).select("id").single();
-  if (error) return NextResponse.json({ error: "Report artifact was created but the plan register could not record it" }, { status: 500 });
-  return NextResponse.json({ implementationReportId: implementationReport.id, reportId: report.id, contentHash }, { status: 201 });
 }

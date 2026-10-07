@@ -35,6 +35,12 @@ Repeated inspection of an engagement contribution now returns keyboard focus
 to its retained evidence. Desktop and 390px T3 checks cover both pointer and
 keyboard activation. This correction changes no source records or approvals.
 
+Implementation-report creation now saves the report, artifact, frozen action-status
+snapshot and exact-command receipt in one database transaction. Apply additive
+migration `20261016000012_land_use_plan_implementation_report_commands.sql` before
+using this backend. An explicit retry returns the retained receipt after checking
+current write access. Browser recovery is tracked in the dependent implementation.
+
 Restored workspace deletion now permits finalized GIS versions and features to
 follow their deleted parent. Direct edits to finalized records remain refused,
 including moving a feature out of a finalized version. Migration

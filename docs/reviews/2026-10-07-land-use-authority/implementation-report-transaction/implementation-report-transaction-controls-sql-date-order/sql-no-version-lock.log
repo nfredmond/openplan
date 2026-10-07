@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+stderr | src/test/land-use-implementation-report-transaction-rls.test.ts > serializes report creation and action status edits in both native session orders
+{
+  syntheticFixtureIds: {
+    ACTOR: '0cc9defb-74ab-404e-9b64-b23c9a48e4ed',
+    WORKSPACE: 'f2fd2657-395f-44bb-90b8-fab2256c439b',
+    PLAN: 'f12468f6-741c-47bc-af71-72b84b82fc53',
+    VERSION: '4050c2c9-0af0-4050-8b16-9afe55488f48',
+    COMMAND: '809d4f17-b0fb-4da4-8373-79d9fe78d984',
+    ACTION: 'ff5ac240-358c-4f97-9be0-04a43f14364b'
+  },
+  nativeError: "ERROR:  Report accepted while peer held SELECT id FROM public.land_use_plan_versions WHERE id='4050c2c9-0af0-4050-8b16-9afe55488f48' FOR NO KEY UPDATE\n" +
+    'CONTEXT:  PL/pgSQL function inline_code_block line 22 at RAISE\n',
+  cleanupError: ''
+}
+
+ ❯ src/test/land-use-implementation-report-transaction-rls.test.ts (2 tests | 1 failed) 3204ms
+   × serializes report creation and action status edits in both native session orders 1706ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-transaction-rls.test.ts > serializes report creation and action status edits in both native session orders
+AssertionError: ERROR:  Report accepted while peer held SELECT id FROM public.land_use_plan_versions WHERE id='4050c2c9-0af0-4050-8b16-9afe55488f48' FOR NO KEY UPDATE
+CONTEXT:  PL/pgSQL function inline_code_block line 22 at RAISE
+: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ src/test/land-use-implementation-report-transaction-rls.test.ts:50:81
+     48|     if (result?.status !== 0 || cleanup.status !== 0) console.error({ …
+     49|   }
+     50|   expect(result?.error).toBeUndefined(); expect(result?.status, result…
+       |                                                                                 ^
+     51|   expect(result?.stdout).toContain("implementation report locks verifi…
+     52|   expect(cleanup?.error).toBeUndefined(); expect(cleanup?.status, clea…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  13:44:05
+   Duration  3.73s (transform 40ms, setup 57ms, import 40ms, tests 3.20s, environment 328ms)
+
