@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-transaction-rls.test.ts (2 tests | 1 failed) 3206ms
+   × creates one implementation report atomically and replays only exact currently permitted requests 1514ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-transaction-rls.test.ts > creates one implementation report atomically and replays only exact currently permitted requests
+AssertionError: ERROR:  journal private
+CONTEXT:  PL/pgSQL function pg_temp_90.report_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.report_assert(NOT has_table_privilege('authenticated','public.land_use_plan_implementation_report_commands','SELECT'),'journal private')"
+PL/pgSQL function inline_code_block line 56 at PERFORM
+: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ src/test/land-use-implementation-report-transaction-rls.test.ts:17:78
+     15|     input: `BEGIN; SET LOCAL statement_timeout='15s'; ${migration}\n${…
+     16|   });
+     17|   expect(result.error).toBeUndefined(); expect(result.status, result.s…
+       |                                                                              ^
+     18|   expect(result.stdout).toContain("atomic implementation report verifi…
+     19| }, 30_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  13:45:58
+   Duration  3.72s (transform 39ms, setup 56ms, import 37ms, tests 3.21s, environment 334ms)
+

@@ -1,0 +1,385 @@
+{
+  "results": [
+    {
+      "name": "sql-date-order",
+      "observed": "caught",
+      "expectedEvidence": "invalid command field: unexpected 23514",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 5.265
+    },
+    {
+      "name": "sql-extra-fields",
+      "observed": "caught",
+      "expectedEvidence": "invalid command field: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.209
+    },
+    {
+      "name": "sql-title-length",
+      "observed": "caught",
+      "expectedEvidence": "invalid command field: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.116
+    },
+    {
+      "name": "sql-title-trim",
+      "observed": "caught",
+      "expectedEvidence": "invalid command field: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 3.993
+    },
+    {
+      "name": "sql-summary-length",
+      "observed": "caught",
+      "expectedEvidence": "invalid command field: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 3.961
+    },
+    {
+      "name": "sql-command-id",
+      "observed": "caught",
+      "expectedEvidence": "invalid command field: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.14
+    },
+    {
+      "name": "sql-action-order",
+      "observed": "caught",
+      "expectedEvidence": "retained bytes and ordered actions",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 3.973
+    },
+    {
+      "name": "sql-action-status",
+      "observed": "caught",
+      "expectedEvidence": "Committed status was not captured",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.319
+    },
+    {
+      "name": "sql-private-projection",
+      "observed": "caught",
+      "expectedEvidence": "public action projection",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.14
+    },
+    {
+      "name": "sql-artifact-hash",
+      "observed": "caught",
+      "expectedEvidence": "artifact retains exact snapshot",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.324
+    },
+    {
+      "name": "sql-register-hash",
+      "observed": "caught",
+      "expectedEvidence": "register matches artifact",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.24
+    },
+    {
+      "name": "sql-fallback-summary",
+      "observed": "caught",
+      "expectedEvidence": "report date and fallback summary",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.39
+    },
+    {
+      "name": "sql-no-plan-lock",
+      "observed": "caught",
+      "expectedEvidence": "Report accepted while peer held SELECT id FROM public.land_use_plans",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.075
+    },
+    {
+      "name": "sql-no-permission-lock",
+      "observed": "caught",
+      "expectedEvidence": "Report accepted while peer held SELECT user_id",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.21
+    },
+    {
+      "name": "sql-no-version-lock",
+      "observed": "caught",
+      "expectedEvidence": "Report accepted while peer held SELECT id FROM public.land_use_plan_versions",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.294
+    },
+    {
+      "name": "sql-no-append-only",
+      "observed": "caught",
+      "expectedEvidence": "receipt append-only: accepted",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.141
+    },
+    {
+      "name": "store-receipt-read-error",
+      "observed": "caught",
+      "expectedEvidence": "refuses unavailable or mismatched receipt discovery",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.172
+    },
+    {
+      "name": "store-receipt-identity",
+      "observed": "caught",
+      "expectedEvidence": "refuses unavailable or mismatched receipt discovery",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.161
+    },
+    {
+      "name": "store-version-read-error",
+      "observed": "caught",
+      "expectedEvidence": "refuses unavailable version reads",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.195
+    },
+    {
+      "name": "store-version-id",
+      "observed": "caught",
+      "expectedEvidence": "refuses missing or altered adopted sources",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.192
+    },
+    {
+      "name": "store-version-plan",
+      "observed": "caught",
+      "expectedEvidence": "refuses missing or altered adopted sources",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.217
+    },
+    {
+      "name": "store-version-workspace",
+      "observed": "caught",
+      "expectedEvidence": "refuses missing or altered adopted sources",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.202
+    },
+    {
+      "name": "store-version-state",
+      "observed": "caught",
+      "expectedEvidence": "refuses missing or altered adopted sources",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.177
+    },
+    {
+      "name": "store-version-hash",
+      "observed": "caught",
+      "expectedEvidence": "refuses missing or altered adopted sources",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.159
+    },
+    {
+      "name": "store-frozen-identity",
+      "observed": "caught",
+      "expectedEvidence": "refuses missing or altered adopted sources",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.106
+    },
+    {
+      "name": "store-raw-sha",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.148
+    },
+    {
+      "name": "store-replay-confirmation",
+      "observed": "caught",
+      "expectedEvidence": "requires replay confirmation",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.175
+    },
+    {
+      "name": "store-receipt-projection",
+      "observed": "caught",
+      "expectedEvidence": "verifies the selected adopted source",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.184
+    },
+    {
+      "name": "store-version-projection",
+      "observed": "caught",
+      "expectedEvidence": "verifies the selected adopted source",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.199
+    },
+    {
+      "name": "store-scope-filter",
+      "observed": "caught",
+      "expectedEvidence": "verifies the selected adopted source",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.19
+    },
+    {
+      "name": "store-exact-rpc-bytes",
+      "observed": "caught",
+      "expectedEvidence": "verifies the selected adopted source",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.153
+    },
+    {
+      "name": "store-byte-limit",
+      "observed": "caught",
+      "expectedEvidence": "refuses invalid command",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.168
+    },
+    {
+      "name": "schema-match-actorId",
+      "observed": "caught",
+      "expectedEvidence": "refuses substituted receipt",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.187
+    },
+    {
+      "name": "schema-match-workspaceId",
+      "observed": "caught",
+      "expectedEvidence": "refuses substituted receipt",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.155
+    },
+    {
+      "name": "schema-match-planId",
+      "observed": "caught",
+      "expectedEvidence": "refuses substituted receipt",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.172
+    },
+    {
+      "name": "schema-match-commandId",
+      "observed": "caught",
+      "expectedEvidence": "refuses substituted receipt",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.176
+    },
+    {
+      "name": "schema-match-versionId",
+      "observed": "caught",
+      "expectedEvidence": "refuses substituted receipt",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.172
+    },
+    {
+      "name": "schema-match-adoptedVersionContentHash",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.213
+    },
+    {
+      "name": "schema-match-reportingPeriodStart",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.179
+    },
+    {
+      "name": "schema-match-reportingPeriodEnd",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.208
+    },
+    {
+      "name": "schema-match-title",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.182
+    },
+    {
+      "name": "schema-match-summary",
+      "observed": "caught",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.169
+    },
+    {
+      "name": "schema-title-trim",
+      "observed": "caught",
+      "expectedEvidence": "refuses invalid command",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.137
+    },
+    {
+      "name": "schema-date-order",
+      "observed": "caught",
+      "expectedEvidence": "refuses invalid command",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.164
+    },
+    {
+      "name": "schema-unicode",
+      "observed": "caught",
+      "expectedEvidence": "refuses invalid command",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.184
+    },
+    {
+      "name": "schema-title-bound",
+      "observed": "caught",
+      "expectedEvidence": "refuses invalid command",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.185
+    },
+    {
+      "name": "schema-summary-bound",
+      "observed": "caught",
+      "expectedEvidence": "refuses invalid command",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.192
+    }
+  ],
+  "restored": {
+    "supabase/migrations/20261016000012_land_use_plan_implementation_report_commands.sql": "4deac02d24f1941af8d7805a5991551cd682feb0998103cf9cfa9b1e1e0acf69",
+    "src/lib/land-use-plans/implementation-report-store.ts": "3e947452a0eb04450aeb4577d5fabe61e20fc206e1c7eb41dbc62b875ee82b01",
+    "src/lib/land-use-plans/implementation-report-command.ts": "1cc62c19245c2b9dfa47f9e51b97d9213cf386f242ff9a20254591529d67bdb2"
+  }
+}

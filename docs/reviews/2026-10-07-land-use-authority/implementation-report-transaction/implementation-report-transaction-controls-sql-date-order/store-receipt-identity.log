@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-store.test.ts (56 tests | 2 failed) 29ms
+   × refuses unavailable or mismatched receipt discovery {"error":null,"data":{}} 3ms
+   × refuses unavailable or mismatched receipt discovery {"error":null,"data":{"command_id":"35000000-0000-4000-8000-000000000009"}} 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses unavailable or mismatched receipt discovery {"error":null,"data":{}}
+ FAIL  src/test/land-use-implementation-report-store.test.ts > refuses unavailable or mismatched receipt discovery {"error":null,"data":{"command_id":"35000000-0000-4000-8000-000000000009"}}
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "create_land_use_plan_implementation_report",
+      Object {
+        "p_actor_id": "35000000-0000-4000-8000-000000000003",
+        "p_adopted_snapshot_text": null,
+        "p_command_id": "35000000-0000-4000-8000-000000000005",
+        "p_command_text": " 
+    {"operation":"generate","commandId":"35000000-0000-4000-8000-000000000005","versionId":"35000000-0000-4000-8000-000000000004","expectedVersionHash":"a92f35d3788c8e92430534b9ff64a0bbe5ec7e41c5ca3d60b204f97caf661cef","reportingPeriodStart":"2026-01-01","reportingPeriodEnd":"2026-10-07","title":"SYNTHETIC report","summary":null}
+    ",
+        "p_plan_id": "35000000-0000-4000-8000-000000000001",
+        "p_workspace_id": "35000000-0000-4000-8000-000000000002",
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:67:54
+     65|   "refuses unavailable or mismatched receipt discovery %j", async row …
+     66|     previous = row; await expect(executeImplementationReport(client, s…
+     67|     expect(queries).toHaveLength(1); expect(rpc).not.toHaveBeenCalled(…
+       |                                                      ^
+     68|   });
+     69| it("refuses unavailable version reads", async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 54 passed (56)
+   Start at  13:44:14
+   Duration  643ms (transform 88ms, setup 55ms, import 125ms, tests 29ms, environment 330ms)
+

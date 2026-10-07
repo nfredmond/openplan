@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-execution-controls-20261006/openplan
+
+
+ Test Files  3 passed (3)
+      Tests  43 passed (43)
+   Start at  01:12:52
+   Duration  5.18s (transform 161ms, setup 138ms, import 628ms, tests 3.05s, environment 1.10s)
+

@@ -1,0 +1,755 @@
+{
+  "summary": {
+    "targetedMutants": 52,
+    "matched": 52,
+    "earlierSurvivors": [
+      {
+        "phase": "controls",
+        "name": "route-utf8",
+        "exitCode": 0,
+        "tests": 31,
+        "failedTests": 0,
+        "expectedFailure": "refuses malformed request",
+        "matched": false,
+        "failures": []
+      },
+      {
+        "phase": "controls-2",
+        "name": "control-preserve-edits",
+        "exitCode": 0,
+        "tests": 11,
+        "failedTests": 0,
+        "expectedFailure": "retains edits made",
+        "matched": false,
+        "failures": []
+      }
+    ],
+    "harmlessPerPhase": 5,
+    "finalRestored": 148,
+    "blindCategories": [
+      "Native database and RLS behavior",
+      "HTTP integration",
+      "Browser persistence and layout",
+      "Practitioner acceptance"
+    ]
+  },
+  "finalControls": [
+    {
+      "phase": "controls-2",
+      "name": "route-agent",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 3,
+      "expectedFailure": "refuses agent header",
+      "matched": true,
+      "failures": [
+        "implementation report route custody refuses agent header x-openplan-assistant-execution-source before privileged access",
+        "implementation report route custody refuses agent header x-openplan-assistant-input-hash before privileged access",
+        "implementation report route custody refuses agent header x-openplan-assistant-approval-id before privileged access"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-origin",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 3,
+      "expectedFailure": "refuses mismatched browser scope",
+      "matched": true,
+      "failures": [
+        "implementation report route custody refuses mismatched browser scope {\"origin\":\"https://other.invalid\"}",
+        "implementation report route custody refuses mismatched browser scope {\"origin\":\"\"}",
+        "implementation report route custody refuses mismatched browser scope {\"sec-fetch-site\":\"cross-site\"}"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-user",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 2,
+      "expectedFailure": "refuses mismatched browser scope",
+      "matched": true,
+      "failures": [
+        "implementation report route custody refuses mismatched browser scope {\"x-openplan-expected-user\":\"20000000-0000-4000-8000-000000000007\"}",
+        "implementation report route custody refuses mismatched browser scope {\"x-openplan-expected-user\":\"\"}"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-workspace",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 2,
+      "expectedFailure": "refuses mismatched browser scope",
+      "matched": true,
+      "failures": [
+        "implementation report route custody refuses mismatched browser scope {\"x-openplan-expected-workspace\":\"20000000-0000-4000-8000-000000000007\"}",
+        "implementation report route custody refuses mismatched browser scope {\"x-openplan-expected-workspace\":\"\"}"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-access",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 3,
+      "expectedFailure": "preserves access refusal",
+      "matched": true,
+      "failures": [
+        "implementation report route custody preserves access refusal 401",
+        "implementation report route custody preserves access refusal 403",
+        "implementation report route custody preserves access refusal 404"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-limit",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 1,
+      "expectedFailure": "bounds actual bytes",
+      "matched": true,
+      "failures": [
+        "implementation report route custody bounds actual bytes despite a smaller declared length"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-utf8",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 1,
+      "expectedFailure": "refuses malformed request",
+      "matched": true,
+      "failures": [
+        "implementation report route custody refuses malformed request 123,34,111,112,101,114,97,116,105,111,110,34,58,34,103,101,110,101,114,97,116,101,34,44,34,99,111,109,109,97,110,100,73,100,34,58,34,50,48,48,48,48,48,48,48,45,48,48,48,48,45,52,48,48,48,45,56,48,48,48,45,48,48,48,48,48,48,48,48,48,48,48,53,34,44,34,118,101,114,115,105,111,110,73,100,34,58,34,50,48,48,48,48,48,48,48,45,48,48,48,48,45,52,48,48,48,45,56,48,48,48,45,48,48,48,48,48,48,48,48,48,48,48,52,34,44,34,101,120,112,101,99,116,101,100,86,101,114,115,105,111,110,72,97,115,104,34,58,34,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,34,44,34,114,101,112,111,114,116,105,110,103,80,101,114,105,111,100,83,116,97,114,116,34,58,34,50,48,50,54,45,48,49,45,48,49,34,44,34,114,101,112,111,114,116,105,110,103,80,101,114,105,111,100,69,110,100,34,58,34,50,48,50,54,45,49,48,45,48,55,34,44,34,116,105,116,108,101,34,58,34,255,89,78,84,72,69,84,73,67,32,114,101,112,111,114,116,34,44,34,115,117,109,109,97,114,121,34,58,110,117,108,108,125 without transport"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-bom",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 1,
+      "expectedFailure": "refuses malformed request",
+      "matched": true,
+      "failures": [
+        "implementation report route custody refuses malformed request \ufeff{\"operation\":\"generate\",\"commandId\":\"20000000-0000-4000-8000-000000000005\",\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"expectedVersionHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"reportingPeriodStart\":\"2026-01-01\",\"reportingPeriodEnd\":\"2026-10-07\",\"title\":\"SYNTHETIC report\",\"summary\":null} without transport"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-command",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 4,
+      "expectedFailure": "refuses malformed request",
+      "matched": true,
+      "failures": [
+        "implementation report route custody refuses malformed request null without transport",
+        "implementation report route custody refuses malformed request {\"operation\":\"generate\",\"commandId\":\"20000000-0000-4000-8000-000000000005\",\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"expectedVersionHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"reportingPeriodStart\":\"2026-01-01\",\"reportingPeriodEnd\":\"2026-10-07\",\"title\":\"SYNTHETIC report\",\"summary\":null,\"unexpected\":true} without transport",
+        "implementation report route custody refuses malformed request {\"operation\":\"generate\",\"commandId\":\"20000000-0000-4000-8000-000000000005\",\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"expectedVersionHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"reportingPeriodStart\":\"2026-01-01\",\"reportingPeriodEnd\":\"2025-01-01\",\"title\":\"SYNTHETIC report\",\"summary\":null} without transport",
+        "implementation report route custody refuses malformed request {\"operation\":\"generate\",\"commandId\":\"invalid\",\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"expectedVersionHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"reportingPeriodStart\":\"2026-01-01\",\"reportingPeriodEnd\":\"2026-10-07\",\"title\":\"SYNTHETIC report\",\"summary\":null} without transport"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-bytes",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 1,
+      "expectedFailure": "passes exact bytes",
+      "matched": true,
+      "failures": [
+        "implementation report route custody passes exact bytes and authenticated scope to the sole transaction"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-replay-status",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 1,
+      "expectedFailure": "recovers a saved command",
+      "matched": true,
+      "failures": [
+        "implementation report route custody recovers a saved command without requiring a current adopted pointer at the route"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-cache",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 17,
+      "expectedFailure": "passes exact bytes",
+      "matched": true,
+      "failures": [
+        "implementation report route custody passes exact bytes and authenticated scope to the sole transaction",
+        "implementation report route custody refuses mismatched browser scope {\"origin\":\"https://other.invalid\"}",
+        "implementation report route custody refuses mismatched browser scope {\"origin\":\"\"}",
+        "implementation report route custody refuses mismatched browser scope {\"sec-fetch-site\":\"cross-site\"}",
+        "implementation report route custody refuses mismatched browser scope {\"x-openplan-expected-user\":\"20000000-0000-4000-8000-000000000007\"}",
+        "implementation report route custody refuses mismatched browser scope {\"x-openplan-expected-workspace\":\"20000000-0000-4000-8000-000000000007\"}",
+        "implementation report route custody refuses mismatched browser scope {\"x-openplan-expected-user\":\"\"}",
+        "implementation report route custody refuses mismatched browser scope {\"x-openplan-expected-workspace\":\"\"}",
+        "implementation report route custody preserves access refusal 401",
+        "implementation report route custody preserves access refusal 403",
+        "implementation report route custody preserves access refusal 404",
+        "implementation report route custody bounds actual bytes despite a smaller declared length",
+        "implementation report route custody keeps invalid failures distinct",
+        "implementation report route custody keeps forbidden failures distinct",
+        "implementation report route custody keeps missing failures distinct",
+        "implementation report route custody keeps conflict failures distinct",
+        "implementation report route custody keeps unavailable failures distinct"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-error-kind",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 25,
+      "expectedFailure": "keeps invalid failures distinct",
+      "matched": true,
+      "failures": [
+        "implementation report route custody refuses agent header x-openplan-assistant-execution-source before privileged access",
+        "implementation report route custody refuses agent header x-openplan-assistant-input-hash before privileged access",
+        "implementation report route custody refuses agent header x-openplan-assistant-approval-id before privileged access",
+        "implementation report route custody refuses mismatched browser scope {\"origin\":\"https://other.invalid\"}",
+        "implementation report route custody refuses mismatched browser scope {\"origin\":\"\"}",
+        "implementation report route custody refuses mismatched browser scope {\"sec-fetch-site\":\"cross-site\"}",
+        "implementation report route custody refuses mismatched browser scope {\"x-openplan-expected-user\":\"20000000-0000-4000-8000-000000000007\"}",
+        "implementation report route custody refuses mismatched browser scope {\"x-openplan-expected-workspace\":\"20000000-0000-4000-8000-000000000007\"}",
+        "implementation report route custody refuses mismatched browser scope {\"x-openplan-expected-user\":\"\"}",
+        "implementation report route custody refuses mismatched browser scope {\"x-openplan-expected-workspace\":\"\"}",
+        "implementation report route custody refuses malformed request { without transport",
+        "implementation report route custody refuses malformed request null without transport",
+        "implementation report route custody refuses malformed request {\"operation\":\"generate\",\"commandId\":\"20000000-0000-4000-8000-000000000005\",\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"expectedVersionHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"reportingPeriodStart\":\"2026-01-01\",\"reportingPeriodEnd\":\"2026-10-07\",\"title\":\"SYNTHETIC report\",\"summary\":null,\"unexpected\":true} without transport",
+        "implementation report route custody refuses malformed request {\"operation\":\"generate\",\"commandId\":\"20000000-0000-4000-8000-000000000005\",\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"expectedVersionHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"reportingPeriodStart\":\"2026-01-01\",\"reportingPeriodEnd\":\"2025-01-01\",\"title\":\"SYNTHETIC report\",\"summary\":null} without transport",
+        "implementation report route custody refuses malformed request {\"operation\":\"generate\",\"commandId\":\"invalid\",\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"expectedVersionHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"reportingPeriodStart\":\"2026-01-01\",\"reportingPeriodEnd\":\"2026-10-07\",\"title\":\"SYNTHETIC report\",\"summary\":null} without transport",
+        "implementation report route custody refuses malformed request 255 without transport",
+        "implementation report route custody refuses malformed request 123,34,111,112,101,114,97,116,105,111,110,34,58,34,103,101,110,101,114,97,116,101,34,44,34,99,111,109,109,97,110,100,73,100,34,58,34,50,48,48,48,48,48,48,48,45,48,48,48,48,45,52,48,48,48,45,56,48,48,48,45,48,48,48,48,48,48,48,48,48,48,48,53,34,44,34,118,101,114,115,105,111,110,73,100,34,58,34,50,48,48,48,48,48,48,48,45,48,48,48,48,45,52,48,48,48,45,56,48,48,48,45,48,48,48,48,48,48,48,48,48,48,48,52,34,44,34,101,120,112,101,99,116,101,100,86,101,114,115,105,111,110,72,97,115,104,34,58,34,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,34,44,34,114,101,112,111,114,116,105,110,103,80,101,114,105,111,100,83,116,97,114,116,34,58,34,50,48,50,54,45,48,49,45,48,49,34,44,34,114,101,112,111,114,116,105,110,103,80,101,114,105,111,100,69,110,100,34,58,34,50,48,50,54,45,49,48,45,48,55,34,44,34,116,105,116,108,101,34,58,34,255,89,78,84,72,69,84,73,67,32,114,101,112,111,114,116,34,44,34,115,117,109,109,97,114,121,34,58,110,117,108,108,125 without transport",
+        "implementation report route custody refuses malformed request \ufeff{\"operation\":\"generate\",\"commandId\":\"20000000-0000-4000-8000-000000000005\",\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"expectedVersionHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"reportingPeriodStart\":\"2026-01-01\",\"reportingPeriodEnd\":\"2026-10-07\",\"title\":\"SYNTHETIC report\",\"summary\":null} without transport",
+        "implementation report route custody refuses malformed plan identity before access",
+        "implementation report route custody keeps invalid failures distinct",
+        "implementation report route custody keeps forbidden failures distinct",
+        "implementation report route custody keeps missing failures distinct",
+        "implementation report route custody keeps conflict failures distinct",
+        "implementation report route custody keeps unavailable failures distinct",
+        "implementation report route custody withholds unexpected internals"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "route-dispatch",
+      "exitCode": 1,
+      "tests": 31,
+      "failedTests": 8,
+      "expectedFailure": "passes exact bytes",
+      "matched": true,
+      "failures": [
+        "implementation report route custody passes exact bytes and authenticated scope to the sole transaction",
+        "implementation report route custody recovers a saved command without requiring a current adopted pointer at the route",
+        "implementation report route custody keeps invalid failures distinct",
+        "implementation report route custody keeps forbidden failures distinct",
+        "implementation report route custody keeps missing failures distinct",
+        "implementation report route custody keeps conflict failures distinct",
+        "implementation report route custody keeps unavailable failures distinct",
+        "implementation report route custody withholds unexpected internals"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-scope",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "restores locally and isolates",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery restores locally and isolates accounts, workspaces and plans"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-byte-limit",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "rejects multibyte overflow",
+      "matched": true,
+      "failures": [
+        "rejects multibyte overflow and round-trips a large exact request copy"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-key",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "another key",
+      "matched": true,
+      "failures": [
+        "does not mistake a command under another key for a retryable request"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-overwrite",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "refuses overwrites",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery refuses overwrites, quota failures and missing storage readback"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-readback",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "refuses overwrites",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery refuses overwrites, quota failures and missing storage readback"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-before-send",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "refuses transport before retention",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery refuses transport before retention and after changed retention"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-exact-bytes",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "sends retained exact bytes",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery sends retained exact bytes and scope, then clears only the confirmed command"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-scope-header",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "sends retained exact bytes",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery sends retained exact bytes and scope, then clears only the confirmed command"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-receipt-fields",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 10,
+      "expectedFailure": "keeps requests with mismatched",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery keeps requests with mismatched or malformed replies {\"actorId\":\"10000000-0000-4000-8000-000000000008\"}",
+        "implementation report request recovery keeps requests with mismatched or malformed replies {\"workspaceId\":\"10000000-0000-4000-8000-000000000008\"}",
+        "implementation report request recovery keeps requests with mismatched or malformed replies {\"planId\":\"10000000-0000-4000-8000-000000000008\"}",
+        "implementation report request recovery keeps requests with mismatched or malformed replies {\"commandId\":\"10000000-0000-4000-8000-000000000008\"}",
+        "implementation report request recovery keeps requests with mismatched or malformed replies {\"versionId\":\"10000000-0000-4000-8000-000000000008\"}",
+        "implementation report request recovery keeps requests with mismatched or malformed replies {\"adoptedVersionContentHash\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}",
+        "implementation report request recovery keeps requests with mismatched or malformed replies {\"reportingPeriodStart\":\"2026-01-02\"}",
+        "implementation report request recovery keeps requests with mismatched or malformed replies {\"reportingPeriodEnd\":\"2026-10-08\"}",
+        "implementation report request recovery keeps requests with mismatched or malformed replies {\"title\":\"changed\"}",
+        "implementation report request recovery keeps requests with mismatched or malformed replies {\"summary\":\"changed\"}"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-receipt-hash",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "keeps requests with mismatched",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery keeps requests with mismatched or malformed replies {\"commandSha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-status",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "keeps requests with mismatched",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery keeps requests with mismatched or malformed replies {\"replayed\":true}"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-abort",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 2,
+      "expectedFailure": "keeps the original through lost",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery keeps the original through lost, unreadable and aborted replies",
+        "implementation report request recovery keeps a request when cancellation arrives while reading its receipt"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-clear-matching",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "refuses transport before retention",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery refuses transport before retention and after changed retention"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-clear",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "sends retained exact bytes",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery sends retained exact bytes and scope, then clears only the confirmed command"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-clear-readback",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "reports failed cleanup",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery reports failed cleanup without removing a different request"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-preserve-copy",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "copies before removing",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery copies before removing and refuses an unverified copy"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-preserve-original",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "checks copy identity",
+      "matched": true,
+      "failures": [
+        "checks copy identity before preserving or clearing"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "recovery-import-limit",
+      "exitCode": 1,
+      "tests": 35,
+      "failedTests": 1,
+      "expectedFailure": "restores locally and isolates",
+      "matched": true,
+      "failures": [
+        "implementation report request recovery restores locally and isolates accounts, workspaces and plans"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "reader-encoding",
+      "exitCode": 1,
+      "tests": 59,
+      "failedTests": 3,
+      "expectedFailure": "refuses unknown encoding",
+      "matched": true,
+      "failures": [
+        "atomic implementation report snapshot bytes refuses unknown encoding null before privileged reads",
+        "atomic implementation report snapshot bytes refuses unknown encoding unknown before privileged reads",
+        "atomic implementation report snapshot bytes refuses unknown encoding 1 before privileged reads"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "reader-dispatch",
+      "exitCode": 1,
+      "tests": 59,
+      "failedTests": 13,
+      "expectedFailure": "verifies exact retained bytes",
+      "matched": true,
+      "failures": [
+        "atomic implementation report snapshot bytes verifies exact retained bytes and uses only scoped public snapshot fields",
+        "atomic implementation report snapshot bytes withholds a different native plan_id",
+        "atomic implementation report snapshot bytes withholds a different native workspace_id",
+        "atomic implementation report snapshot bytes withholds a different native version_id",
+        "atomic implementation report snapshot bytes withholds a different native report_id",
+        "atomic implementation report snapshot bytes withholds missing",
+        "atomic implementation report snapshot bytes withholds query failure",
+        "atomic implementation report snapshot bytes withholds different native hash",
+        "atomic implementation report snapshot bytes withholds changed bytes",
+        "atomic implementation report snapshot bytes withholds invalid JSON",
+        "atomic implementation report snapshot bytes withholds different parsed value",
+        "atomic implementation report snapshot bytes withholds not text",
+        "atomic implementation report snapshot bytes withholds unexpected service read failure"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "reader-plan_id",
+      "exitCode": 1,
+      "tests": 59,
+      "failedTests": 1,
+      "expectedFailure": "withholds a different native plan_id",
+      "matched": true,
+      "failures": [
+        "atomic implementation report snapshot bytes withholds a different native plan_id"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "reader-workspace_id",
+      "exitCode": 1,
+      "tests": 59,
+      "failedTests": 1,
+      "expectedFailure": "withholds a different native workspace_id",
+      "matched": true,
+      "failures": [
+        "atomic implementation report snapshot bytes withholds a different native workspace_id"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "reader-version_id",
+      "exitCode": 1,
+      "tests": 59,
+      "failedTests": 1,
+      "expectedFailure": "withholds a different native version_id",
+      "matched": true,
+      "failures": [
+        "atomic implementation report snapshot bytes withholds a different native version_id"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "reader-report_id",
+      "exitCode": 1,
+      "tests": 59,
+      "failedTests": 1,
+      "expectedFailure": "withholds a different native report_id",
+      "matched": true,
+      "failures": [
+        "atomic implementation report snapshot bytes withholds a different native report_id"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "reader-query-error",
+      "exitCode": 1,
+      "tests": 59,
+      "failedTests": 1,
+      "expectedFailure": "withholds query failure",
+      "matched": true,
+      "failures": [
+        "atomic implementation report snapshot bytes withholds query failure"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "reader-byte-hash",
+      "exitCode": 1,
+      "tests": 59,
+      "failedTests": 1,
+      "expectedFailure": "withholds changed bytes",
+      "matched": true,
+      "failures": [
+        "atomic implementation report snapshot bytes withholds changed bytes"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "reader-value",
+      "exitCode": 1,
+      "tests": 59,
+      "failedTests": 2,
+      "expectedFailure": "withholds different parsed value",
+      "matched": true,
+      "failures": [
+        "atomic implementation report snapshot bytes withholds invalid JSON",
+        "atomic implementation report snapshot bytes withholds different parsed value"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "reader-projection",
+      "exitCode": 1,
+      "tests": 59,
+      "failedTests": 2,
+      "expectedFailure": "verifies exact retained bytes",
+      "matched": true,
+      "failures": [
+        "atomic implementation report snapshot bytes verifies exact retained bytes and uses only scoped public snapshot fields",
+        "atomic implementation report snapshot bytes keeps key order immaterial while preserving the original text hash"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "reader-filter",
+      "exitCode": 1,
+      "tests": 59,
+      "failedTests": 1,
+      "expectedFailure": "verifies exact retained bytes",
+      "matched": true,
+      "failures": [
+        "atomic implementation report snapshot bytes verifies exact retained bytes and uses only scoped public snapshot fields"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "control-retain",
+      "exitCode": 1,
+      "tests": 11,
+      "failedTests": 6,
+      "expectedFailure": "retains before transport",
+      "matched": true,
+      "failures": [
+        "implementation report control custody retains before transport and acknowledges only a matching response",
+        "implementation report control custody keeps an unknown outcome for explicit retry and prevents duplicate clicks",
+        "implementation report control custody leaves the old command available after account changes during transport",
+        "implementation report control custody blocks requests when retention fails",
+        "implementation report control custody keeps confirmation distinct from a failed view refresh",
+        "retains edits made while the original report is being saved"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "control-clear",
+      "exitCode": 1,
+      "tests": 11,
+      "failedTests": 1,
+      "expectedFailure": "retains before transport",
+      "matched": true,
+      "failures": [
+        "implementation report control custody retains before transport and acknowledges only a matching response"
+      ]
+    },
+    {
+      "phase": "controls-2",
+      "name": "control-refresh",
+      "exitCode": 1,
+      "tests": 11,
+      "failedTests": 4,
+      "expectedFailure": "retains before transport",
+      "matched": true,
+      "failures": [
+        "implementation report control custody retains before transport and acknowledges only a matching response",
+        "implementation report control custody does not send on mount, reload, storage events or restored copy",
+        "implementation report control custody retries original bytes while a newer draft exists",
+        "implementation report control custody keeps confirmation distinct from a failed view refresh"
+      ]
+    },
+    {
+      "phase": "controls-3",
+      "name": "control-preserve-edits",
+      "exitCode": 1,
+      "tests": 11,
+      "failedTests": 1,
+      "expectedFailure": "retains edits made",
+      "matched": true,
+      "failures": [
+        "retains edits made while the original report is being saved"
+      ]
+    },
+    {
+      "phase": "controls-3",
+      "name": "control-writer",
+      "exitCode": 1,
+      "tests": 11,
+      "failedTests": 1,
+      "expectedFailure": "refuses a synthetic form submission",
+      "matched": true,
+      "failures": [
+        "refuses a synthetic form submission without current writer permission"
+      ]
+    },
+    {
+      "phase": "controls-3",
+      "name": "control-duplicate",
+      "exitCode": 1,
+      "tests": 11,
+      "failedTests": 1,
+      "expectedFailure": "serializes repeated retry events",
+      "matched": true,
+      "failures": [
+        "serializes repeated retry events before React commits the disabled state"
+      ]
+    },
+    {
+      "phase": "controls-3",
+      "name": "control-abort",
+      "exitCode": 1,
+      "tests": 11,
+      "failedTests": 1,
+      "expectedFailure": "leaves the old command",
+      "matched": true,
+      "failures": [
+        "implementation report control custody leaves the old command available after account changes during transport"
+      ]
+    },
+    {
+      "phase": "controls-3",
+      "name": "control-retry-bytes",
+      "exitCode": 1,
+      "tests": 11,
+      "failedTests": 2,
+      "expectedFailure": "retries original bytes",
+      "matched": true,
+      "failures": [
+        "implementation report control custody retries original bytes while a newer draft exists",
+        "serializes repeated retry events before React commits the disabled state"
+      ]
+    },
+    {
+      "phase": "controls-3",
+      "name": "workbench-adopted-pointer",
+      "exitCode": 1,
+      "tests": 12,
+      "failedTests": 1,
+      "expectedFailure": "offers generation only for the current adopted edition, current=false",
+      "matched": true,
+      "failures": [
+        "implementation report recovery in the workbench offers generation only for the current adopted edition, current=false"
+      ]
+    }
+  ]
+}

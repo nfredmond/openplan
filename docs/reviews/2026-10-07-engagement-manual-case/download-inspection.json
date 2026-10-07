@@ -1,0 +1,266 @@
+{
+  "pdf": {
+    "download": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muynrirx-t-engagement-03457c03-8020-4980-89e7-2186cc602f9a.pdf",
+    "sha256": "72e4e9ce765c85938d2c613f5ab6813e04d98b1450e0add1d6c234075fdf9fac",
+    "bytes": 138115
+  },
+  "xlsx": {
+    "download": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muynrm1v-u-engagement-03457c03-8020-4980-89e7-2186cc602f9a.xlsx",
+    "sha256": "6cda0ea5641e3e585bc8d9017f22c8402ff81eb3f40f172d6549330482e5aa28",
+    "bytes": 38526
+  },
+  "zip": {
+    "download": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muynrmdu-v-engagement-03457c03-8020-4980-89e7-2186cc602f9a.zip",
+    "sha256": "bc5f63f71fec1d4ab2e81da8d3cb38c0f379a1dd791ea10a9dd180e7417ccbec",
+    "bytes": 148835
+  },
+  "sheets": {
+    "Read me": {
+      "rows": 10,
+      "columns": 2,
+      "headers": [
+        "Field",
+        "Value"
+      ]
+    },
+    "Contributions": {
+      "rows": 3,
+      "columns": 15,
+      "headers": [
+        "id",
+        "parent_item_id",
+        "configuration_version_id",
+        "status",
+        "created_at",
+        "title",
+        "body",
+        "submitted_by",
+        "source_type",
+        "latitude",
+        "longitude",
+        "geometry",
+        "photo_path",
+        "moderation_notes",
+        "Historical category"
+      ]
+    },
+    "Survey sessions": {
+      "rows": 1,
+      "columns": 4,
+      "headers": [
+        "id",
+        "configuration_version_id",
+        "status",
+        "created_at"
+      ]
+    },
+    "Answers": {
+      "rows": 1,
+      "columns": 7,
+      "headers": [
+        "id",
+        "session_id",
+        "question_id",
+        "question_prompt_snapshot",
+        "question_type",
+        "answer_text",
+        "answer_json"
+      ]
+    },
+    "Staff responses": {
+      "rows": 1,
+      "columns": 6,
+      "headers": [
+        "id",
+        "theme_title",
+        "you_said",
+        "we_did",
+        "source_item_ids",
+        "published_at"
+      ]
+    },
+    "Question summary": {
+      "rows": 1,
+      "columns": 8,
+      "headers": [
+        "Configuration",
+        "Question ID",
+        "Prompt",
+        "Sessions",
+        "Answered",
+        "Redacted",
+        "Unanswered or not shown",
+        "Repeated additional answers"
+      ]
+    },
+    "Definitions": {
+      "rows": 2,
+      "columns": 3,
+      "headers": [
+        "Version ID",
+        "SHA-256",
+        "Definition JSON"
+      ]
+    },
+    "Decision history scope": {
+      "rows": 4,
+      "columns": 2,
+      "headers": [
+        "Field",
+        "Value"
+      ]
+    },
+    "Decision history": {
+      "rows": 2,
+      "columns": 18,
+      "headers": [
+        "id",
+        "predecessor_id",
+        "operation",
+        "created_at",
+        "actor_id",
+        "response_id",
+        "decision_id",
+        "project_id",
+        "reason",
+        "payload_sha256",
+        "context_sha256",
+        "Retained project",
+        "Retained decision",
+        "Retained decision status",
+        "Retained rationale",
+        "Response revision",
+        "You said",
+        "Agency response"
+      ]
+    },
+    "Decision sources": {
+      "rows": 3,
+      "columns": 6,
+      "headers": [
+        "Action ID",
+        "Source ID",
+        "Position",
+        "Availability",
+        "Original configuration availability",
+        "Original source JSON"
+      ]
+    },
+    "Decision exact context": {
+      "rows": 2,
+      "columns": 5,
+      "headers": [
+        "Action ID",
+        "Payload SHA-256",
+        "Exact payload text",
+        "Context SHA-256",
+        "Exact context text"
+      ]
+    },
+    "Synthesis coverage": {
+      "rows": 2,
+      "columns": 6,
+      "headers": [
+        "decision_action_id",
+        "context_schema",
+        "availability",
+        "history_count",
+        "event_count",
+        "meaning"
+      ]
+    },
+    "Synthesis actions": {
+      "rows": 2,
+      "columns": 32,
+      "headers": [
+        "decision_action_id",
+        "response_link_id",
+        "event_no",
+        "operation",
+        "review_id",
+        "group_id",
+        "source_id",
+        "source_sha256",
+        "source_captured_at",
+        "review_revision_id",
+        "review_revision",
+        "review_title",
+        "review_notes",
+        "group_label",
+        "group_summary",
+        "sentiment",
+        "group_source_count",
+        "approval_id",
+        "approval_actor_id",
+        "approval_recorded_at",
+        "approval_reason",
+        "approval_sha256",
+        "response_revision",
+        "response_status",
+        "response_title",
+        "you_said",
+        "agency_response",
+        "link_actor_id",
+        "link_recorded_at",
+        "link_reason",
+        "event_sha256",
+        "exact_event_text"
+      ]
+    },
+    "Synthesis sources": {
+      "rows": 3,
+      "columns": 15,
+      "headers": [
+        "decision_action_id",
+        "response_link_id",
+        "source_snapshot_id",
+        "source_sha256",
+        "source_key",
+        "source_kind",
+        "source_id",
+        "title",
+        "source_text",
+        "configuration_id",
+        "configuration_availability",
+        "definition_sha256",
+        "exact_definition_text",
+        "original_record_json",
+        "retained_session_json"
+      ]
+    },
+    "Long text": {
+      "rows": 146,
+      "columns": 5,
+      "headers": [
+        "Record type",
+        "Record ID",
+        "Field",
+        "Part",
+        "Text"
+      ]
+    },
+    "Summary": {
+      "rows": 6,
+      "columns": 2,
+      "headers": [
+        "Record set",
+        "Count"
+      ]
+    }
+  },
+  "formulaCount": 5,
+  "zipEntries": [
+    "snapshot.json",
+    "review.html",
+    "review.pdf",
+    "review.xlsx",
+    "contributions.csv",
+    "answers.csv",
+    "decision-history.csv",
+    "decision-synthesis-coverage.csv",
+    "decision-synthesis-actions.csv",
+    "decision-synthesis-sources.csv",
+    "contributions.geojson",
+    "manifest.json"
+  ]
+}

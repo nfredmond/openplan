@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+stderr | src/test/land-use-implementation-report-transaction-rls.test.ts > serializes report creation and action status edits in both native session orders
+{
+  syntheticFixtureIds: {
+    ACTOR: '217d8ca7-d068-4b56-8a2e-87311a542a93',
+    WORKSPACE: 'c64c8ce2-7617-474c-973a-1c8d375ab5b8',
+    PLAN: 'c11f7768-fe08-4e63-9714-23198f7d1e27',
+    VERSION: '50d9e2f6-d7aa-47aa-bcb5-e6cbc1939481',
+    COMMAND: '4a918587-3d9e-495b-bc71-0f6650bca1c3',
+    ACTION: '5876b01d-9443-4348-976a-698b8faeeea7'
+  },
+  nativeError: 'ERROR:  Committed status was not captured\n' +
+    'CONTEXT:  PL/pgSQL function inline_code_block line 42 at RAISE\n',
+  cleanupError: ''
+}
+
+ ❯ src/test/land-use-implementation-report-transaction-rls.test.ts (2 tests | 1 failed) 3290ms
+   × serializes report creation and action status edits in both native session orders 1703ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-transaction-rls.test.ts > serializes report creation and action status edits in both native session orders
+AssertionError: ERROR:  Committed status was not captured
+CONTEXT:  PL/pgSQL function inline_code_block line 42 at RAISE
+: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ src/test/land-use-implementation-report-transaction-rls.test.ts:50:81
+     48|     if (result?.status !== 0 || cleanup.status !== 0) console.error({ …
+     49|   }
+     50|   expect(result?.error).toBeUndefined(); expect(result?.status, result…
+       |                                                                                 ^
+     51|   expect(result?.stdout).toContain("implementation report locks verifi…
+     52|   expect(cleanup?.error).toBeUndefined(); expect(cleanup?.status, clea…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  13:43:35
+   Duration  3.80s (transform 39ms, setup 54ms, import 39ms, tests 3.29s, environment 327ms)
+

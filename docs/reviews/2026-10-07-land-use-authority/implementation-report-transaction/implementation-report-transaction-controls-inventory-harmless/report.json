@@ -1,0 +1,82 @@
+{
+  "results": [
+    {
+      "name": "inventory-harmless",
+      "observed": "survived",
+      "expectedEvidence": "",
+      "exitCode": 0,
+      "valid": true,
+      "seconds": 1.878
+    },
+    {
+      "name": "inventory-command_text",
+      "observed": "caught",
+      "expectedEvidence": "land_use_plan_implementation_report_commands.command_text",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.847
+    },
+    {
+      "name": "inventory-command_sha256",
+      "observed": "caught",
+      "expectedEvidence": "land_use_plan_implementation_report_commands.command_sha256",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 1.815
+    },
+    {
+      "name": "sql-invoker",
+      "observed": "caught",
+      "expectedEvidence": "invoker function",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.126
+    },
+    {
+      "name": "sql-private-rpc",
+      "observed": "caught",
+      "expectedEvidence": "authenticated RPC denied",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.129
+    },
+    {
+      "name": "sql-rls",
+      "observed": "caught",
+      "expectedEvidence": "journal RLS",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.279
+    },
+    {
+      "name": "sql-private-table",
+      "observed": "caught",
+      "expectedEvidence": "journal private",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.242
+    },
+    {
+      "name": "sql-journal-grant",
+      "observed": "caught",
+      "expectedEvidence": "journal has no update grant",
+      "exitCode": 1,
+      "valid": true,
+      "seconds": 4.241
+    },
+    {
+      "name": "schema-receipt-shape",
+      "observed": "survived",
+      "expectedEvidence": "refuses incomplete or inconsistent receipts",
+      "exitCode": 0,
+      "valid": false,
+      "seconds": 1.167
+    }
+  ],
+  "restored": {
+    "supabase/migrations/20261016000012_land_use_plan_implementation_report_commands.sql": "4deac02d24f1941af8d7805a5991551cd682feb0998103cf9cfa9b1e1e0acf69",
+    "src/lib/land-use-plans/implementation-report-store.ts": "3e947452a0eb04450aeb4577d5fabe61e20fc206e1c7eb41dbc62b875ee82b01",
+    "src/lib/land-use-plans/implementation-report-command.ts": "1cc62c19245c2b9dfa47f9e51b97d9213cf386f242ff9a20254591529d67bdb2",
+    "src/test/a-column-nothing-reads-is-a-question.test.ts": "f625305f3059a652bd37833122afb2571a183b56bb89d88cb2d04e9cbbfac189"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "job": "c7d540d7-a424-4fb3-bc30-3b468c3b4492",
+  "runtime": "492f85e2de11110e83ac8fd8bf63d9d3fbf3c0e4",
+  "files": {
+    "pdf": {
+      "sha256": "204455d5a1dc14ecaacdbc1714e772bf64b69cc0f122cf199085c9f25729f9f3",
+      "downloadMatch": true
+    },
+    "xlsx": {
+      "sha256": "23401ab7d9e2d4be6ebaafa39e9c83542d297d2e4f43b7ca30d84326d7ac8e50",
+      "downloadMatch": true
+    },
+    "zip": {
+      "sha256": "7fa6e6d009cb3cbd5446819d1a4617dedfc7b67b93011489130c57e11fdc5bcd",
+      "downloadMatch": true
+    }
+  },
+  "verifiedManifestMembers": 7,
+  "snapshotSha256": "bd707c6bb8f99de60dc6541050a9b03fdd5b773ad2dcf56e917757aa8c93ef52",
+  "workbookMeaning": "Received, awaiting review, approved, publicly released and answered are distinct. Approval does not establish public release. Participation is not a representative population sample.",
+  "pdfApprovedLabel": true,
+  "pdfPublishedLabel": false
+}

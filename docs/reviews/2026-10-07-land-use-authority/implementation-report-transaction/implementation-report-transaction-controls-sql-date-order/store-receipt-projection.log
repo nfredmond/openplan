@@ -1,0 +1,58 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-store.test.ts (56 tests | 2 failed) 38ms
+   × verifies the selected adopted source and sends exact request bytes to one transaction 12ms
+   × replays without consulting a later adopted version 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > verifies the selected adopted source and sends exact request bytes to one transaction
+AssertionError: expected [ { …(3) }, { …(3) } ] to deeply equal [ { …(3) }, { …(3) } ]
+
+- Expected
++ Received
+
+@@ -12,11 +12,11 @@
+        [
+          "command_id",
+          "35000000-0000-4000-8000-000000000005",
+        ],
+      ],
+-     "projection": "command_id",
++     "projection": "plan_id",
+      "table": "land_use_plan_implementation_report_commands",
+    },
+    {
+      "filters": [
+        [
+
+ ❯ src/test/land-use-implementation-report-store.test.ts:45:19
+     43| it("verifies the selected adopted source and sends exact request bytes…
+     44|   expect(await executeImplementationReport(client, scope, raw)).toEqua…
+     45|   expect(queries).toEqual([
+       |                   ^
+     46|     { table: "land_use_plan_implementation_report_commands", projectio…
+     47|     { table: "land_use_plan_versions", projection: "id, workspace_id, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-implementation-report-store.test.ts > replays without consulting a later adopted version
+Error: unavailable
+ ❯ executeImplementationReport src/lib/land-use-plans/implementation-report-store.ts:28:98
+     26|   const previous = await client.from("land_use_plan_implementation_rep…
+     27|     .eq("plan_id", scope.planId).eq("workspace_id", scope.workspaceId)…
+     28|   if (previous.error || (previous.data && previous.data.command_id !==…
+       |                                                                                                  ^
+     29|   let snapshotText: string | null = null;
+     30|   if (!previous.data) {
+ ❯ src/test/land-use-implementation-report-store.test.ts:57:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 54 passed (56)
+   Start at  13:44:26
+   Duration  671ms (transform 90ms, setup 56ms, import 128ms, tests 38ms, environment 349ms)
+

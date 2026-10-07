@@ -1,0 +1,17 @@
+{
+  "pdf": {
+    "path": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muyo4wuc-z-engagement-03457c03-8020-4980-89e7-2186cc602f9a.pdf",
+    "sha256": "72e4e9ce765c85938d2c613f5ab6813e04d98b1450e0add1d6c234075fdf9fac",
+    "unchangedAfterWithdrawal": true
+  },
+  "xlsx": {
+    "path": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muyo4x5i-10-engagement-03457c03-8020-4980-89e7-2186cc602f9a.xlsx",
+    "sha256": "6cda0ea5641e3e585bc8d9017f22c8402ff81eb3f40f172d6549330482e5aa28",
+    "unchangedAfterWithdrawal": true
+  },
+  "zip": {
+    "path": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muyo4xgp-11-engagement-03457c03-8020-4980-89e7-2186cc602f9a.zip",
+    "sha256": "bc5f63f71fec1d4ab2e81da8d3cb38c0f379a1dd791ea10a9dd180e7417ccbec",
+    "unchangedAfterWithdrawal": true
+  }
+}

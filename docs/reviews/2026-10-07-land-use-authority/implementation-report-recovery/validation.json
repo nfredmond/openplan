@@ -1,0 +1,57 @@
+{
+  "tests": {
+    "numTotalTests": 230,
+    "numPassedTests": 230,
+    "numFailedTests": 0,
+    "numTotalTestSuites": 19,
+    "numPassedTestSuites": 19
+  },
+  "testFiles": [
+    "src/test/land-use-implementation-report-control.test.tsx",
+    "src/test/land-use-implementation-report-custody.test.tsx",
+    "src/test/land-use-implementation-report-recovery.test.ts",
+    "src/test/land-use-implementation-report-route.test.ts",
+    "src/test/land-use-plan-content-workbench.test.tsx",
+    "src/test/land-use-plan-draft-custody.test.tsx",
+    "src/test/land-use-plan-route-guards.test.ts",
+    "src/test/land-use-report-provenance-route.test.ts"
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "exitCode": 0,
+      "started": 1791408281.0751529,
+      "finished": 1791408283.3168368
+    },
+    {
+      "name": "focused",
+      "exitCode": 0,
+      "started": 1791408283.3170497,
+      "finished": 1791408300.9995697
+    }
+  ],
+  "typecheck": {
+    "exitCode": 0,
+    "started": 1791408196.0452716,
+    "finished": 1791408267.4059865
+  },
+  "sourceSha256": {
+    "openplan/src/app/api/land-use-plans/[planId]/implementation-reports/route.ts": "babe92d64c109100b6fbf9450b4db008f2eb3c198fe518ca23486aff4c364baf",
+    "openplan/src/components/land-use-plans/land-use-plan-workbench.tsx": "ee7e6c489242fd4a500319996c8d8b79d668bd900dbd1ee3fb2c4f2c752e39f9",
+    "openplan/src/lib/land-use-plans/implementation-report-snapshot.ts": "2f20455d1aa36e58dc6c5ac224c1177a579ab43c77971f2fbda785b219bd7f02",
+    "openplan/src/test/land-use-implementation-report-custody.test.tsx": "b553e660d29a715ac1e0e1629e1cea9c8c70bea3b74ee78824f172e3088a87c1",
+    "openplan/src/test/land-use-plan-content-workbench.test.tsx": "699934060d807c0ac6633a761ad368478362b7b810a37fbe53b06f271a4f6d8b",
+    "openplan/src/components/land-use-plans/land-use-implementation-report-control.tsx": "38c8c5a292e9485d59befe455f37ae23faa44857f9db5be60b8a959fb9c2cb85",
+    "openplan/src/lib/land-use-plans/implementation-report-recovery.ts": "0196008f45e91c67dbbe01a4e6034fc2164fd37085caad52d153644a1be3e139",
+    "openplan/src/test/land-use-implementation-report-control.test.tsx": "5bd3b748695f720bf67f0c715e1a373417a6c8cf311d91862a4a903b2c9c4eaf",
+    "openplan/src/test/land-use-implementation-report-recovery.test.ts": "19a70efef06ffc8ae80b6c54bc2e6470858302f73c380b9293056808e7ad42ad",
+    "openplan/src/test/land-use-implementation-report-route.test.ts": "f0493824ada0863e6078fd379458b87386fdfa94a3b5ded5c2954023f6c3b621"
+  },
+  "unproved": [
+    "Production build for changed route and control",
+    "Native HTTP transaction and exact recovery receipt",
+    "Identified-build desktop and 390px browser journey",
+    "Current-head GitHub CI",
+    "Practitioner acceptance"
+  ]
+}

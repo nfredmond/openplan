@@ -89,7 +89,8 @@ export function EngagementReportCreateButton({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const projects = coveredProjects ?? (campaign.project_id ? [{ id: campaign.project_id, name: "Lead project" }] : []);
-  const [projectId, setProjectId] = useState(campaign.project_id ?? projects[0]?.id ?? "");
+  const [selectedProjectId, setProjectId] = useState<string | null>(null);
+  const projectId = selectedProjectId ?? campaign.project_id ?? projects[0]?.id ?? "";
   const invalidTarget = Boolean(projectId) && !projects.some((project) => project.id === projectId);
 
   async function handleCreateReport() {

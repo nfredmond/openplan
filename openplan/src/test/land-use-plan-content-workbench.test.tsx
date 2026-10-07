@@ -247,3 +247,24 @@ describe("LandUsePlanWorkbench content editing", () => {
     expect(writes).toEqual([]);
   });
 });
+
+
+describe("implementation report recovery in the workbench", () => {
+  it.each([true, false])("offers generation only for the current adopted edition, current=%s", async current => {
+    localStorage.clear();
+    const adopted = { ...WORKBENCH.activeVersion, state: "adopted", content_hash: "a".repeat(64) };
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ ...WORKBENCH, activeVersion: adopted, versions: [adopted],
+      plan: { ...WORKBENCH.plan, current_adopted_version_id: current ? adopted.id : "90000000-0000-4000-8000-000000000009" } })));
+    render(<LandUsePlanWorkbench planId={WORKBENCH.plan.id} />);
+    await screen.findByText("Report request recovery");
+    if (current) {
+      expect(screen.getByRole("button", { name: "Generate frozen implementation report" })).toBeEnabled();
+      expect(within(screen.getByRole("button", { name: "Generate frozen implementation report" }).closest("form")!).getByText(`Adopted content hash: ${"a".repeat(64)}`)).toBeVisible();
+      expect(screen.getByLabelText("Reporting period start")).toBeVisible();
+      expect(screen.getByLabelText("Reporting period end")).toBeVisible();
+    } else {
+      expect(screen.queryByRole("button", { name: "Generate frozen implementation report" })).toBeNull();
+      expect(screen.getByText(/Earlier requests remain available/)).toBeVisible();
+    }
+  });
+});

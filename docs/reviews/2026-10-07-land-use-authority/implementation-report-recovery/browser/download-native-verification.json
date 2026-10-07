@@ -1,0 +1,17 @@
+{
+  "reportFile": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muymhk9l-r-openplan-report-59c9ded0-751f-439d-b827-b40967374d75-provenance.json",
+  "reportBytes": 2087,
+  "reportFileSha256": "1da1b73053270699303a56201d6c776a1f2c51029a7be2d531f6c69449c55533",
+  "nativeSnapshotMatches": true,
+  "nativeSnapshotSha256": "978a89ab2625d531f8128dba44d6ad009956d0721c21e052097d8d87c9cdd271",
+  "encoding": "postgresql-jsonb-text-sha256",
+  "requestFile": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muymfznh-q-openplan-implementation-report-request.json",
+  "requestBytes": 717,
+  "requestFileSha256": "422708bf4874939a43df9a10d944fbfc5fd26e4b0277b9e63d2167e18207f8a5",
+  "nativeCommandSha256": "2ad843f8a22732be9ba9f8cf2279ae31adc266bdb47e1a9c37028f0b60a2b455",
+  "nativeCommandMatches": true,
+  "commandCount": 1,
+  "totalPlanImplementationReports": 2,
+  "priorReports": 1,
+  "reportId": "59c9ded0-751f-439d-b827-b40967374d75"
+}

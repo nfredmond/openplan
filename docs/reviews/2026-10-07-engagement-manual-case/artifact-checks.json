@@ -1,0 +1,14 @@
+{
+  "manifestFilesVerified": 11,
+  "nativeDecisionContextReconstructedExactly": true,
+  "contributionBodiesReconstructedExactly": true,
+  "pdfPagesVisuallyInspected": 11,
+  "mobileCssWidth": 390,
+  "mobileDocumentWidth": 390,
+  "limits": [
+    "Synthetic records only",
+    "No native Excel UI inspection",
+    "No public-copy acceptance yet",
+    "No human practitioner acceptance"
+  ]
+}

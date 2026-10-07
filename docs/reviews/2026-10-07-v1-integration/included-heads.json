@@ -1,0 +1,15 @@
+{
+  "sourceHead": "2c9c1757a2c58c621514f856e042160fa8ca6dcf",
+  "main": "e1579cf367da8df37780459f32ab8aa9ee6dfbfc",
+  "includedPrHeads": {
+    "117": "c91d68136f927e14339eef694ab9c47f628c795c",
+    "131": "b3a03990b9c33f68774472fccc162ceaaff36bcd",
+    "133": "3e2df7b64fbb62f5620780cbe16c7fb3a361808c",
+    "135": "c255dd49b9f7a3b63e527a81ecd5a1b10246a179",
+    "136": "f5e4aa1dbf3d4edfd994f9d4f529f45273e9842a",
+    "137": "57a9f1d35c79d8a800e58d78dda94053b88228ec"
+  },
+  "focusedTests": 208,
+  "focusedFiles": 7,
+  "boundary": "Focused mocked tests do not establish combined build, live isolation or browser acceptance."
+}

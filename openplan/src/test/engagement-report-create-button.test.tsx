@@ -62,6 +62,33 @@ describe("EngagementReportCreateButton", () => {
     expect(screen.getByRole("status")).toHaveTextContent("no longer covered");
   });
 
+  it("uses a newly linked project after a standalone campaign refresh", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ reportId: "newly-linked" }), { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const { rerender } = render(<EngagementReportCreateButton {...sharedCampaignProps} campaign={{ ...sharedCampaignProps.campaign, project_id: null }} coveredProjects={[]} />);
+    expect(screen.getByText(/This campaign has no linked project/)).toBeInTheDocument();
+    rerender(<EngagementReportCreateButton {...sharedCampaignProps} coveredProjects={[sharedCampaignProps.coveredProjects[0]]} />);
+    expect(screen.queryByText(/This campaign has no linked project/)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Create handoff report" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1].body));
+    expect(body.projectId).toBe("lead");
+    expect(body.engagementCampaignId).toBeUndefined();
+    expect(body.sections.map((section: { sectionKey: string }) => section.sectionKey)).toContain("project_overview");
+  });
+
+  it("preserves an explicit covered-project choice when the lead changes", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ reportId: "chosen" }), { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const { rerender } = render(<EngagementReportCreateButton {...sharedCampaignProps} />);
+    fireEvent.change(screen.getByRole("combobox", { name: "Project receiving this report" }), { target: { value: "covered" } });
+    rerender(<EngagementReportCreateButton {...sharedCampaignProps} campaign={{ ...sharedCampaignProps.campaign, project_id: "new-lead" }} coveredProjects={[{ id: "new-lead", name: "New lead" }, ...sharedCampaignProps.coveredProjects]} />);
+    expect(screen.getByRole("combobox", { name: "Project receiving this report" })).toHaveValue("covered");
+    fireEvent.click(screen.getByRole("button", { name: "Create handoff report" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1].body)).projectId).toBe("covered");
+  });
+
   it("shows the frozen handoff snapshot that will be captured", () => {
     render(
       <EngagementReportCreateButton
