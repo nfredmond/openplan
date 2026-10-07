@@ -1,0 +1,30 @@
+{
+  "observedAt": "2026-10-07T20:05:26.961Z",
+  "sourceCommit": "d3815893b2bbf6f2c2803e16b05cab7e81ab5f7f",
+  "file": "browser-download-muyjcfkt-j-openplan-report-ad1a3d1e-925a-44da-a003-9b784689b29a-provenance.json",
+  "bytes": 2008,
+  "sha256": "9be5825f721ece6ab7b9a0055bed868fd7d24777384467c9548889909c9a85c6",
+  "reportId": "ad1a3d1e-925a-44da-a003-9b784689b29a",
+  "artifactId": "3456eaa1-3e75-4b7d-9368-80ef087d4b0d",
+  "implementationReportId": "3eb125dd-8b8d-416b-8428-b4c8e4fda55e",
+  "implementationContentHash": "2fe20d9a59a651da1fe4b1877c848fcf6526eba3ffb176121f9a2b540fc68c19",
+  "adoptedContentHash": "fc9818674bd5d0d6ea354f42ef6bb9c9dba8c8a81464b5225e8c2e94bc5211e1",
+  "reportCount": 1,
+  "savedHistoryUnchanged": true,
+  "currentStatus": "in_progress",
+  "savedStatus": "not_started",
+  "nativeArtifactEqual": true,
+  "adoptedCanonicalHashVerified": true,
+  "legacyImplementationHashBoundary": "Matches native append-only register and complete snapshot. Historical insertion-order hash is not recomputed from jsonb.",
+  "harmlessObjectOrder": true,
+  "changedSnapshotFieldsRefused": 5,
+  "currentStatusSubstitutionRefused": true,
+  "displayMatchesNative": true,
+  "changedDisplayStatusAndTimeRefused": true,
+  "form390NoOverflow": true,
+  "browserRequests": [
+    201,
+    200
+  ],
+  "blindCategory": "One synthetic report and later status update. No interrupted creation, atomic multi-row producer, cross-workspace browser case, historical native edition, date-picker keyboard interaction, print/PDF or practitioner acceptance."
+}

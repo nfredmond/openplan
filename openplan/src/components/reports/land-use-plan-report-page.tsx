@@ -2,6 +2,7 @@ import { LandUsePlanReportDetail } from "@/components/reports/land-use-plan-repo
 import { LandUsePlanReportAdoption } from "@/components/reports/land-use-plan-report-adoption";
 import { LandUsePlanPublicContext } from "@/components/land-use-plans/land-use-plan-public-context";
 import { loadAdoptedReportSnapshot } from "@/lib/land-use-plans/report-snapshot";
+import { loadImplementationReportSnapshot } from "@/lib/land-use-plans/implementation-report-snapshot";
 import { createClient } from "@/lib/supabase/server";
 
 type Report = {
@@ -24,13 +25,16 @@ export async function LandUsePlanReportPage({ report }: { report: Report }) {
   if (planResult.error || artifactsResult.error || !planResult.data || !artifactsResult.data) {
     return <div className="mx-auto max-w-3xl p-8"><h1 className="text-3xl font-semibold">This plan report could not be loaded</h1><p className="mt-4">The linked plan or frozen report file is missing or unreadable. OpenPlan did not substitute an empty report.</p></div>;
   }
-  if (report.report_type === "land_use_plan_implementation_report") {
-    return <LandUsePlanReportDetail report={report} plan={planResult.data} artifact={artifactsResult.data} />;
-  }
-
   const artifact = artifactsResult.data;
   const metadata = artifact.metadata_json && typeof artifact.metadata_json === "object" && !Array.isArray(artifact.metadata_json)
     ? artifact.metadata_json as Record<string, unknown> : {};
+  if (report.report_type === "land_use_plan_implementation_report") {
+    const retained = await loadImplementationReportSnapshot(supabase, report, metadata);
+    if (!retained) return <div className="mx-auto max-w-3xl p-8"><h1 className="text-3xl font-semibold">This implementation report could not be verified</h1><p role="alert" className="mt-4">The saved report does not match its implementation history and adopted plan version. OpenPlan withheld the report content. This does not establish whether the agency completed any action.</p></div>;
+    return <LandUsePlanReportDetail report={{ ...report, summary: retained.summary }}
+      plan={{ id: retained.identity.id, title: retained.identity.title, authority_label: retained.identity.authorityLabel, geography_label: retained.identity.geographyLabel }}
+      artifact={artifact} retainedContext={<LandUsePlanPublicContext snapshot={retained.frozen} />} />;
+  }
   const snapshot = await loadAdoptedReportSnapshot(supabase, report, metadata);
   if (!snapshot) {
     return <div className="mx-auto max-w-3xl p-8"><h1 className="text-3xl font-semibold">This plan report could not be verified</h1><p role="alert" className="mt-4">The saved report does not match its frozen plan version. OpenPlan withheld the report content. This does not mean the agency withdrew the plan.</p></div>;

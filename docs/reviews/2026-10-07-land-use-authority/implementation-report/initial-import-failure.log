@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-custody.test.tsx (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx [ src/test/land-use-implementation-report-custody.test.tsx ]
+Error: Failed to resolve import "@/test/test-utils" from "src/test/land-use-implementation-report-custody.test.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-implementation-report-custody.test.tsx:2:0
+  2  |  vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.create }));
+  3  |  const __vi_import_0__ = await import("node:crypto");
+  4  |  const __vi_import_1__ = await import("@/test/test-utils");
+     |                                       ^
+  5  |  const __vi_import_2__ = await import("@/components/reports/land-use-plan-report-page");
+  6  |  const __vi_import_3__ = await import("@/lib/land-use-plans/versioning");
+ ❯ TransformPluginContext._formatLog ../../land-use-plan-context-20261007/openplan/node_modules/vite/dist/node/chunks/config.js:29079:43
+ ❯ TransformPluginContext.error ../../land-use-plan-context-20261007/openplan/node_modules/vite/dist/node/chunks/config.js:29076:14
+ ❯ normalizeUrl ../../land-use-plan-context-20261007/openplan/node_modules/vite/dist/node/chunks/config.js:27199:18
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/vite/dist/node/chunks/config.js:27257:32
+ ❯ TransformPluginContext.transform ../../land-use-plan-context-20261007/openplan/node_modules/vite/dist/node/chunks/config.js:27225:4
+ ❯ EnvironmentPluginContainer.transform ../../land-use-plan-context-20261007/openplan/node_modules/vite/dist/node/chunks/config.js:28877:14
+ ❯ loadAndTransform ../../land-use-plan-context-20261007/openplan/node_modules/vite/dist/node/chunks/config.js:22746:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  96 passed (96)
+   Start at  12:54:05
+   Duration  4.77s (transform 230ms, setup 187ms, import 936ms, tests 1.48s, environment 1.65s)
+

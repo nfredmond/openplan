@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-report-provenance-route.test.ts (39 tests | 1 failed | 38 skipped) 17ms
+     × withholds missing artifact before retained content reads 16ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-report-provenance-route.test.ts > direct report source download > withholds missing artifact before retained content reads
+AssertionError: expected 200 to be 404 // Object.is equality
+
+- Expected
++ Received
+
+- 404
++ 200
+
+ ❯ refusal src/test/land-use-report-provenance-route.test.ts:62:61
+     60| }
+     61| async function refusal(status = 503) {
+     62|   const response = await request(); expect(response.status).toBe(statu…
+       |                                                             ^
+     63|   expect(response.headers.get("content-disposition")).toBeNull();
+     64|   const body = await response.json(); expect(Object.keys(body)).toEqua…
+ ❯ src/test/land-use-report-provenance-route.test.ts:140:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 38 skipped (39)
+   Start at  13:15:16
+   Duration  652ms (transform 109ms, setup 56ms, import 160ms, tests 17ms, environment 322ms)
+
