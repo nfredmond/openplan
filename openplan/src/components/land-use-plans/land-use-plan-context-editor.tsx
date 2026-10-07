@@ -17,6 +17,7 @@ type Props = PlanContextClientScope & {
   working: boolean; canWrite: boolean; disabled: boolean; authorityLabel: string; geographyLabel: string;
   onRefresh: () => Promise<void>; onBlockChange: (scope: string, blocked: boolean) => void;
 };
+const contextButtonClassName = "h-auto min-h-10 max-w-full whitespace-normal";
 const same = (a: unknown, b: unknown) => canonicalizeActionPayload(a) === canonicalizeActionPayload(b);
 const baseOf = (current: PlanContextRead) => {
   if (!current.versionId) throw new Error("There is no working version for a new context save.");
@@ -237,7 +238,7 @@ export function LandUsePlanContextEditor(props: Props) {
     </div>
     {error ? <p role="alert" className="rounded-lg border border-destructive p-3 text-sm text-destructive">{error}</p> : null}
     {notice ? <p role="status" className="text-sm">{notice}</p> : null}
-    <div className="flex flex-wrap items-center gap-3"><Button type="button" variant="outline" disabled={busy || props.disabled} onClick={() => void refresh()}>Refresh saved context</Button>
+    <div className="flex flex-wrap items-center gap-3"><Button className={contextButtonClassName} type="button" variant="outline" disabled={busy || props.disabled} onClick={() => void refresh()}>Refresh saved context</Button>
       <p className="text-sm text-muted-foreground">{busy ? "Checking the save and current plan…" : dirty ? "Unsaved assessment. A new freeze is blocked." : blocked ? "Review context recovery before freezing." : "Saved context loaded."}</p></div>
     {current ? <details className="min-w-0 border-y border-border py-3"><summary className="cursor-pointer text-sm font-medium">Current saved context</summary>
       <div className="mt-3 space-y-2 text-sm">{current.contextState.status === "legacy" ? <p>No structured authority assessment is retained for this historical plan.</p> : <>
@@ -252,11 +253,11 @@ export function LandUsePlanContextEditor(props: Props) {
       {recovery.map(record => <article key={record.key} className="min-w-0 space-y-2 border-l-2 border-border pl-3">
         <p className="text-sm">{record.archived ? "Preserved copy" : record.value?.kind === "pending" ? "Unconfirmed save request" : record.value?.kind === "draft" ? "Saved browser draft" : "Unreadable copy"}{record.value ? `, ${record.value.savedAt}` : ""}</p>
         {record.value ? <p className="break-all text-xs text-muted-foreground">Original working version: {record.value.base.versionId}</p> : null}
-        <div className="flex flex-wrap gap-2"><Button type="button" size="sm" variant="outline" onClick={() => download(record.raw,"openplan-context-recovery.json")}>Download copy</Button>
-          {record.value?.kind === "pending" && !record.archived ? <Button type="button" size="sm" disabled={busy || props.disabled || !props.canWrite} onClick={() => void save(record.value as PendingPlanContext)}>Retry exact save request</Button> : null}
-          {record.value?.kind === "pending" && record.archived ? <Button type="button" size="sm" variant="outline" disabled={busy || props.disabled} onClick={() => restore(record.raw,false)}>Restore request locally</Button> : null}
-          {record.value ? <Button type="button" size="sm" variant="outline" disabled={busy || props.disabled || dirty} onClick={() => restore(record.raw,true)}>Open draft copy</Button> : null}
-          {!record.archived ? <Button type="button" size="sm" variant="outline" disabled={busy || props.disabled} onClick={() => void preserve(record)}>Keep copy aside and refresh</Button> : null}</div>
+        <div className="flex flex-wrap gap-2"><Button className={contextButtonClassName} type="button" size="sm" variant="outline" onClick={() => download(record.raw,"openplan-context-recovery.json")}>Download copy</Button>
+          {record.value?.kind === "pending" && !record.archived ? <Button className={contextButtonClassName} type="button" size="sm" disabled={busy || props.disabled || !props.canWrite} onClick={() => void save(record.value as PendingPlanContext)}>Retry exact save request</Button> : null}
+          {record.value?.kind === "pending" && record.archived ? <Button className={contextButtonClassName} type="button" size="sm" variant="outline" disabled={busy || props.disabled} onClick={() => restore(record.raw,false)}>Restore request locally</Button> : null}
+          {record.value ? <Button className={contextButtonClassName} type="button" size="sm" variant="outline" disabled={busy || props.disabled || dirty} onClick={() => restore(record.raw,true)}>Open draft copy</Button> : null}
+          {!record.archived ? <Button className={contextButtonClassName} type="button" size="sm" variant="outline" disabled={busy || props.disabled} onClick={() => void preserve(record)}>Keep copy aside and refresh</Button> : null}</div>
       </article>)}</div> : null}
     <label className="block space-y-1 text-sm">Restore a downloaded context copy<input type="file" accept=".json,application/json" disabled={busy || props.disabled} className="block w-full text-sm" onChange={event => {
       const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (!file) return;
@@ -277,14 +278,14 @@ export function LandUsePlanContextEditor(props: Props) {
         <label className="block space-y-1">Plan area for the reviewed draft<select className="module-select w-full" value={reviewArea} disabled={unavailable} onChange={event => { setReviewArea(event.target.value as "current"|"proposed"); setReviewed(false); }}><option value="current">Use the current saved plan area</option>{form.draft.place.mode !== "retained" ? <option value="proposed">Keep this draft&apos;s proposed replacement area</option> : null}</select></label>
         <p>Review the saved assessment above and the draft fields below. Keeping the current plan area does not change the responsible bodies in your draft.</p>
         <label className="flex items-start gap-2"><input type="checkbox" checked={reviewed} disabled={unavailable} onChange={event => setReviewed(event.target.checked)}/>I reviewed the saved context, responsible bodies and selected plan area.</label>
-        <Button type="button" variant="outline" disabled={unavailable || !reviewed} onClick={useReviewedDraft}>Use reviewed assessment with current draft</Button></div> : null}
+        <Button className={contextButtonClassName} type="button" variant="outline" disabled={unavailable || !reviewed} onClick={useReviewedDraft}>Use reviewed assessment with current draft</Button></div> : null}
       <form className="space-y-6" onSubmit={event => { event.preventDefault(); void save(); }}>
         <PlanStudyAreaFields value={form.draft} onChange={change} hasSavedArea={current?.contextState.status === "retained"} disabled={unavailable}/>
         <PlanAuthorityFields value={form.draft} onChange={change} disabled={unavailable}/>
-        <div className="flex flex-wrap gap-3"><Button disabled={unavailable || stale || !dirty}>Save plan context</Button>
-          <Button type="button" variant="outline" onClick={() => download(JSON.stringify(form),"openplan-context-draft.json")}>Download this draft</Button>
-          {dirty && error ? <Button type="button" variant="outline" disabled={busy || props.disabled} onClick={keepNewDraftCopy}>Keep text as a new browser draft</Button> : null}
-          {dirty ? <Button type="button" variant="outline" disabled={busy || props.disabled} onClick={() => void startFromCurrent()}>Keep draft copy and use saved context</Button> : null}</div>
+        <div className="flex flex-wrap gap-3"><Button className={contextButtonClassName} disabled={unavailable || stale || !dirty}>Save plan context</Button>
+          <Button className={contextButtonClassName} type="button" variant="outline" onClick={() => download(JSON.stringify(form),"openplan-context-draft.json")}>Download this draft</Button>
+          {dirty && error ? <Button className={contextButtonClassName} type="button" variant="outline" disabled={busy || props.disabled} onClick={keepNewDraftCopy}>Keep text as a new browser draft</Button> : null}
+          {dirty ? <Button className={contextButtonClassName} type="button" variant="outline" disabled={busy || props.disabled} onClick={() => void startFromCurrent()}>Keep draft copy and use saved context</Button> : null}</div>
       </form>
     </> : null}
   </section>;
