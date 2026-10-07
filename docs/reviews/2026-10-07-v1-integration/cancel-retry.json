@@ -1,0 +1,35 @@
+{
+  "job": "cbba6838-0098-4019-aeac-6386d0648ac3",
+  "reportId": "d3597b8e-ba27-48ae-8d86-2b78cd4ed499",
+  "runtime": "492f85e2de11110e83ac8fd8bf63d9d3fbf3c0e4",
+  "states": [
+    "queued",
+    "cancelled",
+    "queued",
+    "complete"
+  ],
+  "snapshotUnchangedAfterRetry": true,
+  "jobCountBefore": 5,
+  "jobCountAfter": 6,
+  "files": {
+    "pdf": {
+      "sha256": "57321cd3d697fc3047a0c93e8d89aa2ea198dfbe67fc46c4643d7ddeafe8e6df",
+      "downloadMatch": true
+    },
+    "xlsx": {
+      "sha256": "15a24b639413efe7429503033f83409a7a9c0b852f27c55ef6255d6d17a7c253",
+      "downloadMatch": true
+    },
+    "zip": {
+      "sha256": "d1b547fa9435faab6cd33575fcf8ba6ab9afe92782a69a8a0d3b8fd662ab67ab",
+      "downloadMatch": true
+    }
+  },
+  "manifestMembersVerified": 11,
+  "snapshotSha256": "5d7419becf865a934175a8fc9e7024c1a45338954c7f154695a497364211f3b7",
+  "boundaries": [
+    "queued cancellation only; no worker crash",
+    "not a fresh all-page visual inspection",
+    "no practitioner observation"
+  ]
+}

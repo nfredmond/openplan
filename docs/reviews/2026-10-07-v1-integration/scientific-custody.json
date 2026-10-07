@@ -1,0 +1,13 @@
+{
+  "releaseSha": "3ef6eff43d0f9dcf70afd8c308b63e819cdb7750",
+  "frozenMatcherSha256": "67256b4a54d5157fcc9b24172bb58f877e4b465b3adc3c4b9736d29e20e18fb4",
+  "currentMatcherSha256": "869a4f105b3dcabb611e6726a3d674b641faee82146d2d9a9621702b22449aab",
+  "currentMatcherCheck": {
+    "exitCode": 1,
+    "reason": "06007 matcher hash changed"
+  },
+  "historicalMatcherCheck": "all release and custody bindings verified",
+  "wrongReleaseCheck": "study result release binding changed",
+  "method": "Existing verifier pointed at a temporary copy of git show release-source matcher bytes. Study files unmodified.",
+  "boundary": "Historical development custody only; no current-matcher evaluation, model run, calibration or sealed acceptance access."
+}
