@@ -7,12 +7,12 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }));
 vi.mock('next/link', () => ({ default: ({ href, children }: { href: string; children: React.ReactNode }) => <a href={href}>{children}</a> }));
 
 function fixture() {
-  const version = { id: 'version-a', version_number: 1, version_kind: 'original', state: 'working', applicable_requirement_keys: ['local'], content_hash: null, frozen_at: null, published_report_id: null };
+  const version = { id: '10000000-0000-4000-8000-000000000001', draft_revision: 7, version_number: 1, version_kind: 'original', state: 'working', applicable_requirement_keys: ['local'], content_hash: null, frozen_at: null, published_report_id: null };
   const node = (id: string, title: string, kind = 'section') => ({ id, title, node_kind: kind, parent_node_id: null, requirement_key: kind === 'section' ? 'local' : null, body: `Saved ${title}`, sort_order: 0, evidence_document_id: null, evidence_url: null });
   return {
-    plan: { id: 'plan-a', title: 'EXERCISE ONLY draft custody', authority_label: 'Local planning', geography_label: 'Fixture geography', geography_geojson: null, current_working_version_id: version.id, current_adopted_version_id: null },
+    plan: { id: '10000000-0000-4000-8000-000000000002', workspace_id: '10000000-0000-4000-8000-000000000003', title: 'EXERCISE ONLY draft custody', authority_label: 'Local planning', geography_label: 'Fixture geography', geography_geojson: null, current_working_version_id: version.id, current_adopted_version_id: null },
     descriptor: { id: 'local-unconfigured', configured: false, disclosure: 'Local legal requirements are not configured.', verifiedAt: '', reviewDueAt: '', terminology: { plan: 'plan', section: 'section', adoptionInstrument: 'instrument', implementationReport: 'report' }, requirements: [{ key: 'local', label: 'Local content', applicability: 'locally_defined', sourceUrls: [] }], processSteps: [], sourceUrls: [] },
-    canWrite: true, versions: [version], activeVersion: version,
+    actorId: '10000000-0000-4000-8000-000000000004', descriptorHash: 'a'.repeat(64), canWrite: true, versions: [version], activeVersion: version,
     nodes: [node('section-a', 'First section'), node('section-b', 'Second section'), node('policy-a', 'Policy', 'policy')],
     relationships: [], designations: [{ id: 'designation', layer_id: 'layer', layer_version_id: 'layer-version', designation_set_label: 'EXERCISE ONLY', public_field_keys: [], legend_field: null, map_note: '' }], actions: [{ id: 'action', title: 'EXERCISE ONLY action', responsible_party: null, due_on: null, status: 'not_started', project_id: null, program_id: null }], reviews: [], decisions: [], reports: [], consultations: [], processRecords: [], reviewReleases: [], layers: [], layerVersions: [], documents: [{ id: 'document-a', title: 'Source document', citation_label: null }], campaigns: [], projects: [], programs: [],
   };
@@ -193,11 +193,11 @@ describe('Live workbench draft custody', () => {
     const { fields, saved, view, buttons } = await setup();
     fireEvent.change(fields[1], { target: { value: 'Old-scope private draft' } });
     if (boundary === 'plan') {
-      saved.plan.id = 'plan-b';
+      saved.plan.id = '10000000-0000-4000-8000-000000000005';
       saved.nodes[1].body = 'Different plan content';
       view.rerender(<LandUsePlanWorkbench planId={saved.plan.id} />);
     } else {
-      saved.activeVersion.id = 'version-b';
+      saved.activeVersion.id = '10000000-0000-4000-8000-000000000006';
       saved.nodes[1].body = 'Different version content';
       fireEvent.click(buttons[0]);
     }

@@ -84,3 +84,9 @@ transactions, followed by identified-build HTTP and public hash checks. Desktop,
 390px, keyboard, console and artifact inspection remain open while T3 snapshot
 inspection fails. M1, the other roadmap requirements and the full v1 contract
 remain open.
+
+## Route follow-up
+
+The subsequent [staff route and recovery checkpoint](FREEZE_ROUTE.md) connects
+the application and adds the direct-table guard. Its dated verification and
+remaining boundaries supersede the application-unwired status above.

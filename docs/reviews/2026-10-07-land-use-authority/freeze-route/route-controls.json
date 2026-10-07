@@ -1,0 +1,416 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "matched": true,
+      "expected": "pass",
+      "failedTests": []
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "expected": "pass",
+      "failedTests": []
+    },
+    {
+      "case": "agent-source",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "refuses agent header x-openplan-assistant-execution-source",
+      "failedTests": [
+        "atomic plan freeze route refuses agent header x-openplan-assistant-execution-source even when empty"
+      ]
+    },
+    {
+      "case": "agent-input",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "refuses agent header x-openplan-assistant-input-hash",
+      "failedTests": [
+        "atomic plan freeze route refuses agent header x-openplan-assistant-input-hash even when empty"
+      ]
+    },
+    {
+      "case": "agent-approval",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "refuses agent header x-openplan-assistant-approval-id",
+      "failedTests": [
+        "atomic plan freeze route refuses agent header x-openplan-assistant-approval-id even when empty"
+      ]
+    },
+    {
+      "case": "origin",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "refuses untrusted or changed scope",
+      "failedTests": [
+        "atomic plan freeze route refuses untrusted or changed scope {\"origin\":\"http://elsewhere.test\"}",
+        "atomic plan freeze route refuses untrusted or changed scope {\"sec-fetch-site\":\"cross-site\"}"
+      ]
+    },
+    {
+      "case": "scope-user",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "refuses untrusted or changed scope",
+      "failedTests": [
+        "atomic plan freeze route refuses untrusted or changed scope {\"x-openplan-expected-user\":\"10000000-0000-4000-8000-000000000009\"}",
+        "atomic plan freeze route refuses untrusted or changed scope {\"x-openplan-expected-user\":\"\"}"
+      ]
+    },
+    {
+      "case": "scope-workspace",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "refuses untrusted or changed scope",
+      "failedTests": [
+        "atomic plan freeze route refuses untrusted or changed scope {\"x-openplan-expected-workspace\":\"10000000-0000-4000-8000-000000000009\"}"
+      ]
+    },
+    {
+      "case": "write-permission",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "one scoped transaction",
+      "failedTests": [
+        "atomic plan freeze route sends the original request and canonical content through one scoped transaction"
+      ]
+    },
+    {
+      "case": "raw-command",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "original request",
+      "failedTests": [
+        "atomic plan freeze route sends the original request and canonical content through one scoped transaction"
+      ]
+    },
+    {
+      "case": "body-limit",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "bounds request bytes",
+      "failedTests": [
+        "atomic plan freeze route bounds request bytes"
+      ]
+    },
+    {
+      "case": "version-match",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "changed or unknown working version",
+      "failedTests": [
+        "atomic plan freeze route refuses a changed or unknown working version {\"id\":\"10000000-0000-4000-8000-000000000009\",\"draft_revision\":7}"
+      ]
+    },
+    {
+      "case": "revision-match",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "changed or unknown working version",
+      "failedTests": [
+        "atomic plan freeze route refuses a changed or unknown working version {\"id\":\"10000000-0000-4000-8000-000000000002\",\"draft_revision\":8}",
+        "atomic plan freeze route refuses a changed or unknown working version {\"id\":\"10000000-0000-4000-8000-000000000002\"}"
+      ]
+    },
+    {
+      "case": "descriptor-match",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "descriptor drift",
+      "failedTests": [
+        "atomic plan freeze route refuses descriptor drift before building or freezing"
+      ]
+    },
+    {
+      "case": "skip-discovery",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "recovers without loading",
+      "failedTests": [
+        "atomic plan freeze route sends the original request and canonical content through one scoped transaction",
+        "atomic plan freeze route recovers without loading a newer working draft or installed checklist",
+        "atomic plan freeze route keeps land_use_plan_freeze_commands read failures unconfirmed",
+        "atomic plan freeze route refuses an incomplete or mismatched command-discovery projection",
+        "atomic plan freeze route requires a replayed receipt when no fresh snapshot was prepared"
+      ]
+    },
+    {
+      "case": "discovery-projection",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "one scoped transaction",
+      "failedTests": [
+        "atomic plan freeze route sends the original request and canonical content through one scoped transaction",
+        "atomic plan freeze route recovers without loading a newer working draft or installed checklist"
+      ]
+    },
+    {
+      "case": "discovery-workspace",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "one scoped transaction",
+      "failedTests": [
+        "atomic plan freeze route sends the original request and canonical content through one scoped transaction"
+      ]
+    },
+    {
+      "case": "discovery-error",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "read failures unconfirmed",
+      "failedTests": [
+        "atomic plan freeze route keeps land_use_plan_freeze_commands read failures unconfirmed"
+      ]
+    },
+    {
+      "case": "snapshot-drift",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "descriptor drift",
+      "failedTests": [
+        "atomic plan freeze route refuses descriptor drift before building or freezing"
+      ]
+    },
+    {
+      "case": "snapshot-hash",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "mismatched receipts unconfirmed",
+      "failedTests": [
+        "atomic plan freeze route keeps mismatched receipts unconfirmed {\"contentHash\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"}"
+      ]
+    },
+    {
+      "case": "replay-marker",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "requires a replayed receipt",
+      "failedTests": [
+        "atomic plan freeze route requires a replayed receipt when no fresh snapshot was prepared"
+      ]
+    },
+    {
+      "case": "receipt-command",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "mismatched receipts unconfirmed",
+      "failedTests": [
+        "atomic plan freeze route keeps mismatched receipts unconfirmed {\"commandId\":\"10000000-0000-4000-8000-000000000009\"}"
+      ]
+    },
+    {
+      "case": "receipt-version",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "mismatched receipts unconfirmed",
+      "failedTests": [
+        "atomic plan freeze route keeps mismatched receipts unconfirmed {\"versionId\":\"10000000-0000-4000-8000-000000000009\"}"
+      ]
+    },
+    {
+      "case": "receipt-revision",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "mismatched receipts unconfirmed",
+      "failedTests": [
+        "atomic plan freeze route keeps mismatched receipts unconfirmed {\"draftRevision\":8}"
+      ]
+    },
+    {
+      "case": "strict-command",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "rejects malformed commands",
+      "failedTests": [
+        "atomic plan freeze route rejects malformed commands before service access"
+      ]
+    },
+    {
+      "case": "retention-before-transport",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "before retention",
+      "failedTests": [
+        "freeze request recovery refuses transport before retention and after changed retention"
+      ]
+    },
+    {
+      "case": "retention-readback",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "missing storage readback",
+      "failedTests": [
+        "freeze request recovery refuses overwrites, quota failures and missing storage readback"
+      ]
+    },
+    {
+      "case": "immutable-copy",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "refuses overwrites",
+      "failedTests": [
+        "freeze request recovery refuses overwrites, quota failures and missing storage readback"
+      ]
+    },
+    {
+      "case": "exact-browser-bytes",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "retained exact bytes",
+      "failedTests": [
+        "freeze request recovery sends retained exact bytes and scope, then clears only the confirmed command"
+      ]
+    },
+    {
+      "case": "receipt-status",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "malformed replies",
+      "failedTests": [
+        "freeze request recovery keeps requests with mismatched or malformed replies {\"replayed\":true}"
+      ]
+    },
+    {
+      "case": "scope-validation",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "isolates accounts",
+      "failedTests": [
+        "freeze request recovery restores locally and isolates accounts, workspaces and plans"
+      ]
+    },
+    {
+      "case": "acknowledge-custody",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "after changed retention",
+      "failedTests": [
+        "freeze request recovery refuses transport before retention and after changed retention"
+      ]
+    },
+    {
+      "case": "copy-readback",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "unverified copy",
+      "failedTests": [
+        "freeze request recovery copies before removing and refuses an unverified copy"
+      ]
+    },
+    {
+      "case": "cleanup-readback",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "failed cleanup",
+      "failedTests": [
+        "freeze request recovery reports failed cleanup without removing a different request"
+      ]
+    },
+    {
+      "case": "scope-abort",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "account changes during transport",
+      "failedTests": [
+        "freeze control custody leaves the old command available after account changes during transport"
+      ]
+    },
+    {
+      "case": "newer-version-retry",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "retries original bytes",
+      "failedTests": [
+        "freeze control custody retries original bytes while a newer draft exists"
+      ]
+    },
+    {
+      "case": "refresh-fence",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "failed view refresh",
+      "failedTests": [
+        "freeze control custody keeps confirmation distinct from a failed view refresh"
+      ]
+    },
+    {
+      "case": "snapshot-revision",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "exact descriptor",
+      "failedTests": [
+        "freezing a descriptor with authored content includes the exact descriptor in the returned snapshot and content hash"
+      ]
+    },
+    {
+      "case": "working-revision-projection",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "working and detail projections",
+      "failedTests": [
+        "freezing a descriptor with authored content loads the edit counter through both working and detail projections"
+      ]
+    },
+    {
+      "case": "detail-revision-projection",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "working and detail projections",
+      "failedTests": [
+        "freezing a descriptor with authored content loads the edit counter through both working and detail projections"
+      ]
+    },
+    {
+      "case": "detail-actor",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "working and detail projections",
+      "failedTests": [
+        "freezing a descriptor with authored content loads the edit counter through both working and detail projections"
+      ]
+    },
+    {
+      "case": "detail-descriptor-hash",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "working and detail projections",
+      "failedTests": [
+        "freezing a descriptor with authored content loads the edit counter through both working and detail projections"
+      ]
+    },
+    {
+      "case": "policy-order",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "sorts public policy links",
+      "failedTests": [
+        "freezing a descriptor with authored content sorts public policy links without mutating rows and retains only projected fields"
+      ]
+    },
+    {
+      "case": "unsaved-freeze",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "blocks freezing until",
+      "failedTests": [
+        "Live workbench draft custody never acknowledges the only dirty field after its save is refused",
+        "Live workbench draft custody blocks freezing until all edited content is actually saved"
+      ]
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/app/api/land-use-plans/[planId]/freeze/route.ts": "90b4e0b9bba0a7e11026244cca324a8407f1895732dbb4727bb96a388ae9a483",
+    "src/app/api/land-use-plans/[planId]/route.ts": "f4366408db53f60de6aced566af85b9c86dcd7cbf87f9145eab680e154d0a9ac",
+    "src/lib/land-use-plans/freeze-store.ts": "fe8df6a0500ccf07a9bd068b2ec9409ba619a099c8eaddd3da0f8a9d2250a353",
+    "src/lib/land-use-plans/freeze-command.ts": "33891184f012dca5493639de228204ccf69bfaab5f79c2c1caf29b9328a3721e",
+    "src/lib/land-use-plans/freeze-recovery.ts": "33f81e9cd0dced2e37b7005895cf1487d4638b122a645b6c94b15d15fa63ad70",
+    "src/components/land-use-plans/land-use-plan-freeze-control.tsx": "13493863590758e465cafdddb9b01d0ab7267b75a7e0d504464ef59980adbcfc",
+    "src/lib/land-use-plans/api.ts": "e7b1c727a69dad752138b11c788e4c89acdfb5f2b83dab8d7a85b67f589f367a",
+    "src/components/land-use-plans/land-use-plan-workbench.tsx": "d273175499fff01f1ed7ffab80bbfbb83f49b20e2bb227c65ba0616aa5184ec9"
+  }
+}

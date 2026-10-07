@@ -21,6 +21,7 @@ export type FrozenPlanContent = {
     versionKind: string;
     basedOnVersionId: string | null;
     applicableRequirementKeys: string[];
+    draftRevision?: number;
   };
   nodes: unknown[];
   relationships: unknown[];
@@ -60,5 +61,9 @@ export function adoptionHashMatches(
 }
 
 export function hashFrozenRecord(value: unknown): string {
-  return createHash("sha256").update(JSON.stringify(canonicalize(value))).digest("hex");
+  return createHash("sha256").update(serializeFrozenRecord(value)).digest("hex");
+}
+
+export function serializeFrozenRecord(value: unknown): string {
+  return JSON.stringify(canonicalize(value));
 }

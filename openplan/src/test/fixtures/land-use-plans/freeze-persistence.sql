@@ -87,6 +87,16 @@ BEGIN
   PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',actor,'role','authenticated')::text,true);
   SET LOCAL ROLE authenticated;
   PERFORM pg_temp.freeze_refuses(call_sql,'42501','direct authenticated freeze RPC refused');
+  UPDATE public.land_use_plan_versions SET state='working' WHERE id=version;
+  PERFORM pg_temp.freeze_assert((SELECT state='working' AND draft_revision=revision FROM public.land_use_plan_versions WHERE id=version),'authenticated harmless working update');
+  PERFORM pg_temp.freeze_refuses(format('UPDATE public.land_use_plan_versions SET state=%L,content_hash=%L,frozen_snapshot=%L,frozen_at=now(),frozen_by=%L WHERE id=%L',
+    'public_review',repeat('a',64),snapshot::text,actor,version),'42501','direct authenticated freeze update refused');
+  PERFORM pg_temp.freeze_refuses(format('INSERT INTO public.land_use_plan_versions(workspace_id,plan_id,version_number,version_kind,state,content_hash,frozen_snapshot,frozen_at,frozen_by) VALUES(%L,%L,99,%L,%L,%L,%L,now(),%L)',
+    workspace,plan,'revision','public_review',repeat('a',64),snapshot::text,actor),'42501','direct authenticated frozen insert refused');
+  PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',actor,'role','service_role')::text,true);
+  PERFORM pg_temp.freeze_refuses(format('UPDATE public.land_use_plan_versions SET state=%L,content_hash=%L,frozen_snapshot=%L,frozen_at=now(),frozen_by=%L WHERE id=%L',
+    'public_review',repeat('a',64),snapshot::text,actor,version),'42501','forged JWT role cannot freeze directly');
+  PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',actor,'role','authenticated')::text,true);
   SET LOCAL ROLE service_role;
   PERFORM pg_temp.freeze_refuses(replace(call_sql,actor::text,viewer::text),'42501','viewer freeze refused');
   PERFORM pg_temp.freeze_refuses(replace(call_sql,actor::text,outsider::text),'42501','outsider freeze refused');

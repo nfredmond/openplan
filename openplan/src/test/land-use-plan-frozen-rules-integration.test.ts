@@ -12,11 +12,18 @@ const state = vi.hoisted(() => ({
 
 function from(table: string) {
   const query = { table, projection: "", filters: [] as unknown[][] }; state.queries.push(query);
-  const data = () => (state.rows[table] ?? []).map(row => Object.fromEntries(query.projection.split(",").map(key => key.trim()).map(key => [key, row[key]])));
+  const project = (row: Record<string, unknown>, projection: string): Record<string, unknown> => Object.fromEntries(
+    projection.split(/,(?![^()]*\))/).map(part => {
+      const key = part.trim(), nested = /^(\w+)\((.*)\)$/.exec(key);
+      if (!nested) return [key, row[key]];
+      const children = row[nested[1]];
+      return [nested[1], Array.isArray(children) ? children.map(child => project(child, nested[2])) : children];
+    }));
+  const data = () => (state.rows[table] ?? []).map(row => project(row, query.projection));
   const chain = {
     select(projection: string) { query.projection = projection; return chain; },
     eq(key: string, value: unknown) { query.filters.push([key, value]); return chain; },
-    order() { return chain; }, limit() { return chain; },
+    order() { return chain; }, limit() { return chain; }, in() { return chain; }, is() { return chain; },
     async maybeSingle() { return { data: data()[0] ?? null, error: null }; },
     then(resolve: (value: { data: Array<Record<string, unknown>>; error: null }) => unknown) { return Promise.resolve(resolve({ data: data(), error: null })); },
   };
@@ -29,8 +36,9 @@ vi.mock("@/lib/land-use-plans/api", async importOriginal => {
 vi.mock("@/lib/supabase/server", () => ({ createServiceRoleClient: () => ({ rpc: state.rpc }), createClient: vi.fn() }));
 vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: () => ({ info: vi.fn(), error: vi.fn() }) }));
 
-import { buildFrozenSnapshot, type LandUsePlanAccess } from "@/lib/land-use-plans/api";
+import { buildFrozenSnapshot, loadWorkingVersion, type LandUsePlanAccess } from "@/lib/land-use-plans/api";
 import { POST } from "@/app/api/land-use-plans/[planId]/decisions/route";
+import { GET as detail } from "@/app/api/land-use-plans/[planId]/route";
 const planId = "20000000-0000-4000-8000-000000000001";
 const versionId = "20000000-0000-4000-8000-000000000002";
 const documentId = "20000000-0000-4000-8000-000000000003";
@@ -67,13 +75,38 @@ beforeEach(() => {
 });
 
 describe("freezing a descriptor with authored content", () => {
-  const working = { id: versionId, version_number: 1, version_kind: "original", based_on_version_id: null, applicable_requirement_keys: ["locally_defined"] };
+  const working = { draft_revision: 7, id: versionId, version_number: 1, version_kind: "original", based_on_version_id: null, applicable_requirement_keys: ["locally_defined"] };
   it("includes the exact descriptor in the returned snapshot and content hash", async () => {
     const result = await buildFrozenSnapshot(state.access as unknown as LandUsePlanAccess, working);
     expect(result?.snapshot.descriptorSnapshot).toEqual(getJurisdictionPlanDescriptor("local-unconfigured"));
+    expect(result?.snapshot.version.draftRevision).toBe(7);
+    expect(hashFrozenRecord({ ...result?.snapshot, version: { ...result?.snapshot.version, draftRevision: 8 } })).not.toBe(result?.hash);
     expect(result?.hash).toBe(hashFrozenRecord(result?.snapshot));
     const withoutRules = { ...result?.snapshot }; delete withoutRules.descriptorSnapshot;
     expect(hashFrozenRecord(withoutRules)).not.toBe(result?.hash);
+  });
+  it("loads the edit counter through both working and detail projections", async () => {
+    Object.assign(state.access.plan as object, { current_working_version_id: versionId });
+    Object.assign(state.rows.land_use_plan_versions[0], working, { state: "working" });
+    expect((await loadWorkingVersion(state.access as unknown as LandUsePlanAccess))?.draft_revision).toBe(7);
+    expect(state.queries[0].projection.split(", ")).toContain("draft_revision");
+    expect(state.queries[0].filters).toEqual([["id", versionId], ["plan_id", planId], ["state", "working"]]);
+    const response = await detail(new NextRequest("http://localhost"), { params: Promise.resolve({ planId }) });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ actorId: documentId, plan: { workspace_id: workspaceId },
+      descriptorHash: hashFrozenRecord(getJurisdictionPlanDescriptor("local-unconfigured")), activeVersion: { draft_revision: 7 } });
+  });
+  it("sorts public policy links without mutating rows and retains only projected fields", async () => {
+    state.rows.land_use_plan_designations = [{ id: documentId, layer_version_id: releaseId,
+      land_use_plan_designation_policy_links: [{ policy_node_id: workspaceId, confidential: "PRIVATE" }, { policy_node_id: versionId, confidential: "PRIVATE" }] }];
+    state.rows.workspace_gis_layer_versions = [{ id: releaseId, feature_hash: "a".repeat(64), feature_hash_computed_at: "2026-10-07T00:00:00Z",
+      feature_count: 2, bbox: [0, 0, 1, 1], geometry_kinds: ["Polygon"], private_path: "PRIVATE" }];
+    const result = await buildFrozenSnapshot(state.access as unknown as LandUsePlanAccess, working);
+    expect(result?.snapshot.designations[0]).toMatchObject({ land_use_plan_designation_policy_links: [{ policy_node_id: versionId }, { policy_node_id: workspaceId }],
+      layer_version_evidence: { id: releaseId, feature_hash: "a".repeat(64), feature_count: 2 } });
+    expect(JSON.stringify(result?.snapshot)).not.toContain("PRIVATE");
+    expect(state.rows.land_use_plan_designations[0].land_use_plan_designation_policy_links).toEqual([{ policy_node_id: workspaceId, confidential: "PRIVATE" }, { policy_node_id: versionId, confidential: "PRIVATE" }]);
+    expect(state.queries.find(query => query.table === "land_use_plan_designations")?.projection).toContain("land_use_plan_designation_policy_links(policy_node_id)");
   });
   it("does not freeze a plan kind absent from its descriptor", async () => {
     (state.access.plan as Record<string, unknown>).plan_kind_key = "absent";

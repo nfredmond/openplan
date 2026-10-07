@@ -75,7 +75,7 @@ export async function loadWorkingVersion(access: LandUsePlanAccess) {
   if (!access.plan.current_working_version_id) return null;
   const result = await access.supabase
     .from("land_use_plan_versions")
-    .select("id, workspace_id, plan_id, version_number, version_kind, state, based_on_version_id, applicable_requirement_keys, content_hash, frozen_at")
+    .select("id, workspace_id, plan_id, version_number, version_kind, state, based_on_version_id, applicable_requirement_keys, draft_revision, content_hash, frozen_at")
     .eq("id", access.plan.current_working_version_id)
     .eq("plan_id", access.plan.id)
     .eq("state", "working")
@@ -92,6 +92,7 @@ export async function buildFrozenSnapshot(
     version_kind: string;
     based_on_version_id: string | null;
     applicable_requirement_keys: string[];
+    draft_revision: number;
   }
 ): Promise<{ snapshot: FrozenPlanContent; hash: string } | null> {
   const descriptor = getJurisdictionPlanDescriptor(access.plan.descriptor_id);
@@ -143,6 +144,8 @@ export async function buildFrozenSnapshot(
   const layerVersionById = new Map((layerVersions.data ?? []).map((version) => [version.id, version]));
   const frozenDesignations = (designations.data ?? []).map((designation) => ({
     ...designation,
+    land_use_plan_designation_policy_links: [...(designation.land_use_plan_designation_policy_links ?? [])]
+      .sort((left, right) => left.policy_node_id.localeCompare(right.policy_node_id)),
     layer_version_evidence: layerVersionById.get(designation.layer_version_id) ?? null,
   }));
   if (frozenDesignations.some((designation) => !designation.layer_version_evidence?.feature_hash)) return null;
@@ -164,6 +167,7 @@ export async function buildFrozenSnapshot(
       versionKind: version.version_kind,
       basedOnVersionId: version.based_on_version_id,
       applicableRequirementKeys: version.applicable_requirement_keys ?? [],
+      draftRevision: version.draft_revision,
     },
     nodes: nodes.data ?? [],
     relationships: relationships.data ?? [],

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadLandUsePlanAccess, loadWorkingVersion } from "@/lib/land-use-plans/api";
+import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
 import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest, context: Context) {
 
   const { data: versions, error: versionsError } = await access.supabase
     .from("land_use_plan_versions")
-    .select("id, version_number, version_kind, state, based_on_version_id, applicable_requirement_keys, content_hash, frozen_at, frozen_by, published_report_id, created_at, updated_at")
+    .select("id, version_number, version_kind, state, based_on_version_id, applicable_requirement_keys, draft_revision, content_hash, frozen_at, frozen_by, published_report_id, created_at, updated_at")
     .eq("plan_id", access.plan.id)
     .order("version_number", { ascending: false });
   if (versionsError) return NextResponse.json({ error: "Failed to load plan versions" }, { status: 500 });
@@ -66,6 +67,8 @@ export async function GET(request: NextRequest, context: Context) {
 
   return NextResponse.json({
     plan: access.plan,
+    actorId: access.userId,
+    descriptorHash: hashFrozenRecord(descriptor),
     descriptor,
     canWrite: access.canWrite,
     versions: versions ?? [],
