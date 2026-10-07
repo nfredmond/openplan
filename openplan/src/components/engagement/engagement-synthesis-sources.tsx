@@ -13,6 +13,7 @@ import {
   type PendingSynthesisSource, type SynthesisClientScope,
 } from "@/lib/engagement/pending-synthesis-source";
 import { SynthesisSourceInspection } from "./synthesis-source-inspection";
+import { SynthesisRequestHistoryPanel } from "./synthesis-request-history-panel";
 import type { ResponseLinkWorkingCopy } from "@/lib/engagement/synthesis-response-link-recovery";
 import type { ApprovalWorkingCopy } from "@/lib/engagement/synthesis-approval-recovery";
 import { SynthesisReviewEditor } from "./synthesis-review-editor";
@@ -180,6 +181,6 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     <ul className="space-y-3">{entries?.map(entry => <li key={entry.requestId} className="rounded border p-3 space-y-2"><p>{new Date(entry.createdAt).toLocaleString("en-US")} · {entry.counts.items} comments · {entry.counts.sessions} survey responses · {entry.counts.answers} answers</p><p className="text-xs">Statuses: {entry.selection.statuses.join(", ")}</p><p className="text-sm font-medium">{reviewRecoveryLabel(entry)}</p><Button type="button" variant="outline" onClick={() => void inspect(entry.requestId)}>Open saved source {entry.requestId.slice(0, 8)}</Button></li>)}</ul>
     {cursor ? <Button type="button" variant="outline" disabled={listing} onClick={() => void list(cursor)}>Load older sources</Button> : null}
     {reading ? <p role="status">Opening retained source…</p> : null}{readError ? <div><p role="alert">{readError}</p>{openId ? <Button type="button" variant="outline" onClick={() => void inspect(openId)}>Retry opening saved source</Button> : null}</div> : null}
-    {inspection ? <div key={inspection.requestId} className="space-y-4"><SynthesisSourceInspection snapshot={inspection.snapshot} sha256={inspection.snapshotSha256} /><SynthesisReviewEditor userId={userId} workspaceId={workspaceId} campaignId={campaignId} sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} snapshot={inspection.snapshot} onAccessLost={loseReviewAccess} recoveryMemory={reviewMemory(inspection)} approvalMemories={approvalMemories.current} responseLinkMemories={responseLinkMemories.current} importMemories={importMemories.current} /></div> : null}
+    {inspection ? <div key={inspection.requestId} className="space-y-4"><SynthesisSourceInspection snapshot={inspection.snapshot} sha256={inspection.snapshotSha256} /><SynthesisRequestHistoryPanel userId={userId} workspaceId={workspaceId} campaignId={campaignId} sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} onAccessLost={loseReviewAccess} /><SynthesisReviewEditor userId={userId} workspaceId={workspaceId} campaignId={campaignId} sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} snapshot={inspection.snapshot} onAccessLost={loseReviewAccess} recoveryMemory={reviewMemory(inspection)} approvalMemories={approvalMemories.current} responseLinkMemories={responseLinkMemories.current} importMemories={importMemories.current} /></div> : null}
   </section>;
 }
