@@ -3,7 +3,7 @@ import type { createServiceRoleClient } from "@/lib/supabase/server";
 import { planCreationCommandSchema, planCreationResultSchema, matchesPlanCreation, type PlanCreationScope } from "./create-command";
 import { snapshotPlanDescriptor } from "./descriptor-snapshot";
 import { preparePlanContext } from "./plan-context-server";
-import { getJurisdictionPlanDescriptor } from "./registry";
+import { getPlanKindDescriptor } from "./registry";
 import { hashFrozenRecord, serializeFrozenRecord } from "./versioning";
 import type { SavedPlanContext } from "./plan-context";
 
@@ -26,7 +26,7 @@ export async function createPlanWithContext(client: Store, scope: PlanCreationSc
   if (lookup.error || (lookup.data && lookup.data.command_id !== command.commandId)) throw new PlanCreationError("unavailable");
   let context: SavedPlanContext | null = null, descriptorText: string | null = null;
   if (!lookup.data) {
-    const descriptor = getJurisdictionPlanDescriptor(command.descriptorId);
+    const descriptor = getPlanKindDescriptor(command.descriptorId, command.planKindKey);
     if (!descriptor || !descriptor.planKinds.some(kind => kind.key === command.planKindKey)) throw new PlanCreationError("conflict");
     const snapshot = snapshotPlanDescriptor(descriptor, command.planKindKey);
     if (hashFrozenRecord(snapshot) !== command.expectedDescriptorHash) throw new PlanCreationError("conflict");

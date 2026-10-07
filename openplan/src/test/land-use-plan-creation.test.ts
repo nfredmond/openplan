@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPlanWithContext } from "@/lib/land-use-plans/create-store";
 import { matchesPlanCreation, planCreationCommandSchema, serializePlanCreation, type PlanCreationResult } from "@/lib/land-use-plans/create-command";
 import { savedPlanContextSchema } from "@/lib/land-use-plans/plan-context";
-import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
 import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
 import { placeOfRecordFromBoundary, placeOfRecordFromCapturedArea } from "@/lib/geographies/study-area-capture";
 
@@ -11,7 +11,7 @@ vi.mock("@/lib/geographies/place-resolver", () => ({ resolvePlaceBoundary: mocks
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12,"0")}`;
 const scope = { actorId: id(1), workspaceId: id(2) };
 const geometry = { type: "Polygon" as const, coordinates: [[[0,0],[1,0],[1,1],[0,0]]] as [number,number][][] };
-const neutral = getJurisdictionPlanDescriptor("local-unconfigured")!;
+const neutral = getPlanKindDescriptor("local-unconfigured", "community")!;
 function command() { return { commandId: id(3), title: "SYNTHETIC plan", authorityLabel: "SYNTHETIC display body", descriptorId: neutral.id,
   planKindKey: "community", expectedDescriptorHash: hashFrozenRecord(neutral), place: { mode: "uploaded" as const, label: "SYNTHETIC area", geometry },
   assessment: { authorities: [{ id: id(4),label:"SYNTHETIC body",role:"Sponsor",kind:"tribal_government",jurisdiction:null,sourceUrls:[] }],
@@ -36,13 +36,15 @@ describe("atomic plan creation preparation",()=>{
   expect(rpc).toHaveBeenCalledWith("create_land_use_plan_with_context",expect.objectContaining({p_workspace_id:scope.workspaceId,p_actor_id:scope.actorId,p_command_id:c.commandId,p_command_text:raw,p_prepared_context:expect.objectContaining({assessment:c.assessment,place:outcome.context.place})}));
   const args=rpc.mock.calls[0][1];expect(JSON.parse(args.p_descriptor_text)).toEqual(neutral);expect(mocks.resolve).not.toHaveBeenCalled();
  });
- it("uses assessed plan authority for configured rules without a workspace-home read",async()=>{
-  const ca=getJurisdictionPlanDescriptor("us-ca-general-plan")!;const c={...command(),descriptorId:ca.id,planKindKey:"comprehensive",expectedDescriptorHash:hashFrozenRecord(ca),assessment:{authorities:[{id:id(4),label:"SYNTHETIC California body",role:"Plan sponsor",kind:"county",jurisdiction:{country:"US",subdivision:"CA"},sourceUrls:["https://example.test/authority"]}],applicability:{status:"staff_assessed" as const,explanation:"SYNTHETIC scope exercise only",sourceUrls:["https://example.test/assessment"],authorityIds:[id(4)]}}};
+ it.each(["comprehensive","area"])("uses assessed plan authority and the selected %s rules without a workspace-home read",async planKindKey=>{
+  const ca=getPlanKindDescriptor("us-ca-general-plan", planKindKey)!;const c={...command(),descriptorId:ca.id,planKindKey,expectedDescriptorHash:hashFrozenRecord(ca),assessment:{authorities:[{id:id(4),label:"SYNTHETIC California body",role:"Plan sponsor",kind:"county",jurisdiction:{country:"US",subdivision:"CA"},sourceUrls:["https://example.test/authority"]}],applicability:{status:"staff_assessed" as const,explanation:"SYNTHETIC scope exercise only",sourceUrls:["https://example.test/assessment"],authorityIds:[id(4)]}}};
   const result={...receipt(),descriptorId:c.descriptorId,planKindKey:c.planKindKey,descriptorHash:c.expectedDescriptorHash,context:{...receipt().context,assessment:c.assessment}};rpc.mockResolvedValue({data:result,error:null});
   expect(await createPlanWithContext(client,scope,serializePlanCreation(c))).toEqual(result);expect(from).toHaveBeenCalledTimes(1);
+  const prepared=JSON.parse(rpc.mock.calls[0][1].p_descriptor_text);expect(prepared.planKinds).toEqual(ca.planKinds);
+  expect(prepared.requirements[0].key).toBe(planKindKey==="area"?"specific_land_use":"land_use");
  });
  it("refuses unresolved authority for configured rules before any write",async()=>{
-  const d=getJurisdictionPlanDescriptor("us-ca-general-plan")!;
+  const d=getPlanKindDescriptor("us-ca-general-plan", "comprehensive")!;
   await expect(createPlanWithContext(client,scope,serializePlanCreation({...command(),descriptorId:d.id,planKindKey:"comprehensive",expectedDescriptorHash:hashFrozenRecord(d)}))).rejects.toMatchObject({kind:"conflict"});expect(rpc).not.toHaveBeenCalled();
  });
  it("refuses changed descriptor rules and unknown plan kinds",async()=>{

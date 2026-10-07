@@ -3,7 +3,9 @@ import { z } from "zod";
 
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadLandUsePlanAccess } from "@/lib/land-use-plans/api";
-import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
+import { readFrozenPlanIdentity } from "@/lib/land-use-plans/frozen-identity";
+import { readFrozenPlanDescriptor } from "@/lib/land-use-plans/descriptor-snapshot";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 
 const paramsSchema = z.object({ planId: z.string().uuid() });
@@ -35,19 +37,31 @@ export async function POST(request: NextRequest, context: Context) {
   const loaded = await loadLandUsePlanAccess(params.data.planId, { write: true });
   if (!loaded.ok) return loaded.response;
   const { access } = loaded;
-  const descriptor = getJurisdictionPlanDescriptor(access.plan.descriptor_id);
-  const processStep = descriptor?.processSteps.find((step) => step.key === parsed.data.processKey);
-  if (!descriptor || !processStep) {
-    return NextResponse.json({ error: "The process key is not part of this plan descriptor" }, { status: 400 });
-  }
   const { data: version, error: versionError } = await access.supabase
     .from("land_use_plan_versions")
-    .select("id")
+    .select("id, state, version_number, content_hash, frozen_snapshot")
     .eq("id", parsed.data.versionId)
     .eq("plan_id", access.plan.id)
     .maybeSingle();
   if (versionError) return NextResponse.json({ error: "Failed to verify the plan version" }, { status: 500 });
   if (!version) return NextResponse.json({ error: "Plan version not found" }, { status: 404 });
+
+  let descriptor = version.state === "working" ? getPlanKindDescriptor(access.plan.descriptor_id, access.plan.plan_kind_key) : null;
+  if (version.state !== "working") {
+    if (!["public_review", "adopted", "superseded", "repealed"].includes(version.state) || !version.content_hash) {
+      return NextResponse.json({ error: "The frozen version state could not be verified" }, { status: 409 });
+    }
+    const identity = readFrozenPlanIdentity(version.frozen_snapshot, access.plan.id, version.id, version.version_number, version.content_hash);
+    if (!identity) return NextResponse.json({ error: "The frozen version could not be verified" }, { status: 409 });
+    const rules = readFrozenPlanDescriptor(version.frozen_snapshot as Record<string, unknown>, identity.descriptorId, identity.planKindKey);
+    if (rules.status === "invalid") return NextResponse.json({ error: "The reviewed checklist could not be verified" }, { status: 409 });
+    descriptor = rules.status === "retained" ? rules.descriptor : getPlanKindDescriptor(identity.descriptorId, identity.planKindKey);
+  }
+  const processStep = descriptor?.processSteps.find(step => step.key === parsed.data.processKey);
+  if (!descriptor || !processStep) {
+    return NextResponse.json({ error: "The process key is not part of this plan version's checklist" }, { status: 400 });
+  }
+
 
   if (parsed.data.evidenceDocumentId) {
     const { data: document, error } = await access.supabase.from("kb_documents")

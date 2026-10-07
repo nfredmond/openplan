@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { creationCommandFixture, creationReceiptFixture, creationScope, creationId } from "./fixtures/land-use-plans/creation";
-import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
 import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
 
 const mocks = vi.hoisted(() => ({ auth: vi.fn(), membership: vi.fn(), userFrom: vi.fn(), service: vi.fn(), from: vi.fn(), rpc: vi.fn(), resolve: vi.fn(), warn: vi.fn() }));
@@ -86,7 +86,7 @@ describe("plan-owned creation route", () => {
     expect(mocks.rpc).toHaveBeenCalledWith("create_land_use_plan_with_context", expect.objectContaining({ p_actor_id: creationScope.actorId, p_workspace_id: creationScope.workspaceId, p_command_text: raw }));
   });
   it("allows assessed California plan authority with a Puerto Rico office and refuses an incompatible plan assessment", async () => {
-    const descriptor = getJurisdictionPlanDescriptor("us-ca-general-plan")!;
+    const descriptor = getPlanKindDescriptor("us-ca-general-plan", "comprehensive")!;
     const command = { ...creationCommandFixture(), descriptorId: descriptor.id, planKindKey: "comprehensive", expectedDescriptorHash: hashFrozenRecord(descriptor),
       assessment: { authorities: [{ id: creationId(4), label: "SYNTHETIC California agency", role: "Adopting", kind: "county", jurisdiction: { country: "US", subdivision: "CA" }, sourceUrls: ["https://example.test/authority"] }],
         applicability: { status: "staff_assessed" as const, explanation: "SYNTHETIC scope test only", sourceUrls: ["https://example.test/rules"], authorityIds: [creationId(4)] } } };

@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS } from "@/lib/land-use-plans/registry";
+import { SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS, getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
+import { planDescriptorSelectionKey } from "@/lib/land-use-plans/plan-kind-rules";
 import { planContextDraft } from "@/lib/land-use-plans/plan-context-draft";
 import { planApplicabilityBlocker } from "@/lib/land-use-plans/plan-context";
 import { confirmCreationRequest, confirmCreationStop, creationCommandFromDraft, importCreationRecord, readCreationRecords, retainCreationRequest, retainCreationStop,
@@ -35,7 +36,9 @@ function CreationForm({ actorId, workspaceId, canWrite, descriptorHashes }: Prop
   const previous = useRef<string | null>(null), active = useRef(false), mounted = useRef(false);
   const request = useRef<AbortController | null>(null), fileRead = useRef(0);
   const neutral = SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.find(item => !item.configured)!;
-  const descriptor = SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.find(item => item.id === form?.fields.descriptorId);
+  const family = SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.find(item => item.id === form?.fields.descriptorId);
+  const descriptor = family && form ? getPlanKindDescriptor(family.id, form.fields.planKindKey) : null;
+  const selectionKey = form ? planDescriptorSelectionKey(form.fields.descriptorId, form.fields.planKindKey) : null;
   const pending = records.filter(record => record.value?.kind === "pending" || !record.value);
   const submitted = records.some(record => record.value && record.value.kind !== "draft" && record.value.draft.instanceId === form?.instanceId);
   const locked = busy || !canWrite;
@@ -48,7 +51,7 @@ function CreationForm({ actorId, workspaceId, canWrite, descriptorHashes }: Prop
     mounted.current = true;
     setForm({ actorId, workspaceId, schemaVersion: 1, kind: "draft", instanceId: crypto.randomUUID(), savedAt: new Date().toISOString(),
       fields: { title: "", authorityLabel: "", descriptorId: neutral.id, planKindKey: neutral.planKinds[0].key,
-        descriptorHash: descriptorHashes[neutral.id], context: planContextDraft(null, { authority: "", geography: "" }) } });
+        descriptorHash: descriptorHashes[planDescriptorSelectionKey(neutral.id, neutral.planKinds[0].key)], context: planContextDraft(null, { authority: "", geography: "" }) } });
     const readStored = () => {
       try { setRecords(readCreationRecords(localStorage, { actorId, workspaceId })); setReady(true); }
       catch { setReady(false); setError("Saved creation copies could not be read. Download your draft before leaving."); }
@@ -83,7 +86,7 @@ function CreationForm({ actorId, workspaceId, canWrite, descriptorHashes }: Prop
     active.current = true; setBusy(true); setError(null);
     try {
       if (read().some(record => !record.value || record.value.kind === "pending" || (record.value.kind === "confirmed" && record.value.draft.instanceId === form.instanceId))) throw new Error("This draft has a saved creation request. Open or retry it before starting another plan.");
-      if (!descriptor || descriptorHashes[descriptor.id] !== form.fields.descriptorHash) throw new Error("The checklist changed. Review the current rules before creating the plan.");
+      if (!descriptor || descriptorHashes[selectionKey!] !== form.fields.descriptorHash) throw new Error("The checklist changed. Review the current rules before creating the plan.");
       const command = creationCommandFromDraft(form, crypto.randomUUID());
       const blocker = planApplicabilityBlocker(command.assessment, descriptor);
       if (blocker) throw new Error(blocker);
@@ -137,19 +140,19 @@ function CreationForm({ actorId, workspaceId, canWrite, descriptorHashes }: Prop
         <label className="space-y-1 text-sm">Display authority label<Input value={form.fields.authorityLabel} maxLength={180} onChange={event => change({ ...form.fields, authorityLabel: event.target.value })} /><span className="block text-xs text-muted-foreground">The short label shown on the plan list. Describe the role of each body below.</span></label>
         <label className="space-y-1 text-sm">Legal checklist<select className="module-select w-full" value={form.fields.descriptorId} onChange={event => {
           const next = SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.find(item => item.id === event.target.value)!;
-          change({ ...form.fields, descriptorId: next.id, planKindKey: next.planKinds[0].key, descriptorHash: descriptorHashes[next.id] });
+          change({ ...form.fields, descriptorId: next.id, planKindKey: next.planKinds[0].key, descriptorHash: descriptorHashes[planDescriptorSelectionKey(next.id, next.planKinds[0].key)] });
         }}><option value="" disabled>Select a checklist</option>{SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.map(item => <option key={item.id} value={item.id}>{item.jurisdictionLabel}</option>)}</select></label>
-        <label className="space-y-1 text-sm">Plan kind<select className="module-select w-full" value={form.fields.planKindKey} onChange={event => change({ ...form.fields, planKindKey: event.target.value })}>
-          {descriptor?.planKinds.map(kind => <option key={kind.key} value={kind.key}>{kind.label}</option>)}
+        <label className="space-y-1 text-sm">Plan kind<select className="module-select w-full" value={form.fields.planKindKey} onChange={event => change({ ...form.fields, planKindKey: event.target.value, descriptorHash: descriptorHashes[planDescriptorSelectionKey(form.fields.descriptorId, event.target.value)] })}>
+          {family?.planKinds.map(kind => <option key={kind.key} value={kind.key}>{kind.label}</option>)}
         </select></label>
       </fieldset>
       {descriptor ? <div className="max-w-prose space-y-2 border-l-2 border-border pl-4 text-sm">
         <p>{descriptor.disclosure}</p><p className="text-muted-foreground">Source review: {descriptor.verifiedAt}. Review due: {descriptor.reviewDueAt}. These dates do not establish current legal sufficiency.</p>
         {descriptor.sourceUrls.length ? <ul className="list-disc space-y-1 pl-5">{descriptor.sourceUrls.map(url => <li key={url}><a href={url} target="_blank" rel="noreferrer" className="break-all underline">{url}</a></li>)}</ul> : null}
       </div> : <p role="alert">This saved checklist is no longer installed. Select and assess a current checklist.</p>}
-      {descriptor && form.fields.descriptorHash !== descriptorHashes[descriptor.id] ? <div role="alert" className="space-y-2 text-sm">
+      {descriptor && form.fields.descriptorHash !== descriptorHashes[selectionKey!] ? <div role="alert" className="space-y-2 text-sm">
         <p>The saved draft refers to older rules. Its original copy remains available.</p>
-        <Button variant="outline" disabled={locked} onClick={() => change({ ...form.fields, descriptorHash: descriptorHashes[descriptor.id] })}>Use reviewed current rules for this draft</Button>
+        <Button variant="outline" disabled={locked} onClick={() => change({ ...form.fields, descriptorHash: descriptorHashes[selectionKey!] })}>Use reviewed current rules for this draft</Button>
       </div> : null}
       <PlanStudyAreaFields key={form.instanceId} value={form.fields.context} onChange={context => change({ ...form.fields, context })} hasSavedArea={false} disabled={locked} />
       <PlanAuthorityFields value={form.fields.context} onChange={context => change({ ...form.fields, context })} disabled={locked} />

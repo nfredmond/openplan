@@ -1,4 +1,4 @@
-import { getJurisdictionPlanDescriptor } from "./registry";
+import { getPlanKindDescriptor } from "./registry";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { readFrozenPlanDescriptor } from "./descriptor-snapshot";
 import { readFrozenPlanIdentity } from "./frozen-identity";
@@ -83,7 +83,7 @@ export async function loadPublishedLandUsePlanPacket(
 
   const rules = readFrozenPlanDescriptor(version.frozen_snapshot as Record<string, unknown>, identity.descriptorId, identity.planKindKey);
   if (rules.status === "invalid") return { ok: false, reason: "incomplete" };
-  const descriptor = rules.status === "retained" ? rules.descriptor : getJurisdictionPlanDescriptor(identity.descriptorId);
+  const descriptor = rules.status === "retained" ? rules.descriptor : getPlanKindDescriptor(identity.descriptorId, identity.planKindKey);
   return {
     ok: true,
     packet: {
@@ -127,7 +127,7 @@ export async function loadPublicLandUsePlanReviewPacket(
   if (version.plan_id !== plan.id || !identity) return { ok: false, reason: "incomplete" };
   const rules = readFrozenPlanDescriptor(version.frozen_snapshot as Record<string, unknown>, identity.descriptorId, identity.planKindKey);
   if (rules.status === "invalid") return { ok: false, reason: "incomplete" };
-  const descriptor = rules.status === "retained" ? rules.descriptor : getJurisdictionPlanDescriptor(identity.descriptorId);
+  const descriptor = rules.status === "retained" ? rules.descriptor : getPlanKindDescriptor(identity.descriptorId, identity.planKindKey);
   return {
     ok: true,
     packet: {

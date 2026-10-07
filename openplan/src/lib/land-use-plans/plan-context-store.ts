@@ -4,7 +4,7 @@ import type { createServiceRoleClient } from "@/lib/supabase/server";
 import { readSavedPlanContext, savedPlanContextSchema, planApplicabilityBlocker, type SavedPlanContext } from "./plan-context";
 import { planContextSaveResultSchema, type PlanContextSave } from "./plan-context-command";
 import { preparePlanContext } from "./plan-context-server";
-import { getJurisdictionPlanDescriptor } from "./registry";
+import { getPlanKindDescriptor } from "./registry";
 
 type Store = ReturnType<typeof createServiceRoleClient>;
 export type PlanContextScope = { planId: string; workspaceId: string; actorId: string };
@@ -54,7 +54,7 @@ export async function savePlanContext(client: Store, scope: PlanContextScope, co
   if (lookup.error) throw new PlanContextError("unavailable", 503);
   let prepared: SavedPlanContext | null = null;
   if (!lookup.data) {
-    const descriptor = getJurisdictionPlanDescriptor(command.descriptorId);
+    const descriptor = getPlanKindDescriptor(command.descriptorId, command.planKindKey);
     if (!descriptor || !descriptor.planKinds.some(kind => kind.key === command.planKindKey)) throw new PlanContextError("conflict", 409);
     if (command.place.mode === "retained") {
       const current = await readPlanContext(client, scope);

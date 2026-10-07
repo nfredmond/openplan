@@ -6,7 +6,7 @@ import { navLabel } from "@/components/nav/nav-registry";
 import { PageHeader } from "@/components/ui/page-header";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import {
-  getJurisdictionPlanDescriptor,
+  getPlanKindDescriptor,
   SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS,
 } from "@/lib/land-use-plans/registry";
 import { createClient } from "@/lib/supabase/server";
@@ -15,6 +15,7 @@ import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
+import { planDescriptorSelectionKey } from "@/lib/land-use-plans/plan-kind-rules";
 import { snapshotPlanDescriptor } from "@/lib/land-use-plans/descriptor-snapshot";
 
 export const metadata = moduleMetadata("Land Use Plans");
@@ -32,8 +33,12 @@ export default async function LandUsePlansPage() {
   const reads = new ReadFailureLog();
   const unreadable = reads.check("land use plans", plansResult);
   const plans = plansResult.data;
-  const descriptorHashes = Object.fromEntries(SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.map(descriptor =>
-    [descriptor.id, hashFrozenRecord(snapshotPlanDescriptor(descriptor, descriptor.planKinds[0].key))]));
+  const descriptorHashes = Object.fromEntries(SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.flatMap(family =>
+    family.planKinds.map(kind => {
+      const descriptor = getPlanKindDescriptor(family.id, kind.key);
+      if (!descriptor) throw new Error("A selectable plan kind has no installed rules");
+      return [planDescriptorSelectionKey(family.id, kind.key), hashFrozenRecord(snapshotPlanDescriptor(descriptor, kind.key))];
+    })));
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 p-4 md:p-8">
@@ -55,7 +60,7 @@ export default async function LandUsePlansPage() {
       {!unreadable && plans?.length ? (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {plans.map((plan) => {
-            const descriptor = getJurisdictionPlanDescriptor(plan.descriptor_id);
+            const descriptor = getPlanKindDescriptor(plan.descriptor_id, plan.plan_kind_key);
             const versions = plan.land_use_plan_versions ?? [];
             const active = versions.find((version) => version.id === plan.current_working_version_id) ?? versions.find((version) => version.id === plan.current_adopted_version_id);
             return (

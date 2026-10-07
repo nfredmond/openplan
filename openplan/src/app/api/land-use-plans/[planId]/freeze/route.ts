@@ -9,7 +9,7 @@ import { executePlanFreeze, hasPlanFreezeCommand, PlanFreezeError } from "@/lib/
 import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
 import { buildFrozenSnapshot, loadLandUsePlanAccess, loadWorkingVersion } from "@/lib/land-use-plans/api";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
 import { buildPublicDraftBlockers } from "@/lib/land-use-plans/workflow";
 
 const paramsSchema = z.object({ planId: z.string().uuid() }).strict();
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest, context: Context) {
     }
     const version = await loadWorkingVersion(access);
     if (!version || version.id !== command.versionId || version.draft_revision !== command.expectedDraftRevision) throw new PlanFreezeError("conflict");
-    const descriptor = getJurisdictionPlanDescriptor(access.plan.descriptor_id);
+    const descriptor = getPlanKindDescriptor(access.plan.descriptor_id, access.plan.plan_kind_key);
     if (!descriptor || hashFrozenRecord(descriptor) !== command.expectedDescriptorHash) throw new PlanFreezeError("conflict");
     const requiresConsultation = descriptor.processSteps.some(
       (step) => step.key === "tribal_consultation" && step.required,

@@ -70,6 +70,17 @@ beforeEach(() => {
 describe.each(["adopted", "review"] as const)("%s public frozen identity", kind => {
   const load = () => kind === "adopted" ? loadPublishedLandUsePlanPacket(planId) : loadPublicLandUsePlanReviewPacket(shareToken);
 
+  it("uses the selected kind for an explicitly unretained legacy reference", async () => {
+    frozen.plan.descriptorId = "us-ca-general-plan"; frozen.plan.planKindKey = "area"; retainHash();
+    const result = await load(); expect(result.ok).toBe(true);
+    if (!result.ok) throw Error(result.reason);
+    expect(result.packet.descriptor?.terminology.plan).toBe("specific plan");
+    expect(result.packet.descriptorCustody).toBe("not_retained");
+    expect(result.packet.content).not.toHaveProperty("descriptorSnapshot");
+    frozen.plan.planKindKey = "unsupported-kind"; retainHash();
+    expect(await load()).toMatchObject({ ok: true, packet: { descriptor: null, descriptorCustody: "not_retained", content: frozen } });
+  });
+
   it("uses the reviewed identity and descriptor after later draft edits", async () => {
     const result = await load();
     expect(result.ok).toBe(true);

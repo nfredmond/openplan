@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 import { serializePlanContextSave } from "@/lib/land-use-plans/plan-context-command";
 import { placeOfRecordFromCapturedArea } from "@/lib/geographies/study-area-capture";
+import * as registry from "@/lib/land-use-plans/registry";
 
 const mocks = vi.hoisted(() => ({ access: vi.fn(), service: vi.fn(), rpc: vi.fn(), from: vi.fn(), resolve: vi.fn(), info: vi.fn(), warn: vi.fn() }));
 vi.mock("@/lib/land-use-plans/api", () => ({ loadLandUsePlanAccess: mocks.access }));
@@ -61,6 +62,16 @@ beforeEach(() => {
 });
 
 describe("plan context route", () => {
+  it("checks context against a selected kind's authority scope rather than its broader family", async () => {
+    const selected = registry.getPlanKindDescriptor(command.descriptorId, command.planKindKey)!;
+    const lookup = vi.spyOn(registry, "getPlanKindDescriptor").mockReturnValue({ ...selected, configured: true,
+      authorityKinds: ["SYNTHETIC governing body"], jurisdictionCoverage: { country: "NZ", subdivision: "WGN" } });
+    try {
+      expect((await post()).status).toBe(409);
+      expect(lookup).toHaveBeenCalledWith(command.descriptorId, command.planKindKey);
+      expect(mocks.rpc).not.toHaveBeenCalled();
+    } finally { lookup.mockRestore(); }
+  });
   it("saves exact normalized command bytes under server-authenticated scope", async () => {
     const text = ` \n${serializePlanContextSave(command)}\n `;
     const response = await post(text);

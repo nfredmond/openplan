@@ -1,7 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { creationScope } from "./fixtures/land-use-plans/creation";
+import { readCreationRecords } from "@/lib/land-use-plans/create-recovery";
+import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
+import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
 
 const mocks = vi.hoisted(() => ({ create: vi.fn(), membership: vi.fn(), from: vi.fn(), select: vi.fn(), eq: vi.fn(), order: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn(), useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
@@ -19,6 +22,25 @@ beforeEach(() => {
   mocks.membership.mockResolvedValue({ membership: { workspace_id: creationScope.workspaceId, role: "member" }, workspace: { name: "SYNTHETIC office" } });
 });
 describe("plan-owned first-run rule selection", () => {
+  it("passes each family-kind hash from the real page into the saved creation draft", async () => {
+    render(await LandUsePlansPage());
+    fireEvent.change(await screen.findByLabelText("Plan title"), { target: { value: "SYNTHETIC kind selection" } });
+    const savedHash = () => {
+      const saved = readCreationRecords(localStorage, creationScope).find(record => record.value?.kind === "draft")?.value;
+      expect(saved?.kind).toBe("draft");
+      if (saved?.kind !== "draft") throw Error("Page did not supply a usable selection");
+      return saved.fields.descriptorHash;
+    };
+    expect(savedHash()).toBe(hashFrozenRecord(getPlanKindDescriptor("local-unconfigured", "comprehensive")));
+    fireEvent.change(screen.getByLabelText("Legal checklist"), { target: { value: "us-ca-general-plan" } });
+    expect(savedHash()).toBe(hashFrozenRecord(getPlanKindDescriptor("us-ca-general-plan", "comprehensive")));
+    fireEvent.change(screen.getByLabelText("Plan kind"), { target: { value: "area" } });
+    const draft = readCreationRecords(localStorage, creationScope).find(record => record.value?.kind === "draft")?.value;
+    expect(draft?.kind).toBe("draft");
+    if (draft?.kind !== "draft") throw Error("Page did not supply a usable selection");
+    expect(draft.fields.descriptorHash).toBe(hashFrozenRecord(getPlanKindDescriptor("us-ca-general-plan", "area")));
+    expect(draft.fields.descriptorHash).not.toBe(hashFrozenRecord(getPlanKindDescriptor("us-ca-general-plan", "comprehensive")));
+  });
   it.each(["CA", "PR", null])("starts neutral and offers plan-assessed rules with office subdivision %s", async home => {
     mocks.membership.mockResolvedValue({ membership: { workspace_id: creationScope.workspaceId, role: "member" }, workspace: { home_country_code: "US", home_subdivision_code: home } });
     render(await LandUsePlansPage());

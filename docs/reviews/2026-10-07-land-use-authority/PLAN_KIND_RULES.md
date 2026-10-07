@@ -98,3 +98,7 @@ versions, changed rules, interrupted requests, cross-workspace authority and
 frozen/public/export agreement. Native permission, rollback and concurrency
 checks remain separate from identified desktop/390px, console and artifact
 acceptance. Practitioner and counsel review of the claimed scope remains open.
+
+## Subsequent connection checkpoint
+
+The [connection work](PLAN_KIND_CONNECTIONS.md) now calls this selector from current routes, preparation and the creator. This supersedes the earlier unused-selector status, while retaining its source-review limits. Explicit reconciliation of older working drafts, native evidence and rendered acceptance remain open.

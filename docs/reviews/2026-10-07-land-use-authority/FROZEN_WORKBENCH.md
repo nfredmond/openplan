@@ -43,3 +43,7 @@ Specific-plan selection and reconciliation with older working drafts remain unfi
 The [branch/worktree audit](frozen-workbench/integration-audit.json) accounts for 58 local branches, 59 remote branches and 47 worktrees. Every local branch has a remote counterpart. Nine remote tips remain outside main `80a829c2`. The current history branch alone has unpublished commits; the remaining working trees are clean except the canonical checkout's unrelated `.directory`. No stashes are present. The BCA and engagement evidence worktrees remain untouched.
 
 [GitHub push attempts](frozen-workbench/push-status.json) fail with a remote Internal Server Error, including ordinary retries, a different pack and HTTP setting, a new recovery ref and the same owned ref from the canonical Git context. The new recovery ref is not created. The local connectivity check passes. This does not identify the server-side cause. The verified checkpoint remains committed locally, with no new PR, merge or release claimed. Retry the push before further integration.
+
+## Push recovery and next checkpoint
+
+A later ordinary push succeeds. Commit `1be69c7c8c57b9e3741acf512a514ee4653932b8` is on the remote branch, and [PR #127](https://github.com/nfredmond/openplan/pull/127) is open and linked to this thread. The failed attempts above remain historical evidence; pushing is no longer blocked. GitHub CI, merge and release remain separate. The [plan-kind connection checkpoint](PLAN_KIND_CONNECTIONS.md) continues M1 work after this frozen-history checkpoint.

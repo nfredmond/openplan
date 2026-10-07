@@ -29,6 +29,13 @@ Creation now uses the plan area and assessed bodies instead of office location.
 The form retains incomplete drafts and exact requests, with explicit retry after
 an uncertain reply. Rendered desktop/mobile acceptance remains open.
 
+The staff workbench can open earlier reviewed editions using their retained
+identity, context and checklist. Current creation and editing now select rules
+for the specific plan kind, including distinct California general-plan and
+specific-plan requirements. Changing a kind requires another checklist review.
+Earlier frozen editions remain unchanged. Existing authored drafts are not
+automatically converted; explicit reconciliation remains in development.
+
 Apply these additive migrations in order before using these candidate changes:
 
 - `20261016000002_land_use_plan_context.sql` adds nullable historical context and

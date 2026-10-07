@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createClient } from "@/lib/supabase/server";
 import { hashFrozenPlanContent, type FrozenPlanContent } from "./versioning";
-import { getJurisdictionPlanDescriptor } from "./registry";
+import { getPlanKindDescriptor } from "./registry";
 import { snapshotPlanDescriptor } from "./descriptor-snapshot";
 import { PlanContextError, readPlanContext } from "./plan-context-store";
 
@@ -95,7 +95,7 @@ export async function buildFrozenSnapshot(
     draft_revision: number;
   }
 ): Promise<{ snapshot: FrozenPlanContent; hash: string } | null> {
-  const descriptor = getJurisdictionPlanDescriptor(access.plan.descriptor_id);
+  const descriptor = getPlanKindDescriptor(access.plan.descriptor_id, access.plan.plan_kind_key);
   if (!descriptor || !descriptor.planKinds.some(kind => kind.key === access.plan.plan_kind_key)) return null;
   const descriptorSnapshot = snapshotPlanDescriptor(descriptor, access.plan.plan_kind_key);
   const supabase = access.supabase;

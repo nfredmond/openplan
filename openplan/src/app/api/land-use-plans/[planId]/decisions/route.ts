@@ -4,7 +4,8 @@ import { z } from "zod";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadLandUsePlanAccess } from "@/lib/land-use-plans/api";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
+import { selectPlanKindRules } from "@/lib/land-use-plans/plan-kind-rules";
 import { readFrozenPlanDescriptor } from "@/lib/land-use-plans/descriptor-snapshot";
 import { readFrozenPlanContext } from "@/lib/land-use-plans/context-snapshot";
 import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
@@ -75,10 +76,20 @@ export async function POST(request: NextRequest, context: Context) {
     }
     const rules = readFrozenPlanDescriptor(version.frozen_snapshot as Record<string, unknown>, frozenScope.data.plan.descriptorId, frozenScope.data.plan.planKindKey);
     if (rules.status === "invalid") return NextResponse.json({ error: "The saved checklist is malformed or belongs to another descriptor or plan kind" }, { status: 409 });
-    const descriptor = rules.status === "retained" ? rules.descriptor : getJurisdictionPlanDescriptor(frozenScope.data.plan.descriptorId);
+    const descriptor = rules.status === "retained" ? rules.descriptor : getPlanKindDescriptor(frozenScope.data.plan.descriptorId, frozenScope.data.plan.planKindKey);
     if (!descriptor) return NextResponse.json({ error: "The descriptor reference for this legacy version is not installed" }, { status: 409 });
-    const installed = getJurisdictionPlanDescriptor(descriptor.id);
-    if (rules.status === "retained" && (!installed || hashFrozenRecord(installed) !== hashFrozenRecord(descriptor))) {
+    if (rules.status === "legacy") {
+      const nodes: unknown = (version.frozen_snapshot as Record<string, unknown>).nodes;
+      const completed = new Set(Array.isArray(nodes) ? nodes.filter((node): node is Record<string, unknown> =>
+        Boolean(node) && typeof node === "object" && !Array.isArray(node))
+        .filter(node => node.node_kind === "section" && typeof node.body === "string" && node.body.trim())
+        .map(node => node.requirement_key) : []);
+      const missing = descriptor.requirements.filter(rule => rule.applicability === "required" && !completed.has(rule.key)).map(rule => rule.key);
+      if (missing.length) return NextResponse.json({ error: "This legacy version lacks required content under the current plan-kind reference. Prepare and review a corrected working version before adoption.", missing }, { status: 409 });
+    }
+    const installed = getPlanKindDescriptor(descriptor.id, frozenScope.data.plan.planKindKey);
+    const reviewedSelection = selectPlanKindRules(descriptor, frozenScope.data.plan.planKindKey);
+    if (rules.status === "retained" && (!installed || !reviewedSelection || hashFrozenRecord(installed) !== hashFrozenRecord(reviewedSelection))) {
       return NextResponse.json({ error: "The installed descriptor differs from the reviewed checklist. Reconcile the source changes before recording adoption." }, { status: 409 });
     }
     const [documentResult, processResult, releaseResult] = await Promise.all([

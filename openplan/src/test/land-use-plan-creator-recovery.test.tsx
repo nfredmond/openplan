@@ -2,14 +2,15 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LandUsePlanCreator } from "@/components/land-use-plans/land-use-plan-creator";
 import { readCreationRecords, saveCreationDraft } from "@/lib/land-use-plans/create-recovery";
-import { SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS } from "@/lib/land-use-plans/registry";
+import { SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS, getPlanKindDescriptor, getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { planDescriptorSelectionKey } from "@/lib/land-use-plans/plan-kind-rules";
 import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
 import { creationDraftFixture, creationId, creationReceiptFixture, creationScope } from "./fixtures/land-use-plans/creation";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("@/components/models/study-area-picker", () => ({ StudyAreaPicker: () => <div data-testid="study-picker" /> }));
-const hashes = Object.fromEntries(SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.map(item => [item.id, hashFrozenRecord(item)]));
+const hashes = Object.fromEntries(SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.flatMap(item => item.planKinds.map(kind => [planDescriptorSelectionKey(item.id, kind.key), hashFrozenRecord(getPlanKindDescriptor(item.id, kind.key))])));
 const props = { ...creationScope, canWrite: true, descriptorHashes: hashes };
 const transport = vi.fn<typeof fetch>();
 function reply(body: RequestInit["body"], replayed = false) {
@@ -25,6 +26,39 @@ beforeEach(() => { vi.clearAllMocks(); localStorage.clear(); vi.stubGlobal("fetc
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("mounted creation recovery", () => {
+  it("retains a distinct checklist hash and requires another review when the plan kind changes", async () => {
+    render(<LandUsePlanCreator {...props}/>);
+    fireEvent.change(await screen.findByLabelText("Legal checklist"), { target: { value: "us-ca-general-plan" } });
+    fireEvent.click(screen.getByLabelText(/I reviewed the plan area/));
+    expect(screen.getByLabelText(/I reviewed the plan area/)).toBeChecked();
+    fireEvent.change(screen.getByLabelText("Plan kind"), { target: { value: "area" } });
+    expect(screen.getByLabelText(/I reviewed the plan area/)).not.toBeChecked();
+    expect(screen.getByRole("option", { name: "General plan" })).toBeInTheDocument();
+    expect(screen.getByText(/This specific-plan checklist covers selected cited provisions/)).toBeVisible();
+    const draft = readCreationRecords(localStorage, creationScope).find(record => record.value?.kind === "draft")!.value!;
+    expect(draft.kind).toBe("draft");
+    if (draft.kind !== "draft") throw Error("Expected a saved draft");
+    expect(draft.fields.planKindKey).toBe("area");
+    expect(draft.fields.descriptorHash).toBe(hashes[planDescriptorSelectionKey("us-ca-general-plan", "area")]);
+    expect(draft.fields.descriptorHash).not.toBe(hashes[planDescriptorSelectionKey("us-ca-general-plan", "comprehensive")]);
+    expect(transport).not.toHaveBeenCalled();
+  });
+
+  it("keeps an older family-hash draft until staff explicitly reviews the selected-kind rules", async () => {
+    const draft = creationDraftFixture();
+    draft.fields.descriptorHash = hashFrozenRecord(getJurisdictionPlanDescriptor(draft.fields.descriptorId));
+    const original = saveCreationDraft(localStorage, draft, null);
+    render(<LandUsePlanCreator {...props}/>); await restore();
+    expect(screen.getByText("The saved draft refers to older rules. Its original copy remains available.")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Create plan and first working version" }));
+    expect(transport).not.toHaveBeenCalled();
+    expect(await screen.findByText("The checklist changed. Review the current rules before creating the plan.")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Use reviewed current rules for this draft" }));
+    expect(screen.getByLabelText(/I reviewed the plan area/)).not.toBeChecked();
+    expect(localStorage.getItem(original.key)).toBe(original.raw);
+    expect(screen.queryByText("The saved draft refers to older rules. Its original copy remains available.")).not.toBeInTheDocument();
+  });
+
   it("opens without sending, preserves the original draft and requires explicit review", async () => {
     const saved = saveCreationDraft(localStorage, creationDraftFixture(), null); render(<LandUsePlanCreator {...props} />);
     expect(await screen.findByLabelText("Plan title")).toHaveValue(""); expect(transport).not.toHaveBeenCalled();

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadLandUsePlanAccess, loadWorkingVersion } from "@/lib/land-use-plans/api";
+import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
 import { PLAN_CONTENT_NODE_KINDS } from "@/lib/land-use-plans/contracts";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
@@ -52,6 +53,12 @@ export async function POST(request: NextRequest, context: Context) {
   if (!version) return NextResponse.json({ error: "Content can only change on a working version" }, { status: 409 });
 
   const payload = parsed.data;
+  if (payload.operation === "create" && payload.requirementKey) {
+    const descriptor = getPlanKindDescriptor(loaded.access.plan.descriptor_id, loaded.access.plan.plan_kind_key);
+    if (payload.nodeKind !== "section" || !descriptor?.requirements.some(requirement => requirement.key === payload.requirementKey)) {
+      return NextResponse.json({ error: "The requirement key is not a section in this plan kind's checklist" }, { status: 400 });
+    }
+  }
   const parentNodeId = "parentNodeId" in payload ? payload.parentNodeId : undefined;
   if (parentNodeId) {
     const { data: parent, error: parentError } = await loaded.access.supabase

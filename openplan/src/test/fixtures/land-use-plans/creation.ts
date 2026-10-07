@@ -1,4 +1,4 @@
-import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
 import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
 import { planContextDraft } from "@/lib/land-use-plans/plan-context-draft";
 import { savedPlanContextSchema } from "@/lib/land-use-plans/plan-context";
@@ -10,7 +10,7 @@ export const creationId = (n: number) => `00000000-0000-4000-8000-${String(n).pa
 export const creationScope = { actorId: creationId(1), workspaceId: creationId(2) };
 export const creationGeometry = { type: "Polygon" as const, coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] as [number, number][][] };
 export function creationCommandFixture() {
-  const descriptor = getJurisdictionPlanDescriptor("local-unconfigured")!;
+  const descriptor = getPlanKindDescriptor("local-unconfigured", "community")!;
   return { commandId: creationId(3), title: "SYNTHETIC plan", authorityLabel: "SYNTHETIC display body", descriptorId: descriptor.id,
     planKindKey: "community", expectedDescriptorHash: hashFrozenRecord(descriptor), place: { mode: "uploaded" as const, label: "SYNTHETIC area", geometry: creationGeometry },
     assessment: { authorities: [{ id: creationId(4), label: "SYNTHETIC body", role: "Sponsor", kind: "tribal_government", jurisdiction: null, sourceUrls: [] }],

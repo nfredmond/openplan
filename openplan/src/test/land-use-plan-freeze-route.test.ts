@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 import { hashFrozenRecord, serializeFrozenPlanContent, serializeFrozenRecord, type FrozenPlanContent } from "@/lib/land-use-plans/versioning";
-import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
 const mocks = vi.hoisted(() => ({ access: vi.fn(), working: vi.fn(), snapshot: vi.fn(), service: vi.fn(), from: vi.fn(), rpc: vi.fn(), info: vi.fn(), warn: vi.fn() }));
 vi.mock("@/lib/land-use-plans/api", () => ({ loadLandUsePlanAccess: mocks.access, loadWorkingVersion: mocks.working, buildFrozenSnapshot: mocks.snapshot }));
 vi.mock("@/lib/supabase/server", () => ({ createServiceRoleClient: mocks.service }));
@@ -9,7 +9,7 @@ vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: () => ({ inf
 import { POST } from "@/app/api/land-use-plans/[planId]/freeze/route";
 const id = (n: number) => `10000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const planId = id(1), versionId = id(2), actorId = id(3), workspaceId = id(4), commandId = id(5);
-const descriptor = getJurisdictionPlanDescriptor("local-unconfigured")!;
+const descriptor = getPlanKindDescriptor("local-unconfigured", "community")!;
 const command = { state: "public_review", commandId, versionId, expectedDraftRevision: 7, expectedDescriptorHash: hashFrozenRecord(descriptor) };
 const snapshot: FrozenPlanContent = { descriptorSnapshot: descriptor, planContext: null,
   plan: { id: planId, descriptorId: descriptor.id, planKindKey: "community", title: "SYNTHETIC plan", authorityLabel: "SYNTHETIC authority", geographyLabel: "SYNTHETIC place" },
@@ -42,7 +42,7 @@ beforeEach(() => {
     return chain;
   });
   mocks.access.mockResolvedValue({ ok: true, access: { supabase: client, userId: actorId, canWrite: true,
-    plan: { id: planId, workspace_id: workspaceId, descriptor_id: descriptor.id } } });
+    plan: { id: planId, workspace_id: workspaceId, descriptor_id: descriptor.id, plan_kind_key: "community" } } });
   mocks.working.mockResolvedValue({ id: versionId, draft_revision: 7, applicable_requirement_keys: [] });
   mocks.snapshot.mockResolvedValue({ snapshot, hash: hashFrozenRecord(snapshot) });
   mocks.service.mockReturnValue(client); mocks.rpc.mockResolvedValue({ data: result, error: null });
@@ -103,11 +103,11 @@ describe("atomic plan freeze route", () => {
     mocks.rpc.mockClear(); tables.land_use_plan_content_nodes.data = [{ requirement_key: "local", body: " \n " }];
     expect((await post()).status).toBe(409); expect(mocks.rpc).not.toHaveBeenCalled();
   });
-  it("reports required rules absent from an older saved checklist before preparing a snapshot", async () => {
-    const current = getJurisdictionPlanDescriptor("us-ca-general-plan")!;
+  it.each(["comprehensive", "area"])("reports required %s rules absent from an older saved checklist before preparing a snapshot", async planKindKey => {
+    const current = getPlanKindDescriptor("us-ca-general-plan", planKindKey)!;
     const required = current.requirements.filter(rule => rule.applicability === "required").map(rule => rule.key);
     mocks.access.mockResolvedValue({ ok: true, access: { supabase: client, userId: actorId, canWrite: true,
-      plan: { id: planId, workspace_id: workspaceId, descriptor_id: current.id, plan_kind_key: "general" } } });
+      plan: { id: planId, workspace_id: workspaceId, descriptor_id: current.id, plan_kind_key: planKindKey } } });
     mocks.working.mockResolvedValue({ id: versionId, draft_revision: 7, applicable_requirement_keys: ["prior_rule"] });
     tables.land_use_plan_content_nodes.data = [{ requirement_key: "prior_rule", body: "SYNTHETIC retained text" }];
     tables.land_use_plan_process_records.data = current.processSteps.map(step => ({ process_key: step.key, status: "complete" }));
@@ -121,7 +121,7 @@ describe("atomic plan freeze route", () => {
 
     tables.land_use_plan_content_nodes.data = ["prior_rule", ...required].map(key => ({ requirement_key: key, body: "SYNTHETIC reviewed text" }));
     const currentSnapshot = { ...snapshot, descriptorSnapshot: current,
-      plan: { ...snapshot.plan, descriptorId: current.id, planKindKey: "general" } };
+      plan: { ...snapshot.plan, descriptorId: current.id, planKindKey } };
     mocks.snapshot.mockResolvedValue({ snapshot: currentSnapshot, hash: hashFrozenRecord(currentSnapshot) });
     mocks.rpc.mockResolvedValue({ data: { ...result, contentHash: hashFrozenRecord(currentSnapshot) }, error: null });
     expect((await post(requestText)).status).toBe(201);
