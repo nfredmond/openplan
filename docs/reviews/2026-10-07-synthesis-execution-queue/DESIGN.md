@@ -179,3 +179,25 @@ The suite applies the candidate migration inside its transaction when
 schema. It still requires the existing isolated-stack safeguard and explicit
 live-test opt-in. These fresh fixtures supersede the earlier machine-specific
 probe dependency, but do not establish HTTP/browser recovery or concurrent workers.
+
+## Authenticated server helper checkpoint
+
+The server helper forwards the exact saved queue command through the staff
+authenticated client. It checks current route scope before transport and verifies
+the native receipt before acknowledgement. It preserves native refusal categories
+and refuses acknowledgement after cancellation. It never dispatches provider work.
+
+The 12 helper tests pass. A harmless comment passes; removing scope checks,
+receipt verification or post-transport cancellation checks causes assertion
+failures. `server-controls.json` records these controls. Changed-file ESLint and
+whitespace checks pass. These mocked transport tests do not establish live HTTP
+session isolation, timeout recovery, worker execution or a visible staff journey.
+
+The native suite also adds foreign workspace/source checks and immutable-history
+checks. It deliberately disables the history trigger to establish that the
+UPDATE/DELETE assertions detect missing protection. Queue pickup, the staff route
+and UI, credential-change and concurrency evidence remain unfinished.
+
+The expanded native suite passes all 14 cases in 25.82 seconds on October 7.
+It ran with the explicit live-test opt-in, candidate migration flag and isolated
+restore-target workdir. Every case rolls back its migration and fixtures.

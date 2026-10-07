@@ -42,6 +42,18 @@ BEGIN
    PERFORM enqueue_engagement_synthesis_execution((command||jsonb_build_object('actorId',gen_random_uuid()))::text);
    RAISE EXCEPTION 'Changed actor accepted';
   EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+  BEGIN
+   PERFORM enqueue_engagement_synthesis_execution((command||jsonb_build_object('workspaceId',gen_random_uuid()))::text);
+   RAISE EXCEPTION 'Foreign workspace accepted';
+  EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+  BEGIN
+   PERFORM enqueue_engagement_synthesis_execution((command||jsonb_build_object('sourceId',gen_random_uuid()))::text);
+   RAISE EXCEPTION 'Foreign source accepted';
+  EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
+  BEGIN
+   PERFORM enqueue_engagement_synthesis_execution((command||jsonb_build_object('campaignId',gen_random_uuid()))::text);
+   RAISE EXCEPTION 'Foreign campaign accepted';
+  EXCEPTION WHEN insufficient_privilege THEN NULL; END;
   receipt:=enqueue_engagement_synthesis_execution(bytes);
   IF receipt->>'commandText' IS DISTINCT FROM bytes OR receipt->>'queueId' IS DISTINCT FROM queue_id::text
    OR receipt->>'commandSha256' IS DISTINCT FROM encode(extensions.digest(bytes,'sha256'),'hex') THEN
@@ -56,6 +68,18 @@ BEGIN
    PERFORM enqueue_engagement_synthesis_execution(bytes||' ');
    RAISE EXCEPTION 'Changed original bytes accepted';
   EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
+  BEGIN
+   UPDATE engagement_synthesis_execution_queue SET command_text=command_text||' ' WHERE id=queue_id;
+   RAISE EXCEPTION 'Queue history update accepted';
+  EXCEPTION WHEN raise_exception THEN
+   IF SQLERRM<>'Engagement history is immutable' THEN RAISE; END IF;
+  END;
+  BEGIN
+   DELETE FROM engagement_synthesis_execution_queue WHERE id=queue_id;
+   RAISE EXCEPTION 'Queue history deletion accepted';
+  EXCEPTION WHEN raise_exception THEN
+   IF SQLERRM<>'Engagement history is immutable' THEN RAISE; END IF;
+  END;
   RAISE NOTICE 'verified stage % request %',parent.stage,parent.id;
  END LOOP;
  IF (SELECT count(*) FROM engagement_synthesis_execution_queue)<>1 THEN RAISE EXCEPTION 'One fixture queue record required'; END IF;

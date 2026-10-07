@@ -56,6 +56,9 @@ function probe(mutation = "", stage: Stage = "segment") {
   });
 }
 const faults = [
+  ["workspace", change("(command->>'workspaceId')::uuid IS DISTINCT FROM workspace", "false"), "Foreign workspace accepted"],
+  ["source identity", change("request.source_id IS DISTINCT FROM (command->>'sourceId')::uuid", "false"), "Foreign source accepted"],
+  ["immutable history", "ALTER TABLE public.engagement_synthesis_execution_queue DISABLE TRIGGER synthesis_execution_queue_immutable;", "Queue history update accepted"],
   ["exact bytes", change("saved.command_text IS DISTINCT FROM p_command_text", "false"), "Changed original bytes accepted"],
   ["actor", change("(command->>'actorId')::uuid IS DISTINCT FROM auth.uid()", "false"), "Changed actor accepted"],
   ["stage", change("actual_stage IS DISTINCT FROM command->>'stage'", "false"), "Changed stage accepted"],
