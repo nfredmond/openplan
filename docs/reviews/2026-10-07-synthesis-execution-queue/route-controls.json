@@ -1,0 +1,44 @@
+[
+  {
+    "name": "harmless",
+    "exitCode": 0,
+    "expected": 0,
+    "assertionFailure": false,
+    "output": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/synthesis-execution-queue-20261007/openplan\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  16:18:38\n   Duration  701ms (transform 145ms, setup 54ms, import 212ms, tests 20ms, environment 324ms)\n\n"
+  },
+  {
+    "name": "agent refusal",
+    "exitCode": 1,
+    "expected": 1,
+    "assertionFailure": true,
+    "output": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/synthesis-execution-queue-20261007/openplan\n\n \u276f src/test/synthesis-execution-queue-route.test.ts (15 tests | 3 failed) 25ms\n     \u00d7 refuses agent header x-openplan-assistant-execution-source 5ms\n     \u00d7 refuses agent header x-openplan-assistant-input-hash 1ms\n     \u00d7 refuses agent header x-openplan-assistant-approval-id 1ms\n\n Test Files  1 failed (1)\n      Tests  3 failed | 12 passed (15)\n   Start at  16:18:39\n   Duration  737ms (transform 159ms, setup 64ms, import 222ms, tests 25ms, environment 332ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 3 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/synthesis-execution-queue-route.test.ts > staff scheduling HTTP boundary > refuses agent header x-openplan-assistant-execution-source\n FAIL  src/test/synthesis-execution-queue-route.test.ts > staff scheduling HTTP boundary > refuses agent header x-openplan-assistant-input-hash\n FAIL  src/test/synthesis-execution-queue-route.test.ts > staff scheduling HTTP boundary > refuses agent header x-openplan-assistant-approval-id\nAssertionError: expected 200 to be 403 // Object.is equality\n\n- Expected\n+ Received\n\n- 403\n+ 200\n\n \u276f src/test/synthesis-execution-queue-route.test.ts:40:79\n     38|   });\n     39|   it.each([\"x-openplan-assistant-execution-source\", \"x-openplan-assist\u2026\n     40|     expect((await POST(request(commandText, { [key]: \"\" }), context)).\u2026\n       |                                                                               ^\n     41|     expect(mocks.rpc).not.toHaveBeenCalled();\n     42|   });\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/3]\u23af\n\n"
+  },
+  {
+    "name": "origin",
+    "exitCode": 1,
+    "expected": 1,
+    "assertionFailure": true,
+    "output": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/synthesis-execution-queue-20261007/openplan\n\n \u276f src/test/synthesis-execution-queue-route.test.ts (15 tests | 2 failed) 25ms\n     \u00d7 refuses changed browser scope {\"origin\":\"https://foreign.invalid\"} 4ms\n     \u00d7 refuses changed browser scope {\"sec-fetch-site\":\"cross-site\"} 1ms\n\n Test Files  1 failed (1)\n      Tests  2 failed | 13 passed (15)\n   Start at  16:18:40\n   Duration  609ms (transform 65ms, setup 56ms, import 102ms, tests 25ms, environment 332ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 2 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/synthesis-execution-queue-route.test.ts > staff scheduling HTTP boundary > refuses changed browser scope {\"origin\":\"https://foreign.invalid\"}\n FAIL  src/test/synthesis-execution-queue-route.test.ts > staff scheduling HTTP boundary > refuses changed browser scope {\"sec-fetch-site\":\"cross-site\"}\nAssertionError: expected 200 to be 403 // Object.is equality\n\n- Expected\n+ Received\n\n- 403\n+ 200\n\n \u276f src/test/synthesis-execution-queue-route.test.ts:45:71\n     43|   it.each<Record<string, string>>([{ origin: \"https://foreign.invalid\"\u2026\n     44|     { \"x-openplan-expected-user\": \"\" }, { \"x-openplan-expected-workspa\u2026\n     45|     expect((await POST(request(commandText, extra), context)).status).\u2026\n       |                                                                       ^\n     46|     expect(mocks.rpc).not.toHaveBeenCalled();\n     47|   });\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/2]\u23af\n\n"
+  },
+  {
+    "name": "body limit",
+    "exitCode": 1,
+    "expected": 1,
+    "assertionFailure": true,
+    "output": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/synthesis-execution-queue-20261007/openplan\n\n \u276f src/test/synthesis-execution-queue-route.test.ts (15 tests | 1 failed) 23ms\n     \u00d7 refuses invalid body 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 14 passed (15)\n   Start at  16:18:41\n   Duration  726ms (transform 146ms, setup 54ms, import 214ms, tests 23ms, environment 338ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/synthesis-execution-queue-route.test.ts > staff scheduling HTTP boundary > refuses invalid body\nAssertionError: expected 400 to be 413 // Object.is equality\n\n- Expected\n+ Received\n\n- 413\n+ 400\n\n \u276f src/test/synthesis-execution-queue-route.test.ts:57:29\n     55|   it.each([[\"x\".repeat(4097), 413], [new Uint8Array([255]), 400], [\"{\"\u2026\n     56|     const response = await POST(request(body), context);\n     57|     expect(response.status).toBe(status); expect(response.headers.get(\u2026\n       |                             ^\n     58|     expect(mocks.rpc).not.toHaveBeenCalled();\n     59|   });\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  },
+  {
+    "name": "expected account",
+    "exitCode": 1,
+    "expected": 1,
+    "assertionFailure": true,
+    "output": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/synthesis-execution-queue-20261007/openplan\n\n \u276f src/test/synthesis-execution-queue-route.test.ts (15 tests | 1 failed) 25ms\n     \u00d7 refuses changed browser scope {\"x-openplan-expected-user\":\"\"} 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 14 passed (15)\n   Start at  16:18:42\n   Duration  740ms (transform 161ms, setup 55ms, import 235ms, tests 25ms, environment 323ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/synthesis-execution-queue-route.test.ts > staff scheduling HTTP boundary > refuses changed browser scope {\"x-openplan-expected-user\":\"\"}\nAssertionError: expected 200 to be 403 // Object.is equality\n\n- Expected\n+ Received\n\n- 403\n+ 200\n\n \u276f src/test/synthesis-execution-queue-route.test.ts:45:71\n     43|   it.each<Record<string, string>>([{ origin: \"https://foreign.invalid\"\u2026\n     44|     { \"x-openplan-expected-user\": \"\" }, { \"x-openplan-expected-workspa\u2026\n     45|     expect((await POST(request(commandText, extra), context)).status).\u2026\n       |                                                                       ^\n     46|     expect(mocks.rpc).not.toHaveBeenCalled();\n     47|   });\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  },
+  {
+    "name": "expected workspace",
+    "exitCode": 1,
+    "expected": 1,
+    "assertionFailure": true,
+    "output": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/synthesis-execution-queue-20261007/openplan\n\n \u276f src/test/synthesis-execution-queue-route.test.ts (15 tests | 1 failed) 24ms\n     \u00d7 refuses changed browser scope {\"x-openplan-expected-workspace\":\"c7100000-0000-4000-8000-000000000099\"} 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 14 passed (15)\n   Start at  16:18:44\n   Duration  709ms (transform 145ms, setup 53ms, import 213ms, tests 24ms, environment 324ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/synthesis-execution-queue-route.test.ts > staff scheduling HTTP boundary > refuses changed browser scope {\"x-openplan-expected-workspace\":\"c7100000-0000-4000-8000-000000000099\"}\nAssertionError: expected 200 to be 403 // Object.is equality\n\n- Expected\n+ Received\n\n- 403\n+ 200\n\n \u276f src/test/synthesis-execution-queue-route.test.ts:45:71\n     43|   it.each<Record<string, string>>([{ origin: \"https://foreign.invalid\"\u2026\n     44|     { \"x-openplan-expected-user\": \"\" }, { \"x-openplan-expected-workspa\u2026\n     45|     expect((await POST(request(commandText, extra), context)).status).\u2026\n       |                                                                       ^\n     46|     expect(mocks.rpc).not.toHaveBeenCalled();\n     47|   });\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  }
+]

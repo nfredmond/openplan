@@ -201,3 +201,24 @@ and UI, credential-change and concurrency evidence remain unfinished.
 The expanded native suite passes all 14 cases in 25.82 seconds on October 7.
 It ran with the explicit live-test opt-in, candidate migration flag and isolated
 restore-target workdir. Every case rolls back its migration and fixtures.
+
+## Staff scheduling endpoint checkpoint
+
+`POST /api/engagement/campaigns/[campaignId]/synthesis/execution/queue` accepts
+the original UTF-8 queue command directly. It preserves whitespace and bounds
+the body to 4,096 bytes. Current staff access, expected account/workspace and
+browser origin checks precede native enqueue. All three agent execution headers
+receive an executable refusal, including empty values. Responses are private
+and uncached. Audit records contain queue IDs or refusal categories only.
+
+All 15 route tests pass through the real server helper with mocked authenticated
+transport. ESLint passes. A harmless change passes; removing agent refusal,
+origin checks, the byte limit or either expected-scope check causes the intended
+assertion failures. `route-controls.json` preserves the results. The first test
+command ran from the repository root and could not locate Vitest; the corrected
+command ran from the nested app package.
+
+This is an HTTP-handler test, not a deployed browser/session test. The route does
+not discover work, start workers or claim completion. Full package type/build
+checks, live HTTP recovery, worker pickup and the visible scheduling journey
+remain required before release.
