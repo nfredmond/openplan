@@ -51,13 +51,15 @@ describe("plan context editor",()=>{
       expect(records.find(r=>r.value?.kind==="pending")?.value).toMatchObject({commandText:init.body});
       posts.push(String(init.body));return response(String(init.body));
     });
-    render(<LandUsePlanContextEditor {...props}/>);await ready();expect(blocked()).toBe(false);
+    render(<LandUsePlanContextEditor {...props}/>);await ready();
+    // Editable fields and the parent's freeze gate settle through separate effects.
+    await waitFor(()=>expect(blocked()).toBe(false));
     edit();expect(blocked()).toBe(true);expect(readPlanContextRecovery(localStorage,scope)[0].value).toMatchObject({kind:"draft",draft:{authorities:[{label:"Revised planning body"}]}});
     fireEvent.click(saveButton());await waitFor(()=>expect(props.onRefresh).toHaveBeenCalledTimes(1));
     expect(posts).toHaveLength(1);expect(saveButton()).toBeDisabled();expect(blocked()).toBe(true);
     expect(readPlanContextRecovery(localStorage,scope).some(r=>r.value?.kind==="pending")).toBe(true);
     await act(async()=>finishRefresh());await screen.findByText("Plan context saved and refreshed.");
-    expect(blocked()).toBe(false);expect(readPlanContextRecovery(localStorage,scope)).toEqual([]);expect(bodyField()).toHaveValue("Revised planning body");
+    await waitFor(()=>expect(blocked()).toBe(false));expect(readPlanContextRecovery(localStorage,scope)).toEqual([]);expect(bodyField()).toHaveValue("Revised planning body");
   });
   it("keeps an unknown save for explicit exact retry, including duplicate clicks and reload",async()=>{
     let fail!:(error:Error)=>void;
