@@ -199,3 +199,30 @@ ID, original intent bytes and checksum for each. See the
 created, no worker is started and no provider is called. The route and browser
 recovery still need a visible staff review control and its identified-build
 journey. New-grant native recovery and the full engagement case remain open.
+
+## Visible execution review candidate
+
+The preparation inspector now opens an execution review for its original request.
+It reads saved permissions and the sealed plan, shows the actual destination and
+model, and requires explicit charge acknowledgement plus attempt, output-token,
+response-byte and expiry limits. The text states that these limits are not a
+dollar ceiling. Other staff can inspect history but cannot grant authority for
+the requester. Saving an allowance does not start a worker. The existing durable
+worker and its dispatch checks remain responsible for execution.
+
+Confirmed and uncertain allowances remain available for exact retry. A reload
+does not automatically send them. Unreadable recovery remains visibly blocked
+while the separate history/plan read refreshes; the first component test exposed
+and corrected a disappearing recovery error. Old permissions remain visible
+when preparation is unavailable, with new authority disabled. Cancellation,
+revoked provider choices, zero tasks, changed scope and access failure also
+prevent new authority.
+
+The component, browser verifier and existing creation/history/preparation suites
+pass 73 checks. The preparation, component and copy-guard run passes 35 checks.
+Targeted ESLint and TypeScript pass. Harmless comments survive and targeted
+mutations expose missing charge acknowledgement, automatic replay, hidden
+recovery errors, retained private display after lost access, and incorrect scope,
+stage, checksum or cursor handling. See [panel mutations](execution-panel-mutations.json).
+These checks use simulated transport. The production build, full gate, new native
+authorization journey and desktop/390px evidence for this candidate are pending.

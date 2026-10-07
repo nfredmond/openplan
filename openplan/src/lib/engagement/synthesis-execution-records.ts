@@ -17,6 +17,13 @@ export const synthesisExecutionScopeSchema = z.object({ campaignId: id, workspac
 }).strict();
 export type SynthesisExecutionScope = z.infer<typeof synthesisExecutionScopeSchema>;
 
+export const synthesisExecutionPreviewSchema = synthesisExecutionScopeSchema.extend({ schemaVersion: z.literal(1),
+  headerSha256: hash, sealSha256: hash, taskCount: natural, inputBytes: natural,
+  sealedAt: z.string().datetime({ offset: true }), cancelled: z.boolean(),
+  provider: z.object({ connectionId: id, revisionId: id, configurationHash: hash, label: z.string().min(1),
+    endpoint: z.string().url(), modelId: z.string().min(1), current: z.boolean() }).strict(),
+}).strict();
+
 export const synthesisExecutionCommandSchema = z.object({ authorizationId: id, intentText: z.string().max(4096) }).strict();
 const receiptSchema = z.object({ schemaVersion: z.literal(1), id, requestId: id,
   intentText: z.string().max(4096), intentSha256: hash }).strict();
