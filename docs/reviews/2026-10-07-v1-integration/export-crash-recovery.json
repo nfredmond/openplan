@@ -1,0 +1,85 @@
+{
+  "jobId": "f63808e2-da68-4de9-a72d-6bfbbfcc7e6c",
+  "reportId": "a49f4059-1727-45d0-ae7f-6677c39ed886",
+  "snapshotSha256": "20988eab2d436137b2d526a3afd088350810aee79bc3c24e0b89cf1d55da3136",
+  "status": "complete",
+  "attempts": 2,
+  "preserved": {
+    "id": true,
+    "report_id": true,
+    "scope": true,
+    "snapshot_text": true,
+    "snapshot_sha256": true
+  },
+  "exactZipSnapshot": true,
+  "manifestMembers": [
+    {
+      "name": "snapshot.json",
+      "valid": true
+    },
+    {
+      "name": "review.html",
+      "valid": true
+    },
+    {
+      "name": "review.pdf",
+      "valid": true
+    },
+    {
+      "name": "review.xlsx",
+      "valid": true
+    },
+    {
+      "name": "contributions.csv",
+      "valid": true
+    },
+    {
+      "name": "answers.csv",
+      "valid": true
+    },
+    {
+      "name": "decision-history.csv",
+      "valid": true
+    },
+    {
+      "name": "decision-synthesis-coverage.csv",
+      "valid": true
+    },
+    {
+      "name": "decision-synthesis-actions.csv",
+      "valid": true
+    },
+    {
+      "name": "decision-synthesis-sources.csv",
+      "valid": true
+    },
+    {
+      "name": "contributions.geojson",
+      "valid": true
+    }
+  ],
+  "downloads": {
+    "pdf": {
+      "sha256": "62a3e34f2c53bf22239cca8c0163f775b32762b1db8cd9fea70c95f24f105202",
+      "matchesWorker": true,
+      "matchesDatabase": true
+    },
+    "xlsx": {
+      "sha256": "ce8eddcddae8dbc662025a609d6a7e1d2f73465d69055fb21b02f734d971e754",
+      "matchesWorker": true,
+      "matchesDatabase": true
+    },
+    "zip": {
+      "sha256": "b66dbec2200c2ea327fc9b153438d654bc83538a055b3af16d37998c005239b8",
+      "matchesWorker": true,
+      "matchesDatabase": true
+    }
+  },
+  "workerRuntime": "492f85e2",
+  "browserRuntime": "5646c33ca281c4b4614e2be6f9cfa62a3dd75bb8",
+  "limits": [
+    "Deliberate process exit after durable claim, before rendering.",
+    "Malformed cache and partial PDF were explicit fixtures, not an interrupted renderer.",
+    "No crash during upload or independent human acceptance established."
+  ]
+}
