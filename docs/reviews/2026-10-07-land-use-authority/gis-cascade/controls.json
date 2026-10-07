@@ -1,0 +1,174 @@
+{
+  "results": [
+    {
+      "name": "baseline",
+      "expected": "pass",
+      "exit": 0,
+      "passed": 8,
+      "failed": [],
+      "correct": true
+    },
+    {
+      "name": "harmless",
+      "expected": "pass",
+      "exit": 0,
+      "passed": 8,
+      "failed": [],
+      "correct": true
+    },
+    {
+      "name": "version-workspace-cascade",
+      "expected": "Finalized workspace GIS versions are immutable",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "test": "preserves direct-write guards with reordered cascades: freeze-persistence workspace=true",
+          "messages": [
+            "AssertionError: ERROR:  Finalized workspace GIS versions are immutable\nCONTEXT:  PL/pgSQL function refuse_finalized_workspace_gis_version_rewrite() line 11 at RAISE\nSQL statement \"DELETE FROM ONLY \"public\".\"workspace_gis_layer_versions\" WHERE $1 OPERATOR(pg_catalog.=) \"workspace_id\"\"\nSQL statement \"DELETE FROM public.workspaces WHERE id=workspace\"\nPL/pgSQL function inline_code_block line 174 at SQL statement\n: expected 3 to be +0 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan/src/test/land-use-plan-cascade-rls.test.ts:27:40\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+          ]
+        }
+      ],
+      "correct": true
+    },
+    {
+      "name": "version-update-refusal",
+      "expected": "direct ready version update: accepted",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "test": "preserves direct-write guards with reordered cascades: gis-cascade workspace=false",
+          "messages": [
+            "AssertionError: ERROR:  direct ready version update: accepted\nCONTEXT:  PL/pgSQL function pg_temp_74.gis_refuses(text,text,text) line 7 at RAISE\nSQL statement \"SELECT pg_temp.gis_refuses(format('UPDATE public.workspace_gis_layer_versions SET source_filename=%L WHERE id=%L','changed',ready_version),version_error,'direct ready version update')\"\nPL/pgSQL function inline_code_block line 18 at PERFORM\n: expected 3 to be +0 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan/src/test/land-use-plan-cascade-rls.test.ts:27:40\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+          ]
+        }
+      ],
+      "correct": true
+    },
+    {
+      "name": "version-delete-refusal",
+      "expected": "direct ready version delete: accepted",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "test": "preserves direct-write guards with reordered cascades: gis-cascade workspace=false",
+          "messages": [
+            "AssertionError: ERROR:  direct ready version delete: accepted\nCONTEXT:  PL/pgSQL function pg_temp_66.gis_refuses(text,text,text) line 7 at RAISE\nSQL statement \"SELECT pg_temp.gis_refuses(format('DELETE FROM public.workspace_gis_layer_versions WHERE id=%L',ready_version),version_error,'direct ready version delete')\"\nPL/pgSQL function inline_code_block line 19 at PERFORM\n: expected 3 to be +0 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan/src/test/land-use-plan-cascade-rls.test.ts:27:40\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+          ]
+        }
+      ],
+      "correct": true
+    },
+    {
+      "name": "feature-workspace-cascade",
+      "expected": "Features of a finalized workspace GIS version are immutable",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "test": "preserves direct-write guards with reordered cascades: gis-cascade workspace=true",
+          "messages": [
+            "AssertionError: ERROR:  Features of a finalized workspace GIS version are immutable\nCONTEXT:  PL/pgSQL function refuse_finalized_workspace_gis_feature_write() line 15 at RAISE\nSQL statement \"DELETE FROM ONLY \"public\".\"workspace_gis_features\" WHERE $1 OPERATOR(pg_catalog.=) \"workspace_id\"\"\nSQL statement \"DELETE FROM public.workspaces WHERE id=workspace\"\nPL/pgSQL function inline_code_block line 33 at SQL statement\n: expected 3 to be +0 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan/src/test/land-use-plan-cascade-rls.test.ts:27:40\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+          ]
+        }
+      ],
+      "correct": true
+    },
+    {
+      "name": "feature-layer-cascade",
+      "expected": "Features of a finalized workspace GIS version are immutable",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "test": "preserves direct-write guards with reordered cascades: gis-cascade workspace=false",
+          "messages": [
+            "AssertionError: ERROR:  Features of a finalized workspace GIS version are immutable\nCONTEXT:  PL/pgSQL function refuse_finalized_workspace_gis_feature_write() line 15 at RAISE\nSQL statement \"DELETE FROM ONLY \"public\".\"workspace_gis_features\" WHERE $1 OPERATOR(pg_catalog.=) \"layer_id\"\"\nSQL statement \"DELETE FROM public.workspace_gis_layers WHERE id=layer\"\nPL/pgSQL function inline_code_block line 36 at SQL statement\n: expected 3 to be +0 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan/src/test/land-use-plan-cascade-rls.test.ts:27:40\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+          ]
+        }
+      ],
+      "correct": true
+    },
+    {
+      "name": "feature-source-version",
+      "expected": "move out of ready version: accepted",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "test": "preserves direct-write guards with reordered cascades: gis-cascade workspace=false",
+          "messages": [
+            "AssertionError: ERROR:  move out of ready version: accepted\nCONTEXT:  PL/pgSQL function pg_temp_94.gis_refuses(text,text,text) line 7 at RAISE\nSQL statement \"SELECT pg_temp.gis_refuses(format('UPDATE public.workspace_gis_features SET version_id=%L,feature_index=1 WHERE id=%L',draft_version,ready_feature),feature_error,'move out of ready version')\"\nPL/pgSQL function inline_code_block line 23 at PERFORM\n: expected 3 to be +0 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan/src/test/land-use-plan-cascade-rls.test.ts:27:40\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+          ]
+        }
+      ],
+      "correct": true
+    },
+    {
+      "name": "feature-delete-refusal",
+      "expected": "direct ready feature delete: accepted",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "test": "preserves direct-write guards with reordered cascades: gis-cascade workspace=false",
+          "messages": [
+            "AssertionError: ERROR:  direct ready feature delete: accepted\nCONTEXT:  PL/pgSQL function pg_temp_28.gis_refuses(text,text,text) line 7 at RAISE\nSQL statement \"SELECT pg_temp.gis_refuses(format('DELETE FROM public.workspace_gis_features WHERE id=%L',ready_feature),feature_error,'direct ready feature delete')\"\nPL/pgSQL function inline_code_block line 22 at PERFORM\n: expected 3 to be +0 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan/src/test/land-use-plan-cascade-rls.test.ts:27:40\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+          ]
+        }
+      ],
+      "correct": true
+    },
+    {
+      "name": "feature-insert-refusal",
+      "expected": "insert into ready version: accepted",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "test": "preserves direct-write guards with reordered cascades: gis-cascade workspace=false",
+          "messages": [
+            "AssertionError: ERROR:  insert into ready version: accepted\nCONTEXT:  PL/pgSQL function pg_temp_90.gis_refuses(text,text,text) line 7 at RAISE\nSQL statement \"SELECT pg_temp.gis_refuses(format('INSERT INTO public.workspace_gis_features(version_id,layer_id,workspace_id,feature_index,geom) VALUES(%L,%L,%L,1,ST_SetSRID(ST_Point(-121,38),4326))',ready_version,layer,workspace),feature_error,'insert into ready version')\"\nPL/pgSQL function inline_code_block line 25 at PERFORM\n: expected 3 to be +0 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan/src/test/land-use-plan-cascade-rls.test.ts:27:40\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+          ]
+        }
+      ],
+      "correct": true
+    },
+    {
+      "name": "feature-target-version",
+      "expected": "move into ready version: accepted",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "test": "preserves direct-write guards with reordered cascades: gis-cascade workspace=false",
+          "messages": [
+            "AssertionError: ERROR:  move into ready version: accepted\nCONTEXT:  PL/pgSQL function pg_temp_56.gis_refuses(text,text,text) line 7 at RAISE\nSQL statement \"SELECT pg_temp.gis_refuses(format('UPDATE public.workspace_gis_features SET version_id=%L,feature_index=1 WHERE id=%L',ready_version,draft_feature),feature_error,'move into ready version')\"\nPL/pgSQL function inline_code_block line 24 at PERFORM\n: expected 3 to be +0 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan/src/test/land-use-plan-cascade-rls.test.ts:27:40\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+          ]
+        }
+      ],
+      "correct": true
+    },
+    {
+      "name": "feature-move-only",
+      "expected": "move out of ready version: accepted",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "test": "preserves direct-write guards with reordered cascades: gis-cascade workspace=false",
+          "messages": [
+            "AssertionError: ERROR:  move out of ready version: accepted\nCONTEXT:  PL/pgSQL function pg_temp_50.gis_refuses(text,text,text) line 7 at RAISE\nSQL statement \"SELECT pg_temp.gis_refuses(format('UPDATE public.workspace_gis_features SET version_id=%L,feature_index=1 WHERE id=%L',draft_version,ready_feature),feature_error,'move out of ready version')\"\nPL/pgSQL function inline_code_block line 23 at PERFORM\n: expected 3 to be +0 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan/src/test/land-use-plan-cascade-rls.test.ts:27:40\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+          ]
+        }
+      ],
+      "correct": true
+    }
+  ],
+  "restored": {
+    "before": "7044e15822ec46081cd6cefbd8d6b3e82596f9c9ba96c4c8ac14198928bc2e55",
+    "after": "7044e15822ec46081cd6cefbd8d6b3e82596f9c9ba96c4c8ac14198928bc2e55"
+  }
+}

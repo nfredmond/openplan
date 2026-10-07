@@ -1,0 +1,32 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-rule-reconciliation-control.test.tsx (20 tests | 1 failed | 19 skipped) 114ms
+     × clears the previous account's requests even when the new account cannot read storage 113ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-rule-reconciliation-control.test.tsx > explicit checklist review and recovery > clears the previous account's requests even when the new account cannot read storage
+Error: expect(element).not.toBeInTheDocument()
+
+expected document not to contain element, found <p
+  class="text-sm"
+>
+  Saved request for draft 2
+</p> instead
+ ❯ src/test/land-use-plan-rule-reconciliation-control.test.tsx:146:65
+    144|     view.rerender(<LandUsePlanRuleReconciliationControl {...props} act…
+    145|     expect(screen.getByRole("alert")).toHaveTextContent("could not be …
+    146|     expect(screen.queryByText("Saved request for draft 2")).not.toBeIn…
+       |                                                                 ^
+    147|     expect(screen.queryByRole("button", { name: "Download checklist re…
+    148|     expect(action()).toBeDisabled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 skipped (20)
+   Start at  09:49:07
+   Duration  788ms (transform 73ms, setup 57ms, import 191ms, tests 114ms, environment 327ms)
+

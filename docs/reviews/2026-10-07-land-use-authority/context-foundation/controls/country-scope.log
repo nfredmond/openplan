@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 1 failed) 21ms
+     × refuses configured scope with unsupported authority country 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > plan-owned applicability > refuses configured scope with unsupported authority country
+AssertionError: the given combination of arguments (null and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ src/test/land-use-plan-context.test.ts:33:46
+     31|   if(field==="kind") a.kind="sovereign nation";
+     32|   if(field==="sources") a.sourceUrls=[];
+     33|   expect(planApplicabilityBlocker(value,ca)).toContain("outside this c…
+       |                                              ^
+     34|  });
+     35|  it("checks every selected authority while preserving other responsibi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 passed (21)
+   Start at  03:04:06
+   Duration  683ms (transform 94ms, setup 53ms, import 124ms, tests 21ms, environment 321ms)
+

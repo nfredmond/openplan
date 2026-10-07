@@ -1,0 +1,4 @@
+ERROR:  journal rewrite refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_29.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(format('UPDATE public.land_use_plan_context_commands SET command_text=command_text||%L WHERE plan_id=%L',' ',plan),'P0001','journal rewrite refused')"
+PL/pgSQL function inline_code_block line 76 at PERFORM

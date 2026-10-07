@@ -1,0 +1,4 @@
+ERROR:  existing creation workspace scope
+CONTEXT:  PL/pgSQL function pg_temp_38.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert(repeated=result||jsonb_build_object('replayed',true),'existing creation workspace scope')"
+PL/pgSQL function inline_code_block line 52 at PERFORM

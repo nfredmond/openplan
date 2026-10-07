@@ -1,0 +1,60 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "marker": null,
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "marker": null,
+      "matched": true
+    },
+    {
+      "case": "missing-relation",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "marker": "297",
+      "matched": true
+    },
+    {
+      "case": "missing-table",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "marker": "283",
+      "matched": true
+    },
+    {
+      "case": "missing-rls-table",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "marker": "283",
+      "matched": true
+    },
+    {
+      "case": "undocumented-column",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "marker": "land_use_plan_creation_cancellations.command_text",
+      "matched": true
+    },
+    {
+      "case": "stale-column",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "marker": "land_use_plan_creation_cancellations.command_id",
+      "matched": true
+    }
+  ],
+  "restored": true,
+  "sha256": {
+    "openplan/src/test/migrations/inventory.test.ts": "ff36d55c7f4dbf5e0bb42d65aa8db241b8ed5bc1c39427b2f201629f12bf92e9",
+    "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "b6f8d550f7b3b5cdd3be56a406285b1adc076ab49a34afbb0cc9d2fe46463e84",
+    "CHANGELOG.md": "dba9810bdb7dd483372ff89ed49fd5bd114f629d44fc75e78309dfdd458f0ed0"
+  },
+  "boundary": "Static migration inventory, column naming and release note guards. Does not prove native permissions or visible workflow behavior."
+}

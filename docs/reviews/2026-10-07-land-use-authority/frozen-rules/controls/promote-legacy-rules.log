@@ -1,0 +1,30 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts (11 tests | 1 failed) 32ms
+     × records legacy adoption with an explicitly current, unretained descriptor reference 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-frozen-rules-integration.test.ts > adoption of the reviewed descriptor > records legacy adoption with an explicitly current, unretained descriptor reference
+AssertionError: expected 'frozen' to be 'current_reference_not_retained_at_rev…' // Object.is equality
+
+Expected: "current_reference_not_retained_at_review"
+Received: "frozen"
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts:121:40
+    119|     expect(response.status).toBe(200);
+    120|     const manifest = state.rpc.mock.calls[0][1].p_adoption_manifest;
+    121|     expect(manifest.descriptorCustody).toBe("current_reference_not_ret…
+       |                                        ^
+    122|     expect(manifest.descriptorSnapshot).toEqual(getJurisdictionPlanDes…
+    123|     expect(snapshot).not.toHaveProperty("descriptorSnapshot");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 52 passed (53)
+   Start at  02:39:53
+   Duration  2.42s (transform 127ms, setup 150ms, import 325ms, tests 239ms, environment 1.30s)
+

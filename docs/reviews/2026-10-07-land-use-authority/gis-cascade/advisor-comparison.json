@@ -1,0 +1,11 @@
+{
+  "unchanged": true,
+  "before": {
+    "WARN": 8,
+    "ERROR": 1
+  },
+  "after": {
+    "WARN": 8,
+    "ERROR": 1
+  }
+}

@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-public-identity.test.ts (42 tests | 2 failed) 34ms
+     × uses the selected kind for an explicitly unretained legacy reference 13ms
+     × uses the selected kind for an explicitly unretained legacy reference 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-public-identity.test.ts > adopted public frozen identity > uses the selected kind for an explicitly unretained legacy reference
+ FAIL  src/test/land-use-plan-public-identity.test.ts > review public frozen identity > uses the selected kind for an explicitly unretained legacy reference
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/test/land-use-plan-public-identity.test.ts:81:31
+     79|     expect(result.packet.content).not.toHaveProperty("descriptorSnapsh…
+     80|     frozen.plan.planKindKey = "unsupported-kind"; retainHash();
+     81|     expect((await load()).ok).toBe(false);
+       |                               ^
+     82|   });
+     83|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  2 failed | 163 passed (165)
+   Start at  08:30:34
+   Duration  2.08s (transform 302ms, setup 118ms, import 520ms, tests 159ms, environment 987ms)
+

@@ -8,7 +8,7 @@
   "readinessRegistry": {
     "schema": "openplan.jurisdiction-readiness.v1",
     "path": "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
-    "sha256": "3c3922d82dbaee1f0166fa4054118b6b167ecc2b6f3ab9ea4b513522b448cd73"
+    "sha256": "bc923904e0999e0b1916ab46a034f68af0fca6e70cb930851bda75bd8b6dc0e4"
   },
   "dimensions": {
     "planner": [

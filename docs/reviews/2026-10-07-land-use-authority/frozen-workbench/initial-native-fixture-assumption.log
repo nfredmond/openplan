@@ -1,0 +1,9 @@
+/home/nathaniel/.local/state/openplan/t3-restart-recovery-20261006/land-use-authority/frozen-workbench-readonly-http.mts:35
+if(current.activeVersion.id!==freeze.newerVersionId||current.activeVersion.state!=='working'||!current.canWrite||current.isHistoricalVersion||current.frozenVersion!==null)throw Error('Default view does not match current working draft');
+                                                                                                                                                                                 ^
+
+Error: Default view does not match current working draft
+    at <anonymous> (/home/nathaniel/.local/state/openplan/t3-restart-recovery-20261006/land-use-authority/frozen-workbench-readonly-http.mts:35:178)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v24.21.0

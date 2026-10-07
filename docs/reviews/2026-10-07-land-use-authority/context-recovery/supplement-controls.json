@@ -1,0 +1,75 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "abort-propagation",
+      "exitCode": 1,
+      "matched": true,
+      "target": "never starts an aborted request",
+      "failedTests": [
+        "context recovery keeps lost, unreadable and aborted requests, and never starts an aborted request",
+        "context recovery keeps requests when cancellation arrives during response parsing"
+      ]
+    },
+    {
+      "case": "post-json-read-abort",
+      "exitCode": 1,
+      "matched": true,
+      "target": "cancellation arrives during response parsing",
+      "failedTests": [
+        "context recovery keeps requests when cancellation arrives during response parsing"
+      ]
+    },
+    {
+      "case": "post-json-save-abort",
+      "exitCode": 1,
+      "matched": true,
+      "target": "cancellation arrives during response parsing",
+      "failedTests": [
+        "context recovery keeps requests when cancellation arrives during response parsing"
+      ]
+    },
+    {
+      "case": "preserve-archived",
+      "exitCode": 1,
+      "matched": true,
+      "target": "archive nesting",
+      "failedTests": [
+        "context recovery keeps copies when storage enumeration fails and refuses archive nesting or identifier collisions"
+      ]
+    },
+    {
+      "case": "preserve-copy-collision",
+      "exitCode": 1,
+      "matched": true,
+      "target": "identifier collisions",
+      "failedTests": [
+        "context recovery keeps copies when storage enumeration fails and refuses archive nesting or identifier collisions"
+      ]
+    },
+    {
+      "case": "preserve-newer-original",
+      "exitCode": 1,
+      "matched": true,
+      "target": "concurrently changed original",
+      "failedTests": [
+        "context recovery preserves a concurrently changed original while making its recovery copy"
+      ]
+    }
+  ],
+  "restored": true,
+  "sourceSha256": "ad230009ae332f9e407dfd536dea88d60f3e5b47042a96b8c5a1432ec25cc579"
+}

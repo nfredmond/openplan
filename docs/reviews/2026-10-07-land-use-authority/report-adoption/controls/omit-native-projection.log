@@ -1,0 +1,40 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-adoption.test.tsx (26 tests | 3 failed) 700ms
+     × renders the retained decision for adopted editions 183ms
+     × renders the retained decision for superseded editions 59ms
+     × renders the retained decision for repealed editions 56ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > renders the retained decision for adopted editions
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > renders the retained decision for superseded editions
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > renders the retained decision for repealed editions
+AssertionError: expected { …(3) } to deeply equal { …(3) }
+
+- Expected
++ Received
+
+@@ -11,8 +11,8 @@
+      [
+        "adoption_manifest_hash",
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      ],
+    ],
+-   "projection": "plan_id, version_id, version_content_hash, review_release_id, adoption_manifest, adoption_manifest_hash",
++   "projection": "plan_id, version_id, version_content_hash, review_release_id, adoption_manifest_hash",
+    "table": "land_use_plan_decisions",
+  }
+
+ ❯ src/test/land-use-plan-report-adoption.test.tsx:66:70
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 23 passed (26)
+   Start at  12:12:20
+   Duration  1.44s (transform 125ms, setup 55ms, import 264ms, tests 700ms, environment 325ms)
+

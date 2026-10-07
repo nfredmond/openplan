@@ -1,0 +1,89 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "target": null
+    },
+    {
+      "case": "snapshot-context",
+      "exitCode": 1,
+      "matched": true,
+      "target": "retains exact context and scopes"
+    },
+    {
+      "case": "snapshot-legacy",
+      "exitCode": 1,
+      "matched": true,
+      "target": "retains explicit historical absence"
+    },
+    {
+      "case": "version-match",
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses a version context read"
+    },
+    {
+      "case": "descriptor-match",
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses a descriptor context read"
+    },
+    {
+      "case": "kind-match",
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses a kind context read"
+    },
+    {
+      "case": "read-workspace",
+      "exitCode": 1,
+      "matched": true,
+      "target": "retains exact context and scopes"
+    },
+    {
+      "case": "read-plan",
+      "exitCode": 1,
+      "matched": true,
+      "target": "retains exact context and scopes"
+    },
+    {
+      "case": "reader-normalization",
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses self-hashed normalized frozen context"
+    },
+    {
+      "case": "public-invalid",
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses self-hashed malformed frozen context"
+    },
+    {
+      "case": "adoption-invalid",
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses malformed context before recording adoption"
+    },
+    {
+      "case": "manifest-context",
+      "exitCode": 1,
+      "matched": true,
+      "target": "retains the exact reviewed context in the adoption manifest"
+    },
+    {
+      "case": "manifest-custody",
+      "exitCode": 1,
+      "matched": true,
+      "target": "records legacy adoption"
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/lib/land-use-plans/api.ts": "8ea25192c2bc3c4b0ea6e77218cd55d3be99ec35a8b5fa12c54415d89fa46754",
+    "src/lib/land-use-plans/context-snapshot.ts": "1c29bf8db895390f3c999db5f1e4d92c20f644b4cc2281bd9f98f3cf88f9f3fd",
+    "src/lib/land-use-plans/public.ts": "ebbcd29b14f9b1aca7d5abce3aa71763e86548632316c60fd8cac7a6b74864ac",
+    "src/app/api/land-use-plans/[planId]/decisions/route.ts": "390ec70df1ffe1b7c4841fa9b7555edd25bf142ca8a8460048536b765dd642b5"
+  }
+}

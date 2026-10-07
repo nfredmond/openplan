@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 39ms
+     × does not acknowledge a mismatched or altered result {"commandId":"10000000-0000-4000-8000-000000000006"} 4ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:30
+   Duration  1.33s (transform 182ms, setup 84ms, import 305ms, tests 57ms, environment 650ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > does not acknowledge a mismatched or altered result {"commandId":"10000000-0000-4000-8000-000000000006"}
+AssertionError: expected 201 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 201
+
+ ❯ src/test/land-use-plan-context-route.test.ts:139:113
+    137|     { contextHash: "invalid" }, { context: { ...retained, place: { ...…
+    138|   ])("does not acknowledge a mismatched or altered result %j", async p…
+    139|     mocks.rpc.mockResolvedValue({ data: { ...outcome, ...patch }, erro…
+       |                                                                                                                 ^
+    140|   });
+    141|   it("reads the exact retained context and required projections throug…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

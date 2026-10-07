@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan
+
+ ❯ src/test/land-use-plan-cascade-rls.test.ts (8 tests | 1 failed | 7 skipped) 1700ms
+   × preserves direct-write guards with reordered cascades: freeze-persistence workspace=true 1699ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-cascade-rls.test.ts > preserves direct-write guards with reordered cascades: freeze-persistence workspace=true
+AssertionError: ERROR:  Finalized workspace GIS versions are immutable
+CONTEXT:  PL/pgSQL function refuse_finalized_workspace_gis_version_rewrite() line 9 at RAISE
+SQL statement "DELETE FROM ONLY "public"."workspace_gis_layer_versions" WHERE $1 OPERATOR(pg_catalog.=) "workspace_id""
+SQL statement "DELETE FROM public.workspaces WHERE id=workspace"
+PL/pgSQL function inline_code_block line 174 at SQL statement
+: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ src/test/land-use-plan-cascade-rls.test.ts:27:40
+     25|   });
+     26|   expect(result.error).toBeUndefined();
+     27|   expect(result.status, result.stderr).toBe(0);
+       |                                        ^
+     28|   expect(result.stdout).toContain(name === "creation" ? "atomic plan c…
+     29| }, 30_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  10:05:20
+   Duration  2.34s (transform 41ms, setup 59ms, import 44ms, tests 1.70s, environment 365ms)
+

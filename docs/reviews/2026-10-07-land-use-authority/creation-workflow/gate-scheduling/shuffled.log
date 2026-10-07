@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan
+      Running tests with seed "175639"
+
+
+ Test Files  3 passed (3)
+      Tests  36 passed (36)
+   Start at  07:33:17
+   Duration  5.32s (transform 244ms, setup 120ms, import 689ms, tests 3.20s, environment 987ms)
+

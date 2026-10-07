@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { hashFrozenRecord, type FrozenPlanContent } from "@/lib/land-use-plans/versioning";
 import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { syntheticPlanContext } from "./fixtures/land-use-plans/plan-context";
 
 const database = vi.hoisted(() => ({
   rows: {} as Record<string, Record<string, unknown>>,
@@ -69,6 +70,17 @@ beforeEach(() => {
 describe.each(["adopted", "review"] as const)("%s public frozen identity", kind => {
   const load = () => kind === "adopted" ? loadPublishedLandUsePlanPacket(planId) : loadPublicLandUsePlanReviewPacket(shareToken);
 
+  it("uses the selected kind for an explicitly unretained legacy reference", async () => {
+    frozen.plan.descriptorId = "us-ca-general-plan"; frozen.plan.planKindKey = "area"; retainHash();
+    const result = await load(); expect(result.ok).toBe(true);
+    if (!result.ok) throw Error(result.reason);
+    expect(result.packet.descriptor?.terminology.plan).toBe("specific plan");
+    expect(result.packet.descriptorCustody).toBe("not_retained");
+    expect(result.packet.content).not.toHaveProperty("descriptorSnapshot");
+    frozen.plan.planKindKey = "unsupported-kind"; retainHash();
+    expect(await load()).toMatchObject({ ok: true, packet: { descriptor: null, descriptorCustody: "not_retained", content: frozen } });
+  });
+
   it("uses the reviewed identity and descriptor after later draft edits", async () => {
     const result = await load();
     expect(result.ok).toBe(true);
@@ -77,6 +89,7 @@ describe.each(["adopted", "review"] as const)("%s public frozen identity", kind 
       geographyLabel: frozen.plan.geographyLabel, planKindKey: "community" });
     expect(result.packet.descriptor?.terminology).toEqual(getJurisdictionPlanDescriptor("local-unconfigured")?.terminology);
     expect(result.packet.content).toEqual(frozen);
+    expect(result.packet.descriptorCustody).toBe("not_retained");
     const query = database.queries.find(q => q.table === "land_use_plan_versions")!;
     expect(query.projection.split(",").map(s => s.trim())).toEqual(expect.arrayContaining(["id", "plan_id", "version_number", "content_hash", "frozen_snapshot"]));
     expect(query.filters).toContainEqual(["eq", "plan_id", planId]);
@@ -91,6 +104,65 @@ describe.each(["adopted", "review"] as const)("%s public frozen identity", kind 
   it("accepts equivalent object key order without changing reviewed values", async () => {
     database.rows.land_use_plan_versions.frozen_snapshot = Object.fromEntries(Object.entries(frozen).reverse());
     expect((await load()).ok).toBe(true);
+  });
+
+  it("returns frozen context after the current plan context changes", async () => {
+    frozen.planContext = syntheticPlanContext(); retainHash();
+    database.rows.land_use_plans.plan_context = { ...syntheticPlanContext(), savedAt: "2026-10-08T00:00:00Z" };
+    const result = await load();
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.packet.content.planContext).toEqual(frozen.planContext);
+    expect(database.queries.find(q => q.table === "land_use_plans")?.projection).not.toContain("plan_context");
+  });
+
+  it.each(["malformed", "normalized"])("refuses self-hashed %s frozen context", async fault => {
+    const context = syntheticPlanContext();
+    if (fault === "malformed") context.savedBy = "unverified";
+    else context.place.label = "  Trimmed label  ";
+    frozen.planContext = context; retainHash();
+    expect(await load()).toEqual({ ok: false, reason: "incomplete" });
+  });
+
+  it("keeps explicit null context as an unretained historical value", async () => {
+    frozen.planContext = null; retainHash();
+    const result = await load();
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.packet.content.planContext).toBeNull();
+  });
+
+  it("uses saved descriptor wording and dates instead of the installed edition", async () => {
+    const saved = structuredClone(getJurisdictionPlanDescriptor(frozen.plan.descriptorId)!);
+    saved.terminology.plan = "SYNTHETIC saved terminology";
+    saved.disclosure = "SYNTHETIC original scope disclosure";
+    saved.verifiedAt = "2026-01-01";
+    frozen.descriptorSnapshot = saved; retainHash();
+    const result = await load();
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw Error(result.reason);
+    expect(result.packet.descriptorCustody).toBe("frozen");
+    expect(result.packet.descriptor).toMatchObject({ terminology: saved.terminology, disclosure: saved.disclosure, verifiedAt: saved.verifiedAt });
+  });
+
+  it("keeps a valid saved descriptor after it is removed from the installed registry", async () => {
+    frozen.descriptorSnapshot = { ...structuredClone(getJurisdictionPlanDescriptor("local-unconfigured")!), id: "retired-edition" };
+    frozen.plan.descriptorId = "retired-edition"; retainHash();
+    const result = await load();
+    expect(result.ok).toBe(true);
+    if (result.ok) { expect(result.packet.descriptor).not.toBeNull(); expect(result.packet.descriptorCustody).toBe("frozen"); }
+  });
+
+  it.each(["null", "wrong-id", "wrong-kind", "missing-source-date"])("refuses a self-hashed %s descriptor instead of substituting live rules", async fault => {
+    const saved = structuredClone(getJurisdictionPlanDescriptor("local-unconfigured")!) as Record<string, unknown>;
+    if (fault === "wrong-id") saved.id = "different";
+    if (fault === "wrong-kind") saved.planKinds = [{ key: "other", label: "Other kind" }];
+    if (fault === "missing-source-date") delete saved.verifiedAt;
+    const snapshot = { ...frozen, descriptorSnapshot: fault === "null" ? null : saved };
+    const hash = hashFrozenRecord(snapshot);
+    database.rows.land_use_plan_versions.frozen_snapshot = snapshot;
+    database.rows.land_use_plan_versions.content_hash = hash;
+    database.rows.land_use_plan_review_releases.version_content_hash = hash;
+    database.rows.land_use_plan_decisions.version_content_hash = hash;
+    expect(await load()).toEqual({ ok: false, reason: "incomplete" });
   });
 
   it("refuses changed frozen content even when stored hash references agree", async () => {

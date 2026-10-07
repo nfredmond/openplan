@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 39ms
+     × preserves RPC PT400 as 400 4ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:43
+   Duration  1.35s (transform 190ms, setup 87ms, import 313ms, tests 59ms, environment 663ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > preserves RPC PT400 as 400
+AssertionError: expected 503 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 503
+
+ ❯ src/test/land-use-plan-context-route.test.ts:132:60
+    130|   it.each([["PT409", 409], ["42501", 403], ["PT404", 404], ["PT400", 4…
+    131|     mocks.rpc.mockResolvedValue({ data: null, error: { code, message: …
+    132|     const response = await post(); expect(response.status).toBe(status…
+       |                                                            ^
+    133|     expect(JSON.stringify(await response.json())).not.toContain("priva…
+    134|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

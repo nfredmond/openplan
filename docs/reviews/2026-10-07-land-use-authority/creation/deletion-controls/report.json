@@ -1,0 +1,23 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "matched": true,
+      "target": null
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "target": null
+    },
+    {
+      "case": "creation-key-erased",
+      "exitCode": 3,
+      "matched": true,
+      "target": "individual deletion retains creation identity: accepted"
+    }
+  ],
+  "sourceUnchanged": true
+}

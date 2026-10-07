@@ -1,0 +1,19 @@
+{
+  "observedAt": "2026-10-07T18:30:17.383Z",
+  "downloads": [
+    {
+      "kind": "review",
+      "file": "browser-download-muyfyu1t-e-openplan-review-v1.json",
+      "bytes": 5501,
+      "sha256": "7762b65827d8c3e60980796a7cbfff92bd3bff766b05eacaa18e66f6f6445225",
+      "versionId": "9dbe8fd6-04cb-4e3a-9cf1-dbd543e58211",
+      "contentHash": "971d2c823e79849661b6563845386d3d701f2f2d412282360e43fbe36d7dc836",
+      "nativeContentEqual": true,
+      "canonicalHashVerified": true,
+      "anonymousResponseEqual": true,
+      "harmlessKeyOrder": true,
+      "changedTitleRefused": true
+    }
+  ],
+  "blindCategory": "Recorded downloads and read-only native snapshots. No new producer, adoption, publication or permission write."
+}

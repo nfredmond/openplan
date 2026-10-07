@@ -1,0 +1,2 @@
+src/components/reports/land-use-plan-report-page.tsx(53,109): error TS18049: 'version' is possibly 'null' or 'undefined'.
+src/components/reports/land-use-plan-report-page.tsx(53,134): error TS18049: 'version' is possibly 'null' or 'undefined'.

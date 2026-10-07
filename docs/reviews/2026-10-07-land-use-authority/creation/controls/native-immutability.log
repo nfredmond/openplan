@@ -1,0 +1,4 @@
+ERROR:  journal append-only: accepted
+CONTEXT:  PL/pgSQL function pg_temp_13.creation_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.creation_refuses(format('UPDATE public.land_use_plan_creation_commands SET command_text=%L WHERE workspace_id=%L','changed',workspace),'P0001','journal append-only')"
+PL/pgSQL function inline_code_block line 77 at PERFORM

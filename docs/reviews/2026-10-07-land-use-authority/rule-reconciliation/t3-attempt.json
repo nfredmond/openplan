@@ -1,0 +1,45 @@
+{
+  "buildCommit": "d7c9215c1d6e5f8dcb292e83c69b03bfce477132",
+  "serverPid": 3667600,
+  "serverCwd": "/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan",
+  "serverStopped": true,
+  "tab": "tab_i",
+  "browser": "T3 preview only",
+  "status": {
+    "available": true,
+    "visible": false
+  },
+  "viewports": [
+    {
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "snapshotError": "Preview automation snapshot failed on client preview-15c860c89cab5f9b9eeb30c7c9bd70be.",
+  "failedCaptures": [
+    "desktop image and save",
+    "desktop text only",
+    "390px landing image and save",
+    "390px sign-in image and save"
+  ],
+  "partialChecks": [
+    "Owned server cwd and /api/health match d7c9215c1d6e and version0.67.0",
+    "T3 reads landing headings and links",
+    "T3 sets viewport390x844; innerWidth390 and document scrollWidth375",
+    "Initial role locator fails; text locator clicks Sign in to existing workspace",
+    "Subsequent DOM confirms /sign-in, title, email/password inputs and scrollWidth375"
+  ],
+  "notEstablished": [
+    "Rendered appearance",
+    "Console review",
+    "Authenticated plan workflow",
+    "Recovery UI",
+    "Downloaded artifact usability",
+    "Practitioner acceptance"
+  ],
+  "protected": "BCA3486,engagement3481,demo3000 not stopped or edited"
+}

@@ -1,0 +1,25 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
+import { join } from 'node:path';
+const base='/home/nathaniel/.local/state/openplan/t3-restart-recovery-20261006/land-use-authority';
+const read=async(name:string)=>JSON.parse(await readFile(join(base,name),'utf8'));
+const {hashFrozenRecord}=await import(join(process.cwd(),'src/lib/land-use-plans/versioning.ts'));
+const native=await read('publication-after-native-private.json');
+const before=await read('frozen-browser-before-private.json');
+const browser=await read('publication-browser-before-private.json');
+const version=native.versions.find((v:{version_number:number})=>v.version_number===2);
+const first=native.versions.find((v:{version_number:number})=>v.version_number===1);
+const file='/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muygg0jp-f-openplan-adopted-v2.json';
+const bytes=await readFile(file);const packet=JSON.parse(bytes.toString());
+const metadata=native.artifacts[0].metadata_json;
+const verifies=(snapshot:Record<string,unknown>)=>isDeepStrictEqual(snapshot,version.frozen_snapshot)&&hashFrozenRecord(snapshot)===version.content_hash;
+if(!verifies(packet.content)||!isDeepStrictEqual(packet,browser.adopted.packet)||browser.adopted.status!==200)throw Error('Adopted download does not match native and anonymous records');
+if(!verifies(metadata.frozenSnapshot)||!isDeepStrictEqual(metadata,browser.reportBefore.provenance.artifact.metadata_json)||browser.reportBefore.provenanceStatus!==200)throw Error('Report artifact does not match native and authenticated provenance');
+if(native.decisions.length!==1||native.artifacts.length!==1||metadata.adoptionManifestHash!==native.decisions[0].adoption_manifest_hash||!isDeepStrictEqual(metadata.adoptionManifest,native.decisions[0].adoption_manifest))throw Error('Decision or report multiplicity/custody changed');
+for(const row of native.versions){const previous=before.versions.find((v:{id:string})=>v.id===row.id);if(!isDeepStrictEqual(row.frozen_snapshot,previous.frozen_snapshot)||row.content_hash!==previous.content_hash)throw Error('Prior frozen snapshot changed');}
+if(first.state!=='public_review'||version.state!=='adopted'||version.published_report_id!==native.report.id)throw Error('Wrong version transition');
+if(!verifies(Object.fromEntries(Object.entries(packet.content).reverse())))throw Error('Harmless key order fails');
+const changed=structuredClone(packet.content);changed.planContext.place.label+=' ALTERED';if(verifies(changed))throw Error('Changed context escapes verification');
+const record={observedAt:new Date().toISOString(),sourceCommit:'70ad9299fbf87681d77148eebee026505324debf',file:file.split('/').at(-1),bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),versionId:version.id,contentHash:version.content_hash,reportId:native.report.id,decisionId:native.decisions[0].id,nativeDownloadAndAnonymousEqual:true,reportArtifactAndAuthenticatedProvenanceEqual:true,priorFrozenSnapshotsUnchanged:true,decisions:1,artifacts:1,harmlessKeyOrder:true,changedContextRefused:true,blindCategory:'Synthetic local UI happy path and recorded native reads. Does not prove interruption/concurrency recovery, legal adoption, or nonempty mapped content.'};
+await writeFile(join(base,'publication-native-download-verification.json'),JSON.stringify(record,null,2)+'\n');console.log('Adopted download, report artifact and native records agree. Prior frozen snapshots unchanged; controls pass.');

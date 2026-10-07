@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 40ms
+     × does not acknowledge a mismatched or altered result {"context":{"schemaVersion":1,"place":{"source":"uploaded_file","kind":null,"ref":null,"label":"  changed  ","countryCode":null,"subdivisionCode":null,"bbox":{"minLon":0,"minLat":0,"maxLon":1,"maxLat":1},"geometry":{"type":"Polygon","coordinates":[[[0,0],[1,0],[1,1],[0,0]]]}},"assessment":{"authorities":[{"id":"10000000-0000-4000-8000-000000000006","label":"SYNTHETIC body","kind":"unassessed","role":"adopting","jurisdiction":null,"sourceUrls":[]}],"applicability":{"status":"unresolved","explanation":"Synthetic unresolved assessment"}},"savedBy":"10000000-0000-4000-8000-000000000003","savedAt":"2026-10-07T10:30:00.123456Z"}} 4ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:36
+   Duration  1.29s (transform 183ms, setup 90ms, import 314ms, tests 58ms, environment 644ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > does not acknowledge a mismatched or altered result {"context":{"schemaVersion":1,"place":{"source":"uploaded_file","kind":null,"ref":null,"label":"  changed  ","countryCode":null,"subdivisionCode":null,"bbox":{"minLon":0,"minLat":0,"maxLon":1,"maxLat":1},"geometry":{"type":"Polygon","coordinates":[[[0,0],[1,0],[1,1],[0,0]]]}},"assessment":{"authorities":[{"id":"10000000-0000-4000-8000-000000000006","label":"SYNTHETIC body","kind":"unassessed","role":"adopting","jurisdiction":null,"sourceUrls":[]}],"applicability":{"status":"unresolved","explanation":"Synthetic unresolved assessment"}},"savedBy":"10000000-0000-4000-8000-000000000003","savedAt":"2026-10-07T10:30:00.123456Z"}}
+AssertionError: expected 201 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 201
+
+ ❯ src/test/land-use-plan-context-route.test.ts:139:113
+    137|     { contextHash: "invalid" }, { context: { ...retained, place: { ...…
+    138|   ])("does not acknowledge a mismatched or altered result %j", async p…
+    139|     mocks.rpc.mockResolvedValue({ data: { ...outcome, ...patch }, erro…
+       |                                                                                                                 ^
+    140|   });
+    141|   it("reads the exact retained context and required projections throug…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

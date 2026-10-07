@@ -1,0 +1,8 @@
+
+/home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan/src/components/land-use-plans/land-use-plan-creator.tsx
+   57:54   warning  The ref value 'fileRead.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fileRead.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+  117:79   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                  react/no-unescaped-entities
+  123:322  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                  react/no-unescaped-entities
+
+✖ 3 problems (2 errors, 1 warning)
+

@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-descriptor-snapshot.test.ts (5 tests | 1 failed) 17ms
+     × does not claim a descriptor for a plan kind it does not cover 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-descriptor-snapshot.test.ts > frozen plan descriptor custody > does not claim a descriptor for a plan kind it does not cover
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ src/test/land-use-plan-descriptor-snapshot.test.ts:20:111
+     18|
+     19|   it("does not claim a descriptor for a plan kind it does not cover", …
+     20|     expect(() => snapshotPlanDescriptor(getJurisdictionPlanDescriptor(…
+       |                                                                                                               ^
+     21|   });
+     22|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 52 passed (53)
+   Start at  02:39:15
+   Duration  2.37s (transform 134ms, setup 149ms, import 334ms, tests 232ms, environment 1.30s)
+

@@ -1,0 +1,217 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "target": null,
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "target": null,
+      "matched": true
+    },
+    {
+      "case": "revision-guard",
+      "exitCode": 3,
+      "target": "stale-revision readiness or precondition refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "current-pointer",
+      "exitCode": 3,
+      "target": "noncurrent-version readiness or precondition refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "permission",
+      "exitCode": 3,
+      "target": "viewer freeze refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "replay-actor",
+      "exitCode": 3,
+      "target": "other writer cannot reuse command: accepted",
+      "matched": true
+    },
+    {
+      "case": "replay-version",
+      "exitCode": 3,
+      "target": "changed replay version refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "replay-revision",
+      "exitCode": 3,
+      "target": "changed replay revision refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "replay-bytes",
+      "exitCode": 3,
+      "target": "changed request bytes refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "descriptor-edition",
+      "exitCode": 3,
+      "target": "descriptor substitution refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "snapshot-identity",
+      "exitCode": 3,
+      "target": "plan identity substitution refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "snapshot-revision",
+      "exitCode": 3,
+      "target": "snapshot revision substitution refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "required-sections",
+      "exitCode": 3,
+      "target": "section-whitespace readiness or precondition refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "required-descriptor-section",
+      "exitCode": 3,
+      "target": "required-section readiness or precondition refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "required-process",
+      "exitCode": 3,
+      "target": "process readiness or precondition refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "required-consultation",
+      "exitCode": 3,
+      "target": "consultation readiness or precondition refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "pointer-clear",
+      "exitCode": 3,
+      "target": "working pointer cleared",
+      "matched": true
+    },
+    {
+      "case": "hash-original-bytes",
+      "exitCode": 3,
+      "target": "frozen hash covers original bytes",
+      "matched": true
+    },
+    {
+      "case": "event-attribution",
+      "exitCode": 3,
+      "target": "one attributed event",
+      "matched": true
+    },
+    {
+      "case": "journal-rls",
+      "exitCode": 3,
+      "target": "journal RLS enabled",
+      "matched": true
+    },
+    {
+      "case": "journal-read-grant",
+      "exitCode": 3,
+      "target": "private journal",
+      "matched": true
+    },
+    {
+      "case": "rpc-definer",
+      "exitCode": 3,
+      "target": "security invoker",
+      "matched": true
+    },
+    {
+      "case": "helper-definer",
+      "exitCode": 3,
+      "target": "snapshot helper security invoker",
+      "matched": true
+    },
+    {
+      "case": "helper-grant",
+      "exitCode": 3,
+      "target": "private snapshot helper",
+      "matched": true
+    },
+    {
+      "case": "snapshot-nodes",
+      "exitCode": 3,
+      "target": "nodes omission refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "snapshot-relationships",
+      "exitCode": 3,
+      "target": "relationships omission refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "snapshot-designations",
+      "exitCode": 3,
+      "target": "designations omission refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "snapshot-implementationActions",
+      "exitCode": 3,
+      "target": "implementationActions omission refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "projection-nodes",
+      "exitCode": 3,
+      "target": "nodes exact projection",
+      "matched": true
+    },
+    {
+      "case": "projection-relationships",
+      "exitCode": 3,
+      "target": "relationships exact projection",
+      "matched": true
+    },
+    {
+      "case": "projection-designations",
+      "exitCode": 3,
+      "target": "designations exact projection",
+      "matched": true
+    },
+    {
+      "case": "projection-actions",
+      "exitCode": 3,
+      "target": "implementationActions exact projection",
+      "matched": true
+    },
+    {
+      "case": "missing-designations",
+      "exitCode": 3,
+      "target": "designations readiness or precondition refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "missing-actions",
+      "exitCode": 3,
+      "target": "actions readiness or precondition refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "journal-rewrite",
+      "exitCode": 3,
+      "target": "journal rewrite refused: accepted",
+      "matched": true
+    }
+  ],
+  "sourceUnchanged": true,
+  "migrationSha256": "237106bc8f323c52095e2c682423f83fe4647e964eb4fc610b412ba6e809ea27",
+  "fixtureSha256": "739d024b237337818c08c82bc385b8577838e27515c411921e1588b0559575cc"
+}

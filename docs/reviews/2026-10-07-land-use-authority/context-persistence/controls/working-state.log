@@ -1,0 +1,4 @@
+ERROR:  frozen version save refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_35.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(format('SELECT pg_temp.save_context(%L,%L,%L,%L,%L,%L,%L)',plan,version,actor,gen_random_uuid(),second_result->>'contextHash',raw_command,prepared),'PT409','frozen version save refused')"
+PL/pgSQL function inline_code_block line 84 at PERFORM

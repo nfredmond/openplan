@@ -1,6 +1,12 @@
 import { createHash } from "node:crypto";
+import type { JurisdictionPlanDescriptor } from "./contracts";
+import type { SavedPlanContext } from "./plan-context";
 
 export type FrozenPlanContent = {
+  /** Absent in historical versions; never backfilled from today's registry. */
+  descriptorSnapshot?: JurisdictionPlanDescriptor;
+  /** Historical absence remains explicit; this never reads a later draft. */
+  planContext?: SavedPlanContext | null;
   plan: {
     id: string;
     descriptorId: string;
@@ -15,6 +21,7 @@ export type FrozenPlanContent = {
     versionKind: string;
     basedOnVersionId: string | null;
     applicableRequirementKeys: string[];
+    draftRevision?: number;
   };
   nodes: unknown[];
   relationships: unknown[];
@@ -54,5 +61,9 @@ export function adoptionHashMatches(
 }
 
 export function hashFrozenRecord(value: unknown): string {
-  return createHash("sha256").update(JSON.stringify(canonicalize(value))).digest("hex");
+  return createHash("sha256").update(serializeFrozenRecord(value)).digest("hex");
+}
+
+export function serializeFrozenRecord(value: unknown): string {
+  return JSON.stringify(canonicalize(value));
 }

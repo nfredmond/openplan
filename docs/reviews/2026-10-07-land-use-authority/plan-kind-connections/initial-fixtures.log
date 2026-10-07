@@ -1,0 +1,236 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts (60 tests | 1 failed) 72ms
+     × records legacy adoption with an explicitly current, unretained descriptor reference 6ms
+ ❯ src/test/land-use-plan-freeze-route.test.ts (47 tests | 20 failed) 39ms
+     × sends the original request and canonical content through one scoped transaction 12ms
+     × requires readiness fields and refuses blank required content 1ms
+     × keeps land_use_plan_content_nodes read failures unconfirmed 1ms
+     × keeps land_use_plan_designations read failures unconfirmed 1ms
+     × keeps land_use_plan_implementation_actions read failures unconfirmed 1ms
+     × keeps land_use_plan_process_records read failures unconfirmed 1ms
+     × keeps land_use_plan_consultation_records read failures unconfirmed 0ms
+     × maps SQL PT400 to HTTP 400 without diagnostics 0ms
+     × maps SQL 42501 to HTTP 403 without diagnostics 0ms
+     × maps SQL PT404 to HTTP 404 without diagnostics 0ms
+     × maps SQL unknown to HTTP 503 without diagnostics 0ms
+     × keeps mismatched receipts unconfirmed {"commandId":"10000000-0000-4000-8000-000000000009"} 0ms
+     × keeps mismatched receipts unconfirmed {"versionId":"10000000-0000-4000-8000-000000000009"} 0ms
+     × keeps mismatched receipts unconfirmed {"draftRevision":8} 0ms
+     × keeps mismatched receipts unconfirmed {"contentHash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"} 0ms
+     × keeps mismatched receipts unconfirmed {"frozenAt":"invalid"} 0ms
+     × keeps mismatched receipts unconfirmed {"reviewEventId":"invalid"} 0ms
+     × keeps mismatched receipts unconfirmed {"extra":true} 0ms
+     × accepts a concurrent exact replay after fresh preparation 0ms
+     × keeps failed snapshot preparation unconfirmed 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 21 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > sends the original request and canonical content through one scoped transaction
+AssertionError: expected 409 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 409
+
+ ❯ src/test/land-use-plan-freeze-route.test.ts:55:29
+     53|     const text = ` \n${JSON.stringify(command)}\n`;
+     54|     const response = await post(text);
+     55|     expect(response.status).toBe(201); expect(await response.json()).t…
+       |                             ^
+     56|     expect(response.headers.get("cache-control")).toBe("private, no-st…
+     57|     expect(mocks.access).toHaveBeenCalledWith(planId, { write: true });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/21]⎯
+
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > requires readiness fields and refuses blank required content
+AssertionError: expected 409 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 409
+
+ ❯ src/test/land-use-plan-freeze-route.test.ts:101:35
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/21]⎯
+
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps land_use_plan_content_nodes read failures unconfirmed
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps land_use_plan_designations read failures unconfirmed
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps land_use_plan_implementation_actions read failures unconfirmed
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps land_use_plan_process_records read failures unconfirmed
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps land_use_plan_consultation_records read failures unconfirmed
+AssertionError: expected 409 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 409
+
+ ❯ src/test/land-use-plan-freeze-route.test.ts:135:60
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/21]⎯
+
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > maps SQL PT400 to HTTP 400 without diagnostics
+AssertionError: expected 409 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 409
+
+ ❯ src/test/land-use-plan-freeze-route.test.ts:145:60
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/21]⎯
+
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > maps SQL 42501 to HTTP 403 without diagnostics
+AssertionError: expected 409 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 409
+
+ ❯ src/test/land-use-plan-freeze-route.test.ts:145:60
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/21]⎯
+
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > maps SQL PT404 to HTTP 404 without diagnostics
+AssertionError: expected 409 to be 404 // Object.is equality
+
+- Expected
++ Received
+
+- 404
++ 409
+
+ ❯ src/test/land-use-plan-freeze-route.test.ts:145:60
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/21]⎯
+
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > maps SQL unknown to HTTP 503 without diagnostics
+AssertionError: expected 409 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 409
+
+ ❯ src/test/land-use-plan-freeze-route.test.ts:145:60
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/21]⎯
+
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps mismatched receipts unconfirmed {"commandId":"10000000-0000-4000-8000-000000000009"}
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps mismatched receipts unconfirmed {"versionId":"10000000-0000-4000-8000-000000000009"}
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps mismatched receipts unconfirmed {"draftRevision":8}
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps mismatched receipts unconfirmed {"contentHash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps mismatched receipts unconfirmed {"frozenAt":"invalid"}
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps mismatched receipts unconfirmed {"reviewEventId":"invalid"}
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps mismatched receipts unconfirmed {"extra":true}
+AssertionError: expected 409 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 409
+
+ ❯ src/test/land-use-plan-freeze-route.test.ts:148:112
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/21]⎯
+
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > accepts a concurrent exact replay after fresh preparation
+AssertionError: expected 409 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 409
+
+ ❯ src/test/land-use-plan-freeze-route.test.ts:154:118
+    152|   });
+    153|   it("accepts a concurrent exact replay after fresh preparation", asyn…
+    154|     mocks.rpc.mockResolvedValue({ data: { ...result, replayed: true },…
+       |                                                                                                                      ^
+    155|   });
+    156|   it("keeps failed snapshot preparation unconfirmed", async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/21]⎯
+
+ FAIL  src/test/land-use-plan-freeze-route.test.ts > atomic plan freeze route > keeps failed snapshot preparation unconfirmed
+AssertionError: expected 409 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 409
+
+ ❯ src/test/land-use-plan-freeze-route.test.ts:157:75
+    155|   });
+    156|   it("keeps failed snapshot preparation unconfirmed", async () => {
+    157|     mocks.snapshot.mockResolvedValue(null); expect((await post()).stat…
+       |                                                                           ^
+    158|   });
+    159| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/21]⎯
+
+ FAIL  src/test/land-use-plan-frozen-rules-integration.test.ts > adoption of the reviewed descriptor > records legacy adoption with an explicitly current, unretained descriptor reference
+AssertionError: expected { id: 'local-unconfigured', …(11) } to deeply equal { id: 'local-unconfigured', …(11) }
+
+- Expected
++ Received
+
+@@ -4,18 +4,10 @@
+    "disclosure": "Local legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.",
+    "id": "local-unconfigured",
+    "jurisdictionLabel": "Local requirements not configured",
+    "planKinds": [
+      {
+-       "key": "comprehensive",
+-       "label": "Comprehensive plan",
+-     },
+-     {
+-       "key": "area",
+-       "label": "Area or neighborhood plan",
+-     },
+-     {
+        "key": "community",
+        "label": "Community plan",
+      },
+    ],
+    "processSteps": [
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts:330:41
+    328|     const manifest = state.rpc.mock.calls[0][1].p_adoption_manifest;
+    329|     expect(manifest.descriptorCustody).toBe("current_reference_not_ret…
+    330|     expect(manifest.descriptorSnapshot).toEqual(getJurisdictionPlanDes…
+       |                                         ^
+    331|     expect(manifest.planContext).toBeNull();
+    332|     expect(manifest.planContextCustody).toBe("not_retained");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/21]⎯
+
+
+ Test Files  2 failed | 23 passed | 5 skipped (30)
+      Tests  21 failed | 499 passed | 5 skipped (525)
+   Start at  08:23:14
+   Duration  27.26s (transform 791ms, setup 984ms, import 3.17s, tests 10.73s, environment 9.76s)
+

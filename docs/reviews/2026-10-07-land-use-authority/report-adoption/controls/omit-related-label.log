@@ -1,0 +1,115 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-adoption.test.tsx (26 tests | 1 failed) 718ms
+     × renders related plan labels, relation and notes from the verified snapshot 34ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > renders related plan labels, relation and notes from the verified snapshot
+TestingLibraryElementError: Unable to find an accessible element with the role "heading" and name "SYNTHETIC predecessor"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "Related plans retained with this version":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+    [33mid[39m=[32m"report-relationships-heading"[39m
+  [36m/>[39m
+
+  --------------------------------------------------list:
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"mt-4 space-y-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"rounded-lg border p-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "Related plan label not recorded":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 whitespace-pre-wrap"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<section[39m
+  [33maria-labelledby[39m=[32m"report-relationships-heading"[39m
+  [33mclass[39m=[32m"mt-9 border-t pt-7"[39m
+[36m>[39m
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+    [33mid[39m=[32m"report-relationships-heading"[39m
+  [36m>[39m
+    [0mRelated plans retained with this version[0m
+  [36m</h2>[39m
+  [36m<ul[39m
+    [33mclass[39m=[32m"mt-4 space-y-4"[39m
+  [36m>[39m
+    [36m<li[39m
+      [33mclass[39m=[32m"rounded-lg border p-4"[39m
+    [36m>[39m
+      [36m<h3[39m
+        [33mclass[39m=[32m"font-semibold"[39m
+      [36m>[39m
+        [0mRelated plan label not recorded[0m
+      [36m</h3>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"mt-1 text-sm"[39m
+      [36m>[39m
+        [0mRelationship recorded as: [0m
+        [0msupersedes[0m
+      [36m</p>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"mt-2 whitespace-pre-wrap"[39m
+      [36m>[39m
+        [0mSYNTHETIC related plan note[0m
+      [36m</p>[39m
+    [36m</li>[39m
+  [36m</ul>[39m
+[36m</section>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-report-adoption.test.tsx:114:20
+    112|     await show();
+    113|     const section = within(screen.getByRole("region", { name: "Related…
+    114|     expect(section.getByRole("heading", { name: "SYNTHETIC predecessor…
+       |                    ^
+    115|     expect(section.getByText("Relationship recorded as: supersedes")).…
+    116|     expect(section.getByText("SYNTHETIC related plan note")).toBeVisib…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 25 passed (26)
+   Start at  12:12:30
+   Duration  1.47s (transform 122ms, setup 54ms, import 268ms, tests 718ms, environment 335ms)
+

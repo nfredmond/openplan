@@ -1,0 +1,5 @@
+ERROR:  retained stop receipt
+CONTEXT:  PL/pgSQL function pg_temp_1.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert(result->>'outcome'='cancelled' AND result->>'commandId'=command_id::text AND result->>'actorId'=actor::text
+    AND result->>'workspaceId'=workspace::text AND result->>'commandText'=raw AND result->>'replayed'='false' AND result->>'cancelledAt' IS NOT NULL,'retained stop receipt')"
+PL/pgSQL function inline_code_block line 28 at PERFORM

@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+
+ Test Files  3 passed (3)
+      Tests  73 passed (73)
+   Start at  07:59:19
+   Duration  4.09s (transform 343ms, setup 121ms, import 803ms, tests 1.91s, environment 990ms)
+

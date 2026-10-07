@@ -1,0 +1,67 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "delayed-initial-gate",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "old-assertion-delayed",
+      "expectedPass": false,
+      "exitCode": 1,
+      "failedTests": [
+        "plan context editor retains an edited draft and command before transport, then refreshes before enabling freeze"
+      ],
+      "matched": true
+    },
+    {
+      "case": "permanently-blocked",
+      "expectedPass": false,
+      "exitCode": 1,
+      "failedTests": [
+        "plan context editor retains an edited draft and command before transport, then refreshes before enabling freeze"
+      ],
+      "matched": true
+    },
+    {
+      "case": "blocked-after-refresh",
+      "expectedPass": false,
+      "exitCode": 1,
+      "failedTests": [
+        "plan context editor retains an edited draft and command before transport, then refreshes before enabling freeze"
+      ],
+      "matched": true
+    },
+    {
+      "case": "prematurely-unblocked",
+      "expectedPass": false,
+      "exitCode": 1,
+      "failedTests": [
+        "plan context editor retains an edited draft and command before transport, then refreshes before enabling freeze"
+      ],
+      "matched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/components/land-use-plans/land-use-plan-context-editor.tsx": "0c4deeb43e2da48695b068402f11d0663f358315e6b31ab4b05d4dc51d3af2d4",
+    "src/test/land-use-plan-context-editor.test.tsx": "444fd3e086f0e9cfd232e701fdf1bcf0655b42fb81dc66c65ce0b6af53e6c819"
+  },
+  "boundary": "One mounted test under a controlled initial notification delay and explicit blocked-state faults. This demonstrates the timing assumption, not reproduction of the complete GitHub scheduler or browser acceptance."
+}

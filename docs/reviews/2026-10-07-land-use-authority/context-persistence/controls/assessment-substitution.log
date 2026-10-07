@@ -1,0 +1,4 @@
+ERROR:  assessment substitution refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_16.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(format('SELECT pg_temp.save_context(%L,%L,%L,%L,NULL,%L,%L)',plan,version,actor,command,raw_command,jsonb_set(prepared,'{assessment,authorities}','[{"label":"changed"}]')),'PT400','assessment substitution refused')"
+PL/pgSQL function inline_code_block line 38 at PERFORM

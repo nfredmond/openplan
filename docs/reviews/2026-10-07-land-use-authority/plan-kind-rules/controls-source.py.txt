@@ -1,0 +1,47 @@
+from pathlib import Path
+import hashlib, json, os, subprocess
+
+app = Path('/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan')
+out = Path('/tmp/openplan-plan-kind-controls'); out.mkdir(exist_ok=False)
+paths = {'registry': 'src/lib/land-use-plans/registry.ts', 'selector': 'src/lib/land-use-plans/plan-kind-rules.ts', 'snapshot': 'src/lib/land-use-plans/descriptor-snapshot.ts'}
+original = {key: (app / path).read_bytes() for key, path in paths.items()}
+cases = [
+ ('baseline', None, None, None, None),
+ ('harmless', 'selector', '/** Select one kind', '/** Harmless control: select one kind', None),
+ ('wrong-kind-rules', 'registry', 'area: CALIFORNIA_SPECIFIC', 'area: CALIFORNIA', 'keeps the established general-plan content'),
+ ('unknown-family', 'registry', 'const family = getJurisdictionPlanDescriptor(descriptorId);', 'const family = getJurisdictionPlanDescriptor(descriptorId) ?? CALIFORNIA;', 'refuses unknown families'),
+ ('unknown-kind', 'selector', 'if (!selected) return null;', 'if (false) return null;', 'resolves arbitrary adapter data'),
+ ('wrong-family', 'selector', 'rules.id !== family.id || ', '', 'resolves arbitrary adapter data'),
+ ('variant-missing-kind', 'selector', '!rules.planKinds.some(kind => kind.key === planKindKey)', 'false', 'resolves arbitrary adapter data'),
+ ('shared-source-object', 'selector', 'structuredClone({ ...rules, planKinds: [selected] })', '({ ...rules, planKinds: [selected] })', 'returns detached rules'),
+ ('all-kinds-retained', 'selector', 'planKinds: [selected]', 'planKinds: rules.planKinds', 'keeps the established general-plan content'),
+ ('selection-collision', 'selector', 'JSON.stringify([descriptorId, planKindKey])', '[descriptorId, planKindKey].join("/")', 'encodes both selection identifiers'),
+ ('consistency-review', 'registry', 'label: "Document consistency with the general plan", required: true, reviewPrerequisite: true', 'label: "Document consistency with the general plan", required: true, reviewPrerequisite: false', 'distinguishes consistency'),
+ ('consistency-adoption', 'registry', 'label: "Document consistency with the general plan", required: true, reviewPrerequisite: true, adoptionPrerequisite: true', 'label: "Document consistency with the general plan", required: true, reviewPrerequisite: true, adoptionPrerequisite: false', 'distinguishes consistency'),
+ ('general-amendment-cap', 'registry', '"public_draft", "hearing", "recommendation", "adoption"].includes', '"public_draft", "hearing", "recommendation", "adoption", "amendment_limit"].includes', 'distinguishes consistency'),
+ ('specific-amendment-cap', 'registry', 'Amendments may occur as often as the legislative body finds necessary;', 'Amendments may occur no more than four times per year;', 'distinguishes consistency'),
+ ('agency-update-required', 'registry', 'label: "Prepare an agency-defined implementation update", required: false', 'label: "Prepare an agency-defined implementation update", required: true', 'distinguishes consistency'),
+ ('agency-update-deadline', 'registry', 'label: "Prepare an agency-defined implementation update", required: false, sourceUrls: []', 'label: "Prepare an agency-defined implementation update", required: false, deadline: "April 1", sourceUrls: []', 'distinguishes consistency'),
+ ('incorrect-content-source', 'registry', 'label: "Land uses and open space", applicability: "required", sourceUrls: [CA_SPECIFIC_CONTENT]', 'label: "Land uses and open space", applicability: "required", sourceUrls: [CA_ARTICLE_5]', 'keeps the established general-plan content'),
+ ('unreviewed-date-promotion', 'registry', '...CALIFORNIA,\n  // Preserve', '...CALIFORNIA,\n  verifiedAt: "2026-10-07",\n  // Preserve', 'distinguishes consistency'),
+ ('legal-sufficiency-caveat', 'registry', 'consultation. OpenPlan does not determine legal sufficiency or replace counsel', 'consultation. OpenPlan replaces counsel', 'distinguishes consistency'),
+ ('rewritten-frozen-rules', 'snapshot', 'return { status: "retained", descriptor: parsed.data };', 'return { status: "retained", descriptor: { ...parsed.data, requirements: [] } };', 'binds snapshots and review hashes'),
+]
+for name, key, old, new, target in cases:
+ if key: assert original[key].decode().count(old) == 1, (name, original[key].decode().count(old))
+rows = []
+try:
+ for name, key, old, new, target in cases:
+  try:
+   if key: (app / paths[key]).write_text(original[key].decode().replace(old, new))
+   report = out / (name + '.json')
+   run = subprocess.run(['npx', 'vitest', 'run', 'src/test/land-use-plan-kind-rules.test.ts', 'src/test/land-use-plan-registry.test.ts', 'src/test/land-use-plan-descriptor-snapshot.test.ts', '--maxWorkers=1', '--reporter=json', '--outputFile=' + str(report)], cwd=app, env={**os.environ, 'NODE_OPTIONS': '--max-old-space-size=6144'}, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=90)
+   (out / (name + '.log')).write_text(run.stdout)
+   data = json.loads(report.read_text()); failed = [a['fullName'] for f in data['testResults'] for a in f['assertionResults'] if a['status'] == 'failed']
+   matched = run.returncode == 0 if target is None else run.returncode != 0 and any(target in item for item in failed)
+   rows.append({'case': name, 'target': target, 'exitCode': run.returncode, 'failedTests': failed, 'matched': matched})
+   print(name, matched, flush=True); assert matched, name
+  finally:
+   for key, content in original.items(): (app / paths[key]).write_bytes(content)
+finally:
+ (out / 'report.json').write_text(json.dumps({'results': rows, 'restored': all((app / paths[key]).read_bytes() == data for key, data in original.items()), 'sourceSha256': {paths[key]: hashlib.sha256(data).hexdigest() for key, data in original.items()}, 'boundary': 'Pure rule selection, current source declarations and snapshot serialization. No authenticated route, database, rendered browser, legal sufficiency or practitioner acceptance.'}, indent=2) + '\n')

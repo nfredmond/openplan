@@ -1,0 +1,101 @@
+import { createRequire } from 'node:module';
+import { readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { randomUUID, createHash } from 'node:crypto';
+import assert from 'node:assert/strict';
+const root = process.cwd(), dir = '/home/nathaniel/.local/state/openplan/t3-restart-recovery-20261006/land-use-authority';
+const require = createRequire(join(root, 'package.json'));
+const { createServerClient } = require('@supabase/ssr'), { createClient } = require('@supabase/supabase-js');
+const { requireContractVerificationStack } = await import(join(root, 'src/test/helpers/contract-verification-stack.ts'));
+const { creationDraftFixture } = await import(join(root, 'src/test/fixtures/land-use-plans/creation.ts'));
+const { retainCreationRequest, sendCreationRequest, confirmCreationRequest, retainCreationStop, sendCreationStop, confirmCreationStop, importCreationRecord, readCreationRecords } = await import(join(root, 'src/lib/land-use-plans/create-recovery.ts'));
+requireContractVerificationStack('supabase_db_openplan-restore-target-2026091050');
+assert.equal(process.env.NEXT_PUBLIC_SUPABASE_URL, 'http://127.0.0.1:29821');
+const expected = process.env.OPENPLAN_EXPECTED_COMMIT;
+assert.match(expected ?? '', /^[a-f0-9]{40}$/);
+const origin = 'http://127.0.0.1:3497', health = await (await fetch(origin + '/api/health')).json();
+assert.equal(health.deployment?.commit, expected.slice(0, 12));
+const fixture = JSON.parse(await readFile('/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-thematic-browser-producer-input.json', 'utf8'));
+const service = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+const jar = new Map();
+const owner = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, { cookies: {
+  getAll: () => [...jar].map(([name, value]) => ({ name, value })), setAll: values => { for (const item of values) jar.set(item.name, item.value); },
+} });
+function checked(value) { if (value.error) throw Error('Native operation failed: ' + value.error.code); return value.data; }
+const actorId = checked(await owner.auth.signInWithPassword({ email: fixture.email, password: fixture.password })).user.id;
+const workspaceId = randomUUID(), marker = 'SYNTHETIC creation workflow ' + randomUUID();
+const journalPath = join(dir, 'creation-workflow-native-http-private.json');
+const journal = { applicationCommit: expected, actorId, workspaceId, marker, state: 'starting', startedAt: new Date().toISOString(), requests: [] };
+await writeFile(journalPath, JSON.stringify(journal), { mode: 0o600, flag: 'wx' });
+const retain = () => writeFile(journalPath, JSON.stringify(journal), { mode: 0o600 });
+checked(await service.from('workspaces').insert({ id: workspaceId, name: marker, slug: workspaceId }));
+checked(await service.from('workspace_members').insert({ workspace_id: workspaceId, user_id: actorId, role: 'owner' }));
+jar.set('openplan_active_workspace', workspaceId);
+const scope = { actorId, workspaceId };
+function makeStorage() { const values = new Map(); return { get length() { return values.size; }, key: n => [...values.keys()][n] ?? null, getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) }; }
+const storage = makeStorage();
+let loseNextReply = false;
+const transport = async (path, init = {}) => {
+  const headers = new Headers(init.headers);
+  headers.set('Cookie', [...jar].map(([key, value]) => key + '=' + value).join('; '));
+  if (!headers.has('Origin')) headers.set('Origin', origin);
+  const row = { path: String(path), method: init.method ?? 'GET', bodySha256: typeof init.body === 'string' ? createHash('sha256').update(init.body).digest('hex') : null };
+  journal.requests.push(row); await retain();
+  const response = await fetch(origin + path, { ...init, headers });
+  row.status = response.status; row.privateNoStore = response.headers.get('cache-control') === 'private, no-store'; await retain();
+  if (init.method === 'POST') assert.equal(row.privateNoStore, true);
+  if (loseNextReply && init.method === 'POST') { loseNextReply = false; await response.clone().text(); row.replyIntentionallyDropped = true; await retain(); throw Error('SYNTHETIC lost reply after response'); }
+  return response;
+};
+const draft = { ...creationDraftFixture(), ...scope, instanceId: randomUUID(), savedAt: new Date().toISOString() };
+draft.fields.title = marker; draft.fields.context.authorities[0].id = randomUUID();
+draft.fields.context.place.label = 'SYNTHETIC uploaded study';
+draft.fields.context.place.geometryText = JSON.stringify({ type: 'Polygon', coordinates: [[[-121.5, 38.5], [-121.4, 38.5], [-121.4, 38.6], [-121.5, 38.5]]] });
+const pending = retainCreationRequest(storage, draft, randomUUID()); journal.pending = pending; await retain();
+loseNextReply = true;
+await assert.rejects(() => sendCreationRequest(storage, pending, transport), /SYNTHETIC lost reply/);
+assert.equal(readCreationRecords(storage, scope)[0].value.kind, 'pending');
+const receipt = await sendCreationRequest(storage, pending, transport); assert.equal(receipt.replayed, true);
+const confirmed = confirmCreationRequest(storage, pending, receipt);
+const commands = checked(await service.from('land_use_plan_creation_commands').select('command_id,command_text,plan_id,version_id').eq('workspace_id', workspaceId));
+assert.equal(commands.length, 1); assert.equal(commands[0].command_text, pending.commandText); assert.equal(commands[0].plan_id, receipt.planId);
+const plans = checked(await service.from('land_use_plans').select('id,current_working_version_id,plan_context,geography_geojson').eq('workspace_id', workspaceId));
+assert.equal(plans.length, 1); assert.equal(plans[0].current_working_version_id, receipt.versionId);
+assert.deepEqual(plans[0].plan_context.assessment, receipt.context.assessment);
+assert.deepEqual(plans[0].geography_geojson, JSON.parse(draft.fields.context.place.geometryText));
+const importedStorage = makeStorage(), imported = importCreationRecord(importedStorage, scope, JSON.stringify(confirmed));
+assert.equal(imported.kind, 'pending'); assert.equal(imported.stopRequested, true);
+const recovered = await sendCreationStop(importedStorage, imported, transport);
+assert.equal(recovered.outcome, 'created'); assert.equal(recovered.result.planId, receipt.planId); confirmCreationStop(importedStorage, imported, recovered);
+const stoppedDraft = { ...draft, instanceId: randomUUID(), fields: { ...draft.fields, title: marker + ' stopped' } };
+const stoppable = retainCreationRequest(storage, stoppedDraft, randomUUID()), stopping = retainCreationStop(storage, stoppable);
+journal.stopping = stopping; await retain(); loseNextReply = true;
+await assert.rejects(() => sendCreationStop(storage, stopping, transport), /SYNTHETIC lost reply/);
+assert.equal(readCreationRecords(storage, scope).find(row => row.value?.kind === 'pending').value.stopRequested, true);
+const stopped = await sendCreationStop(storage, stopping, transport);
+assert.equal(stopped.outcome, 'cancelled'); assert.equal(stopped.replayed, true); confirmCreationStop(storage, stopping, stopped);
+const scopedHeaders = { 'Content-Type': 'application/json', 'x-openplan-expected-user': actorId, 'x-openplan-expected-workspace': workspaceId };
+async function refused(path, body, status, overrides = {}) {
+  const response = await transport(path, { method: 'POST', headers: { ...scopedHeaders, ...overrides }, body });
+  assert.equal(response.status, status); return response.json();
+}
+await refused('/api/land-use-plans', stopping.commandText, 409);
+await refused('/api/land-use-plans', pending.commandText + ' ', 409);
+await refused('/api/land-use-plans', pending.commandText, 403, { 'x-openplan-expected-user': randomUUID() });
+await refused('/api/land-use-plans', pending.commandText, 403, { 'x-openplan-expected-workspace': randomUUID() });
+await refused('/api/land-use-plans', pending.commandText, 403, { Origin: 'https://example.test' });
+await refused('/api/land-use-plans', pending.commandText, 403, { 'x-openplan-assistant-approval-id': randomUUID() });
+const stopPath = '/api/land-use-plans/creation-requests/' + JSON.parse(stopping.commandText).commandId + '/stop';
+await refused(stopPath, stopping.commandText + ' ', 409);
+await refused(stopPath, stopping.commandText, 403, { 'x-openplan-expected-workspace': randomUUID() });
+const finalPlans = checked(await service.from('land_use_plans').select('id').eq('workspace_id', workspaceId));
+const finalVersions = checked(await service.from('land_use_plan_versions').select('id').eq('workspace_id', workspaceId));
+const cancellations = checked(await service.from('land_use_plan_creation_cancellations').select('command_id,command_text').eq('workspace_id', workspaceId));
+assert.equal(finalPlans.length, 1); assert.equal(finalVersions.length, 1); assert.equal(cancellations.length, 1); assert.equal(cancellations[0].command_text, stopping.commandText);
+const page = await transport('/land-use-plans'); assert.equal(page.status, 200);
+assert.match(await page.text(), /Start a land use plan/);
+journal.state = 'verified'; journal.planId = receipt.planId; journal.versionId = receipt.versionId; journal.finishedAt = new Date().toISOString(); await retain();
+console.log(JSON.stringify({ applicationCommit: expected, workspaceId, planId: receipt.planId, versionId: receipt.versionId, requests: journal.requests,
+  onePlanAndVersion: true, exactCreationRetry: true, exactStopRetry: true, importedReceiptReconfirmed: true, stoppedRequestCannotCreate: true,
+  authenticatedPageResponds: true, fixturesPreserved: true,
+  boundary: 'Synthetic authenticated production HTTP and native database assertions. Recovery helpers use in-memory Node storage. No rendered browser, native browser storage, downloaded artifact, accessibility, legal, practitioner or scientific acceptance.' }, null, 2));

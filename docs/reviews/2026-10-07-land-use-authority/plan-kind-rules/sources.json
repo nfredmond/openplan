@@ -1,0 +1,46 @@
+{
+  "sources": [
+    {
+      "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=65450",
+      "reviewedOn": "2026-10-07",
+      "access": "Official section text returned by web tool; some trailing-dot forms failed. No whole-code currentness claim."
+    },
+    {
+      "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=65451",
+      "reviewedOn": "2026-10-07",
+      "access": "Official section text returned by web tool; some trailing-dot forms failed. No whole-code currentness claim."
+    },
+    {
+      "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=65454",
+      "reviewedOn": "2026-10-07",
+      "access": "Official section text returned by web tool; some trailing-dot forms failed. No whole-code currentness claim."
+    },
+    {
+      "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=65456",
+      "reviewedOn": "2026-10-07",
+      "access": "Official section text returned by web tool; some trailing-dot forms failed. No whole-code currentness claim."
+    },
+    {
+      "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=65358",
+      "reviewedOn": "2026-10-07",
+      "access": "Official section text returned by web tool; some trailing-dot forms failed. No whole-code currentness claim."
+    },
+    {
+      "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=65453",
+      "reviewedOn": "2026-10-07",
+      "access": "Unavailable through direct web requests; trailing-dot form returned403. Not reported as a successful statute retrieval."
+    },
+    {
+      "url": "https://lci.ca.gov/wp-content/uploads/OPR_C9_final.pdf",
+      "reviewedOn": "2026-10-07",
+      "edition": "2017 guidelines, chapter9,printedpages239-240",
+      "access": "Retrieved through current LCI guidance index. Issued guidance supports specific-plan content, instruments and amendment treatment; not an adopted2026replacement."
+    },
+    {
+      "url": "https://lci.ca.gov/planning/general-plan/guidelines/",
+      "reviewedOn": "2026-10-07",
+      "access": "Retrieved; identifies2017comprehensiveedition and later advisories."
+    }
+  ],
+  "boundary": "Scope review for selected rule differences, not a complete current-law, local-overlay, consultation or environmental review."
+}

@@ -11,13 +11,11 @@ const WRITE_ROUTES = [
 ];
 
 describe("Land Use Plans route boundaries", () => {
-  it("verifies the workspace jurisdiction before attaching a configured legal bundle", () => {
+  it("routes creation through the plan-owned atomic command", () => {
     const route = readFileSync(path.resolve(__dirname, "../app/api/land-use-plans/route.ts"), "utf8");
-
-    expect(route).toContain("HOME_JURISDICTION_COLUMNS");
-    expect(route).toContain("recommendJurisdictionPlanDescriptor");
-    expect(route).toContain("recommendation.descriptor.id !== descriptor.id");
-    expect(route).toContain("does not match this workspace's home jurisdiction");
+    expect(route).toContain("await createPlanWithContext(createServiceRoleClient(),");
+    expect(route).not.toContain("HOME_JURISDICTION_COLUMNS");
+    expect(route).not.toContain("recommendJurisdictionPlanDescriptor");
   });
 
   it("qualifies the plan-version relationship on both registry reads", () => {
@@ -81,8 +79,8 @@ describe("Land Use Plans route boundaries", () => {
   });
 
   it("creates locally defined sections as applicable instead of disabling their editor", () => {
-    const createRoute = readFileSync(path.resolve(__dirname, "../app/api/land-use-plans/route.ts"), "utf8");
-    expect(createRoute).toContain("defaultApplicableRequirementKeys(descriptor)");
+    const migration = readFileSync(path.resolve(__dirname, "../../supabase/migrations/20261016000007_land_use_plan_creation_commands.sql"), "utf8");
+    expect(migration).toContain("WHERE r->>'applicability'<>'conditional'");
   });
 
   it("keeps conditional applicability, evidence, and policy-map links reachable in the workbench", () => {

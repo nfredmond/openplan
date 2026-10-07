@@ -1,0 +1,4 @@
+ERROR:  changed checklist refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_37.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(format('SELECT public.save_land_use_plan_context(%L,%L,%L,%L,NULL,%L,%L,%L,%L)',plan,version,actor,command,raw_command,prepared,'wrong-checklist','community'),'PT409','changed checklist refused')"
+PL/pgSQL function inline_code_block line 42 at PERFORM

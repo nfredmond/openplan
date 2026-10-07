@@ -1,0 +1,16 @@
+{
+  "applicationCommit": "c047153ad120ff638da80f4f8a1dd00af88db11b",
+  "tab": "tab_h",
+  "origin": "http://openplan-creation.localhost:3497",
+  "available": true,
+  "visible": false,
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "title": "Free, open-source planning software \u00b7 OpenPlan",
+  "snapshotWithImage": "Preview automation snapshot failed on client preview-15c860c89cab5f9b9eeb30c7c9bd70be.",
+  "snapshotTextOnly": "Same client execution error.",
+  "alternateBrowserOpened": false,
+  "boundary": "Landing page navigation only. No authenticated browser journey, rendered desktop or 390px evidence, console acceptance or artifact review."
+}

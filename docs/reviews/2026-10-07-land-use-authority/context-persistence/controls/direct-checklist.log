@@ -1,0 +1,4 @@
+ERROR:  direct checklist change refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_81.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(format('UPDATE public.land_use_plans SET descriptor_id=%L WHERE id=%L','wrong-checklist',plan),'42501','direct checklist change refused')"
+PL/pgSQL function inline_code_block line 46 at PERFORM

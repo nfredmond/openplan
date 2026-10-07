@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 42ms
+     × bounds the body and refuses malformed JSON 9ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:12
+   Duration  1.36s (transform 195ms, setup 89ms, import 323ms, tests 61ms, environment 652ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > bounds the body and refuses malformed JSON
+AssertionError: expected 400 to be 413 // Object.is equality
+
+- Expected
++ Received
+
+- 413
++ 400
+
+ ❯ src/test/land-use-plan-context-route.test.ts:118:56
+    116|   it("bounds the body and refuses malformed JSON", async () => {
+    117|     expect((await post("{" )).status).toBe(400);
+    118|     expect((await post(" ".repeat(2_000_001))).status).toBe(413);
+       |                                                        ^
+    119|     expect(mocks.service).not.toHaveBeenCalled();
+    120|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

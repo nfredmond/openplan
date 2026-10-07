@@ -1,0 +1,2 @@
+ERROR:  55P03: could not obtain lock on row in relation "workspace_members"
+LOCATION:  heap_lock_tuple, heapam.c:4985

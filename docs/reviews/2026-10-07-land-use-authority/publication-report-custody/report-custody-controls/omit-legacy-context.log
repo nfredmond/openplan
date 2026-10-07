@@ -1,0 +1,435 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-custody.test.tsx (17 tests | 4 failed) 408ms
+     × shows the adopted recorded identity and context, independent of later labels 137ms
+     × shows the superseded recorded identity and context, independent of later labels 29ms
+     × shows the repealed recorded identity and context, independent of later labels 31ms
+     × discloses legacy context absence without substituting current context 92ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > shows the adopted recorded identity and context, independent of later labels
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > shows the superseded recorded identity and context, independent of later labels
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > shows the repealed recorded identity and context, independent of later labels
+TestingLibraryElementError: Unable to find an element with the text: SYNTHETIC study area. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto min-w-0 w-full max-w-4xl [overflow-wrap:anywhere] p-5 md:p-10 print:max-w-none print:p-0"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-7"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+        [36m>[39m
+          [0mAdopted plan report[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+        [36m>[39m
+          [0mSYNTHETIC report title[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg"[39m
+        [36m>[39m
+          [0mSYNTHETIC frozen title[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+        [36m>[39m
+          [0mSYNTHETIC frozen authority[0m
+          [0m · [0m
+          [0mSYNTHETIC frozen geography[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4"[39m
+        [36m>[39m
+          [0mLong hash aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mt-5 flex flex-wrap gap-3 print:hidden"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"default"[39m
+          [36m>[39m
+            [0mPrint report[0m
+          [36m</button>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mdownload[39m=[32m"openplan-report-22000000-0000-4000-8000-000000000003-provenance.json"[39m
+            [33mhref[39m=[32m"/api/reports/22000000-0000-4000-8000-000000000003/provenance"[39m
+          [36m>[39m
+            [0mDownload source JSON[0m
+          [36m</a>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mhref[39m=[32m"/land-use-plans/22000000-0000-4000-8000-000000000001"[39m
+          [36m>[39m
+            [0mOpen plan workbench[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mFrozen plan content[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+        [36m>[39m
+          [0mPlan content hash: [0m
+          [0madd8e9f218efe09acd089f9e8dba1631496af7224e014cde5cfd3e9270411a2d[0m
+        [36m</p>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"mt-6"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"text-xl font-semibold"[39m
+          [36m>[39m
+            [0mSYNTHETIC retained policy[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 whitespace-pre-wrap leading-relaxed"[39m
+          [36m>[39m
+            [0mRetained policy text[0m
+          [36m</p>[39m
+        [36m</article>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-9 border-t pt-7"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mImplementation program[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3"[39m
+        [36m>[39m
+          [0mNo implementation actions were present in this frozen report.[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<footer[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<p>[39m
+          [0mGenerated [0m
+          [0m2026-10-07[0m
+          [0m. Consultation details, confidential notes, and sensitive-location flags are not part of this report.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all"[39m
+        [36m>[39m
+          [0mReport ID [0m
+          [0m22000000-0000-4000-8000-000000000003[0m
+        [36m</p>[39m
+      [36m</footer>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-report-custody.test.tsx:52:185
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > discloses legacy context absence without substituting current context
+TestingLibraryElementError: Unable to find an accessible element with the role "region" and name "Context not retained with this version"
+
+Here are the accessible roles:
+
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"border-b pb-7"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-lg"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 whitespace-pre-wrap leading-relaxed"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "SYNTHETIC report title":
+  [36m<h1[39m
+    [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Frozen plan content":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "SYNTHETIC retained policy":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Implementation program":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Print report":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Download source JSON":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mdownload[39m=[32m"openplan-report-22000000-0000-4000-8000-000000000003-provenance.json"[39m
+    [33mhref[39m=[32m"/api/reports/22000000-0000-4000-8000-000000000003/provenance"[39m
+  [36m/>[39m
+
+  Name "Open plan workbench":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mhref[39m=[32m"/land-use-plans/22000000-0000-4000-8000-000000000001"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  article:
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"mt-6"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  contentinfo:
+
+  Name "":
+  [36m<footer[39m
+    [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto min-w-0 w-full max-w-4xl [overflow-wrap:anywhere] p-5 md:p-10 print:max-w-none print:p-0"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-7"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+        [36m>[39m
+          [0mAdopted plan report[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+        [36m>[39m
+          [0mSYNTHETIC report title[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg"[39m
+        [36m>[39m
+          [0mSYNTHETIC frozen title[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+        [36m>[39m
+          [0mSYNTHETIC frozen authority[0m
+          [0m · [0m
+          [0mSYNTHETIC frozen geography[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4"[39m
+        [36m>[39m
+          [0mLong hash aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mt-5 flex flex-wrap gap-3 print:hidden"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"default"[39m
+          [36m>[39m
+            [0mPrint report[0m
+          [36m</button>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mdownload[39m=[32m"openplan-report-22000000-0000-4000-8000-000000000003-provenance.json"[39m
+            [33mhref[39m=[32m"/api/reports/22000000-0000-4000-8000-000000000003/provenance"[39m
+          [36m>[39m
+            [0mDownload source JSON[0m
+          [36m</a>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mhref[39m=[32m"/land-use-plans/22000000-0000-4000-8000-000000000001"[39m
+          [36m>[39m
+            [0mOpen plan workbench[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mFrozen plan content[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+        [36m>[39m
+          [0mPlan content hash: [0m
+          [0m25397dc9eb6d5059d72fe9b01284e25d74003132e581de9c97e032777057db70[0m
+        [36m</p>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"mt-6"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"text-xl font-semibold"[39m
+          [36m>[39m
+            [0mSYNTHETIC retained policy[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 whitespace-pre-wrap leading-relaxed"[39m
+          [36m>[39m
+            [0mRetained policy text[0m
+          [36m</p>[39m
+        [36m</article>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-9 border-t pt-7"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mImplementation program[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3"[39m
+        [36m>[39m
+          [0mNo implementation actions were present in this frozen report.[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<footer[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<p>[39m
+          [0mGenerated [0m
+          [0m2026-10-07[0m
+          [0m. Consultation details, confidential notes, and sensitive-location flags are not part of this report.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all"[39m
+        [36m>[39m
+          [0mReport ID [0m
+          [0m22000000-0000-4000-8000-000000000003[0m
+        [36m</p>[39m
+      [36m</footer>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-report-custody.test.tsx:63:19
+     61|   it("discloses legacy context absence without substituting current co…
+     62|     delete frozen.planContext; anchorArtifact(); await show();
+     63|     expect(screen.getByRole("region", { name: "Context not retained wi…
+       |                   ^
+     64|     expect(screen.queryByText(syntheticPlanContext().place.label)).toB…
+     65|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 13 passed (17)
+   Start at  11:54:04
+   Duration  1.13s (transform 106ms, setup 55ms, import 240ms, tests 408ms, environment 329ms)
+

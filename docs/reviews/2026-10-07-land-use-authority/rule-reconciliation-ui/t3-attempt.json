@@ -1,0 +1,57 @@
+[
+  {
+    "step": "desktop landing snapshot",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Preview snapshot failed: Preview automation snapshot failed on client preview-15c860c89cab5f9b9eeb30c7c9bd70be."
+        }
+      ],
+      "structuredContent": {
+        "error": {
+          "_tag": "PreviewAutomationExecutionError",
+          "operation": "snapshot",
+          "failureCount": 1,
+          "message": "Preview automation snapshot failed on client preview-15c860c89cab5f9b9eeb30c7c9bd70be."
+        }
+      },
+      "isError": true
+    }
+  },
+  {
+    "step": "normal sign-in then Land Use Plans navigation",
+    "result": {
+      "toolIcon": {
+        "_tag": "website",
+        "pageUrl": "http://openplan-history.localhost:3498/dashboard"
+      },
+      "value": {
+        "headings": [
+          "Overview",
+          "Set up SYNTHETIC creation workflow be7d28df-ba83-4ead-8f13-b45500f299b1",
+          "SYNTHETIC creation workflow be7d28df-ba83-4ead-8f13-b45500f299b1",
+          "What is worth your attention today",
+          "Where the work is right now",
+          "Analysis run history",
+          "Recent audited operator actions"
+        ],
+        "links": [],
+        "title": "Overview \u00b7 OpenPlan",
+        "url": "http://openplan-history.localhost:3498/dashboard"
+      }
+    }
+  },
+  {
+    "step": "Land Use Plans index after navigation settles"
+  },
+  {
+    "step": "Land Use Plans wait",
+    "error": "Preview automation waitFor timed out after 15000ms."
+  },
+  {
+    "step": "browser host disconnected",
+    "error": "No preview automation host is available for evaluate in environment 8ad2b823-e886-4c35-926a-4159d7475a27. Do not retry.",
+    "boundary": "User requires T3 only. No alternate browser used. Desktop screenshot failed; no current-source 390px, authenticated plan, console, or download acceptance."
+  }
+]

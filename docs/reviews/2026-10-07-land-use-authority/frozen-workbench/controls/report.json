@@ -1,0 +1,525 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "target": null,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "target": null,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "identity-plan",
+      "target": "refuses plan corruption",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses plan corruption before loading workbench records",
+        "adopted public frozen identity refuses a self-hashed snapshot for another plan",
+        "review public frozen identity refuses a self-hashed snapshot for another plan"
+      ],
+      "matched": true
+    },
+    {
+      "case": "identity-version",
+      "target": "refuses version corruption",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses version corruption before loading workbench records",
+        "adopted public frozen identity refuses a self-hashed snapshot for another version",
+        "review public frozen identity refuses a self-hashed snapshot for another version"
+      ],
+      "matched": true
+    },
+    {
+      "case": "identity-number",
+      "target": "refuses number corruption",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses number corruption before loading workbench records",
+        "adopted public frozen identity refuses a self-hashed snapshot for another number",
+        "review public frozen identity refuses a self-hashed snapshot for another number"
+      ],
+      "matched": true
+    },
+    {
+      "case": "identity-hash",
+      "target": "refuses unhashed-content corruption",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses unhashed-content corruption before loading workbench records",
+        "adopted public frozen identity refuses changed frozen content even when stored hash references agree",
+        "review public frozen identity refuses changed frozen content even when stored hash references agree"
+      ],
+      "matched": true
+    },
+    {
+      "case": "public-context",
+      "target": "refuses self-hashed malformed frozen context",
+      "exitCode": 1,
+      "failedTests": [
+        "adopted public frozen identity refuses self-hashed malformed frozen context",
+        "adopted public frozen identity refuses self-hashed normalized frozen context",
+        "review public frozen identity refuses self-hashed malformed frozen context",
+        "review public frozen identity refuses self-hashed normalized frozen context"
+      ],
+      "matched": true
+    },
+    {
+      "case": "selected-id",
+      "target": "binds a self-consistent fresh id",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context binds a self-consistent fresh id to the version selected by the workbench"
+      ],
+      "matched": true
+    },
+    {
+      "case": "selected-plan",
+      "target": "refuses a missing or changed selected row",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses a missing or changed selected row {\"plan_id\":\"20000000-0000-4000-8000-000000000003\"}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "selected-workspace",
+      "target": "refuses a missing or changed selected row",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses a missing or changed selected row {\"workspace_id\":\"20000000-0000-4000-8000-000000000003\"}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "selected-number",
+      "target": "binds a self-consistent fresh number",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context binds a self-consistent fresh number to the version selected by the workbench"
+      ],
+      "matched": true
+    },
+    {
+      "case": "selected-state",
+      "target": "binds a self-consistent fresh state",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context binds a self-consistent fresh state to the version selected by the workbench"
+      ],
+      "matched": true
+    },
+    {
+      "case": "allowed-state",
+      "target": "refuses an unrecognized version state",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses an unrecognized version state"
+      ],
+      "matched": true
+    },
+    {
+      "case": "selected-hash",
+      "target": "refuses a different valid snapshot",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses a different valid snapshot returned after selecting the version hash"
+      ],
+      "matched": true
+    },
+    {
+      "case": "missing-row-success",
+      "target": "refuses a missing or changed selected row null",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses a missing or changed selected row null",
+        "frozen workbench rules and context refuses a missing or changed selected row {\"id\":\"20000000-0000-4000-8000-000000000003\"}",
+        "frozen workbench rules and context refuses a missing or changed selected row {\"plan_id\":\"20000000-0000-4000-8000-000000000003\"}",
+        "frozen workbench rules and context refuses a missing or changed selected row {\"workspace_id\":\"20000000-0000-4000-8000-000000000003\"}",
+        "frozen workbench rules and context refuses a missing or changed selected row {\"version_number\":99}",
+        "frozen workbench rules and context refuses a missing or changed selected row {\"state\":\"working\"}",
+        "frozen workbench rules and context refuses a missing or changed selected row {\"content_hash\":null}",
+        "frozen workbench rules and context refuses a missing or changed selected row {\"content_hash\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"}",
+        "frozen workbench rules and context binds a self-consistent fresh id to the version selected by the workbench",
+        "frozen workbench rules and context binds a self-consistent fresh number to the version selected by the workbench",
+        "frozen workbench rules and context binds a self-consistent fresh state to the version selected by the workbench",
+        "frozen workbench rules and context refuses a different valid snapshot returned after selecting the version hash",
+        "frozen workbench rules and context refuses an unrecognized version state"
+      ],
+      "matched": true
+    },
+    {
+      "case": "read-error-is-missing",
+      "target": "distinguishes a frozen read failure",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context distinguishes a frozen read failure from a missing record"
+      ],
+      "matched": true
+    },
+    {
+      "case": "invalid-rules-fallback",
+      "target": "refuses rules corruption",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses rules corruption before loading workbench records",
+        "frozen workbench rules and context refuses kind corruption before loading workbench records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "current-rules-for-frozen",
+      "target": "keeps reviewed wording and dates",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context reads the saved public_review edition independently of current plan identity and installed rules",
+        "frozen workbench rules and context reads the saved adopted edition independently of current plan identity and installed rules",
+        "frozen workbench rules and context reads the saved superseded edition independently of current plan identity and installed rules",
+        "frozen workbench rules and context reads the saved repealed edition independently of current plan identity and installed rules",
+        "frozen workbench rules and context keeps reviewed wording and dates when the same family remains installed"
+      ],
+      "matched": true
+    },
+    {
+      "case": "current-family-for-legacy",
+      "target": "discloses a missing legacy reference",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context discloses a missing legacy reference without substituting the current plan's descriptor"
+      ],
+      "matched": true
+    },
+    {
+      "case": "legacy-custody-promoted",
+      "target": "labels an unretained historical checklist",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context labels an unretained historical checklist and context without backfilling them"
+      ],
+      "matched": true
+    },
+    {
+      "case": "context-omitted",
+      "target": "reads the saved public_review edition",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context reads the saved public_review edition independently of current plan identity and installed rules",
+        "frozen workbench rules and context reads the saved adopted edition independently of current plan identity and installed rules",
+        "frozen workbench rules and context reads the saved superseded edition independently of current plan identity and installed rules",
+        "frozen workbench rules and context reads the saved repealed edition independently of current plan identity and installed rules"
+      ],
+      "matched": true
+    },
+    {
+      "case": "working-is-frozen",
+      "target": "loads the edit counter",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context opens a selected historical version read-only while retaining an editable current draft",
+        "freezing a descriptor with authored content loads the edit counter through both working and detail projections"
+      ],
+      "matched": true
+    },
+    {
+      "case": "query-unscoped",
+      "target": "reads the saved public_review edition",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context reads the saved public_review edition independently of current plan identity and installed rules",
+        "frozen workbench rules and context reads the saved adopted edition independently of current plan identity and installed rules",
+        "frozen workbench rules and context reads the saved superseded edition independently of current plan identity and installed rules",
+        "frozen workbench rules and context reads the saved repealed edition independently of current plan identity and installed rules"
+      ],
+      "matched": true
+    },
+    {
+      "case": "header-current-title",
+      "target": "separates retained reviewed identity",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates retained reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates legacy reviewed identity and context from current request recovery"
+      ],
+      "matched": true
+    },
+    {
+      "case": "context-panel-omitted",
+      "target": "separates retained reviewed identity",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates retained reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates legacy reviewed identity and context from current request recovery"
+      ],
+      "matched": true
+    },
+    {
+      "case": "current-geometry-for-legacy",
+      "target": "separates legacy reviewed identity",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates legacy reviewed identity and context from current request recovery"
+      ],
+      "matched": true
+    },
+    {
+      "case": "reviewed-family-for-current-recovery",
+      "target": "separates retained reviewed identity",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates retained reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates legacy reviewed identity and context from current request recovery"
+      ],
+      "matched": true
+    },
+    {
+      "case": "legacy-label-promoted",
+      "target": "separates legacy reviewed identity",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates legacy reviewed identity and context from current request recovery"
+      ],
+      "matched": true
+    },
+    {
+      "case": "current-context-open",
+      "target": "separates retained reviewed identity",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates retained reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates legacy reviewed identity and context from current request recovery"
+      ],
+      "matched": true
+    },
+    {
+      "case": "source-links-replaced",
+      "target": "separates staff_assessed reviewed identity",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery"
+      ],
+      "matched": true
+    },
+    {
+      "case": "staff-assessment-unresolved",
+      "target": "separates staff_assessed reviewed identity",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery"
+      ],
+      "matched": true
+    },
+    {
+      "case": "all-bodies-assessed",
+      "target": "separates staff_assessed reviewed identity",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery"
+      ],
+      "matched": true
+    },
+    {
+      "case": "ignore-selected-version",
+      "target": "opens a selected historical version",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context opens a selected historical version read-only while retaining an editable current draft",
+        "frozen workbench rules and context refuses an unavailable version without falling back to the current plan"
+      ],
+      "matched": true
+    },
+    {
+      "case": "unknown-falls-back",
+      "target": "refuses an unavailable version",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses an unavailable version without falling back to the current plan"
+      ],
+      "matched": true
+    },
+    {
+      "case": "query-allows-duplicates",
+      "target": "refuses an invalid or repeated version query",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses an invalid or repeated version query 20000000-0000-4000-8000-000000000002&versionId=20000000-0000-4000-8000-000000000002 before reading records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "query-allows-invalid",
+      "target": "refuses an invalid or repeated version query",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context refuses an invalid or repeated version query  before reading records",
+        "frozen workbench rules and context refuses an invalid or repeated version query invalid before reading records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "history-can-write",
+      "target": "opens a selected historical version",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context opens a selected historical version read-only while retaining an editable current draft"
+      ],
+      "matched": true
+    },
+    {
+      "case": "reader-can-write",
+      "target": "does not grant write access",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context does not grant write access when the current version is selected by a reader"
+      ],
+      "matched": true
+    },
+    {
+      "case": "history-flag-hidden",
+      "target": "opens a selected historical version",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context opens a selected historical version read-only while retaining an editable current draft"
+      ],
+      "matched": true
+    },
+    {
+      "case": "unscoped-version-list",
+      "target": "refuses an unavailable version",
+      "exitCode": 1,
+      "failedTests": [
+        "frozen workbench rules and context opens a selected historical version read-only while retaining an editable current draft",
+        "frozen workbench rules and context refuses an unavailable version without falling back to the current plan"
+      ],
+      "matched": true
+    },
+    {
+      "case": "client-omits-version",
+      "target": "passes the exact selected version",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates retained reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates legacy reviewed identity and context from current request recovery",
+        "plan version page navigation passes the exact selected version to the workbench request: 22222222-2222-4222-8222-222222222222",
+        "plan version page navigation passes the exact selected version to the workbench request: ",
+        "plan version page navigation passes the exact selected version to the workbench request: bad&versionId=another"
+      ],
+      "matched": true
+    },
+    {
+      "case": "client-empty-version-default",
+      "target": "passes the exact selected version",
+      "exitCode": 1,
+      "failedTests": [
+        "plan version page navigation passes the exact selected version to the workbench request: "
+      ],
+      "matched": true
+    },
+    {
+      "case": "client-unescaped-version",
+      "target": "passes the exact selected version",
+      "exitCode": 1,
+      "failedTests": [
+        "plan version page navigation passes the exact selected version to the workbench request: bad&versionId=another"
+      ],
+      "matched": true
+    },
+    {
+      "case": "page-drops-version",
+      "target": "passes the exact selected version",
+      "exitCode": 1,
+      "failedTests": [
+        "plan version page navigation passes the exact selected version to the workbench request: 22222222-2222-4222-8222-222222222222",
+        "plan version page navigation passes the exact selected version to the workbench request: ",
+        "plan version page navigation passes the exact selected version to the workbench request: bad&versionId=another"
+      ],
+      "matched": true
+    },
+    {
+      "case": "page-allows-multiple",
+      "target": "refuses multiple version selections",
+      "exitCode": 1,
+      "failedTests": [
+        "plan version page navigation refuses multiple version selections before mounting a workbench"
+      ],
+      "matched": true
+    },
+    {
+      "case": "history-same-tab",
+      "target": "keeps unsaved draft text in place",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates retained reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates legacy reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing keeps unsaved draft text in place when history opens in another tab"
+      ],
+      "matched": true
+    },
+    {
+      "case": "history-wrong-version-link",
+      "target": "keeps unsaved draft text in place",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates retained reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates legacy reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing keeps unsaved draft text in place when history opens in another tab"
+      ],
+      "matched": true
+    },
+    {
+      "case": "history-current-link-wrong",
+      "target": "separates retained reviewed identity",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates retained reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates legacy reviewed identity and context from current request recovery"
+      ],
+      "matched": true
+    },
+    {
+      "case": "history-readonly-label-hidden",
+      "target": "separates retained reviewed identity",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates retained reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates legacy reviewed identity and context from current request recovery"
+      ],
+      "matched": true
+    },
+    {
+      "case": "history-active-label-missing",
+      "target": "separates retained reviewed identity",
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing separates retained reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates staff_assessed reviewed identity and context from current request recovery",
+        "LandUsePlanWorkbench content editing separates legacy reviewed identity and context from current request recovery"
+      ],
+      "matched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/app/(app)/land-use-plans/[planId]/page.tsx": "49b48ac13fcaa2f2a29eb8882398108e0ae28a27c7c21a53729229bbb38b8662",
+    "src/lib/land-use-plans/frozen-identity.ts": "83d0aa7090b841fb69e38e6d4f6bd4f69b35d97404ebf4079785836e9ab2baa6",
+    "src/app/api/land-use-plans/[planId]/route.ts": "884347f40cc9f31dff17e5d340315fced34f211eb2f42310cdb382aa07bb4281",
+    "src/lib/land-use-plans/public.ts": "726010a8267b40e171b7a0b814cee3a9349f65b2c194afa57ebaa7b310cf9f17",
+    "src/components/land-use-plans/land-use-plan-workbench.tsx": "62082625c75037b0f8cf60b189dfa3137c3c295481a1d1827deb4778dedcdfe2",
+    "src/components/land-use-plans/land-use-plan-retained-context.tsx": "c0b1b5f5ad274c0ae9ed70c5b99efa6dc79af87182bef46d57808f667e11e185"
+  },
+  "boundary": "Shared identity validation, real private/public readers with projected mock queries, and mounted workbench/context DOM. No native permission/concurrency, actual rendered browser or professional/legal acceptance."
+}

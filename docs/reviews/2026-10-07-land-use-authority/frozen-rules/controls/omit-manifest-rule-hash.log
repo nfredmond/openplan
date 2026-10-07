@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts (11 tests | 1 failed) 32ms
+     × retains the reviewed rules and their hash in the exact adoption manifest 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-frozen-rules-integration.test.ts > adoption of the reviewed descriptor > retains the reviewed rules and their hash in the exact adoption manifest
+AssertionError: expected undefined to be '19ec738f9e267237b8236075b15750d64e81b…' // Object.is equality
+
+- Expected:
+"19ec738f9e267237b8236075b15750d64e81b41e82eac433f49ba6d97ae5ff16"
+
++ Received:
+undefined
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts:101:58
+     99|     const payload = state.rpc.mock.calls[0][1];
+    100|     expect(payload.p_adoption_manifest.descriptorSnapshot).toEqual(sna…
+    101|     expect(payload.p_adoption_manifest.descriptorSha256).toBe(hashFroz…
+       |                                                          ^
+    102|     expect(payload.p_adoption_manifest.descriptorCustody).toBe("frozen…
+    103|     const query = state.queries.find(q => q.table === "land_use_plan_v…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 52 passed (53)
+   Start at  02:39:50
+   Duration  2.39s (transform 125ms, setup 152ms, import 322ms, tests 233ms, environment 1.33s)
+

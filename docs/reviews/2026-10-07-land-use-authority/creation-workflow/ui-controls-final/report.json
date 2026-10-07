@@ -1,0 +1,198 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "target": null,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "target": null,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "origin",
+      "exitCode": 1,
+      "target": "refuses another origin",
+      "failedTests": [
+        "plan-owned creation route refuses another origin {\"origin\":\"http://elsewhere.test\"}",
+        "plan-owned creation route refuses another origin {\"sec-fetch-site\":\"cross-site\"}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "expected-actor",
+      "exitCode": 1,
+      "target": "refuses changed scope x-openplan-expected-user",
+      "failedTests": [
+        "plan-owned creation route refuses changed scope x-openplan-expected-user"
+      ],
+      "matched": true
+    },
+    {
+      "case": "expected-workspace",
+      "exitCode": 1,
+      "target": "refuses changed scope x-openplan-expected-workspace",
+      "failedTests": [
+        "plan-owned creation route refuses changed scope x-openplan-expected-workspace"
+      ],
+      "matched": true
+    },
+    {
+      "case": "viewer",
+      "exitCode": 1,
+      "target": "refuses absent or read-only membership",
+      "failedTests": [
+        "plan-owned creation route refuses absent or read-only membership {\"workspace_id\":\"00000000-0000-4000-8000-000000000002\",\"role\":\"viewer\"}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "auth-failure",
+      "exitCode": 1,
+      "target": "distinguishes missing authentication",
+      "failedTests": [
+        "plan-owned creation route distinguishes missing authentication, failed authentication and unavailable membership"
+      ],
+      "matched": true
+    },
+    {
+      "case": "normalization",
+      "exitCode": 1,
+      "target": "rejects malformed",
+      "failedTests": [
+        "plan-owned creation route rejects malformed, unnormalized, client-attributed and old creation payloads before service access"
+      ],
+      "matched": true
+    },
+    {
+      "case": "body-bound",
+      "exitCode": 1,
+      "target": "rejects malformed",
+      "failedTests": [
+        "plan-owned creation route rejects malformed, unnormalized, client-attributed and old creation payloads before service access"
+      ],
+      "matched": true
+    },
+    {
+      "case": "status",
+      "exitCode": 1,
+      "target": "replays the original receipt",
+      "failedTests": [
+        "plan-owned creation route replays the original receipt without boundary lookup or reinstalling old rules"
+      ],
+      "matched": true
+    },
+    {
+      "case": "no-store",
+      "exitCode": 1,
+      "target": "uses exact bytes",
+      "failedTests": [
+        "plan-owned creation route uses exact bytes and authenticated scope for one atomic command without workspace-home reads",
+        "plan-owned creation route preserves native PT400 as 400 without exposing diagnostics",
+        "plan-owned creation route preserves native PT409 as 409 without exposing diagnostics",
+        "plan-owned creation route preserves native 42501 as 403 without exposing diagnostics",
+        "plan-owned creation route preserves native XX000 as 503 without exposing diagnostics"
+      ],
+      "matched": true
+    },
+    {
+      "case": "draft-collision",
+      "exitCode": 1,
+      "target": "keeps incomplete drafts",
+      "failedTests": [
+        "creation request recovery keeps incomplete drafts separate from executable commands and preserves exact earlier bytes"
+      ],
+      "matched": true
+    },
+    {
+      "case": "draft-lost-write",
+      "exitCode": 1,
+      "target": "refuses unavailable",
+      "failedTests": [
+        "creation request recovery refuses unavailable or silently lost storage writes before transport"
+      ],
+      "matched": true
+    },
+    {
+      "case": "request-collision",
+      "exitCode": 1,
+      "target": "imports pretty-printed",
+      "failedTests": [
+        "creation request recovery imports pretty-printed copies without changing the inner command and refuses a substituted draft"
+      ],
+      "matched": true
+    },
+    {
+      "case": "request-lost-write",
+      "exitCode": 1,
+      "target": "refuses unavailable",
+      "failedTests": [
+        "creation request recovery refuses unavailable or silently lost storage writes before transport"
+      ],
+      "matched": true
+    },
+    {
+      "case": "draft-consistency",
+      "exitCode": 1,
+      "target": "imports pretty-printed",
+      "failedTests": [
+        "creation request recovery imports pretty-printed copies without changing the inner command and refuses a substituted draft"
+      ],
+      "matched": true
+    },
+    {
+      "case": "outer-scope",
+      "exitCode": 1,
+      "target": "rejects imported outer",
+      "failedTests": [
+        "creation request recovery rejects imported outer or draft actorId substitutions",
+        "creation request recovery rejects imported outer or draft workspaceId substitutions"
+      ],
+      "matched": true
+    },
+    {
+      "case": "draft-scope",
+      "exitCode": 1,
+      "target": "rejects imported outer",
+      "failedTests": [
+        "creation request recovery rejects imported outer or draft actorId substitutions",
+        "creation request recovery rejects imported outer or draft workspaceId substitutions"
+      ],
+      "matched": true
+    },
+    {
+      "case": "key-match",
+      "exitCode": 1,
+      "target": "preserves unknown copies",
+      "failedTests": [
+        "creation request recovery preserves unknown copies, rejects mismatched keys, and never reads another scope"
+      ],
+      "matched": true
+    },
+    {
+      "case": "retained-before-send",
+      "exitCode": 1,
+      "target": "refuses changed or missing",
+      "failedTests": [
+        "creation request recovery preserves a lost reply for an explicit byte-identical replay and retains the confirmed receipt",
+        "creation request recovery refuses changed or missing retained bytes before transport"
+      ],
+      "matched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/app/api/land-use-plans/route.ts": "6f1bf5935415f30a5b0c3ac9ff273ee8b990588fe9c7dc4f1bdebbb07dc889ad",
+    "src/lib/land-use-plans/create-recovery.ts": "c98ecb1850748354f43b9dc608806c18fe03d3aac1559ebfa07f2b0916cb4a56",
+    "src/components/land-use-plans/land-use-plan-creator.tsx": "836963993e5c035a1b007a4ca730f852d0334483f62f5f9cb7674fbc27e8d6d2",
+    "src/app/(app)/land-use-plans/page.tsx": "77a011d02f46e995ef26a1c73ff992039fb27fc291aac53cc4ca486f2773eae9",
+    "src/lib/land-use-plans/create-stop.ts": "c6b8722c75e12d12b9c9f323a7e286906df7af991d4155c6dbbebac08483ccfe",
+    "src/app/api/land-use-plans/creation-requests/[commandId]/stop/route.ts": "02fe7cdafd69361df6a6514263fcc02f084d20107fecee0dd24f312bb51bacc7"
+  },
+  "boundary": "Synthetic HTTP mocks, local browser-storage simulation, mounted DOM and static guards. No native HTTP or rendered acceptance."
+}

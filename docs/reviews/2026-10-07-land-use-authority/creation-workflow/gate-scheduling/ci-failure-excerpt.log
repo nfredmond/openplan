@@ -1,0 +1,31 @@
+2026-10-07T14:29:15.6258969Z [31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+2026-10-07T14:29:15.6259431Z 
+2026-10-07T14:29:15.6262968Z [41m[1m FAIL [22m[49m src/test/land-use-plan-context-editor.test.tsx[2m > [22mplan context editor[2m > [22mretains an edited draft and command before transport, then refreshes before enabling freeze
+2026-10-07T14:29:15.6269607Z [31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+2026-10-07T14:29:15.6270187Z 
+2026-10-07T14:29:15.6270580Z [32m- Expected[39m
+2026-10-07T14:29:15.6270983Z [31m+ Received[39m
+2026-10-07T14:29:15.6271178Z 
+2026-10-07T14:29:15.6271440Z [32m- false[39m
+2026-10-07T14:29:15.6271831Z [31m+ true[39m
+2026-10-07T14:29:15.6272090Z 
+2026-10-07T14:29:15.6272934Z [36m [2m❯[22m src/test/land-use-plan-context-editor.test.tsx:[2m54:84[22m[39m
+2026-10-07T14:29:15.6382484Z     [90m 52|[39m       posts[33m.[39m[34mpush[39m([33mString[39m(init[33m.[39mbody))[33m;[39m[35mreturn[39m [34mresponse[39m([33mString[39m(init[33m.[39mbody))[33m;[39m
+2026-10-07T14:29:15.6384425Z     [90m 53|[39m     })[33m;[39m
+2026-10-07T14:29:15.6385347Z     [90m 54|[39m     render(<LandUsePlanContextEditor {...props}/>);await ready();expec…
+2026-10-07T14:29:15.6386450Z     [90m   |[39m                                                                                    [31m^[39m
+2026-10-07T14:29:15.6386908Z 
+2026-10-07T14:29:15.6387515Z     [90m 55|[39m     edit();expect(blocked()).toBe(true);expect(readPlanContextRecovery…
+2026-10-07T14:29:15.6388709Z     [90m 56|[39m     fireEvent.click(saveButton());await waitFor(()=>expect(props.onRef…
+2026-10-07T14:29:15.6389298Z 
+2026-10-07T14:29:15.6399249Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+2026-10-07T14:29:15.6399888Z 
+2026-10-07T14:29:15.6462969Z [2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1457 passed[39m[22m[2m | [22m[33m90 skipped[39m[90m (1548)[39m
+2026-10-07T14:29:15.6596404Z [2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m18643 passed[39m[22m[2m | [22m[33m1534 skipped[39m[90m (20178)[39m
+2026-10-07T14:29:15.6597112Z [2m   Start at [22m 14:09:36
+2026-10-07T14:29:15.6613244Z [2m   Duration [22m 1179.33s[2m (transform 49.27s, setup 88.51s, import 329.51s, tests 1822.61s, environment 993.96s)[22m
+2026-10-07T14:29:15.6614658Z 
+2026-10-07T14:29:15.8791175Z 
+2026-10-07T14:29:15.8792177Z The suite failed in shuffled order with seed 175639.
+2026-10-07T14:29:15.8792945Z This is an order-dependence defect, not a flake: replay it with
+2026-10-07T14:29:15.8793701Z     node scripts/ops/test-shuffled.mjs 175639

@@ -1,0 +1,16 @@
+{
+  "unit": "openplan-plan-context-c29d-prod-20261007.service",
+  "mainPid": 580280,
+  "server": {
+    "pid": 580301,
+    "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan"
+  },
+  "port": 3494,
+  "deployment": {
+    "commit": "c29d064045b3",
+    "version": "0.67.0"
+  },
+  "commit": "c29d064045b3f511448cbd41f7e8b0a0fca6611c",
+  "stoppedAt": "2026-10-07T11:46:03.936979+00:00",
+  "finalUnitState": "ActiveState=inactive\nMainPID=0"
+}

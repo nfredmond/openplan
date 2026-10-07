@@ -1,0 +1,306 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007
+
+ ❯ openplan/src/test/land-use-plan-context-editor.test.tsx (0 test)
+ ❯ openplan/src/test/land-use-plan-frozen-rules-integration.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-context-recovery.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-creation-recovery.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-content-workbench.test.tsx (0 test)
+ ❯ openplan/src/test/land-use-plan-context-route.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-freeze-route.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-draft-custody.test.tsx (0 test)
+ ❯ openplan/src/test/land-use-plan-create-jurisdiction.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-context-draft.test.tsx (0 test)
+ ❯ openplan/src/test/land-use-plan-creation.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-public-identity.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-creator-recovery.test.tsx (0 test)
+ ❯ openplan/src/test/land-use-plan-review-reporting.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-context.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-freeze-recovery.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-freeze-control.test.tsx (0 test)
+ ❯ openplan/src/test/land-use-plan-kind-rules.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-registry.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-source-review.test.tsx (0 test)
+ ❯ openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx (0 test)
+ ❯ openplan/src/test/land-use-plan-descriptor-snapshot.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-versioning.test.ts (0 test)
+ ❯ openplan/src/test/land-use-plan-version-navigation.test.tsx (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 24 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  openplan/src/test/land-use-plan-content-workbench.test.tsx [ openplan/src/test/land-use-plan-content-workbench.test.tsx ]
+Error: Cannot find package '@/lib/land-use-plans/plan-context-recovery' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-content-workbench.test.tsx
+ ❯ openplan/src/test/land-use-plan-content-workbench.test.tsx:4:1
+      2| import { beforeEach, describe, expect, it, vi } from "vitest";
+      3|
+      4| import { readPlanContextRecovery } from "@/lib/land-use-plans/plan-con…
+       | ^
+      5| import { LandUsePlanWorkbench } from "@/components/land-use-plans/land…
+      6| import { syntheticPlanContext } from "./fixtures/land-use-plans/plan-c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-context-draft.test.tsx [ openplan/src/test/land-use-plan-context-draft.test.tsx ]
+Error: Cannot find package '@/components/land-use-plans/plan-authority-fields' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-context-draft.test.tsx
+ ❯ openplan/src/test/land-use-plan-context-draft.test.tsx:4:1
+      2| import { cleanup, fireEvent, render, screen, within, waitFor, act } fr…
+      3| import { afterEach, describe, expect, it, vi } from "vitest";
+      4| import { PlanAuthorityFields } from "@/components/land-use-plans/plan-…
+       | ^
+      5| import { PlanStudyAreaFields } from "@/components/land-use-plans/plan-…
+      6| import { assessmentFromDraft, contextCommandFromDraft, planContextDraf…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-context-editor.test.tsx [ openplan/src/test/land-use-plan-context-editor.test.tsx ]
+Error: Cannot find package '@/lib/geographies/study-area-capture' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-context-editor.test.tsx
+ ❯ openplan/src/test/land-use-plan-context-editor.test.tsx:3:1
+      1| import { act, cleanup, fireEvent, render, screen, waitFor, within } fr…
+      2| import { afterEach, beforeEach, describe, expect, it, vi } from "vites…
+      3| import { placeOfRecordFromCapturedArea } from "@/lib/geographies/study…
+       | ^
+      4| import { planContextSaveSchema } from "@/lib/land-use-plans/plan-conte…
+      5| import { LandUsePlanContextEditor } from "@/components/land-use-plans/…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-context-recovery.test.ts [ openplan/src/test/land-use-plan-context-recovery.test.ts ]
+Error: Cannot find package '@/lib/geographies/study-area-capture' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-context-recovery.test.ts
+ ❯ openplan/src/test/land-use-plan-context-recovery.test.ts:2:1
+      1| import { beforeEach, describe, expect, it, vi } from "vitest";
+      2| import { placeOfRecordFromCapturedArea } from "@/lib/geographies/study…
+       | ^
+      3| import { planContextDraft, contextCommandFromDraft } from "@/lib/land-…
+      4| import { serializePlanContextSave, type PlanContextSaveResult } from "…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-context-route.test.ts [ openplan/src/test/land-use-plan-context-route.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/plan-context-command' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-context-route.test.ts
+ ❯ openplan/src/test/land-use-plan-context-route.test.ts:3:1
+      1| import { beforeEach, describe, expect, it, vi } from "vitest";
+      2| import { NextRequest, NextResponse } from "next/server";
+      3| import { serializePlanContextSave } from "@/lib/land-use-plans/plan-co…
+       | ^
+      4| import { placeOfRecordFromCapturedArea } from "@/lib/geographies/study…
+      5|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-context.test.ts [ openplan/src/test/land-use-plan-context.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/plan-context' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-context.test.ts
+ ❯ openplan/src/test/land-use-plan-context.test.ts:2:1
+      1| import { beforeEach, describe, expect, it, vi } from "vitest";
+      2| import { planAuthorityAssessmentSchema, planApplicabilityBlocker, read…
+       | ^
+      3| import { studyAreaCaptureSchema, placeOfRecordFromCapturedArea } from …
+      4| import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/re…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-create-jurisdiction.test.ts [ openplan/src/test/land-use-plan-create-jurisdiction.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/registry' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/fixtures/land-use-plans/creation.ts
+ ❯ openplan/src/test/fixtures/land-use-plans/creation.ts:1:1
+      1| import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
+       | ^
+      2| import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
+      3| import { planContextDraft } from "@/lib/land-use-plans/plan-context-dr…
+ ❯ openplan/src/test/land-use-plan-create-jurisdiction.test.ts:3:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-creation-recovery.test.ts [ openplan/src/test/land-use-plan-creation-recovery.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/create-recovery' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-creation-recovery.test.ts
+ ❯ openplan/src/test/land-use-plan-creation-recovery.test.ts:2:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-creation.test.ts [ openplan/src/test/land-use-plan-creation.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/create-store' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-creation.test.ts
+ ❯ openplan/src/test/land-use-plan-creation.test.ts:2:1
+      1| import { beforeEach, describe, expect, it, vi } from "vitest";
+      2| import { createPlanWithContext } from "@/lib/land-use-plans/create-sto…
+       | ^
+      3| import { matchesPlanCreation, planCreationCommandSchema, serializePlan…
+      4| import { savedPlanContextSchema } from "@/lib/land-use-plans/plan-cont…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-creator-recovery.test.tsx [ openplan/src/test/land-use-plan-creator-recovery.test.tsx ]
+Error: Cannot find package '@/components/land-use-plans/land-use-plan-creator' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-creator-recovery.test.tsx
+ ❯ openplan/src/test/land-use-plan-creator-recovery.test.tsx:3:1
+      1| import { act, fireEvent, render, screen, waitFor } from "@testing-libr…
+      2| import { afterEach, beforeEach, describe, expect, it, vi } from "vites…
+      3| import { LandUsePlanCreator } from "@/components/land-use-plans/land-u…
+       | ^
+      4| import { readCreationRecords, saveCreationDraft } from "@/lib/land-use…
+      5| import { SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS, getPlanKindDescript…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-descriptor-snapshot.test.ts [ openplan/src/test/land-use-plan-descriptor-snapshot.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/descriptor-snapshot' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-descriptor-snapshot.test.ts
+ ❯ openplan/src/test/land-use-plan-descriptor-snapshot.test.ts:2:1
+      1| import { describe, expect, it } from "vitest";
+      2| import { snapshotPlanDescriptor, readFrozenPlanDescriptor, describeDes…
+       | ^
+      3| import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/re…
+      4| import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-draft-custody.test.tsx [ openplan/src/test/land-use-plan-draft-custody.test.tsx ]
+Error: Cannot find package '@/components/land-use-plans/land-use-plan-workbench' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-draft-custody.test.tsx
+ ❯ openplan/src/test/land-use-plan-draft-custody.test.tsx:3:1
+      1| import { act, cleanup, fireEvent, render, screen, waitFor, within } fr…
+      2| import { afterEach, describe, expect, it, vi } from 'vitest';
+      3| import { LandUsePlanWorkbench } from '@/components/land-use-plans/land…
+       | ^
+      4|
+      5| const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx [ openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx ]
+Error: Cannot find package '@/lib/land-use-plans/registry' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/fixtures/land-use-plans/creation.ts
+ ❯ openplan/src/test/fixtures/land-use-plans/creation.ts:1:1
+      1| import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
+       | ^
+      2| import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
+      3| import { planContextDraft } from "@/lib/land-use-plans/plan-context-dr…
+ ❯ openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx:4:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-freeze-control.test.tsx [ openplan/src/test/land-use-plan-freeze-control.test.tsx ]
+Error: Cannot find package '@/components/land-use-plans/land-use-plan-freeze-control' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-freeze-control.test.tsx
+ ❯ openplan/src/test/land-use-plan-freeze-control.test.tsx:3:1
+      1| import { act, cleanup, fireEvent, render, screen, waitFor } from "@tes…
+      2| import { afterEach, beforeEach, describe, expect, it, vi } from "vites…
+      3| import { LandUsePlanFreezeControl } from "@/components/land-use-plans/…
+       | ^
+      4| import { readPlanFreezeRecovery, retainPlanFreeze } from "@/lib/land-u…
+      5| const id = (n: number) => `10000000-0000-4000-8000-${String(n).padStar…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-freeze-recovery.test.ts [ openplan/src/test/land-use-plan-freeze-recovery.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/freeze-recovery' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-freeze-recovery.test.ts
+ ❯ openplan/src/test/land-use-plan-freeze-recovery.test.ts:2:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-freeze-route.test.ts [ openplan/src/test/land-use-plan-freeze-route.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/versioning' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-freeze-route.test.ts
+ ❯ openplan/src/test/land-use-plan-freeze-route.test.ts:3:1
+      1| import { beforeEach, describe, expect, it, vi } from "vitest";
+      2| import { NextRequest, NextResponse } from "next/server";
+      3| import { hashFrozenRecord, serializeFrozenPlanContent, serializeFrozen…
+       | ^
+      4| import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
+      5| const mocks = vi.hoisted(() => ({ access: vi.fn(), working: vi.fn(), s…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-frozen-rules-integration.test.ts [ openplan/src/test/land-use-plan-frozen-rules-integration.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/versioning' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts
+ ❯ openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:3:1
+      1| import { beforeEach, describe, expect, it, vi } from "vitest";
+      2| import { NextRequest } from "next/server";
+      3| import { hashFrozenRecord, type FrozenPlanContent } from "@/lib/land-u…
+       | ^
+      4| import { getJurisdictionPlanDescriptor, getPlanKindDescriptor } from "…
+      5| import { syntheticPlanContext } from "./fixtures/land-use-plans/plan-c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-kind-rules.test.ts [ openplan/src/test/land-use-plan-kind-rules.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/registry' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-kind-rules.test.ts
+ ❯ openplan/src/test/land-use-plan-kind-rules.test.ts:2:1
+      1| import { describe, expect, it } from "vitest";
+      2| import { getJurisdictionPlanDescriptor, getPlanKindDescriptor, default…
+       | ^
+      3| import { planDescriptorSelectionKey, selectPlanKindRules } from "@/lib…
+      4| import { snapshotPlanDescriptor, readFrozenPlanDescriptor } from "@/li…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-public-identity.test.ts [ openplan/src/test/land-use-plan-public-identity.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/versioning' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-public-identity.test.ts
+ ❯ openplan/src/test/land-use-plan-public-identity.test.ts:2:1
+      1| import { beforeEach, describe, expect, it, vi } from "vitest";
+      2| import { hashFrozenRecord, type FrozenPlanContent } from "@/lib/land-u…
+       | ^
+      3| import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/re…
+      4| import { syntheticPlanContext } from "./fixtures/land-use-plans/plan-c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-registry.test.ts [ openplan/src/test/land-use-plan-registry.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/registry' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-registry.test.ts
+ ❯ openplan/src/test/land-use-plan-registry.test.ts:5:1
+      3| import { describe, expect, it } from "vitest";
+      4|
+      5| import {
+       | ^
+      6|   defaultApplicableRequirementKeys,
+      7|   descriptorIsOverdue,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-review-reporting.test.ts [ openplan/src/test/land-use-plan-review-reporting.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/public-map' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-review-reporting.test.ts
+ ❯ openplan/src/test/land-use-plan-review-reporting.test.ts:6:1
+      4|
+      5| import type { JurisdictionPlanDescriptor } from "@/lib/land-use-plans/…
+      6| import { pickPublicAttributes, publicMapIsTooDense } from "@/lib/land-…
+       | ^
+      7| import {
+      8|   buildAdoptionBlockers,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-source-review.test.tsx [ openplan/src/test/land-use-plan-source-review.test.tsx ]
+Error: Cannot find package '@/app/(published)/published-plans/[planId]/page' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-source-review.test.tsx
+ ❯ openplan/src/test/land-use-plan-source-review.test.tsx:3:1
+      1| import { render, screen } from "@testing-library/react";
+      2| import { describe, expect, it, vi } from "vitest";
+      3| import PublishedLandUsePlanPage from "@/app/(published)/published-plan…
+       | ^
+      4| import PublicLandUsePlanReviewPage from "@/app/(published)/review/land…
+      5| import { loadPublishedLandUsePlanPacket, loadPublicLandUsePlanReviewPa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-version-navigation.test.tsx [ openplan/src/test/land-use-plan-version-navigation.test.tsx ]
+Error: Cannot find package '@/app/(app)/land-use-plans/[planId]/page' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-version-navigation.test.tsx
+ ❯ openplan/src/test/land-use-plan-version-navigation.test.tsx:3:1
+      1| import { render, screen, waitFor } from "@testing-library/react";
+      2| import { beforeEach, describe, expect, it, vi } from "vitest";
+      3| import Page from "@/app/(app)/land-use-plans/[planId]/page";
+       | ^
+      4|
+      5| vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/24]⎯
+
+ FAIL  openplan/src/test/land-use-plan-versioning.test.ts [ openplan/src/test/land-use-plan-versioning.test.ts ]
+Error: Cannot find package '@/lib/land-use-plans/versioning' imported from /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-versioning.test.ts
+ ❯ openplan/src/test/land-use-plan-versioning.test.ts:3:1
+      1| import { describe, expect, it } from "vitest";
+      2|
+      3| import { adoptionHashMatches, hashFrozenPlanContent, type FrozenPlanCo…
+       | ^
+      4|
+      5| function fixture(): FrozenPlanContent {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/24]⎯
+
+
+ Test Files  24 failed | 1 passed | 5 skipped (30)
+      Tests  13 passed | 5 skipped (18)
+   Start at  08:22:55
+   Duration  3.85s (transform 304ms, setup 0ms, import 178ms, tests 7ms, environment 2ms)
+

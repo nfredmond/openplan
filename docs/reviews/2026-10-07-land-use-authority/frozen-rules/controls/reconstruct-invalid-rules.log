@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts (11 tests | 1 failed) 32ms
+     × refuses a malformed saved checklist instead of reconstructing it for adoption 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-frozen-rules-integration.test.ts > adoption of the reviewed descriptor > refuses a malformed saved checklist instead of reconstructing it for adoption
+AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts:137:29
+    135|     snapshot.descriptorSnapshot!.id = "another-descriptor"; rehash();
+    136|     const response = await adopt();
+    137|     expect(response.status).toBe(409);
+       |                             ^
+    138|     expect((await response.json()).error).toContain("saved checklist i…
+    139|     expect(state.rpc).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 52 passed (53)
+   Start at  02:40:04
+   Duration  2.41s (transform 133ms, setup 151ms, import 329ms, tests 232ms, environment 1.29s)
+

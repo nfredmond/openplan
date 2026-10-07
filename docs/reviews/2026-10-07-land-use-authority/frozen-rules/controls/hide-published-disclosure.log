@@ -1,0 +1,275 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-source-review.test.tsx (5 tests | 2 failed) 159ms
+     × withholds review dates when the descriptor has no sources 25ms
+     × identifies an unsaved legacy descriptor as a current registry reference 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > withholds review dates when the descriptor has no sources
+TestingLibraryElementError: Unable to find an element with the text: /checklist, terminology and source-review dates were saved with this version/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"mx-auto max-w-3xl px-5 py-12 print:max-w-none"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-8"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wider text-muted-foreground"[39m
+        [36m>[39m
+          [0mPublished [0m
+          [0mplan[0m
+          [0m · frozen version [0m
+          [0m1[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-3 text-4xl font-semibold tracking-tight"[39m
+        [36m>[39m
+          [0mTest published plan[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg text-muted-foreground"[39m
+        [36m>[39m
+          [0mTest authority[0m
+          [0m · [0m
+          [0mTest area[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs"[39m
+        [36m>[39m
+          [0mContent hash: [0m
+          [0mtest-hash[0m
+        [36m</p>[39m
+        [36m<a[39m
+          [33mclass[39m=[32m"mt-4 inline-block text-sm font-medium underline"[39m
+          [33mhref[39m=[32m"/api/public/land-use-plans/test-plan"[39m
+        [36m>[39m
+          [0mDownload the frozen plan data[0m
+        [36m</a>[39m
+      [36m</header>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 rounded-lg border p-5"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mAdoption decision[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 leading-relaxed"[39m
+        [36m>[39m
+          [0mTest body[0m
+          [0m adopted this exact frozen version by [0m
+          [0mtest[0m
+          [0m [0m
+          [0mtest[0m
+          [0m on [0m
+          [0m2026-08-01[0m
+          [0m.[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 space-y-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mPlan content[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mMapped designations[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mImplementation program[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mb-3 text-sm"[39m
+        [36m/>[39m
+        [36m<p>[39m
+          [0mTest coverage disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mTest privacy disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mNo legal sources are configured; source review is not established.[0m
+        [36m</p>[39m
+      [36m</aside>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-source-review.test.tsx:35:19
+     33|     expect(screen.queryByText(/Sources reviewed/)).not.toBeInTheDocume…
+     34|     expect(screen.getByText(/source review is not established/i)).toBe…
+     35|     expect(screen.getByText(/checklist, terminology and source-review …
+       |                   ^
+     36|   });
+     37|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > identifies an unsaved legacy descriptor as a current registry reference
+TestingLibraryElementError: Unable to find an element with the text: /may differ from what reviewers saw/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"mx-auto max-w-3xl px-5 py-12 print:max-w-none"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-8"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wider text-muted-foreground"[39m
+        [36m>[39m
+          [0mPublished [0m
+          [0mplan[0m
+          [0m · frozen version [0m
+          [0m1[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-3 text-4xl font-semibold tracking-tight"[39m
+        [36m>[39m
+          [0mTest published plan[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg text-muted-foreground"[39m
+        [36m>[39m
+          [0mTest authority[0m
+          [0m · [0m
+          [0mTest area[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs"[39m
+        [36m>[39m
+          [0mContent hash: [0m
+          [0mtest-hash[0m
+        [36m</p>[39m
+        [36m<a[39m
+          [33mclass[39m=[32m"mt-4 inline-block text-sm font-medium underline"[39m
+          [33mhref[39m=[32m"/api/public/land-use-plans/test-plan"[39m
+        [36m>[39m
+          [0mDownload the frozen plan data[0m
+        [36m</a>[39m
+      [36m</header>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 rounded-lg border p-5"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mAdoption decision[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 leading-relaxed"[39m
+        [36m>[39m
+          [0mTest body[0m
+          [0m adopted this exact frozen version by [0m
+          [0mtest[0m
+          [0m [0m
+          [0mtest[0m
+          [0m on [0m
+          [0m2026-08-01[0m
+          [0m.[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 space-y-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mPlan content[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mMapped designations[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mImplementation program[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mb-3 text-sm"[39m
+        [36m/>[39m
+        [36m<p>[39m
+          [0mTest coverage disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mTest privacy disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mSources reviewed 2026-08-23; review due 2027-01-15.[0m
+        [36m</p>[39m
+      [36m</aside>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-source-review.test.tsx:43:19
+     41|     vi.mocked(loadPublishedLandUsePlanPacket).mockResolvedValue({ ok: …
+     42|     render(await PublishedLandUsePlanPage({ params: Promise.resolve({ …
+     43|     expect(screen.getByText(/may differ from what reviewers saw/i)).to…
+       |                   ^
+     44|     expect(screen.queryByText(/checklist, terminology and source-revie…
+     45|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  2 failed | 51 passed (53)
+   Start at  02:39:58
+   Duration  2.46s (transform 130ms, setup 157ms, import 333ms, tests 223ms, environment 1.33s)
+

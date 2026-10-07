@@ -1,0 +1,187 @@
+{
+  "results": [
+    {
+      "case": "baseline-creation",
+      "expectedPass": true,
+      "exitCode": 0,
+      "matched": true,
+      "expectedFailure": null,
+      "fixture": "creation",
+      "workspace": false
+    },
+    {
+      "case": "baseline-freeze-persistence",
+      "expectedPass": true,
+      "exitCode": 0,
+      "matched": true,
+      "expectedFailure": null,
+      "fixture": "freeze-persistence",
+      "workspace": false
+    },
+    {
+      "case": "baseline-freeze-persistence-workspace",
+      "expectedPass": true,
+      "exitCode": 0,
+      "matched": true,
+      "expectedFailure": null,
+      "fixture": "freeze-persistence",
+      "workspace": true
+    },
+    {
+      "case": "baseline-context-persistence",
+      "expectedPass": true,
+      "exitCode": 0,
+      "matched": true,
+      "expectedFailure": null,
+      "fixture": "context-persistence",
+      "workspace": false
+    },
+    {
+      "case": "baseline-context-persistence-workspace",
+      "expectedPass": true,
+      "exitCode": 0,
+      "matched": true,
+      "expectedFailure": null,
+      "fixture": "context-persistence",
+      "workspace": true
+    },
+    {
+      "case": "baseline-draft-revision",
+      "expectedPass": true,
+      "exitCode": 0,
+      "matched": true,
+      "expectedFailure": null,
+      "fixture": "draft-revision",
+      "workspace": false
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "matched": true,
+      "expectedFailure": null,
+      "fixture": "freeze-persistence",
+      "workspace": false
+    },
+    {
+      "case": "old-creation",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "violates foreign key constraint \"land_use_plan_versions_workspace_id_fkey\"",
+      "fixture": "creation",
+      "workspace": false
+    },
+    {
+      "case": "old-freeze",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "Frozen land-use plan content is immutable",
+      "fixture": "freeze-persistence",
+      "workspace": false
+    },
+    {
+      "case": "missing-counter-cascade",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "violates foreign key constraint \"land_use_plan_versions_workspace_id_fkey\"",
+      "fixture": "creation",
+      "workspace": false
+    },
+    {
+      "case": "missing-content-cascade",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "Frozen land-use plan content is immutable",
+      "fixture": "freeze-persistence",
+      "workspace": false
+    },
+    {
+      "case": "missing-action-cascade",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "A frozen implementation action may only update status and implementation evidence",
+      "fixture": "freeze-persistence",
+      "workspace": true
+    },
+    {
+      "case": "missing-journal-workspace-cascade",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "Land-use plan decisions and frozen implementation reports are append-only",
+      "fixture": "freeze-persistence",
+      "workspace": true
+    },
+    {
+      "case": "missing-receipt-workspace-fk",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "violates foreign key constraint \"land_use_plan_freeze_commands_review_event_id_workspace_id_fkey\"",
+      "fixture": "freeze-persistence",
+      "workspace": true
+    },
+    {
+      "case": "counter-bypass",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "land_use_plan_designation_policy_links delete revision delta",
+      "fixture": "draft-revision",
+      "workspace": false
+    },
+    {
+      "case": "frozen-content-bypass",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "direct frozen content deletion refused: accepted",
+      "fixture": "freeze-persistence",
+      "workspace": false
+    },
+    {
+      "case": "frozen-action-bypass",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "direct frozen action deletion refused: accepted",
+      "fixture": "freeze-persistence",
+      "workspace": false
+    },
+    {
+      "case": "append-only-delete-bypass",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "direct journal deletion refused: accepted",
+      "fixture": "freeze-persistence",
+      "workspace": false
+    },
+    {
+      "case": "helper-hides-live-owner",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "direct frozen content deletion refused: accepted",
+      "fixture": "freeze-persistence",
+      "workspace": false
+    },
+    {
+      "case": "helper-hides-parent-deletion",
+      "expectedPass": false,
+      "exitCode": 3,
+      "matched": true,
+      "expectedFailure": "violates foreign key constraint \"land_use_plan_versions_workspace_id_fkey\"",
+      "fixture": "creation",
+      "workspace": false
+    }
+  ],
+  "sourceUnchanged": true,
+  "sha256": "6a0fe1d0434889a0391cf18dc32224a5b089a13969583051bd51b25f9cb8a5ac",
+  "boundary": "Rollback-only PostgreSQL fixtures and reordered equivalent constraints. No full archive restore, browser, practitioner or release acceptance."
+}

@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 1 failed) 21ms
+     × retains the adapter authority scope in the frozen descriptor 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > plan-owned applicability > retains the adapter authority scope in the frozen descriptor
+AssertionError: expected [Function] to throw an error
+ ❯ src/test/land-use-plan-context.test.ts:60:81
+     58|  it("retains the adapter authority scope in the frozen descriptor",()=…
+     59|   expect(snapshotPlanDescriptor(ca,"comprehensive").authorityKinds).to…
+     60|   expect(()=>snapshotPlanDescriptor({...ca,authorityKinds:[]},"compreh…
+       |                                                                                 ^
+     61|  });
+     62| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 passed (21)
+   Start at  03:04:27
+   Duration  671ms (transform 93ms, setup 53ms, import 124ms, tests 21ms, environment 320ms)
+

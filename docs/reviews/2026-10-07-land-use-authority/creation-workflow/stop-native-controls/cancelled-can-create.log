@@ -1,0 +1,4 @@
+ERROR:  stopped request cannot create: accepted
+CONTEXT:  PL/pgSQL function pg_temp_12.creation_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.creation_refuses(creation,'PT409','stopped request cannot create')"
+PL/pgSQL function inline_code_block line 34 at PERFORM

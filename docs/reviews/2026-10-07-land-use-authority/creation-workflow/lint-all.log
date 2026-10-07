@@ -1,0 +1,5 @@
+
+> openplan@0.67.0 lint
+> eslint --max-warnings 0
+
+[BABEL] Note: The code generator has deoptimised the styling of /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan/src/lib/geo/crs/crs-registry.generated.ts as it exceeds the max of 500KB.

@@ -1,0 +1,32 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 2 failed) 27ms
+     × keeps drawn geometry without inventing legal identity 6ms
+     × keeps uploaded geometry without inventing legal identity 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > study place capture and attributed context > keeps drawn geometry without inventing legal identity
+ FAIL  src/test/land-use-plan-context.test.ts > study place capture and attributed context > keeps uploaded geometry without inventing legal identity
+AssertionError: expected 'aa000000-0000-4000-8000-000000000009' to be 'aa000000-0000-4000-8000-000000000003' // Object.is equality
+
+Expected: "aa000000-0000-4000-8000-000000000003"
+Received: "aa000000-0000-4000-8000-000000000009"
+
+ ❯ src/test/land-use-plan-context.test.ts:69:34
+     67|   const result=await preparePlanContext(value,ca,id(3));expect(result.…
+     68|   expect(result.context.place).toMatchObject({source:mode==="drawn"?"d…
+     69|   expect(result.context.savedBy).toBe(id(3));expect(Number.isNaN(Date.…
+       |                                  ^
+     70|   expect(resolve).not.toHaveBeenCalled();
+     71|   value.place.geometry.coordinates[0][0][0]=-123;expect(result.context…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 19 passed (21)
+   Start at  03:04:19
+   Duration  696ms (transform 101ms, setup 55ms, import 136ms, tests 27ms, environment 322ms)
+

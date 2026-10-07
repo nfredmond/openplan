@@ -1,0 +1,210 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "matched": true
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "matched": true
+    },
+    {
+      "case": "direct-update",
+      "exitCode": 3,
+      "expectedFailure": "direct context update refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "direct-insert",
+      "exitCode": 3,
+      "expectedFailure": "direct context insert refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "direct-checklist",
+      "exitCode": 3,
+      "expectedFailure": "direct checklist change refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "direct-plan-kind",
+      "exitCode": 3,
+      "expectedFailure": "direct plan kind change refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "public-rpc",
+      "exitCode": 3,
+      "expectedFailure": "authenticated RPC permission",
+      "matched": true
+    },
+    {
+      "case": "anonymous-rpc",
+      "exitCode": 3,
+      "expectedFailure": "anonymous RPC permission",
+      "matched": true
+    },
+    {
+      "case": "journal-rls",
+      "exitCode": 3,
+      "expectedFailure": "command journal RLS enabled",
+      "matched": true
+    },
+    {
+      "case": "journal-read",
+      "exitCode": 3,
+      "expectedFailure": "private command journal",
+      "matched": true
+    },
+    {
+      "case": "definer-escalation",
+      "exitCode": 3,
+      "expectedFailure": "RPC remains security invoker",
+      "matched": true
+    },
+    {
+      "case": "viewer-write",
+      "exitCode": 3,
+      "expectedFailure": "viewer refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "outsider-write",
+      "exitCode": 3,
+      "expectedFailure": "outsider refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "checklist-selection",
+      "exitCode": 3,
+      "expectedFailure": "changed checklist refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "plan-kind-selection",
+      "exitCode": 3,
+      "expectedFailure": "changed plan kind refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "replay-checklist",
+      "exitCode": 3,
+      "expectedFailure": "changed replay checklist refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "replay-plan-kind",
+      "exitCode": 3,
+      "expectedFailure": "changed replay plan kind refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "current-pointer",
+      "exitCode": 3,
+      "expectedFailure": "noncurrent version refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "stale-write",
+      "exitCode": 3,
+      "expectedFailure": "stale first save refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "assessment-substitution",
+      "exitCode": 3,
+      "expectedFailure": "assessment substitution refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "actor-attribution",
+      "exitCode": 3,
+      "expectedFailure": "database actor attribution",
+      "matched": true
+    },
+    {
+      "case": "time-attribution",
+      "exitCode": 3,
+      "expectedFailure": "database time attribution",
+      "matched": true
+    },
+    {
+      "case": "command-byte-trimming",
+      "exitCode": 3,
+      "expectedFailure": "exact command journal",
+      "matched": true
+    },
+    {
+      "case": "command-hash",
+      "exitCode": 3,
+      "expectedFailure": "exact command journal",
+      "matched": true
+    },
+    {
+      "case": "replay-actor",
+      "exitCode": 3,
+      "expectedFailure": "other member cannot replay: accepted",
+      "matched": true
+    },
+    {
+      "case": "replay-version",
+      "exitCode": 3,
+      "expectedFailure": "changed replay version refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "replay-precondition",
+      "exitCode": 3,
+      "expectedFailure": "changed replay precondition refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "replay-bytes",
+      "exitCode": 3,
+      "expectedFailure": "changed command bytes refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "replay-overwrite",
+      "exitCode": 3,
+      "expectedFailure": "old replay does not overwrite newer save",
+      "matched": true
+    },
+    {
+      "case": "replay-before-permission",
+      "exitCode": 3,
+      "expectedFailure": "revoked writer replay refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "journal-rewrite",
+      "exitCode": 3,
+      "expectedFailure": "journal rewrite refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "freeze-insert",
+      "exitCode": 3,
+      "expectedFailure": "frozen insert omission refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "freeze-consistency",
+      "exitCode": 3,
+      "expectedFailure": "omitted frozen context refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "working-state",
+      "exitCode": 3,
+      "expectedFailure": "frozen version save refused: accepted",
+      "matched": true
+    }
+  ],
+  "sourceUnchanged": true,
+  "sourceSha256": "055cd03f835f0992e46ba4672070938c1e131bcc621ea3444d90471892c770ab"
+}
