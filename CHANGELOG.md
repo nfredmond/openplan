@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Engagement handoff reports now use a newly linked project without requiring a
+page reload. Explicit project choices remain preserved, and a removed choice
+still blocks report creation until corrected.
+
 Repeated inspection of an engagement contribution now returns keyboard focus
 to its retained evidence. Desktop and 390px T3 checks cover both pointer and
 keyboard activation. This correction changes no source records or approvals.
