@@ -20,7 +20,31 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes recorded after the 0.67.0 candidate below.
+Land-use plans retain their own boundaries, responsible bodies and applicability
+assessment. Staff can save incomplete browser drafts, retry an uncertain save
+without creating a second change, and review older drafts against current facts.
+Frozen versions retain their original plan identity, descriptor rules and context.
+Atomic freeze checks the displayed draft revision and current write permission.
+Creation still uses the older workspace-home restriction; correcting it and
+completing rendered desktop/mobile acceptance remain open.
+
+Apply these additive migrations in order before using these candidate changes:
+
+- `20261016000002_land_use_plan_context.sql` adds nullable historical context and
+  private exact-command custody. It infers no authority for existing plans.
+- `20261016000003_land_use_plan_draft_revision.sql` tracks changes relevant to
+  freezing a working plan.
+- `20261016000004_land_use_plan_freeze_commands.sql` adds atomic freeze commands
+  and retained receipts.
+- `20261016000005_land_use_plan_freeze_server_path.sql` restricts freeze transitions
+  to the permission-checked server command.
+- `20261016000006_land_use_plan_retained_study_area.sql` preserves an unchanged
+  saved boundary during authority edits and aligns the plan's displayed geography.
+
+The migrations are installed only on the isolated verification stack. The
+[context editor evidence](docs/reviews/2026-10-07-land-use-authority/CONTEXT_EDITOR.md)
+distinguishes unit/native checks and partial desktop behavior from unresolved
+rendered acceptance. These changes are not a released version.
 
 ## 0.67.0 (2026-10-07)
 

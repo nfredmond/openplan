@@ -155,6 +155,10 @@ a build and functional case do not establish a passing release.
 
 ## Remaining M1 work
 
+The subsequent [CI repair](CONTEXT_CI_REPAIR.md) records five whole-suite failures,
+their corrections and fault controls. It also changes the visible area labels;
+the production/browser evidence above remains tied to its original build.
+
 Collect the identified-build rendered journeys. Connect
 atomic creation to these same fields and remove the workspace-home applicability
 assumption. Distinguish source-supported plan-kind rules, then verify the roadmap's

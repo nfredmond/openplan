@@ -27,7 +27,7 @@ function download(raw: string, name: string) {
   const link = document.createElement("a"); link.href = url; link.download = name; link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-const message = (error: unknown) => error instanceof Error && error.name !== "ZodError" ? error.message : "Review the study area, responsible bodies and assessment fields. Keep your draft.";
+const message = (error: unknown) => error instanceof Error && error.name !== "ZodError" ? error.message : "Review the plan area, responsible bodies and assessment fields. Keep your draft.";
 
 /** Context editing retains its own scope and original base independently of content-node forms. */
 export function LandUsePlanContextEditor(props: Props) {
@@ -231,8 +231,8 @@ export function LandUsePlanContextEditor(props: Props) {
   const ownedKey = form ? `openplan:plan-context:${actorId}:${workspaceId}:${planId}:draft:${form.instanceId}` : null;
   const recovery = records.filter(record => record.key !== ownedKey);
   return <section className="min-w-0 space-y-5 rounded-xl border border-border bg-card p-5" aria-label="Plan context">
-    <div className="space-y-2"><h2 className="text-lg font-semibold">Study area and responsible bodies</h2>
-      <p className="max-w-prose text-sm text-muted-foreground">Record this plan&apos;s study area, responsible bodies and the sources for its applicability assessment. These facts belong to the plan, independently of the workspace home.</p>
+    <div className="space-y-2"><h2 className="text-lg font-semibold">Plan area and responsible bodies</h2>
+      <p className="max-w-prose text-sm text-muted-foreground">Save the area covered by this plan, its responsible bodies and the sources for its applicability assessment. An office location does not establish these facts.</p>
       {!props.working ? <p className="text-sm text-muted-foreground">This is the current plan context and request recovery. Frozen versions retain their own reviewed context. Start a working revision before preparing a new save.</p> : null}
     </div>
     {error ? <p role="alert" className="rounded-lg border border-destructive p-3 text-sm text-destructive">{error}</p> : null}
@@ -241,7 +241,7 @@ export function LandUsePlanContextEditor(props: Props) {
       <p className="text-sm text-muted-foreground">{busy ? "Checking the save and current plan…" : dirty ? "Unsaved assessment. A new freeze is blocked." : blocked ? "Review context recovery before freezing." : "Saved context loaded."}</p></div>
     {current ? <details className="min-w-0 border-y border-border py-3"><summary className="cursor-pointer text-sm font-medium">Current saved context</summary>
       <div className="mt-3 space-y-2 text-sm">{current.contextState.status === "legacy" ? <p>No structured authority assessment is retained for this historical plan.</p> : <>
-        <p>Study area: {current.contextState.context.place.label}</p><p>Responsible bodies: {current.contextState.context.assessment.authorities.map(body => body.label).join(", ")}</p>
+        <p>Plan area: {current.contextState.context.place.label}</p><p>Responsible bodies: {current.contextState.context.assessment.authorities.map(body => body.label).join(", ")}</p>
         <p>{current.contextState.context.assessment.applicability.explanation}</p><details><summary className="cursor-pointer">View saved assessment and sources</summary>
           <ul className="mt-3 space-y-3">{current.contextState.context.assessment.authorities.map(body => <li key={body.id} className="space-y-1"><p className="font-medium">{body.label}</p><p>{body.role}. Body type: {body.kind.replaceAll("_", " ")}. Jurisdiction: {body.jurisdiction ? [body.jurisdiction.country,body.jurisdiction.subdivision].filter(Boolean).join(", ") : "Not assessed"}.</p>
             {body.sourceUrls.length ? <ul className="list-disc pl-5">{body.sourceUrls.map((url,index) => <li key={`${index}:${url}`}><a className="break-all underline" href={url} target="_blank" rel="noopener noreferrer">{url}</a></li>)}</ul> : <p className="text-muted-foreground">No authority source recorded.</p>}</li>)}</ul>
@@ -273,10 +273,10 @@ export function LandUsePlanContextEditor(props: Props) {
       {stale ? <div className="space-y-3 rounded-lg border border-amber-300 p-3 text-sm dark:border-amber-900"><h3 className="font-semibold">Review this older draft against the saved context</h3>
         <p>This copy keeps its original assessment. It cannot save against a newer version or context without your review.</p>
         <p className="break-all">Original version: {form.base.versionId}<br/>Original context hash: {form.base.contextHash ?? "No retained context"}</p>
-        <p>Original study area: {form.draft.place.label}. Current saved study area: {current?.contextState.status === "retained" ? current.contextState.context.place.label : "No retained study area"}.</p>
-        <label className="block space-y-1">Study area for the reviewed draft<select className="module-select w-full" value={reviewArea} disabled={unavailable} onChange={event => { setReviewArea(event.target.value as "current"|"proposed"); setReviewed(false); }}><option value="current">Use the current saved study area</option>{form.draft.place.mode !== "retained" ? <option value="proposed">Keep this draft&apos;s proposed replacement area</option> : null}</select></label>
-        <p>Review the saved assessment above and the draft fields below. Keeping the current study area does not change the responsible bodies in your draft.</p>
-        <label className="flex items-start gap-2"><input type="checkbox" checked={reviewed} disabled={unavailable} onChange={event => setReviewed(event.target.checked)}/>I reviewed the saved context, responsible bodies and selected study area.</label>
+        <p>Original plan area: {form.draft.place.label}. Current saved plan area: {current?.contextState.status === "retained" ? current.contextState.context.place.label : "No retained plan area"}.</p>
+        <label className="block space-y-1">Plan area for the reviewed draft<select className="module-select w-full" value={reviewArea} disabled={unavailable} onChange={event => { setReviewArea(event.target.value as "current"|"proposed"); setReviewed(false); }}><option value="current">Use the current saved plan area</option>{form.draft.place.mode !== "retained" ? <option value="proposed">Keep this draft&apos;s proposed replacement area</option> : null}</select></label>
+        <p>Review the saved assessment above and the draft fields below. Keeping the current plan area does not change the responsible bodies in your draft.</p>
+        <label className="flex items-start gap-2"><input type="checkbox" checked={reviewed} disabled={unavailable} onChange={event => setReviewed(event.target.checked)}/>I reviewed the saved context, responsible bodies and selected plan area.</label>
         <Button type="button" variant="outline" disabled={unavailable || !reviewed} onClick={useReviewedDraft}>Use reviewed assessment with current draft</Button></div> : null}
       <form className="space-y-6" onSubmit={event => { event.preventDefault(); void save(); }}>
         <PlanStudyAreaFields value={form.draft} onChange={change} hasSavedArea={current?.contextState.status === "retained"} disabled={unavailable}/>

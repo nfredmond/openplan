@@ -73,6 +73,16 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "land_use_plan_context_commands.command_sha256", category: "WRITE_ONLY", reason: "Generated digest retained for command audit and native custody checks. Runtime replay compares exact command_text; it does not currently display or return this digest." },
+  { column: "land_use_plan_context_commands.command_text", category: "READ_IN_SQL", reason: "save_land_use_plan_context compares exact command bytes on replay, preventing reuse of one command ID for a different assessment." },
+  { column: "land_use_plan_context_commands.expected_context_hash", category: "READ_IN_SQL", reason: "The native context command compares the original precondition on replay before returning the retained save receipt." },
+  { column: "land_use_plan_context_commands.saved_context", category: "READ_IN_SQL", reason: "The native context command returns the original saved context on retry, including its original author and save time." },
+  { column: "land_use_plan_context_commands.saved_context_hash", category: "READ_IN_SQL", reason: "The journal constraint checks the saved context digest and the native retry receipt returns the same contextHash." },
+  { column: "land_use_plan_freeze_commands.command_sha256", category: "WRITE_ONLY", reason: "Generated digest retained for freeze audit and native custody checks. Runtime replay compares exact command_text; this digest has no current application display." },
+  { column: "land_use_plan_freeze_commands.command_text", category: "READ_IN_SQL", reason: "The native freeze function compares exact command text before replaying the original frozen-version receipt." },
+  { column: "land_use_plan_freeze_commands.expected_draft_revision", category: "READ_IN_SQL", reason: "Native replay compares the original draft revision and returns it as draftRevision, preserving the precondition of the accepted freeze." },
+  { column: "land_use_plan_freeze_commands.frozen_snapshot_text", category: "READ_IN_SQL", reason: "Original snapshot bytes generate content_hash in the journal; the native freeze receipt returns that digest rather than mutable plan data." },
+  { column: "land_use_plan_freeze_commands.review_event_id", category: "READ_IN_SQL", reason: "The native freeze retry returns reviewEventId for the single retained review event; the composite foreign key binds it to the same workspace." },
   { column: "engagement_synthesis_preparation_jobs.seal_sha256", category: "READ_IN_SQL", reason: "Native completion compares the requested original seal, retains its hash, and returns sealSha256 through the scoped preparation state function." },
   { column: "engagement_synthesis_thematic_inputs.proof_text", category: "READ_IN_SQL", reason: "Native custody reads return proofText; saves compare exact retained proof bytes and the application verifies their scope and digest." },
   { column: "engagement_synthesis_thematic_inputs.proof_sha256", category: "READ_IN_SQL", reason: "Native input records return the generated proofSha256 for application byte verification." },

@@ -160,7 +160,7 @@ describe('Live workbench draft custody', () => {
     fireEvent.change(fields[1], { target: { value: 'Unsubmitted section' } });
     expect(freeze).toBeDisabled();
     expect(screen.queryByText('The public draft is ready to freeze.')).not.toBeInTheDocument();
-    expect(screen.getByText('Save edited context, sections and content nodes, and resolve recovery before freezing.')).toBeVisible();
+    expect(screen.getByText('Save edited context, sections and content nodes, and review recovery copies before freezing.')).toBeVisible();
     fireEvent.click(freeze);
     expect(writes).toHaveLength(0);
     fireEvent.click(buttons[1]);

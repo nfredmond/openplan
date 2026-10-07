@@ -87,7 +87,7 @@ describe("plan context authoring fields", () => {
   });
   it("requires a new boundary choice after leaving the retained study area", () => {
     render(<Harness area saved />); expect(screen.queryByText("Existing study area picker")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByLabelText("Keep the saved study area unchanged"));
+    fireEvent.click(screen.getByLabelText("Keep the saved plan area unchanged"));
     expect(observed.place.geometryText).toBe(""); expect(() => contextCommandFromDraft(observed, conditions)).toThrow();
     const before = observed.authorities;
     act(() => { picker.current!.onCorridorChange(JSON.stringify(geometry)); picker.current!.onPlaceResolved(boundary); });

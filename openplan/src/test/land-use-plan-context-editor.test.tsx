@@ -89,7 +89,7 @@ describe("plan context editor",()=>{
   it("starts historical context with display labels and no inferred legal facts",async()=>{
     current={...current,contextState:{status:"legacy"},contextHash:null};render(<LandUsePlanContextEditor {...props}/>);await ready();
     expect(bodyField()).toHaveValue("Inherited display label");expect(screen.getByLabelText("Role in this plan")).toHaveValue("");expect(screen.getByLabelText("Type of body")).toHaveValue("");
-    expect(screen.getByLabelText("Jurisdiction is not assessed")).toBeChecked();expect(screen.queryByLabelText("Keep the saved study area unchanged")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Jurisdiction is not assessed")).toBeChecked();expect(screen.queryByLabelText("Keep the saved plan area unchanged")).not.toBeInTheDocument();
   });
   it("keeps draft text and a downloadable copy when browser retention fails",async()=>{
     render(<LandUsePlanContextEditor {...props}/>);await ready();vi.spyOn(Storage.prototype,"setItem").mockImplementation(()=>{throw new Error("quota full");});edit();
@@ -104,18 +104,18 @@ describe("plan context editor",()=>{
     expect(own.value?.base).toEqual(old.base);expect(posts).toEqual([]);
     expect(screen.getByRole("button",{name:"Use reviewed assessment with current draft"})).toBeDisabled();
     fireEvent.click(screen.getByRole("button",{name:"Use reviewed assessment with current draft"}));expect(readPlanContextRecovery(localStorage,scope).find(r=>r.key===own.key)?.value?.base).toEqual(old.base);
-    fireEvent.click(screen.getByLabelText("I reviewed the saved context, responsible bodies and selected study area."));
+    fireEvent.click(screen.getByLabelText("I reviewed the saved context, responsible bodies and selected plan area."));
     fireEvent.click(screen.getByRole("button",{name:"Use reviewed assessment with current draft"}));
     expect(saveButton()).toBeEnabled();expect(posts).toEqual([]);const copies=readPlanContextRecovery(localStorage,scope);
     expect(copies.some(r=>r.archived&&r.raw===own.raw)).toBe(true);expect(copies.find(r=>!r.archived&&r.value?.kind==="draft"&&r.value.instanceId!==old.instanceId)?.value?.base).toEqual(base);
-    expect(bodyField()).toHaveValue("Older reviewed body");expect(screen.getByLabelText("Keep the saved study area unchanged")).toBeChecked();
+    expect(bodyField()).toHaveValue("Older reviewed body");expect(screen.getByLabelText("Keep the saved plan area unchanged")).toBeChecked();
   });
   it("keeps proposed replacement geometry only through the explicit reviewed choice",async()=>{
     const old=makePlanContextDraft(scope,{...base,contextHash:"c".repeat(64)},{...draft,place:{...draft.place,mode:"uploaded",label:"Proposed area"}},id(10));
     retainPlanContextDraft(localStorage,old,null);render(<LandUsePlanContextEditor {...props}/>);await ready();fireEvent.click(screen.getByRole("button",{name:"Open draft copy"}));
-    fireEvent.change(screen.getByLabelText("Study area for the reviewed draft"),{target:{value:"proposed"}});
-    fireEvent.click(screen.getByLabelText("I reviewed the saved context, responsible bodies and selected study area."));fireEvent.click(screen.getByRole("button",{name:"Use reviewed assessment with current draft"}));
-    expect(screen.getByLabelText("Study area label")).toHaveValue("Proposed area");expect(saveButton()).toBeEnabled();expect(posts).toEqual([]);
+    fireEvent.change(screen.getByLabelText("Plan area for the reviewed draft"),{target:{value:"proposed"}});
+    fireEvent.click(screen.getByLabelText("I reviewed the saved context, responsible bodies and selected plan area."));fireEvent.click(screen.getByRole("button",{name:"Use reviewed assessment with current draft"}));
+    expect(screen.getByLabelText("Plan area label")).toHaveValue("Proposed area");expect(saveButton()).toBeEnabled();expect(posts).toEqual([]);
   });
   it("preserves the edited draft before replacing it with the current saved context",async()=>{
     render(<LandUsePlanContextEditor {...props}/>);await ready();edit();const record=readPlanContextRecovery(localStorage,scope)[0];
@@ -222,10 +222,10 @@ describe("plan context editor",()=>{
       current={...current,contextState:{status:"retained",context:saved},contextHash:"b".repeat(64)};
       return Response.json({replayed:false,commandId:command.commandId,versionId:command.versionId,context:saved,contextHash:current.contextHash},{status:201});
     });
-    render(<LandUsePlanContextEditor {...props}/>);await ready();fireEvent.click(screen.getByLabelText("Keep the saved study area unchanged"));
+    render(<LandUsePlanContextEditor {...props}/>);await ready();fireEvent.click(screen.getByLabelText("Keep the saved plan area unchanged"));
     const file=new File(["boundary"],"boundary.geojson");file.text=async()=>JSON.stringify({type:"Polygon",coordinates:[[[0,0],[2,0],[2,1],[0,0]]]});
     fireEvent.change(screen.getByLabelText("Or upload a study boundary"),{target:{files:[file]}});await waitFor(()=>expect(readPlanContextRecovery(localStorage,scope)[0].value?.draft.place.mode).toBe("uploaded"));
-    fireEvent.change(screen.getByLabelText("Study area label"),{target:{value:"Synthetic replacement area"}});fireEvent.click(screen.getByRole("button",{name:"Add responsible body"}));
+    fireEvent.change(screen.getByLabelText("Plan area label"),{target:{value:"Synthetic replacement area"}});fireEvent.click(screen.getByRole("button",{name:"Add responsible body"}));
     fireEvent.change(screen.getAllByLabelText("Body name")[1],{target:{value:"Synthetic sovereign body"}});fireEvent.change(screen.getAllByLabelText("Role in this plan")[1],{target:{value:"Consulting authority"}});
     fireEvent.change(screen.getAllByLabelText("Type of body")[1],{target:{value:"Tribal government"}});fireEvent.click(saveButton());
     await screen.findByText("Plan context saved and refreshed.");expect(posts).toHaveLength(1);expect(blocked()).toBe(false);

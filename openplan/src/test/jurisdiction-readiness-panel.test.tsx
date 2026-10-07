@@ -28,9 +28,13 @@ describe("JurisdictionReadinessPanel", () => {
 
     expect(screen.getByText("Unavailable here")).toBeInTheDocument();
     expect(screen.getByText(/no configured Oregon statutory plan bundle/i)).toBeInTheDocument();
-    const evidenceHash = screen.getByText(/sha256:f63f563d/i);
-    expect(evidenceHash).toBeInTheDocument();
-    expect(evidenceHash.previousElementSibling).toHaveClass("break-all");
+    const selected = payload.reports.find(report => report.job.id === "land-use-plan");
+    expect(selected?.sources.length).toBeGreaterThan(0);
+    for (const source of selected!.sources) {
+      const evidenceHash = screen.getByText(`sha256:${source.sha256}`);
+      expect(evidenceHash.previousElementSibling).toHaveTextContent(source.path);
+      expect(evidenceHash.previousElementSibling).toHaveClass("break-all");
+    }
     expect(screen.getByRole("link", { name: /download exact local support json/i })).toHaveAttribute(
       "href",
       "/api/workspaces/jurisdiction-readiness?download=1",

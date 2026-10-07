@@ -24,7 +24,7 @@ export function PlanAuthorityFields({ value, onChange, disabled = false }: Props
   }
   return <fieldset disabled={disabled} className="min-w-0 space-y-5">
     <legend className="text-base font-semibold">Responsible bodies and applicability</legend>
-    <p className="max-w-prose text-sm text-muted-foreground">Identify the bodies responsible for this plan and their roles. A study boundary or office location does not establish governing authority. Keep private consultation notes in the consultation record.</p>
+    <p className="max-w-prose text-sm text-muted-foreground">Identify the bodies responsible for this plan and their roles. A study boundary or office location does not establish governing authority. Keep private consultation notes in the consultation section.</p>
     <datalist id={kindList}>{suggestedBodyTypes.map(type => <option key={type.value} value={type.label} />)}</datalist>
     {value.authorities.map((authority, index) => <fieldset key={authority.id} className="min-w-0 space-y-3 border-l-2 border-border pl-4">
       <legend className="text-sm font-semibold">Responsible body {index + 1}</legend>
@@ -47,13 +47,13 @@ export function PlanAuthorityFields({ value, onChange, disabled = false }: Props
     <label className="block space-y-1 text-sm">Applicability assessment<select className="module-select mt-1 w-full" value={value.applicability.status} onChange={event => updateAssessment({ status: event.target.value as "unresolved" | "staff_assessed" })}>
       <option value="unresolved">Unresolved</option><option value="staff_assessed">Assessed by staff with sources</option>
     </select></label>
-    <label className="block space-y-1 text-sm">Assessment basis and unresolved questions<Textarea value={value.applicability.explanation} onChange={event => updateAssessment({ explanation: event.target.value })} rows={4} maxLength={6000} /></label>
+    <label className="block space-y-1 text-sm">Assessment reasons and unresolved questions<Textarea value={value.applicability.explanation} onChange={event => updateAssessment({ explanation: event.target.value })} rows={4} maxLength={6000} /></label>
     {value.applicability.status === "staff_assessed" ? <div className="space-y-3">
       <fieldset className="space-y-2"><legend className="mb-2 text-sm font-medium">Bodies covered by this checklist assessment</legend>
         {value.authorities.map((authority, index) => <label key={authority.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={value.applicability.authorityIds.includes(authority.id)} onChange={event => updateAssessment({ authorityIds: event.target.checked ? [...value.applicability.authorityIds, authority.id] : value.applicability.authorityIds.filter(id => id !== authority.id) })} />{authority.label || `Responsible body ${index + 1}`}</label>)}
       </fieldset>
       <label className="block space-y-1 text-sm">Applicability sources<Textarea aria-label="Applicability sources" aria-describedby={`${kindList}-assessment-sources`} value={value.applicability.sourceText} onChange={event => updateAssessment({ sourceText: event.target.value })} rows={3} maxLength={62000} /><span id={`${kindList}-assessment-sources`} className="text-xs text-muted-foreground">One source URL per line supporting using this checklist for the selected bodies.</span></label>
-      <p className="max-w-prose text-sm text-muted-foreground">A saved staff assessment records its author and sources. It does not establish counsel approval or complete legal compliance.</p>
+      <p className="max-w-prose text-sm text-muted-foreground">A saved staff assessment retains its author and sources. It does not establish counsel approval or complete legal compliance.</p>
     </div> : <p className="max-w-prose text-sm text-muted-foreground">Unresolved applicability can be retained with the neutral workflow. It cannot authorize a configured legal checklist.</p>}
   </fieldset>;
 }
