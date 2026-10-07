@@ -1,0 +1,8 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "workdir": "/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050",
+  "migration": "20261016000006",
+  "migrationSha256": "e6f53b47077007031dd6670925f4325cbffc71f42289ff2b4b49adced0175012",
+  "nativeSuites": "All three installed suites passed without migration probes",
+  "applicationServer": "Stopped, no server or build for this recovery checkpoint"
+}

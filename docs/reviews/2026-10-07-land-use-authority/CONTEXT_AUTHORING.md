@@ -92,3 +92,10 @@ the workspace-home applicability assumption, distinguish sourced plan-kind rules
 and collect the full M1 geography/authority cases. Public and exported presentation,
 rendered desktop/390px recovery and practitioner/counsel acceptance remain open.
 The roadmap remains the only work queue; this is implementation guidance within M1.
+
+## Follow-up
+
+The [recovery checkpoint](CONTEXT_RECOVERY.md) adds scoped browser draft and
+request recovery functions and records migration 6 installed on the isolated
+verification stack. The fields still await the mounted editor. The rollback-only
+state above describes this earlier authoring checkpoint.
