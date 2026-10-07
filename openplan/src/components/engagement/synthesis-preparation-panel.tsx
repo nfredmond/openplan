@@ -11,8 +11,8 @@ import {
 } from "@/lib/engagement/synthesis-preparation-recovery";
 
 type Props = SynthesisPreparationClientScope & { actorId: string; cancelled: boolean; onAccessLost: () => void };
-const statusLabels = { queued: "Waiting for the preparation worker", running: "Preparing analysis inputs", failed: "Preparation failed", cancelled: "Preparation cancelled", prepared: "Analysis inputs prepared" };
-const failureLabels = { access_unavailable: "The worker could not confirm access.", input_unavailable: "The required inputs were unavailable.", preparation_failed: "The worker could not finish preparation." };
+const statusLabels = { queued: "Waiting to prepare analysis", running: "Preparing for analysis", failed: "Preparation failed", cancelled: "Preparation cancelled", prepared: "Preparation complete" };
+const failureLabels = { access_unavailable: "The worker could not confirm access.", input_unavailable: "The saved material was unavailable.", preparation_failed: "The worker could not finish preparation." };
 const message = (cause: unknown) => cause instanceof Error ? cause.message : "Preparation could not be confirmed. Keep the saved command and refresh its status.";
 
 /** A history entry identifies the request. A fresh native read establishes its
@@ -89,16 +89,16 @@ function Preparation({ userId, workspaceId, campaignId, sourceId, sourceSha256, 
   }
   const canChange = ready && confirmed && !busy && !blocked && !pending && actorId === userId && !cancelled && !state?.cancelled;
   return <section aria-label="Request preparation" className="min-w-0 space-y-3 rounded border border-border p-3">
-    <div className="flex flex-wrap items-center justify-between gap-2"><h4 className="font-semibold">Prepare analysis inputs</h4>
+    <div className="flex flex-wrap items-center justify-between gap-2"><h4 className="font-semibold">Prepare this source for analysis</h4>
       <Button type="button" variant="outline" disabled={busy} onClick={() => void refresh()}>Refresh preparation status</Button></div>
-    <p className="max-w-prose text-sm text-muted-foreground">Preparation reads this saved source and builds the inputs for analysis. It does not send contributions to a provider or approve findings.</p>
+    <p className="max-w-prose text-sm text-muted-foreground">Preparation organizes this saved source for analysis. It does not send contributions to a provider or approve findings.</p>
     {busy ? <p role="status">Checking preparation…</p> : null}
     {error ? <p role="alert">{error}</p> : null}{notice ? <p role="status">{notice}</p> : null}
     {blocked ? <p className="text-sm">Recovery needs attention before another command can be saved. Preserve the original copy or reopen the consultation to check access.</p> : null}
     {confirmed ? <><p className="font-medium">{state ? statusLabels[state.status] : "Preparation has not been queued"}</p>
       {state ? <p className="text-sm">Attempt {state.attempts}. Last updated <time dateTime={state.updatedAt}>{new Date(state.updatedAt).toLocaleString("en-US")}</time>.</p> : null}
       {state?.failureCode ? <p>{failureLabels[state.failureCode]}</p> : null}
-      {state?.cancelled || cancelled ? <p>Cancellation is recorded. Earlier preparation and results remain retained.</p> : null}</> : null}
+      {state?.cancelled || cancelled ? <p>Cancellation is saved. Earlier preparation and results remain retained.</p> : null}</> : null}
     {actorId !== userId ? <p className="text-sm">Another staff account created this request. Only that account can queue or retry preparation.</p> : null}
     <div className="flex flex-wrap gap-2">
       {confirmed && state === null ? <Button type="button" disabled={!canChange} onClick={() => void send({ version: 1, ...scope, command: { operation: "enqueue", requestId, stage, intentSha256 } })}>Queue preparation</Button> : null}

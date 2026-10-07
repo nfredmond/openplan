@@ -34,7 +34,7 @@ describe("staff preparation controls", () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(fetcher.mock.calls[0]).toEqual([`/api/engagement/campaigns/${f.scope.campaignId}/synthesis/preparation?requestId=${f.scope.requestId}`, expect.objectContaining({ method: "GET", cache: "no-store", headers: { "x-openplan-expected-user": f.scope.userId, "x-openplan-expected-workspace": f.scope.workspaceId } })]);
     fireEvent.click(queue);
-    expect(await screen.findByText("Waiting for the preparation worker")).toBeTruthy();
+    expect(await screen.findByText("Waiting to prepare analysis")).toBeTruthy();
     expect(readPendingSynthesisPreparation(localStorage, f.scope)).toBeNull();
     expect(fetcher).toHaveBeenCalledTimes(2);
     expect(screen.getByText(/Provider execution still requires separate authorization/)).toBeTruthy();
@@ -43,7 +43,7 @@ describe("staff preparation controls", () => {
   it.each(["segment", "context", "thematic"] as const)("inspects the %s stage without granting provider authority", async stage => {
     const f = fixture(); vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json({ ...f.state, stage, status: "prepared", attempts: 1, sealSha256: "c".repeat(64) })));
     render(<SynthesisPreparationPanel {...f.props} stage={stage} />);
-    expect(await screen.findByText("Analysis inputs prepared")).toBeTruthy();
+    expect(await screen.findByText("Preparation complete")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Queue preparation" })).toBeNull();
     expect(screen.getByText(/does not send contributions to a provider/)).toBeTruthy();
   });
@@ -53,7 +53,7 @@ describe("staff preparation controls", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json({ ...f.state, [field]: changed })));
     render(<SynthesisPreparationPanel {...f.props} />);
     await screen.findByRole("alert"); expect(screen.queryByRole("button", { name: "Queue preparation" })).toBeNull();
-    expect(screen.queryByText("Waiting for the preparation worker")).toBeNull();
+    expect(screen.queryByText("Waiting to prepare analysis")).toBeNull();
   });
 
   it.each(["other staff", "cancelled"])("blocks queueing for %s", async condition => {
@@ -67,7 +67,7 @@ describe("staff preparation controls", () => {
       .mockResolvedValueOnce(json({ ...f.state, attempts: 3 }));
     vi.stubGlobal("fetch", fetcher); render(<SynthesisPreparationPanel {...f.props} />);
     fireEvent.click(await screen.findByRole("button", { name: "Retry failed preparation" }));
-    await screen.findByText("Waiting for the preparation worker");
+    await screen.findByText("Waiting to prepare analysis");
     expect(JSON.parse(String(fetcher.mock.calls[1][1]?.body))).toEqual({ operation: "retry", requestId: f.scope.requestId, attempt: 3 });
   });
 
@@ -78,7 +78,7 @@ describe("staff preparation controls", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Queue preparation" }));
     await screen.findByRole("alert"); expect(readPendingSynthesisPreparation(localStorage, f.scope)).toEqual(f.pending);
     view.unmount(); render(<SynthesisPreparationPanel {...f.props} />);
-    await screen.findByText("Waiting for the preparation worker"); expect(fetcher).toHaveBeenCalledTimes(3);
+    await screen.findByText("Waiting to prepare analysis"); expect(fetcher).toHaveBeenCalledTimes(3);
     fireEvent.click(screen.getByRole("button", { name: "Retry saved preparation command" }));
     await screen.findByText(/Preparation command confirmed/);
     expect(fetcher.mock.calls[3][1]?.body).toBe(fetcher.mock.calls[1][1]?.body);
@@ -120,9 +120,9 @@ describe("staff preparation controls", () => {
   it("clears preparation on denied refresh and notifies the containing source", async () => {
     const f = fixture(), fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(json(f.state)).mockResolvedValueOnce(json({}, 403));
     vi.stubGlobal("fetch", fetcher); render(<SynthesisPreparationPanel {...f.props} />);
-    await screen.findByText("Waiting for the preparation worker"); fireEvent.click(screen.getByRole("button", { name: "Refresh preparation status" }));
+    await screen.findByText("Waiting to prepare analysis"); fireEvent.click(screen.getByRole("button", { name: "Refresh preparation status" }));
     await screen.findByRole("alert"); expect(f.props.onAccessLost).toHaveBeenCalledOnce();
-    expect(screen.queryByText("Waiting for the preparation worker")).toBeNull();
+    expect(screen.queryByText("Waiting to prepare analysis")).toBeNull();
   });
 
   it("keeps an unavailable read distinct from a missing job", async () => {
@@ -138,6 +138,6 @@ describe("staff preparation controls", () => {
     vi.stubGlobal("fetch", fetcher); const view = render(<SynthesisPreparationPanel {...a.props} />);
     view.rerender(<SynthesisPreparationPanel {...b.props} />); await screen.findByText("Preparation has not been queued");
     await act(async () => { resolve(json(a.state)); });
-    await waitFor(() => expect(screen.queryByText("Waiting for the preparation worker")).toBeNull());
+    await waitFor(() => expect(screen.queryByText("Waiting to prepare analysis")).toBeNull());
   });
 });
