@@ -1,0 +1,51 @@
+{
+  "job": "186fc5e8-2984-4970-9a8a-f80c9f547ea9",
+  "runtime": "6ec41a82a210e1c4a585eada65d16667cd05cb7d",
+  "files": {
+    "pdf": {
+      "sha256": "4f2b6421623598d1d366ccdd8817e1eb4256769746723b3e57afcfa43d591501",
+      "downloadMatch": true,
+      "bytes": 87317
+    },
+    "xlsx": {
+      "sha256": "0265b2d1cf8529c228f3fc16885023521cfb17b2352e3982f3a45c53df19497c",
+      "downloadMatch": true,
+      "bytes": 17255
+    },
+    "zip": {
+      "sha256": "40ffe2ad61fcf314d30969fd2954b6f857bd41d9b72b2522a9df17b95c6198ac",
+      "downloadMatch": true,
+      "bytes": 81205
+    }
+  },
+  "sheets": [
+    "Read me",
+    "Contributions",
+    "Contribution sources",
+    "Survey sessions",
+    "Answers",
+    "Staff responses",
+    "Question summary",
+    "Definitions",
+    "Long text",
+    "Summary"
+  ],
+  "sources": [
+    [
+      "Source",
+      "Records"
+    ],
+    [
+      "Staff-authored note",
+      2
+    ]
+  ],
+  "manifestMembersVerified": 7,
+  "snapshotSha256": "2830d4f6936b1b98993f07a9b3fc723ecba56177b8ceed1535ed68c47c90d1b5",
+  "visualReview": {
+    "pages": 5,
+    "sourceLabelsVisible": true,
+    "longMultilingualFinalLineVisible": true,
+    "sourceSummaryTableContinuesOnPage2": true
+  }
+}
