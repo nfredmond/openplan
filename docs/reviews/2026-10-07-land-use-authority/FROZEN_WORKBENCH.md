@@ -22,7 +22,17 @@ The [land-use regression](frozen-workbench/regression.log) passes 520 tests in 2
 
 TypeScript, changed-file ESLint and the product-direction check pass. TypeScript first caught an unsupported `exact` option in a role locator; removing that option preserves its default exact-name behavior. The [follow-up](frozen-workbench/followup.log) passes 21 workbench and agent-refusal tests. The [initial typecheck](frozen-workbench/initial-typecheck.log) is retained. Direction age and scope reminders remain unchanged.
 
-These tests use projected database mocks, real reader functions and mounted components. They cannot establish live RLS, simultaneous transactions, actual new-tab behavior, desktop or 390px layouts, console cleanliness, usable exported artifacts, legal applicability or practitioner outcomes. Native identified-build reads and rendered acceptance remain separate work.
+These tests use projected database mocks, real reader functions and mounted components. They cannot establish live RLS, simultaneous transactions, actual new-tab behavior, desktop or 390px layouts, console cleanliness, usable exported artifacts, legal applicability or practitioner outcomes. Native identified-build reads are recorded below; rendered acceptance remains open.
+
+## Identified build and existing native records
+
+The [production build](frozen-workbench/build-status.json) passes at `2dc8686fbfd694d99fccfb81b642aef2a0526515` in 109 seconds. The checkout stays clean and unchanged. It includes the creation test correction `67b05212`; the merge changes no application files relative to `5f7f0ff9`. The owned server on port 3498 reports the expected commit, and `/proc/2830232/cwd` points to this app checkout.
+
+Twelve [authenticated HTTP reads](frozen-workbench/native-http.json) pass against existing synthetic records on the isolated 29821 stack. They verify default and explicit working-version selection, default latest-frozen and older-version selection, read-only historical behavior, retained identity/checklist/context agreement with the native snapshot, legacy disclosure, and refusals for invalid, repeated, absent and another plan's version identifiers. The frozen database record is unchanged after these reads. Sign-in creates an auth session; the probe performs no plan fixture writes.
+
+The first attempt [stops on an outdated fixture assumption](frozen-workbench/initial-native-fixture-assumption.log). A subsequent native read confirms that the earlier exercise's newer draft is already in public review. The completed check therefore uses that plan's two frozen editions and a separate existing working-plan fixture. It does not claim native evidence for a historical selection alongside a current working draft, cross-user RLS or concurrent writes.
+
+A fresh [T3 browser attempt](frozen-workbench/browser-attempt.json) opens the identified landing page but fails both text and saved-image inspection. Open reports available but not visible, including when requested visible. No desktop, 390px, keyboard, console, download or real-navigation acceptance is established. An alternative browser remains subject to the runtime's explicit-request requirement. The owned server is explicitly stopped afterward; exit 143 records that stop, not an application crash.
 
 ## Remaining work
 

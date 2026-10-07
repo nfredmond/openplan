@@ -1,0 +1,98 @@
+{
+  "checkedAt": "2026-10-07T15:12:45.873Z",
+  "applicationCommit": "2dc8686fbfd694d99fccfb81b642aef2a0526515",
+  "requests": [
+    {
+      "planId": "fb049e81-a3a7-4ae0-be50-752410899be8",
+      "query": "",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "planId": "fb049e81-a3a7-4ae0-be50-752410899be8",
+      "query": "?versionId=da327c80-ee2d-456b-b4db-263b57ac50ce",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "planId": "29d17983-a3c1-4b03-8622-180e6b83bd36",
+      "query": "",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "planId": "29d17983-a3c1-4b03-8622-180e6b83bd36",
+      "query": "?versionId=0caf2f7b-e3ec-4e49-93d2-76386251cfbb",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "planId": "fb049e81-a3a7-4ae0-be50-752410899be8",
+      "query": "?versionId=9dbe8fd6-04cb-4e3a-9cf1-dbd543e58211",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "planId": "fb049e81-a3a7-4ae0-be50-752410899be8",
+      "query": "?versionId=",
+      "status": 400,
+      "expected": 400
+    },
+    {
+      "planId": "fb049e81-a3a7-4ae0-be50-752410899be8",
+      "query": "?versionId=invalid",
+      "status": 400,
+      "expected": 400
+    },
+    {
+      "planId": "fb049e81-a3a7-4ae0-be50-752410899be8",
+      "query": "?versionId=9dbe8fd6-04cb-4e3a-9cf1-dbd543e58211&versionId=da327c80-ee2d-456b-b4db-263b57ac50ce",
+      "status": 400,
+      "expected": 400
+    },
+    {
+      "planId": "fb049e81-a3a7-4ae0-be50-752410899be8",
+      "query": "?versionId=76dffb5a-c1ea-474d-9489-420d59930596",
+      "status": 404,
+      "expected": 404
+    },
+    {
+      "planId": "fb049e81-a3a7-4ae0-be50-752410899be8",
+      "query": "?versionId=36835b9b-5651-4ce7-aa6b-a4c4374e1317",
+      "status": 404,
+      "expected": 404
+    },
+    {
+      "planId": "3964fae0-0adc-4b6e-bc5b-abff7f2542dc",
+      "query": "?versionId=36835b9b-5651-4ce7-aa6b-a4c4374e1317",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "planId": "ec5e4569-a84f-49fe-836c-3a8c9793b246",
+      "query": "?versionId=8c85a9cd-ca2c-47a9-a76b-e88286e852b9",
+      "status": 200,
+      "expected": 200
+    }
+  ],
+  "retained": [
+    {
+      "kind": "retained",
+      "descriptorCustody": "frozen",
+      "context": "legacy"
+    },
+    {
+      "kind": "legacy",
+      "descriptorCustody": "not_retained",
+      "context": "legacy"
+    }
+  ],
+  "latestFrozenVersion": "da327c80-ee2d-456b-b4db-263b57ac50ce",
+  "currentWorkingVersion": "0caf2f7b-e3ec-4e49-93d2-76386251cfbb",
+  "historicalVersion": "9dbe8fd6-04cb-4e3a-9cf1-dbd543e58211",
+  "nativeContentHash": "971d2c823e79849661b6563845386d3d701f2f2d412282360e43fbe36d7dc836",
+  "retainedIdentityRulesContextMatch": true,
+  "historicalReadOnly": true,
+  "frozenRecordUnchanged": true,
+  "boundary": "Read-only authenticated HTTP against existing synthetic fixtures on the isolated stack. Sign-in creates an auth session; no plan fixture writes. Historical selection uses two frozen editions in one plan; working selection uses a separate plan. Does not establish native history selection alongside a current working draft, cross-user RLS, concurrency, browser navigation, desktop or mobile layout, console cleanliness, practitioner or legal acceptance."
+}

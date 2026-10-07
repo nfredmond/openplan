@@ -1,0 +1,21 @@
+{
+  "applicationCommit": "2dc8686fbfd694d99fccfb81b642aef2a0526515",
+  "port": 3498,
+  "serverPid": 2830232,
+  "processCwd": "/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan",
+  "previewTab": "tab_i",
+  "previewOpen": {
+    "available": true,
+    "visible": false,
+    "width": 1280,
+    "height": 800
+  },
+  "attempts": [
+    "text snapshot",
+    "image snapshot with save"
+  ],
+  "error": "Preview automation snapshot failed on client preview-15c860c89cab5f9b9eeb30c7c9bd70be.",
+  "acceptance": "unverified",
+  "alternativeBrowser": "not used; explicit request pending",
+  "serverStop": "Owned unit explicitly stopped after reads and failed preview attempts. MainPID0; exit143 records that stop."
+}
