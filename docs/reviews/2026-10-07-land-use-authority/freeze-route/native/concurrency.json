@@ -1,0 +1,62 @@
+{
+  "cases": [
+    {
+      "case": "real-child-first",
+      "revision": 9,
+      "commandId": "533e8632-603e-4d02-be31-b55ddf38e3be",
+      "beforeEditCommit": "terminal",
+      "busyAndStaleFreezeRefused": true,
+      "matched": true
+    },
+    {
+      "case": "real-freeze-first",
+      "revision": 10,
+      "commandId": "c7867c0f-dd47-4594-81a6-8fee0000dc21",
+      "childWriteAndDuplicateRefusedWhileFreezePending": true,
+      "matched": true
+    },
+    {
+      "case": "permission-change-first",
+      "revision": 10,
+      "commandId": "1051a618-0d2d-46ad-95f1-f15e3bdef60d",
+      "busyThenRevokedFreezeRefused": true,
+      "matched": true
+    },
+    {
+      "case": "harmless-child-first",
+      "revision": 10,
+      "commandId": "3f82d63e-493c-4981-9745-0376d5812018",
+      "beforeEditCommit": "terminal",
+      "busyAndStaleFreezeRefused": true,
+      "matched": true
+    },
+    {
+      "case": "harmless-freeze-first",
+      "revision": 11,
+      "commandId": "efa4891e-ae44-4d5e-a948-52f6e03ab3d7",
+      "childWriteAndDuplicateRefusedWhileFreezePending": true,
+      "matched": true
+    },
+    {
+      "case": "missing-version-lock",
+      "revision": 11,
+      "commandId": "d1886c88-6115-49e7-a0b1-a94f3edc7521",
+      "beforeEditCommit": "waiting_on_lock",
+      "detectedFault": "Without the version lock, stale snapshot freezes after a concurrent child edit.",
+      "staleRevision": 11,
+      "currentRevision": 12,
+      "matched": true
+    },
+    {
+      "case": "duplicate-command-commit-and-replay",
+      "revision": 12,
+      "commandId": "61cdf43c-841f-411d-8ace-e5451453fb0e",
+      "oneCommittedFreezeAndExactReplay": true,
+      "matched": true
+    }
+  ],
+  "publicFunctionUnchanged": true,
+  "privateSchemaRemoved": true,
+  "fixturesPreserved": true,
+  "boundary": "Synthetic native concurrent transactions on the owned HTTP fixture. Private copies demonstrate the missing-lock defect; their freeze writes roll back. No browser, practitioner, legal, accessibility or scientific acceptance."
+}
