@@ -1,0 +1,14 @@
+[
+  {
+    "name": "provider-choice-harmless-comment",
+    "exitCode": 0,
+    "expectedPass": true,
+    "matched": true
+  },
+  {
+    "name": "provider-choice-silently-replaced",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  }
+]

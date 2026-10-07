@@ -1,0 +1,26 @@
+[
+  {
+    "name": "readback-restored-baseline",
+    "exitCode": 0,
+    "expectedPass": true,
+    "matched": true
+  },
+  {
+    "name": "create-readback-recovery-missing",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "name": "cancel-readback-recovery-missing",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "name": "prepare-readback-recovery-missing",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  }
+]

@@ -55,6 +55,28 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("workspace API connection routes", () => {
+  it.each([false, true])("checks pinned browser identity before metadata reads, history=%s", async history => {
+    const variants: Record<string, string>[] = [
+      { "x-openplan-expected-user": otherId, "x-openplan-expected-workspace": workspaceId },
+      { "x-openplan-expected-user": userId, "x-openplan-expected-workspace": otherId },
+      { "x-openplan-expected-user": userId }, { "x-openplan-expected-workspace": workspaceId },
+    ];
+    for (const headers of variants) {
+      const response = await route.GET(new NextRequest(`${origin}/api/workspaces/provider-api-connections?workspaceId=${workspaceId}${history ? `&connectionId=${connectionId}` : ""}`, { headers }));
+      expect(response.status).toBe(403); expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(await response.json()).toEqual({ error: "provider_browser_scope_changed" });
+      expect(mocks.userFrom).not.toHaveBeenCalled(); expect(mocks.serviceFrom).not.toHaveBeenCalled();
+    }
+  });
+  it("accepts matching pinned metadata scope and retains native membership checks", async () => {
+    const pinned = () => new NextRequest(`${origin}/api/workspaces/provider-api-connections?workspaceId=${workspaceId}`, {
+      headers: { "x-openplan-expected-user": userId, "x-openplan-expected-workspace": workspaceId },
+    });
+    expect((await route.GET(pinned())).status).toBe(200);
+    expect(memberQuery.eq).toHaveBeenCalledWith("user_id", userId);
+    memberQuery.maybeSingle.mockResolvedValue({ data: null, error: null });
+    expect((await route.GET(pinned())).status).toBe(404);
+  });
   it("stores encrypted credentials with exact identity and returns metadata only", async () => {
     const response = await route.PUT(request("PUT", input()));
     expect(response.status).toBe(201); expect(response.headers.get("cache-control")).toBe("no-store");

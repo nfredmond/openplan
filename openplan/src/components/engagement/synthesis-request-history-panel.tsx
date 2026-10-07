@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { SynthesisPreparationPanel } from "./synthesis-preparation-panel";
+import { SynthesisGenerationCancellationInspector } from "./synthesis-generation-cancellation-inspector";
 import { readSynthesisHistory } from "@/lib/engagement/synthesis-history-read";
 import {
   verifySynthesisRequestHistory, type SynthesisRequestHistoryCursor,
@@ -22,12 +24,13 @@ function History({ userId, workspaceId, campaignId, sourceId, sourceSha256, onAc
   const [entries, setEntries] = useState<SynthesisRequestHistoryPage["entries"] | null>(null);
   const [cursor, setCursor] = useState<SynthesisRequestHistoryCursor | null>(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
   const active = useRef<AbortController | null>(null);
   const load = useCallback(async (before: SynthesisRequestHistoryCursor | null = null) => {
     active.current?.abort();
     const controller = new AbortController(); active.current = controller;
     const isCurrent = () => active.current === controller && !controller.signal.aborted;
-    setBusy(true); setError(null);
+    setBusy(true); setError(null); setSelected(null);
     if (!before) { setEntries(null); setCursor(null); }
     try {
       const query = new URLSearchParams({ sourceId, sourceSha256 });
@@ -82,6 +85,17 @@ function History({ userId, workspaceId, campaignId, sourceId, sourceSha256, onAc
           <dt className="text-muted-foreground">Intent SHA-256</dt><dd>{entry.intentSha256}</dd>
         </dl>
       </details>
+      <Button type="button" variant="outline" disabled={busy} aria-expanded={selected === entry.requestId}
+        onClick={() => setSelected(current => current === entry.requestId ? null : entry.requestId)}>
+        {selected === entry.requestId ? "Close preparation" : "Inspect preparation"} {entry.requestId.slice(0, 8)}
+      </Button>
+      {selected === entry.requestId ? <><SynthesisPreparationPanel userId={userId} workspaceId={workspaceId} campaignId={campaignId}
+        sourceId={sourceId} sourceSha256={sourceSha256} requestId={entry.requestId} intentSha256={entry.intentSha256}
+        stage={entry.stage} actorId={entry.actorId} cancelled={entry.cancelled} onAccessLost={onAccessLost} />
+        <SynthesisGenerationCancellationInspector userId={userId} workspaceId={workspaceId} campaignId={campaignId}
+          sourceId={sourceId} sourceSha256={sourceSha256} requestId={entry.requestId} intentSha256={entry.intentSha256} actorId={entry.actorId}
+          onAccessLost={onAccessLost} onCancelled={() => setEntries(current => current?.map(row => row.requestId === entry.requestId ? { ...row, cancelled: true } : row) ?? null)} />
+      </> : null}
     </li>)}</ul>
     {cursor ? <Button type="button" variant="outline" disabled={busy} onClick={() => void load(cursor)}>Load older generation requests</Button> : null}
   </section>;
