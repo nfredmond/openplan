@@ -3,4 +3,4 @@
 /openplan/src/app/fonts/*/METADATA.pb -text
 
 # Preserve captured verification output, including tool-generated padding.
-/docs/reviews/2026-10-07-land-use-authority/creation-workflow/** whitespace=-blank-at-eol
+/docs/reviews/2026-10-07-land-use-authority/creation-workflow/** whitespace=-blank-at-eol,-blank-at-eof
