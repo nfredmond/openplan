@@ -1,0 +1,17 @@
+{
+  "cases": [
+    {
+      "case": "harmless CLI comment",
+      "exitCode": 0,
+      "expectedOutcome": true,
+      "reasonConfirmed": true
+    },
+    {
+      "case": "drop output format and output path arguments",
+      "exitCode": 1,
+      "expectedOutcome": true,
+      "reasonConfirmed": true
+    }
+  ],
+  "boundary": "Installed CLI compatibility only; registry audit is a separate supply-chain check."
+}
