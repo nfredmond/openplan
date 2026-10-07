@@ -116,22 +116,22 @@ export function LandUseImplementationReportControl(props: Props) {
       <label className="block text-sm">Reporting period end<Input className="mt-1" name="end" required type="date" /></label>
       <label className="block text-sm md:col-span-2">Implementation report title<Input className="mt-1" name="title" required maxLength={180} /></label>
       <label className="block text-sm md:col-span-2">Summary<Textarea className="mt-1" name="summary" maxLength={20000} /></label>
-      <Button className="md:col-span-2" disabled={busy || refreshRequired || !ready || !props.canWrite || props.disabled || pending.length > 0}>Generate frozen implementation report</Button>
+      <Button className="h-auto min-h-10 max-w-full whitespace-normal md:col-span-2" disabled={busy || refreshRequired || !ready || !props.canWrite || props.disabled || pending.length > 0}>Generate frozen implementation report</Button>
     </form> : <p className="text-sm text-muted-foreground">Open the current adopted edition to create an implementation report. Earlier requests remain available for recovery below.</p>}
     {reportId ? <a className="block text-sm underline" href={`/reports/${reportId}`}>Open saved implementation report</a> : null}
     {notice ? <p role="status" className="text-sm text-muted-foreground">{notice}</p> : null}
     {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
-    {refreshRequired ? <Button variant="outline" disabled={busy} onClick={() => void refreshCurrentPlan()}>Refresh current plan</Button> : null}
-    {!ready ? <Button variant="outline" onClick={read} disabled={busy}>Read saved requests again</Button> : null}
+    {refreshRequired ? <Button className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" disabled={busy} onClick={() => void refreshCurrentPlan()}>Refresh current plan</Button> : null}
+    {!ready ? <Button className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={read} disabled={busy}>Read saved requests again</Button> : null}
     {pending.length > 0 ? <div className="space-y-3 border-l-2 border-amber-500 pl-4">
       <h3 className="font-semibold">Unconfirmed report requests</h3>
       <p className="max-w-prose text-sm text-muted-foreground">Retry uses the original saved request. It may create a report for that adopted edition if the first request did not arrive. It captures saved action statuses when the transaction runs. A changed adopted edition causes a conflict.</p>
       {pending.map(record => <div key={record.key} className="space-y-2">
         <p className="text-sm">{record.pending ? `Saved request for edition ${record.pending.versionNumber}` : "Unreadable saved request. Preserve a copy before reviewing the current edition."}</p>
         <div className="flex flex-wrap gap-2">
-          {record.pending ? <Button variant="outline" disabled={busy || !props.canWrite} onClick={() => { if (record.pending) void send(record.pending); }}>Check or retry saved report</Button> : null}
-          <Button variant="outline" disabled={busy} onClick={() => downloadCopy(record.raw)}>Download request copy</Button>
-          <Button variant="outline" disabled={busy} onClick={() => void preserve(record)}>Preserve copy and review current edition</Button>
+          {record.pending ? <Button className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" disabled={busy || !props.canWrite} onClick={() => { if (record.pending) void send(record.pending); }}>Check or retry saved report</Button> : null}
+          <Button className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" disabled={busy} onClick={() => downloadCopy(record.raw)}>Download request copy</Button>
+          <Button className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" disabled={busy} onClick={() => void preserve(record)}>Preserve copy and review current edition</Button>
         </div>
       </div>)}
     </div> : null}
@@ -148,8 +148,8 @@ export function LandUseImplementationReportControl(props: Props) {
         }} /></label>
         {copies.map(record => <div key={record.key} className="flex flex-wrap items-center gap-2">
           <span>{record.pending ? `Preserved request for edition ${record.pending.versionNumber}` : "Preserved unreadable request"}</span>
-          <Button variant="outline" disabled={busy} onClick={() => downloadCopy(record.raw)}>Download copy</Button>
-          {record.pending ? <Button variant="outline" disabled={busy} onClick={() => restore(record.raw)}>Restore saved request</Button> : null}
+          <Button className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" disabled={busy} onClick={() => downloadCopy(record.raw)}>Download copy</Button>
+          {record.pending ? <Button className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" disabled={busy} onClick={() => restore(record.raw)}>Restore saved request</Button> : null}
         </div>)}
       </div>
     </details>
