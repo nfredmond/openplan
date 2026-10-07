@@ -67,3 +67,24 @@ rendering, keyboard/console behavior, complete input membership or sealing,
 provider execution, semantic correctness, practitioner acceptance or release
 readiness. The thematic request has one selected contribution; it is not a complete
 theme workflow. Build and GitHub outcomes follow as separately identified checks.
+
+## Identified build and HTTP follow-up
+
+Commit `338ff24e` builds successfully from a clean, unchanged worktree. The Google
+Fonts network block records zero endpoint requests. The owned server on port 3485
+reports commit `338ff24e6bc6`; process 2489675 runs from this worktree's application
+directory. The [build record](thematic-inputs/build.json) identifies the candidate.
+
+The [HTTP record](thematic-inputs/http.json) uses the real production route and
+the existing synthetic browser account. Direct fetch returns the authenticated
+1600-character excerpt of a 3326-byte result and the original choice hash. Exact
+POST replay returns 200 and the same choice bytes. Changed inspected bytes return
+503; a changed workspace or unregistered assistant marker returns 403. A changed
+user's read returns 403 without choice data. A subsequent authorized saved read
+confirms unchanged original custody. All responses use `private, no-store`.
+
+These are direct authenticated transport checks, not a visible thematic journey
+or browser-storage recovery. The server is stopped after collection and before
+documentation edits. The earlier native-HTTP limitation is superseded only for
+these named cases. GitHub checks, browser controls and the broader limits above
+remain open.
