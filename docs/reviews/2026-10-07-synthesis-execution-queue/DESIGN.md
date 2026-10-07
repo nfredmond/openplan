@@ -89,3 +89,21 @@ preview and a separate selection control at desktop and 390px. No enqueue,
 allowance, provider call, import or approval was performed in this read-only
 follow-up. Private local checkpoint and screenshots retain the exact paths;
 final workflow evidence must be collected after implementation.
+
+## Record contract checkpoint
+
+The shared command binds schema version, queue ID, actor, workspace, campaign,
+source and source hash, request and intent hash, stage, and authorization and
+intent hash. The receipt carries the unchanged command text, its SHA-256,
+queue ID and original creation time. The portable verifier checks exact bytes
+and the checksum without treating the receipt as permission or completion.
+Native validation of authority and unique JSON keys remains required.
+
+Twenty focused tests pass. A harmless comment passes; deleting the exact-command,
+queue-identity or checksum comparison causes targeted assertion failures.
+`record-controls.json` retains those outcomes. Changed-file ESLint passes.
+An initial test invocation from the repository root failed to locate Vitest;
+the actual tests ran from the application package. No native command, worker,
+provider, browser write or new capability is implemented by this checkpoint.
+Mock-free record checks do not establish database authorization, browser storage,
+concurrency, worker recovery, deployment or full-package compatibility.
