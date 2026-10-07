@@ -68,7 +68,8 @@ No historical plan, provider output or selection record is changed.
 The initial standalone TypeScript run exhausted its default 4 GB heap. A second
 run with 6 GB found a manifest-status type mismatch. Schema parsing now narrows
 the status at the server boundary. The final standalone TypeScript check passes with the 6 GB allowance.
-The production build remains pending.
+Production build `42976a78` passes with an unchanged clean checkout. It predates
+the subsequent BCA integration; a combined production build remains pending.
 
 These checks do not establish rendering, keyboard access, console health,
 provider semantics, practitioner acceptance or a released capability. The T3
@@ -77,3 +78,13 @@ The existing execution-permission checkout stays frozen at `408e6e9f` while
 acceptance evidence remains incomplete. This new checkout has no browser claim.
 Dependent context and thematic request creation in the staff workflow remains
 separate unfinished work.
+
+
+## Integration checkpoint
+
+Main `c369d4bc` contains the merged BCA workbench from PR #118. Merge `291be2d6`
+incorporates it without conflicts. The combined focused run passes 143 tests
+across eleven files, covering progress, preparation, execution permission and
+BCA engine, routes and recovery controls. PR #119 targets main to trigger the
+main-only GitHub workflows; PR #117 remains its dependency until accepted and
+merged. No source changes occur in the frozen PR #117 acceptance checkout.

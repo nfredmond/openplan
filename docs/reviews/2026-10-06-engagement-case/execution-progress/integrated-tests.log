@@ -1,0 +1,12 @@
+
+> openplan@0.67.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress.test.ts src/test/engagement-synthesis-progress-server.test.ts src/test/engagement-synthesis-progress-plan.test.ts src/test/engagement-synthesis-progress-route.test.ts src/test/engagement-synthesis-progress-panel.test.tsx src/test/engagement-synthesis-preparation-panel.test.tsx src/test/engagement-synthesis-execution-panel.test.tsx src/test/bca-workbench-engine.test.ts src/test/bca-workbench-quantity-ui.test.tsx src/test/bca-workbench-recovery-ui.test.tsx src/test/bca-workbench-route.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+
+ Test Files  11 passed (11)
+      Tests  143 passed (143)
+   Start at  23:49:19
+   Duration  9.22s (transform 377ms, setup 382ms, import 1.43s, tests 2.76s, environment 3.61s)
