@@ -91,6 +91,7 @@ DECLARE queued public.engagement_synthesis_execution_queue; request public.engag
  permission public.engagement_synthesis_generation_authorizations; command jsonb; receipt jsonb;
  fresh_id uuid; fresh_intent text; fresh_command jsonb; role_name text;
  expired_command jsonb; expiring_receipt jsonb; expiring_bytes text;
+ credential public.workspace_provider_api_credentials;
 BEGIN
  FOR queued IN SELECT * FROM engagement_synthesis_execution_queue ORDER BY stage LOOP
   SELECT * INTO request FROM engagement_synthesis_generation_requests WHERE id=queued.request_id;
@@ -133,6 +134,38 @@ BEGIN
   END CASE;
   fresh_command:=command||jsonb_build_object('queueId',gen_random_uuid(),'authorizationId',fresh_id);
   PERFORM enqueue_engagement_synthesis_execution(fresh_command::text);
+  -- Rotation does not alter old receipts, but invalidates an unused allowance.
+  fresh_id:=gen_random_uuid();
+  CASE queued.stage
+   WHEN 'segment' THEN PERFORM authorize_engagement_synthesis_generation(request.id,fresh_id,fresh_intent);
+   WHEN 'context' THEN PERFORM authorize_engagement_synthesis_context(request.id,fresh_id,fresh_intent);
+   WHEN 'thematic' THEN PERFORM authorize_engagement_synthesis_thematic(request.id,fresh_id,fresh_intent);
+  END CASE;
+  fresh_command:=command||jsonb_build_object('queueId',gen_random_uuid(),'authorizationId',fresh_id);
+  EXECUTE 'RESET ROLE';
+  SELECT * INTO STRICT credential FROM workspace_provider_api_credentials WHERE revision_id=request.configuration_revision_id;
+  DELETE FROM workspace_provider_api_credentials WHERE revision_id=credential.revision_id;
+  INSERT INTO workspace_provider_api_credentials(revision_id,connection_id,workspace_id,credential_ciphertext)
+   VALUES(credential.revision_id,credential.connection_id,credential.workspace_id,'v2:SYNTHETIC queue rotation');
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  IF enqueue_engagement_synthesis_execution(queued.command_text) IS DISTINCT FROM receipt THEN
+   RAISE EXCEPTION 'Credential rotation changed original receipt';
+  END IF;
+  BEGIN
+   PERFORM enqueue_engagement_synthesis_execution(fresh_command::text);
+   RAISE EXCEPTION 'Changed credential queue accepted';
+  EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
+  EXECUTE 'RESET ROLE';
+  DELETE FROM workspace_provider_api_credentials WHERE revision_id=credential.revision_id;
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  BEGIN
+   PERFORM enqueue_engagement_synthesis_execution(fresh_command::text);
+   RAISE EXCEPTION 'Missing credential queue accepted';
+  EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
+  EXECUTE 'RESET ROLE';
+  INSERT INTO workspace_provider_api_credentials(revision_id,connection_id,workspace_id,credential_ciphertext)
+   VALUES(credential.revision_id,credential.connection_id,credential.workspace_id,credential.credential_ciphertext);
+  EXECUTE 'SET LOCAL ROLE authenticated';
   -- Let real time expire two newly authorized grants. Never alter old history.
   fresh_intent:=(permission.intent_text::jsonb||jsonb_build_object('expiresAt',clock_timestamp()+interval '250 milliseconds'))::text;
   FOR n IN 1..2 LOOP

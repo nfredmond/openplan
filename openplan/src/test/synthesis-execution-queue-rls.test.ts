@@ -42,13 +42,15 @@ function change(old: string, replacement: string) {
  * not establish HTTP isolation, worker concurrency, network or browser recovery.
  * All stages use repository fixtures; synthetic outputs prove no semantics.
  */
-function probe(mutation = "", stage: Stage = "segment") {
+function probe(mutation = "", stage: Stage = "segment", apiKey = true) {
+  const configuredRequests = apiKey ? requests.replaceAll('"authMode":"none"', '"authMode":"api_key"')
+    .replaceAll("}',NULL);", "}','v2:SYNTHETIC original key');") : requests;
   const container = resolveLocalDbContainer();
   requireContractVerificationStack(container);
   return execFileSync("docker", ["exec", "-i", container, "psql", "-U", "postgres", "-d", "postgres", "-X", "-qAt", "-v", "ON_ERROR_STOP=1"], {
     input: `BEGIN; SET LOCAL statement_timeout='30s'; SET LOCAL lock_timeout='2s';
       ${process.env.OPENPLAN_SYNTHESIS_EXECUTION_QUEUE_CANDIDATE === "1" ? migration : ""}
-      ${source}\n${requests}\n${setups[stage]}
+      ${source}\n${configuredRequests}\n${setups[stage]}
       RESET ROLE; SELECT set_config('request.jwt.claim.sub',(SELECT actor_id::text FROM engagement_synthesis_generation_requests WHERE id='${stage === "segment" ? "f0000000-0000-4000-8000-000000000001" : "f0000000-0000-4000-8000-000000000010"}'),true);
       SET LOCAL ROLE authenticated; SELECT pg_temp.${grants[stage]}(); RESET ROLE;
       ${mutation}\n${stage === "segment" ? native : native.replace("r.id='f0000000-0000-4000-8000-000000000001'", "r.id='f0000000-0000-4000-8000-000000000010'")}\nROLLBACK;`,
@@ -56,6 +58,7 @@ function probe(mutation = "", stage: Stage = "segment") {
   });
 }
 const faults = [
+  ["credential rotation", change("credential_hash IS DISTINCT FROM permission.credential_sha256", "false"), "Changed credential queue accepted"],
   ["workspace", change("(command->>'workspaceId')::uuid IS DISTINCT FROM workspace", "false"), "Foreign workspace accepted"],
   ["source identity", change("request.source_id IS DISTINCT FROM (command->>'sourceId')::uuid", "false"), "Foreign source accepted"],
   ["immutable history", "ALTER TABLE public.engagement_synthesis_execution_queue DISABLE TRIGGER synthesis_execution_queue_immutable;", "Queue history update accepted"],
@@ -69,6 +72,9 @@ const faults = [
 ] as const;
 
 describe.skipIf(!LIVE_RLS)("native synthesis execution queue", () => {
+  it("retains no-key provider coverage", () => {
+    expect(probe("", "segment", false)).toContain("synthesis-execution-queue-verified");
+  }, 90_000);
   it.each(["context", "thematic"] as const)("retains %s scheduling with fresh fixtures", stage => {
     expect(probe("", stage)).toContain("synthesis-execution-queue-verified");
   }, 90_000);

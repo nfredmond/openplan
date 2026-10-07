@@ -317,3 +317,25 @@ checks causes assertion failures. `service-controls.json` retains the evidence.
 Mocks cover loop control and delays, not OS signals, real provider dispatch,
 process crash recovery or deployed service health. The full type check through
 d3dd40d4 passes; the new command and service still need full checking.
+
+## Credential rotation and combined checks
+
+The native fixture now replaces a valid synthetic API key after granting
+permission, then removes the credential record. Existing queue receipts retain
+their original bytes, while unused permissions refuse new scheduling. All changes
+remain inside rollback-only transactions. Contribution, context and thematic
+fixtures use valid key-based configurations; a separate no-key case remains.
+
+The initial rotation mutant survived because the no-key configuration rejected
+the inserted key before reaching the credential-hash comparison. That fixture
+proved incompatible configuration refusal, not valid key rotation. The revised
+fixture creates key-based configuration through the normal native revision
+command. Removing the enqueue hash comparison now triggers the intended
+'Changed credential queue accepted' assertion. No production guard changed.
+
+All 16 native cases pass in 29.24 seconds, including the harmless control and
+targeted faults. All 104 focused tests across seven queue suites pass together
+in 3.05 seconds. Changed-test ESLint and whitespace checks pass. The bounded full
+package type check at e679bfd9 passes. These checks still do not prove concurrent
+worker dispatch, live service interruption, visible scheduling or planner
+acceptance. The queue migration remains a rollback-tested candidate.
