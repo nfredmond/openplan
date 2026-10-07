@@ -156,3 +156,26 @@ weakness and final results remain in `native-role-controls.json`.
 These checks establish SQL role behavior and natural expiry, not browser/HTTP
 session isolation, concurrent workers or deployment recovery. Independent fixture
 construction, credential-change and concurrency coverage remain unfinished.
+
+## Reproducible native suite
+
+The repository now includes `synthesis-execution-queue-rls.test.ts` and its SQL
+fixture in the live-isolation npm command. It creates source, request, plan and
+permission records from the existing repository fixture producers. Contribution,
+context and thematic cases each use fresh rollback-only records rather than this
+machine's saved browser data. The 11 tests pass in 20.84 seconds on the explicitly
+selected restore target; changed-test ESLint and whitespace checks also pass.
+
+The initial command ran outside the app package and found no fixture. After
+correcting the working directory, the first expanded run passed nine tests and
+failed two: the fixture setup supplied the contribution author's ID for context
+and thematic requests. Native authorization correctly refused that author.
+The setup now reads the original actor from each created request before assuming
+the authenticated role. All 11 cases pass, including seven targeted faults and
+the harmless control. No production authorization check was weakened.
+
+The suite applies the candidate migration inside its transaction when
+`OPENPLAN_SYNTHESIS_EXECUTION_QUEUE_CANDIDATE=1`. Ordinary live CI uses the migrated
+schema. It still requires the existing isolated-stack safeguard and explicit
+live-test opt-in. These fresh fixtures supersede the earlier machine-specific
+probe dependency, but do not establish HTTP/browser recovery or concurrent workers.
