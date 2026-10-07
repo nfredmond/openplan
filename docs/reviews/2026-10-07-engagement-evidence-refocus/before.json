@@ -1,0 +1,14 @@
+{
+  "build": "359ab99204b2afd8ce3c3773092ebe7be3937ab4",
+  "url": "http://openplan-history.localhost:3498/engagement/71e5671b-d3df-43aa-ba1c-75dfce09e0d7?tab=analysis",
+  "first": {
+    "label": "Selected contribution evidence",
+    "tag": "SECTION",
+    "text": "Comment 1SYNTHETIC browser test. Caminar, 步行, walking 🌉. Keep the complete original contribution. C"
+  },
+  "repeated": {
+    "label": null,
+    "tag": "BUTTON",
+    "text": "Inspect comment 1"
+  }
+}

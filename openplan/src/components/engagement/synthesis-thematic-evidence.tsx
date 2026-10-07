@@ -30,7 +30,10 @@ export function SynthesisThematicEvidence({ origin, proposal, snapshot }: Props)
   const filtered = contributions.filter(row => `${row.label} ${row.prompt ?? ""} ${row.text}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()));
   const contribution = selected ? byId.get(selected) : null, context = selected ? contexts.get(selected) : null;
   const sourceButton = (sourceId: string) => <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal"
-    onClick={() => setSelected(sourceId)}>Inspect {byId.get(sourceId)?.label.toLocaleLowerCase() ?? "referenced contribution"}</Button>;
+    onClick={() => {
+      if (sourceId === selected) selectedRef.current?.focus();
+      else setSelected(sourceId);
+    }}>Inspect {byId.get(sourceId)?.label.toLocaleLowerCase() ?? "referenced contribution"}</Button>;
   return <section aria-label="Original machine proposal evidence" className="min-w-0 space-y-4 rounded border p-3">
     <h5 className="font-semibold">Original machine proposal</h5>
     <p className="text-sm">Machine-generated, unreviewed wording. Citations identify retained evidence; they do not establish that the interpretation is accurate. Counts describe contributions, not distinct people or representative support.</p>

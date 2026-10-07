@@ -220,6 +220,18 @@ describe("explicit thematic import panel", () => {
     expect(await blobs[0].text()).toBe(x.origin.proposalText); expect(await blobs[1].text()).toBe(x.origin.historyText);
     expect(links.map(link => link.download)).toEqual([`thematic-proposal-${x.f.scope.requestId}.json`, `thematic-history-${x.f.scope.requestId}.json`]);
   });
+  it("returns focus to evidence when the same contribution is inspected again", async () => {
+    const x = await fixture(); render(<SynthesisThematicImportPanel {...x.props} />); await x.inspect();
+    const browse = screen.getByRole("region", { name: "Browse original contributions" });
+    const inspect = within(browse).getAllByRole("button", { name: /Inspect comment/ })[0];
+    inspect.focus(); fireEvent.click(inspect);
+    const selected = screen.getByRole("region", { name: "Selected contribution evidence" });
+    expect(selected).toHaveFocus();
+    inspect.focus(); expect(inspect).toHaveFocus(); fireEvent.click(inspect);
+    expect(selected).toHaveFocus();
+    expect(selected.textContent).toContain(x.source.snapshot.items[0].body);
+    expect(x.posts).toHaveLength(0);
+  });
   it("shows retained context notes and uncertainty beside each original contribution", async () => {
     const x = await fixture(); render(<SynthesisThematicImportPanel {...x.props} />); await x.inspect();
     const proposal = JSON.parse(x.origin.proposalText) as { contextEvidence: Array<{ sourceId: string; notes: Array<{ text: string }>; uncertainties: string[] }> };
