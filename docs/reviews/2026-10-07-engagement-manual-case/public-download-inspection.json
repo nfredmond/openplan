@@ -1,0 +1,43 @@
+{
+  "pdf": {
+    "path": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muyo2jcw-w-engagement-ff3fb367-463d-4f98-ae90-d1b176ab1a0a.pdf",
+    "sha256": "2bf8860ab0527a41035fb3b5802ca475c89b49e0c265bee592838a126c310f19",
+    "bytes": 84124
+  },
+  "xlsx": {
+    "path": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muyo2jnn-x-engagement-ff3fb367-463d-4f98-ae90-d1b176ab1a0a.xlsx",
+    "sha256": "ff4a3ce4a3d715f8e061af72368565d18a7540c749aedc73ae930e1976be515e",
+    "bytes": 16388
+  },
+  "zip": {
+    "path": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muyo2jya-y-engagement-ff3fb367-463d-4f98-ae90-d1b176ab1a0a.zip",
+    "sha256": "ce64c917523a1a9b6d2546c194542d5b8e51ffddbb7a69dd148a1b7e4379c1e4",
+    "bytes": 78982
+  },
+  "zipEntries": [
+    "snapshot.json",
+    "review.html",
+    "review.pdf",
+    "review.xlsx",
+    "contributions.csv",
+    "answers.csv",
+    "contributions.geojson",
+    "manifest.json"
+  ],
+  "scope": "public",
+  "itemCount": 2,
+  "workbookPrivateHistoryAbsent": true,
+  "pdfPagesInspected": 5,
+  "sheets": [
+    "Read me",
+    "Contributions",
+    "Survey sessions",
+    "Answers",
+    "Staff responses",
+    "Question summary",
+    "Definitions",
+    "Long text",
+    "Summary"
+  ],
+  "remaining": "No marked-private contribution exercised in this case; no native Excel UI or human acceptance."
+}

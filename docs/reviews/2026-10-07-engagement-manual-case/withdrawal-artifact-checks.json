@@ -1,0 +1,24 @@
+{
+  "xlsx": {
+    "path": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muyo5jz6-12-engagement-e0e0235f-91e0-47a1-90db-b76d481b99da.xlsx",
+    "sha256": "cb6f82a6f3210c287f83de36d2fc93d8eeef9d14170de76b15bcfd1b2339d582"
+  },
+  "zip": {
+    "path": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muyo5kaf-13-engagement-e0e0235f-91e0-47a1-90db-b76d481b99da.zip",
+    "sha256": "14f89c3280dc9bbd302986f5b5d752a04725dc47409369c825f941208a045b3a"
+  },
+  "decisionHistoryRows": 2,
+  "operations": [
+    "link",
+    "withdraw"
+  ],
+  "sameRetainedContext": true,
+  "snapshotSha256": "c73015209feb7f891e407833c2e361ff71f07184172f2a0527c8aade2b833248",
+  "pdfVisualReview": "not repeated for withdrawal export",
+  "blindCategories": [
+    "Synthetic only",
+    "No marked-private source in this case",
+    "No interrupted export recovery in this case",
+    "No native Excel UI or human acceptance"
+  ]
+}

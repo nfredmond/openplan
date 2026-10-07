@@ -6,6 +6,32 @@ import * as XLSX from 'xlsx';
 import { buildCampaignReviewHtml,buildCampaignReviewWorkbook,parseReviewSnapshot,renderCampaignReviewFiles,campaignQuestionSummary,campaignReviewMap,type EngagementReviewSnapshot } from '@/lib/engagement/review-export';
 const snapshot:EngagementReviewSnapshot={schema:1,capturedAt:'2026-09-06T12:00:00Z',scope:'internal',filters:{},campaign:{id:'demo',title:'Demonstration only',summary:null,configurationVersionId:null},items:[{id:'one',status:'pending',body:'=HYPERLINK("https://invalid.test")',title:'<script>bad()</script>',configuration_version_id:null}],sessions:[{id:'session',status:'pending'}],answers:[{id:'answer1',session_id:'session',answer_text:'Repeated answer'},{id:'answer2',session_id:'session',answer_text:'Repeated answer'}],responses:[],definitions:[]};
 describe('campaign review records',()=>{
+ it.each(['internal','public'] as const)('distinguishes staff notes and intake methods in %s review files',async(scope)=>{
+  const types=['internal','internal','public','meeting','email',undefined,'<new>'];
+  const source:EngagementReviewSnapshot={...snapshot,scope,items:types.map((source_type,index)=>({id:`origin-${index}`,status:'approved',body:`Retained ${index}`,source_type})),sessions:[],answers:[]};
+  const before=JSON.stringify(source),html=buildCampaignReviewHtml(source,'checksum');
+  const page=document.createElement('div');page.innerHTML=html;
+  expect([...page.querySelectorAll('article.entry .meta')].map(node=>node.textContent)).toEqual(expect.arrayContaining([
+   expect.stringContaining('Source: Staff-authored note'),expect.stringContaining('Source: Public portal'),
+   expect.stringContaining('Source: Meeting or workshop'),expect.stringContaining('Source: Email or letter'),
+   expect.stringContaining('Source: Source not recorded'),expect.stringContaining('Source: Unrecognized source (<new>)'),
+  ]));
+  expect(page.querySelector('table[aria-label="Contribution sources"]')?.textContent).toContain('Staff-authored note2');
+  expect(html).toContain('Counts are records, not people. Staff-authored notes are not resident submissions.');
+  expect(html).not.toContain('<new>');
+  const workbook=XLSX.read(await buildCampaignReviewWorkbook(source,'checksum'),{type:'buffer'});
+  const rows=XLSX.utils.sheet_to_json<Record<string,unknown>>(workbook.Sheets['Contribution sources']);
+  expect(rows).toEqual([
+   {Source:'Staff-authored note',Records:2},{Source:'Public portal',Records:1},{Source:'Meeting or workshop',Records:1},
+   {Source:'Email or letter',Records:1},{Source:'Source not recorded',Records:1},{Source:'Unrecognized source (<new>)',Records:1},
+  ]);
+  expect(rows.reduce((sum,row)=>sum+Number(row.Records),0)).toBe(7);
+  const contributions=XLSX.utils.sheet_to_json<Record<string,unknown>>(workbook.Sheets.Contributions);
+  expect(contributions.map(row=>row['Source label'])).toEqual(['Staff-authored note','Staff-authored note','Public portal','Meeting or workshop','Email or letter','Source not recorded','Unrecognized source (<new>)']);
+  expect(contributions[6].source_type).toBe('<new>');
+  expect(JSON.stringify(source)).toBe(before);
+ });
+
  it('refuses corrupt snapshots and private records in public snapshots',async()=>{
   const raw=JSON.stringify(snapshot),hash=createHash('sha256').update(raw).digest('hex');
   expect((await parseReviewSnapshot(raw,hash)).items).toHaveLength(1);
