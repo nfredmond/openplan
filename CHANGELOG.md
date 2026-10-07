@@ -33,12 +33,13 @@ The staff workbench can open earlier reviewed editions using their retained
 identity, context and checklist. Current creation and editing now select rules
 for the specific plan kind, including distinct California general-plan and
 specific-plan requirements. Changing a kind requires another checklist review.
-Earlier frozen editions remain unchanged. Existing authored drafts are not
-automatically converted; explicit reconciliation remains in development.
-The reconciliation API now appends missing blank sections and selected default
-keys without rewriting earlier content. Migration
+Earlier frozen editions remain unchanged. Staff can review missing checklist
+sections and default applicability changes before adding them to a working draft.
+The workbench preserves earlier content, retains exact requests for explicit retry,
+and blocks reconciliation or refresh over unsaved edits. Staff form saves retain
+text entered after submission. Migration
 `20261016000010_land_use_plan_rule_reconciliation.sql` adds its private receipt
-journal. The workbench action and browser recovery remain unfinished.
+journal. Identified desktop/mobile acceptance and recovery-file review remain open.
 
 Parent deletion now tolerates restored foreign-key cascade order while preserving
 direct frozen-content and receipt protections. Migration

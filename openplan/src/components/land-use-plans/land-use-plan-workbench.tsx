@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 
 import { LandUsePlanContextEditor } from "./land-use-plan-context-editor";
 import { LandUsePlanRetainedContext } from "./land-use-plan-retained-context";
+import { LandUsePlanRuleReconciliationControl } from "./land-use-plan-rule-reconciliation-control";
+import { planFormSnapshot, resetUnchangedPlanForm, usePlanFormCustody } from "./use-plan-form-custody";
 import { LandUsePlanFreezeControl } from "./land-use-plan-freeze-control";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -101,6 +103,7 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
   const { drafts: sectionEvidenceUrls, setDrafts: setSectionEvidenceUrls, refreshDrafts: refreshUrls, acknowledge: acknowledgeUrl, hasUnsaved: unsavedUrls } = usePlanDraftMap<string>();
   const { drafts: contentDrafts, setDrafts: setContentDrafts, refreshDrafts: refreshContent, acknowledge: acknowledgeContent, hasUnsaved: unsavedContent } = usePlanDraftMap<{ title: string; body: string }>();
   const [designationLayerId, setDesignationLayerId] = useState("");
+  const formCustody = usePlanFormCustody(`${data?.actorId}:${data?.plan.workspace_id}:${planId}:${data?.activeVersion.id}`);
 
   const load = useCallback(async () => {
     const response = await fetch(`/api/land-use-plans/${planId}${versionId !== undefined ? `?versionId=${encodeURIComponent(versionId)}` : ""}`, { cache: "no-store" });
@@ -119,8 +122,14 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
   async function run(work: () => Promise<unknown>, event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
     if (!data?.canWrite) { setActionError("This plan view is read-only."); return; }
+    const form = event?.currentTarget;
+    const submitted = form ? planFormSnapshot(form) : null;
     setBusy(true); setActionError(null);
-    try { await work(); await load(); router.refresh(); }
+    try {
+      await work();
+      if (form && submitted !== null) formCustody.acknowledge(form, submitted);
+      await load(); router.refresh();
+    }
     catch (error) { setActionError(error instanceof Error ? error.message : "The operation failed"); }
     finally { setBusy(false); }
   }
@@ -177,7 +186,7 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
   const draftScope = `${planId}:${data.activeVersion.id}:${data.activeVersion.state}`;
   const contextScope = `${data.actorId}:${data.plan.workspace_id}:${planId}:${data.activeVersion.id}:${data.activeVersion.draft_revision}`;
   const contextBlocked = contextGate?.scope !== contextScope || contextGate.blocked;
-  const hasUnsavedContent = unsavedSections || unsavedDocuments || unsavedUrls || unsavedContent || contextBlocked;
+  const hasUnsavedContent = unsavedSections || unsavedDocuments || unsavedUrls || unsavedContent || contextBlocked || formCustody.hasUnsavedForms;
   const working = data.activeVersion.state === "working";
   const displayPlan = data.frozenVersion ? { title: data.frozenVersion.plan.title,
     authority_label: data.frozenVersion.plan.authorityLabel, geography_label: data.frozenVersion.plan.geographyLabel } : data.plan;
@@ -219,7 +228,7 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
   async function submitNode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); const formElement = event.currentTarget; const form = new FormData(formElement);
     await postJson(`/api/land-use-plans/${planId}/content`, { operation: "create", parentNodeId: String(form.get("parentNodeId")) || null, nodeKind: String(form.get("nodeKind")), title: String(form.get("title")), body: String(form.get("body")) || null, sortOrder: workbenchData.nodes.length + 1 });
-    formElement.reset();
+    resetUnchangedPlanForm(formElement, form);
   }
 
   async function submitDesignation(event: FormEvent<HTMLFormElement>) {
@@ -227,26 +236,25 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
     const layer = workbenchData.layers.find((item) => item.id === layerId); const layerVersionId = layer?.current_version_id;
     if (!layerVersionId) throw new Error("Choose a GIS layer with a ready current version");
     await postJson(`/api/land-use-plans/${planId}/designations`, { layerId, layerVersionId, designationSetLabel: String(form.get("label")), legendMetadata: { source: "workspace_gis_layer", layerName: layer.name }, publicFieldKeys: form.getAll("publicFieldKeys").map(String), legendField: String(form.get("legendField")) || null, policyNodeIds: form.getAll("policyNodeIds").map(String) });
-    formElement.reset();
-    setDesignationLayerId("");
+    if (resetUnchangedPlanForm(formElement, form)) setDesignationLayerId("");
   }
 
   async function submitImplementation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); const formElement = event.currentTarget; const form = new FormData(formElement);
     await postJson(`/api/land-use-plans/${planId}/implementation`, { operation: "create", title: String(form.get("title")), responsibleParty: String(form.get("responsibleParty")) || null, dueOn: String(form.get("dueOn")) || null, projectId: String(form.get("projectId")) || null, programId: String(form.get("programId")) || null });
-    formElement.reset();
+    resetUnchangedPlanForm(formElement, form);
   }
 
   async function submitRelationship(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); const formElement = event.currentTarget; const form = new FormData(formElement);
     await postJson(`/api/land-use-plans/${planId}/relationships`, { relatedPlanLabel: String(form.get("label")), relationshipKind: String(form.get("kind")), notes: String(form.get("notes")) || null });
-    formElement.reset();
+    resetUnchangedPlanForm(formElement, form);
   }
 
   async function submitReview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); const formElement = event.currentTarget; const form = new FormData(formElement);
     await postJson(`/api/land-use-plans/${planId}/reviews`, { operation: "record_event", versionId: workbenchData.activeVersion.id, eventKind: String(form.get("eventKind")), occurredOn: String(form.get("occurredOn")) || null, decisionBody: String(form.get("decisionBody")) || null, engagementCampaignId: String(form.get("campaignId")) || null, evidenceDocumentId: String(form.get("documentId")) || null, notes: String(form.get("notes")) || null });
-    formElement.reset();
+    resetUnchangedPlanForm(formElement, form);
   }
 
   async function submitConsultation(event: FormEvent<HTMLFormElement>) {
@@ -262,23 +270,23 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
   async function submitAnnualReport(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); const formElement = event.currentTarget; const form = new FormData(formElement);
     await postJson(`/api/land-use-plans/${planId}/implementation-reports`, { reportingPeriodStart: String(form.get("start")), reportingPeriodEnd: String(form.get("end")), title: String(form.get("title")), summary: String(form.get("summary")) || null });
-    formElement.reset();
+    resetUnchangedPlanForm(formElement, form);
   }
 
   async function submitProcess(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); const formElement = event.currentTarget; const form = new FormData(formElement);
     await postJson(`/api/land-use-plans/${planId}/process`, { versionId: workbenchData.activeVersion.id, processKey: String(form.get("processKey")), status: String(form.get("status")), dueOn: String(form.get("dueOn")) || null, completedOn: String(form.get("completedOn")) || null, evidenceDocumentId: String(form.get("documentId")) || null, notes: String(form.get("notes")) || null });
-    formElement.reset();
+    resetUnchangedPlanForm(formElement, form);
   }
 
   async function submitReviewRelease(event: FormEvent<HTMLFormElement>, reviewMethod: "engagement_campaign" | "external_process") {
     event.preventDefault(); const formElement = event.currentTarget; const form = new FormData(formElement);
     await postJson(`/api/land-use-plans/${planId}/review-releases`, { operation: "release", versionId: workbenchData.activeVersion.id, versionContentHash: workbenchData.activeVersion.content_hash, reviewMethod, reviewOpenOn: String(form.get("reviewOpenOn")), reviewCloseOn: String(form.get("reviewCloseOn")), engagementCampaignId: reviewMethod === "engagement_campaign" ? String(form.get("campaignId")) || null : null, externalReviewDocumentId: reviewMethod === "external_process" ? String(form.get("documentId")) || null : null });
-    formElement.reset();
+    resetUnchangedPlanForm(formElement, form);
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={formCustody.root} onInputCapture={formCustody.change} onChangeCapture={formCustody.change} onResetCapture={formCustody.reset}>
       <header className="rounded-xl border border-border bg-card p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{data.descriptor.terminology.plan} · version {data.activeVersion.version_number}</p><h1 className="mt-1 text-3xl font-bold">{displayPlan.title}</h1><p className="mt-2 text-sm text-muted-foreground">{displayPlan.authority_label} · {displayPlan.geography_label}</p></div>
@@ -301,9 +309,9 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
       </nav>
 
       {actionError ? <div role="alert" className="rounded-lg border border-destructive p-3 text-sm text-destructive">{actionError}</div> : null}
-      {working ? <p role="status" className="rounded-lg border border-border bg-card p-3 text-sm">{busy ? "Saving and refreshing the plan. New typing remains unsaved." : hasUnsavedContent ? "Context or content needs attention. Save edits and review recovery copies before freezing the plan." : "Context, section and content-node changes are saved."}</p> : null}
+      {working ? <p role="status" className="rounded-lg border border-border bg-card p-3 text-sm">{busy ? "Saving and refreshing the plan. New typing remains unsaved." : hasUnsavedContent ? "Context, content or an unfinished form needs attention. Save edits and review recovery copies before freezing the plan." : "Context, content and staff forms have no unsaved edits."}</p> : null}
       {data.frozenVersion ? <LandUsePlanRetainedContext value={data.frozenVersion.context}/> : null}
-      <details open={working} className="space-y-3">
+      <details open={working} className="space-y-3" data-plan-context-custody>
         <summary className="cursor-pointer text-sm font-medium">{working ? "Plan context and request recovery" : "Current plan context and request recovery"}</summary>
       <LandUsePlanContextEditor key={`${data.actorId}:${data.plan.workspace_id}:${planId}`} actorId={data.actorId} workspaceId={data.plan.workspace_id} planId={planId}
         activeVersionId={data.activeVersion.id} draftRevision={data.activeVersion.draft_revision} workingVersionId={data.plan.current_working_version_id} descriptorId={data.plan.descriptor_id} planKindKey={data.plan.plan_kind_key}
@@ -312,7 +320,16 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
       </details>
       <section className="rounded-xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Workflow</h2><div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{workflow.map((step) => <div key={step.key} className={`rounded-lg border p-3 text-sm ${step.complete ? "border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20" : "border-border"}`}><span className="font-medium">{step.complete ? "Complete" : "Open"}</span> · {step.label}{step.humanOnly ? <span className="ml-1 text-xs text-muted-foreground">human only</span> : null}</div>)}</div></section>
 
-      <section className="rounded-xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Applicable {data.descriptor.terminology.section}s</h2><p className="mt-1 text-sm text-muted-foreground">Conditional requirements stay visible with their trigger. The planner decides applicability.</p><div className="mt-4 space-y-4">{data.nodes.filter((node) => node.node_kind === "section").map((node) => { const requirement = data.descriptor.requirements.find((item) => item.key === node.requirement_key); const applicable = Boolean(node.requirement_key && (requirement?.applicability !== "conditional" || data.activeVersion.applicable_requirement_keys.includes(node.requirement_key))); return <div key={node.id} className="rounded-lg border border-border p-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 id={`section-title-${node.id}`} className="font-semibold">{node.title}</h3>{requirement?.applicability === "conditional" && node.requirement_key ? <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={applicable} disabled={!working || busy || !data.canWrite} onChange={(event) => void run(() => setRequirementApplicability(node.requirement_key!, event.target.checked))}/>Applicable to this version</label> : <span className="text-xs text-muted-foreground">{requirement?.applicability.replaceAll("_", " ")}</span>}</div>{requirement?.condition ? <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{requirement.condition}</p> : null}<Textarea aria-labelledby={`section-title-${node.id}`} className="mt-3 min-h-36" value={sectionDrafts[node.id] ?? ""} onChange={(event) => setSectionDrafts((current) => ({ ...current, [node.id]: event.target.value }))} disabled={!working || !data.canWrite || !applicable} placeholder="Author the plan text, with evidence links and policy details."/><div className="mt-3 grid gap-2 md:grid-cols-2"><label className="block text-sm">Evidence document<select className="module-select mt-1" value={sectionEvidenceDocuments[node.id] ?? ""} disabled={!working || !data.canWrite || !applicable} onChange={(event) => setSectionEvidenceDocuments((current) => ({ ...current, [node.id]: event.target.value }))}><option value="">No evidence document</option>{data.documents.map((document) => <option key={document.id} value={document.id}>{document.title}</option>)}</select></label><label className="block text-sm">Official evidence URL<Input className="mt-1" value={sectionEvidenceUrls[node.id] ?? ""} disabled={!working || !data.canWrite || !applicable} onChange={(event) => setSectionEvidenceUrls((current) => ({ ...current, [node.id]: event.target.value }))} placeholder="https://"/></label></div><Button className="mt-2" size="sm" disabled={!working || busy || !data.canWrite || !applicable} onClick={() => void run(() => saveSection(node.id))}>Save section</Button></div>; })}</div>
+      <LandUsePlanRuleReconciliationControl key={`checklist:${data.actorId}:${data.plan.workspace_id}:${planId}`}
+        actorId={data.actorId} workspaceId={data.plan.workspace_id} planId={planId}
+        versionId={data.activeVersion.id} versionNumber={data.activeVersion.version_number}
+        draftRevision={data.activeVersion.draft_revision} descriptorHash={data.descriptorHash}
+        working={working} canWrite={data.canWrite && !data.isHistoricalVersion} disabled={busy || hasUnsavedContent}
+        missingSections={data.descriptor.requirements.filter(requirement => !data.nodes.some(node => node.node_kind === "section" && node.requirement_key === requirement.key))}
+        missingDefaults={data.descriptor.requirements.filter(requirement => requirement.applicability !== "conditional" && !data.activeVersion.applicable_requirement_keys.includes(requirement.key))}
+        onRefresh={async () => { await load(); router.refresh(); }} />
+
+      <section className="rounded-xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Applicable {data.descriptor.terminology.section}s</h2><p className="mt-1 text-sm text-muted-foreground">Conditional requirements stay visible with their trigger. The planner decides applicability.</p><div className="mt-4 space-y-4">{data.nodes.filter((node) => node.node_kind === "section").map((node) => { const requirement = data.descriptor.requirements.find((item) => item.key === node.requirement_key); const applicable = !requirement || requirement.applicability !== "conditional" || Boolean(node.requirement_key && data.activeVersion.applicable_requirement_keys.includes(node.requirement_key)); return <div key={node.id} className="rounded-lg border border-border p-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 id={`section-title-${node.id}`} className="font-semibold">{node.title}</h3>{requirement?.applicability === "conditional" && node.requirement_key ? <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={applicable} disabled={!working || busy || !data.canWrite} onChange={(event) => void run(() => setRequirementApplicability(node.requirement_key!, event.target.checked))}/>Applicable to this version</label> : <span className="text-xs text-muted-foreground">{requirement ? requirement.applicability.replaceAll("_", " ") : "Earlier section outside the current checklist"}</span>}</div>{!requirement ? <p className="mt-1 text-sm text-muted-foreground">This retained section stays editable in the working draft. Its text and evidence do not automatically satisfy another checklist item.</p> : null}{requirement?.condition ? <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{requirement.condition}</p> : null}<Textarea aria-labelledby={`section-title-${node.id}`} className="mt-3 min-h-36" value={sectionDrafts[node.id] ?? ""} onChange={(event) => setSectionDrafts((current) => ({ ...current, [node.id]: event.target.value }))} disabled={!working || !data.canWrite || !applicable} placeholder="Author the plan text, with evidence links and policy details."/><div className="mt-3 grid gap-2 md:grid-cols-2"><label className="block text-sm">Evidence document<select className="module-select mt-1" value={sectionEvidenceDocuments[node.id] ?? ""} disabled={!working || !data.canWrite || !applicable} onChange={(event) => setSectionEvidenceDocuments((current) => ({ ...current, [node.id]: event.target.value }))}><option value="">No evidence document</option>{data.documents.map((document) => <option key={document.id} value={document.id}>{document.title}</option>)}</select></label><label className="block text-sm">Official evidence URL<Input className="mt-1" value={sectionEvidenceUrls[node.id] ?? ""} disabled={!working || !data.canWrite || !applicable} onChange={(event) => setSectionEvidenceUrls((current) => ({ ...current, [node.id]: event.target.value }))} placeholder="https://"/></label></div><Button className="mt-2" size="sm" disabled={!working || busy || !data.canWrite || !applicable} onClick={() => void run(() => saveSection(node.id))}>Save section</Button></div>; })}</div>
         {data.nodes.some((node) => node.node_kind !== "section") ? <div className="mt-5 space-y-3"><h3 className="font-semibold">Plan content</h3>{data.nodes.filter((node) => node.node_kind !== "section").map((node) => <article key={node.id} className="rounded-lg border border-border p-4"><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Edit content node · {node.node_kind.replaceAll("_", " ")}</p><label className="mt-3 block text-sm">Title<Input className="mt-1" value={contentDrafts[node.id]?.title ?? node.title} disabled={!working || busy || !data.canWrite} onChange={(event) => setContentDrafts((current) => ({ ...current, [node.id]: { title: event.target.value, body: current[node.id]?.body ?? node.body ?? "" } }))}/></label><label className="mt-3 block text-sm">Draft text<Textarea className="mt-1 min-h-28" value={contentDrafts[node.id]?.body ?? node.body ?? ""} disabled={!working || busy || !data.canWrite} onChange={(event) => setContentDrafts((current) => ({ ...current, [node.id]: { title: current[node.id]?.title ?? node.title, body: event.target.value } }))}/></label><Button className="mt-3" size="sm" disabled={!working || busy || !data.canWrite || !(contentDrafts[node.id]?.title ?? node.title).trim()} onClick={() => void run(() => saveContentNode(node.id))}>Save content node</Button></article>)}</div> : null}
         {working ? <form className="mt-5 grid gap-3 rounded-lg border border-dashed border-border p-4 md:grid-cols-2" onSubmit={(event) => void run(() => submitNode(event), event)}><h3 className="md:col-span-2 font-semibold">Add a goal, objective, policy, standard, program, or action node</h3><label className="block text-sm">Parent section<select className="module-select mt-1" name="parentNodeId" defaultValue=""><option value="">Top level</option>{data.nodes.filter((node) => node.node_kind === "section").map((node) => <option key={node.id} value={node.id}>{node.title}</option>)}</select></label><label className="block text-sm">Node type<select className="module-select mt-1" name="nodeKind" defaultValue="policy">{["goal","objective","policy","standard","program","implementation_action"].map((kind) => <option key={kind} value={kind}>{kind.replaceAll("_", " ")}</option>)}</select></label><label className="block text-sm">Node title<Input className="mt-1" name="title" required/></label><label className="block text-sm">Node text<Textarea className="mt-1" name="body"/></label><Button disabled={busy || !data.canWrite}>Add content node</Button></form> : null}
       </section>
@@ -368,9 +385,9 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
                 ? <a className="mt-2 inline-block underline" href={`/review/land-use-plans/${release.share_token}`}>Open public review</a>
                 : <p className="mt-2 text-muted-foreground">Withdrawn: {release.withdrawal_reason}</p>}
               {release.status === "open" ? (
-                <div className="mt-3 grid gap-2 md:grid-cols-2">
+                <form className="mt-3 grid gap-2 md:grid-cols-2" onSubmit={event => event.preventDefault()}>
                   {release.review_method === "external_process" ? (
-                    <label className="block text-sm">Disposition summary for external review<Textarea className="mt-1" id={`disposition-${release.id}`}/></label>
+                    <label className="block text-sm">Disposition summary for external review<Textarea className="mt-1" name="dispositionSummary" id={`disposition-${release.id}`}/></label>
                   ) : (
                     <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100">
                       <p>Close the linked public review and finish reviewing its comments before freezing this review outcome.</p>
@@ -388,6 +405,7 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
                     </div>
                   )}
                   <Button
+                    type="button"
                     disabled={busy || !data.canWrite || linkedCampaignNeedsClosure}
                     onClick={() => {
                       const value = release.review_method === "external_process"
@@ -407,9 +425,10 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
                       {actionError}
                     </div>
                   ) : null}
-                  <label className="block text-sm">Reason for withdrawal<Input className="mt-1" id={`withdraw-${release.id}`}/></label>
+                  <label className="block text-sm">Reason for withdrawal<Input className="mt-1" name="withdrawalReason" id={`withdraw-${release.id}`}/></label>
                   <Button
                     variant="outline"
+                    type="button"
                     disabled={busy || !data.canWrite}
                     onClick={() => {
                       const reason = (document.getElementById(`withdraw-${release.id}`) as HTMLInputElement | null)?.value ?? "";
@@ -422,7 +441,7 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
                   >
                     Withdraw mistaken release
                   </Button>
-                </div>
+                </form>
               ) : null}
             </article>
           );
@@ -430,7 +449,7 @@ export function LandUsePlanWorkbench({ planId, versionId }: { planId: string; ve
         {currentVersionReleases.length === 0 ? <div className="mt-4 grid gap-6 lg:grid-cols-2"><form className="space-y-3 rounded-lg border p-4" onSubmit={(event) => void run(() => submitReviewRelease(event, "engagement_campaign"), event)}><h3 className="font-semibold">Release with Engagement</h3><label className="block text-sm">Review opens<Input className="mt-1" name="reviewOpenOn" required type="date"/></label><label className="block text-sm">Review closes<Input className="mt-1" name="reviewCloseOn" required type="date"/></label><label className="block text-sm">Public engagement<select className="module-select mt-1 w-full" name="campaignId" required defaultValue=""><option value="">Active public engagement</option>{data.campaigns.filter((campaign) => campaign.status === "active").map((campaign) => <option key={campaign.id} value={campaign.id}>{campaign.title}</option>)}</select></label><Button disabled={busy || !data.canWrite}>Publish review release</Button></form><form className="space-y-3 rounded-lg border p-4" onSubmit={(event) => void run(() => submitReviewRelease(event, "external_process"), event)}><h3 className="font-semibold">Release with external review</h3><label className="block text-sm">Review opens<Input className="mt-1" name="reviewOpenOn" required type="date"/></label><label className="block text-sm">Review closes<Input className="mt-1" name="reviewCloseOn" required type="date"/></label><label className="block text-sm">External review document<select className="module-select mt-1 w-full" name="documentId" required defaultValue=""><option value="">Ready external-review document</option>{data.documents.map((document) => <option key={document.id} value={document.id}>{document.title}</option>)}</select></label><Button disabled={busy || !data.canWrite}>Publish review release</Button></form></div> : null}
       </section> : null}
 
-      <section className="rounded-xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Freeze, adopt, and publish</h2>{working ? <div className="mt-4"><p className="text-sm text-muted-foreground">Freezing captures plan content, exact GIS versions, policy links, and the implementation program under one SHA-256 hash. It cannot be edited afterward.</p>{publicDraftBlockers.length > 0 ? <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"><p className="font-semibold">Before freezing, complete:</p><ul className="mt-2 list-disc space-y-1 pl-5">{publicDraftBlockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></div> : hasUnsavedContent ? <p className="mt-3 text-sm text-amber-700 dark:text-amber-300">Save edited context, sections and content nodes, and review recovery copies before freezing.</p> : <p className="mt-3 text-sm text-emerald-700 dark:text-emerald-300">The public draft is ready to freeze.</p>}</div> : null}<LandUsePlanFreezeControl key={`${data.actorId}:${data.plan.workspace_id}:${planId}`} actorId={data.actorId} workspaceId={data.plan.workspace_id} planId={planId} versionId={data.activeVersion.id} versionNumber={data.activeVersion.version_number} draftRevision={data.activeVersion.draft_revision} descriptorHash={data.descriptorHash} working={working} canWrite={data.canWrite} disabled={busy || hasUnsavedContent || publicDraftBlockers.length > 0} onRefresh={async () => { await load(); router.refresh(); }} />{data.activeVersion.state === "public_review" ? <><form className="mt-4 grid gap-3 md:grid-cols-2" onSubmit={(event) => void run(() => submitAdoption(event), event)}><p className="md:col-span-2 break-all rounded-lg bg-muted p-3 text-xs">Reviewed content hash: {data.activeVersion.content_hash}</p>{adoptionBlockers.length > 0 ? <div className="md:col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"><p className="font-semibold">Before adoption, complete:</p><ul className="mt-2 list-disc space-y-1 pl-5">{adoptionBlockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></div> : <p className="md:col-span-2 text-sm text-emerald-700 dark:text-emerald-300">The latest closed review and adoption prerequisites are on file.</p>}<label className="block text-sm">Decision body<Input className="mt-1" name="decisionBody" required/></label><label className="block text-sm">Instrument type<Input className="mt-1" name="instrumentType" required defaultValue={data.descriptor.terminology.adoptionInstrument}/></label><label className="block text-sm">Instrument identifier<Input className="mt-1" name="instrumentIdentifier" required/></label><label className="block text-sm">Vote<Input className="mt-1" name="vote"/></label><label className="block text-sm">Decision date<Input className="mt-1" name="decidedOn" required type="date"/></label><label className="block text-sm">Effective date<Input className="mt-1" name="effectiveOn" type="date"/></label><label className="block text-sm md:col-span-2">Supporting adoption document<select className="module-select mt-1" name="documentId" required defaultValue=""><option value="">Supporting adoption document</option>{data.documents.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label><Button className="md:col-span-2" disabled={busy || !data.canWrite || adoptionBlockers.length > 0}>Save adoption of latest closed review</Button></form><Button className="mt-3" variant="outline" disabled={busy || !data.canWrite || currentVersionReleases.some((release) => release.status === "open")} onClick={() => void run(() => postJson(`/api/land-use-plans/${planId}/versions`, { baseVersionId: data.activeVersion.id }))}>Revise reviewed plan</Button></> : null}{adopted ? <div className="mt-4 space-y-3"><p className="break-all rounded-lg bg-muted p-3 text-xs">Adopted content hash: {data.activeVersion.content_hash}</p>{data.activeVersion.published_report_id ? <div className="flex flex-wrap gap-4 text-sm font-medium"><a className="underline" href={`/published-plans/${planId}`}>Open published plan</a><Link className="underline" href={`/reports/${data.activeVersion.published_report_id}`}>Open adopted-plan report</Link></div> : <Button disabled={busy || !data.canWrite} onClick={() => void run(() => postJson(`/api/land-use-plans/${planId}/decisions`, { operation: "publish", versionId: data.activeVersion.id, versionContentHash: data.activeVersion.content_hash, title: `${displayPlan.title} adopted plan` }))}>Publish frozen plan</Button>}<Button variant="outline" disabled={busy || !data.canWrite || Boolean(data.plan.current_working_version_id)} onClick={() => void run(() => postJson(`/api/land-use-plans/${planId}/versions`, {}))}>Fork amendment working version</Button></div> : null}</section>
+      <section className="rounded-xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Freeze, adopt, and publish</h2>{working ? <div className="mt-4"><p className="text-sm text-muted-foreground">Freezing captures plan content, exact GIS versions, policy links, and the implementation program under one SHA-256 hash. It cannot be edited afterward.</p>{publicDraftBlockers.length > 0 ? <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"><p className="font-semibold">Before freezing, complete:</p><ul className="mt-2 list-disc space-y-1 pl-5">{publicDraftBlockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></div> : hasUnsavedContent ? <p className="mt-3 text-sm text-amber-700 dark:text-amber-300">Save edited context, sections, content nodes and staff forms, and review recovery copies before freezing.</p> : <p className="mt-3 text-sm text-emerald-700 dark:text-emerald-300">The public draft is ready to freeze.</p>}</div> : null}<LandUsePlanFreezeControl key={`${data.actorId}:${data.plan.workspace_id}:${planId}`} actorId={data.actorId} workspaceId={data.plan.workspace_id} planId={planId} versionId={data.activeVersion.id} versionNumber={data.activeVersion.version_number} draftRevision={data.activeVersion.draft_revision} descriptorHash={data.descriptorHash} working={working} canWrite={data.canWrite} disabled={busy || hasUnsavedContent || publicDraftBlockers.length > 0} onRefresh={async () => { await load(); router.refresh(); }} />{data.activeVersion.state === "public_review" ? <><form className="mt-4 grid gap-3 md:grid-cols-2" onSubmit={(event) => void run(() => submitAdoption(event), event)}><p className="md:col-span-2 break-all rounded-lg bg-muted p-3 text-xs">Reviewed content hash: {data.activeVersion.content_hash}</p>{adoptionBlockers.length > 0 ? <div className="md:col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"><p className="font-semibold">Before adoption, complete:</p><ul className="mt-2 list-disc space-y-1 pl-5">{adoptionBlockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></div> : <p className="md:col-span-2 text-sm text-emerald-700 dark:text-emerald-300">The latest closed review and adoption prerequisites are on file.</p>}<label className="block text-sm">Decision body<Input className="mt-1" name="decisionBody" required/></label><label className="block text-sm">Instrument type<Input className="mt-1" name="instrumentType" required defaultValue={data.descriptor.terminology.adoptionInstrument}/></label><label className="block text-sm">Instrument identifier<Input className="mt-1" name="instrumentIdentifier" required/></label><label className="block text-sm">Vote<Input className="mt-1" name="vote"/></label><label className="block text-sm">Decision date<Input className="mt-1" name="decidedOn" required type="date"/></label><label className="block text-sm">Effective date<Input className="mt-1" name="effectiveOn" type="date"/></label><label className="block text-sm md:col-span-2">Supporting adoption document<select className="module-select mt-1" name="documentId" required defaultValue=""><option value="">Supporting adoption document</option>{data.documents.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label><Button className="md:col-span-2" disabled={busy || !data.canWrite || adoptionBlockers.length > 0}>Save adoption of latest closed review</Button></form><Button className="mt-3" variant="outline" disabled={busy || !data.canWrite || currentVersionReleases.some((release) => release.status === "open")} onClick={() => void run(() => postJson(`/api/land-use-plans/${planId}/versions`, { baseVersionId: data.activeVersion.id }))}>Revise reviewed plan</Button></> : null}{adopted ? <div className="mt-4 space-y-3"><p className="break-all rounded-lg bg-muted p-3 text-xs">Adopted content hash: {data.activeVersion.content_hash}</p>{data.activeVersion.published_report_id ? <div className="flex flex-wrap gap-4 text-sm font-medium"><a className="underline" href={`/published-plans/${planId}`}>Open published plan</a><Link className="underline" href={`/reports/${data.activeVersion.published_report_id}`}>Open adopted-plan report</Link></div> : <Button disabled={busy || !data.canWrite} onClick={() => void run(() => postJson(`/api/land-use-plans/${planId}/decisions`, { operation: "publish", versionId: data.activeVersion.id, versionContentHash: data.activeVersion.content_hash, title: `${displayPlan.title} adopted plan` }))}>Publish frozen plan</Button>}<Button variant="outline" disabled={busy || !data.canWrite || Boolean(data.plan.current_working_version_id)} onClick={() => void run(() => postJson(`/api/land-use-plans/${planId}/versions`, {}))}>Fork amendment working version</Button></div> : null}</section>
 
       {adopted ? <section className="rounded-xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">{data.descriptor.terminology.implementationReport}</h2><p className="mt-1 text-sm text-muted-foreground">The report freezes the current implementation statuses against the adopted plan hash. Use the descriptor duty below to set the actual due date.</p><form className="mt-4 grid gap-3 md:grid-cols-2" onSubmit={(event) => void run(() => submitAnnualReport(event), event)}><label className="block text-sm">Reporting period start<Input className="mt-1" name="start" required type="date"/></label><label className="block text-sm">Reporting period end<Input className="mt-1" name="end" required type="date"/></label><label className="block text-sm md:col-span-2">Annual implementation report title<Input className="mt-1" name="title" required/></label><label className="block text-sm md:col-span-2">Summary<Textarea className="mt-1" name="summary"/></label><Button className="md:col-span-2" disabled={busy || !data.canWrite}>Generate frozen implementation report</Button></form>{data.reports.map((report) => <p key={report.id} className="mt-3 rounded-lg border p-3 text-sm">{report.reporting_period_start} through {report.reporting_period_end}{report.report_id ? <> · <Link className="underline" href={`/reports/${report.report_id}`}>open readable report</Link></> : " · report link unavailable"}</p>)}</section> : null}
 

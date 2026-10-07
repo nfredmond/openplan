@@ -1,5 +1,9 @@
 # Working-draft rule reconciliation backend
 
+Follow-up: [staff review and browser recovery](RULE_RECONCILIATION_UI.md) records
+the subsequent UI implementation. This backend record retains its earlier
+verification boundary.
+
 October 7, 2026. This implements the command and transaction in the
 [reconciliation design](DRAFT_RULE_RECONCILIATION_DESIGN.md). It does not yet add
 the workbench action or browser recovery. An older specific-plan draft still
