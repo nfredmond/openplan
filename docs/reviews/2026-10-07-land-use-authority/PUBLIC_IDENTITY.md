@@ -60,3 +60,26 @@ These checks establish a reader and native-record boundary. They do not establis
 an identified HTTP build, rendered public journey, adopted-packet native case,
 downloads, legal completeness or professional acceptance. The broader M1 case,
 plan-kind-specific requirements, recovery and full v1 scope remain open.
+
+## Identified production follow-up
+
+The clean, unchanged `61e82460` production build passes. The owned server on
+port 3491 reports `61e824600a45`; process 3254823 runs from this worktree's
+application directory. The [identity record](identity-61e8.json) preserves that
+check separately from database readiness.
+
+A second synthetic review round retains the same original version. Its live
+plan still has the later labels from the native case. The public API returns
+200 with the original frozen identity and hash. The server-rendered public page
+returns 200, contains the original authority and excludes the later authority.
+Withdrawing this test round makes the public API return 404. Both rounds remain
+retained. The [HTTP record](http-61e8.json) supersedes the missing production HTTP
+boundary above for this named case only. HTML inspection is not browser visual,
+keyboard, console, download or practitioner acceptance. Native adopted-packet
+acceptance remains open. The owned server is stopped before these evidence edits.
+
+The [fresh integration audit](integration-audit-61e8.json) accounts for 43
+worktrees, 54 local branches and 55 live origin branches. Every local branch
+matches its remote and there are no stashes. Six branches remain outside main.
+Only the canonical checkout's unrelated `.directory` is untracked. The BCA
+server on port 3486 remains untouched.
