@@ -1,0 +1,62 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-public-identity.test.ts (32 tests | 4 failed) 28ms
+     × uses saved descriptor wording and dates instead of the installed edition 8ms
+     × keeps a valid saved descriptor after it is removed from the installed registry 1ms
+     × uses saved descriptor wording and dates instead of the installed edition 1ms
+     × keeps a valid saved descriptor after it is removed from the installed registry 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-public-identity.test.ts > adopted public frozen identity > uses saved descriptor wording and dates instead of the installed edition
+ FAIL  src/test/land-use-plan-public-identity.test.ts > review public frozen identity > uses saved descriptor wording and dates instead of the installed edition
+AssertionError: expected { terminology: { …(4) }, …(4) } to match object { terminology: { …(4) }, …(2) }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "disclosure": "SYNTHETIC original scope disclosure",
++   "disclosure": "Local legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.",
+    "terminology": {
+      "adoptionInstrument": "adoption instrument",
+      "implementationReport": "implementation report",
+-     "plan": "SYNTHETIC saved terminology",
++     "plan": "land use plan",
+      "section": "section",
+    },
+-   "verifiedAt": "2026-01-01",
++   "verifiedAt": "2026-08-23",
+  }
+
+ ❯ src/test/land-use-plan-public-identity.test.ts:107:38
+    105|     if (!result.ok) throw Error(result.reason);
+    106|     expect(result.packet.descriptorCustody).toBe("frozen");
+    107|     expect(result.packet.descriptor).toMatchObject({ terminology: save…
+       |                                      ^
+    108|   });
+    109|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/test/land-use-plan-public-identity.test.ts > adopted public frozen identity > keeps a valid saved descriptor after it is removed from the installed registry
+ FAIL  src/test/land-use-plan-public-identity.test.ts > review public frozen identity > keeps a valid saved descriptor after it is removed from the installed registry
+AssertionError: expected null not to be null
+ ❯ src/test/land-use-plan-public-identity.test.ts:115:59
+    113|     const result = await load();
+    114|     expect(result.ok).toBe(true);
+    115|     if (result.ok) { expect(result.packet.descriptor).not.toBeNull(); …
+       |                                                           ^
+    116|   });
+    117|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  4 failed | 49 passed (53)
+   Start at  02:39:31
+   Duration  2.43s (transform 122ms, setup 152ms, import 319ms, tests 244ms, environment 1.30s)
+

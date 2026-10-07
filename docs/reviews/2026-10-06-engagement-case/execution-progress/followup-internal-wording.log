@@ -1,0 +1,47 @@
+
+> openplan@0.67.0 test
+> vitest run --maxWorkers=1 src/test/planner-copy-says-the-plain-thing.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/planner-copy-says-the-plain-thing.test.ts (4 tests | 1 failed) 30ms
+     × uses no term from the ledger more often than the recorded baseline 24ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  00:04:55
+   Duration  674ms (transform 46ms, setup 54ms, import 107ms, tests 30ms, environment 327ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/planner-copy-says-the-plain-thing.test.ts > planner copy says the plain thing > uses no term from the ledger more often than the recorded baseline
+AssertionError: A term of art moved in the wrong direction. If a count ROSE, a lane is saying the machine's word for something a planner already has a word for — src/test/helpers/jargon-ledger.ts says what to say instead. If a count FELL, good: lower the number in BASELINE in the same commit, so the improvement is banked and cannot silently come back.: expected { posture: 50, packet: 128, …(42) } to deeply equal { artifact: 43, attribute: 4, …(42) }
+
+- Expected
++ Received
+
+@@ -28,11 +28,11 @@
+    "populate": 1,
+    "posture": 50,
+    "preset": 13,
+    "provenance": 11,
+    "readiness": 33,
+-   "record": 249,
++   "record": 250,
+    "registry": 17,
+    "resolve": 3,
+    "scaffold": 3,
+    "schema": 5,
+    "signal": 8,
+
+ ❯ src/test/planner-copy-says-the-plain-thing.test.ts:283:7
+    281|         "FELL, good: lower the number in BASELINE in the same commit, …
+    282|         "improvement is banked and cannot silently come back."
+    283|     ).toEqual(BASELINE);
+       |       ^
+    284|   });
+    285| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

@@ -1,0 +1,31 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 1 failed) 207ms
+     × uses the report map endpoint, saved extent, hash and note 120ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > report designation presentation > uses the report map endpoint, saved extent, hash and note
+Error: expect(element).toHaveAttribute("data-bbox", "[-122,38,-121,39]") // element.getAttribute("data-bbox") === "[-122,38,-121,39]"
+
+Expected the element to have attribute:
+  data-bbox="[-122,38,-121,39]"
+Received:
+  data-bbox="null"
+ ❯ src/test/land-use-plan-report-map.test.tsx:156:82
+    154|     render(await LandUsePlanReportPage({ report }));
+    155|     expect(screen.getByRole("img", { name: "SYNTHETIC retained designa…
+    156|     expect(screen.getByRole("img", { name: "SYNTHETIC retained designa…
+       |                                                                                  ^
+    157|     expect(screen.getByText("SYNTHETIC map is not zoning")).toBeVisibl…
+    158|     expect(screen.getByText(`Frozen GIS feature hash: ${featureHash}`)…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  12:30:45
+   Duration  980ms (transform 145ms, setup 54ms, import 304ms, tests 207ms, environment 322ms)
+

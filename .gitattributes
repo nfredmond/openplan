@@ -1,3 +1,18 @@
 # Retain upstream notice bytes, including original line endings and spaces.
 /openplan/src/app/fonts/*/OFL.txt -text whitespace=-blank-at-eol,cr-at-eol
 /openplan/src/app/fonts/*/METADATA.pb -text
+
+# Preserve captured test logs byte for byte, including terminal blank lines.
+/docs/reviews/2026-10-06-engagement-case/**/*.log whitespace=-blank-at-eof
+
+# Preserve captured verification output, including tool-generated padding.
+/docs/reviews/2026-10-07-land-use-authority/creation-workflow/** whitespace=-blank-at-eol,-blank-at-eof
+
+# Preserve raw plan-kind verification output.
+/docs/reviews/2026-10-07-land-use-authority/plan-kind-rules/** whitespace=-blank-at-eol,-blank-at-eof
+
+# Preserve captured readiness verification output.
+/docs/reviews/2026-10-07-land-use-authority/readiness-reconciliation/** whitespace=-blank-at-eol,-blank-at-eof
+
+# Preserve the original engagement integration test output.
+/docs/reviews/2026-10-07-engagement-main-integration/*.log whitespace=-blank-at-eof

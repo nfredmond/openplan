@@ -1,0 +1,80 @@
+{
+  "state": "incomplete",
+  "cases": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "no-latest-fallback",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "shows the same default edition"
+    },
+    {
+      "name": "oldest-fallback",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "shows the same default edition"
+    },
+    {
+      "name": "ignore-working",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "shows the same default edition"
+    },
+    {
+      "name": "ignore-adopted",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "shows the same default edition"
+    },
+    {
+      "name": "mutate-row-order",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "shows the same default edition"
+    },
+    {
+      "name": "omit-number-projection",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "shows the same default edition"
+    },
+    {
+      "name": "omit-review-context",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "shows saved area"
+    },
+    {
+      "name": "omit-adopted-context",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "shows saved area"
+    },
+    {
+      "name": "review-download-view-only",
+      "exitCode": 1,
+      "verified": false,
+      "expectedFailure": "shows saved area"
+    }
+  ],
+  "restored": true,
+  "sourceHashes": {
+    "src/app/(app)/land-use-plans/page.tsx": "d053fc4b55a89266c2a342f94b707d9958d072b481a8c9be9c13b1152248a439",
+    "src/app/(published)/review/land-use-plans/[shareToken]/page.tsx": "4138af8f1fd8a0be8020c1acbaa6fa4a8683937364b90643251331fc3a5b2aa7",
+    "src/app/(published)/published-plans/[planId]/page.tsx": "aad168ba7a542d2c0681c9ad9048e4307c00c3b41cb880888eaa817825c4b704",
+    "src/components/land-use-plans/land-use-plan-public-context.tsx": "94bdf093e40e445930a6362cc51a2a712faba67b2bf108f25345baa25df789cb",
+    "src/components/land-use-plans/land-use-plan-retained-context.tsx": "f33f0f05abab487cfb62c03d322443163bdaf34641cd84347201314e750cdd63"
+  },
+  "blindCategory": "Mounted pages and projected mocks only. Does not prove native authorization, browser download, layout, or practitioner acceptance."
+}

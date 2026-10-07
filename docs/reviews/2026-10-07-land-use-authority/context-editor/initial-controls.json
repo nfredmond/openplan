@@ -1,0 +1,300 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "workbench-freeze-gate",
+      "exitCode": 1,
+      "matched": true,
+      "target": "actual freeze control",
+      "failedTests": [
+        "LandUsePlanWorkbench content editing joins context edits, pending recovery and refreshed revisions to the actual freeze control"
+      ]
+    },
+    {
+      "case": "context-revision-read",
+      "exitCode": 1,
+      "matched": true,
+      "target": "changed revision has a fresh context read",
+      "failedTests": [
+        "plan context editor rechecks context after a workbench revision change while preserving an edited assessment",
+        "plan context editor blocks freezing until a changed revision has a fresh context read even without edits"
+      ]
+    },
+    {
+      "case": "auto-refresh-erases-draft",
+      "exitCode": 1,
+      "matched": true,
+      "target": "workbench revision change while preserving",
+      "failedTests": [
+        "plan context editor rechecks context after a workbench revision change while preserving an edited assessment"
+      ]
+    },
+    {
+      "case": "late-initial-erases-restore",
+      "exitCode": 1,
+      "matched": true,
+      "target": "initial context read arrives late",
+      "failedTests": [
+        "plan context editor does not replace a restored copy when the initial context read arrives late"
+      ]
+    },
+    {
+      "case": "pending-edit-gate",
+      "exitCode": 1,
+      "matched": true,
+      "target": "unknown save for explicit exact retry",
+      "failedTests": [
+        "plan context editor keeps an unknown save for explicit exact retry, including duplicate clicks and reload"
+      ]
+    },
+    {
+      "case": "revision-read-missing",
+      "exitCode": 1,
+      "matched": true,
+      "target": "changed revision has a fresh context read",
+      "failedTests": [
+        "LandUsePlanWorkbench content editing joins context edits, pending recovery and refreshed revisions to the actual freeze control",
+        "plan context editor rechecks context after a workbench revision change while preserving an edited assessment",
+        "plan context editor blocks freezing until a changed revision has a fresh context read even without edits"
+      ]
+    },
+    {
+      "case": "version-edit-gate",
+      "exitCode": 1,
+      "matched": true,
+      "target": "mismatched working versions",
+      "failedTests": [
+        "plan context editor refuses new edits for mismatched working versions and read-only staff"
+      ]
+    },
+    {
+      "case": "staff-prop-edit-gate",
+      "exitCode": 1,
+      "matched": true,
+      "target": "mismatched working versions",
+      "failedTests": [
+        "plan context editor refuses new edits for mismatched working versions and read-only staff"
+      ]
+    },
+    {
+      "case": "staff-read-edit-gate",
+      "exitCode": 1,
+      "matched": true,
+      "target": "permission changes read-only",
+      "failedTests": [
+        "plan context editor retains an edited draft and command before transport, then refreshes before enabling freeze",
+        "plan context editor preserves unsaved fields during manual refresh and keeps permission changes read-only"
+      ]
+    },
+    {
+      "case": "manual-refresh-erases-draft",
+      "exitCode": 1,
+      "matched": true,
+      "target": "permission changes read-only",
+      "failedTests": [
+        "plan context editor preserves unsaved fields during manual refresh and keeps permission changes read-only"
+      ]
+    },
+    {
+      "case": "confirm-erases-other-draft",
+      "exitCode": 1,
+      "matched": true,
+      "target": "different recovered request is confirmed",
+      "failedTests": [
+        "plan context editor keeps current typing when a different recovered request is confirmed"
+      ]
+    },
+    {
+      "case": "confirmation-copy-retained",
+      "exitCode": 1,
+      "matched": true,
+      "target": "retains an edited draft and command before transport",
+      "failedTests": [
+        "LandUsePlanWorkbench content editing joins context edits, pending recovery and refreshed revisions to the actual freeze control",
+        "plan context editor retains an edited draft and command before transport, then refreshes before enabling freeze",
+        "plan context editor keeps an unknown save for explicit exact retry, including duplicate clicks and reload",
+        "plan context editor saves an uploaded study area and multiple responsible bodies through the mounted fields"
+      ]
+    },
+    {
+      "case": "confirmation-draft-retained",
+      "exitCode": 1,
+      "matched": true,
+      "target": "retains an edited draft and command before transport",
+      "failedTests": [
+        "LandUsePlanWorkbench content editing joins context edits, pending recovery and refreshed revisions to the actual freeze control",
+        "plan context editor retains an edited draft and command before transport, then refreshes before enabling freeze",
+        "plan context editor saves an uploaded study area and multiple responsible bodies through the mounted fields"
+      ]
+    },
+    {
+      "case": "rebase-misses-preservation",
+      "exitCode": 1,
+      "matched": true,
+      "target": "restored stale bases",
+      "failedTests": [
+        "plan context editor keeps restored stale bases until staff review and preserves the old copy during rebase"
+      ]
+    },
+    {
+      "case": "rebase-ignores-proposed-area",
+      "exitCode": 1,
+      "matched": true,
+      "target": "proposed replacement geometry",
+      "failedTests": [
+        "plan context editor keeps proposed replacement geometry only through the explicit reviewed choice"
+      ]
+    },
+    {
+      "case": "review-checkbox-ui",
+      "exitCode": 1,
+      "matched": true,
+      "target": "restored stale bases",
+      "failedTests": [
+        "plan context editor keeps restored stale bases until staff review and preserves the old copy during rebase"
+      ]
+    },
+    {
+      "case": "start-current-loses-draft",
+      "exitCode": 1,
+      "matched": true,
+      "target": "preserves the edited draft before replacing",
+      "failedTests": [
+        "plan context editor preserves the edited draft before replacing it with the current saved context"
+      ]
+    },
+    {
+      "case": "file-typing-generation",
+      "exitCode": 1,
+      "matched": true,
+      "target": "delayed restore files replace newer typing",
+      "failedTests": [
+        "plan context editor does not let delayed restore files replace newer typing or cross a scope change"
+      ]
+    },
+    {
+      "case": "file-scope-generation",
+      "exitCode": 1,
+      "matched": true,
+      "target": "late restore file after the account changes",
+      "failedTests": [
+        "plan context editor refuses a late restore file after the account changes"
+      ]
+    },
+    {
+      "case": "file-size-limit",
+      "exitCode": 1,
+      "matched": true,
+      "target": "bounds restored file size",
+      "failedTests": [
+        "plan context editor bounds restored file size and restores pending bytes locally without sending"
+      ]
+    },
+    {
+      "case": "new-draft-key",
+      "exitCode": 1,
+      "matched": true,
+      "target": "recovers current typing under a new key",
+      "failedTests": [
+        "plan context editor recovers current typing under a new key after another copy changes"
+      ]
+    },
+    {
+      "case": "clear-own-instance",
+      "exitCode": 1,
+      "matched": true,
+      "target": "exact draft owned",
+      "failedTests": [
+        "plan context editor clears only an exact draft owned by the confirming instance"
+      ]
+    },
+    {
+      "case": "clear-own-original",
+      "exitCode": 1,
+      "matched": true,
+      "target": "exact draft owned",
+      "failedTests": [
+        "plan context editor clears only an exact draft owned by the confirming instance"
+      ]
+    },
+    {
+      "case": "clear-own-readback",
+      "exitCode": 1,
+      "matched": true,
+      "target": "exact draft owned",
+      "failedTests": [
+        "plan context editor clears only an exact draft owned by the confirming instance"
+      ]
+    },
+    {
+      "case": "download-draft-bytes",
+      "exitCode": 1,
+      "matched": true,
+      "target": "actual draft bytes",
+      "failedTests": [
+        "plan context editor downloads the actual draft bytes as a usable JSON artifact"
+      ]
+    },
+    {
+      "case": "uploaded-authority-fields",
+      "exitCode": 1,
+      "matched": true,
+      "target": "multiple responsible bodies",
+      "failedTests": [
+        "LandUsePlanWorkbench content editing joins context edits, pending recovery and refreshed revisions to the actual freeze control",
+        "plan context editor retains an edited draft and command before transport, then refreshes before enabling freeze",
+        "plan context editor keeps an unknown save for explicit exact retry, including duplicate clicks and reload",
+        "plan context editor retains confirmation and both copies when the workbench refresh fails",
+        "plan context editor keeps draft text and a downloadable copy when browser retention fails",
+        "plan context editor preserves the edited draft before replacing it with the current saved context",
+        "plan context editor aborts old-account requests and preserves their copies after a scope change",
+        "plan context editor does not let delayed restore files replace newer typing or cross a scope change",
+        "plan context editor rechecks context after a workbench revision change while preserving an edited assessment",
+        "plan context editor preserves unsaved fields during manual refresh and keeps permission changes read-only",
+        "plan context editor keeps current typing when a different recovered request is confirmed",
+        "plan context editor keeps every copy when a mismatched save reply arrives",
+        "plan context editor recovers current typing under a new key after another copy changes",
+        "plan context editor saves an uploaded study area and multiple responsible bodies through the mounted fields",
+        "plan context editor downloads the actual draft bytes as a usable JSON artifact"
+      ]
+    },
+    {
+      "case": "uploaded-area-fields",
+      "exitCode": 1,
+      "matched": true,
+      "target": "multiple responsible bodies",
+      "failedTests": [
+        "plan context editor saves an uploaded study area and multiple responsible bodies through the mounted fields"
+      ]
+    },
+    {
+      "case": "unresolved-recovery-freeze",
+      "exitCode": 1,
+      "matched": false,
+      "target": "malformed copies downloadable",
+      "failedTests": [
+        "LandUsePlanWorkbench content editing joins context edits, pending recovery and refreshed revisions to the actual freeze control",
+        "plan context editor keeps an unknown save for explicit exact retry, including duplicate clicks and reload"
+      ]
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/components/land-use-plans/land-use-plan-context-editor.tsx": "fab2069532994b4cb086549b75fb75f9e9fbafa1d9a01a299208096431650c3e",
+    "src/components/land-use-plans/land-use-plan-workbench.tsx": "49fc7bfc829c7b5f7451f3074292aad9cc63a2cef74a2c61db6de601e1d5bed1",
+    "src/lib/land-use-plans/plan-context-recovery.ts": "dc7512c4dadc3c8af515d12226ce51ddf5db5157397e302c7aefbb34381d6f92"
+  }
+}

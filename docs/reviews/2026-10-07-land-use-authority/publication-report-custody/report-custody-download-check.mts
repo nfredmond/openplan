@@ -1,0 +1,15 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
+import { join } from 'node:path';
+const base='/home/nathaniel/.local/state/openplan/t3-restart-recovery-20261006/land-use-authority';
+const {hashFrozenRecord}=await import(join(process.cwd(),'src/lib/land-use-plans/versioning.ts'));
+const native=JSON.parse(await readFile(join(base,'publication-after-native-private.json'),'utf8'));
+const file='/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muyh632e-g-openplan-report-e0aab60e-a9ff-4d51-a98e-4f01e99ceb45-provenance.json';
+const bytes=await readFile(file);const data=JSON.parse(bytes.toString());const metadata=data.artifact.metadata_json;
+const version=native.versions.find((v:{version_number:number})=>v.version_number===2);
+const verifies=(value:typeof data)=>value.report.id===native.report.id&&value.report.land_use_plan_id===version.plan_id&&value.artifact.id===native.artifacts[0].id&&isDeepStrictEqual(value.artifact.metadata_json,native.artifacts[0].metadata_json)&&hashFrozenRecord(value.artifact.metadata_json.frozenSnapshot)===version.content_hash;
+if(!verifies(data))throw Error('Report download disagrees with native version and artifact');
+const harmless={...data,artifact:{...data.artifact,metadata_json:Object.fromEntries(Object.entries(metadata).reverse())}};if(!verifies(harmless))throw Error('Harmless object order affects verification');
+const broken=structuredClone(data);broken.artifact.metadata_json.frozenSnapshot.planContext.place.label+=' ALTERED';if(verifies(broken))throw Error('Changed retained area escapes verification');
+await writeFile(join(base,'report-custody-download-verification.json'),JSON.stringify({observedAt:new Date().toISOString(),sourceCommit:'da4d1898c756d557a19a8141095dd5c5213b8f8f',file:file.split('/').at(-1),bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),reportId:native.report.id,artifactId:data.artifact.id,contentHash:version.content_hash,nativeArtifactEqual:true,canonicalHashVerified:true,harmlessObjectOrder:true,changedAreaRefused:true,blindCategory:'Recorded download from the synthetic report; no print/PDF, concurrency or practitioner acceptance.'},null,2)+'\n');console.log('Report download matches native artifact and frozen version; controls pass.');

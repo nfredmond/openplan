@@ -1,0 +1,68 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 9 failed) 208ms
+     × reads the adopted report edition using current scoped permission 17ms
+     × reads the superseded report edition using current scoped permission 1ms
+     × reads the repealed report edition using current scoped permission 1ms
+     × refuses GIS version read error before reading features 1ms
+     × refuses missing GIS version before reading features 1ms
+     × refuses wrong GIS version before reading features 1ms
+     × refuses wrong GIS workspace before reading features 1ms
+     × refuses unfinished GIS ingest before reading features 1ms
+     × refuses changed GIS feature hash before reading features 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > reads the adopted report edition using current scoped permission
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > reads the superseded report edition using current scoped permission
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > reads the repealed report edition using current scoped permission
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array []
+
+
+Number of calls: 1
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:72:31
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses GIS version read error before reading features
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses missing GIS version before reading features
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses wrong GIS version before reading features
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses wrong GIS workspace before reading features
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses unfinished GIS ingest before reading features
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses changed GIS feature hash before reading features
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array []
+
+
+Number of calls: 1
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:104:73
+    102|   ] as const)("refuses %s before reading features", async (_name, stat…
+    103|     mutate(); const response = await request(); expect(response.status…
+    104|     expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.service).no…
+       |                                                                         ^
+    105|     expect(JSON.stringify(await response.json())).not.toContain("PRIVA…
+    106|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 40 passed (49)
+   Start at  12:30:17
+   Duration  978ms (transform 143ms, setup 55ms, import 298ms, tests 208ms, environment 323ms)
+

@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 1 failed) 21ms
+     × keeps unresolved and unsupported authorities usable in the neutral workflow 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > plan-owned applicability > keeps unresolved and unsupported authorities usable in the neutral workflow
+AssertionError: the given combination of arguments (null and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ src/test/land-use-plan-context.test.ts:25:105
+     23|   const value=assessed();value.applicability={status:"unresolved",expl…
+     24|   value.authorities[0].jurisdiction=null;value.authorities[0].kind="so…
+     25|   expect(planApplicabilityBlocker(value,neutral)).toBeNull();expect(pl…
+       |                                                                                                         ^
+     26|  });
+     27|  it.each(["country","subdivision","kind","sources"])("refuses configur…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 passed (21)
+   Start at  03:04:04
+   Duration  642ms (transform 102ms, setup 55ms, import 135ms, tests 21ms, environment 331ms)
+

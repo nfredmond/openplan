@@ -1,0 +1,9 @@
+{
+  "commit": "5cdecf792124badbe82b9325f8d7dc8a60caebde",
+  "startedEpoch": 1791401687.0809803,
+  "state": "finished",
+  "exitCode": 0,
+  "finishedEpoch": 1791401815.139393,
+  "finalCommit": "5cdecf792124badbe82b9325f8d7dc8a60caebde",
+  "checkoutUnchanged": true
+}

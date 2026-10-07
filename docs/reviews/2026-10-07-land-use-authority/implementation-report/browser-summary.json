@@ -1,0 +1,197 @@
+{
+  "commit": "d3815893b2bbf6f2c2803e16b05cab7e81ab5f7f",
+  "journey": [
+    "plan list",
+    "actual plan card",
+    "implementation report form",
+    "generate once",
+    "open readable report",
+    "workbench link",
+    "status ArrowDown once",
+    "open retained report"
+  ],
+  "form": {
+    "commandText": "{\"reportingPeriodStart\":\"2026-10-01\",\"reportingPeriodEnd\":\"2026-10-07\",\"title\":\"SYNTHETIC implementation custody 20261007\",\"summary\":\"SYNTHETIC acceptance fixture. No agency assessment or completed work is claimed.\"}",
+    "fetchNative": true,
+    "payload": {
+      "reportingPeriodEnd": "2026-10-07",
+      "reportingPeriodStart": "2026-10-01",
+      "summary": "SYNTHETIC acceptance fixture. No agency assessment or completed work is claimed.",
+      "title": "SYNTHETIC implementation custody 20261007"
+    },
+    "valid": true
+  },
+  "requests": {
+    "fetchNative": true,
+    "requests": [
+      {
+        "duration": 255.29999995231628,
+        "responseStatus": 201,
+        "startedAt": "2026-10-07T20:01:38.555Z",
+        "url": "http://openplan-history.localhost:3498/api/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8/implementation-reports"
+      },
+      {
+        "duration": 127.29999995231628,
+        "responseStatus": 200,
+        "startedAt": "2026-10-07T20:02:43.130Z",
+        "url": "http://openplan-history.localhost:3498/api/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8/implementation"
+      }
+    ]
+  },
+  "statusBefore": {
+    "disabled": false,
+    "focused": true,
+    "label": "Status of SYNTHETIC implementation actionnot startedin progresscompleteddeferred",
+    "options": [
+      {
+        "text": "not started",
+        "value": "not_started"
+      },
+      {
+        "text": "in progress",
+        "value": "in_progress"
+      },
+      {
+        "text": "completed",
+        "value": "completed"
+      },
+      {
+        "text": "deferred",
+        "value": "deferred"
+      }
+    ],
+    "ready": true,
+    "url": "http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8",
+    "value": "not_started"
+  },
+  "statusAfter": {
+    "disabled": false,
+    "performance": [
+      {
+        "duration": 127.29999995231628,
+        "initiatorType": "fetch",
+        "name": "http://openplan-history.localhost:3498/api/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8/implementation",
+        "responseStatus": 200
+      }
+    ],
+    "url": "http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8",
+    "value": "in_progress"
+  },
+  "desktop": {
+    "fetchNative": true,
+    "ready": true,
+    "scrollWidth": 1440,
+    "text": "IMPLEMENTATION REPORT\n\nSYNTHETIC implementation custody 20261007\n\nSYNTHETIC freeze API a8800256-568e-442f-86b0-1ce5e5dc5e5c\n\nSYNTHETIC unresolved authority \u00b7 SYNTHETIC study\n\nSYNTHETIC acceptance fixture. No agency assessment or completed work is claimed.\n\nPrint report\nDownload source JSON\nOpen plan workbench\nContext retained with this version\n\nThese are the saved area and staff assessment reviewed with this version. They do not establish legal sufficiency.\n\nPlan area\n\nSYNTHETIC frozen study\n\nArea source: uploaded_file. Study geometry and legal authority are different facts.\n\nResponsible bodies\n\nSYNTHETIC unresolved body\n\nadopting \u00b7 unassessed\n\nJurisdiction was not assessed.\n\nNo authority source was retained.\n\nApplicability assessment\n\nApplicability remains unresolved.\n\nSynthetic verification only. No legal applicability or agency approval.\n\nReporting period\n\n2026-10-01 through 2026-10-07\n\nAdopted plan hash: fc9818674bd5d0d6ea354f42ef6bb9c9dba8c8a81464b5225e8c2e94bc5211e1\n\nFrozen action-status snapshot\nSYNTHETIC implementation action\n\nStatus: not started \u00b7 due 2026-10-08\n\nFixture only\n\nResponsible party at reporting\nSYNTHETIC staff\nLast action update retained\n2026-10-07T11:42:49.024913+00:00\n\nGenerated 2026-10-07T20:01:38.78078+00:00. Consultation details, confidential notes, and sensitive-location flags are not part of this report.\n\nReport ID ad1a3d1e-925a-44da-a003-9b784689b29a",
+    "url": "http://openplan-history.localhost:3498/reports/ad1a3d1e-925a-44da-a003-9b784689b29a",
+    "width": 1440
+  },
+  "mobile": {
+    "scrollWidth": 390,
+    "text": "IMPLEMENTATION REPORT\n\nSYNTHETIC implementation custody 20261007\n\nSYNTHETIC freeze API a8800256-568e-442f-86b0-1ce5e5dc5e5c\n\nSYNTHETIC unresolved authority \u00b7 SYNTHETIC study\n\nSYNTHETIC acceptance fixture. No agency assessment or completed work is claimed.\n\nPrint report\nDownload source JSON\nOpen plan workbench\nContext retained with this version\n\nThese are the saved area and staff assessment reviewed with this version. They do not establish legal sufficiency.\n\nPlan area\n\nSYNTHETIC frozen study\n\nArea source: uploaded_file. Study geometry and legal authority are different facts.\n\nResponsible bodies\n\nSYNTHETIC unresolved body\n\nadopting \u00b7 unassessed\n\nJurisdiction was not assessed.\n\nNo authority source was retained.\n\nApplicability assessment\n\nApplicability remains unresolved.\n\nSynthetic verification only. No legal applicability or agency approval.\n\nReporting period\n\n2026-10-01 through 2026-10-07\n\nAdopted plan hash: fc9818674bd5d0d6ea354f42ef6bb9c9dba8c8a81464b5225e8c2e94bc5211e1\n\nFrozen action-status snapshot\nSYNTHETIC implementation action\n\nStatus: not started \u00b7 due 2026-10-08\n\nFixture only\n\nResponsible party at reporting\nSYNTHETIC staff\nLast action update retained\n2026-10-07T11:42:49.024913+00:00\n\nGenerated 2026-10-07T20:01:38.78078+00:00. Consultation details, confidential notes, and sensitive-location flags are not part of this report.\n\nReport ID ad1a3d1e-925a-44da-a003-9b784689b29a",
+    "url": "http://openplan-history.localhost:3498/reports/ad1a3d1e-925a-44da-a003-9b784689b29a",
+    "width": 390
+  },
+  "screenshots": {
+    "formDesktop": "formDesktop.png",
+    "currentStatusDesktop": "currentStatusDesktop.png",
+    "reportDesktop": "reportDesktop.png",
+    "reportMobile": "reportMobile.png",
+    "formMobile": "formMobile.png"
+  },
+  "console": [
+    {
+      "level": "error",
+      "text": "Electron sandboxed_renderer.bundle.js script failed to run",
+      "timestamp": "2026-10-07T17:48:48.542Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "TypeError: Cannot destructure property 'preloadScripts' of 'binding.startupData' as it is null.\n    at node:electron/js2c/sandbox_bundle:2:124925\n    at node:electron/js2c/sandbox_bundle:2:125860\n    at ___electron_webpack_init__ (node:electron/js2c/sandbox_bundle:2:125864)\n    at node:electron/js2c/sandbox_bundle:2:125987",
+      "timestamp": "2026-10-07T17:48:48.542Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Fetch API cannot load chrome-error://chromewebdata/api/health. URL scheme \"chrome-error\" is not supported.",
+      "timestamp": "2026-10-07T18:03:52.344Z",
+      "source": "javascript"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:398)\n    at n (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://\u2026",
+      "timestamp": "2026-10-07T18:38:41.585Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:285)\n    at n (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://\u2026",
+      "timestamp": "2026-10-07T18:40:09.032Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:285)\n    at n (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://\u2026",
+      "timestamp": "2026-10-07T18:40:55.768Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:285)\n    at n (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://\u2026",
+      "timestamp": "2026-10-07T18:41:19.145Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "timestamp": "2026-10-07T19:47:55.222Z",
+      "source": "network"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "timestamp": "2026-10-07T19:47:55.308Z",
+      "source": "network"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "timestamp": "2026-10-07T19:47:55.346Z",
+      "source": "network"
+    }
+  ],
+  "omitted": [
+    "accessibilityTree (use interactiveElements locators or preview_evaluate)",
+    "console entries text after 500 characters",
+    "160 older network entries",
+    "160 older action timeline entries",
+    "30 of 40 actionTimeline"
+  ],
+  "dateInputLimit": "T3 typing failed three times. Native date values set through T3 evaluate with input/change events. Calendar and keyboard date entry not verified.",
+  "formMobile": {
+    "buttonWidth": 279.48272705078125,
+    "ready": true,
+    "scrollWidth": 390,
+    "text": "implementation report\n\nThe report freezes the current implementation statuses against the adopted plan hash. Use the descriptor duty below to set the actual due date.\n\nReporting period start\nReporting period end\nImplementation report title\nSummary\nGenerate frozen implementation report\n\n2026-10-01 through 2026-10-07 \u00b7 open readable report",
+    "url": "http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8",
+    "values": [
+      {
+        "name": "start",
+        "value": ""
+      },
+      {
+        "name": "end",
+        "value": ""
+      },
+      {
+        "name": "title",
+        "value": ""
+      },
+      {
+        "name": "summary",
+        "value": ""
+      }
+    ],
+    "width": 390
+  }
+}

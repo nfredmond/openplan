@@ -1,0 +1,14 @@
+{
+  "reportUnchanged": true,
+  "versionsUnchanged": true,
+  "artifactsUnchanged": true,
+  "decisionsUnchanged": true,
+  "gisVersion": {
+    "id": "caa598d2-9916-4527-873d-ae9eb341fda0",
+    "feature_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace_id": "ef79280b-99ac-4d8f-a10e-87adbe624635",
+    "feature_count": 0,
+    "ingest_status": "ready"
+  },
+  "boundary": "Read-only SQL comparison. No new producer writes, native nonempty geography, historical native or foreign-workspace browser case."
+}

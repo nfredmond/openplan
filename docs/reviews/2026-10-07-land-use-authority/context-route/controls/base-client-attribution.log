@@ -1,0 +1,54 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 45ms
+     × refuses client attribution or extra scope savedBy 4ms
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 1 failed) 23ms
+     × refuses source-free assessment, unsafe links and invented client attribution 6ms
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 50 passed (52)
+   Start at  03:34:57
+   Duration  1.36s (transform 186ms, setup 90ms, import 308ms, tests 68ms, environment 641ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > refuses client attribution or extra scope savedBy
+AssertionError: expected 201 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 201
+
+ ❯ src/test/land-use-plan-context-route.test.ts:108:83
+    106|   });
+    107|   it.each(["savedBy", "savedAt", "workspaceId", "actorId"])("refuses c…
+    108|     expect((await post(JSON.stringify({ ...command, [field]: actorId }…
+       |                                                                                   ^
+    109|     expect(mocks.service).not.toHaveBeenCalled();
+    110|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > plan-owned applicability > refuses source-free assessment, unsafe links and invented client attribution
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/test/land-use-plan-context.test.ts:56:84
+     54|   expect(planAuthorityAssessmentSchema.safeParse(value).success).toBe(…
+     55|   const unsafe=assessed();unsafe.authorities[0].sourceUrls=["javascrip…
+     56|   expect(planContextCommandSchema.safeParse({...command(),savedBy:id(9…
+       |                                                                                    ^
+     57|  });
+     58|  it("retains the adapter authority scope in the frozen descriptor",()=…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

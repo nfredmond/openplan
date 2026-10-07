@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-continuation-recovery.test.ts (28 tests | 1 failed) 54ms
+     × does not substitute a different saved parent parentActorId 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-recovery.test.ts > context and thematic browser custody > does not substitute a different saved parent parentActorId
+AssertionError: expected [Function] to throw an error
+ ❯ src/test/engagement-synthesis-continuation-recovery.test.ts:85:42
+     83|     const storage = new Store(); retainPendingSynthesisGeneration(stor…
+     84|     const changed = { ...proposal, parent: { ...parent, [field]: field…
+     85|     expect(() => read(storage, changed)).toThrow();
+       |                                          ^
+     86|   });
+     87|   it("does not send when custody is missing, unreadable or cannot be r…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 27 passed (28)
+   Start at  00:44:30
+   Duration  670ms (transform 57ms, setup 53ms, import 79ms, tests 54ms, environment 318ms)
+

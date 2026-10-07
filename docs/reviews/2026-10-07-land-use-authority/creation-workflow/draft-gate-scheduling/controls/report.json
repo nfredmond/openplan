@@ -1,0 +1,59 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "delayed-initial-gate",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "old-assertion-delayed",
+      "expectedPass": false,
+      "exitCode": 1,
+      "failedTests": [
+        "Live workbench draft custody blocks freezing until all edited content is actually saved"
+      ],
+      "matched": true
+    },
+    {
+      "case": "permanently-blocked",
+      "expectedPass": false,
+      "exitCode": 1,
+      "failedTests": [
+        "Live workbench draft custody blocks freezing until all edited content is actually saved"
+      ],
+      "matched": true
+    },
+    {
+      "case": "dirty-content-ignored",
+      "expectedPass": false,
+      "exitCode": 1,
+      "failedTests": [
+        "Live workbench draft custody blocks freezing until all edited content is actually saved"
+      ],
+      "matched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/components/land-use-plans/land-use-plan-context-editor.tsx": "0c4deeb43e2da48695b068402f11d0663f358315e6b31ab4b05d4dc51d3af2d4",
+    "src/test/land-use-plan-draft-custody.test.tsx": "10b1356a33168876d94683d260298361d1461cac325a6548f84c5e40d238431e",
+    "src/components/land-use-plans/land-use-plan-workbench.tsx": "eb7d7c531a92fa7266c7079f9cc916b451e1576b1951c60ae455d1008f5249b6"
+  },
+  "boundary": "One mounted test under a controlled initial notification delay and explicit blocked-state faults. This demonstrates the timing assumption, not reproduction of the complete GitHub scheduler or browser acceptance."
+}

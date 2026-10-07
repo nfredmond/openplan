@@ -1,0 +1,36 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 43ms
+     × reads the exact retained context and required projections through the user client 4ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:16
+   Duration  1.41s (transform 213ms, setup 91ms, import 345ms, tests 62ms, environment 662ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > reads the exact retained context and required projections through the user client
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array []
+
+
+Number of calls: 1
+
+ ❯ src/test/land-use-plan-context-route.test.ts:149:31
+    147|       projection: "plan_context,plan_context_hash,descriptor_id,plan_k…
+    148|       filters: [["id", planId], ["workspace_id", workspaceId]] }]);
+    149|     expect(mocks.service).not.toHaveBeenCalled();
+       |                               ^
+    150|   });
+    151|   it("keeps legacy null distinct from missing, invalid or unreadable c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

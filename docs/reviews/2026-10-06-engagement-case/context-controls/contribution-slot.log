@@ -1,0 +1,23 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-continuation-recovery.test.ts (28 tests | 1 failed) 54ms
+     × separates parents, contributions, thematic, root creation and cancellation 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-recovery.test.ts > context and thematic browser custody > separates parents, contributions, thematic, root creation and cancellation
+Error: Generation recovery belongs to another source, account or operation
+ ❯ readPendingSynthesisGeneration src/lib/engagement/synthesis-generation-request-recovery.ts:69:128
+
+ ❯ read src/test/engagement-synthesis-continuation-recovery.test.ts:39:82
+ ❯ src/test/engagement-synthesis-continuation-recovery.test.ts:59:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 27 passed (28)
+   Start at  00:44:29
+   Duration  684ms (transform 57ms, setup 53ms, import 81ms, tests 54ms, environment 346ms)
+

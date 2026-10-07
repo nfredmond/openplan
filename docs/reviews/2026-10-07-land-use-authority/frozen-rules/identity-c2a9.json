@@ -1,0 +1,17 @@
+{
+  "pid": 3524167,
+  "cwd": "/home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan",
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-07T09:47:30.960Z",
+    "deployment": {
+      "commit": "c2a991d7a4e6",
+      "version": "0.67.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  }
+}

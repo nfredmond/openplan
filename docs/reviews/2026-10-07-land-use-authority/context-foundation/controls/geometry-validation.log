@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 1 failed) 25ms
+     × rejects projected coordinates, open rings and client-supplied resolver facts 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > study place capture and attributed context > rejects projected coordinates, open rings and client-supplied resolver facts
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/test/land-use-plan-context.test.ts:94:94
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 passed (21)
+   Start at  03:04:23
+   Duration  742ms (transform 108ms, setup 52ms, import 151ms, tests 25ms, environment 349ms)
+

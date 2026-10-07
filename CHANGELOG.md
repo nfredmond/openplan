@@ -20,7 +20,70 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes recorded after the 0.67.0 candidate below.
+Restored workspace deletion now permits finalized GIS versions and features to
+follow their deleted parent. Direct edits to finalized records remain refused,
+including moving a feature out of a finalized version. Migration
+`20261016000011_workspace_gis_cascade_guards.sql` removes the cascade-order
+dependency without changing foreign keys or row-level security.
+
+Land-use plans retain their own boundaries, responsible bodies and applicability
+assessment. Staff can save incomplete browser drafts, retry an uncertain save
+without creating a second change, and review older drafts against current facts.
+Frozen versions retain their original plan identity, descriptor rules and context.
+Atomic freeze checks the displayed draft revision and current write permission.
+Creation now uses the plan area and assessed bodies instead of office location.
+The form retains incomplete drafts and exact requests, with explicit retry after
+an uncertain reply. Rendered desktop/mobile acceptance remains open.
+
+The staff workbench can open earlier reviewed editions using their retained
+identity, context and checklist. Current creation and editing now select rules
+for the specific plan kind, including distinct California general-plan and
+specific-plan requirements. Changing a kind requires another checklist review.
+Earlier frozen editions remain unchanged. Staff can review missing checklist
+sections and default applicability changes before adding them to a working draft.
+The workbench preserves earlier content, retains exact requests for explicit retry,
+and blocks reconciliation or refresh over unsaved edits. Staff form saves retain
+text entered after submission. Migration
+`20261016000010_land_use_plan_rule_reconciliation.sql` adds its private receipt
+journal. Identified desktop/mobile acceptance and recovery-file review remain open.
+
+Parent deletion now tolerates restored foreign-key cascade order while preserving
+direct frozen-content and receipt protections. Migration
+`20261016000009_land_use_plan_cascade_guards.sql` applies this correction.
+The complete restore drill remains pending on the corrected commit.
+
+Apply these additive migrations in order before using these candidate changes:
+
+- `20261016000002_land_use_plan_context.sql` adds nullable historical context and
+  private exact-command custody. It infers no authority for existing plans.
+- `20261016000003_land_use_plan_draft_revision.sql` tracks changes relevant to
+  freezing a working plan.
+- `20261016000004_land_use_plan_freeze_commands.sql` adds atomic freeze commands
+  and retained receipts.
+- `20261016000005_land_use_plan_freeze_server_path.sql` restricts freeze transitions
+  to the permission-checked server command.
+- `20261016000006_land_use_plan_retained_study_area.sql` preserves an unchanged
+  saved boundary during authority edits and aligns the plan's displayed geography.
+
+The initial backend creation checkpoint adds
+`20261016000007_land_use_plan_creation_commands.sql`. It creates a plan, first
+version, checklist, assessed context and immutable retry receipt in one
+permission-checked transaction. Individual plan deletion cannot erase that
+creation identity and make an old retry create another plan; workspace deletion
+still removes its owned records. The route and creator now use this transaction.
+
+`20261016000008_land_use_plan_creation_cancellation.sql` adds an explicit stop
+command for an unresolved creation request. Under the same transaction lock as
+creation, it either returns the already-created plan or retains a stop receipt
+that prevents later creation from that request. It never deletes a plan. The
+browser retains stop intent before sending, and imported receipts require server
+confirmation before the form treats creation or stopping as settled. After a
+confirmed stop, staff can restore the draft to a new copy and review current rules.
+
+The migrations are installed only on the isolated verification stack. The
+[context editor evidence](docs/reviews/2026-10-07-land-use-authority/CONTEXT_EDITOR.md)
+distinguishes unit/native checks and partial desktop behavior from unresolved
+rendered acceptance. The [creation workflow evidence](docs/reviews/2026-10-07-land-use-authority/CREATION_WORKFLOW.md) records request recovery, stopping and their remaining acceptance limits. These changes are not a released version.
 
 ## 0.67.0 (2026-10-07)
 

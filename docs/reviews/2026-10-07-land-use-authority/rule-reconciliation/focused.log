@@ -1,0 +1,30 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+Review reminder: jurisdiction readiness registry review expired on 2026-09-28
+Review reminder: capability matrix review expired on 2026-10-05
+Review reminder: capability registry review expired on 2026-10-05
+Review reminder: latest review covers v0.66.0; package is v0.67.0
+Review reminder: latest direction review predates substantive changes: .gitattributes, LICENSE-NOTICE.md, docs/ARCHITECTURE.md, docs/README.md, docs/ops/BCA_WORKBENCH.md, docs/research/BCA_PROGRAM_METHODS_2026-10-06.md, docs/reviews/2026-10-06-bca/METHOD_FOLLOWUP.md, docs/reviews/2026-10-06-bca/METHOD_REVIEW.md
+Review reminder: jurisdiction readiness registry review expired on 2026-09-28
+Review reminder: capability matrix review expired on 2026-10-05
+Review reminder: capability registry review expired on 2026-10-05
+Review reminder: latest review covers v0.66.0; package is v0.67.0
+Review reminder: latest direction review predates substantive changes: .gitattributes, LICENSE-NOTICE.md, docs/ARCHITECTURE.md, docs/README.md, docs/ops/BCA_WORKBENCH.md, docs/research/BCA_PROGRAM_METHODS_2026-10-06.md, docs/reviews/2026-10-06-bca/METHOD_FOLLOWUP.md, docs/reviews/2026-10-06-bca/METHOD_REVIEW.md
+Review reminder: jurisdiction readiness registry review expired on 2026-09-28
+Review reminder: latest review expired on 2026-11-06
+Review reminder: capability matrix review expired on 2026-10-05
+Review reminder: capability registry review expired on 2026-10-05
+Review reminder: latest review covers v0.66.0; package is v0.67.0
+Review reminder: latest direction review predates substantive changes: .gitattributes, LICENSE-NOTICE.md, docs/ARCHITECTURE.md, docs/README.md, docs/ops/BCA_WORKBENCH.md, docs/research/BCA_PROGRAM_METHODS_2026-10-06.md, docs/reviews/2026-10-06-bca/METHOD_FOLLOWUP.md, docs/reviews/2026-10-06-bca/METHOD_REVIEW.md
+Review reminder: jurisdiction readiness registry review expired on 2026-09-28
+Review reminder: capability matrix review expired on 2026-10-05
+Review reminder: capability registry review expired on 2026-10-05
+Review reminder: latest review covers v0.66.0; package is v0.67.0
+Review reminder: latest direction review predates substantive changes: .gitattributes, LICENSE-NOTICE.md, docs/ARCHITECTURE.md, docs/README.md, docs/ops/BCA_WORKBENCH.md, docs/research/BCA_PROGRAM_METHODS_2026-10-06.md, docs/reviews/2026-10-06-bca/METHOD_FOLLOWUP.md, docs/reviews/2026-10-06-bca/METHOD_REVIEW.md
+
+ Test Files  2 passed (2)
+      Tests  63 passed (63)
+   Start at  09:19:51
+   Duration  1.78s (transform 168ms, setup 106ms, import 260ms, tests 455ms, environment 762ms)
+

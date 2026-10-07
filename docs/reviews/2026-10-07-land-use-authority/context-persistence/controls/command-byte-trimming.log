@@ -1,0 +1,4 @@
+ERROR:  exact command journal
+CONTEXT:  PL/pgSQL function pg_temp_7.context_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.context_assert((SELECT c.command_text = raw_command AND c.command_sha256=encode(extensions.digest(c.command_text,'sha256'),'hex') FROM public.land_use_plan_context_commands c WHERE c.plan_id=plan AND c.command_id=command),'exact command journal')"
+PL/pgSQL function inline_code_block line 55 at PERFORM

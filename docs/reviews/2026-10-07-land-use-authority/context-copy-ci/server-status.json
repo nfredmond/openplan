@@ -1,0 +1,7 @@
+{
+  "MainPID": "358900",
+  "MemoryPeak": "292913152",
+  "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan",
+  "after": "ActiveState=inactive\nResult=success\n",
+  "listeners": "State Recv-Q Send-Q Local Address:Port Peer Address:Port\n"
+}

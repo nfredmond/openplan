@@ -3,7 +3,13 @@ import { z } from "zod";
 
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadLandUsePlanAccess, loadWorkingVersion } from "@/lib/land-use-plans/api";
-import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
+import { getPlanKindDescriptor } from "@/lib/land-use-plans/registry";
+import { readFrozenPlanIdentity, type FrozenPlanIdentity } from "@/lib/land-use-plans/frozen-identity";
+import { readFrozenPlanDescriptor } from "@/lib/land-use-plans/descriptor-snapshot";
+import { readFrozenPlanContext } from "@/lib/land-use-plans/context-snapshot";
+import type { SavedPlanContext } from "@/lib/land-use-plans/plan-context";
+import type { JurisdictionPlanDescriptor } from "@/lib/land-use-plans/contracts";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
@@ -23,23 +29,63 @@ export async function GET(request: NextRequest, context: Context) {
   audit.info("land_use_plan_detail_requested");
   const parsedParams = paramsSchema.safeParse(await context.params);
   if (!parsedParams.success) return NextResponse.json({ error: "Invalid plan id" }, { status: 400 });
+  const requestedVersions = request.nextUrl.searchParams.getAll("versionId");
+  const requestedVersion = z.string().uuid().optional().safeParse(requestedVersions[0]);
+  if (requestedVersions.length > 1 || !requestedVersion.success) return NextResponse.json({ error: "Choose one valid plan version" }, { status: 400 });
   const loaded = await loadLandUsePlanAccess(parsedParams.data.planId);
   if (!loaded.ok) return loaded.response;
   const { access } = loaded;
-  const descriptor = getJurisdictionPlanDescriptor(access.plan.descriptor_id);
-  if (!descriptor) return NextResponse.json({ error: "Plan descriptor is not installed" }, { status: 409 });
-
   const { data: versions, error: versionsError } = await access.supabase
     .from("land_use_plan_versions")
-    .select("id, version_number, version_kind, state, based_on_version_id, applicable_requirement_keys, content_hash, frozen_at, frozen_by, published_report_id, created_at, updated_at")
+    .select("id, version_number, version_kind, state, based_on_version_id, applicable_requirement_keys, draft_revision, content_hash, frozen_at, frozen_by, published_report_id, created_at, updated_at")
     .eq("plan_id", access.plan.id)
     .order("version_number", { ascending: false });
   if (versionsError) return NextResponse.json({ error: "Failed to load plan versions" }, { status: 500 });
-  const activeVersion = (versions ?? []).find((version) => version.id === access.plan.current_working_version_id)
+  const currentVersion = (versions ?? []).find((version) => version.id === access.plan.current_working_version_id)
     ?? (versions ?? []).find((version) => version.id === access.plan.current_adopted_version_id)
     ?? versions?.[0]
     ?? null;
-  if (!activeVersion) return NextResponse.json({ error: "Plan has no version" }, { status: 409 });
+  const activeVersion = requestedVersion.data !== undefined
+    ? (versions ?? []).find(version => version.id === requestedVersion.data) ?? null
+    : currentVersion;
+  if (!activeVersion) return NextResponse.json({ error: requestedVersion.data ? "The requested version is not available for this plan" : "Plan has no version" }, { status: requestedVersion.data ? 404 : 409 });
+
+  let descriptor: JurisdictionPlanDescriptor | null;
+  let frozenVersion: {
+    plan: FrozenPlanIdentity;
+    descriptorCustody: "frozen" | "not_retained";
+    context: { status: "retained"; context: SavedPlanContext } | { status: "legacy" };
+  } | null = null;
+  if (activeVersion.state === "working") {
+    descriptor = getPlanKindDescriptor(access.plan.descriptor_id, access.plan.plan_kind_key);
+  } else {
+    // Fetch only the selected snapshot, not every historical plan's full content.
+    const frozenResult = await access.supabase.from("land_use_plan_versions")
+      .select("id, plan_id, workspace_id, version_number, state, content_hash, frozen_snapshot")
+      .eq("id", activeVersion.id).eq("plan_id", access.plan.id).eq("workspace_id", access.plan.workspace_id).maybeSingle();
+    if (frozenResult.error) return NextResponse.json({ error: "Failed to load the frozen plan version" }, { status: 500 });
+    const frozen = frozenResult.data;
+    if (!frozen || frozen.id !== activeVersion.id || frozen.plan_id !== access.plan.id || frozen.workspace_id !== access.plan.workspace_id
+      || frozen.version_number !== activeVersion.version_number || frozen.state !== activeVersion.state
+      || !["public_review", "adopted", "superseded", "repealed"].includes(frozen.state)
+      || !frozen.content_hash || frozen.content_hash !== activeVersion.content_hash) {
+      return NextResponse.json({ error: "The selected frozen version changed or could not be verified" }, { status: 409 });
+    }
+    const identity = readFrozenPlanIdentity(frozen.frozen_snapshot, access.plan.id, frozen.id, frozen.version_number, frozen.content_hash);
+    if (!identity) return NextResponse.json({ error: "The frozen plan content or identity could not be verified" }, { status: 409 });
+    const snapshot = frozen.frozen_snapshot as Record<string, unknown>;
+    const rules = readFrozenPlanDescriptor(snapshot, identity.descriptorId, identity.planKindKey);
+    const context = readFrozenPlanContext(snapshot);
+    if (rules.status === "invalid" || context.status === "invalid") {
+      return NextResponse.json({ error: "The frozen checklist or plan context could not be verified" }, { status: 409 });
+    }
+    descriptor = rules.status === "retained" ? rules.descriptor : getPlanKindDescriptor(identity.descriptorId, identity.planKindKey);
+    frozenVersion = { plan: identity, descriptorCustody: rules.status === "retained" ? "frozen" : "not_retained",
+      context: context.status === "retained" ? context : { status: "legacy" } };
+  }
+  if (!descriptor) return NextResponse.json({ error: frozenVersion
+    ? "This version did not retain a checklist, and its descriptor reference is not installed"
+    : "Plan descriptor is not installed" }, { status: 409 });
 
   const versionId = activeVersion.id;
   const [nodes, relationships, designations, actions, reviews, decisions, reports, consultations, processRecords, reviewReleases, layers, layerVersions, documents, campaigns, projects, programs] = await Promise.all([
@@ -66,8 +112,12 @@ export async function GET(request: NextRequest, context: Context) {
 
   return NextResponse.json({
     plan: access.plan,
+    actorId: access.userId,
+    descriptorHash: hashFrozenRecord(descriptor),
     descriptor,
-    canWrite: access.canWrite,
+    frozenVersion,
+    canWrite: access.canWrite && activeVersion.id === currentVersion?.id,
+    isHistoricalVersion: activeVersion.id !== currentVersion?.id,
     versions: versions ?? [],
     activeVersion,
     ...Object.fromEntries(Object.entries(results).map(([key, result]) => [key, result.data ?? []])),
@@ -88,6 +138,19 @@ export async function PATCH(request: NextRequest, context: Context) {
   const working = await loadWorkingVersion(loaded.access);
   if (!working) return NextResponse.json({ error: "Fork a working version before changing plan identity or applicability" }, { status: 409 });
 
+  if (parsed.data.applicableRequirementKeys !== undefined) {
+    const descriptor = getPlanKindDescriptor(loaded.access.plan.descriptor_id, loaded.access.plan.plan_kind_key);
+    if (!descriptor) return NextResponse.json({ error: "Plan kind rules are not installed" }, { status: 409 });
+    const allowed = new Set([...(descriptor?.requirements.map((requirement) => requirement.key) ?? []), ...(working.applicable_requirement_keys ?? [])]);
+    const required = descriptor?.requirements.filter((requirement) => requirement.applicability === "required").map((requirement) => requirement.key) ?? [];
+    if (!parsed.data.applicableRequirementKeys.every((key) => allowed.has(key))) {
+      return NextResponse.json({ error: "Applicability includes a key outside the plan descriptor" }, { status: 400 });
+    }
+    if (!required.every((key) => parsed.data.applicableRequirementKeys?.includes(key))) {
+      return NextResponse.json({ error: "Required descriptor content cannot be marked inapplicable" }, { status: 400 });
+    }
+  }
+
   const planUpdates: Record<string, unknown> = {};
   if (parsed.data.title !== undefined) planUpdates.title = parsed.data.title;
   if (parsed.data.authorityLabel !== undefined) planUpdates.authority_label = parsed.data.authorityLabel;
@@ -99,15 +162,6 @@ export async function PATCH(request: NextRequest, context: Context) {
     if (writeMatchedNoRows(result)) return noRowsMatchedResponse({ subject: "land use plan", targetWasVerified: true });
   }
   if (parsed.data.applicableRequirementKeys !== undefined) {
-    const descriptor = getJurisdictionPlanDescriptor(loaded.access.plan.descriptor_id);
-    const allowed = new Set(descriptor?.requirements.map((requirement) => requirement.key) ?? []);
-    const required = descriptor?.requirements.filter((requirement) => requirement.applicability === "required").map((requirement) => requirement.key) ?? [];
-    if (!parsed.data.applicableRequirementKeys.every((key) => allowed.has(key))) {
-      return NextResponse.json({ error: "Applicability includes a key outside the plan descriptor" }, { status: 400 });
-    }
-    if (!required.every((key) => parsed.data.applicableRequirementKeys?.includes(key))) {
-      return NextResponse.json({ error: "Required descriptor content cannot be marked inapplicable" }, { status: 400 });
-    }
     const result = await loaded.access.supabase.from("land_use_plan_versions").update({ applicable_requirement_keys: parsed.data.applicableRequirementKeys }).eq("id", working.id).select("id").maybeSingle();
     if (isWriteFailure(result.error)) return NextResponse.json({ error: "Failed to update applicability" }, { status: 500 });
     if (writeMatchedNoRows(result)) return noRowsMatchedResponse({ subject: "working plan version", targetWasVerified: true });

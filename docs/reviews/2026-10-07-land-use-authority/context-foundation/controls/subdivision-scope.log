@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 2 failed) 24ms
+     × refuses configured scope with unsupported authority subdivision 3ms
+     × refuses unsupported authority before resolving the independent study place 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > plan-owned applicability > refuses configured scope with unsupported authority subdivision
+AssertionError: the given combination of arguments (null and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ src/test/land-use-plan-context.test.ts:33:46
+     31|   if(field==="kind") a.kind="sovereign nation";
+     32|   if(field==="sources") a.sourceUrls=[];
+     33|   expect(planApplicabilityBlocker(value,ca)).toContain("outside this c…
+       |                                              ^
+     34|  });
+     35|  it("checks every selected authority while preserving other responsibi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > study place capture and attributed context > refuses unsupported authority before resolving the independent study place
+AssertionError: expected { ok: true, context: { …(5) } } to match object { ok: false, status: 409 }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": false,
+-   "status": 409,
++   "ok": true,
+  }
+
+ ❯ src/test/land-use-plan-context.test.ts:90:52
+     88|  it("refuses unsupported authority before resolving the independent st…
+     89|   const value=command();value.assessment.authorities[0].jurisdiction={…
+     90|   expect(await preparePlanContext(value,ca,id(3))).toMatchObject({ok:f…
+       |                                                    ^
+     91|  });
+     92|  it("rejects projected coordinates, open rings and client-supplied res…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 19 passed (21)
+   Start at  03:04:07
+   Duration  689ms (transform 97ms, setup 56ms, import 128ms, tests 24ms, environment 324ms)
+

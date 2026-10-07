@@ -1,5 +1,6 @@
 import type { JurisdictionPlanDescriptor } from "./contracts";
 import type { HomeJurisdiction } from "@/lib/workspaces/home-geography";
+import { selectPlanKindRules } from "./plan-kind-rules";
 
 /** Required and planner-defined sections start applicable; only conditional sections await a choice. */
 export function defaultApplicableRequirementKeys(
@@ -68,6 +69,7 @@ const CALIFORNIA: JurisdictionPlanDescriptor = {
   jurisdictionCoverage: { country: "US", subdivision: "CA" },
   authorityScope: "Local planning agencies governed by the cited California statutes",
   configured: true,
+  authorityKinds: ["city", "county"],
   verifiedAt: "2026-08-23",
   reviewDueAt: "2027-01-15",
   terminology: {
@@ -135,6 +137,43 @@ const CALIFORNIA: JurisdictionPlanDescriptor = {
   disclosure:
     "This is a scoped California statutory workflow, not a complete statement of every law that may apply. OpenPlan tracks cited requirements and attached evidence. It does not determine legal sufficiency, complete environmental review, or replace agency counsel and qualified planning review.",
   sourceUrls: [CA_ARTICLE_5, CA_ARTICLE_6, CA_ARTICLE_8],
+};
+
+const CA_SPECIFIC_CONTENT = "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=65451";
+const CA_SPECIFIC_PROCEDURE = "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=65453";
+const CA_SPECIFIC_CONSISTENCY = "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=65454";
+const CA_SPECIFIC_INSPECTION = "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=65456";
+const CA_IMPLEMENTATION_GUIDANCE = "https://lci.ca.gov/wp-content/uploads/OPR_C9_final.pdf";
+
+/** The family ID remains stable; the selected kind determines its own rules. */
+const CALIFORNIA_SPECIFIC: JurisdictionPlanDescriptor = {
+  ...CALIFORNIA,
+  // Preserve the family's earlier review date. October 7 reviews the distinct
+  // content/procedure provisions, not every inherited referral or review duty.
+  terminology: { plan: "specific plan", section: "plan part", adoptionInstrument: "resolution or ordinance", implementationReport: "implementation update" },
+  planKinds: [{ key: "area", label: "Specific plan" }],
+  requirements: [
+    { key: "specific_land_use", label: "Land uses and open space", applicability: "required", sourceUrls: [CA_SPECIFIC_CONTENT] },
+    { key: "specific_facilities", label: "Transportation, utilities and essential facilities", applicability: "required", sourceUrls: [CA_SPECIFIC_CONTENT] },
+    { key: "specific_standards", label: "Development and natural-resource standards", applicability: "required", condition: "Address natural-resource conservation, development and use where applicable. Text and diagrams must describe the required detail.", sourceUrls: [CA_SPECIFIC_CONTENT] },
+    { key: "specific_implementation", label: "Implementation measures and financing", applicability: "required", sourceUrls: [CA_SPECIFIC_CONTENT] },
+    { key: "specific_general_plan_relationship", label: "Relationship to the general plan", applicability: "required", sourceUrls: [CA_SPECIFIC_CONTENT, CA_SPECIFIC_CONSISTENCY] },
+  ],
+  processSteps: [
+    { key: "setup", label: "Identify the plan area and adopted parent plan", required: true, sourceUrls: [CA_ARTICLE_8] },
+    { key: "content", label: "Prepare the required text and diagrams", required: true, sourceUrls: [CA_SPECIFIC_CONTENT] },
+    { key: "general_plan_consistency", label: "Document consistency with the general plan", required: true, reviewPrerequisite: true, adoptionPrerequisite: true, sourceUrls: [CA_SPECIFIC_CONSISTENCY] },
+    ...CALIFORNIA.processSteps.filter(step => ["referrals", "tribal_consultation", "environmental_review", "public_draft", "hearing", "recommendation", "adoption"].includes(step.key)),
+    { key: "public_inspection", label: "Make adopted text and diagrams available for inspection and requested copies", required: true, deadline: "Inspection within one working day after adoption; requested copies within two working days after receipt of the request and copying payment", sourceUrls: [CA_SPECIFIC_INSPECTION] },
+    { key: "specific_amendment_procedure", label: "Apply the specific-plan amendment and repeal procedure", required: true, deadline: "Amendments may occur as often as the legislative body finds necessary; each amendment must remain consistent with the general plan", sourceUrls: [CA_SPECIFIC_PROCEDURE, CA_SPECIFIC_CONSISTENCY, CA_IMPLEMENTATION_GUIDANCE] },
+    { key: "implementation_report", label: "Prepare an agency-defined implementation update", required: false, sourceUrls: [] },
+  ],
+  disclosure: "This specific-plan checklist covers selected cited provisions, not a complete statement of every law that may apply. It requires text and diagrams, supporting facilities, standards, implementation measures and the relationship to the general plan. The general-plan element checklist and its amendment-frequency limit do not define this plan. The implementation update is an agency process choice; it does not replace the agency's separate general-plan reporting duties. Verify local procedures, environmental review and consultation. OpenPlan does not determine legal sufficiency or replace counsel and qualified planning review.",
+  sourceUrls: [CA_SPECIFIC_CONTENT, CA_SPECIFIC_PROCEDURE, CA_SPECIFIC_CONSISTENCY, CA_SPECIFIC_INSPECTION, CA_ARTICLE_6, CA_IMPLEMENTATION_GUIDANCE],
+};
+
+const PLAN_KIND_RULES: Readonly<Record<string, Readonly<Record<string, JurisdictionPlanDescriptor>>>> = {
+  [CALIFORNIA.id]: { area: CALIFORNIA_SPECIFIC },
 };
 
 const NEUTRALITY_FIXTURES: JurisdictionPlanDescriptor[] = [
@@ -275,6 +314,12 @@ export function recommendJurisdictionPlanDescriptor(
 
 export function getJurisdictionPlanDescriptor(id: string): JurisdictionPlanDescriptor | null {
   return JURISDICTION_PLAN_DESCRIPTORS.find((descriptor) => descriptor.id === id) ?? null;
+}
+
+/** Resolve installed rules only after checking both halves of the selection. */
+export function getPlanKindDescriptor(descriptorId: string, planKindKey: string): JurisdictionPlanDescriptor | null {
+  const family = getJurisdictionPlanDescriptor(descriptorId);
+  return family ? selectPlanKindRules(family, planKindKey, PLAN_KIND_RULES[descriptorId]) : null;
 }
 
 export function descriptorIsOverdue(descriptor: JurisdictionPlanDescriptor, now = new Date()): boolean {

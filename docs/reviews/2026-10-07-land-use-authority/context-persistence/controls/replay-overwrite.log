@@ -1,0 +1,4 @@
+ERROR:  old replay does not overwrite newer save
+CONTEXT:  PL/pgSQL function pg_temp_43.context_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.context_assert((SELECT plan_context=second_result->'context' FROM public.land_use_plans WHERE id=plan),'old replay does not overwrite newer save')"
+PL/pgSQL function inline_code_block line 68 at PERFORM

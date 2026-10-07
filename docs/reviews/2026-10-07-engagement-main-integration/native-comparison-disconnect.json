@@ -1,0 +1,9 @@
+{
+  "unchanged": true,
+  "tables": 21,
+  "harmlessReorderSurvives": true,
+  "changedCountDetected": true,
+  "changedHashDetected": true,
+  "scope": "Campaign-scoped synthesis tables only. Does not establish all database rows or filesystem state unchanged.",
+  "checkedAt": "2026-10-07T21:02:47.046328+00:00"
+}

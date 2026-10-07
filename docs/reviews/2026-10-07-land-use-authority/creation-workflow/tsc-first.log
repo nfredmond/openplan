@@ -1,0 +1,4 @@
+src/test/land-use-plan-create-jurisdiction.test.ts(70,43): error TS2352: Conversion of type '{ origin: string; "sec-fetch-site"?: undefined; } | { "sec-fetch-site": string; origin?: undefined; }' to type 'Record<string, string>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ "sec-fetch-site": string; origin?: undefined; }' is not comparable to type 'Record<string, string>'.
+    Property 'origin' is incompatible with index signature.
+      Type 'undefined' is not comparable to type 'string'.

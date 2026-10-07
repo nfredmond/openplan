@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts (11 tests | 1 failed) 31ms
+     × refuses substituted frozen number before adoption 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-frozen-rules-integration.test.ts > adoption of the reviewed descriptor > refuses substituted frozen number before adoption
+AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts:149:29
+    147|     else rehash();
+    148|     const response = await adopt();
+    149|     expect(response.status).toBe(409);
+       |                             ^
+    150|     expect((await response.json()).error).toContain("content or identi…
+    151|     expect(state.rpc).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 52 passed (53)
+   Start at  02:39:45
+   Duration  2.42s (transform 126ms, setup 153ms, import 329ms, tests 234ms, environment 1.28s)
+

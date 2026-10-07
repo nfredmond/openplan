@@ -1,0 +1,61 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan
+
+ ❯ src/test/land-use-plan-cascade-rls.test.ts (8 tests | 2 failed) 11920ms
+   × preserves direct-write guards with reordered cascades: gis-cascade workspace=false 1501ms
+   × preserves direct-write guards with reordered cascades: gis-cascade workspace=true 1424ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-cascade-rls.test.ts > preserves direct-write guards with reordered cascades: gis-cascade workspace=false
+AssertionError: ERROR:  new row for relation "workspace_gis_layer_versions" violates check constraint "workspace_gis_layer_versions_ready_is_complete"
+DETAIL:  Failing row contains (eb3596d4-b61c-4bf4-bc21-79f5e55cfcf8, ab2133e3-e307-4925-82ae-7f9832173ac8, 538dc9dd-6bc3-450a-bc06-a318d15b2776, 1, geojson, SYNTHETIC.geojson, 0, null, null, null, null, WGS84, geojson_rfc7946_default, null, null, none, null, null, null, {}, [], null, f, 1, 0, 1, 0, f, null, ready, null, 2026-10-07 17:05:51.139255+00, null, 2026-10-07 17:05:51.139255+00, 635ceae722aa23be7541162e2b8a3a87ea2fea1defb5a6d4df651a0a354658ad, 2026-10-07 17:05:51.139255+00).
+CONTEXT:  SQL statement "UPDATE public.workspace_gis_layer_versions SET ingest_status='ready',finalized_at=now() WHERE id=ready_version"
+PL/pgSQL function inline_code_block line 17 at SQL statement
+: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ src/test/land-use-plan-cascade-rls.test.ts:27:40
+     25|   });
+     26|   expect(result.error).toBeUndefined();
+     27|   expect(result.status, result.stderr).toBe(0);
+       |                                        ^
+     28|   expect(result.stdout).toContain(name === "creation" ? "atomic plan c…
+     29| }, 30_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-plan-cascade-rls.test.ts > preserves direct-write guards with reordered cascades: gis-cascade workspace=true
+AssertionError: ERROR:  new row for relation "workspace_gis_layer_versions" violates check constraint "workspace_gis_layer_versions_ready_is_complete"
+DETAIL:  Failing row contains (6a34be0f-1836-4386-b5b5-e7cecc8005ab, 6510dada-3389-40e9-9205-1e36d091c292, 42e0893b-cdb1-4a34-9d23-ba5d9a91a043, 1, geojson, SYNTHETIC.geojson, 0, null, null, null, null, WGS84, geojson_rfc7946_default, null, null, none, null, null, null, {}, [], null, f, 1, 0, 1, 0, f, null, ready, null, 2026-10-07 17:05:52.570753+00, null, 2026-10-07 17:05:52.570753+00, 635ceae722aa23be7541162e2b8a3a87ea2fea1defb5a6d4df651a0a354658ad, 2026-10-07 17:05:52.570753+00).
+CONTEXT:  SQL statement "UPDATE public.workspace_gis_layer_versions SET ingest_status='ready',finalized_at=now() WHERE id=ready_version"
+PL/pgSQL function inline_code_block line 17 at SQL statement
+: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ src/test/land-use-plan-cascade-rls.test.ts:27:40
+     25|   });
+     26|   expect(result.error).toBeUndefined();
+     27|   expect(result.status, result.stderr).toBe(0);
+       |                                        ^
+     28|   expect(result.stdout).toContain(name === "creation" ? "atomic plan c…
+     29| }, 30_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  10:05:40
+   Duration  12.52s (transform 38ms, setup 57ms, import 40ms, tests 11.92s, environment 339ms)
+

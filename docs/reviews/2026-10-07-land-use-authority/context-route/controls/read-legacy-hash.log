@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 37ms
+     × keeps legacy null distinct from missing, invalid or unreadable context 5ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:50
+   Duration  1.37s (transform 190ms, setup 87ms, import 318ms, tests 58ms, environment 664ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > keeps legacy null distinct from missing, invalid or unreadable context
+AssertionError: expected 200 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 200
+
+ ❯ src/test/land-use-plan-context-route.test.ts:158:105
+    156|     ] as const) {
+    157|       tables.land_use_plans = { data: { ...planRow(), ...patch }, erro…
+    158|       const response = await GET(new NextRequest("http://localhost"), …
+       |                                                                                                         ^
+    159|       if (status === 200) expect((await response.json()).contextState)…
+    160|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

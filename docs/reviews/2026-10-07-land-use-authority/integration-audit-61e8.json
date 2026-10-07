@@ -1,0 +1,65 @@
+{
+  "target": "3e54ecc3f1a8159d6e26c03b1428d34b285100fc",
+  "local_branches": 54,
+  "live_origin_branches": 55,
+  "registered_worktrees": 43,
+  "local_branches_differing_from_remote": [],
+  "local_branches_without_remote": [],
+  "origin_branches_outside_target": [
+    "work/engagement-context-handoff-20261007",
+    "work/engagement-execution-controls-20261006",
+    "work/engagement-execution-progress-20261006",
+    "work/engagement-form-recovery-20261006",
+    "work/engagement-thematic-inputs-20261007",
+    "work/land-use-plan-authority-20261007"
+  ],
+  "worktrees_outside_target": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007",
+      "head": "21b1f86adf3bb437032f7cc19af5525d2de08655",
+      "contained": false,
+      "changes": []
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/engagement-execution-controls-20261006",
+      "head": "df92b53fce0717b2b1f2c0d13ab754cd2364d205",
+      "contained": false,
+      "changes": []
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/engagement-execution-progress-20261006",
+      "head": "bd292640a7b50a79370adc0ba9350df96d62306d",
+      "contained": false,
+      "changes": []
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/engagement-form-recovery-20261006",
+      "head": "00b849e75a3145f1f99d701520bfeddc3ffe18c8",
+      "contained": false,
+      "changes": []
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007",
+      "head": "0186fb40c7ac47f521569b23964e4be3d1eb4f41",
+      "contained": false,
+      "changes": []
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/land-use-plan-authority-20261007",
+      "head": "61e824600a456fcfb1952b7b53e8562fea3158ea",
+      "contained": false,
+      "changes": []
+    }
+  ],
+  "worktree_changes": [
+    {
+      "path": "/home/nathaniel/code/openplan",
+      "head": "3e54ecc3f1a8159d6e26c03b1428d34b285100fc",
+      "contained": true,
+      "changes": [
+        "?? .directory"
+      ]
+    }
+  ],
+  "stashes": []
+}

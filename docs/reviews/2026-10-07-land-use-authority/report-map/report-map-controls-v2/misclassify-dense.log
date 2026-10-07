@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 1 failed) 240ms
+     × draws nothing and reports the count when the view is too dense 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > draws nothing and reports the count when the view is too dense
+AssertionError: expected 503 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 503
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:142:63
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  12:30:42
+   Duration  1.03s (transform 149ms, setup 55ms, import 309ms, tests 240ms, environment 334ms)
+

@@ -1,0 +1,14 @@
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.6970508Z ^[[41m^[[1m FAIL ^[[22m^[[49m src/test/land-use-plan-content-workbench.test.tsx^[[2m > ^[[22mLandUsePlanWorkbench content editing^[[2m > ^[[22mseparates legacy reviewed identity and context from current request recovery
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.6978307Z ^[[31m^[[1mTestingLibraryElementError^[[22m^[[39m: Unable to find an accessible element with the role "region" and name "Context retained with this version"
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.6979211Z 
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.6979447Z Here are the accessible roles:
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.6979633Z 
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.6979763Z   banner:
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.6979942Z 
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.6980071Z   Name "":
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.6980436Z   ^[[36m<header^[[39m
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.6981060Z     ^[[33mclass^[[39m=^[[32m"rounded-xl border border-border bg-card p-5 shadow-sm"^[[39m
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.6981469Z   ^[[36m/>^[[39m
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.6981593Z 
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.7379279Z ^[[2m Test Files ^[[22m ^[[1m^[[31m1 failed^[[39m^[[22m^[[2m | ^[[22m^[[1m^[[32m1462 passed^[[39m^[[22m^[[2m | ^[[22m^[[33m92 skipped^[[39m^[[90m (1555)^[[39m
+order independence (shuffled vitest)	Shuffled suite	2026-10-07T18:53:30.7386764Z ^[[2m      Tests ^[[22m ^[[1m^[[31m1 failed^[[39m^[[22m^[[2m | ^[[22m^[[1m^[[32m18873 passed^[[39m^[[22m^[[2m | ^[[22m^[[33m1544 skipped^[[39m^[[90m (20418)^[[39m

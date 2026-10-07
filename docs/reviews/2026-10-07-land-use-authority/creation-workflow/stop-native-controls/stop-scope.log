@@ -1,0 +1,4 @@
+ERROR:  independent stop workspace
+CONTEXT:  PL/pgSQL function pg_temp_9.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert(repeated->>'workspaceId'=third_workspace::text AND (SELECT count(*) FROM public.land_use_plan_creation_cancellations c WHERE c.command_id=(command->>'commandId')::uuid)=2,'independent stop workspace')"
+PL/pgSQL function inline_code_block line 44 at PERFORM

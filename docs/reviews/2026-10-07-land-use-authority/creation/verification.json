@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-07",
+  "base": "5a2679b01fbe33742b91825e758f3a13474addf1",
+  "scope": "Backend creation checkpoint; no production route or creator connection yet.",
+  "unitAndAccountingTests": 64,
+  "nativeInstalledSuites": 4,
+  "targetedFaults": 51,
+  "typescript": "passed",
+  "changedFileLint": "passed",
+  "deadcode": "exit0; warnings retained, including PlanCreationError awaiting route integration",
+  "migration": "20261016000007, isolated restore target only",
+  "database": "PostgreSQL 17.6, API29821 DB29822",
+  "browser": "Not run for creation; no visible acceptance claim.",
+  "focusedLandUseRegression": "See land-use-regression.log"
+}

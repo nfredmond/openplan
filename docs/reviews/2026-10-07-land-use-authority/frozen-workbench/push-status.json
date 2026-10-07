@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-10-07T15:17:02.618963+00:00",
+  "localHead": "3ee61e37c35064bada0e7ffba21d5e49e0bf4bf0",
+  "remoteHead": "36c85e76c25bb7ccc1b95696ed716b29cdf86429",
+  "branch": "work/land-use-plan-kinds-20261007",
+  "result": "Push remains rejected with remote Internal Server Error. No force push or history rewrite.",
+  "attempts": [
+    "ordinary push of5f7f0ff9",
+    "ordinary push after merging parent at2dc8686f",
+    "ordinary retry",
+    "non-thin pack without bitmaps",
+    "HTTP1.1 after evidence commit3ee61e37",
+    "new work/land-use-reviewed-history-20261007 ref, also rejected; no new branch created",
+    "same owned ref from canonical Git context, also rejected"
+  ],
+  "connectivityCheck": "git fsck --no-reflogs --connectivity-only3ee61e37 returns0; dangling historical objects retained",
+  "sshReadCheck": "Strict known-host verification refuses GitHub because no local ED25519 host key is recorded. No host-key bypass or configuration change.",
+  "pr": "No new PR created for this unpushed checkpoint. PR126 remains linked and open.",
+  "browser": "T3 preview reports available; two fresh tab_i snapshots fail. Alternative browser request remains unanswered."
+}

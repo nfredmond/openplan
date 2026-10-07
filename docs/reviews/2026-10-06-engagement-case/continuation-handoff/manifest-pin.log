@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-context-handoff-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-continuation-server.test.ts (40 tests | 1 failed) 40ms
+     × refuses substituted or incomplete history: manifest 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-continuation-server.test.ts > continuation from a pinned, complete parent > refuses substituted or incomplete history: manifest
+AssertionError: promise resolved "{ request: { …(3) }, replayed: false }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "replayed": false,
++   "request": {
++     "actorId": "c7700000-0000-4000-8000-000000000003",
++     "id": "c7700000-0000-4000-8000-000000000009",
++     "intentText": "{
++   \"schemaVersion\": 1,
++   \"sourceId\": \"c7700000-0000-4000-8000-000000000006\",
++   \"sourceSha256\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",
++   \"connectionId\": \"c7700000-0000-4000-8000-000000000007\",
++   \"configurationRevisionId\": \"c7700000-0000-4000-8000-000000000008\",
++   \"configurationHash\": \"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",
++   \"modelId\": \"PRIVATE-model\",
++   \"taskByteLimit\": 65536
++ }",
++   },
+  }
+
+ ❯ src/test/engagement-synthesis-continuation-server.test.ts:98:66
+     96|     if (field === "empty") value.inventory.contributionIds = [];
+     97|     if (field === "duplicate") value.inventory.contributionIds.push(id…
+     98|     mocks.history.mockResolvedValue(value); await expect(create()).rej…
+       |                                                                  ^
+     99|     expect(mocks.context).not.toHaveBeenCalled();
+    100|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 39 passed (40)
+   Start at  00:22:03
+   Duration  780ms (transform 133ms, setup 56ms, import 179ms, tests 40ms, environment 352ms)
+

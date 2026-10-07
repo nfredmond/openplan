@@ -1,0 +1,916 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-content-workbench.test.tsx (10 tests | 1 failed) 2444ms
+     × separates legacy reviewed identity and context from current request recovery 471ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-content-workbench.test.tsx > LandUsePlanWorkbench content editing > separates legacy reviewed identity and context from current request recovery
+TestingLibraryElementError: Unable to find an accessible element with the role "region" and name "Context not retained with this version"
+
+Here are the accessible roles:
+
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"rounded-xl border border-border bg-card p-5 shadow-sm"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs font-semibold uppercase tracking-wide text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-2xl font-bold"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"max-w-prose text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"max-w-prose text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs font-semibold uppercase tracking-wide text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"max-w-prose text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-all rounded-lg bg-muted p-3 text-xs"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "SYNTHETIC reviewed title":
+  [36m<h1[39m
+    [33mclass[39m=[32m"mt-1 text-3xl font-bold"[39m
+  [36m/>[39m
+
+  Name "Version history":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Context retained with this version":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Plan area and responsible bodies":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Workflow":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Review the current checklist":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-semibold"[39m
+  [36m/>[39m
+
+  Name "Applicable sections":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Locally defined content":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-semibold"[39m
+    [33mid[39m=[32m"section-title-33333333-3333-4333-8333-333333333333"[39m
+  [36m/>[39m
+
+  Name "Plan content":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-semibold"[39m
+  [36m/>[39m
+
+  Name "Mapped designations":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Implementation program":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Related plans":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Required process steps":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Private tribal consultation":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Review history":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Freeze, adopt, and publish":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "report":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Descriptor duties and sources":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  navigation:
+
+  Name "Plan version history":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"Plan version history"[39m
+    [33mclass[39m=[32m"space-y-3 rounded-xl border border-border bg-card p-5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Open the current plan in a new tab":
+  [36m<a[39m
+    [33mclass[39m=[32m"underline"[39m
+    [33mhref[39m=[32m"/land-use-plans/11111111-1111-4111-8111-111111111111"[39m
+    [33mrel[39m=[32m"noopener noreferrer"[39m
+    [33mtarget[39m=[32m"_blank"[39m
+  [36m/>[39m
+
+  Name "Open version 2 in a new tab":
+  [36m<a[39m
+    [33mclass[39m=[32m"font-medium underline"[39m
+    [33mhref[39m=[32m"/land-use-plans/11111111-1111-4111-8111-111111111111?versionId=77777777-7777-4777-8777-777777777777"[39m
+    [33mrel[39m=[32m"noopener noreferrer"[39m
+    [33mtarget[39m=[32m"_blank"[39m
+  [36m/>[39m
+
+  Name "Engagement":
+  [36m<a[39m
+    [33mclass[39m=[32m"underline"[39m
+    [33mhref[39m=[32m"/engagement"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"grid gap-2 sm:grid-cols-2 lg:grid-cols-3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"min-w-0 rounded-lg border border-border p-3 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"min-w-0 rounded-lg border border-border p-3 text-sm"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Context retained with this version":
+  [36m<section[39m
+    [33maria-label[39m=[32m"Context retained with this version"[39m
+    [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+  [36m/>[39m
+
+  Name "Plan context":
+  [36m<section[39m
+    [33maria-label[39m=[32m"Plan context"[39m
+    [33mclass[39m=[32m"min-w-0 space-y-5 rounded-xl border border-border bg-card p-5"[39m
+  [36m/>[39m
+
+  Name "Checklist review and recovery":
+  [36m<section[39m
+    [33maria-label[39m=[32m"Checklist review and recovery"[39m
+    [33mclass[39m=[32m"space-y-3 border-l-2 border-border pl-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  group:
+
+  Name "":
+  [36m<details[39m
+    [33mclass[39m=[32m"space-y-3"[39m
+    [33mdata-plan-context-custody[39m=[32m"true"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<details[39m
+    [33mclass[39m=[32m"text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<details[39m
+    [33mclass[39m=[32m"text-sm"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Refresh saved context":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Save section":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-9 gap-1.5 px-3.5 has-[>svg]:px-3 mt-2"[39m
+    [33mdata-size[39m=[32m"sm"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Save content node":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-9 gap-1.5 px-3.5 has-[>svg]:px-3 mt-3"[39m
+    [33mdata-size[39m=[32m"sm"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Save process step":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5 md:col-span-2"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Save private information":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Save review event":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Publish frozen plan":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Fork amendment working version":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Generate frozen implementation report":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5 md:col-span-2"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "Locally defined content":
+  [36m<textarea[39m
+    [33maria-labelledby[39m=[32m"section-title-33333333-3333-4333-8333-333333333333"[39m
+    [33mclass[39m=[32m"border-input placeholder:text-muted-foreground flex field-sizing-content w-full rounded-xl border bg-background px-3.5 py-2.5 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive mt-3 min-h-36"[39m
+    [33mdata-slot[39m=[32m"textarea"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mplaceholder[39m=[32m"Author the plan text, with evidence links and policy details."[39m
+  [36m/>[39m
+
+  Name "Official evidence URL":
+  [36m<input[39m
+    [33mclass[39m=[32m"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive mt-1"[39m
+    [33mdata-slot[39m=[32m"input"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mplaceholder[39m=[32m"https://"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Title":
+  [36m<input[39m
+    [33mclass[39m=[32m"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive mt-1"[39m
+    [33mdata-slot[39m=[32m"input"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mvalue[39m=[32m"Maintain a clear record"[39m
+  [36m/>[39m
+
+  Name "Draft text":
+  [36m<textarea[39m
+    [33mclass[39m=[32m"border-input placeholder:text-muted-foreground flex field-sizing-content w-full rounded-xl border bg-background px-3.5 py-2.5 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive mt-1 min-h-28"[39m
+    [33mdata-slot[39m=[32m"textarea"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Process note":
+  [36m<textarea[39m
+    [33mclass[39m=[32m"border-input placeholder:text-muted-foreground flex field-sizing-content min-h-24 w-full rounded-xl border bg-background px-3.5 py-2.5 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive mt-1"[39m
+    [33mdata-slot[39m=[32m"textarea"[39m
+    [33mname[39m=[32m"notes"[39m
+  [36m/>[39m
+
+  Name "Confidential consultation notes":
+  [36m<textarea[39m
+    [33mclass[39m=[32m"border-input placeholder:text-muted-foreground flex field-sizing-content min-h-24 w-full rounded-xl border bg-background px-3.5 py-2.5 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive mt-1"[39m
+    [33mdata-slot[39m=[32m"textarea"[39m
+    [33mname[39m=[32m"notes"[39m
+  [36m/>[39m
+
+  Name "Reviewing or hearing body":
+  [36m<input[39m
+    [33mclass[39m=[32m"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive mt-1"[39m
+    [33mdata-slot[39m=[32m"input"[39m
+    [33mname[39m=[32m"decisionBody"[39m
+  [36m/>[39m
+
+  Name "Review notes":
+  [36m<textarea[39m
+    [33mclass[39m=[32m"border-input placeholder:text-muted-foreground flex field-sizing-content min-h-24 w-full rounded-xl border bg-background px-3.5 py-2.5 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive mt-1"[39m
+    [33mdata-slot[39m=[32m"textarea"[39m
+    [33mname[39m=[32m"notes"[39m
+    [33mplaceholder[39m=[32m"What was reviewed, heard, recommended, or resolved"[39m
+  [36m/>[39m
+
+  Name "Annual implementation report title":
+  [36m<input[39m
+    [33mclass[39m=[32m"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive mt-1"[39m
+    [33mdata-slot[39m=[32m"input"[39m
+    [33mname[39m=[32m"title"[39m
+    [33mrequired[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Summary":
+  [36m<textarea[39m
+    [33mclass[39m=[32m"border-input placeholder:text-muted-foreground flex field-sizing-content min-h-24 w-full rounded-xl border bg-background px-3.5 py-2.5 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive mt-1"[39m
+    [33mdata-slot[39m=[32m"textarea"[39m
+    [33mname[39m=[32m"summary"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Evidence document":
+  [36m<select[39m
+    [33mclass[39m=[32m"module-select mt-1"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Process step":
+  [36m<select[39m
+    [33mclass[39m=[32m"module-select mt-1"[39m
+    [33mname[39m=[32m"processKey"[39m
+    [33mrequired[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Status":
+  [36m<select[39m
+    [33mclass[39m=[32m"module-select mt-1"[39m
+    [33mname[39m=[32m"status"[39m
+  [36m/>[39m
+
+  Name "Evidence document":
+  [36m<select[39m
+    [33mclass[39m=[32m"module-select mt-1"[39m
+    [33mname[39m=[32m"documentId"[39m
+  [36m/>[39m
+
+  Name "Consultation status":
+  [36m<select[39m
+    [33mclass[39m=[32m"module-select mt-1 w-full"[39m
+    [33mname[39m=[32m"status"[39m
+  [36m/>[39m
+
+  Name "Evidence document":
+  [36m<select[39m
+    [33mclass[39m=[32m"module-select mt-1 w-full"[39m
+    [33mname[39m=[32m"documentId"[39m
+  [36m/>[39m
+
+  Name "Review event type":
+  [36m<select[39m
+    [33mclass[39m=[32m"module-select mt-1 w-full"[39m
+    [33mname[39m=[32m"eventKind"[39m
+  [36m/>[39m
+
+  Name "Linked public engagement":
+  [36m<select[39m
+    [33mclass[39m=[32m"module-select mt-1 w-full"[39m
+    [33mname[39m=[32m"campaignId"[39m
+  [36m/>[39m
+
+  Name "Evidence document":
+  [36m<select[39m
+    [33mclass[39m=[32m"module-select mt-1 w-full"[39m
+    [33mname[39m=[32m"documentId"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  option:
+
+  Name "No evidence document":
+  [36m<option[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Choose descriptor step":
+  [36m<option[39m
+    [33mselected[39m=[32m""[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Saved plan area":
+  [36m<option[39m
+    [33mvalue[39m=[32m"setup"[39m
+  [36m/>[39m
+
+  Name "not started":
+  [36m<option[39m
+    [33mselected[39m=[32m""[39m
+    [33mvalue[39m=[32m"not_started"[39m
+  [36m/>[39m
+
+  Name "in progress":
+  [36m<option[39m
+    [33mvalue[39m=[32m"in_progress"[39m
+  [36m/>[39m
+
+  Name "complete":
+  [36m<option[39m
+    [33mvalue[39m=[32m"complete"[39m
+  [36m/>[39m
+
+  Name "not applicable":
+  [36m<option[39m
+    [33mvalue[39m=[32m"not_applicable"[39m
+  [36m/>[39m
+
+  Name "No evidence document":
+  [36m<option[39m
+    [33mselected[39m=[32m""[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "not started":
+  [36m<option[39m
+    [33mselected[39m=[32m""[39m
+    [33mvalue[39m=[32m"not_started"[39m
+  [36m/>[39m
+
+  Name "initiated":
+  [36m<option[39m
+    [33mvalue[39m=[32m"initiated"[39m
+  [36m/>[39m
+
+  Name "in progress":
+  [36m<option[39m
+    [33mvalue[39m=[32m"in_progress"[39m
+  [36m/>[39m
+
+  Name "complete":
+  [36m<option[39m
+    [33mvalue[39m=[32m"complete"[39m
+  [36m/>[39m
+
+  Name "not applicable":
+  [36m<option[39m
+    [33mvalue[39m=[32m"not_applicable"[39m
+  [36m/>[39m
+
+  Name "No evidence document selected":
+  [36m<option[39m
+    [33mselected[39m=[32m""[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "internal consistency":
+  [36m<option[39m
+    [33mselected[39m=[32m""[39m
+    [33mvalue[39m=[32m"internal_consistency"[39m
+  [36m/>[39m
+
+  Name "environmental review":
+  [36m<option[39m
+    [33mvalue[39m=[32m"environmental_review"[39m
+  [36m/>[39m
+
+  Name "hearing":
+  [36m<option[39m
+    [33mvalue[39m=[32m"hearing"[39m
+  [36m/>[39m
+
+  Name "recommendation":
+  [36m<option[39m
+    [33mvalue[39m=[32m"recommendation"[39m
+  [36m/>[39m
+
+  Name "comment response":
+  [36m<option[39m
+    [33mvalue[39m=[32m"comment_response"[39m
+  [36m/>[39m
+
+  Name "No linked public engagement":
+  [36m<option[39m
+    [33mselected[39m=[32m""[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "No evidence document":
+  [36m<option[39m
+    [33mselected[39m=[32m""[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  article:
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"rounded-lg border border-border p-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  strong:
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  --------------------------------------------------
+  checkbox:
+
+  Name "Contains sensitive-location information":
+  [36m<input[39m
+    [33mname[39m=[32m"sensitive"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-6"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"rounded-xl border border-border bg-card p-5 shadow-sm"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-wrap items-start justify-between gap-4"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-xs font-semibold uppercase tracking-wide text-muted-foreground"[39m
+            [36m>[39m
+              [0mReviewed plan wording[0m
+              [0m · version [0m
+              [0m1[0m
+            [36m</p>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"mt-1 text-3xl font-bold"[39m
+            [36m>[39m
+              [0mSYNTHETIC reviewed title[0m
+            [36m</h1>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-2 text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mSYNTHETIC reviewed authority[0m
+              [0m · [0m
+              [0mSYNTHETIC reviewed area[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-lg bg-muted px-4 py-3 text-right"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-2xl font-bold"[39m
+            [36m>[39m
+              [0m13[0m
+              [0m%[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+            [36m>[39m
+              [0mworkflow complete[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+        [36m>[39m
+          [0mLocal legal requirements are not configured.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 text-xs text-muted-foreground"[39m
+        [36m>[39m
+          [0mNo legal sources are configured; source review is not established.[0m
+          [0m OpenPlan does not certify legal sufficiency.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 text-sm text-muted-foreground"[39m
+        [36m>[39m
+          [0mThis version did not retain its checklist or source-review dates. Any descriptor reference shown comes from the installed registry and may differ from what reviewers saw.[0m
+        [36m</p>[39m
+      [36m</header>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Plan version history"[39m
+        [33mclass[39m=[32m"space-y-3 rounded-xl border border-border bg-card p-5"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-lg font-semibold"[39m
+        [36m>[39m
+          [0mVersion history[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+        [36m>[39m
+          [0mOpen another version in a new tab to keep this page and any unsaved drafts in place.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm"[39m
+        [36m>[39m
+          [0mThis historical view is read-only. [0m
+          [36m<a[39m
+            [33mclass[39m=[32m"underline"[39m
+            [33mhref[39m=[32m"/land-use-plans/11111111-1111-4111-8111-111111111111"[39m
+            [33mrel[39m=[32m"noopener noreferrer"[39m
+            [33mtarget[39m=[32m"_blank"[39m
+          [36m>[39m
+            [0mOpen the current plan in a new tab[0m
+          [36m</a>[39m
+          [0m to continue work.[0m
+        [36m</p>[39m
+        [36m<ul[39m
+          [33mclass[39m=[32m"grid gap-2 sm:grid-cols-2 lg:grid-cols-3"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"min-w-0 rounded-lg border border-border p-3 text-sm"[39m
+          [36m>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"font-medium underline"[39m
+              [33mhref[39m=[32m"/land-use-plans/11111111-1111-4111-8111-111111111111?versionId=77777777-7777-4777-8777-777777777777"[39m
+              [33mrel[39m=[32m"noopener noreferrer"[39m
+              [33mtarget[39m=[32m"_blank"[39m
+            [36m>[39m
+              [0mOpen version [0m
+              [0m2[0m
+              [0m in a new tab[0m
+            [36m</a>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+            [36m>[39m
+              [0moriginal[0m
+              [0m · [0m
+              [0mworking[0m
+            [36m</p>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"min-w-0 rounded-lg border border-border p-3 text-sm"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mViewing version [0m
+              [0m1[0m
+            [36m</span>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+            [36m>[39m
+              [0moriginal[0m
+              [0m · [0m
+              [0madopted[0m
+            [36m</p>[39m
+          [36m</li>[39m
+        [36m</ul>[39m
+      [36m</nav>[39m
+      [36m<section[39m
+        [33maria-label[39m=[32m"Context retained with this version"[39m
+        [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"text-lg font-semibold"[39m
+          [36m>[39m
+            [0mContext retained with this version[0m
+          [36m</h2>[39m
+        [36m</div>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm"[39m
+        [36m>[39m
+          [0mThis version did not retain its plan context. Current plan context cannot establish what reviewers saw.[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<details[39m
+        [33mclass[39m=[32m"space-y-3"[39m
+        [33mdata-plan-context-custody[39m=[32m"true"[39m
+      [36m>[39m
+        [36m<summary[39m
+          [33mclass[39m=[32m"cursor-pointer text-sm font-medium"[39m
+        [36m>[39m
+          [0mCurrent plan context and request recovery[0m
+        [36m</summary>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"Plan context"[39m
+          [33mclass[39m=[32m"min-w-0 space-y-5 rounded-xl border border-border bg-card p-5"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-2"[39m
+          [36m>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-lg font-semibold"...
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-content-workbench.test.tsx:195:26
+    193|     expect(screen.getByText("SYNTHETIC reviewed authority · SYNTHETIC …
+    194|     expect(within(screen.getByRole("heading", { name: "Workflow" }).cl…
+    195|     const panel = screen.getByRole("region", { name: custody === "lega…
+       |                          ^
+    196|     expect(within(panel).queryByText("SYNTHETIC later area")).not.toBe…
+    197|     if (custody !== "legacy") {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  11:58:32
+   Duration  3.29s (transform 233ms, setup 54ms, import 389ms, tests 2.44s, environment 318ms)
+

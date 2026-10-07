@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 1 failed) 21ms
+     × keeps stored absence and malformed attributed context distinct from a valid copy 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > study place capture and attributed context > keeps stored absence and malformed attributed context distinct from a valid copy
+AssertionError: expected { status: 'legacy' } to deeply equal { status: 'invalid' }
+
+- Expected
++ Received
+
+  {
+-   "status": "invalid",
++   "status": "legacy",
+  }
+
+ ❯ src/test/land-use-plan-context.test.ts:101:43
+     99|   const result=await preparePlanContext(command(),ca,id(3));if(!result…
+    100|   expect(readSavedPlanContext(result.context)).toEqual({status:"retain…
+    101|   expect(readSavedPlanContext(undefined)).toEqual({status:"invalid"});
+       |                                           ^
+    102|   expect(readSavedPlanContext({...result.context,savedBy:"client label…
+    103|   expect(readSavedPlanContext({...result.context,place:{...result.cont…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 passed (21)
+   Start at  03:04:16
+   Duration  662ms (transform 89ms, setup 53ms, import 120ms, tests 21ms, environment 320ms)
+

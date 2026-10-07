@@ -1,0 +1,55 @@
+{
+  "checkedAt": "2026-10-07T08:40:17.212915+00:00",
+  "checkpointBase": "070c71ca4441ba574b6dd4e6a2ca7d46355e4094",
+  "scope": "Existing M9b thematic input discovery, exact browser custody and whole-source preparation handoff",
+  "controls": {
+    "harmlessTests": 157,
+    "targetedFaults": 20,
+    "restored": true
+  },
+  "native": {
+    "synthetic": true,
+    "readOnly": true,
+    "historyPages": 2,
+    "historyRequests": 47,
+    "sourceContributions": 2,
+    "chosenContributions": 1,
+    "ready": false,
+    "harmlessPass": true,
+    "actorFaultDetected": true,
+    "restoredPass": true
+  },
+  "historicalCi": {
+    "commit": "070c71ca4441ba574b6dd4e6a2ca7d46355e4094",
+    "shuffleRun": 37592251795,
+    "job": 112696290206,
+    "failedTest": "every-api-route-has-a-caller",
+    "reason": "The backend checkpoint added the thematic choice route without an application caller. The current UI supplies callers; the guard is unchanged."
+  },
+  "browser": {
+    "tool": "T3 preview",
+    "tabId": "tab_9",
+    "available": true,
+    "visible": false,
+    "snapshot": "failed after preview_open(open=true,show=true)",
+    "currentThematicUiRendered": false
+  },
+  "unproved": [
+    "Visible desktop and 390px current-build journey",
+    "Console, keyboard and pointer acceptance",
+    "Browser-native storage interruption for these thematic controls",
+    "Complete thematic input sealing and subsequent provider execution through UI",
+    "Semantic, practitioner and public-participant acceptance",
+    "Full QA and exact-head GitHub CI for the new checkpoint",
+    "Release readiness"
+  ],
+  "focusedVerification": {
+    "tests": 224,
+    "suites": 10,
+    "passed": true,
+    "typescript": "pass",
+    "eslint": "pass, 16 changed TypeScript files",
+    "routeCallerGuard": "pass, unchanged",
+    "styleGuard": "pass, unchanged"
+  }
+}

@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-report-provenance-route.test.ts (39 tests | 1 failed | 38 skipped) 16ms
+     × withholds adoption download with wrong kind with artifact kind 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-report-provenance-route.test.ts > direct report source download > withholds adoption download with wrong kind with artifact kind
+AssertionError: expected 200 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 200
+
+ ❯ refusal src/test/land-use-report-provenance-route.test.ts:62:61
+     60| }
+     61| async function refusal(status = 503) {
+     62|   const response = await request(); expect(response.status).toBe(statu…
+       |                                                             ^
+     63|   expect(response.headers.get("content-disposition")).toBeNull();
+     64|   const body = await response.json(); expect(Object.keys(body)).toEqua…
+ ❯ src/test/land-use-report-provenance-route.test.ts:128:92
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 38 skipped (39)
+   Start at  13:14:58
+   Duration  652ms (transform 106ms, setup 54ms, import 156ms, tests 16ms, environment 330ms)
+

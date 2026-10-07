@@ -1,0 +1,189 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "target": null,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "target": null,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "wrong-kind-rules",
+      "target": "keeps the established general-plan content",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection keeps the established general-plan content separate from specific-plan content",
+        "plan-kind rule selection distinguishes consistency, amendment procedure and agency-defined implementation updates",
+        "plan-kind rule selection returns detached rules and never rewrites an installed family"
+      ],
+      "matched": true
+    },
+    {
+      "case": "unknown-family",
+      "target": "refuses unknown families",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection refuses unknown families and kinds"
+      ],
+      "matched": true
+    },
+    {
+      "case": "unknown-kind",
+      "target": "resolves arbitrary adapter data",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection resolves arbitrary adapter data without borrowing a different family's rules"
+      ],
+      "matched": true
+    },
+    {
+      "case": "wrong-family",
+      "target": "resolves arbitrary adapter data",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection resolves arbitrary adapter data without borrowing a different family's rules"
+      ],
+      "matched": true
+    },
+    {
+      "case": "variant-missing-kind",
+      "target": "resolves arbitrary adapter data",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection resolves arbitrary adapter data without borrowing a different family's rules"
+      ],
+      "matched": true
+    },
+    {
+      "case": "shared-source-object",
+      "target": "returns detached rules",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection returns detached rules and never rewrites an installed family"
+      ],
+      "matched": true
+    },
+    {
+      "case": "all-kinds-retained",
+      "target": "keeps the established general-plan content",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection keeps the established general-plan content separate from specific-plan content"
+      ],
+      "matched": true
+    },
+    {
+      "case": "selection-collision",
+      "target": "encodes both selection identifiers",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection encodes both selection identifiers without delimiter collisions"
+      ],
+      "matched": true
+    },
+    {
+      "case": "consistency-review",
+      "target": "distinguishes consistency",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection distinguishes consistency, amendment procedure and agency-defined implementation updates"
+      ],
+      "matched": true
+    },
+    {
+      "case": "consistency-adoption",
+      "target": "distinguishes consistency",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection distinguishes consistency, amendment procedure and agency-defined implementation updates"
+      ],
+      "matched": true
+    },
+    {
+      "case": "general-amendment-cap",
+      "target": "distinguishes consistency",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection distinguishes consistency, amendment procedure and agency-defined implementation updates"
+      ],
+      "matched": true
+    },
+    {
+      "case": "specific-amendment-cap",
+      "target": "distinguishes consistency",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection distinguishes consistency, amendment procedure and agency-defined implementation updates"
+      ],
+      "matched": true
+    },
+    {
+      "case": "agency-update-required",
+      "target": "distinguishes consistency",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection distinguishes consistency, amendment procedure and agency-defined implementation updates"
+      ],
+      "matched": true
+    },
+    {
+      "case": "agency-update-deadline",
+      "target": "distinguishes consistency",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection distinguishes consistency, amendment procedure and agency-defined implementation updates"
+      ],
+      "matched": true
+    },
+    {
+      "case": "incorrect-content-source",
+      "target": "keeps the established general-plan content",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection keeps the established general-plan content separate from specific-plan content"
+      ],
+      "matched": true
+    },
+    {
+      "case": "unreviewed-date-promotion",
+      "target": "distinguishes consistency",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection distinguishes consistency, amendment procedure and agency-defined implementation updates"
+      ],
+      "matched": true
+    },
+    {
+      "case": "legal-sufficiency-caveat",
+      "target": "distinguishes consistency",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection distinguishes consistency, amendment procedure and agency-defined implementation updates"
+      ],
+      "matched": true
+    },
+    {
+      "case": "rewritten-frozen-rules",
+      "target": "binds snapshots and review hashes",
+      "exitCode": 1,
+      "failedTests": [
+        "plan-kind rule selection binds snapshots and review hashes to the selected kind"
+      ],
+      "matched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/lib/land-use-plans/registry.ts": "770f857cae683b406fd1bc803b5807b7c1d18b53a757fdaee3044788dddc207e",
+    "src/lib/land-use-plans/plan-kind-rules.ts": "9e73bd348c075ce2231597784825710f54d7ba8458813fda4ddb37686dc0ca12",
+    "src/lib/land-use-plans/descriptor-snapshot.ts": "6bddf29275a14e88c6ae3916d9a136c20e4dbcd4a087fb745b001bc0a4bbed3e"
+  },
+  "boundary": "Pure rule selection, current source declarations and snapshot serialization. No authenticated route, database, rendered browser, legal sufficiency or practitioner acceptance."
+}

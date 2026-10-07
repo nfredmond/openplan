@@ -1,0 +1,41 @@
+{
+  "testedParentCommit": "1be69c7c8c57b9e3741acf512a514ee4653932b8",
+  "workingChanges": true,
+  "sourceAndTestHashes": {
+    "openplan/src/app/(app)/land-use-plans/page.tsx": "76f81e55f25eeac655b6157f0b4bbc55d30d2a59e996453038133fb4d0863770",
+    "openplan/src/app/api/land-use-plans/[planId]/content/route.ts": "0b07c43c05ad804951e2ca8242726ff672916b278ca47d3eff21be18ec844e68",
+    "openplan/src/app/api/land-use-plans/[planId]/decisions/route.ts": "879151d6fc638d6ece2036b266f6cafcfb0913d6c87e2ed5127670d781a776b2",
+    "openplan/src/app/api/land-use-plans/[planId]/freeze/route.ts": "8e5cdece74e501d161562b34a711b31efe28dac080d6577f81b4a469ae7fa1c3",
+    "openplan/src/app/api/land-use-plans/[planId]/process/route.ts": "003a62ae96284973f26c04bd334b7311b58b34d863d61dc11cda843d17f1688c",
+    "openplan/src/app/api/land-use-plans/[planId]/route.ts": "cc6ea1ee716dc19a477c318b57cf8c033fecebe96df03edbedcabd91f43fb523",
+    "openplan/src/components/land-use-plans/land-use-plan-creator.tsx": "7a3014a0abe478c4b3fa897b5deb8fd0dc047d8538a02427e52803fa431e1a72",
+    "openplan/src/lib/land-use-plans/api.ts": "dc15427a47bf280da34f6729841ce033625c250f0bd876b73f0b504bd011f063",
+    "openplan/src/lib/land-use-plans/create-store.ts": "2071ffe7852466ffe09bc1bf921ff02e4082fa7c2d2fe9760c6a4ca936fcd6e8",
+    "openplan/src/lib/land-use-plans/plan-context-store.ts": "58b46b6348de25a0b5f7e4264eb6d61babe65550a747c094aae88227f81ac1ce",
+    "openplan/src/lib/land-use-plans/public.ts": "2ac4588a9e82725483c387cd082b7f2c71d65f1752826a92b817a68c4eaa6b9f",
+    "openplan/src/test/fixtures/land-use-plans/creation.ts": "523aaef6dab5e757fae79ecd508d4934411b95e40e22114859b72a69bac4e262",
+    "openplan/src/test/land-use-plan-context-route.test.ts": "03c77d3dcbfc5d4c130f907ec1a406d91a35ed32fb548d39a39ff7d89a5d3d7e",
+    "openplan/src/test/land-use-plan-create-jurisdiction.test.ts": "706c29beed2aa70ef3ed8a60141f68cecce47145dc1909606fc5e883e550592b",
+    "openplan/src/test/land-use-plan-creation.test.ts": "78618e3c09e5ee39ceaf21934c0950aed2dbe0609e908f2daa740a2578402124",
+    "openplan/src/test/land-use-plan-creator-recovery.test.tsx": "a2c7912abb0bf91c971992270d030394fa1848a23b9f180bc134a28660c4a514",
+    "openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx": "22c7ea5129c6b429b354ee503b5cd6129d49bdb1e885a0fd95c27c47d59319e7",
+    "openplan/src/test/land-use-plan-freeze-route.test.ts": "e76d286ea92b0d33519274334941d3a16fc941a2909f90c0c43e5c4d7daab276",
+    "openplan/src/test/land-use-plan-frozen-rules-integration.test.ts": "32786d886395ea0547b56d409641e6d85805eb33059f2c170a94d1e3d46ce80e",
+    "openplan/src/test/land-use-plan-public-identity.test.ts": "865df16af6204942bed0bedfa41e43a812f7d152a6b40ad441c57e8cd9c70610"
+  },
+  "regression": {
+    "passed": 552,
+    "nativeSuitesSkipped": 5,
+    "command": "NODE_OPTIONS=--max-old-space-size=6144 npm exec -- vitest run --maxWorkers=1 src/test/land-use*.test*"
+  },
+  "typecheck": "passed after fixture typing correction",
+  "lint": "20 changed TypeScript files pass",
+  "direction": "pass with unchanged reminders",
+  "controls": {
+    "baseline": "pass",
+    "harmless": "pass",
+    "faultsDetected": 39,
+    "restored": true
+  },
+  "boundary": "No new production build, native permissions/concurrency or browser acceptance. Older-draft reconciliation remains a design."
+}

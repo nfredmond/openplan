@@ -1,0 +1,145 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts (11 tests | 2 failed) 33ms
+     × retains the reviewed rules and their hash in the exact adoption manifest 11ms
+     × records legacy adoption with an explicitly current, unretained descriptor reference 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-frozen-rules-integration.test.ts > adoption of the reviewed descriptor > retains the reviewed rules and their hash in the exact adoption manifest
+AssertionError: expected undefined to deeply equal { id: 'local-unconfigured', …(11) }
+
+- Expected:
+{
+  "authorityScope": "Planner-defined local authority",
+  "configured": false,
+  "disclosure": "Local legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.",
+  "id": "local-unconfigured",
+  "jurisdictionLabel": "Local requirements not configured",
+  "planKinds": [
+    {
+      "key": "comprehensive",
+      "label": "Comprehensive plan",
+    },
+    {
+      "key": "area",
+      "label": "Area or neighborhood plan",
+    },
+    {
+      "key": "community",
+      "label": "Community plan",
+    },
+  ],
+  "processSteps": [
+    {
+      "adoptionPrerequisite": true,
+      "key": "local_process",
+      "label": "Locally defined review and adoption process",
+      "required": true,
+      "sourceUrls": [],
+    },
+  ],
+  "requirements": [
+    {
+      "applicability": "locally_defined",
+      "key": "locally_defined",
+      "label": "Locally defined content",
+      "sourceUrls": [],
+    },
+  ],
+  "reviewDueAt": "2027-01-15",
+  "sourceUrls": [],
+  "terminology": {
+    "adoptionInstrument": "adoption instrument",
+    "implementationReport": "implementation report",
+    "plan": "land use plan",
+    "section": "section",
+  },
+  "verifiedAt": "2026-08-23",
+}
+
++ Received:
+undefined
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts:100:60
+     98|     expect(state.rpc).toHaveBeenCalledOnce();
+     99|     const payload = state.rpc.mock.calls[0][1];
+    100|     expect(payload.p_adoption_manifest.descriptorSnapshot).toEqual(sna…
+       |                                                            ^
+    101|     expect(payload.p_adoption_manifest.descriptorSha256).toBe(hashFroz…
+    102|     expect(payload.p_adoption_manifest.descriptorCustody).toBe("frozen…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-plan-frozen-rules-integration.test.ts > adoption of the reviewed descriptor > records legacy adoption with an explicitly current, unretained descriptor reference
+AssertionError: expected undefined to deeply equal { id: 'local-unconfigured', …(11) }
+
+- Expected:
+{
+  "authorityScope": "Planner-defined local authority",
+  "configured": false,
+  "disclosure": "Local legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.",
+  "id": "local-unconfigured",
+  "jurisdictionLabel": "Local requirements not configured",
+  "planKinds": [
+    {
+      "key": "comprehensive",
+      "label": "Comprehensive plan",
+    },
+    {
+      "key": "area",
+      "label": "Area or neighborhood plan",
+    },
+    {
+      "key": "community",
+      "label": "Community plan",
+    },
+  ],
+  "processSteps": [
+    {
+      "adoptionPrerequisite": true,
+      "key": "local_process",
+      "label": "Locally defined review and adoption process",
+      "required": true,
+      "sourceUrls": [],
+    },
+  ],
+  "requirements": [
+    {
+      "applicability": "locally_defined",
+      "key": "locally_defined",
+      "label": "Locally defined content",
+      "sourceUrls": [],
+    },
+  ],
+  "reviewDueAt": "2027-01-15",
+  "sourceUrls": [],
+  "terminology": {
+    "adoptionInstrument": "adoption instrument",
+    "implementationReport": "implementation report",
+    "plan": "land use plan",
+    "section": "section",
+  },
+  "verifiedAt": "2026-08-23",
+}
+
++ Received:
+undefined
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts:122:41
+    120|     const manifest = state.rpc.mock.calls[0][1].p_adoption_manifest;
+    121|     expect(manifest.descriptorCustody).toBe("current_reference_not_ret…
+    122|     expect(manifest.descriptorSnapshot).toEqual(getJurisdictionPlanDes…
+       |                                         ^
+    123|     expect(snapshot).not.toHaveProperty("descriptorSnapshot");
+    124|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  2 failed | 51 passed (53)
+   Start at  02:39:48
+   Duration  2.47s (transform 131ms, setup 152ms, import 349ms, tests 244ms, environment 1.30s)
+

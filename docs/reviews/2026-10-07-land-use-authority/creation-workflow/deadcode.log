@@ -1,0 +1,1230 @@
+
+> openplan@0.67.0 deadcode
+> knip --no-progress
+
+Unused exports (536)
+collectPositions                               function  src/app/(app)/explore/_components/_helpers.ts:13:17            
+paintWhereMeasured                                       src/app/(app)/explore/_components/_helpers.ts:204:30           
+buildLinkedDatasetQueueItem                    function  …app)/explore/_components/explore-linked-dataset-state.ts:82:17
+formatDateTime                                 function  …p/(app)/invoicing/_components/invoicing-page-helpers.ts:135:17
+parseFeatureFile                               function  …/(app)/models/_components/network-package-upload-plan.ts:68:17
+serializedByteLength                           function  …(app)/models/_components/network-package-upload-plan.ts:421:17
+asStageGateSnapshotGateSummary                 function  src/app/(app)/reports/[reportId]/_components/_helpers.ts:115:17
+asStageGateSnapshotControlHealth               function  src/app/(app)/reports/[reportId]/_components/_helpers.ts:153:17
+parseTimestamp                                 function  src/app/(app)/reports/[reportId]/_components/_helpers.ts:237:17
+toFundingAwardNumber                           function  src/app/api/funding-awards/[awardId]/award-closure.ts:80:17    
+storageRefAllowed                                        …els/[modelId]/runs/[modelRunId]/volumes/artifact-source.ts:7:3
+resolveContainedLocalPath                                …els/[modelId]/runs/[modelRunId]/volumes/artifact-source.ts:8:3
+AerialProcessingJobCard                        function  src/components/aerial/aerial-processing-jobs-panel.tsx:380:17  
+useCartographic                                function  src/components/cartographic/cartographic-context.tsx:476:17    
+maskEmailAddresses                             function  src/components/engagement/notifications-inbox.tsx:41:17        
+EN_PUBLIC_BASEMAP_PICKER_LABELS                          src/components/engagement/public-map-picker-basemap.tsx:57:14  
+EN_PUBLIC_MAP_LAYER_PICKER_LABELS                        src/components/engagement/public-map-picker-layers.tsx:75:14   
+PublicMapLayerSwatch                           function  src/components/engagement/public-map-picker-layers.tsx:219:17  
+describeResponseBroadcast                      function  src/components/engagement/response-broadcast-notice.tsx:7:17   
+CLIENT_KIND_OPTIONS                                      src/components/invoicing/client-composer.tsx:10:14             
+ENGAGEMENT_KIND_OPTIONS                                  src/components/invoicing/engagement-composer.tsx:10:14         
+worksheetRequestPath                           function  …omponents/invoicing/reimbursement-worksheet-download.tsx:67:17
+newDraftKey                                    function  src/components/measures/allocation-rule-draft.ts:120:17        
+TripGenScreenBody                              function  src/components/models/model-run-trip-gen-screen.tsx:107:17     
+newActual                                      function  src/components/programs/work-program/actual-entry.tsx:17:17    
+BudgetPosition                                 function  src/components/programs/work-program/period-reporting.tsx:9:17 
+SAFETY_CRASH_MAP_CAN_DRAW                                src/components/safety/safety-crash-map.tsx:32:14               
+finalizeAerialCustodyState                     function  src/lib/aerial/artifact-custody-server.ts:690:23               
+AERIAL_CUSTODY_BUDGET_MS_ENV                             src/lib/aerial/artifact-custody.ts:28:14                       
+DEFAULT_AERIAL_CUSTODY_BUDGET_MS                         src/lib/aerial/artifact-custody.ts:63:14                       
+AERIAL_ARTIFACT_CUSTODY_STATES                           src/lib/aerial/artifact-custody.ts:273:14                      
+AERIAL_JOB_CUSTODY_STATES                                src/lib/aerial/artifact-custody.ts:276:14                      
+AERIAL_CUSTODY_FAILURE_CODES                             src/lib/aerial/artifact-custody.ts:289:14                      
+AERIAL_PROCESSING_JOB_STATUSES                           src/lib/aerial/catalog.ts:424:14                               
+isTerminalAerialProcessingJobStatus            function  src/lib/aerial/catalog.ts:444:17                               
+formatAerialProcessingJobStatusLabel           function  src/lib/aerial/catalog.ts:448:17                               
+aerialProcessingJobStatusTone                  function  src/lib/aerial/catalog.ts:473:17                               
+AERIAL_PROCESSING_SILENCE_MINUTES_ENV                    src/lib/aerial/catalog.ts:507:14                               
+describeAerialElapsedSince                     function  src/lib/aerial/catalog.ts:523:17                               
+LITCHI_CSV_HEADER                                        src/lib/aerial/flight-exports.ts:435:14                        
+FLIGHT_EXPORT_FORMATS                                    src/lib/aerial/flight-exports.ts:551:14                        
+PROCESSING_CALLBACK_STATUSES                             src/lib/aerial/processing-contract.ts:45:14                    
+processingExternalRefSchema                              src/lib/aerial/processing-contract.ts:64:14                    
+zipImagerySchema                                         src/lib/aerial/processing-contract.ts:73:14                    
+photoManifestPhotoSchema                                 src/lib/aerial/processing-contract.ts:82:14                    
+photoManifestImagerySchema                               src/lib/aerial/processing-contract.ts:94:14                    
+processingImagerySchema                                  src/lib/aerial/processing-contract.ts:112:14                   
+processingArtifactSchema                                 src/lib/aerial/processing-contract.ts:153:14                   
+summarizeAerialMissionPackagePosture                     src/lib/aerial/public.ts:20:3                                  
+formatAerialMissionStatusLabel                           src/lib/aerial/public.ts:22:3                                  
+aerialMissionStatusTone                                  src/lib/aerial/public.ts:23:3                                  
+formatAerialPackageStatusLabel                           src/lib/aerial/public.ts:24:3                                  
+aerialPackageStatusTone                                  src/lib/aerial/public.ts:25:3                                  
+AERIAL_PROCESSING_JOB_SELECT                             src/lib/aerial/queries.ts:460:14                               
+preserveCountyInlineScaffoldCsvContent         function  src/lib/api/county-onramp-inline-scaffold.ts:38:17             
+countyRuntimeOptionsSchema                               src/lib/api/county-onramp.ts:5:14                              
+countyRunListItemSchema                                  src/lib/api/county-onramp.ts:54:14                             
+countyRunArtifactSchema                                  src/lib/api/county-onramp.ts:69:14                             
+countyRunModelingEvidenceSchema                          src/lib/api/county-onramp.ts:74:14                             
+placeSearchItemSchema                                    src/lib/api/place-geographies.ts:41:14                         
+placeBoundaryBboxSchema                                  src/lib/api/place-geographies.ts:67:14                         
+ASSISTANT_ACTIVITY_AUTHORSHIP_COLUMNS                    src/lib/assistant/activity-summary.ts:36:14                    
+ASSISTANT_ACTOR_KINDS                                    src/lib/assistant/agent-principal.ts:27:14                     
+PLANNER_AGENT_PRINCIPAL_LABEL                            src/lib/assistant/agent-principal.ts:39:14                     
+describeAssistantAuthorship                    function  src/lib/assistant/agent-principal.ts:89:17                     
+compareAssistantOperations                     function  src/lib/assistant/catalog.ts:872:17                            
+ASSISTANT_CHAT_TOOL_KB_EXCERPT_LIMIT                     src/lib/assistant/chat-tools.ts:84:14                          
+ASSISTANT_CHAT_TOOL_OPERATIONS_LIMIT                     src/lib/assistant/chat-tools.ts:85:14                          
+ASSISTANT_CHAT_TOOL_VALIDATION_LIMIT                     src/lib/assistant/chat-tools.ts:87:14                          
+ASSISTANT_CHAT_TOOL_SURVEY_QUESTION_LIMIT                src/lib/assistant/chat-tools.ts:90:14                          
+assistantLocalConsoleViewModeSchema                      src/lib/assistant/local-console-state.ts:5:14                  
+PROVIDER_PROJECT_TASK_VERSION                            src/lib/assistant/provider-project-task.ts:8:14                
+VIEWER_READ_ONLY_MESSAGE                                 src/lib/auth/workspace-write-gate.ts:34:14                     
+BCA_NARRATIVE_CAVEAT                                     src/lib/bca/index.ts:28:3                                      
+DEFAULT_CO2_DISCOUNT_RATE_PCT                            src/lib/bca/index.ts:33:3                                      
+LEGACY_DISCOUNT_RATE_PCT                                 src/lib/bca/index.ts:35:3                                      
+computeDiscountedPaybackYears                            src/lib/bca/index.ts:41:3                                      
+computeIrrPct                                            src/lib/bca/index.ts:42:3                                      
+computeNpvFromCashFlows                                  src/lib/bca/index.ts:43:3                                      
+presentValue                                             src/lib/bca/index.ts:44:3                                      
+runBcaSensitivity                                        src/lib/bca/index.ts:45:3                                      
+mulberry32                                               src/lib/bca/index.ts:53:3                                      
+bcaFactBlocks                                            src/lib/bca/index.ts:64:3                                      
+bcaMemo                                        function  src/lib/bca/workbench/export.ts:37:17                          
+bcaWorkbookBytes                               function  src/lib/bca/workbench/export.ts:360:23                         
+CALBC_SOURCE                                             src/lib/bca/workbench/profiles.ts:3:14                         
+evidenceSchema                                           src/lib/bca/workbench/schema.ts:34:14                          
+flowSchema                                               src/lib/bca/workbench/schema.ts:48:14                          
+describeBasemapAvailability                    function  src/lib/cartographic/basemaps.ts:212:17                        
+paintWhereMeasured                             function  src/lib/cartographic/tract-measure-classes.ts:52:17            
+WORKSPACE_GIS_INSPECTOR_ATTRIBUTE_LIMIT                  …c/lib/cartographic/workspace-gis-feature-to-selection.ts:51:14
+isWorkspaceGisFeatureProperties                function  …c/lib/cartographic/workspace-gis-feature-to-selection.ts:79:17
+workspaceGisFillLayerId                                  src/lib/cartographic/workspace-gis-map-layers.ts:76:14         
+workspaceGisCircleLayerId                                src/lib/cartographic/workspace-gis-map-layers.ts:91:14         
+workspaceGisLabelLayerId                                 src/lib/cartographic/workspace-gis-map-layers.ts:93:14         
+isDevUnlimitedRunsEnabled                      function  src/lib/config/run-cap.ts:95:17                                
+currentUtcMonthStart                           function  src/lib/config/run-cap.ts:100:17                               
+currentUtcMonthStartIso                        function  src/lib/config/run-cap.ts:107:17                               
+AWARD_READ_CAP                                           src/lib/dashboard/chart-reads.ts:53:14                         
+INVOICE_READ_CAP                                         src/lib/dashboard/chart-reads.ts:54:14                         
+CEJST_NATIONAL_SOURCE_ID                                 src/lib/data-sources/equity-designation/cejst-national.ts:36:14
+coversCejstGeography                           function  src/lib/data-sources/equity-designation/cejst-national.ts:86:17
+EQUITY_DESIGNATION_ADAPTERS                              src/lib/data-sources/equity-designation/registry.ts:33:14      
+estimateFromCensus                             function  src/lib/data-sources/lodes.ts:47:17                            
+asGroupableServiceLevels                       function  src/lib/data-sources/transit/gtfs-feed.ts:226:17               
+toGroupableServiceDay                          function  src/lib/data-sources/transit/gtfs-feed.ts:252:17               
+NOT_MEASURED_METHOD                                      src/lib/data-sources/transit/index.ts:40:3                     
+NOT_RECORDED_METHOD                                      src/lib/data-sources/transit/index.ts:41:3                     
+OSM_STOP_INVENTORY_METHOD                                src/lib/data-sources/transit/index.ts:42:3                     
+gtfsServiceLevelMethod                                   src/lib/data-sources/transit/index.ts:43:3                     
+resolveTransitMethod                                     src/lib/data-sources/transit/index.ts:44:3                     
+transitComparabilityRefusal                              src/lib/data-sources/transit/index.ts:45:3                     
+transitFrequencyHalfNote                                 src/lib/data-sources/transit/index.ts:46:3                     
+transitMethodComparabilityKey                            src/lib/data-sources/transit/index.ts:47:3                     
+transitMethodLine                                        src/lib/data-sources/transit/index.ts:48:3                     
+TRANSIT_SOURCE_ADAPTERS                                  src/lib/data-sources/transit/index.ts:50:10                    
+getTransitSourceById                                     src/lib/data-sources/transit/index.ts:50:35                    
+TRANSIT_UNAVAILABLE_REASON                               src/lib/data-sources/transit/index.ts:51:10                    
+bboxAreaSquareMiles                                      src/lib/data-sources/transit/index.ts:52:10                    
+describeTransitAccess                          function  src/lib/data-sources/transit/index.ts:155:17                   
+buildTransitSourceSnapshot                     function  src/lib/data-sources/transit/index.ts:232:17                   
+TRANSIT_SOURCE_IDS                                       src/lib/data-sources/transit/method.ts:55:14                   
+TRANSIT_TIER_HEADWAYS                                    src/lib/data-sources/transit/method.ts:162:14                  
+getTransitSourceById                           function  src/lib/data-sources/transit/registry.ts:35:17                 
+MODERATION_ACTIONS                                       src/lib/engagement/ai-moderation-shared.ts:25:14               
+MODERATION_ACTIONS                                       src/lib/engagement/ai-moderation.ts:26:3                       
+MODERATION_CATEGORIES                                    src/lib/engagement/ai-moderation.ts:27:3                       
+MODERATION_SEVERITIES                                    src/lib/engagement/ai-moderation.ts:29:3                       
+PROJECT_CAMPAIGN_EVIDENCE_SELECT                         src/lib/engagement/campaign-projects.ts:195:14                 
+PUBLIC_SLUG_PATTERN                                      src/lib/engagement/campaign-slugs.ts:18:14                     
+ENGAGEMENT_CONTENT_TRANSLATION_BUCKET                    src/lib/engagement/campaign-translations.ts:112:14             
+loadCampaignSourceLocale                       function  src/lib/engagement/campaign-translations.ts:557:23             
+ENGAGEMENT_COMMENT_MATRIX_CAVEAT                         src/lib/engagement/comment-matrix.ts:54:14                     
+getEngagementCommentDuplicateKey               function  src/lib/engagement/comment-matrix.ts:70:17                     
+isEngagementDuplicateReviewResolved            function  src/lib/engagement/comment-matrix.ts:104:17                    
+detectContextLayerFormat                                 src/lib/engagement/context-layer-import.ts:88:37               
+CONTEXT_LAYER_SOURCE_PREFIX                              src/lib/engagement/context-layer-paint.ts:54:14                
+CONTEXT_LAYER_FORMATS                                    src/lib/engagement/context-layers.ts:36:14                     
+CONTEXT_LAYER_SRS_BASES                                  src/lib/engagement/context-layers.ts:49:14                     
+CONTEXT_LAYER_FEATURE_CAP_ENV                            src/lib/engagement/context-layers.ts:108:14                    
+EMPTY_PARTICIPANT_CONTEXT_LAYERS                         src/lib/engagement/context-layers.ts:323:14                    
+describeCommentCrashRecord                     function  src/lib/engagement/crash-corroboration.ts:207:17               
+CRASH_RADIUS_CHOICES_METERS                              src/lib/engagement/crash-corroboration.ts:363:14               
+projectDecisionSchema                                    src/lib/engagement/decision-links.ts:13:14                     
+DEMOGRAPHIC_LABELS                                       src/lib/engagement/demographics.ts:74:14                       
+EMPTY_DRAW_STATE                                         src/lib/engagement/draw-state.ts:38:14                         
+GEOFENCE_CAMPAIGN_COLUMNS                                src/lib/engagement/geofence-enforcement.ts:13:14               
+engagementGeometrySchema                                 src/lib/engagement/geometry.ts:78:14                           
+HOTSPOT_DEFAULT_ALPHA                                    src/lib/engagement/hotspots.ts:28:14                           
+HOTSPOT_MIN_EXPECTED_NEGATIVE                            src/lib/engagement/hotspots.ts:34:14                           
+JOINT_ECOLOGICAL_METRIC_KEY                              src/lib/engagement/joint-representativeness.ts:100:14          
+JOINT_SELF_REPORTED_DIMENSION                            src/lib/engagement/joint-representativeness.ts:103:14          
+FLOOR_COUNTED_BANDS                                      src/lib/engagement/joint-representativeness.ts:110:14          
+FLOOR_UNMAPPABLE_BANDS                                   src/lib/engagement/joint-representativeness.ts:118:14          
+selfReportedFloor                              function  src/lib/engagement/joint-representativeness.ts:247:17          
+NEAR_DUPLICATE_DEFAULT_THRESHOLD                         src/lib/engagement/near-duplicates.ts:9:14                     
+NEAR_DUPLICATE_MAX_PAIRS                                 src/lib/engagement/near-duplicates.ts:12:14                    
+ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS                  src/lib/engagement/photo.ts:24:14                              
+PUBLIC_PHOTO_UPLOAD_RATE_WINDOW_MINUTES                  src/lib/engagement/photo.ts:29:14                              
+ENGAGEMENT_PHOTO_CONTENT_TYPES                           src/lib/engagement/photo.ts:32:14                              
+portalTextDisclosure                           function  src/lib/engagement/portal-i18n/provenance.ts:134:17            
+PROJECT_REPORT_ARTIFACT_SELECT                           src/lib/engagement/project-report-coverage.ts:13:14            
+loadPublicPortalBundleForShareValue            function  src/lib/engagement/public-portal-data.ts:1448:23               
+buildPublicPortalPath                          function  src/lib/engagement/public-portal.ts:76:17                      
+PUBLIC_SUBMISSION_DUPLICATE_WINDOW_MINUTES               src/lib/engagement/public-submit.ts:5:14                       
+normalizePublicSubmissionText                  function  src/lib/engagement/public-submit.ts:40:17                      
+getPublicSubmissionClientIp                    function  src/lib/engagement/public-submit.ts:44:17                      
+countUrlsInPublicSubmission                    function  src/lib/engagement/public-submit.ts:73:17                      
+publicTranslationIntentSchema                            src/lib/engagement/public-translation-generation.ts:7:10       
+publicTranslationViewSchema                              src/lib/engagement/public-translation-generation.ts:7:41       
+responseWriteResultSchema                                src/lib/engagement/response-write.ts:34:14                     
+surveyDraftTokenHashesMatch                    function  src/lib/engagement/survey-drafts.ts:82:17                      
+surveyDraftAnswerSchema                                  src/lib/engagement/survey-drafts.ts:119:14                     
+LIVE_SURVEY_QUESTION_SELECT                              src/lib/engagement/survey-responses.ts:165:14                  
+isPublishedSurveyQuestion                      function  src/lib/engagement/survey-responses.ts:367:17                  
+SURVEY_BUILDER_QUESTION_SELECT                           src/lib/engagement/survey-responses.ts:392:14                  
+SURVEY_FREE_TEXT_HARD_MAX                                src/lib/engagement/survey.ts:34:14                             
+SURVEY_BUDGET_TOLERANCE                                  src/lib/engagement/survey.ts:35:14                             
+SURVEY_FILE_MAX_FILES_HARD_CAP                           src/lib/engagement/survey.ts:36:14                             
+SURVEY_ALLOWED_FILE_MIME                                 src/lib/engagement/survey.ts:53:14                             
+surveyVisibilityConditionSchema                          src/lib/engagement/survey.ts:129:14                            
+hasUnreadableVisibilityCondition               function  src/lib/engagement/survey.ts:628:17                            
+reviewDraftSchema                                        src/lib/engagement/synthesis-review-recovery.ts:7:14           
+synthesisReviewChangeSchema                              src/lib/engagement/synthesis-review.ts:31:14                   
+synthesisSourceCountsSchema                              src/lib/engagement/synthesis-sources.ts:23:14                  
+synthesisSourceListEntrySchema                           src/lib/engagement/synthesis-sources.ts:55:14                  
+thematicBrowserScopeSchema                               src/lib/engagement/synthesis-thematic-browser.ts:8:14          
+thematicProposalDisplaySchema                            src/lib/engagement/synthesis-thematic-browser.ts:24:14         
+translationDraftSchema                                   src/lib/engagement/translation-drafts.ts:6:14                  
+translationGenerationCatalogSchema                       src/lib/engagement/translation-generation-catalog.ts:13:14     
+GENERATION_RESOLUTION_COPY_LIMIT                         src/lib/engagement/translation-generation-resolution.ts:5:14   
+TranslationGenerationError                     class     src/lib/engagement/translation-generation.ts:30:14             
+translationHistoryChangeSchema                           src/lib/engagement/translation-history.ts:34:14                
+translationPublicationReferenceSchema                    src/lib/engagement/translation-publication.ts:8:10             
+translationPublicationResultSchema                       src/lib/engagement/translation-publication.ts:25:14            
+resolutionArchivePrefix                                  src/lib/engagement/translation-resolution-recovery.ts:11:14    
+TRANSLATION_WRITE_BATCH_MAX                              src/lib/engagement/translation-write.ts:6:14                   
+translationWriteResultSchema                             src/lib/engagement/translation-write.ts:58:14                  
+TRANSLATION_LANGUAGES                                    src/lib/engagement/translation.ts:25:3                         
+TRANSLATION_LANGUAGE_LABELS                              src/lib/engagement/translation.ts:26:3                         
+EVIDENCE_DESCRIPTOR_VERSION                              src/lib/evidence/evidence-descriptor.ts:5:14                   
+evidenceDescriptorV1Schema                               src/lib/evidence/evidence-descriptor.ts:41:14                  
+unsupportedNumericEvidence                     function  src/lib/evidence/evidence-descriptor.ts:126:17                 
+AREA_OF_USE_MARGIN_DEGREES                               src/lib/geo/crs/area-of-use.ts:51:14                           
+NULL_ISLAND_DEGREES                                      src/lib/geo/crs/area-of-use.ts:63:14                           
+HOME_GEOGRAPHY_WARNING_DEGREES                           src/lib/geo/crs/area-of-use.ts:69:14                           
+CRS_METHODS                                              src/lib/geo/crs/index.ts:30:10                                 
+CRS_REFUSAL_REASONS                                      src/lib/geo/crs/index.ts:30:23                                 
+AREA_OF_USE_MARGIN_DEGREES                               src/lib/geo/crs/index.ts:40:3                                  
+HOME_GEOGRAPHY_WARNING_DEGREES                           src/lib/geo/crs/index.ts:41:3                                  
+NULL_ISLAND_DEGREES                                      src/lib/geo/crs/index.ts:42:3                                  
+checkAreaOfUse                                           src/lib/geo/crs/index.ts:43:24                                 
+reprojectBbox                                            src/lib/geo/crs/index.ts:46:10                                 
+reprojectFeature                                         src/lib/geo/crs/index.ts:46:46                                 
+reprojectPosition                                        src/lib/geo/crs/index.ts:46:64                                 
+describeSpatialFileSrs                                   src/lib/geo/crs/index.ts:49:10                                 
+readWktCrs                                               src/lib/geo/crs/index.ts:51:10                                 
+CRS_REGISTRY_SOURCE                                      src/lib/geo/crs/index.ts:55:3                                  
+allCrsEntries                                            src/lib/geo/crs/index.ts:56:3                                  
+crsRegistrySize                                          src/lib/geo/crs/index.ts:57:3                                  
+crsSiblings                                              src/lib/geo/crs/index.ts:58:3                                  
+findCrsByCode                                            src/lib/geo/crs/index.ts:59:3                                  
+findCrsByName                                            src/lib/geo/crs/index.ts:60:3                                  
+resolveCrs                                               src/lib/geo/crs/index.ts:61:25                                 
+listCrsForRegion                                         src/lib/geo/crs/index.ts:62:3                                  
+CRS_REFUSAL_REASONS                                      src/lib/geo/crs/types.ts:212:14                                
+parseWkt                                       function  src/lib/geo/crs/wkt.ts:41:17                                   
+SPATIAL_FILE_FORMATS                                     src/lib/geo/spatial-file-import.ts:69:14                       
+SPATIAL_FILE_CONVERTIBLE_FORMATS                         src/lib/geo/spatial-file-import.ts:83:14                       
+webInflateRaw                                  function  src/lib/geo/spatial-file-import.ts:474:23                      
+describeSpatialFileFormat                      function  src/lib/geo/spatial-file-import.ts:823:17                      
+readShapefilePrjText                           function  src/lib/geo/spatial-file-import.ts:1265:17                     
+placeCanSeedStudyArea                          function  src/lib/geographies/place-of-record.ts:86:17                   
+bboxCenter                                     function  src/lib/geographies/place-of-record.ts:138:17                  
+ZONE_ATTRIBUTE_MEASURES                                  src/lib/geographies/zone-attribute-source.ts:54:14             
+DEMOGRAPHIC_MEASURES                                     src/lib/geographies/zone-attribute-source.ts:68:14             
+EQUITY_MEASURES                                          src/lib/geographies/zone-attribute-source.ts:71:14             
+US_CENSUS_ACS_DESCRIPTOR                                 src/lib/geographies/zone-attribute-source.ts:225:14            
+usCensusZoneAttributeAdapter                             src/lib/geographies/zone-attribute-source.ts:410:14            
+ZONE_ATTRIBUTE_SOURCES                                   src/lib/geographies/zone-attribute-source.ts:564:14            
+APPLICATION_SECTION_SOURCES                              src/lib/grants/application.ts:38:14                            
+APPLICATION_ASSEMBLY_MIGRATION                           src/lib/grants/application.ts:53:14                            
+getOpportunityPriority                         function  src/lib/grants/page-helpers.ts:407:17                          
+buildFocusedGrantsFundingNeedHref              function  src/lib/grants/page-helpers.ts:473:17                          
+buildFocusedGrantsGapResolutionHref            function  src/lib/grants/page-helpers.ts:482:17                          
+buildFocusedGrantsOpportunityCreationHref      function  src/lib/grants/page-helpers.ts:491:17                          
+buildFocusedGrantsReimbursementHref            function  src/lib/grants/page-helpers.ts:500:17                          
+buildFocusedGrantsOpportunityHref              function  src/lib/grants/page-helpers.ts:509:17                          
+buildFocusedGrantsAwardConversionHref          function  src/lib/grants/page-helpers.ts:518:17                          
+usCaPrograms                                             src/lib/grants/programs/index.ts:24:10                         
+usFederalPrograms                                        src/lib/grants/programs/index.ts:25:10                         
+PURSUIT_KINDS                                            src/lib/grants/pursuit.ts:14:14                                
+isSupersededCatalogEntry                       function  src/lib/gtfs/catalog.ts:832:17                                 
+boundingBoxSpread                              function  src/lib/gtfs/catalog.ts:861:17                                 
+boundingBoxCentre                              function  src/lib/gtfs/catalog.ts:865:17                                 
+GTFS_FAILURE_HTTP_STATUS                                 src/lib/gtfs/ingest.ts:132:14                                  
+gtfsUploadObjectPath                           function  src/lib/gtfs/ingest.ts:342:17                                  
+GTFS_MAX_MEMBER_UNCOMPRESSED_BYTES                       src/lib/gtfs/limits.ts:111:14                                  
+GTFS_MAX_TOTAL_UNCOMPRESSED_BYTES                        src/lib/gtfs/limits.ts:121:14                                  
+GTFS_MAX_DECLARED_COMPRESSION_RATIO                      src/lib/gtfs/limits.ts:135:14                                  
+GTFS_MAX_ROWS_PER_TABLE                                  src/lib/gtfs/limits.ts:148:14                                  
+GTFS_MAX_ROUTE_SERVICE_PAIRS                             src/lib/gtfs/limits.ts:178:14                                  
+GTFS_MAX_BUFFERED_FREQUENCY_STOP_TIMES                   src/lib/gtfs/limits.ts:199:14                                  
+GTFS_MAX_EXPANDED_FREQUENCY_DEPARTURES                   src/lib/gtfs/limits.ts:218:14                                  
+GTFS_MAX_SERVICE_DATES                                   src/lib/gtfs/limits.ts:232:14                                  
+GTFS_MAX_WARNING_EXAMPLES                                src/lib/gtfs/limits.ts:260:14                                  
+GTFS_MAX_WARNING_EXAMPLE_CHARS                           src/lib/gtfs/limits.ts:267:14                                  
+GTFS_REQUIRED_CALENDAR_FILES                             src/lib/gtfs/parse.ts:103:14                                   
+GTFS_VERSION_STATUS_READY                                src/lib/gtfs/persist.ts:92:14                                  
+GTFS_INGEST_ABANDONED_AFTER_MS                           src/lib/gtfs/persist.ts:920:14                                 
+isGtfsFailureCode                              function  src/lib/gtfs/types.ts:100:17                                   
+GTFS_DERIVATION_METHODS                                  src/lib/gtfs/types.ts:216:14                                   
+GTFS_SPEC_TABLE_FILES                                    src/lib/gtfs/zip.ts:60:14                                      
+providerApiListedConnection                              src/lib/integrations/provider-api-metadata.ts:19:14            
+workspaceConfigurableProviders                 function  src/lib/integrations/providers.ts:76:17                        
+settlementEventSchema                                    src/lib/invoicing/contracts/closeout-schema.ts:5:14            
+obligationSchema                                         src/lib/invoicing/contracts/closeout-schema.ts:6:14            
+currentSettlementEvents                        function  src/lib/invoicing/contracts/closeout.ts:5:17                   
+workingCalendarSchema                                    src/lib/invoicing/contracts/delivery-schema.ts:6:14            
+capacitySchema                                           src/lib/invoicing/contracts/delivery-schema.ts:7:14            
+scheduleNodeSchema                                       src/lib/invoicing/contracts/delivery-schema.ts:8:14            
+deliveryCommandSchema                                    src/lib/invoicing/contracts/delivery-schema.ts:18:14           
+taskSchema                                               src/lib/invoicing/contracts/schema.ts:11:14                    
+authorizationSchema                                      src/lib/invoicing/contracts/schema.ts:12:14                    
+allocationSchema                                         src/lib/invoicing/contracts/schema.ts:14:14                    
+receivedLineSchema                                       src/lib/invoicing/contracts/schema.ts:24:14                    
+receivedContentSchema                                    src/lib/invoicing/contracts/schema.ts:25:14                    
+CLAIMED_INVOICE_STATUSES                                 src/lib/invoicing/drawdown-ledger.ts:344:10                    
+BUILT_IN_REIMBURSEMENT_PROFILE_REGISTRATIONS             src/lib/invoicing/reimbursement-profiles.ts:320:14             
+worksheetCurrencyNote                          function  src/lib/invoicing/reimbursement-worksheet.ts:304:17            
+JURISDICTION_READINESS_STATUSES                          src/lib/jurisdiction-readiness/contracts.ts:1:14               
+JURISDICTION_READINESS_JOBS                              src/lib/jurisdiction-readiness/registry.ts:12:14               
+kbDocumentFiltersAreActive                     function  src/lib/knowledge-base/document-list-filters.ts:181:17         
+KB_CHUNK_INSERT_BATCH                                    src/lib/knowledge-base/documents.ts:65:14                      
+extractionCallbackUrl                          function  src/lib/knowledge-base/extraction-jobs.ts:9:17                 
+KB_OCR_WORKER_URL_ENV                                    src/lib/knowledge-base/ocr-availability.ts:24:14               
+KB_OCR_WORKER_TOKEN_ENV                                  src/lib/knowledge-base/ocr-availability.ts:25:14               
+KB_OCR_CALLBACK_TOKEN_ENV                                src/lib/knowledge-base/ocr-availability.ts:26:14               
+KB_OCR_CALLBACK_URL_ENV                                  src/lib/knowledge-base/ocr-availability.ts:27:14               
+KB_OCR_LANGUAGES_ENV                                     src/lib/knowledge-base/ocr-availability.ts:28:14               
+KB_OCR_CALLBACK_MAX_BYTES_ENV                            src/lib/knowledge-base/ocr-availability.ts:29:14               
+DEFAULT_KB_OCR_LANGUAGES                                 src/lib/knowledge-base/ocr-availability.ts:57:14               
+TERMINAL_KB_OCR_JOB_STATUSES                             src/lib/knowledge-base/ocr-contract.ts:61:14                   
+OCR_MAX_LANGUAGES                                        src/lib/knowledge-base/ocr-contract.ts:96:14                   
+PLAN_VERSION_STATES                                      src/lib/land-use-plans/contracts.ts:3:14                       
+PLAN_VERSION_KINDS                                       src/lib/land-use-plans/contracts.ts:13:14                      
+planContextReadSchema                                    src/lib/land-use-plans/plan-context-recovery.ts:15:14          
+PLAN_CONTEXT_COLUMNS                                     src/lib/land-use-plans/plan-context-store.ts:17:14             
+planAuthoritySchema                                      src/lib/land-use-plans/plan-context.ts:13:14                   
+MEASURE_COMPUTATION_BASES                                src/lib/measures/fund.ts:89:14                                 
+STATEMENT_DOCUMENT_TITLE                                 src/lib/measures/oversight-statement.ts:98:14                  
+formatOversightMoney                           function  src/lib/measures/oversight.ts:203:17                           
+formatOversightDate                            function  src/lib/measures/oversight.ts:215:17                           
+receiptCoverageSentence                        function  src/lib/measures/oversight.ts:301:17                           
+claimCoverageSentence                          function  src/lib/measures/oversight.ts:355:17                           
+summarizeMeasureRecipientOutcomes              function  src/lib/measures/oversight.ts:449:17                           
+buildMeasureDivisionSummary                    function  src/lib/measures/oversight.ts:625:17                           
+titleizeModelValue                             function  src/lib/models/catalog.ts:85:17                                
+formatModelLinkTypeLabel                       function  src/lib/models/catalog.ts:104:17                               
+countyOnrampArtifactsSchema                              src/lib/models/county-onramp.ts:17:14                          
+countyOnrampRuntimeSchema                                src/lib/models/county-onramp.ts:25:14                          
+isJsonRecord                                   function  src/lib/models/demand-agreement-artifact.ts:187:17             
+MODELING_EVIDENCE_TRACKS                                 src/lib/models/evidence-backbone.ts:6:14                       
+isModelingEvidenceSchemaMissing                function  src/lib/models/evidence-backbone.ts:595:17                     
+readRoadClassAccuracyFromSummary               function  src/lib/models/evidence-backbone.ts:915:17                     
+readStationComparisonsFromSummary              function  src/lib/models/evidence-backbone.ts:957:17                     
+buildEvidenceKpiSummary                        function  src/lib/models/evidence-packet.ts:203:17                       
+buildEvidenceStageSummaries                    function  src/lib/models/evidence-packet.ts:224:17                       
+buildEvidenceArtifactList                      function  src/lib/models/evidence-packet.ts:243:17                       
+GUIDED_MODEL_METHODS                                     src/lib/models/guided-model-evidence.ts:8:14                   
+GUIDED_SCENARIO_ROLES                                    src/lib/models/guided-model-evidence.ts:9:14                   
+guidedArtifactType                             function  src/lib/models/guided-model-evidence.ts:85:17                  
+guidedEngineKey                                function  src/lib/models/guided-model-evidence.ts:89:17                  
+guidedArtifactStageName                        function  src/lib/models/guided-model-evidence.ts:93:17                  
+verifiedGuidedArtifact                         function  src/lib/models/guided-model-evidence.ts:173:17                 
+DEFAULT_TRIP_GEN_RATES                                   src/lib/models/ite-rates.ts:52:14                              
+COMPARABLE_STUDY_SCHEMA                                  src/lib/models/published-comparable-observation-study.ts:7:14  
+STRUCTURAL_DEMAND_STUDY_SCHEMA                           src/lib/models/published-structural-demand-diagnosis.ts:7:14   
+PUBLISHED_DIAGNOSIS_SCHEMA                               src/lib/models/published-structural-diagnosis.ts:5:14          
+MODELING_WORKER_TOKEN_ENV                                src/lib/models/run-dispatch.ts:59:10                           
+MODELING_WORKER_URL_ENV                                  src/lib/models/run-dispatch.ts:59:37                           
+MODELING_QUEUE_DEPTH_ENV                                 src/lib/models/run-dispatch.ts:67:14                           
+MODEL_RUN_DISPATCH_PATH                                  src/lib/models/run-dispatch.ts:76:14                           
+ACTIVITYSIM_PREFLIGHT_STAGE_NAME                         src/lib/models/run-dispatch.ts:98:14                           
+ACTIVITYSIM_ASSIGNMENT_STAGE_NAME                        src/lib/models/run-dispatch.ts:99:14                           
+corridorPolygonSchema                                    src/lib/models/run-launch.ts:8:14                              
+corridorMultiPolygonSchema                               src/lib/models/run-launch.ts:13:14                             
+isTerminalRun                                  function  src/lib/models/run-liveness.ts:53:17                           
+isManagedRunModeKey                            function  src/lib/models/run-modes.ts:174:17                             
+runABMSample                                   function  src/lib/models/sketch-abm/abm-runner.ts:261:23                 
+exportTripsToCSV                               function  src/lib/models/sketch-abm/abm-runner.ts:273:17                 
+sampleDestinations                             function  src/lib/models/sketch-abm/destination-choice.ts:300:17         
+AUTO_SPEED_KMH                                           src/lib/models/sketch-abm/sketch-abm-inputs.ts:93:14           
+WALK_SPEED_KMH                                           src/lib/models/sketch-abm/sketch-abm-inputs.ts:96:14           
+BIKE_SPEED_KMH                                           src/lib/models/sketch-abm/sketch-abm-inputs.ts:99:14           
+TRANSIT_IVTT_FACTOR                                      src/lib/models/sketch-abm/sketch-abm-inputs.ts:102:14          
+TRANSIT_WAIT_MIN                                         src/lib/models/sketch-abm/sketch-abm-inputs.ts:105:14          
+TRANSIT_ACCESS_WALK_MIN                                  src/lib/models/sketch-abm/sketch-abm-inputs.ts:108:14          
+SCREENING_MEDIAN_INCOME                                  src/lib/models/sketch-abm/sketch-abm-inputs.ts:121:14          
+INCOME_LOGNORMAL_SIGMA                                   src/lib/models/sketch-abm/sketch-abm-inputs.ts:124:14          
+mulberry32                                     function  src/lib/models/sketch-abm/sketch-abm-inputs.ts:209:17          
+getTypicalDepartureTime                        function  src/lib/models/sketch-abm/time-of-day-choice.ts:306:17         
+checkTourFeasibility                           function  src/lib/models/sketch-abm/time-of-day-choice.ts:317:17         
+generateStopPattern                            function  src/lib/models/sketch-abm/tour-generation.ts:200:17            
+STUDY_AREA_BBOX_TOLERANCE                                src/lib/models/study-area.ts:18:14                             
+DUAL_DEMAND_AGREEMENT_SCHEMA_VERSION                     src/lib/models/verified-dual-demand-agreement.ts:11:14         
+DUAL_DEMAND_AGREEMENT_SNAPSHOT_SCHEMA_VERSION            src/lib/models/verified-dual-demand-agreement.ts:13:14         
+ZONE_ATTRIBUTE_BUCKET                                    src/lib/models/zone-attribute-payload.ts:63:14                 
+zoneAttributeObjectPath                        function  src/lib/models/zone-attribute-payload.ts:106:17                
+zoneAttributeStorageRef                        function  src/lib/models/zone-attribute-payload.ts:110:17                
+zoneAttributeHandoffFailedStamp                function  src/lib/models/zone-attribute-payload.ts:165:17                
+asZoneAttributeUploader                        function  src/lib/models/zone-attribute-payload.ts:296:17                
+MONEY_DISPLAY_LOCALE                                     src/lib/money/format.ts:48:14                                  
+DEFAULT_MONEY_CURRENCY                                   src/lib/money/format.ts:51:14                                  
+MY_WORK_DEPARTED_FILTER_MAX_ROSTER                       src/lib/my-work/query.ts:70:14                                 
+buildDepartedAwareUnassignedFilter             function  src/lib/my-work/query.ts:191:17                                
+DEFAULT_REMINDER_PREFERENCE                              src/lib/notifications/reminder-preferences.ts:13:14            
+WORK_SWEEP_SOURCE_LIMIT                                  src/lib/notifications/work.ts:175:14                           
+workDeadlineDueOn                              function  src/lib/notifications/work.ts:359:17                           
+horizonBound                                   function  src/lib/notifications/work.ts:368:17                           
+WORK_NOTIFICATION_INBOX_LIMIT                            src/lib/notifications/work.ts:1510:14                          
+fundingDaysUntil                               function  src/lib/operations/funding-decision-status.ts:33:17            
+isGrantsQueueItem                              function  src/lib/operations/grants-links.ts:86:17                       
+COMMAND_CENTER_ROADMAP_WORKFLOW_LANE_KEYS                src/lib/operations/workflow-next-action-groups.ts:26:14        
+CALIBRATED_HOLDOUT_APE_KPI                               src/lib/planner-pack/vmt-determination-inputs.ts:47:14         
+VMT_DETERMINATIONS                                       src/lib/planner-pack/vmt-screening-records.ts:71:14            
+VMT_CLAIM_STATUS_SOURCES                                 src/lib/planner-pack/vmt-screening-records.ts:86:14            
+VMT_SIGNIFICANCE_ENGINE_VERSION                          src/lib/planner-pack/vmt-screening-records.ts:165:14           
+determinationLabel                             function  src/lib/planner-pack/vmt-screening-records.ts:173:17           
+inputBasisLabel                                function  src/lib/planner-pack/vmt-screening-records.ts:184:17           
+titleizePlanValue                              function  src/lib/plans/catalog.ts:75:17                                 
+FUNDING_AWARD_CLOSURE_BASIS_OPTIONS                      src/lib/programs/catalog.ts:100:14                             
+formatProgramLinkTypeLabel                     function  src/lib/programs/catalog.ts:190:17                             
+closeoutAssessmentSchema                                 src/lib/programs/work-program/closeout.ts:9:14                 
+reimbursementDraftSchema                                 src/lib/programs/work-program/reimbursement.ts:5:14            
+reportTables                                   function  src/lib/programs/work-program/reporting-export.ts:8:17         
+allocationSchema                                         src/lib/programs/work-program/reporting.ts:9:14                
+progressSchema                                           src/lib/programs/work-program/reporting.ts:21:14               
+text                                                     src/lib/programs/work-program/schema.ts:5:14                   
+label                                                    src/lib/programs/work-program/schema.ts:6:14                   
+amount                                                   src/lib/programs/work-program/schema.ts:8:14                   
+workProgramActivitySchema                                src/lib/programs/work-program/schema.ts:22:14                  
+workProgramBudgetLineSchema                              src/lib/programs/work-program/schema.ts:29:14                  
+workProgramElementSchema                                 src/lib/programs/work-program/schema.ts:40:14                  
+workProgramPreparationSchema                             src/lib/programs/work-program/schema.ts:73:14                  
+workProgramReferences                          function  src/lib/programs/work-program/source-review.ts:54:17           
+PROJECT_EVIDENCE_MANIFEST_V1_VERSION                     src/lib/project-evidence-bundles/contracts.ts:6:14             
+BILLED_LINE_SENT_STATUSES                                src/lib/projects/budget.ts:35:14                               
+BILLED_LINE_DRAFT_STATUSES                               src/lib/projects/budget.ts:38:14                               
+PORTFOLIO_ROUND_TRIP_SHEET                               src/lib/projects/portfolio-export.ts:16:3                      
+PORTFOLIO_ROUND_TRIP_VERSION                             src/lib/projects/portfolio-export.ts:17:3                      
+PORTFOLIO_IMPORT_MAX_ROWS                                src/lib/projects/portfolio-import.ts:24:38                     
+PORTFOLIO_IMPORT_VERSION                                 src/lib/projects/portfolio-import.ts:25:14                     
+PORTFOLIO_WORKBOOK_IMPORT_VERSION                        src/lib/projects/portfolio-import.ts:26:14                     
+normalizePortfolioProjectName                  function  src/lib/projects/portfolio-import.ts:157:17                    
+PORTFOLIO_ROWS_PER_PROJECT                               src/lib/projects/portfolio-queries.ts:67:14                    
+PORTFOLIO_MAX_ROWS_PER_LANE                              src/lib/projects/portfolio-queries.ts:68:14                    
+PORTFOLIO_LANE_IDS                                       src/lib/projects/portfolio-queries.ts:70:14                    
+PORTFOLIO_SOURCE_FORMATS                                 src/lib/projects/portfolio-workbook.ts:6:14                    
+PORTFOLIO_IMPORT_MAX_COLUMNS                             src/lib/projects/portfolio-workbook.ts:11:14                   
+PORTFOLIO_ARCHIVE_MAX_ENTRIES                            src/lib/projects/portfolio-workbook.ts:12:14                   
+PORTFOLIO_ARCHIVE_MAX_ENTRY_BYTES                        src/lib/projects/portfolio-workbook.ts:13:14                   
+PORTFOLIO_ARCHIVE_MAX_TOTAL_BYTES                        src/lib/projects/portfolio-workbook.ts:14:14                   
+PORTFOLIO_INSPECTION_SAMPLE_ROWS                         src/lib/projects/portfolio-workbook.ts:15:14                   
+describePortfolioDisclosures                   function  src/lib/projects/portfolio.ts:314:17                           
+PROJECT_RETIRED_STATUSES                                 src/lib/projects/project-record-fields.ts:56:14                
+isProjectRecordStatusType                      function  src/lib/projects/record-status-transitions.ts:133:17           
+REPORT_AERIAL_ORTHO_CUSTODY_SELECT                       src/lib/reports/aerial-ortho-evidence-server.ts:19:14          
+REPORT_AERIAL_ORTHO_SELECTIONS_VERSION                   src/lib/reports/aerial-ortho-evidence.ts:3:14                  
+REPORT_AERIAL_ORTHO_SNAPSHOT_SCHEMA                      src/lib/reports/aerial-ortho-evidence.ts:4:14                  
+reportAerialOrthoStoragePath                   function  src/lib/reports/aerial-ortho-evidence.ts:85:17                 
+AERIAL_REPORT_ARTIFACT_RETRIEVABILITY_NOTE               src/lib/reports/aerial-source-context.ts:97:14                 
+REPORT_STATUS_OPTIONS                                    src/lib/reports/catalog.ts:23:14                               
+REPORT_AGREEMENT_SELECTIONS_VERSION                      src/lib/reports/dual-demand-agreement.ts:12:14                 
+DOCUMENT_NARRATIVE_TARGET_KINDS                          src/lib/reports/narrative-drafts.ts:37:14                      
+DOCUMENT_NARRATIVE_DRAFT_STATUSES                        src/lib/reports/narrative-drafts.ts:42:14                      
+isPacketFreshnessLabel                         function  src/lib/reports/packet-labels.ts:35:17                         
+renderHtmlToPdf                                function  src/lib/reports/pdf.ts:64:23                                   
+looksLikePendingReportRunsSchema               function  src/lib/reports/run-citations.ts:163:17                        
+REPORT_SAFETY_SELECTION_VERSION                          src/lib/reports/safety-evidence-selection.ts:3:14              
+RTP_PUBLISHABLE_COMMENT_STATUS                           src/lib/rtp/comment-response.ts:101:14                         
+RTP_PUBLISHED_RESPONSE_STATUS                            src/lib/rtp/comment-response.ts:104:14                         
+RTP_EXPORT_CHAPTER_COLUMNS                               src/lib/rtp/export-input.ts:103:14                             
+RTP_EXPORT_LINKED_PROJECT_COLUMNS                        src/lib/rtp/export-input.ts:106:14                             
+RTP_EXPORT_CAMPAIGN_COLUMNS                              src/lib/rtp/export-input.ts:109:14                             
+formatRtpExportDate                            function  src/lib/rtp/export.ts:212:17                                   
+extractionAcceptanceReport                     function  src/lib/rtp/extraction/acceptance.ts:425:17                    
+EXTRACTION_CHUNK_PROMPT_CHARS                            src/lib/rtp/extraction/contract.ts:521:14                      
+VALUE_NOT_STATED                                         src/lib/rtp/extraction/display.ts:59:14                        
+TRANSCRIPTION_CANDIDATE_COLUMNS                          src/lib/rtp/extraction/provenance-queries.ts:56:14             
+TRANSCRIPTION_RUN_COLUMNS                                src/lib/rtp/extraction/provenance-queries.ts:59:14             
+RECONCILIATION_VERDICTS                                  src/lib/rtp/extraction/reconcile.ts:117:14                     
+RECONCILABLE_TARGET_KINDS                                src/lib/rtp/extraction/reconcile.ts:516:14                     
+RTP_EXTRACTION_FAILURE_REASONS                           src/lib/rtp/extraction/run.ts:68:14                            
+describeExtractionFailure                      function  src/lib/rtp/extraction/run.ts:83:17                            
+scorePassage                                   function  src/lib/rtp/extraction/run.ts:138:17                           
+selectPassagesForTarget                        function  src/lib/rtp/extraction/run.ts:148:17                           
+RTP_EXTRACTION_DISCARD_REASONS                           src/lib/rtp/extraction/verify.ts:78:14                         
+PASSAGE_EXCLUSION_REASONS                                src/lib/rtp/extraction/verify.ts:272:14                        
+RTP_CONSTRAINED_PORTFOLIO_ROLE                           src/lib/rtp/fiscal-constraint.ts:42:14                         
+uncoveredHorizonSpans                          function  src/lib/rtp/fiscal-constraint.ts:181:17                        
+rtpPriorityFrameworkRegistry                             src/lib/rtp/priority-framework-binding.ts:29:14                
+RTP_PRIORITY_FRAMEWORK_WORKSPACE_COLUMNS                 src/lib/rtp/priority-framework-queries.ts:25:14                
+resolveQuickLinkAuditEvent                     function  src/lib/runtime/action-metadata.ts:161:17                      
+AI_RATE_LIMIT_BUCKET_KEYS                                src/lib/runtime/ai-rate-limit.ts:14:14                         
+AI_RATE_LIMIT_WINDOW_SECONDS                             src/lib/runtime/ai-rate-limit.ts:25:14                         
+PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS                         src/lib/runtime/ai-rate-limit.ts:35:14                         
+PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW                      src/lib/runtime/ai-rate-limit.ts:36:14                         
+shortCommitSha                                 function  src/lib/runtime/app-version.ts:48:17                           
+BCA_OBSERVED_IS_NOT_AVOIDED_CAVEAT                       src/lib/safety/bca-evidence.ts:58:14                           
+SAFETY_METHOD_CITATION                                   src/lib/safety/caveats.ts:131:14                               
+crashExportHeaderRows                          function  src/lib/safety/crash-export.ts:206:17                          
+CRASH_INVOLVEMENT_FACET                                  src/lib/safety/crash-filters.ts:66:14                          
+EMPTY_CRASH_FILTER_SELECTION                             src/lib/safety/crash-filters.ts:276:14                         
+readCasualtyCount                              function  src/lib/safety/crash-properties.ts:62:17                       
+READ_ONLY_MAX_RECORDS                                    src/lib/safety/read-only-lane.ts:53:14                         
+fetchInjuryResourceIds                         function  src/lib/safety/sources/ccrs-injury.ts:56:23                    
+chunkIds                                       function  src/lib/safety/sources/ccrs-parties.ts:112:17                  
+fetchCcrsResourceIdsFor                        function  src/lib/safety/sources/ccrs-parties.ts:125:23                  
+FARS_EARLIEST_YEAR                                       src/lib/safety/sources/fars.ts:68:14                           
+toStateFips                                    function  src/lib/safety/sources/fars.ts:161:17                          
+farsAnnualArchiveUrl                           function  src/lib/safety/sources/fars.ts:221:17                          
+toFarsCrashRecord                              function  src/lib/safety/sources/fars.ts:225:17                          
+fetchFarsCrashes                               function  src/lib/safety/sources/fars.ts:349:23                          
+CRASH_SEVERITIES                                         src/lib/safety/sources/types.ts:53:10                          
+CRASH_DIMENSION_SUPPORTS                                 src/lib/safety/vocabulary.ts:305:14                            
+isCrashDimension                               function  src/lib/safety/vocabulary.ts:471:17                            
+normalizeScenarioSlug                          function  src/lib/scenarios/catalog.ts:92:17                             
+buildScenarioComparisonPairKey                 function  src/lib/scenarios/catalog.ts:323:17                            
+buildScenarioSharedSpineBasisLabel             function  src/lib/scenarios/catalog.ts:333:17                            
+formatScenarioPlannerAssumptions               function  src/lib/scenarios/comparison-source-context.ts:119:17          
+getOperatorControlProfile                      function  src/lib/stage-gates/operator-controls.ts:85:17                 
+KNOWN_DATABASE_DEFAULT_TEMPLATE_IDS                      src/lib/stage-gates/template-loader.ts:71:14                   
+INTERIM_DEFAULT_RATIONALE                                src/lib/stage-gates/template-loader.ts:477:10                  
+DEFAULT_PAGED_READ_MAX_PAGES                             src/lib/supabase/paged-read.ts:78:14                           
+MissingEnvironmentVariableError                class     src/lib/supabase/server.ts:5:14                                
+isMissingEnvironmentVariableError              function  src/lib/supabase/server.ts:21:17                               
+getTdmStrategy                                           src/lib/tdm/index.ts:7:3                                       
+DEFAULT_CO2E_LBS_PER_VEHICLE_MILE                        src/lib/tdm/index.ts:13:3                                      
+LBS_PER_METRIC_TON                                       src/lib/tdm/index.ts:14:3                                      
+TDM_COMBINED_REVIEW_THRESHOLD_PCT                        src/lib/tdm/index.ts:15:3                                      
+estimateGhgFromVmtReduction                              src/lib/tdm/index.ts:19:3                                      
+paletteById                                    function  src/lib/theme/palettes.ts:124:17                               
+TRACT_DEFINITION_METHODS                                 src/lib/title-vi/policy.ts:30:14                               
+toneFromBoolean                                function  src/lib/ui/status.ts:52:17                                     
+addDaysUtc                                     function  src/lib/work-plans/apply.ts:72:17                              
+normalizeRecordTitle                           function  src/lib/work-plans/apply.ts:78:17                              
+WORK_PLAN_PRACTICE_AREAS                                 src/lib/work-plans/template-registry.ts:74:14                  
+WORKSPACE_LAYER_FEATURE_CAP_ENV                          src/lib/workspace-gis/caps.ts:17:14                            
+recordIngestFailure                            function  src/lib/workspace-gis/client.ts:222:23                         
+WORKSPACE_GIS_DRAW_LIMIT_FITS_ONE_REQUEST                src/lib/workspace-gis/coverage.ts:50:14                        
+WGS84_ENTRY                                              src/lib/workspace-gis/crs-resolution.ts:118:14                 
+WORKSPACE_GIS_BATCH_TOO_LARGE_MESSAGE                    src/lib/workspace-gis/ingest.ts:48:14                          
+describeArchivedLayer                          function  src/lib/workspace-gis/references.ts:55:17                      
+WORKSPACE_GIS_LAYERS_TABLE                               src/lib/workspace-gis/store.ts:34:14                           
+WORKSPACE_GIS_VERSIONS_TABLE                             src/lib/workspace-gis/store.ts:35:14                           
+WORKSPACE_GIS_FEATURES_TABLE                             src/lib/workspace-gis/store.ts:36:14                           
+WORKSPACE_GIS_REFERENCES_TABLE                           src/lib/workspace-gis/store.ts:37:14                           
+WORKSPACE_GIS_LAYER_COLUMNS                              src/lib/workspace-gis/store.ts:80:14                           
+parseAttributeFields                           function  src/lib/workspace-gis/store.ts:140:17                          
+parseBbox                                      function  src/lib/workspace-gis/store.ts:152:17                          
+mapReferenceRow                                function  src/lib/workspace-gis/store.ts:233:17                          
+referenceHref                                  function  src/lib/workspace-gis/store.ts:251:17                          
+WORKSPACE_GIS_SRS_BASES                                  src/lib/workspace-gis/types.ts:34:14                           
+WORKSPACE_GIS_EVIDENCE_BASES                             src/lib/workspace-gis/types.ts:45:14                           
+isAssertedSrsBasis                             function  src/lib/workspace-gis/types.ts:55:17                           
+describeIngestFailure                          function  src/lib/workspace-gis/types.ts:79:17                           
+WORKSPACE_GIS_REFERENCE_KINDS                            src/lib/workspace-gis/types.ts:303:14                          
+ACTIVE_WORKSPACE_COOKIE                                  src/lib/workspaces/active-workspace.ts:22:14                   
+workspaceOptionsFromMemberships                function  src/lib/workspaces/current.ts:131:17                           
+HOME_GEOGRAPHY_SCOPE_COLUMN_NAMES                        src/lib/workspaces/home-geography.ts:105:14                    
+HOME_JURISDICTION_COLUMN_NAMES                           src/lib/workspaces/home-geography.ts:117:14                    
+HOME_JURISDICTION_COLUMNS                                src/lib/workspaces/home-geography.ts:124:14                    
+WORKSPACE_INVITATION_STATUSES                            src/lib/workspaces/invitations.ts:7:14                         
+generateInvitationToken                        function  src/lib/workspaces/invitations.ts:88:17                        
+WORKSPACE_ROSTER_LIMIT                                   src/lib/workspaces/roster.ts:29:14                             
+Unused exported types (685)
+Polygon                                  type       src/app/(app)/explore/_components/_types.ts:6:13                    
+MultiPolygon                             type       src/app/(app)/explore/_components/_types.ts:11:13                   
+AnalysisProjectSelection                 type       src/app/(app)/explore/_components/_types.ts:159:13                  
+DatasetOverlayMode                       type       …app/(app)/explore/_components/explore-dataset-overlay-state.ts:6:13
+LinkedDatasetQueueItem                   type       …app/(app)/explore/_components/explore-linked-dataset-state.ts:12:13
+ExploreMapUnavailableReason              type       src/app/(app)/explore/_components/use-explore-map-instance.ts:29:13 
+ZoneType                                 type       …c/app/(app)/models/_components/network-package-upload-plan.ts:49:13
+CorridorType                             type       …c/app/(app)/models/_components/network-package-upload-plan.ts:50:13
+CorridorDirection                        type       …c/app/(app)/models/_components/network-package-upload-plan.ts:51:13
+ConnectorType                            type       …c/app/(app)/models/_components/network-package-upload-plan.ts:52:13
+GeoJsonFeature                           type       …c/app/(app)/models/_components/network-package-upload-plan.ts:54:13
+FeatureParse                             type       …c/app/(app)/models/_components/network-package-upload-plan.ts:59:13
+ProjectBudgetPanelPendingSchema          type       …pp)/projects/[projectId]/_components/project-budget-panel.tsx:11:13
+StageGateDecisionRow                     type       src/app/(app)/reports/[reportId]/_components/_types.ts:166:13       
+GrantModelingEvidence                    type       …(app)/reports/[reportId]/_components/report-packet-review.tsx:26:13
+QueueTraceState                          type       src/app/(app)/rtp/_components/_types.ts:7:13                        
+StatusBadgeTone                          type       src/app/(app)/rtp/_components/_types.ts:10:13                       
+PacketFreshnessInfo                      type       src/app/(app)/rtp/_components/_types.ts:24:13                       
+PacketPresetPosture                      type       src/app/(app)/rtp/_components/_types.ts:30:13                       
+PacketFundingReview                      type       src/app/(app)/rtp/_components/_types.ts:36:13                       
+PacketOperatorStatus                     type       src/app/(app)/rtp/_components/_types.ts:43:13                       
+PacketActivityTrace                      type       src/app/(app)/rtp/_components/_types.ts:49:13                       
+PacketScanCue                            type       src/app/(app)/rtp/_components/_types.ts:55:13                       
+PacketQueueTrace                         type       src/app/(app)/rtp/_components/_types.ts:61:13                       
+PacketQueueTraceStateInfo                type       src/app/(app)/rtp/_components/_types.ts:71:13                       
+RtpReadiness                             type       src/app/(app)/rtp/_components/_types.ts:78:13                       
+RtpWorkflowSummary                       type       src/app/(app)/rtp/_components/_types.ts:85:13                       
+GrantsFollowThrough                      type       src/app/(app)/rtp/_components/_types.ts:91:13                       
+RtpCycleTranscriptionCounts              type       src/app/(app)/rtp/_components/_types.ts:148:13                      
+QueueActionMix                           type       src/app/(app)/rtp/_components/_types.ts:176:13                      
+ProjectLinkProjectRow                    type       src/app/(app)/rtp/[rtpCycleId]/_components/_types.ts:51:13          
+CampaignProjectRow                       type       src/app/(app)/rtp/[rtpCycleId]/_components/_types.ts:106:13         
+CloseoutInvoiceCoverageBreakdown         type       src/app/api/funding-awards/[awardId]/award-closure.ts:85:13         
+ArtifactReadScope                        type       …models/[modelId]/runs/[modelRunId]/volumes/artifact-source.ts:13:15
+ModeratedItem                            type       src/components/engagement/ai-moderation-panel.tsx:27:15             
+CrashRadiusChoice                        type       src/components/engagement/crash-corroboration-panel.tsx:35:13       
+BcaScreeningSavedSummary                 type       src/components/grants/bca-screening-body.tsx:80:13                  
+InvoiceClientOption                      type       src/components/invoicing/client-invoice-composer.tsx:23:13          
+InvoiceEngagementOption                  type       src/components/invoicing/client-invoice-composer.tsx:24:13          
+InvoiceProjectOption                     type       src/components/invoicing/client-invoice-composer.tsx:31:13          
+InvoiceDeliverableOption                 type       src/components/invoicing/client-invoice-composer.tsx:32:13          
+InvoiceRateTableOption                   type       src/components/invoicing/client-invoice-composer.tsx:33:13          
+InvoiceStaffOption                       type       src/components/invoicing/client-invoice-composer.tsx:38:13          
+MeasureRuleProblemField                  type       src/components/measures/allocation-rule-draft.ts:46:13              
+ModelRunComparisonCandidate              type       src/components/models/model-run-manager.tsx:172:13                  
+AppNavRailGroup                          type       src/components/nav/nav-registry.ts:24:13                            
+RtpFinancialLedgerBand                   type       src/components/rtp/rtp-financial-ledger-editor.tsx:81:13            
+SafetyStudyAreaSeed                      type       src/components/safety/safety-workspace.tsx:267:13                   
+ScenarioRegistryReadFailures             type       src/components/scenarios/scenario-entry-registry.tsx:111:13         
+WalkBikeAccessTier                       type       src/lib/accessibility/isochrone.ts:1:13                             
+AerialJobCustodyState                    type       src/lib/aerial/artifact-custody.ts:282:13                           
+AerialProcessingJobStatus                type       src/lib/aerial/catalog.ts:434:13                                    
+AerialProcessingArtifactEntry            type       src/lib/aerial/catalog.ts:539:13                                    
+AerialProcessingJobLiveness              type       src/lib/aerial/catalog.ts:686:13                                    
+DjiWaypoint                              type       src/lib/aerial/dji-export.ts:31:13                                  
+FlightSnapshotLine                       type       src/lib/aerial/flight-exports.ts:60:13                              
+OrthoPreviewRefusalReason                type       src/lib/aerial/ortho-preview.ts:41:13                               
+AerialOrthoPreview                       type       src/lib/aerial/ortho-preview.ts:46:13                               
+AerialOrthoPreviewRefusal                type       src/lib/aerial/ortho-preview.ts:59:13                               
+AerialOrthoPreviewUnreadable             type       src/lib/aerial/ortho-preview.ts:66:13                               
+OrthoPreviewSupabaseLike                 type       src/lib/aerial/ortho-preview.ts:96:13                               
+OrthoPreviewSignerLike                   type       src/lib/aerial/ortho-preview.ts:113:13                              
+AerialPostureWritebackSupabaseLike       type       src/lib/aerial/posture-writeback.ts:7:13                            
+ContractSchemaVersion                    type       src/lib/aerial/processing-contract.ts:32:13                         
+ContractImageryType                      type       src/lib/aerial/processing-contract.ts:40:13                         
+ProcessingCallbackStatus                 type       src/lib/aerial/processing-contract.ts:52:13                         
+ProcessingArtifactKind                   type       src/lib/aerial/processing-contract.ts:62:13                         
+ProcessingRequestImagery                 type       src/lib/aerial/processing-contract.ts:150:13                        
+PhotoManifestPhoto                       type       src/lib/aerial/processing-contract.ts:151:13                        
+ProcessingArtifact                       type       src/lib/aerial/processing-contract.ts:189:13                        
+AerialMissionType                        type       src/lib/aerial/public.ts:34:3                                       
+AerialPackageStatus                      type       src/lib/aerial/public.ts:35:3                                       
+AerialVerificationReadiness              type       src/lib/aerial/public.ts:36:3                                       
+AerialMissionPackagePosture              type       src/lib/aerial/public.ts:37:3                                       
+AerialEvidenceAttachmentSummary          type       src/lib/aerial/public.ts:40:3                                       
+AoiPolygonGeoJson                        type       src/lib/aerial/public.ts:44:15                                      
+ProjectAerialMissionRow                  type       src/lib/aerial/queries.ts:136:13                                    
+ProjectAerialPackageRow                  type       src/lib/aerial/queries.ts:145:13                                    
+ProjectAerialSourceContextMissionRow     type       src/lib/aerial/queries.ts:243:13                                    
+ProjectAerialSourceContextPackageRow     type       src/lib/aerial/queries.ts:254:13                                    
+SurveyCameraDescriptor                   interface  src/lib/aerial/survey-grid.ts:109:18                                
+SurveyCorridorInput                      interface  src/lib/aerial/survey-grid.ts:120:18                                
+SurveyFlightLine                         interface  src/lib/aerial/survey-grid.ts:156:18                                
+SurveyGridRefusalReason                  type       src/lib/aerial/survey-grid.ts:172:13                                
+InterpretationSource                     type       src/lib/ai/interpret.ts:14:13                                       
+InterpretationFallbackReason             type       src/lib/ai/interpret.ts:15:13                                       
+CorridorDecisionUseStatus                type       src/lib/analysis/decision-use.ts:39:13                              
+PresentedScore                           type       src/lib/analysis/score-presentation.ts:3:13                         
+CountyValidationScaffoldRow              type       src/lib/api/county-onramp-scaffold.ts:180:13                        
+CountyRuntimeOptions                     type       src/lib/api/county-onramp.ts:213:13                                 
+UpdateCountyRunScaffoldRequest           type       src/lib/api/county-onramp.ts:223:13                                 
+PlaceSearchResponse                      type       src/lib/api/place-geographies.ts:83:13                              
+UnreadableReference                      type       src/lib/api/reference-counts.ts:10:13                               
+AssistantActorKind                       type       src/lib/assistant/agent-principal.ts:28:13                          
+AssistantPreviewStat                     type       src/lib/assistant/catalog.ts:66:13                                  
+AssistantOperationLead                   type       src/lib/assistant/catalog.ts:368:13                                 
+ChatToolCallRecord                       type       src/lib/assistant/chat-tools.ts:95:13                               
+GrantsAssistantLaneSummary               type       src/lib/assistant/context.ts:315:13                                 
+InvoicingAssistantLaneSummary            type       src/lib/assistant/context.ts:340:13                                 
+EngagementAssistantLaneSummary           type       src/lib/assistant/context.ts:366:13                                 
+SafetyAssistantLaneSummary               type       src/lib/assistant/context.ts:384:13                                 
+AerialAssistantLaneSummary               type       src/lib/assistant/context.ts:420:13                                 
+KnowledgeBaseAssistantLaneSummary        type       src/lib/assistant/context.ts:448:13                                 
+DataHubAssistantLaneSummary              type       src/lib/assistant/context.ts:463:13                                 
+RtpPacketFreshnessLabel                  type       src/lib/assistant/rtp-packet-posture.ts:8:13                        
+BcaSensitivityPoint                      type       src/lib/bca/engine.ts:426:13                                        
+BcaSensitivityEntry                      type       src/lib/bca/engine.ts:428:13                                        
+BcaBenefitKind                           type       src/lib/bca/index.ts:9:8                                            
+BcaCapitalCostInput                      type       src/lib/bca/index.ts:10:8                                           
+BcaCostKind                              type       src/lib/bca/index.ts:12:8                                           
+BcaEmissionsBenefitInput                 type       src/lib/bca/index.ts:13:8                                           
+BcaLineItemResult                        type       src/lib/bca/index.ts:14:8                                           
+BcaOperationsMaintenanceCostInput        type       src/lib/bca/index.ts:15:8                                           
+BcaOtherBenefitInput                     type       src/lib/bca/index.ts:16:8                                           
+BcaOtherCostInput                        type       src/lib/bca/index.ts:17:8                                           
+BcaSafetyBenefitInput                    type       src/lib/bca/index.ts:19:8                                           
+BcaTravelTimeBenefitInput                type       src/lib/bca/index.ts:20:8                                           
+BcaVehicleOperatingBenefitInput          type       src/lib/bca/index.ts:21:8                                           
+BcaYearValue                             type       src/lib/bca/index.ts:22:8                                           
+BcaMonetizationParameters                type       src/lib/bca/index.ts:36:8                                           
+BcaSensitivityEntry                      type       src/lib/bca/index.ts:46:8                                           
+BcaSensitivityPoint                      type       src/lib/bca/index.ts:47:8                                           
+BcaSensitivityResult                     type       src/lib/bca/index.ts:48:8                                           
+BcaSensitivityTarget                     type       src/lib/bca/index.ts:49:8                                           
+BcaDistributionSpec                      type       src/lib/bca/index.ts:55:8                                           
+BcaMetricPercentiles                     type       src/lib/bca/index.ts:56:8                                           
+BcaMetricSummary                         type       src/lib/bca/index.ts:57:8                                           
+BcaMonteCarloConfig                      type       src/lib/bca/index.ts:58:8                                           
+RenderBcaMemoOptions                     type       src/lib/bca/index.ts:67:8                                           
+BcaDistributionSpec                      type       src/lib/bca/monte-carlo.ts:32:13                                    
+BcaMetricPercentiles                     type       src/lib/bca/monte-carlo.ts:54:13                                    
+BcaMetricSummary                         type       src/lib/bca/monte-carlo.ts:64:13                                    
+BcaBenefitKind                           type       src/lib/bca/types.ts:17:13                                          
+BcaCostKind                              type       src/lib/bca/types.ts:24:13                                          
+BcaTravelTimeBenefitInput                type       src/lib/bca/types.ts:26:13                                          
+BcaSafetyBenefitInput                    type       src/lib/bca/types.ts:34:13                                          
+BcaEmissionsBenefitInput                 type       src/lib/bca/types.ts:48:13                                          
+BcaVehicleOperatingBenefitInput          type       src/lib/bca/types.ts:55:13                                          
+BcaOtherBenefitInput                     type       src/lib/bca/types.ts:61:13                                          
+BcaCapitalCostInput                      type       src/lib/bca/types.ts:75:13                                          
+BcaOperationsMaintenanceCostInput        type       src/lib/bca/types.ts:85:13                                          
+BcaOtherCostInput                        type       src/lib/bca/types.ts:94:13                                          
+BcaRetainedSave                          type       src/lib/bca/workbench/draft.ts:22:13                                
+BcaLedgerRow                             type       src/lib/bca/workbench/engine.ts:12:13                               
+BcaCalculation                           type       src/lib/bca/workbench/engine.ts:29:13                               
+RtpCycleProjectFeature                   type       src/lib/cartographic/rtp-cycle-project-layer.ts:39:13               
+WorkspaceGisFeatureProperties            type       src/lib/cartographic/workspace-gis-feature-to-selection.ts:23:13    
+DeploymentCheckStatus                    type       src/lib/config/deployment-health.ts:35:13                           
+DeploymentHealthStatus                   type       src/lib/config/deployment-health.ts:52:13                           
+RunCapOk                                 type       src/lib/config/run-cap.ts:50:13                                     
+DashboardChartForm                       type       src/lib/dashboard/chart-catalog.ts:37:13                            
+DashboardTone                            type       src/lib/dashboard/run-figures.ts:35:13                              
+CensusClipStatus                         type       src/lib/data-sources/census.ts:99:13                                
+CrashSummarySourceState                  type       src/lib/data-sources/crashes.ts:55:13                               
+CrashDensityBasis                        type       src/lib/data-sources/crashes.ts:65:13                               
+CrashPointSeverityBucket                 type       src/lib/data-sources/crashes.ts:154:13                              
+CrashPointFeature                        type       src/lib/data-sources/crashes.ts:156:13                              
+DatasetDependentOutputSurface            type       src/lib/data-sources/dataset-dependent-output-context.ts:5:13       
+DatasetDependentOutputHint               type       src/lib/data-sources/dataset-dependent-output-context.ts:7:13       
+DatasetLineageFieldKey                   type       src/lib/data-sources/dataset-lineage-readiness.ts:1:13              
+DatasetLineageCheck                      type       src/lib/data-sources/dataset-lineage-readiness.ts:28:13             
+StudyAreaBbox                            type       src/lib/data-sources/equity-designation/db.ts:160:15                
+Justice40Coverage                        interface  src/lib/data-sources/equity-designation/types.ts:49:18              
+EquityDesignationCoverageState           type       src/lib/data-sources/equity-designation/types.ts:120:13             
+Justice40Status                          type       src/lib/data-sources/equity.ts:20:39                                
+RefreshJobStatusTone                     type       src/lib/data-sources/refresh-log.ts:16:13                           
+TransitContributingSource                type       src/lib/data-sources/transit/index.ts:37:37                         
+TransitSourceAdapter                     type       src/lib/data-sources/transit/index.ts:37:64                         
+TransitAccessMethod                      type       src/lib/data-sources/transit/index.ts:38:15                         
+TransitAccessMethodId                    type       src/lib/data-sources/transit/index.ts:38:36                         
+TransitSourceId                          type       src/lib/data-sources/transit/index.ts:38:59                         
+TransitAccessMethodId                    type       src/lib/data-sources/transit/method.ts:59:13                        
+ModeratedItem                            type       src/lib/engagement/ai-moderation-shared.ts:57:13                    
+ModerationAction                         type       src/lib/engagement/ai-moderation.ts:31:8                            
+ModerationCategory                       type       src/lib/engagement/ai-moderation.ts:32:8                            
+ModerationFallbackReason                 type       src/lib/engagement/ai-moderation.ts:33:8                            
+ModerationSeverity                       type       src/lib/engagement/ai-moderation.ts:36:8                            
+SynthesisCategoryLike                    type       src/lib/engagement/ai-synthesis.ts:53:13                            
+EngagementSynthesisTheme                 type       src/lib/engagement/ai-synthesis.ts:58:13                            
+EngagementSynthesisSource                type       src/lib/engagement/ai-synthesis.ts:67:13                            
+CampaignTemplateCategory                 type       src/lib/engagement/campaign-templates.ts:39:13                      
+CampaignTemplateOption                   type       src/lib/engagement/campaign-templates.ts:45:13                      
+CampaignTemplateQuestion                 type       src/lib/engagement/campaign-templates.ts:51:13                      
+CampaignTranslationSource                type       src/lib/engagement/campaign-translations.ts:76:13                   
+CampaignTranslatableGroup                type       src/lib/engagement/campaign-translations.ts:115:13                  
+CampaignLocaleState                      type       src/lib/engagement/campaign-translations.ts:610:13                  
+EngagementCampaignStatus                 type       src/lib/engagement/catalog.ts:18:13                                 
+EngagementItemStatus                     type       src/lib/engagement/catalog.ts:20:13                                 
+CommentImportRow                         type       src/lib/engagement/comment-import.ts:85:13                          
+CommentImportRowError                    type       src/lib/engagement/comment-import.ts:96:13                          
+EngagementCommentMatrixPosture           type       src/lib/engagement/comment-matrix.ts:22:13                          
+EngagementCommentMatrixPreviewRow        type       src/lib/engagement/comment-matrix.ts:28:13                          
+ContextLayerImportRefusalReason          type       src/lib/engagement/context-layer-import.ts:38:13                    
+ContextLayerImportRefusal                type       src/lib/engagement/context-layer-import.ts:40:13                    
+ContextLayerImport                       type       src/lib/engagement/context-layer-import.ts:47:13                    
+ContextLayerSrsBasis                     type       src/lib/engagement/context-layers.ts:71:13                          
+CategoryCount                            type       src/lib/engagement/corridor-join.ts:24:13                           
+CrashRecordCoverage                      type       src/lib/engagement/crash-corroboration.ts:77:13                     
+DecisionLinkRow                          type       src/lib/engagement/decision-links.ts:68:13                          
+DecisionLinkReceipt                      type       src/lib/engagement/decision-links.ts:73:13                          
+VerifiedDecisionResolution               type       src/lib/engagement/decision-request-resolution.ts:63:13             
+DecisionSynthesisHistory                 type       src/lib/engagement/decision-synthesis-history.ts:15:13              
+AgeBand                                  type       src/lib/engagement/demographics.ts:28:13                            
+Language                                 type       src/lib/engagement/demographics.ts:56:13                            
+HouseholdTenure                          type       src/lib/engagement/demographics.ts:72:13                            
+DemographicsBand                         type       src/lib/engagement/demographics.ts:162:13                           
+GeofenceBasis                            type       src/lib/engagement/geofence.ts:103:13                               
+GeofenceUncheckedReason                  type       src/lib/engagement/geofence.ts:106:13                               
+EngagementGeometryPosition               type       src/lib/engagement/geometry.ts:19:13                                
+EngagementPointGeometry                  type       src/lib/engagement/geometry.ts:21:13                                
+EngagementLineStringGeometry             type       src/lib/engagement/geometry.ts:26:13                                
+EngagementPolygonGeometry                type       src/lib/engagement/geometry.ts:31:13                                
+HotspotFootprint                         type       src/lib/engagement/hotspots.ts:55:13                                
+HotspotFeature                           type       src/lib/engagement/hotspots.ts:282:13                               
+JointEcologicalSide                      type       src/lib/engagement/joint-representativeness.ts:153:13               
+JointSelfReportedSide                    type       src/lib/engagement/joint-representativeness.ts:169:13               
+DailyIntakeBucket                        type       src/lib/engagement/participation-dashboard.ts:8:13                  
+PortalLocaleSource                       type       src/lib/engagement/portal-i18n/locales.ts:283:13                    
+PortalTextProvenance                     type       src/lib/engagement/portal-i18n/operator-text.ts:77:13               
+PublicPortalCampaign                     type       src/lib/engagement/public-portal-data.ts:57:13                      
+PublicPortalProject                      type       src/lib/engagement/public-portal-data.ts:86:13                      
+PortalMapBbox                            type       src/lib/engagement/public-portal-data.ts:136:13                     
+PortalPlaceOrigin                        type       src/lib/engagement/public-portal-data.ts:213:13                     
+PortalFramingOrigin                      type       src/lib/engagement/public-portal-data.ts:216:13                     
+PortalFramingGap                         type       src/lib/engagement/public-portal-data.ts:231:13                     
+PortalCategoryView                       type       src/lib/engagement/public-portal-data.ts:654:13                     
+PortalSurveyQuestionView                 type       src/lib/engagement/public-portal-data.ts:668:13                     
+PortalCloseLoopEntryView                 type       src/lib/engagement/public-portal-data.ts:675:13                     
+PortalCampaignText                       type       src/lib/engagement/public-portal-data.ts:683:13                     
+PublicPortalProps                        type       src/lib/engagement/public-portal-data.ts:693:13                     
+PortalText                               type       src/lib/engagement/public-portal-data.ts:1574:15                    
+PortalTranslationIndex                   type       src/lib/engagement/public-portal-data.ts:1574:27                    
+EngagementHandoffReadinessCheck          type       src/lib/engagement/readiness.ts:27:13                               
+PortalSubmissionDemographics             type       src/lib/engagement/submit-portal-input.ts:25:13                     
+SurveyBuilderOption                      type       src/lib/engagement/survey-responses.ts:334:13                       
+SurveyQuestionStatus                     type       src/lib/engagement/survey-responses.ts:364:13                       
+SurveyAnswerErrorCode                    type       src/lib/engagement/survey.ts:374:13                                 
+SurveyConditionProblemCode               type       src/lib/engagement/survey.ts:781:13                                 
+EngagementGeometry                       type       src/lib/engagement/survey.ts:1149:15                                
+EngagementGeometryType                   type       src/lib/engagement/survey.ts:1149:35                                
+SynthesisGenerationInputManifest         type       src/lib/engagement/synthesis-generation-input.ts:29:13              
+SynthesisGenerationRecord                type       src/lib/engagement/synthesis-generation-records.ts:8:13             
+SynthesisReviewReceipt                   type       src/lib/engagement/synthesis-review-records.ts:13:13                
+SynthesisReviewChange                    type       src/lib/engagement/synthesis-review.ts:37:13                        
+SynthesisSourceIntent                    type       src/lib/engagement/synthesis-sources.ts:21:13                       
+ThematicPreview                          type       src/lib/engagement/synthesis-thematic-browser.ts:20:13              
+TranslationGenerationResolution          type       src/lib/engagement/translation-generation-resolution.ts:56:13       
+TranslationVersion                       type       src/lib/engagement/translation-snapshot.ts:12:13                    
+CorridorPolygon                          type       src/lib/geo/corridor-geometry.ts:3:13                               
+CorridorMultiPolygon                     type       src/lib/geo/corridor-geometry.ts:8:13                               
+CrsPlacementWarningCode                  type       src/lib/geo/crs/area-of-use.ts:71:13                                
+CrsAreaOfUse                             type       src/lib/geo/crs/index.ts:23:3                                       
+CrsMethod                                type       src/lib/geo/crs/index.ts:24:3                                       
+CrsProjectionParams                      type       src/lib/geo/crs/index.ts:25:3                                       
+CrsRefusal                               type       src/lib/geo/crs/index.ts:26:3                                       
+CrsRefusalReason                         type       src/lib/geo/crs/index.ts:27:3                                       
+Bbox                                     type       src/lib/geo/crs/index.ts:33:3                                       
+CrsPlacementCheck                        type       src/lib/geo/crs/index.ts:34:3                                       
+CrsPlacementInput                        type       src/lib/geo/crs/index.ts:35:3                                       
+CrsPlacementWarning                      type       src/lib/geo/crs/index.ts:36:3                                       
+CrsPlacementWarningCode                  type       src/lib/geo/crs/index.ts:37:3                                       
+DescribableSrs                           type       src/lib/geo/crs/index.ts:48:15                                      
+CrsRegionQuery                           type       src/lib/geo/crs/index.ts:53:15                                      
+PrjIdentification                        type       src/lib/geo/crs/index.ts:53:31                                      
+CrsRefusalReason                         type       src/lib/geo/crs/types.ts:227:13                                     
+WktNode                                  type       src/lib/geo/crs/wkt.ts:24:13                                        
+SpatialFileSrs                           type       src/lib/geo/spatial-file-import.ts:112:13                           
+SpatialFileGeometryKind                  type       src/lib/geo/spatial-file-import.ts:140:13                           
+SpatialFileFeatureCollection             type       src/lib/geo/spatial-file-import.ts:142:13                           
+SpatialFileImportRefusal                 type       src/lib/geo/spatial-file-import.ts:159:13                           
+SpatialFileAttributeField                type       src/lib/geo/spatial-file-import.ts:225:13                           
+SpatialFileAttributeEncoding             type       src/lib/geo/spatial-file-import.ts:231:13                           
+SpatialFileCrsEvidence                   type       src/lib/geo/spatial-file-import.ts:266:13                           
+CensusTractCoverageBlockedReason         type       src/lib/geographies/census-tract-coverage.ts:32:13                  
+CensusTractScopeState                    type       src/lib/geographies/census-tract-scope.ts:35:13                     
+PlaceSearchResult                        interface  src/lib/geographies/place-resolver.ts:107:18                        
+CountySearchItem                         interface  src/lib/geographies/us-counties.ts:37:18                            
+CountyCatalogAvailability                type       src/lib/geographies/us-counties.ts:72:13                            
+ZoneAttributeMeasure                     type       src/lib/geographies/zone-attribute-source.ts:65:13                  
+ZoneAttributeTable                       type       src/lib/geographies/zone-attribute-source.ts:86:13                  
+ZoneAttributeSourceDescriptor            type       src/lib/geographies/zone-attribute-source.ts:99:13                  
+ZoneAttributeSourceFetch                 type       src/lib/geographies/zone-attribute-source.ts:112:13                 
+GrantApplicationSectionOrigin            type       src/lib/grants/application-html.ts:36:13                            
+ApplicationSectionSource                 type       src/lib/grants/application.ts:39:13                                 
+ApplicationSectionDraftRow               type       src/lib/grants/application.ts:153:13                                
+GrantEvidenceReadinessCueKey             type       src/lib/grants/evidence-readiness.ts:19:13                          
+GrantsGovWindowTone                      type       src/lib/grants/grants-gov.ts:225:13                                 
+NarrativeLinkedProjectStage              type       src/lib/grants/narrative-evidence.ts:108:13                         
+NarrativeRtpProgrammingLink              type       src/lib/grants/narrative-evidence.ts:123:13                         
+NarrativeCompletedProject                type       src/lib/grants/narrative-evidence.ts:139:13                         
+NarrativeEvidenceReadFailure             type       src/lib/grants/narrative-evidence.ts:154:13                         
+NarrativeGroundingSentence               type       src/lib/grants/narrative-grounding.ts:22:13                         
+GrantProgramBundleScope                  type       src/lib/grants/programs/coverage.ts:52:13                           
+GrantProgramBundleCoverage               type       src/lib/grants/programs/coverage.ts:58:13                           
+GrantProgramCoverageEntry                type       src/lib/grants/programs/coverage.ts:70:13                           
+GrantProgramCoverageGapReason            type       src/lib/grants/programs/coverage.ts:86:13                           
+GrantProgramCoverageDisclosure           type       src/lib/grants/programs/coverage.ts:92:13                           
+GrantApplicationAttachmentTemplate       type       src/lib/grants/programs/index.ts:15:3                               
+GrantProgramJurisdiction                 type       src/lib/grants/programs/index.ts:20:3                               
+GrantProgramLevel                        type       src/lib/grants/programs/index.ts:21:3                               
+GrantProgramBundleCoverage               type       src/lib/grants/programs/index.ts:30:8                               
+GrantProgramBundleScope                  type       src/lib/grants/programs/index.ts:31:8                               
+GrantProgramCoverage                     type       src/lib/grants/programs/index.ts:32:8                               
+GrantProgramCoverageDisclosure           type       src/lib/grants/programs/index.ts:33:8                               
+GrantProgramCoverageEntry                type       src/lib/grants/programs/index.ts:34:8                               
+GrantProgramCoverageGapReason            type       src/lib/grants/programs/index.ts:35:8                               
+GrantProgramLevel                        type       src/lib/grants/programs/types.ts:9:13                               
+GrantApplicationAttachmentTemplate       type       src/lib/grants/programs/types.ts:61:13                              
+GtfsRefetchRefusal                       type       src/lib/gtfs/assistant-summary.ts:63:13                             
+WorkspaceTransitFeedSummary              type       src/lib/gtfs/assistant-summary.ts:65:13                             
+GeoPoint                                 type       src/lib/gtfs/catalog.ts:140:13                                      
+GtfsCatalogStatedLocation                type       src/lib/gtfs/catalog.ts:167:13                                      
+GtfsCatalogAuthentication                type       src/lib/gtfs/catalog.ts:174:13                                      
+GtfsCatalogEntry                         type       src/lib/gtfs/catalog.ts:204:13                                      
+GtfsWithheldFeedReason                   type       src/lib/gtfs/catalog.ts:416:13                                      
+GtfsWithheldFeed                         type       src/lib/gtfs/catalog.ts:419:13                                      
+GtfsCatalogRedirectRefusal               type       src/lib/gtfs/catalog.ts:565:13                                      
+GtfsFetchFailureCode                     type       src/lib/gtfs/fetch.ts:85:13                                         
+GtfsFetchSuccess                         type       src/lib/gtfs/fetch.ts:117:13                                        
+GtfsFetchFailure                         type       src/lib/gtfs/fetch.ts:132:13                                        
+GtfsIngestAdoption                       type       src/lib/gtfs/ingest.ts:282:13                                       
+GtfsSourceKind                           type       src/lib/gtfs/persist.ts:342:13                                      
+TractServiceComputation                  type       src/lib/gtfs/persist.ts:532:13                                      
+GtfsParseStats                           type       src/lib/gtfs/types.ts:457:13                                        
+GtfsParseSuccess                         type       src/lib/gtfs/types.ts:494:13                                        
+GtfsParseFailure                         type       src/lib/gtfs/types.ts:496:13                                        
+GtfsArchiveOpenFailureCode               type       src/lib/gtfs/zip.ts:119:13                                          
+ProviderApiConfiguration                 type       src/lib/integrations/provider-api-credentials.ts:29:13              
+DeliverableEvent                         type       src/lib/invoicing/contracts/closeout-schema.ts:15:13                
+CloseoutVersion                          type       src/lib/invoicing/contracts/closeout-schema.ts:17:13                
+Capacity                                 type       src/lib/invoicing/contracts/delivery-schema.ts:20:13                
+WorkUpdate                               type       src/lib/invoicing/contracts/delivery-schema.ts:22:13                
+DeliveryCommand                          type       src/lib/invoicing/contracts/delivery-schema.ts:23:13                
+ScheduleVersion                          type       src/lib/invoicing/contracts/delivery-schema.ts:24:13                
+CapacityVersion                          type       src/lib/invoicing/contracts/delivery-schema.ts:26:13                
+OutsideReservation                       type       src/lib/invoicing/contracts/delivery-schema.ts:27:13                
+ForecastVersion                          type       src/lib/invoicing/contracts/delivery-schema.ts:33:13                
+ManagementResponse                       type       src/lib/invoicing/contracts/response-schema.ts:10:13                
+ProjectResponseRecord                    type       src/lib/invoicing/contracts/response-schema.ts:11:13                
+ContractAllocation                       type       src/lib/invoicing/contracts/schema.ts:52:13                         
+BaselineVersion                          type       src/lib/invoicing/contracts/schema.ts:54:13                         
+Estimate                                 type       src/lib/invoicing/contracts/schema.ts:55:13                         
+SharedOwpSource                          type       src/lib/invoicing/contracts/schema.ts:56:13                         
+MasterTerms                              type       src/lib/invoicing/contracts/schema.ts:57:13                         
+AccountingImport                         type       src/lib/invoicing/contracts/schema.ts:59:13                         
+AccountingReview                         type       src/lib/invoicing/contracts/schema.ts:60:13                         
+ClientInvoicePdfWorkspace                type       src/lib/invoicing/invoice-pdf.ts:27:13                              
+ClientInvoiceStatus                      type       src/lib/invoicing/receivables.ts:23:13                              
+ReceivableAgingBucketSummary             type       src/lib/invoicing/receivables.ts:69:13                              
+ReimbursementProfileSelection            type       src/lib/invoicing/reimbursement-profile-binding.ts:43:13            
+ReimbursementInterimDefaultReason        type       src/lib/invoicing/reimbursement-profile-binding.ts:57:13            
+InvoicingJurisdiction                    type       src/lib/invoicing/reimbursement-profiles.ts:42:13                   
+ReimbursementJurisdictionMatch           type       src/lib/invoicing/reimbursement-profiles.ts:141:13                  
+WorksheetWorkspace                       type       src/lib/invoicing/reimbursement-worksheet.ts:111:13                 
+WorksheetAward                           type       src/lib/invoicing/reimbursement-worksheet.ts:115:13                 
+WorksheetCostLine                        type       src/lib/invoicing/reimbursement-worksheet.ts:141:13                 
+HourlyRateSource                         type       src/lib/invoicing/time-billing.ts:36:13                             
+UnbilledTimeGroupBy                      type       src/lib/invoicing/time-billing.ts:43:13                             
+JurisdictionReadinessSource              type       src/lib/jurisdiction-readiness/contracts.ts:19:13                   
+JurisdictionReadinessJurisdiction        type       src/lib/jurisdiction-readiness/contracts.ts:25:13                   
+JurisdictionReadinessAuthority           type       src/lib/jurisdiction-readiness/contracts.ts:33:13                   
+JurisdictionReadinessClaim               type       src/lib/jurisdiction-readiness/contracts.ts:40:13                   
+KbOcrJobRow                              type       src/lib/knowledge-base/ocr-contract.ts:73:13                        
+OcrCallback                              type       src/lib/knowledge-base/ocr-contract.ts:172:13                       
+KnowledgeBaseSearchFailure               type       src/lib/knowledge-base/retrieval.ts:59:13                           
+PlanVersionState                         type       src/lib/land-use-plans/contracts.ts:11:13                           
+PlanVersionKind                          type       src/lib/land-use-plans/contracts.ts:14:13                           
+PlanContentNodeKind                      type       src/lib/land-use-plans/contracts.ts:25:13                           
+LandUsePlan                              type       src/lib/land-use-plans/contracts.ts:27:13                           
+PlanVersion                              type       src/lib/land-use-plans/contracts.ts:41:13                           
+PlanContentNode                          type       src/lib/land-use-plans/contracts.ts:53:13                           
+PlanRelationship                         type       src/lib/land-use-plans/contracts.ts:66:13                           
+PlanReviewEvent                          type       src/lib/land-use-plans/contracts.ts:74:13                           
+PlanDecision                             type       src/lib/land-use-plans/contracts.ts:91:13                           
+PlanDesignationReference                 type       src/lib/land-use-plans/contracts.ts:106:13                          
+PlanProcessRecord                        type       src/lib/land-use-plans/contracts.ts:118:13                          
+PlanReviewRelease                        type       src/lib/land-use-plans/contracts.ts:129:13                          
+ImplementationAction                     type       src/lib/land-use-plans/contracts.ts:143:13                          
+MeasureRecipientLike                     type       src/lib/measures/allocation.ts:684:13                               
+MeasureBasisValueLike                    type       src/lib/measures/allocation.ts:686:13                               
+MeasureCapWindow                         type       src/lib/measures/allocation.ts:727:13                               
+MeasureCapStatus                         type       src/lib/measures/allocation.ts:750:13                               
+MeasureOffTheTopLine                     type       src/lib/measures/allocation.ts:752:13                               
+MeasureShareFactorValue                  type       src/lib/measures/allocation.ts:786:13                               
+MeasureShareFloorEffect                  type       src/lib/measures/allocation.ts:800:13                               
+MeasureRecipientShare                    type       src/lib/measures/allocation.ts:802:13                               
+MeasureDistributionFactor                type       src/lib/measures/allocation.ts:820:13                               
+MeasureCategoryDistribution              type       src/lib/measures/allocation.ts:827:13                               
+MeasureFloorOutcome                      type       src/lib/measures/allocation.ts:852:13                               
+MeasureUndistributedReason               type       src/lib/measures/allocation.ts:860:13                               
+MeasureCategoryLine                      type       src/lib/measures/allocation.ts:867:13                               
+MeasureAllocationNoteCode                type       src/lib/measures/allocation.ts:880:13                               
+MeasureAllocationNote                    type       src/lib/measures/allocation.ts:890:13                               
+MeasureClaimDocumentRole                 type       src/lib/measures/claims.ts:247:13                                   
+MeasureClaimLine                         type       src/lib/measures/claims.ts:493:13                                   
+MeasureClaimBucket                       type       src/lib/measures/claims.ts:512:13                                   
+MeasureClaimCategoryTotal                type       src/lib/measures/claims.ts:530:13                                   
+MeasureMoeStatus                         type       src/lib/measures/claims.ts:927:13                                   
+MeasureMoeLine                           type       src/lib/measures/claims.ts:929:13                                   
+MeasureReceiptCadence                    type       src/lib/measures/fund.ts:44:13                                      
+MeasureSunsetPosture                     type       src/lib/measures/fund.ts:59:13                                      
+MeasureRecipientKind                     type       src/lib/measures/fund.ts:78:13                                      
+MeasureComputationBasis                  type       src/lib/measures/fund.ts:94:13                                      
+MeasureFundRecord                        type       src/lib/measures/fund.ts:104:13                                     
+MeasureAllocationRuleRecord              type       src/lib/measures/fund.ts:137:13                                     
+MeasureRecipientRecord                   type       src/lib/measures/fund.ts:147:13                                     
+MeasureRecipientBasisValueRecord         type       src/lib/measures/fund.ts:157:13                                     
+MeasureAllocationRecord                  type       src/lib/measures/fund.ts:168:13                                     
+MeasureRecipientOutcome                  type       src/lib/measures/oversight.ts:414:13                                
+OversightTakeRow                         type       src/lib/measures/oversight.ts:507:13                                
+OversightReserveRow                      type       src/lib/measures/oversight.ts:520:13                                
+OversightPeriodRow                       type       src/lib/measures/oversight.ts:1138:13                               
+OversightReceipts                        type       src/lib/measures/oversight.ts:1147:13                               
+OversightOrdinance                       type       src/lib/measures/oversight.ts:1175:13                               
+MeasureReceiptLine                       type       src/lib/measures/receipts.ts:78:13                                  
+MeasureReceiptGap                        type       src/lib/measures/receipts.ts:107:13                                 
+MeasureReceiptCoverage                   type       src/lib/measures/receipts.ts:113:13                                 
+MeasureFundRow                           type       src/lib/measures/write-authorization.ts:71:13                       
+BehavioralOnrampKpiRow                   type       src/lib/models/behavioral-onramp-kpis.ts:18:13                      
+BehavioralOnrampKpiSupabaseLike          type       src/lib/models/behavioral-onramp-kpis.ts:124:13                     
+ModelFamily                              type       src/lib/models/catalog.ts:26:13                                     
+ModelStatus                              type       src/lib/models/catalog.ts:27:13                                     
+ModelReadinessCheck                      type       src/lib/models/catalog.ts:30:13                                     
+CountyOnrampArtifacts                    type       src/lib/models/county-onramp.ts:177:13                              
+CountyOnrampRuntime                      type       src/lib/models/county-onramp.ts:178:13                              
+CountyOnrampRunSnapshot                  type       src/lib/models/county-onramp.ts:179:13                              
+CountyOnrampValidationSummary            type       src/lib/models/county-onramp.ts:181:13                              
+ProvenanceSource                         type       src/lib/models/county-run-provenance.ts:17:13                       
+ProvenanceEvidence                       type       src/lib/models/county-run-provenance.ts:23:13                       
+DemandAgreementWithholdingReason         type       src/lib/models/demand-agreement-artifact.ts:90:13                   
+RetainedNetworkManifest                  type       src/lib/models/demand-agreement-artifact.ts:119:13                  
+DemandAgreementEvidence                  type       src/lib/models/demand-agreement-artifact.ts:129:13                  
+EquityGroup                              type       src/lib/models/equity-screen.ts:17:13                               
+ModelingValidationComparator             type       src/lib/models/evidence-backbone.ts:133:13                          
+ModelingSourceManifestInput              type       src/lib/models/evidence-backbone.ts:163:13                          
+NormalizedEvidencePacketBenchmarkFit     type       src/lib/models/evidence-packet.ts:38:13                             
+NormalizedCountSourceEvidence            type       src/lib/models/evidence-packet.ts:60:13                             
+NormalizedIndependentValidationEvidence  type       src/lib/models/evidence-packet.ts:64:13                             
+GuidedComparisonRunResult                type       src/lib/models/guided-comparison-results.ts:30:13                   
+GuidedModelMethod                        type       src/lib/models/guided-model-evidence.ts:11:13                       
+GuidedScenarioRole                       type       src/lib/models/guided-model-evidence.ts:12:13                       
+TripGenComparisonBasis                   type       src/lib/models/ite-trip-generation.ts:34:13                         
+TripGenLineItemInput                     type       src/lib/models/ite-trip-generation.ts:36:13                         
+TripGenLineItemResult                    type       src/lib/models/ite-trip-generation.ts:55:13                         
+ModelRunKpiComparisonCategory            type       src/lib/models/kpi-comparison.ts:15:13                              
+ComparableMethod                         type       src/lib/models/published-comparable-observation-study.ts:12:13      
+ComparableDiagnosis                      type       src/lib/models/published-comparable-observation-study.ts:14:13      
+DistributedWorkLoadingMethod             type       src/lib/models/published-distributed-work-loading.ts:14:13          
+PublishedDistributedWorkLoadingRecord    type       src/lib/models/published-distributed-work-loading.ts:16:13          
+StructuralDemandMethod                   type       src/lib/models/published-structural-demand-diagnosis.ts:12:13       
+StructuralDemandRecord                   type       src/lib/models/published-structural-demand-diagnosis.ts:13:13       
+PublishedDiagnosisMethod                 type       src/lib/models/published-structural-diagnosis.ts:10:13              
+PublishedDiagnosisRecord                 type       src/lib/models/published-structural-diagnosis.ts:12:13              
+LivenessStage                            interface  src/lib/models/run-liveness.ts:30:18                                
+Household                                type       src/lib/models/sketch-abm/abm-runner.ts:38:38                       
+ScheduledTour                            type       src/lib/models/sketch-abm/abm-runner.ts:38:49                       
+Trip                                     type       src/lib/models/sketch-abm/abm-runner.ts:38:64                       
+SketchAbmLodesInput                      interface  src/lib/models/sketch-abm/sketch-abm-inputs.ts:39:18                
+TourPurpose                              type       src/lib/models/sketch-abm/tour-generation.ts:27:3                   
+TourType                                 type       src/lib/models/sketch-abm/tour-generation.ts:29:3                   
+TransitFeedStampStatus                   type       src/lib/models/transit-feed-handoff.ts:144:13                       
+RegisteredAgreementArtifactType          type       src/lib/models/verified-dual-demand-agreement-server.ts:33:13       
+RegisteredDualDemandAgreement            type       src/lib/models/verified-dual-demand-agreement-server.ts:37:13       
+DualDemandAgreementClassification        type       src/lib/models/verified-dual-demand-agreement.ts:60:13              
+DualDemandAgreementAttributionScale      type       src/lib/models/verified-dual-demand-agreement.ts:61:13              
+DualDemandAgreementCorridor              type       src/lib/models/verified-dual-demand-agreement.ts:63:13              
+DualDemandAgreementAggregate             type       src/lib/models/verified-dual-demand-agreement.ts:72:13              
+WorkerBackedStageObservation             type       src/lib/models/worker-backed-launch.ts:92:13                        
+ModelingWorkerKind                       type       src/lib/models/worker-health.ts:6:13                                
+WorkerCapabilityState                    type       src/lib/models/worker-health.ts:19:13                               
+ZoneResolutionBand                       type       src/lib/models/zone-resolution.ts:38:13                             
+MoneyPrecision                           type       src/lib/money/format.ts:63:13                                       
+MyWorkStaticFilter                       type       src/lib/my-work/sources.ts:88:13                                    
+MyWorkSourceContext                      type       src/lib/my-work/sources.ts:135:13                                   
+MyWorkBadge                              type       src/lib/my-work/types.ts:130:13                                     
+WorkNotificationKind                     type       src/lib/notifications/work.ts:151:13                                
+WorkNotificationRow                      type       src/lib/notifications/work.ts:177:13                                
+WorkSweepSourceOutcome                   type       src/lib/notifications/work.ts:192:13                                
+SweepSourceContext                       type       src/lib/notifications/work.ts:269:13                                
+WorkNotificationInboxRow                 type       src/lib/notifications/work.ts:1487:13                               
+AssistantActionExecutionOutcome          type       src/lib/observability/action-audit.ts:10:13                         
+WorkflowReadinessRollup                  type       src/lib/operations/workflow-next-action-groups.ts:64:13             
+WorkspaceGrantModelingSummary            type       src/lib/operations/workspace-summary.ts:276:13                      
+WorkspaceModuleReadFailure               type       src/lib/operations/workspace-summary.ts:299:13                      
+WorkspaceEngagementObservation           type       src/lib/operations/workspace-summary.ts:331:13                      
+WorkspaceSafetyObservation               type       src/lib/operations/workspace-summary.ts:359:13                      
+WorkspaceModelingObservation             type       src/lib/operations/workspace-summary.ts:371:13                      
+WorkspaceEvidenceObservation             type       src/lib/operations/workspace-summary.ts:383:13                      
+WorkspaceReceivablesObservation          type       src/lib/operations/workspace-summary.ts:392:13                      
+GroundedSentence                         type       src/lib/planner-pack/grounding.ts:45:13                             
+GroundingIssue                           type       src/lib/planner-pack/grounding.ts:54:13                             
+CeqaMemoJurisdictionBasis                type       src/lib/planner-pack/render.ts:48:13                                
+FactArtifactRef                          type       src/lib/planner-pack/types.ts:19:13                                 
+CeqaVmtDetermination                     type       src/lib/planner-pack/types.ts:68:13                                 
+VmtClaimStatusSource                     type       src/lib/planner-pack/vmt-screening-records.ts:87:13                 
+VmtScreeningSubject                      type       src/lib/planner-pack/vmt-screening-records.ts:295:13                
+VmtFrameworkJurisdiction                 type       src/lib/planner-pack/vmt-significance-frameworks.ts:54:13           
+VmtFrameworkJurisdictionQuery            type       src/lib/planner-pack/vmt-significance-frameworks.ts:72:13           
+PlanType                                 type       src/lib/plans/catalog.ts:24:13                                      
+PlanStatus                               type       src/lib/plans/catalog.ts:25:13                                      
+ProgramType                              type       src/lib/programs/catalog.ts:119:13                                  
+ProgramStatus                            type       src/lib/programs/catalog.ts:120:13                                  
+ProgramFundingClassification             type       src/lib/programs/catalog.ts:122:13                                  
+FundingAwardMatchPosture                 type       src/lib/programs/catalog.ts:125:13                                  
+FundingAwardSpendingStatus               type       src/lib/programs/catalog.ts:126:13                                  
+FundingAwardOpenSpendingStatus           type       src/lib/programs/catalog.ts:127:13                                  
+FundingAwardClosureBasis                 type       src/lib/programs/catalog.ts:128:13                                  
+FundingAwardRiskFlag                     type       src/lib/programs/catalog.ts:129:13                                  
+ProgramReadinessCheck                    type       src/lib/programs/catalog.ts:131:13                                  
+SuccessorBaseline                        type       src/lib/programs/work-program/closeout.ts:25:13                     
+CloseoutRecord                           type       src/lib/programs/work-program/closeout.ts:27:13                     
+PeriodClosure                            type       src/lib/programs/work-program/closeout.ts:28:13                     
+WorkProgramDiscrepancy                   type       src/lib/programs/work-program/reconciliation.ts:3:13                
+ReimbursementSnapshot                    type       src/lib/programs/work-program/reimbursement.ts:22:13                
+ActualAllocation                         type       src/lib/programs/work-program/reporting.ts:30:13                    
+WorkProgramExtractionVersion             type       src/lib/programs/work-program/types.ts:4:13                         
+ProjectEvidenceManifestEntryV1           type       src/lib/project-evidence-bundles/contracts.ts:61:13                 
+ProjectEvidenceManifestV1                type       src/lib/project-evidence-bundles/contracts.ts:96:13                 
+ProjectEvidenceManifest                  type       src/lib/project-evidence-bundles/contracts.ts:135:13                
+ProjectDeliverableBudgetRow              type       src/lib/projects/budget-queries.ts:31:13                            
+ProjectSpendEntryRow                     type       src/lib/projects/budget-queries.ts:51:13                            
+ProjectBudgetReadFailure                 type       src/lib/projects/budget-queries.ts:113:13                           
+ProjectControlDeadlineItem               type       src/lib/projects/controls.ts:58:13                                  
+PlanningContextProject                   type       src/lib/projects/planning-context.ts:1:13                           
+PortfolioImportIssue                     type       src/lib/projects/portfolio-import.ts:64:13                          
+PortfolioImportRow                       type       src/lib/projects/portfolio-import.ts:82:13                          
+PortfolioWorkbookIssue                   type       src/lib/projects/portfolio-import.ts:559:13                         
+PortfolioWorkbookImportRow               type       src/lib/projects/portfolio-import.ts:571:13                         
+PortfolioSheetReview                     type       src/lib/projects/portfolio-import.ts:586:13                         
+PortfolioLane                            type       src/lib/projects/portfolio-queries.ts:93:13                         
+PortfolioProjectBudgetRow                type       src/lib/projects/portfolio-queries.ts:98:13                         
+PortfolioDeliverableRow                  type       src/lib/projects/portfolio-queries.ts:99:13                         
+PortfolioMilestoneRow                    type       src/lib/projects/portfolio-queries.ts:108:13                        
+PortfolioSubmittalRow                    type       src/lib/projects/portfolio-queries.ts:115:13                        
+PortfolioSpendRow                        type       src/lib/projects/portfolio-queries.ts:122:13                        
+PortfolioBilledLineRow                   type       src/lib/projects/portfolio-queries.ts:127:13                        
+PortfolioDeadlineKind                    type       src/lib/projects/portfolio.ts:83:13                                 
+PortfolioNextDeadline                    type       src/lib/projects/portfolio.ts:85:13                                 
+PortfolioDeadlineColumn                  type       src/lib/projects/portfolio.ts:92:13                                 
+PortfolioBurnColumn                      type       src/lib/projects/portfolio.ts:103:13                                
+ProjectPortfolioRow                      type       src/lib/projects/portfolio.ts:118:13                                
+ProjectDeleteBlockerSeverity             type       src/lib/projects/project-delete-preconditions.ts:33:13              
+ProjectDeleteCascadeBehavior             type       src/lib/projects/project-delete-preconditions.ts:36:13              
+ProjectDeleteBlocker                     type       src/lib/projects/project-delete-preconditions.ts:59:13              
+ProjectGeoPackageCoreLayerInventory      type       src/lib/projects/project-geopackage.ts:41:13                        
+ProjectGeoPackageFeatureAttribute        type       src/lib/projects/project-geopackage.ts:93:13                        
+ProjectGeoPackageModelLinkFeature        type       src/lib/projects/project-geopackage.ts:95:13                        
+ProjectSpineCrosslinkReadiness           type       src/lib/projects/project-spine-crosslinks.ts:8:13                   
+ProjectSpineCrosslinkSourceState         type       src/lib/projects/project-spine-crosslinks.ts:9:13                   
+ProjectSpineCrosslinkBoardState          type       src/lib/projects/project-spine-crosslinks.ts:10:13                  
+ProjectSpineCrosslinkRowId               type       src/lib/projects/project-spine-crosslinks.ts:12:13                  
+ProjectSpineCrosslinkRow                 type       src/lib/projects/project-spine-crosslinks.ts:25:13                  
+RtpPostureWritebackSupabaseLike          type       src/lib/projects/rtp-posture-writeback.ts:38:13                     
+ProjectSpineReadinessLaneKey             type       src/lib/projects/spine-readiness.ts:28:13                           
+ProjectSpineReadinessLane                type       src/lib/projects/spine-readiness.ts:36:13                           
+AerialOrthoEvidenceSupabaseLike          type       src/lib/reports/aerial-ortho-evidence-server.ts:33:13               
+ReportAerialMissionSourceSummary         type       src/lib/reports/aerial-source-context.ts:27:13                      
+ReportAccessRow                          type       src/lib/reports/api.ts:18:13                                        
+ReportMembershipRow                      type       src/lib/reports/api.ts:32:13                                        
+ReportStatus                             type       src/lib/reports/catalog.ts:30:13                                    
+ReportGenerationReadinessCheck           type       src/lib/reports/generation-readiness.ts:16:13                       
+ReportDataLineageReadinessSummary        type       src/lib/reports/generation-readiness.ts:25:13                       
+PacketGeographyMarker                    type       src/lib/reports/geography-figure.ts:74:13                           
+PacketGeographyShapeKind                 type       src/lib/reports/geography-figure.ts:93:13                           
+PacketGeographyShape                     type       src/lib/reports/geography-figure.ts:96:13                           
+PacketGeographyLegendEntry               type       src/lib/reports/geography-figure.ts:106:13                          
+PacketGeographyScaleBar                  type       src/lib/reports/geography-figure.ts:112:13                          
+DocumentNarrativeTargetKind              type       src/lib/reports/narrative-drafts.ts:34:13                           
+DocumentNarrativeDraftStatus             type       src/lib/reports/narrative-drafts.ts:35:13                           
+PacketPostureLabel                       type       src/lib/reports/packet-labels.ts:16:13                              
+PdfPageSize                              type       src/lib/reports/pdf-writer.ts:50:13                                 
+RenderHtmlToPdfOptions                   type       src/lib/reports/pdf.ts:32:13                                        
+CitedModelRunRow                         type       src/lib/reports/run-citations.ts:60:13                              
+CitedRunUnresolvedReason                 type       src/lib/reports/run-citations.ts:134:13                             
+PacketSafetyFigure                       type       src/lib/reports/safety-evidence-section.ts:33:13                    
+PacketSafetyAcquisition                  type       src/lib/reports/safety-evidence-section.ts:41:13                    
+ScenarioSpineSchemaPendingWarning        type       src/lib/reports/scenario-provenance.ts:35:13                        
+ReportScenarioMatchedEntry               type       src/lib/reports/scenario-provenance.ts:117:13                       
+ReportScenarioSharedSpineSummary         type       src/lib/reports/scenario-provenance.ts:130:13                       
+ReportScenarioComparisonSnapshot         type       src/lib/reports/scenario-provenance.ts:142:13                       
+RtpCycleStatus                           type       src/lib/rtp/catalog.ts:20:13                                        
+RtpChapterStatus                         type       src/lib/rtp/catalog.ts:37:13                                        
+RtpCycleReadinessCheck                   type       src/lib/rtp/catalog.ts:107:13                                       
+RtpAdoptionRecordProofCheck              type       src/lib/rtp/catalog.ts:140:13                                       
+RtpReleaseReviewState                    type       src/lib/rtp/catalog.ts:178:13                                       
+RtpCommentResponseCampaignView           interface  src/lib/rtp/comment-response.ts:377:18                              
+RtpPublicCommentView                     interface  src/lib/rtp/comment-response.ts:387:18                              
+RtpCommentResponseView                   interface  src/lib/rtp/comment-response.ts:402:18                              
+RtpCommentResponsePair                   interface  src/lib/rtp/comment-response.ts:417:18                              
+RtpWithheldCommentReason                 type       src/lib/rtp/comment-response.ts:432:13                              
+RtpWithheldComment                       interface  src/lib/rtp/comment-response.ts:434:18                              
+RtpExportComposition                     type       src/lib/rtp/export-input.ts:354:13                                  
+RtpExportInputRefusal                    type       src/lib/rtp/export-input.ts:370:13                                  
+RtpExportInputContext                    type       src/lib/rtp/export-input.ts:387:13                                  
+RtpExportModelingEvidence                type       src/lib/rtp/export.ts:106:13                                        
+RtpExportComposition                     type       src/lib/rtp/export.ts:192:13                                        
+ChapterBlockChunkRecheck                 type       src/lib/rtp/extraction/chapter-blocks.ts:130:13                     
+RtpExtractionFieldKind                   type       src/lib/rtp/extraction/contract.ts:109:13                           
+ReconciliationTone                       type       src/lib/rtp/extraction/display.ts:79:13                             
+ExistingFinancialLine                    type       src/lib/rtp/extraction/reconcile.ts:58:13                           
+ExistingPerformanceMeasure               type       src/lib/rtp/extraction/reconcile.ts:68:13                           
+ExistingHorizonBand                      type       src/lib/rtp/extraction/reconcile.ts:80:13                           
+ExistingProgrammedProject                type       src/lib/rtp/extraction/reconcile.ts:89:13                           
+ExistingCycleFinancialBasis              type       src/lib/rtp/extraction/reconcile.ts:99:13                           
+ReconciliationMatch                      type       src/lib/rtp/extraction/reconcile.ts:135:13                          
+RtpExtractionFailureReason               type       src/lib/rtp/extraction/run.ts:74:13                                 
+ExtractionTargetOutcome                  type       src/lib/rtp/extraction/run.ts:98:13                                 
+RtpPerformanceMeasureView                interface  src/lib/rtp/financial-element-queries.ts:53:18                      
+RtpFinancialElementLine                  interface  src/lib/rtp/financial-element-queries.ts:73:18                      
+RtpFiscalBlockerCode                     type       src/lib/rtp/fiscal-constraint.ts:92:13                              
+RtpFiscalBlocker                         interface  src/lib/rtp/fiscal-constraint.ts:100:18                             
+RtpFiscalBandResult                      interface  src/lib/rtp/fiscal-constraint.ts:106:18                             
+RtpFiscalUnresolvedProject               interface  src/lib/rtp/fiscal-constraint.ts:129:18                             
+HorizonBandScaffold                      type       src/lib/rtp/horizon-banding-profiles.ts:36:13                       
+RtpPriorityEvidence                      type       src/lib/rtp/priority-criteria.ts:28:13                              
+RtpPriorityFrameworkSelection            type       src/lib/rtp/priority-framework-binding.ts:35:13                     
+RtpPriorityUncitedReason                 type       src/lib/rtp/priority-framework-binding.ts:40:13                     
+RtpPriorityDriver                        interface  src/lib/rtp/priority-scoring.ts:88:18                               
+ActionEffectContext                      type       src/lib/runtime/action-registry.ts:25:13                            
+SafetyCrashProperties                    type       src/lib/safety/client-types.ts:9:13                                 
+SafetyIngestScope                        type       src/lib/safety/client-types.ts:275:13                               
+SafetyCrashEvidenceRpcBuilder            type       src/lib/safety/crash-evidence.ts:448:13                             
+CrashExportProvenance                    type       src/lib/safety/crash-export.ts:62:13                                
+CrashPartyCompleteness                   type       src/lib/safety/ingest.ts:45:13                                      
+CrashInvolvementBasis                    type       src/lib/safety/ingest.ts:46:13                                      
+SafetyRoadSourceId                       type       src/lib/safety/road-context.ts:6:13                                 
+CachedRoadRow                            type       src/lib/safety/road-context.ts:34:13                                
+SafetyCoverageState                      type       src/lib/safety/sources/types.ts:70:13                               
+CrashResourceUpdates                     type       src/lib/safety/sources/types.ts:213:13                              
+CrashPublishedCutoff                     type       src/lib/safety/sources/types.ts:221:13                              
+CrashUnmeasuredState                     type       src/lib/safety/unmeasured-crash-note.ts:33:13                       
+ScenarioAssumptionSetStatus              type       src/lib/scenarios/catalog.ts:12:13                                  
+ScenarioDataPackageType                  type       src/lib/scenarios/catalog.ts:13:13                                  
+ScenarioDataPackageStatus                type       src/lib/scenarios/catalog.ts:14:13                                  
+ScenarioComparisonSnapshotStatus         type       src/lib/scenarios/catalog.ts:15:13                                  
+ScenarioComparisonBoardRun               type       src/lib/scenarios/comparison-board.ts:9:13                          
+ScenarioComparisonBoardModelRun          type       src/lib/scenarios/comparison-board.ts:15:13                         
+ScenarioComparisonBoardEvidenceSource    type       src/lib/scenarios/comparison-board.ts:23:13                         
+ScenarioComparisonBoardMetric            type       src/lib/scenarios/comparison-board.ts:36:13                         
+ScenarioComparisonAssumptionInput        type       src/lib/scenarios/comparison-source-context.ts:1:13                 
+ScenarioComparisonSummarySupabaseLike    type       src/lib/scenarios/comparison-summary.ts:15:13                       
+TripGenComparisonIndicatorDelta          type       src/lib/scenarios/trip-gen-comparison.ts:39:13                      
+OperatorWorkflowStatus                   type       src/lib/stage-gates/operator-controls.ts:3:13                       
+LapmReadinessStatus                      type       src/lib/stage-gates/operator-controls.ts:11:13                      
+InvoiceLifecycleStatus                   type       src/lib/stage-gates/operator-controls.ts:19:13                      
+OperatorFieldDefinition                  type       src/lib/stage-gates/operator-controls.ts:30:13                      
+StageGateEvidencePreviewItem             type       src/lib/stage-gates/summary.ts:27:13                                
+StageGateDecisionsReadState              type       src/lib/stage-gates/summary.ts:56:13                                
+StageGateSummaryItem                     type       src/lib/stage-gates/summary.ts:60:13                                
+StageGateBindingMode                     type       src/lib/stage-gates/template-loader.ts:78:13                        
+StageGateInterimDefaultReason            type       src/lib/stage-gates/template-loader.ts:107:13                       
+StageGateJurisdictionMatch               type       src/lib/stage-gates/template-registry.ts:71:13                      
+StageGateTemplateDocument                type       src/lib/stage-gates/template-registry.ts:96:13                      
+StageGateTemplateEntry                   type       src/lib/stage-gates/template-registry.ts:150:13                     
+TdmCombinedStrategy                      interface  src/lib/tdm/engine.ts:54:18                                         
+TdmStrategy                              type       src/lib/tdm/index.ts:8:8                                            
+TdmStrategyCategory                      type       src/lib/tdm/index.ts:9:8                                            
+TdmCombinationResult                     type       src/lib/tdm/index.ts:21:8                                           
+TdmCombinedStrategy                      type       src/lib/tdm/index.ts:22:8                                           
+TdmGhgEstimate                           type       src/lib/tdm/index.ts:23:8                                           
+TdmSelection                             type       src/lib/tdm/index.ts:24:8                                           
+PaletteSwatch                            type       src/lib/theme/palettes.ts:34:13                                     
+MeasureDirection                         type       src/lib/title-vi/service-equity.ts:104:13                           
+ServiceMeasureKey                        type       src/lib/title-vi/service-equity.ts:106:13                           
+ServiceEquityRefusalCode                 type       src/lib/title-vi/service-equity.ts:169:13                           
+ServiceEquityRefusal                     interface  src/lib/title-vi/service-equity.ts:176:18                           
+GroupProfile                             interface  src/lib/title-vi/service-equity.ts:205:18                           
+TransitFeedRegistryTone                  type       src/lib/transit/feed-registry-card.ts:61:13                         
+GtfsServiceWindowState                   type       src/lib/transit/feed-registry-card.ts:105:13                        
+TransitFeedRegistryState                 type       src/lib/transit/feed-registry-card.ts:211:13                        
+CountyRunManifestProofRow                type       src/lib/ui/county-onramp.ts:22:13                                   
+WorkPlanDeliverableInsert                type       src/lib/work-plans/apply.ts:83:13                                   
+WorkPlanMilestoneInsert                  type       src/lib/work-plans/apply.ts:92:13                                   
+WorkPlanTemplateJurisdiction             type       src/lib/work-plans/template-registry.ts:139:13                      
+WorkPlanJurisdictionQuery                type       src/lib/work-plans/template-registry.ts:147:13                      
+WorkPlanTemplateDeliverable              type       src/lib/work-plans/template-registry.ts:153:13                      
+WorkPlanTemplateMilestone                type       src/lib/work-plans/template-registry.ts:163:13                      
+WorkPlanTemplateEntry                    type       src/lib/work-plans/template-registry.ts:215:13                      
+WorkPlanTemplateMatch                    type       src/lib/work-plans/template-registry.ts:225:13                      
+WorkPlanTemplateQuery                    type       src/lib/work-plans/template-registry.ts:230:13                      
+WorkspaceGisCrsRefusalReason             type       src/lib/workspace-gis/crs-resolution.ts:79:13                       
+WorkspaceGisSrs                          type       src/lib/workspace-gis/types.ts:111:13                               
+WorkspaceGisIngestAppendRequest          type       src/lib/workspace-gis/types.ts:242:13                               
+WorkspaceInvitationStatus                type       src/lib/workspaces/invitations.ts:9:13                              
+WorkspaceRosterFailureReason             type       src/lib/workspaces/roster.ts:42:13                                  
+Duplicate exports (2)
+DASHBOARD_CHART_IDS|DEFAULT_DASHBOARD_CHART_IDS                 src/lib/dashboard/chart-catalog.ts
+MONDAY_TO_FRIDAY_WORKWEEK|DEFAULT_SERVICE_DAY_GROUPING_PROFILE  src/lib/gtfs/service-day-groups.ts

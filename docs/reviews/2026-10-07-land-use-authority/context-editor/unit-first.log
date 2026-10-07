@@ -1,0 +1,125 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-draft-custody.test.tsx (15 tests | 6 failed) 1899ms
+     × keeps a deliberate reversion to the old saved text during the request 121ms
+     × retains both drafts after a refused save without claiming saved status 128ms
+     × retains local drafts and the explicit error when a saved operation cannot refresh 116ms
+     × never acknowledges the only dirty field after its save is refused 113ms
+     × blocks freezing until all edited content is actually saved 91ms
+     × acknowledges a saved policy and displays its server-normalized title 186ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-draft-custody.test.tsx > Live workbench draft custody > keeps a deliberate reversion to the old saved text during the request
+Error: expect(element).toHaveTextContent()
+
+Expected element to have text content:
+  Unsaved content changes
+Received:
+  Context or content needs attention. Save edits and resolve recovery before freezing the plan.
+ ❯ src/test/land-use-plan-draft-custody.test.tsx:108:40
+    106|     expect(saved.nodes[0].body).toBe('Submitted snapshot');
+    107|     expect(fields[0]).toHaveValue('Saved First section');
+    108|     expect(screen.getByRole('status')).toHaveTextContent('Unsaved cont…
+       |                                        ^
+    109|   });
+    110|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/test/land-use-plan-draft-custody.test.tsx > Live workbench draft custody > retains both drafts after a refused save without claiming saved status
+Error: expect(element).toHaveTextContent()
+
+Expected element to have text content:
+  Unsaved content changes
+Received:
+  Context or content needs attention. Save edits and resolve recovery before freezing the plan.
+ ❯ src/test/land-use-plan-draft-custody.test.tsx:126:40
+    124|     expect(fields[0]).toHaveValue('Refused first draft');
+    125|     expect(fields[1]).toHaveValue('Unsaved second draft');
+    126|     expect(screen.getByRole('status')).toHaveTextContent('Unsaved cont…
+       |                                        ^
+    127|     expect(refresh).not.toHaveBeenCalled();
+    128|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/test/land-use-plan-draft-custody.test.tsx > Live workbench draft custody > retains local drafts and the explicit error when a saved operation cannot refresh
+Error: expect(element).toHaveTextContent()
+
+Expected element to have text content:
+  Unsaved content changes
+Received:
+  Context or content needs attention. Save edits and resolve recovery before freezing the plan.
+ ❯ src/test/land-use-plan-draft-custody.test.tsx:138:40
+    136|     expect(fields[0]).toHaveValue('Submitted first draft');
+    137|     expect(fields[1]).toHaveValue('Unsaved second draft');
+    138|     expect(screen.getByRole('status')).toHaveTextContent('Unsaved cont…
+       |                                        ^
+    139|   });
+    140|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/test/land-use-plan-draft-custody.test.tsx > Live workbench draft custody > never acknowledges the only dirty field after its save is refused
+Error: expect(element).toHaveTextContent()
+
+Expected element to have text content:
+  Unsaved content changes
+Received:
+  Context or content needs attention. Save edits and resolve recovery before freezing the plan.
+ ❯ src/test/land-use-plan-draft-custody.test.tsx:148:40
+    146|     expect(saved.nodes[0].body).toBe('Saved First section');
+    147|     expect(fields[0]).toHaveValue('Only unsaved draft');
+    148|     expect(screen.getByRole('status')).toHaveTextContent('Unsaved cont…
+       |                                        ^
+    149|     expect(screen.getByRole('button', { name: 'Freeze public draft' })…
+    150|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/test/land-use-plan-draft-custody.test.tsx > Live workbench draft custody > blocks freezing until all edited content is actually saved
+Error: expect(element).toBeEnabled()
+
+Received element is not enabled:
+  <button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"
+  data-size="default"
+  data-slot="button"
+  data-variant="default"
+  disabled=""
+/>
+ ❯ src/test/land-use-plan-draft-custody.test.tsx:155:20
+    153|     const { fields, buttons, writes } = await setup();
+    154|     const freeze = screen.getByRole('button', { name: 'Freeze public d…
+    155|     expect(freeze).toBeEnabled();
+       |                    ^
+    156|     fireEvent.change(fields[1], { target: { value: 'Unsubmitted sectio…
+    157|     expect(freeze).toBeDisabled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  src/test/land-use-plan-draft-custody.test.tsx > Live workbench draft custody > acknowledges a saved policy and displays its server-normalized title
+Error: expect(element).toHaveTextContent()
+
+Expected element to have text content:
+  All section and content-node changes are saved
+Received:
+  Context or content needs attention. Save edits and resolve recovery before freezing the plan.
+ ❯ src/test/land-use-plan-draft-custody.test.tsx:179:40
+    177|     expect(title).toHaveValue('Revised policy');
+    178|     expect(body).toHaveValue('Submitted policy body');
+    179|     expect(screen.getByRole('status')).toHaveTextContent('All section …
+       |                                        ^
+    180|   });
+    181|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed | 19 passed | 3 skipped (23)
+      Tests  6 failed | 355 passed | 3 skipped (364)
+   Start at  05:29:09
+   Duration  19.08s (transform 633ms, setup 744ms, import 2.39s, tests 6.36s, environment 7.53s)
+

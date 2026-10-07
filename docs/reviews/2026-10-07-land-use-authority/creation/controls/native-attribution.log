@@ -1,0 +1,4 @@
+ERROR:  native context attribution
+CONTEXT:  PL/pgSQL function pg_temp_66.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert(result#>>'{context,savedBy}'=actor::text AND result#>>'{context,savedAt}'<>prepared->>'savedAt','native context attribution')"
+PL/pgSQL function inline_code_block line 51 at PERFORM

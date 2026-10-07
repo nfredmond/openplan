@@ -1,0 +1,38 @@
+
+> openplan@0.66.0 test
+> vitest run --maxWorkers=1 src/test/engagement-synthesis-progress-plan.test.ts
+
+
+ RUN  v4.1.11 <app>
+
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts (16 tests | 1 failed) 329ms
+     × rejects changed task task_text 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-progress-plan.test.ts > saved segment plan custody for progress > rejects changed task task_text
+AssertionError: promise resolved "'sealed'" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+"sealed"
+
+ ❯ src/test/engagement-synthesis-progress-plan.test.ts:67:25
+     65|     const f = fixture(), task = f.data.tasks[0];
+     66|     task[field] = field === "request_id" ? sourceScope.requestId : fie…
+     67|     await expect(f.run()).rejects.toThrow("task differs");
+       |                         ^
+     68|   });
+     69|   it("rejects a sealed missing task, extra task and missing header", a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  23:41:45
+   Duration  1.04s (transform 125ms, setup 55ms, import 180ms, tests 329ms, environment 326ms)

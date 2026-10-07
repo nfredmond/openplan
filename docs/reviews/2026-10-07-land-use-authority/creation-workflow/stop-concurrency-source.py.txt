@@ -1,0 +1,93 @@
+import pathlib,subprocess,json,uuid,hashlib,selectors,concurrent.futures,time,os
+app=pathlib.Path('/home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan');private=pathlib.Path('/home/nathaniel/.local/state/openplan/t3-restart-recovery-20261006/land-use-authority');journal=private/'creation-stop-concurrency-private.json';out=pathlib.Path('/tmp/openplan-plan-creation-stop-concurrency');out.mkdir(exist_ok=False)
+container='supabase_db_openplan-restore-target-2026091050';base=['docker','exec','-i',container,'psql','-U','postgres','-d','postgres','-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose']
+actor=str(uuid.uuid4());workspace=str(uuid.uuid4());first=str(uuid.uuid4());simultaneous=str(uuid.uuid4());rows=[];state={'actor':actor,'workspace':workspace,'command':first,'simultaneous':simultaneous,'stage':'starting','rows':rows};journal.write_text(json.dumps(state),encoding='utf8') if not journal.exists() else (_ for _ in ()).throw(RuntimeError('Journal exists; inspect rather than rerun'))
+def retain(stage):state['stage']=stage;journal.write_text(json.dumps(state,indent=2)+'\n');journal.chmod(0o600)
+def quote(x):return "'"+str(x).replace("'","''")+"'"
+def run(sql):return subprocess.run(base,input=sql,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=20)
+def checked(sql):
+ r=run(sql)
+ if r.returncode:raise RuntimeError(r.stderr)
+ return r.stdout.strip()
+geometry={'type':'Polygon','coordinates':[[[0,0],[1,0],[1,1],[0,0]]]}
+assessment={'authorities':[{'id':str(uuid.uuid4()),'label':'SYNTHETIC body','role':'Sponsor','kind':'unassessed','jurisdiction':None,'sourceUrls':[]}],'applicability':{'status':'unresolved','explanation':'SYNTHETIC concurrency only. No legal finding.'}}
+prepared={'schemaVersion':1,'place':{'source':'uploaded_file','label':'SYNTHETIC area','kind':None,'ref':None,'countryCode':None,'subdivisionCode':None,'bbox':{'minLon':0,'minLat':0,'maxLon':1,'maxLat':1},'geometry':geometry},'assessment':assessment,'savedBy':actor,'savedAt':'2026-10-07T00:00:00Z'}
+descriptor=json.dumps({'id':'synthetic-neutral','configured':False,'disclosure':'SYNTHETIC unresolved law','planKinds':[{'key':'community','label':'Community'}],'requirements':[{'key':'local','label':'Local section','applicability':'locally_defined'}]},separators=(',',':'))
+def raw(cid):return ' \n'+json.dumps({'commandId':cid,'title':'SYNTHETIC concurrent creation','authorityLabel':'SYNTHETIC display body','descriptorId':'synthetic-neutral','planKindKey':'community','expectedDescriptorHash':hashlib.sha256(descriptor.encode()).hexdigest(),'assessment':assessment,'place':{'mode':'uploaded','label':'SYNTHETIC area','geometry':geometry}},separators=(',',':'))+'\n'
+def call(cid,function='public.create_land_use_plan_with_context',replay=False):return 'SELECT '+function+'('+','.join([quote(workspace),quote(actor),quote(cid),quote(raw(cid)),'NULL' if replay else quote(json.dumps(prepared)),'NULL' if replay else quote(descriptor)])+');'
+source=(app/'supabase/migrations/20261016000008_land_use_plan_creation_cancellation.sql').read_text()
+start=source.index('CREATE FUNCTION public.cancel_land_use_plan_creation')
+function=source[start:source.index('REVOKE ALL ON FUNCTION public.cancel_land_use_plan_creation',start)]
+temporary=function.replace('CREATE FUNCTION public.cancel_land_use_plan_creation','CREATE FUNCTION pg_temp.stop_control')
+def stop(cid,function='public.cancel_land_use_plan_creation'):return 'SELECT '+function+'('+','.join([quote(workspace),quote(actor),quote(cid),quote(raw(cid))])+');'
+# A holder is observed through an explicit SQL marker, never through a stale PID file.
+def holder(sql):
+ p=subprocess.Popen(base,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1);p.stdin.write("BEGIN; SET LOCAL statement_timeout='15s';\n"+sql+"\nSELECT 'OPENPLAN_HOLDER_READY';\n");p.stdin.flush();selector=selectors.DefaultSelector();selector.register(p.stdout,selectors.EVENT_READ);deadline=time.monotonic()+15
+ # Read the descriptor directly; buffered text reads can hide an already-arrived marker.
+ line=''
+ while time.monotonic()<deadline:
+  if p.poll() is not None:raise RuntimeError('Holder terminated: '+p.stderr.read())
+  ready=selector.select(.2)
+  if ready:
+   line+=os.read(p.stdout.fileno(),4096).decode()
+   if 'OPENPLAN_HOLDER_READY\n' in line:selector.close();return p
+ p.stdin.write('ROLLBACK;\n\\q\n');p.stdin.flush();p.communicate(timeout=10)
+ raise RuntimeError('Holder readiness not observed; owned holder released')
+def release(p,commit=False):
+ if p.poll() is None:p.stdin.write(('COMMIT;' if commit else 'ROLLBACK;')+'\n\\q\n');p.stdin.flush()
+ p.communicate(timeout=10)
+
+assert checked("SELECT max(version) FROM supabase_migrations.schema_migrations;")=='20261016000008'
+checked('INSERT INTO auth.users(id,email) VALUES('+quote(actor)+','+quote(actor+'@synthetic.invalid')+');INSERT INTO public.workspaces(id,name,slug) VALUES('+quote(workspace)+",'SYNTHETIC stop concurrency',"+quote(workspace)+');INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES('+quote(workspace)+','+quote(actor)+",'owner');")
+retain('fixtures-ready')
+# A concurrent command may not cancel through a held creation lock.
+h=None
+try:
+ h=holder("SELECT pg_advisory_xact_lock(hashtextextended('land-use-create:"+workspace+':'+first+"',0));")
+ for name,definition,mutant in [('installed',None,False),('baseline',temporary,False),('harmless',temporary+'\n-- Harmless stop control.\n',False),('missing-lock',temporary.replace("IF NOT pg_try_advisory_xact_lock(hashtextextended('land-use-create:' || p_workspace_id::text || ':' || p_command_id::text, 0)) THEN","IF false THEN"),True)]:
+  r=run("BEGIN; SET LOCAL statement_timeout='5s';"+(definition or '')+'SET LOCAL ROLE service_role;'+stop(first,'pg_temp.stop_control' if definition else 'public.cancel_land_use_plan_creation')+'ROLLBACK;')
+  (out/(name+'.log')).write_text(r.stdout+r.stderr)
+  refused=r.returncode!=0 and 'PT409' in r.stderr and 'request is running' in r.stderr
+  accepted=r.returncode==0 and '"outcome": "cancelled"' in r.stdout
+  matched=accepted if mutant else refused;rows.append({'case':name,'refused':refused,'accepted':accepted,'targetedFaultDetected':mutant and accepted,'matched':matched});retain(name);assert matched,name
+finally:
+ if h:release(h)
+# Exercise both controlled commit orders, observing the holder before contending.
+created_id=str(uuid.uuid4());stopped_id=str(uuid.uuid4());state.update({'createdFirst':created_id,'stoppedFirst':stopped_id});retain('ordered-start')
+for name,cid,first_call,contender in [('creation-first',created_id,call,stop),('stop-first',stopped_id,stop,call)]:
+ h=None
+ try:
+  h=holder('SET LOCAL ROLE service_role;'+first_call(cid));retain(name+'-held')
+  r=run("BEGIN; SET LOCAL statement_timeout='5s';SET LOCAL ROLE service_role;"+contender(cid)+'COMMIT;')
+  (out/(name+'.log')).write_text(r.stdout+r.stderr);assert r.returncode!=0 and 'PT409' in r.stderr,r.stderr
+  release(h,True);h=None
+  receipt=json.loads(checked('SET ROLE service_role;'+stop(cid)))
+  expected='created' if name=='creation-first' else 'cancelled';assert receipt['outcome']==expected,receipt
+  retry=run('SET ROLE service_role;'+call(cid))
+  if expected=='created':assert retry.returncode==0 and json.loads(retry.stdout)['planId']==receipt['result']['planId']
+  else:assert retry.returncode!=0 and 'PT409' in retry.stderr and 'was stopped' in retry.stderr
+  rows.append({'case':name,'contenderRefused':True,'outcome':expected,'retryMatches':True,'matched':True});retain(name+'-verified')
+ finally:
+  if h:release(h)
+# Simultaneous creation and stop end in one durable outcome; retry resolves it.
+retain('simultaneous-start')
+with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+ futures=[pool.submit(run,"BEGIN; SET LOCAL statement_timeout='5s';SET LOCAL ROLE service_role;"+action(simultaneous)+'COMMIT;') for action in [call,stop]]
+ results=[future.result() for future in futures]
+for i,r in enumerate(results):
+ (out/('simultaneous-'+str(i)+'.log')).write_text(r.stdout+r.stderr);assert r.returncode==0 or 'PT409' in r.stderr,r.stderr
+receipts=[json.loads(checked('SET ROLE service_role;'+stop(simultaneous))) for _ in range(2)];assert receipts[0]==receipts[1]
+counts=json.loads(checked("SELECT jsonb_build_object('created',(SELECT count(*) FROM public.land_use_plan_creation_commands WHERE workspace_id="+quote(workspace)+" AND command_id="+quote(simultaneous)+"),'cancelled',(SELECT count(*) FROM public.land_use_plan_creation_cancellations WHERE workspace_id="+quote(workspace)+" AND command_id="+quote(simultaneous)+"),'plans',(SELECT count(*) FROM public.land_use_plans WHERE workspace_id="+quote(workspace)+"),'versions',(SELECT count(*) FROM public.land_use_plan_versions WHERE workspace_id="+quote(workspace)+"));"))
+assert counts['created']+counts['cancelled']==1 and counts['plans']==counts['versions']==1+counts['created'],counts
+rows.append({'case':'simultaneous-exclusive-outcome','counts':counts,'outcome':receipts[0]['outcome'],'retriesMatch':True,'matched':True});retain('simultaneous-verified')
+# Stop receipt replay also retains the current membership lock through commit.
+for name,definition,mutant in [('permission-installed',None,False),('permission-harmless',temporary+'\n-- Harmless permission comment.\n',False),('permission-missing',temporary.replace(' FOR SHARE NOWAIT',''),True)]:
+ h=None
+ try:
+  h=holder((definition or '')+'SET LOCAL ROLE service_role;'+stop(stopped_id,'pg_temp.stop_control' if definition else 'public.cancel_land_use_plan_creation'));retain(name+'-held')
+  r=run("BEGIN; SET LOCAL statement_timeout='5s';SELECT user_id FROM public.workspace_members WHERE workspace_id="+quote(workspace)+' AND user_id='+quote(actor)+' FOR UPDATE NOWAIT;ROLLBACK;')
+  (out/(name+'.log')).write_text(r.stdout+r.stderr);locked=r.returncode!=0 and '55P03' in r.stderr;matched=r.returncode==0 if mutant else locked
+  rows.append({'case':name,'locked':locked,'targetedFaultDetected':mutant and not locked,'matched':matched});retain(name+'-verified');assert matched,name
+ finally:
+  if h:release(h)
+retain('verified');(out/'report.json').write_text(json.dumps({'workspaceId':workspace,'actorId':actor,'results':rows,'fixturesPreserved':True,'nativeMigration':'20261016000008','boundary':'Native SQL concurrency and rollback-only temporary function controls. No HTTP or rendered acceptance.'},indent=2)+'\n');print('creation stop concurrency verified')

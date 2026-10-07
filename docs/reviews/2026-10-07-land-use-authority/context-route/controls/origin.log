@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 2 failed) 44ms
+     × refuses cross-origin writes {"origin":"http://elsewhere.test"} 5ms
+     × refuses cross-origin writes {"sec-fetch-site":"cross-site"} 1ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 50 passed (52)
+   Start at  03:34:05
+   Duration  1.26s (transform 125ms, setup 88ms, import 223ms, tests 62ms, environment 651ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > refuses cross-origin writes {"origin":"http://elsewhere.test"}
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > refuses cross-origin writes {"sec-fetch-site":"cross-site"}
+AssertionError: expected 201 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 201
+
+ ❯ src/test/land-use-plan-context-route.test.ts:95:53
+     93|   });
+     94|   it.each<Record<string, string>>([{ origin: "http://elsewhere.test" }…
+     95|     expect((await post(undefined, headers)).status).toBe(403);
+       |                                                     ^
+     96|     expect(mocks.service).not.toHaveBeenCalled();
+     97|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

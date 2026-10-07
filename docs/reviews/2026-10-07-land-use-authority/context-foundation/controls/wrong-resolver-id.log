@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 1 failed) 23ms
+     × refuses a wrong-id resolver result without saving guessed geography 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > study place capture and attributed context > refuses a wrong-id resolver result without saving guessed geography
+AssertionError: expected { ok: true, context: { …(5) } } to match object { ok: false, status: 503 }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": false,
+-   "status": 503,
++   "ok": true,
+  }
+
+ ❯ src/test/land-use-plan-context.test.ts:86:18
+     84|   else resolve.mockResolvedValue(fault==="unavailable"?null:{...bounda…
+     85|   const result=await preparePlanContext({...command(),place:{mode:"pla…
+     86|   expect(result).toMatchObject({ok:false,status:503});
+       |                  ^
+     87|  });
+     88|  it("refuses unsupported authority before resolving the independent st…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 passed (21)
+   Start at  03:04:21
+   Duration  699ms (transform 107ms, setup 56ms, import 139ms, tests 23ms, environment 327ms)
+

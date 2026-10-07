@@ -1,0 +1,354 @@
+Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/migrations/release-ordering.test.ts > released migration ordering > the CHANGELOG's Unreleased section names every migration landed since the newest tag
+AssertionError: Every migration landed since the newest tag must be named in the CHANGELOG's Unreleased section — that section is what an operator reads to know what to run before deploying. Missing: 20261016000002_land_use_plan_context.sql, 20261016000003_land_use_plan_draft_revision.sql, 20261016000004_land_use_plan_freeze_commands.sql, 20261016000005_land_use_plan_freeze_server_path.sql, 20261016000006_land_use_plan_retained_study_area.sql: expected [ …(5) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "20261016000002_land_use_plan_context.sql",
++   "20261016000003_land_use_plan_draft_revision.sql",
++   "20261016000004_land_use_plan_freeze_commands.sql",
++   "20261016000005_land_use_plan_freeze_server_path.sql",
++   "20261016000006_land_use_plan_retained_study_area.sql",
++ ]
+
+ ❯ src/test/migrations/release-ordering.test.ts:607:7
+    605|         "section — that section is what an operator reads to know what…
+    606|         `Missing: ${missing.join(", ")}`
+    607|     ).toEqual([]);
+       |       ^
+    608|   });
+    609|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/test/jurisdiction-readiness-panel.test.tsx > JurisdictionReadinessPanel > shows the exact selected cell and lets a planner change jobs
+TestingLibraryElementError: Unable to find an element with the text: /sha256:f63f563d/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <section
+      aria-label="Jurisdiction support"
+      class="rounded-xl border border-border/70 p-5"
+    >
+      <div
+        class="flex flex-wrap items-start justify-between gap-3"
+      >
+        <div
+          class="min-w-0"
+        >
+          <div
+            class="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-map-pinned h-4 w-4"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M18 8c0 3.613-3.869 7.429-5.393 8.795a1 1 0 0 1-1.214 0C9.87 15.429 6 11.613 6 8a6 6 0 0 1 12 0"
+              />
+              <circle
+                cx="12"
+                cy="8"
+                r="2"
+              />
+              <path
+                d="M8.714 14h-3.71a1 1 0 0 0-.948.683l-2.004 6A1 1 0 0 0 3 22h18a1 1 0 0 0 .948-1.316l-2-6a1 1 0 0 0-.949-.684h-3.712"
+              />
+            </svg>
+            Local support
+          </div>
+          <h2
+            class="mt-2 text-base font-semibold text-foreground"
+          >
+            Can OpenPlan do this here?
+          </h2>
+          <p
+            class="mt-1 text-sm text-muted-foreground"
+          >
+            Deschutes County, Oregon
+          </p>
+        </div>
+        <span
+          class="inline-flex items-center gap-1.5 border font-semibold uppercase whitespace-nowrap shrink-0 [&>svg]:size-3 [&>svg]:pointer-events-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background min-h-8 px-2.5 py-1 text-label tracking-[0.12em] border-status-urgent/38 bg-status-urgent/12 text-status-urgent"
+          data-slot="badge"
+          data-tone="danger"
+          data-variant="outline"
+        >
+          Unavailable here
+        </span>
+      </div>
+      <label
+        class="mt-4 block text-sm font-medium text-foreground"
+      >
+        Planning job
+        <select
+          class="module-select mt-1 w-full md:max-w-xl"
+        >
+          <option
+            value="project-evidence-handoff"
+          >
+            Project record and evidence handoff
+          </option>
+          <option
+            value="land-use-plan"
+          >
+            Land-use plan
+          </option>
+          <option
+            value="safety-analysis"
+          >
+            Safety analysis
+          </option>
+          <option
+            value="grants-and-reimbursement"
+          >
+            Grants and reimbursement
+          </option>
+          <option
+            value="model-validation-evidence"
+          >
+            Model validation evidence
+          </option>
+        </select>
+      </label>
+      <p
+        class="mt-4 text-sm text-foreground"
+      >
+        The neutral versioning and review workflow exists, but OpenPlan has no configured Oregon statutory plan bundle.
+      </p>
+      <p
+        class="mt-2 text-xs text-muted-foreground"
+      >
+        Author, review, adopt, publish, and retain a statutory land-use plan under the applicable jurisdiction bundle.
+      </p>
+      <div
+        class="mt-4 grid gap-4 lg:grid-cols-2"
+      >
+        <div>
+          <h3
+            class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+          >
+            Limits
+          </h3>
+          <ul
+            class="mt-2 space-y-1.5 text-sm text-muted-foreground"
+          >
+            <li>
+              OpenPlan cannot provide an Oregon requirements checklist or adoption-law claim.
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3
+            class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+          >
+            Exact evidence
+          </h3>
+          <ul
+            class="mt-2 space-y-2 text-xs text-muted-foreground"
+          >
+            <li
+              class="min-w-0"
+            >
+              <span
+                class="block break-all text-foreground"
+              >
+                openplan/src/lib/land-use-plans/registry.ts
+              </span>
+              <code
+                class="block break-all font-mono text-label"
+              >
+                sha256:
+                70049a88d403f1ae9a25b00d16e60ae96482ef743fbf0ae494c329c24af0cfff
+              </code>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div
+        class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-4 text-xs text-muted-foreground"
+      >
+        <div
+          class="min-w-0"
+        >
+          <span
+            class="block"
+          >
+            Registry 
+            2026-09-05.1
+          </span>
+          <code
+            class="mt-1 block break-all font-mono text-label"
+          >
+            sha256:
+            aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          </code>
+        </div>
+        <a
+          class="inline-flex items-center gap-1.5 font-medium text-foreground hover:underline"
+          href="/api/workspaces/jurisdiction-readiness?download=1"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-download h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 15V3"
+            />
+            <path
+              d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+            />
+            <path
+              d="m7 10 5 5 5-5"
+            />
+          </svg>
+          Download exact local support JSON
+        </a>
+      </div>
+    </section>
+  </div>
+</body>
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/jurisdiction-readiness-panel.test.tsx:31:33
+     29|     expect(screen.getByText("Unavailable here")).toBeInTheDocument();
+     30|     expect(screen.getByText(/no configured Oregon statutory plan bundl…
+     31|     const evidenceHash = screen.getByText(/sha256:f63f563d/i);
+       |                                 ^
+     32|     expect(evidenceHash).toBeInTheDocument();
+     33|     expect(evidenceHash.previousElementSibling).toHaveClass("break-all…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/test/a-column-nothing-reads-is-a-question.test.ts > a column the application never reads has to say why > finds no unread column that is not accounted for
+AssertionError: these columns exist and nothing in the application ever names them. Each is either dead schema, something written and never surfaced, or a capability the schema implies and the code never built. Read it, delete it, or add it to UNREAD_COLUMNS with which of the three it is.: expected [ …(10) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "land_use_plan_context_commands.command_sha256",
++   "land_use_plan_context_commands.command_text",
++   "land_use_plan_context_commands.expected_context_hash",
++   "land_use_plan_context_commands.saved_context",
++   "land_use_plan_context_commands.saved_context_hash",
++   "land_use_plan_freeze_commands.command_sha256",
++   "land_use_plan_freeze_commands.command_text",
++   "land_use_plan_freeze_commands.expected_draft_revision",
++   "land_use_plan_freeze_commands.frozen_snapshot_text",
++   "land_use_plan_freeze_commands.review_event_id",
++ ]
+
+ ❯ src/test/a-column-nothing-reads-is-a-question.test.ts:399:7
+    397|         "code never built. Read it, delete it, or add it to UNREAD_COL…
+    398|         "it is."
+    399|     ).toEqual([]);
+       |       ^
+    400|   });
+    401|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/test/migrations/inventory.test.ts > migration schema inventory > reads every relation the migrations declare
+AssertionError: expected [ …(296) ] to have a length of 294 but got 296
+
+- Expected
++ Received
+
+- 294
++ 296
+
+ ❯ src/test/migrations/inventory.test.ts:808:32
+    806| describe("migration schema inventory", () => {
+    807|   it("reads every relation the migrations declare", () => {
+    808|     expect(schema.relations()).toHaveLength(EXPECTED.relations);
+       |                                ^
+    809|     expect(schema.tables()).toHaveLength(EXPECTED.tables);
+    810|     expect(schema.views()).toHaveLength(EXPECTED.views);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/test/planner-copy-says-the-plain-thing.test.ts > planner copy says the plain thing > uses no term from the ledger more often than the recorded baseline
+AssertionError: A term of art moved in the wrong direction. If a count ROSE, a lane is saying the machine's word for something a planner already has a word for — src/test/helpers/jargon-ledger.ts says what to say instead. If a count FELL, good: lower the number in BASELINE in the same commit, so the improvement is banked and cannot silently come back.: expected { posture: 50, packet: 128, …(42) } to deeply equal { artifact: 43, attribute: 4, …(42) }
+
+- Expected
++ Received
+
+@@ -1,10 +1,10 @@
+  {
+    "artifact": 43,
+    "attribute": 4,
+    "basemap": 4,
+-   "basis": 23,
++   "basis": 24,
+    "bootstrap": 0,
+    "cadence": 3,
+    "campaign": 62,
+    "claim tier": 1,
+    "compose": 3,
+@@ -28,18 +28,18 @@
+    "populate": 1,
+    "posture": 50,
+    "preset": 13,
+    "provenance": 11,
+    "readiness": 33,
+-   "record": 249,
++   "record": 251,
+    "registry": 17,
+-   "resolve": 3,
++   "resolve": 4,
+    "scaffold": 3,
+    "schema": 5,
+    "signal": 8,
+    "spine": 9,
+-   "study area": 21,
++   "study area": 30,
+    "submission": 10,
+    "surface": 13,
+    "trace": 19,
+    "upstream": 0,
+    "workspace": 148,
+
+ ❯ src/test/planner-copy-says-the-plain-thing.test.ts:283:7
+    281|         "FELL, good: lower the number in BASELINE in the same commit, …
+    282|         "improvement is banked and cannot silently come back."
+    283|     ).toEqual(BASELINE);
+       |       ^
+    284|   });
+    285| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  5 failed | 1450 passed | 88 skipped (1543)
+      Tests  5 failed | 18537 passed | 1532 skipped (20074)
+   Start at  12:34:03
+   Duration  1125.51s (transform 48.25s, setup 73.47s, import 309.03s, tests 1693.06s, environment 910.36s)
+
+

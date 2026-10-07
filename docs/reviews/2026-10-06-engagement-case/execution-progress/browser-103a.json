@@ -1,0 +1,343 @@
+{
+  "commit": "103a67fd23128aa1ab5515fee010f5d792262a73",
+  "port": 3481,
+  "tab": "tab_9",
+  "pid": 1638323,
+  "navigation": [
+    "Landing page",
+    "Overview link by DOM activation",
+    "Engagement link by DOM activation",
+    "Synthetic consultation link",
+    "Analysis tab link",
+    "Saved source cc77a4d3",
+    "Request history, including older page",
+    "Progress inspection for segment, context and thematic requests"
+  ],
+  "boundary": "T3 screenshot and snapshot fail. Locator click returned success but did not navigate; DOM activation used. No visual or pointer/keyboard acceptance.",
+  "segment": {
+    "responses": [
+      {
+        "body": {
+          "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+          "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+          "cancelled": false,
+          "checkedAt": "2026-10-07T06:53:26.735Z",
+          "counts": [
+            {
+              "count": 4,
+              "disposition": "validated_output"
+            }
+          ],
+          "interpretation": "not_assessed",
+          "manifestSha256": "e64166f3561b16a3dd80ab8595fa65eee5ff8e5475cdc4991f7c1aafca0aba2a",
+          "requestId": "3ebc394b-35de-48c2-b65d-65dce0d7c0cb",
+          "requestIntentSha256": "26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925",
+          "schemaVersion": 1,
+          "selectionSequence": 4,
+          "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+          "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+          "stage": "segment",
+          "status": "ready_for_record_consolidation",
+          "taskCount": 4,
+          "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+        },
+        "cache": "private, no-store",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/progress?requestId=3ebc394b-35de-48c2-b65d-65dce0d7c0cb&stage=segment"
+      }
+    ],
+    "text": "Inspect saved analysis resultsThis reads saved output and its original records. It does not start a worker, retry a provider call or approve findings.Refresh resultsContribution outputs are ready to combineCombine each contribution with its complete context before preparing themes. Meaning remains unassessed.Checked 10/6/2026, 11:53:26 PM. This is a saved snapshot, not a live worker connection.4 tasks accounted for in this saved selection.Complete output checks4Output checks establish retained bytes and required structure. They do not establish meaning, representative support, staff approval or publication.Original selection referenceRequest3ebc394b-35de-48c2-b65d-65dce0d7c0cbSelection sequence4History SHA-256e64166f3561b16a3dd80ab8595fa65eee5ff8e5475cdc4991f7c1aafca0aba2a",
+    "width": 1280
+  },
+  "context": {
+    "response": {
+      "body": {
+        "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+        "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+        "cancelled": false,
+        "checkedAt": "2026-10-07T06:53:46.637Z",
+        "counts": [
+          {
+            "count": 13,
+            "disposition": "verified"
+          }
+        ],
+        "interpretation": "machine_unreviewed",
+        "manifestSha256": "d2223b0ca0461b9ccf04f565c5b2544be1302a0094063dab2e24999ad63e9796",
+        "requestId": "359abb88-65b5-4682-8ad2-ff786adfad25",
+        "requestIntentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+        "schemaVersion": 1,
+        "selectionSequence": 13,
+        "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+        "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+        "stage": "context",
+        "status": "frames_complete",
+        "taskCount": 13,
+        "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+      },
+      "cache": "private, no-store",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/progress?requestId=359abb88-65b5-4682-8ad2-ff786adfad25&stage=context"
+    },
+    "text": "Inspect saved analysis resultsThis reads saved output and its original records. It does not start a worker, retry a provider call or approve findings.Refresh resultsCombined context is ready for theme preparationSelect the complete context for each contribution before preparing themes. Machine wording still needs staff review.Checked 10/6/2026, 11:53:46 PM. This is a saved snapshot, not a live worker connection.13 tasks accounted for in this saved selection.Complete output checks13Output checks establish retained bytes and required structure. They do not establish meaning, representative support, staff approval or publication.Original selection referenceRequest359abb88-65b5-4682-8ad2-ff786adfad25Selection sequence13History SHA-256d2223b0ca0461b9ccf04f565c5b2544be1302a0094063dab2e24999ad63e9796"
+  },
+  "thematic": {
+    "response": {
+      "body": {
+        "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+        "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+        "cancelled": false,
+        "checkedAt": "2026-10-07T06:53:54.383Z",
+        "counts": [
+          {
+            "count": 5,
+            "disposition": "verified"
+          }
+        ],
+        "interpretation": "machine_unreviewed",
+        "manifestSha256": "9bfea03a34175c062ff77de0cba5de2885f5ed6322665445cff9a55e7299f0fb",
+        "requestId": "dd741df4-7b58-4313-877e-55490ca40346",
+        "requestIntentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+        "schemaVersion": 1,
+        "selectionSequence": 5,
+        "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+        "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+        "stage": "thematic",
+        "status": "proposal_complete",
+        "taskCount": 5,
+        "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+      },
+      "cache": "private, no-store",
+      "status": 200,
+      "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/progress?requestId=dd741df4-7b58-4313-877e-55490ca40346&stage=thematic"
+    },
+    "text": "Inspect saved analysis resultsThis reads saved output and its original records. It does not start a worker, retry a provider call or approve findings.Refresh resultsA machine draft is ready for staff reviewOpen a staff synthesis review below to inspect and explicitly import the proposal. It is not an approved or published finding.Checked 10/6/2026, 11:53:54 PM. This is a saved snapshot, not a live worker connection.5 tasks accounted for in this saved selection.Complete output checks5Output checks establish retained bytes and required structure. They do not establish meaning, representative support, staff approval or publication.Original selection referenceRequestdd741df4-7b58-4313-877e-55490ca40346Selection sequence5History SHA-2569bfea03a34175c062ff77de0cba5de2885f5ed6322665445cff9a55e7299f0fb"
+  },
+  "desktopGeometry": {
+    "buttons": [
+      {
+        "rect": {
+          "bottom": 10876.5625,
+          "height": 40,
+          "left": 310,
+          "right": 551.390625,
+          "top": 10836.5625,
+          "width": 241.390625,
+          "x": 310,
+          "y": 10836.5625
+        },
+        "text": "Inspect saved analysis results"
+      },
+      {
+        "rect": {
+          "bottom": 10980.5625,
+          "height": 40,
+          "left": 310,
+          "right": 450.46875,
+          "top": 10940.5625,
+          "width": 140.46875,
+          "x": 310,
+          "y": 10940.5625
+        },
+        "text": "Refresh results"
+      }
+    ],
+    "documentWidth": 1280,
+    "section": {
+      "bottom": 11257.828125,
+      "height": 434.265625,
+      "left": 310,
+      "right": 1204,
+      "top": 10823.5625,
+      "width": 894,
+      "x": 310,
+      "y": 10823.5625
+    },
+    "width": 1280
+  },
+  "mobileUnsettledGeometry": {
+    "animations": [
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      },
+      {
+        "state": "running",
+        "time": 0
+      }
+    ],
+    "buttons": [
+      {
+        "rect": {
+          "bottom": 72285.171875,
+          "height": 98,
+          "left": 282,
+          "right": 342,
+          "top": 72187.171875,
+          "width": 60,
+          "x": 282,
+          "y": 72187.171875
+        },
+        "text": "Inspect saved analysis results"
+      },
+      {
+        "rect": {
+          "bottom": 72669.171875,
+          "height": 40,
+          "left": 282,
+          "right": 422.46875,
+          "top": 72629.171875,
+          "width": 140.46875,
+          "x": 282,
+          "y": 72629.171875
+        },
+        "text": "Refresh results"
+      }
+    ],
+    "documentWidth": 390,
+    "main": {
+      "bottom": 788,
+      "height": 732,
+      "left": 240,
+      "right": 390,
+      "top": 56,
+      "width": 150,
+      "x": 240,
+      "y": 56
+    },
+    "section": {
+      "bottom": 74142.03125,
+      "height": 1967.859375,
+      "left": 282,
+      "right": 342,
+      "top": 72174.171875,
+      "width": 60,
+      "x": 282,
+      "y": 72174.171875
+    },
+    "width": 390
+  },
+  "mobileReload": {
+    "buttons": [
+      {
+        "rect": {
+          "bottom": 8986.53125,
+          "height": 40,
+          "left": 42,
+          "right": 283.390625,
+          "top": 8946.53125,
+          "width": 241.390625,
+          "x": 42,
+          "y": 8946.53125
+        },
+        "text": "Inspect saved analysis results"
+      },
+      {
+        "rect": {
+          "bottom": 9110.53125,
+          "height": 40,
+          "left": 42,
+          "right": 182.46875,
+          "top": 9070.53125,
+          "width": 140.46875,
+          "x": 42,
+          "y": 9070.53125
+        },
+        "text": "Refresh results"
+      }
+    ],
+    "documentWidth": 390,
+    "main": {
+      "bottom": 788,
+      "height": 732,
+      "left": 0,
+      "right": 390,
+      "top": 56,
+      "width": 390,
+      "x": 0,
+      "y": 56
+    },
+    "section": {
+      "bottom": 9533.0625,
+      "height": 599.53125,
+      "left": 42,
+      "right": 342,
+      "top": 8933.53125,
+      "width": 300,
+      "x": 42,
+      "y": 8933.53125
+    },
+    "text": "Inspect saved analysis resultsThis reads saved output and its original records. It does not start a worker, retry a provider call or approve findings.Refresh resultsContribution outputs are ready to combineCombine each contribution with its complete context before preparing themes. Meaning remains unassessed.Checked 10/6/2026, 11:54:37 PM. This is a saved snapshot, not a live worker connection.4 tasks accounted for in this saved selection.Complete output checks4Output checks establish retained bytes and required structure. They do not establish meaning, representative support, staff approval or publication.Original selection referenceRequest3ebc394b-35de-48c2-b65d-65dce0d7c0cbSelection sequence4History SHA-256e64166f3561b16a3dd80ab8595fa65eee5ff8e5475cdc4991f7c1aafca0aba2a",
+    "width": 390
+  },
+  "finishedAt": "2026-10-07T06:55:07.943Z",
+  "console": "T3 snapshot diagnostics unavailable; no console acceptance."
+}

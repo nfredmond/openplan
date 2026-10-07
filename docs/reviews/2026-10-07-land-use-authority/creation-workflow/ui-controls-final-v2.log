@@ -1,0 +1,12 @@
+baseline True
+harmless True
+transport-workspace True
+transport-bytes True
+reply-status True
+reply-identity True
+confirmation-identity True
+Traceback (most recent call last):
+  File "/home/nathaniel/.local/state/openplan/t3-restart-recovery-20261006/land-use-authority/creation-ui-controls-final-v2.py", line 82, in <module>
+    assert source.count(old)==1,(name,source.count(old));source=source.replace(old,new)
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('confirmation-collision', 2)

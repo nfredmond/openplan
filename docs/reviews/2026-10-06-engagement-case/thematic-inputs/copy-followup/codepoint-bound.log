@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/engagement-thematic-inputs-20261007/openplan
+
+ ❯ src/test/engagement-synthesis-context-continuation.test.ts (18 tests | 1 failed | 17 skipped) 118ms
+     × matches Unicode code-point limits without cleaning original unusual output 117ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-context-continuation.test.ts > context continuation protocol > matches Unicode code-point limits without cleaning original unusual output
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ src/test/engagement-synthesis-context-continuation.test.ts:129:55
+    127|     const saved = p.accept(r.observe()); expect(JSON.parse(saved.canon…
+    128|     const oversized = processor(f), tooLong = response(oversized); too…
+    129|     expect(() => oversized.accept(tooLong.observe())).toThrow("4000 co…
+       |                                                       ^
+    130|   });
+    131|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 skipped (18)
+   Start at  02:44:45
+   Duration  870ms (transform 158ms, setup 53ms, import 216ms, tests 118ms, environment 329ms)
+

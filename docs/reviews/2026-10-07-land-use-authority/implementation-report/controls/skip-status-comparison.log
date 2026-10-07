@@ -1,0 +1,3021 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-implementation-report-custody.test.tsx (41 tests | 7 failed) 1321ms
+     × withholds wrong snapshot plan without substituting live values 112ms
+     × withholds wrong snapshot version without substituting live values 103ms
+     × withholds wrong adopted hash without substituting live values 105ms
+     × withholds changed artifact action without substituting live values 102ms
+     × withholds changed artifact owner without substituting live values 103ms
+     × withholds changed reporting start without substituting live values 112ms
+     × withholds changed reporting end without substituting live values 106ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong snapshot plan without substituting live values
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong snapshot version without substituting live values
+TestingLibraryElementError: Unable to find an accessible element with the role "alert"
+
+Here are the accessible roles:
+
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"border-b pb-7"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-lg"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words font-medium"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"whitespace-pre-wrap break-words"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "SYNTHETIC implementation report":
+  [36m<h1[39m
+    [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Context retained with this version":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Plan area":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Responsible bodies":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Applicability assessment":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Reporting period":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Frozen action-status snapshot":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "SYNTHETIC saved action":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Print report":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Download source JSON":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mdownload[39m=[32m"openplan-report-23000000-0000-4000-8000-000000000003-provenance.json"[39m
+    [33mhref[39m=[32m"/api/reports/23000000-0000-4000-8000-000000000003/provenance"[39m
+  [36m/>[39m
+
+  Name "Open plan workbench":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mhref[39m=[32m"/land-use-plans/23000000-0000-4000-8000-000000000001"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Context retained with this version":
+  [36m<section[39m
+    [33maria-label[39m=[32m"Context retained with this version"[39m
+    [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  article:
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"min-w-0 border-l-2 border-border pl-3 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  term:
+
+  Name "":
+  [36m<dt[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<dt[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  definition:
+
+  Name "":
+  [36m<dd />[39m
+
+  Name "":
+  [36m<dd />[39m
+
+  --------------------------------------------------
+  contentinfo:
+
+  Name "":
+  [36m<footer[39m
+    [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto min-w-0 w-full max-w-4xl [overflow-wrap:anywhere] p-5 md:p-10 print:max-w-none print:p-0"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-7"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+        [36m>[39m
+          [0mImplementation report[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+        [36m>[39m
+          [0mSYNTHETIC implementation report[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg"[39m
+        [36m>[39m
+          [0mSYNTHETIC adopted title[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+        [36m>[39m
+          [0mSYNTHETIC adopted authority[0m
+          [0m · [0m
+          [0mSYNTHETIC adopted geography[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4"[39m
+        [36m>[39m
+          [0mSYNTHETIC retained summary[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mt-5 flex flex-wrap gap-3 print:hidden"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"default"[39m
+          [36m>[39m
+            [0mPrint report[0m
+          [36m</button>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mdownload[39m=[32m"openplan-report-23000000-0000-4000-8000-000000000003-provenance.json"[39m
+            [33mhref[39m=[32m"/api/reports/23000000-0000-4000-8000-000000000003/provenance"[39m
+          [36m>[39m
+            [0mDownload source JSON[0m
+          [36m</a>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mhref[39m=[32m"/land-use-plans/23000000-0000-4000-8000-000000000001"[39m
+          [36m>[39m
+            [0mOpen plan workbench[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"Context retained with this version"[39m
+          [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mContext retained with this version[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mThese are the saved area and staff assessment reviewed with this version. They do not establish legal sufficiency.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mPlan area[0m
+            [36m</h3>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"break-words text-sm"[39m
+            [36m>[39m
+              [0mSYNTHETIC study area[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mArea source: [0m
+              [0muploaded_file[0m
+              [0m. Study geometry and legal authority are different facts.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-3"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mResponsible bodies[0m
+            [36m</h3>[39m
+            [36m<article[39m
+              [33mclass[39m=[32m"min-w-0 border-l-2 border-border pl-3 text-sm"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-words font-medium"[39m
+              [36m>[39m
+                [0mSYNTHETIC responsible body[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-words"[39m
+              [36m>[39m
+                [0mResponsibility unresolved[0m
+                [0m · [0m
+                [0munassessed[0m
+              [36m</p>[39m
+              [36m<p>[39m
+                [0mJurisdiction was not assessed.[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mNo authority source was retained.[0m
+              [36m</p>[39m
+            [36m</article>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-2 text-sm"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mApplicability assessment[0m
+            [36m</h3>[39m
+            [36m<p>[39m
+              [0mApplicability remains unresolved.[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"whitespace-pre-wrap break-words"[39m
+            [36m>[39m
+              [0mSYNTHETIC fixture with no legal applicability claim[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mReporting period[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2"[39m
+        [36m>[39m
+          [0m2026-01-01[0m
+          [0m through [0m
+          [0m2026-09-30[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+        [36m>[39m
+          [0mAdopted plan hash: [0m
+          [0m9e0fff784858b8d8ee2b58d6bd2d1b96fcdd221c31de97d2d858542eef5bdf05[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-9 border-t pt-7"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mFrozen action-status snapshot[0m
+        [36m</h2>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-semibold"[39m
+          [36m>[39m
+            [0mSYNTHETIC saved action[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-1 text-sm"[39m
+          [36m>[39m
+            [0mStatus: [0m
+            [0mcompleted[0m
+            [0m · due 2026-12-01[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2"[39m
+          [36m>[39m
+            [0mRetained implementation detail[0m
+          [36m</p>[39m
+          [36m<dl[39m
+            [33mclass[39m=[32m"mt-3 grid gap-3 text-sm sm:grid-cols-2"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<dt[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mResponsible party at reporting[0m
+              [36m</dt>[39m
+              [36m<dd>[39m
+                [0mSYNTHETIC responsible team[0m
+              [36m</dd>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<dt[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mLast action update retained[0m
+              [36m</dt>[39m
+              [36m<dd>[39m
+                [0m2026-09-29T12:34:56+00:00[0m
+              [36m</dd>[39m
+            [36m</div>[39m
+          [36m</dl>[39m
+        [36m</article>[39m
+      [36m</section>[39m
+      [36m<footer[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<p>[39m
+          [0mGenerated [0m
+          [0m2026-10-07[0m
+          [0m. Consultation details, confidential notes, and sensitive-location flags are not part of this report.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all"[39m
+        [36m>[39m
+          [0mReport ID [0m
+          [0m23000000-0000-4000-8000-000000000003[0m
+        [36m</p>[39m
+      [36m</footer>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-implementation-report-custody.test.tsx:128:19
+    126|   ] as const)("withholds %s without substituting live values", async (…
+    127|     change(); await show();
+    128|     expect(screen.getByRole("alert")).toHaveTextContent("does not matc…
+       |                   ^
+    129|     expect(screen.getByRole("alert")).toHaveTextContent("This does not…
+    130|     for (const value of ["SYNTHETIC saved action", "SYNTHETIC adopted …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds wrong adopted hash without substituting live values
+TestingLibraryElementError: Unable to find an accessible element with the role "alert"
+
+Here are the accessible roles:
+
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"border-b pb-7"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-lg"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words font-medium"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"whitespace-pre-wrap break-words"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "SYNTHETIC implementation report":
+  [36m<h1[39m
+    [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Context retained with this version":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Plan area":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Responsible bodies":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Applicability assessment":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Reporting period":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Frozen action-status snapshot":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "SYNTHETIC saved action":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Print report":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Download source JSON":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mdownload[39m=[32m"openplan-report-23000000-0000-4000-8000-000000000003-provenance.json"[39m
+    [33mhref[39m=[32m"/api/reports/23000000-0000-4000-8000-000000000003/provenance"[39m
+  [36m/>[39m
+
+  Name "Open plan workbench":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mhref[39m=[32m"/land-use-plans/23000000-0000-4000-8000-000000000001"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Context retained with this version":
+  [36m<section[39m
+    [33maria-label[39m=[32m"Context retained with this version"[39m
+    [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  article:
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"min-w-0 border-l-2 border-border pl-3 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  term:
+
+  Name "":
+  [36m<dt[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<dt[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  definition:
+
+  Name "":
+  [36m<dd />[39m
+
+  Name "":
+  [36m<dd />[39m
+
+  --------------------------------------------------
+  contentinfo:
+
+  Name "":
+  [36m<footer[39m
+    [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto min-w-0 w-full max-w-4xl [overflow-wrap:anywhere] p-5 md:p-10 print:max-w-none print:p-0"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-7"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+        [36m>[39m
+          [0mImplementation report[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+        [36m>[39m
+          [0mSYNTHETIC implementation report[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg"[39m
+        [36m>[39m
+          [0mSYNTHETIC adopted title[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+        [36m>[39m
+          [0mSYNTHETIC adopted authority[0m
+          [0m · [0m
+          [0mSYNTHETIC adopted geography[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4"[39m
+        [36m>[39m
+          [0mSYNTHETIC retained summary[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mt-5 flex flex-wrap gap-3 print:hidden"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"default"[39m
+          [36m>[39m
+            [0mPrint report[0m
+          [36m</button>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mdownload[39m=[32m"openplan-report-23000000-0000-4000-8000-000000000003-provenance.json"[39m
+            [33mhref[39m=[32m"/api/reports/23000000-0000-4000-8000-000000000003/provenance"[39m
+          [36m>[39m
+            [0mDownload source JSON[0m
+          [36m</a>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mhref[39m=[32m"/land-use-plans/23000000-0000-4000-8000-000000000001"[39m
+          [36m>[39m
+            [0mOpen plan workbench[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"Context retained with this version"[39m
+          [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mContext retained with this version[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mThese are the saved area and staff assessment reviewed with this version. They do not establish legal sufficiency.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mPlan area[0m
+            [36m</h3>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"break-words text-sm"[39m
+            [36m>[39m
+              [0mSYNTHETIC study area[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mArea source: [0m
+              [0muploaded_file[0m
+              [0m. Study geometry and legal authority are different facts.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-3"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mResponsible bodies[0m
+            [36m</h3>[39m
+            [36m<article[39m
+              [33mclass[39m=[32m"min-w-0 border-l-2 border-border pl-3 text-sm"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-words font-medium"[39m
+              [36m>[39m
+                [0mSYNTHETIC responsible body[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-words"[39m
+              [36m>[39m
+                [0mResponsibility unresolved[0m
+                [0m · [0m
+                [0munassessed[0m
+              [36m</p>[39m
+              [36m<p>[39m
+                [0mJurisdiction was not assessed.[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mNo authority source was retained.[0m
+              [36m</p>[39m
+            [36m</article>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-2 text-sm"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mApplicability assessment[0m
+            [36m</h3>[39m
+            [36m<p>[39m
+              [0mApplicability remains unresolved.[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"whitespace-pre-wrap break-words"[39m
+            [36m>[39m
+              [0mSYNTHETIC fixture with no legal applicability claim[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mReporting period[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2"[39m
+        [36m>[39m
+          [0m2026-01-01[0m
+          [0m through [0m
+          [0m2026-09-30[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+        [36m>[39m
+          [0mAdopted plan hash: [0m
+          [0mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-9 border-t pt-7"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mFrozen action-status snapshot[0m
+        [36m</h2>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-semibold"[39m
+          [36m>[39m
+            [0mSYNTHETIC saved action[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-1 text-sm"[39m
+          [36m>[39m
+            [0mStatus: [0m
+            [0mcompleted[0m
+            [0m · due 2026-12-01[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2"[39m
+          [36m>[39m
+            [0mRetained implementation detail[0m
+          [36m</p>[39m
+          [36m<dl[39m
+            [33mclass[39m=[32m"mt-3 grid gap-3 text-sm sm:grid-cols-2"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<dt[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mResponsible party at reporting[0m
+              [36m</dt>[39m
+              [36m<dd>[39m
+                [0mSYNTHETIC responsible team[0m
+              [36m</dd>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<dt[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mLast action update retained[0m
+              [36m</dt>[39m
+              [36m<dd>[39m
+                [0m2026-09-29T12:34:56+00:00[0m
+              [36m</dd>[39m
+            [36m</div>[39m
+          [36m</dl>[39m
+        [36m</article>[39m
+      [36m</section>[39m
+      [36m<footer[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<p>[39m
+          [0mGenerated [0m
+          [0m2026-10-07[0m
+          [0m. Consultation details, confidential notes, and sensitive-location flags are not part of this report.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all"[39m
+        [36m>[39m
+          [0mReport ID [0m
+          [0m23000000-0000-4000-8000-000000000003[0m
+        [36m</p>[39m
+      [36m</footer>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-implementation-report-custody.test.tsx:128:19
+    126|   ] as const)("withholds %s without substituting live values", async (…
+    127|     change(); await show();
+    128|     expect(screen.getByRole("alert")).toHaveTextContent("does not matc…
+       |                   ^
+    129|     expect(screen.getByRole("alert")).toHaveTextContent("This does not…
+    130|     for (const value of ["SYNTHETIC saved action", "SYNTHETIC adopted …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds changed artifact action without substituting live values
+TestingLibraryElementError: Unable to find an accessible element with the role "alert"
+
+Here are the accessible roles:
+
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"border-b pb-7"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-lg"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words font-medium"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"whitespace-pre-wrap break-words"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "SYNTHETIC implementation report":
+  [36m<h1[39m
+    [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Context retained with this version":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Plan area":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Responsible bodies":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Applicability assessment":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Reporting period":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Frozen action-status snapshot":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "SYNTHETIC saved action":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Print report":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Download source JSON":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mdownload[39m=[32m"openplan-report-23000000-0000-4000-8000-000000000003-provenance.json"[39m
+    [33mhref[39m=[32m"/api/reports/23000000-0000-4000-8000-000000000003/provenance"[39m
+  [36m/>[39m
+
+  Name "Open plan workbench":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mhref[39m=[32m"/land-use-plans/23000000-0000-4000-8000-000000000001"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Context retained with this version":
+  [36m<section[39m
+    [33maria-label[39m=[32m"Context retained with this version"[39m
+    [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  article:
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"min-w-0 border-l-2 border-border pl-3 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  term:
+
+  Name "":
+  [36m<dt[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<dt[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  definition:
+
+  Name "":
+  [36m<dd />[39m
+
+  Name "":
+  [36m<dd />[39m
+
+  --------------------------------------------------
+  contentinfo:
+
+  Name "":
+  [36m<footer[39m
+    [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto min-w-0 w-full max-w-4xl [overflow-wrap:anywhere] p-5 md:p-10 print:max-w-none print:p-0"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-7"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+        [36m>[39m
+          [0mImplementation report[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+        [36m>[39m
+          [0mSYNTHETIC implementation report[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg"[39m
+        [36m>[39m
+          [0mSYNTHETIC adopted title[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+        [36m>[39m
+          [0mSYNTHETIC adopted authority[0m
+          [0m · [0m
+          [0mSYNTHETIC adopted geography[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4"[39m
+        [36m>[39m
+          [0mSYNTHETIC retained summary[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mt-5 flex flex-wrap gap-3 print:hidden"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"default"[39m
+          [36m>[39m
+            [0mPrint report[0m
+          [36m</button>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mdownload[39m=[32m"openplan-report-23000000-0000-4000-8000-000000000003-provenance.json"[39m
+            [33mhref[39m=[32m"/api/reports/23000000-0000-4000-8000-000000000003/provenance"[39m
+          [36m>[39m
+            [0mDownload source JSON[0m
+          [36m</a>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mhref[39m=[32m"/land-use-plans/23000000-0000-4000-8000-000000000001"[39m
+          [36m>[39m
+            [0mOpen plan workbench[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"Context retained with this version"[39m
+          [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mContext retained with this version[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mThese are the saved area and staff assessment reviewed with this version. They do not establish legal sufficiency.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mPlan area[0m
+            [36m</h3>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"break-words text-sm"[39m
+            [36m>[39m
+              [0mSYNTHETIC study area[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mArea source: [0m
+              [0muploaded_file[0m
+              [0m. Study geometry and legal authority are different facts.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-3"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mResponsible bodies[0m
+            [36m</h3>[39m
+            [36m<article[39m
+              [33mclass[39m=[32m"min-w-0 border-l-2 border-border pl-3 text-sm"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-words font-medium"[39m
+              [36m>[39m
+                [0mSYNTHETIC responsible body[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-words"[39m
+              [36m>[39m
+                [0mResponsibility unresolved[0m
+                [0m · [0m
+                [0munassessed[0m
+              [36m</p>[39m
+              [36m<p>[39m
+                [0mJurisdiction was not assessed.[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mNo authority source was retained.[0m
+              [36m</p>[39m
+            [36m</article>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-2 text-sm"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mApplicability assessment[0m
+            [36m</h3>[39m
+            [36m<p>[39m
+              [0mApplicability remains unresolved.[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"whitespace-pre-wrap break-words"[39m
+            [36m>[39m
+              [0mSYNTHETIC fixture with no legal applicability claim[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mReporting period[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2"[39m
+        [36m>[39m
+          [0m2026-01-01[0m
+          [0m through [0m
+          [0m2026-09-30[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+        [36m>[39m
+          [0mAdopted plan hash: [0m
+          [0m9e0fff784858b8d8ee2b58d6bd2d1b96fcdd221c31de97d2d858542eef5bdf05[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-9 border-t pt-7"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mFrozen action-status snapshot[0m
+        [36m</h2>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-semibold"[39m
+          [36m>[39m
+            [0mSYNTHETIC saved action[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-1 text-sm"[39m
+          [36m>[39m
+            [0mStatus: [0m
+            [0mdeferred[0m
+            [0m · due 2026-12-01[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2"[39m
+          [36m>[39m
+            [0mRetained implementation detail[0m
+          [36m</p>[39m
+          [36m<dl[39m
+            [33mclass[39m=[32m"mt-3 grid gap-3 text-sm sm:grid-cols-2"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<dt[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mResponsible party at reporting[0m
+              [36m</dt>[39m
+              [36m<dd>[39m
+                [0mSYNTHETIC responsible team[0m
+              [36m</dd>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<dt[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mLast action update retained[0m
+              [36m</dt>[39m
+              [36m<dd>[39m
+                [0m2026-09-29T12:34:56+00:00[0m
+              [36m</dd>[39m
+            [36m</div>[39m
+          [36m</dl>[39m
+        [36m</article>[39m
+      [36m</section>[39m
+      [36m<footer[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<p>[39m
+          [0mGenerated [0m
+          [0m2026-10-07[0m
+          [0m. Consultation details, confidential notes, and sensitive-location flags are not part of this report.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all"[39m
+        [36m>[39m
+          [0mReport ID [0m
+          [0m23000000-0000-4000-8000-000000000003[0m
+        [36m</p>[39m
+      [36m</footer>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-implementation-report-custody.test.tsx:128:19
+    126|   ] as const)("withholds %s without substituting live values", async (…
+    127|     change(); await show();
+    128|     expect(screen.getByRole("alert")).toHaveTextContent("does not matc…
+       |                   ^
+    129|     expect(screen.getByRole("alert")).toHaveTextContent("This does not…
+    130|     for (const value of ["SYNTHETIC saved action", "SYNTHETIC adopted …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds changed artifact owner without substituting live values
+TestingLibraryElementError: Unable to find an accessible element with the role "alert"
+
+Here are the accessible roles:
+
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"border-b pb-7"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-lg"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words font-medium"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"whitespace-pre-wrap break-words"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "SYNTHETIC implementation report":
+  [36m<h1[39m
+    [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Context retained with this version":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Plan area":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Responsible bodies":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Applicability assessment":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Reporting period":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Frozen action-status snapshot":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "SYNTHETIC saved action":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Print report":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Download source JSON":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mdownload[39m=[32m"openplan-report-23000000-0000-4000-8000-000000000003-provenance.json"[39m
+    [33mhref[39m=[32m"/api/reports/23000000-0000-4000-8000-000000000003/provenance"[39m
+  [36m/>[39m
+
+  Name "Open plan workbench":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mhref[39m=[32m"/land-use-plans/23000000-0000-4000-8000-000000000001"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Context retained with this version":
+  [36m<section[39m
+    [33maria-label[39m=[32m"Context retained with this version"[39m
+    [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  article:
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"min-w-0 border-l-2 border-border pl-3 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  term:
+
+  Name "":
+  [36m<dt[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<dt[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  definition:
+
+  Name "":
+  [36m<dd />[39m
+
+  Name "":
+  [36m<dd />[39m
+
+  --------------------------------------------------
+  contentinfo:
+
+  Name "":
+  [36m<footer[39m
+    [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto min-w-0 w-full max-w-4xl [overflow-wrap:anywhere] p-5 md:p-10 print:max-w-none print:p-0"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-7"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+        [36m>[39m
+          [0mImplementation report[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+        [36m>[39m
+          [0mSYNTHETIC implementation report[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg"[39m
+        [36m>[39m
+          [0mSYNTHETIC adopted title[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+        [36m>[39m
+          [0mSYNTHETIC adopted authority[0m
+          [0m · [0m
+          [0mSYNTHETIC adopted geography[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4"[39m
+        [36m>[39m
+          [0mSYNTHETIC retained summary[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mt-5 flex flex-wrap gap-3 print:hidden"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"default"[39m
+          [36m>[39m
+            [0mPrint report[0m
+          [36m</button>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mdownload[39m=[32m"openplan-report-23000000-0000-4000-8000-000000000003-provenance.json"[39m
+            [33mhref[39m=[32m"/api/reports/23000000-0000-4000-8000-000000000003/provenance"[39m
+          [36m>[39m
+            [0mDownload source JSON[0m
+          [36m</a>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mhref[39m=[32m"/land-use-plans/23000000-0000-4000-8000-000000000001"[39m
+          [36m>[39m
+            [0mOpen plan workbench[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"Context retained with this version"[39m
+          [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mContext retained with this version[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mThese are the saved area and staff assessment reviewed with this version. They do not establish legal sufficiency.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mPlan area[0m
+            [36m</h3>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"break-words text-sm"[39m
+            [36m>[39m
+              [0mSYNTHETIC study area[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mArea source: [0m
+              [0muploaded_file[0m
+              [0m. Study geometry and legal authority are different facts.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-3"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mResponsible bodies[0m
+            [36m</h3>[39m
+            [36m<article[39m
+              [33mclass[39m=[32m"min-w-0 border-l-2 border-border pl-3 text-sm"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-words font-medium"[39m
+              [36m>[39m
+                [0mSYNTHETIC responsible body[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-words"[39m
+              [36m>[39m
+                [0mResponsibility unresolved[0m
+                [0m · [0m
+                [0munassessed[0m
+              [36m</p>[39m
+              [36m<p>[39m
+                [0mJurisdiction was not assessed.[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mNo authority source was retained.[0m
+              [36m</p>[39m
+            [36m</article>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-2 text-sm"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mApplicability assessment[0m
+            [36m</h3>[39m
+            [36m<p>[39m
+              [0mApplicability remains unresolved.[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"whitespace-pre-wrap break-words"[39m
+            [36m>[39m
+              [0mSYNTHETIC fixture with no legal applicability claim[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mReporting period[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2"[39m
+        [36m>[39m
+          [0m2026-01-01[0m
+          [0m through [0m
+          [0m2026-09-30[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+        [36m>[39m
+          [0mAdopted plan hash: [0m
+          [0m9e0fff784858b8d8ee2b58d6bd2d1b96fcdd221c31de97d2d858542eef5bdf05[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-9 border-t pt-7"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mFrozen action-status snapshot[0m
+        [36m</h2>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-semibold"[39m
+          [36m>[39m
+            [0mSYNTHETIC saved action[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-1 text-sm"[39m
+          [36m>[39m
+            [0mStatus: [0m
+            [0mcompleted[0m
+            [0m · due 2026-12-01[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2"[39m
+          [36m>[39m
+            [0mRetained implementation detail[0m
+          [36m</p>[39m
+          [36m<dl[39m
+            [33mclass[39m=[32m"mt-3 grid gap-3 text-sm sm:grid-cols-2"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<dt[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mResponsible party at reporting[0m
+              [36m</dt>[39m
+              [36m<dd>[39m
+                [0mALTERED[0m
+              [36m</dd>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<dt[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mLast action update retained[0m
+              [36m</dt>[39m
+              [36m<dd>[39m
+                [0m2026-09-29T12:34:56+00:00[0m
+              [36m</dd>[39m
+            [36m</div>[39m
+          [36m</dl>[39m
+        [36m</article>[39m
+      [36m</section>[39m
+      [36m<footer[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<p>[39m
+          [0mGenerated [0m
+          [0m2026-10-07[0m
+          [0m. Consultation details, confidential notes, and sensitive-location flags are not part of this report.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all"[39m
+        [36m>[39m
+          [0mReport ID [0m
+          [0m23000000-0000-4000-8000-000000000003[0m
+        [36m</p>[39m
+      [36m</footer>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-implementation-report-custody.test.tsx:128:19
+    126|   ] as const)("withholds %s without substituting live values", async (…
+    127|     change(); await show();
+    128|     expect(screen.getByRole("alert")).toHaveTextContent("does not matc…
+       |                   ^
+    129|     expect(screen.getByRole("alert")).toHaveTextContent("This does not…
+    130|     for (const value of ["SYNTHETIC saved action", "SYNTHETIC adopted …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds changed reporting start without substituting live values
+TestingLibraryElementError: Unable to find an accessible element with the role "alert"
+
+Here are the accessible roles:
+
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"border-b pb-7"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-lg"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words font-medium"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"whitespace-pre-wrap break-words"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "SYNTHETIC implementation report":
+  [36m<h1[39m
+    [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Context retained with this version":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Plan area":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Responsible bodies":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Applicability assessment":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Reporting period":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Frozen action-status snapshot":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "SYNTHETIC saved action":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Print report":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Download source JSON":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mdownload[39m=[32m"openplan-report-23000000-0000-4000-8000-000000000003-provenance.json"[39m
+    [33mhref[39m=[32m"/api/reports/23000000-0000-4000-8000-000000000003/provenance"[39m
+  [36m/>[39m
+
+  Name "Open plan workbench":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mhref[39m=[32m"/land-use-plans/23000000-0000-4000-8000-000000000001"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Context retained with this version":
+  [36m<section[39m
+    [33maria-label[39m=[32m"Context retained with this version"[39m
+    [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  article:
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"min-w-0 border-l-2 border-border pl-3 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  term:
+
+  Name "":
+  [36m<dt[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<dt[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  definition:
+
+  Name "":
+  [36m<dd />[39m
+
+  Name "":
+  [36m<dd />[39m
+
+  --------------------------------------------------
+  contentinfo:
+
+  Name "":
+  [36m<footer[39m
+    [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto min-w-0 w-full max-w-4xl [overflow-wrap:anywhere] p-5 md:p-10 print:max-w-none print:p-0"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-7"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+        [36m>[39m
+          [0mImplementation report[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+        [36m>[39m
+          [0mSYNTHETIC implementation report[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg"[39m
+        [36m>[39m
+          [0mSYNTHETIC adopted title[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+        [36m>[39m
+          [0mSYNTHETIC adopted authority[0m
+          [0m · [0m
+          [0mSYNTHETIC adopted geography[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4"[39m
+        [36m>[39m
+          [0mSYNTHETIC retained summary[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mt-5 flex flex-wrap gap-3 print:hidden"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"default"[39m
+          [36m>[39m
+            [0mPrint report[0m
+          [36m</button>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mdownload[39m=[32m"openplan-report-23000000-0000-4000-8000-000000000003-provenance.json"[39m
+            [33mhref[39m=[32m"/api/reports/23000000-0000-4000-8000-000000000003/provenance"[39m
+          [36m>[39m
+            [0mDownload source JSON[0m
+          [36m</a>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mhref[39m=[32m"/land-use-plans/23000000-0000-4000-8000-000000000001"[39m
+          [36m>[39m
+            [0mOpen plan workbench[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"Context retained with this version"[39m
+          [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mContext retained with this version[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mThese are the saved area and staff assessment reviewed with this version. They do not establish legal sufficiency.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mPlan area[0m
+            [36m</h3>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"break-words text-sm"[39m
+            [36m>[39m
+              [0mSYNTHETIC study area[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mArea source: [0m
+              [0muploaded_file[0m
+              [0m. Study geometry and legal authority are different facts.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-3"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mResponsible bodies[0m
+            [36m</h3>[39m
+            [36m<article[39m
+              [33mclass[39m=[32m"min-w-0 border-l-2 border-border pl-3 text-sm"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-words font-medium"[39m
+              [36m>[39m
+                [0mSYNTHETIC responsible body[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-words"[39m
+              [36m>[39m
+                [0mResponsibility unresolved[0m
+                [0m · [0m
+                [0munassessed[0m
+              [36m</p>[39m
+              [36m<p>[39m
+                [0mJurisdiction was not assessed.[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mNo authority source was retained.[0m
+              [36m</p>[39m
+            [36m</article>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-2 text-sm"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mApplicability assessment[0m
+            [36m</h3>[39m
+            [36m<p>[39m
+              [0mApplicability remains unresolved.[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"whitespace-pre-wrap break-words"[39m
+            [36m>[39m
+              [0mSYNTHETIC fixture with no legal applicability claim[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mReporting period[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2"[39m
+        [36m>[39m
+          [0m2026-01-02[0m
+          [0m through [0m
+          [0m2026-09-30[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+        [36m>[39m
+          [0mAdopted plan hash: [0m
+          [0m9e0fff784858b8d8ee2b58d6bd2d1b96fcdd221c31de97d2d858542eef5bdf05[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-9 border-t pt-7"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mFrozen action-status snapshot[0m
+        [36m</h2>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-semibold"[39m
+          [36m>[39m
+            [0mSYNTHETIC saved action[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-1 text-sm"[39m
+          [36m>[39m
+            [0mStatus: [0m
+            [0mcompleted[0m
+            [0m · due 2026-12-01[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2"[39m
+          [36m>[39m
+            [0mRetained implementation detail[0m
+          [36m</p>[39m
+          [36m<dl[39m
+            [33mclass[39m=[32m"mt-3 grid gap-3 text-sm sm:grid-cols-2"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<dt[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mResponsible party at reporting[0m
+              [36m</dt>[39m
+              [36m<dd>[39m
+                [0mSYNTHETIC responsible team[0m
+              [36m</dd>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<dt[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mLast action update retained[0m
+              [36m</dt>[39m
+              [36m<dd>[39m
+                [0m2026-09-29T12:34:56+00:00[0m
+              [36m</dd>[39m
+            [36m</div>[39m
+          [36m</dl>[39m
+        [36m</article>[39m
+      [36m</section>[39m
+      [36m<footer[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<p>[39m
+          [0mGenerated [0m
+          [0m2026-10-07[0m
+          [0m. Consultation details, confidential notes, and sensitive-location flags are not part of this report.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all"[39m
+        [36m>[39m
+          [0mReport ID [0m
+          [0m23000000-0000-4000-8000-000000000003[0m
+        [36m</p>[39m
+      [36m</footer>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-implementation-report-custody.test.tsx:128:19
+    126|   ] as const)("withholds %s without substituting live values", async (…
+    127|     change(); await show();
+    128|     expect(screen.getByRole("alert")).toHaveTextContent("does not matc…
+       |                   ^
+    129|     expect(screen.getByRole("alert")).toHaveTextContent("This does not…
+    130|     for (const value of ["SYNTHETIC saved action", "SYNTHETIC adopted …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  src/test/land-use-implementation-report-custody.test.tsx > implementation report retains verified history > withholds changed reporting end without substituting live values
+TestingLibraryElementError: Unable to find an accessible element with the role "alert"
+
+Here are the accessible roles:
+
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"border-b pb-7"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-lg"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words font-medium"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"break-words"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"whitespace-pre-wrap break-words"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 break-all"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "SYNTHETIC implementation report":
+  [36m<h1[39m
+    [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Context retained with this version":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Plan area":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Responsible bodies":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Applicability assessment":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "Reporting period":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Frozen action-status snapshot":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "SYNTHETIC saved action":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Print report":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"default"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Download source JSON":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mdownload[39m=[32m"openplan-report-23000000-0000-4000-8000-000000000003-provenance.json"[39m
+    [33mhref[39m=[32m"/api/reports/23000000-0000-4000-8000-000000000003/provenance"[39m
+  [36m/>[39m
+
+  Name "Open plan workbench":
+  [36m<a[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+    [33mdata-size[39m=[32m"default"[39m
+    [33mdata-slot[39m=[32m"button"[39m
+    [33mdata-variant[39m=[32m"outline"[39m
+    [33mhref[39m=[32m"/land-use-plans/23000000-0000-4000-8000-000000000001"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Context retained with this version":
+  [36m<section[39m
+    [33maria-label[39m=[32m"Context retained with this version"[39m
+    [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  article:
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"min-w-0 border-l-2 border-border pl-3 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  term:
+
+  Name "":
+  [36m<dt[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<dt[39m
+    [33mclass[39m=[32m"text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  definition:
+
+  Name "":
+  [36m<dd />[39m
+
+  Name "":
+  [36m<dd />[39m
+
+  --------------------------------------------------
+  contentinfo:
+
+  Name "":
+  [36m<footer[39m
+    [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto min-w-0 w-full max-w-4xl [overflow-wrap:anywhere] p-5 md:p-10 print:max-w-none print:p-0"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-7"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wide text-muted-foreground"[39m
+        [36m>[39m
+          [0mImplementation report[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-2 text-4xl font-semibold"[39m
+        [36m>[39m
+          [0mSYNTHETIC implementation report[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg"[39m
+        [36m>[39m
+          [0mSYNTHETIC adopted title[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-muted-foreground"[39m
+        [36m>[39m
+          [0mSYNTHETIC adopted authority[0m
+          [0m · [0m
+          [0mSYNTHETIC adopted geography[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4"[39m
+        [36m>[39m
+          [0mSYNTHETIC retained summary[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"mt-5 flex flex-wrap gap-3 print:hidden"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"default"[39m
+          [36m>[39m
+            [0mPrint report[0m
+          [36m</button>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mdownload[39m=[32m"openplan-report-23000000-0000-4000-8000-000000000003-provenance.json"[39m
+            [33mhref[39m=[32m"/api/reports/23000000-0000-4000-8000-000000000003/provenance"[39m
+          [36m>[39m
+            [0mDownload source JSON[0m
+          [36m</a>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mhref[39m=[32m"/land-use-plans/23000000-0000-4000-8000-000000000001"[39m
+          [36m>[39m
+            [0mOpen plan workbench[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"Context retained with this version"[39m
+          [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mContext retained with this version[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mThese are the saved area and staff assessment reviewed with this version. They do not establish legal sufficiency.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mPlan area[0m
+            [36m</h3>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"break-words text-sm"[39m
+            [36m>[39m
+              [0mSYNTHETIC study area[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+            [36m>[39m
+              [0mArea source: [0m
+              [0muploaded_file[0m
+              [0m. Study geometry and legal authority are different facts.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-3"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mResponsible bodies[0m
+            [36m</h3>[39m
+            [36m<article[39m
+              [33mclass[39m=[32m"min-w-0 border-l-2 border-border pl-3 text-sm"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-words font-medium"[39m
+              [36m>[39m
+                [0mSYNTHETIC responsible body[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"break-words"[39m
+              [36m>[39m
+                [0mResponsibility unresolved[0m
+                [0m · [0m
+                [0munassessed[0m
+              [36m</p>[39m
+              [36m<p>[39m
+                [0mJurisdiction was not assessed.[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mNo authority source was retained.[0m
+              [36m</p>[39m
+            [36m</article>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-2 text-sm"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mApplicability assessment[0m
+            [36m</h3>[39m
+            [36m<p>[39m
+              [0mApplicability remains unresolved.[0m
+            [36m</p>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"whitespace-pre-wrap break-words"[39m
+            [36m>[39m
+              [0mSYNTHETIC fixture with no legal applicability claim[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mReporting period[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2"[39m
+        [36m>[39m
+          [0m2026-01-01[0m
+          [0m through [0m
+          [0m2026-10-01[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all text-xs text-muted-foreground"[39m
+        [36m>[39m
+          [0mAdopted plan hash: [0m
+          [0m9e0fff784858b8d8ee2b58d6bd2d1b96fcdd221c31de97d2d858542eef5bdf05[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-9 border-t pt-7"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mFrozen action-status snapshot[0m
+        [36m</h2>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"mt-4 rounded-lg border p-4"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-semibold"[39m
+          [36m>[39m
+            [0mSYNTHETIC saved action[0m
+          [36m</h3>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-1 text-sm"[39m
+          [36m>[39m
+            [0mStatus: [0m
+            [0mcompleted[0m
+            [0m · due 2026-12-01[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2"[39m
+          [36m>[39m
+            [0mRetained implementation detail[0m
+          [36m</p>[39m
+          [36m<dl[39m
+            [33mclass[39m=[32m"mt-3 grid gap-3 text-sm sm:grid-cols-2"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<dt[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mResponsible party at reporting[0m
+              [36m</dt>[39m
+              [36m<dd>[39m
+                [0mSYNTHETIC responsible team[0m
+              [36m</dd>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<dt[39m
+                [33mclass[39m=[32m"text-muted-foreground"[39m
+              [36m>[39m
+                [0mLast action update retained[0m
+              [36m</dt>[39m
+              [36m<dd>[39m
+                [0m2026-09-29T12:34:56+00:00[0m
+              [36m</dd>[39m
+            [36m</div>[39m
+          [36m</dl>[39m
+        [36m</article>[39m
+      [36m</section>[39m
+      [36m<footer[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-5 text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<p>[39m
+          [0mGenerated [0m
+          [0m2026-10-07[0m
+          [0m. Consultation details, confidential notes, and sensitive-location flags are not part of this report.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 break-all"[39m
+        [36m>[39m
+          [0mReport ID [0m
+          [0m23000000-0000-4000-8000-000000000003[0m
+        [36m</p>[39m
+      [36m</footer>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-implementation-report-custody.test.tsx:128:19
+    126|   ] as const)("withholds %s without substituting live values", async (…
+    127|     change(); await show();
+    128|     expect(screen.getByRole("alert")).toHaveTextContent("does not matc…
+       |                   ^
+    129|     expect(screen.getByRole("alert")).toHaveTextContent("This does not…
+    130|     for (const value of ["SYNTHETIC saved action", "SYNTHETIC adopted …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 34 passed (41)
+   Start at  12:57:48
+   Duration  2.19s (transform 172ms, setup 71ms, import 369ms, tests 1.32s, environment 334ms)
+

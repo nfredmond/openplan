@@ -1,0 +1,4 @@
+{
+  "blockedFontNetworkRequests": 0,
+  "boundary": "Build wrapper blocks Google Fonts network requests; not a general network audit."
+}

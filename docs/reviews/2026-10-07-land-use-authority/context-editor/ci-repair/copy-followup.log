@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+      Running tests with seed "443012"
+
+ ❯ src/test/planner-copy-says-the-plain-thing.test.ts (4 tests | 1 failed) 29ms
+     × uses no term from the ledger more often than the recorded baseline 22ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/planner-copy-says-the-plain-thing.test.ts > planner copy says the plain thing > uses no term from the ledger more often than the recorded baseline
+AssertionError: A term of art moved in the wrong direction. If a count ROSE, a lane is saying the machine's word for something a planner already has a word for — src/test/helpers/jargon-ledger.ts says what to say instead. If a count FELL, good: lower the number in BASELINE in the same commit, so the improvement is banked and cannot silently come back.: expected { posture: 50, packet: 128, …(42) } to deeply equal { artifact: 43, attribute: 4, …(42) }
+
+- Expected
++ Received
+
+@@ -40,7 +40,7 @@
+    "study area": 21,
+    "submission": 10,
+    "surface": 13,
+    "trace": 19,
+    "upstream": 0,
+-   "workspace": 148,
++   "workspace": 149,
+  }
+
+ ❯ src/test/planner-copy-says-the-plain-thing.test.ts:283:7
+    281|         "FELL, good: lower the number in BASELINE in the same commit, …
+    282|         "improvement is banked and cannot silently come back."
+    283|     ).toEqual(BASELINE);
+       |       ^
+    284|   });
+    285| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 7 passed (8)
+      Tests  1 failed | 100 passed (101)
+   Start at  05:56:43
+   Duration  11.80s (transform 394ms, setup 284ms, import 1.57s, tests 6.53s, environment 2.64s)
+

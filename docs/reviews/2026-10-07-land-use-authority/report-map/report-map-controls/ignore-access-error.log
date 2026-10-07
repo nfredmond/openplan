@@ -1,0 +1,53 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (48 tests | 2 failed) 211ms
+     × refuses report read error before reading features 4ms
+     × refuses membership read error before reading features 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses report read error before reading features
+AssertionError: expected 404 to be 500 // Object.is equality
+
+- Expected
++ Received
+
+- 500
++ 404
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:102:73
+    100|     ["changed GIS feature hash", 503, () => { rows.workspace_gis_layer…
+    101|   ] as const)("refuses %s before reading features", async (_name, stat…
+    102|     mutate(); const response = await request(); expect(response.status…
+       |                                                                         ^
+    103|     expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.service).no…
+    104|     expect(JSON.stringify(await response.json())).not.toContain("PRIVA…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses membership read error before reading features
+AssertionError: expected 403 to be 500 // Object.is equality
+
+- Expected
++ Received
+
+- 500
++ 403
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:102:73
+    100|     ["changed GIS feature hash", 503, () => { rows.workspace_gis_layer…
+    101|   ] as const)("refuses %s before reading features", async (_name, stat…
+    102|     mutate(); const response = await request(); expect(response.status…
+       |                                                                         ^
+    103|     expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.service).no…
+    104|     expect(JSON.stringify(await response.json())).not.toContain("PRIVA…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 46 passed (48)
+   Start at  12:27:58
+   Duration  989ms (transform 150ms, setup 57ms, import 306ms, tests 211ms, environment 324ms)
+

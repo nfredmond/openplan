@@ -6,6 +6,7 @@ import type { JurisdictionPlanDescriptor } from "@/lib/land-use-plans/contracts"
 import { pickPublicAttributes, publicMapIsTooDense } from "@/lib/land-use-plans/public-map";
 import {
   buildAdoptionBlockers,
+  applicablePlanRequirementKeys,
   buildLandUsePlanWorkflow,
   buildPublicDraftBlockers,
   percentComplete,
@@ -66,6 +67,7 @@ describe("Land Use Plans review and reporting completion", () => {
 
   it("shows every public-draft blocker beside the freeze control", () => {
     expect(buildPublicDraftBlockers({
+      descriptor: { requirements: [] },
       applicableRequirementKeys: ["land_use", "circulation"],
       completedRequirementKeys: ["land_use"],
       hasDesignation: false,
@@ -83,6 +85,7 @@ describe("Land Use Plans review and reporting completion", () => {
     ]);
 
     expect(buildPublicDraftBlockers({
+      descriptor: { requirements: [] },
       applicableRequirementKeys: ["land_use"],
       completedRequirementKeys: ["land_use"],
       hasDesignation: true,
@@ -92,6 +95,33 @@ describe("Land Use Plans review and reporting completion", () => {
       requiresConsultation: true,
       consultationStatus: "not_applicable",
     })).toEqual([]);
+  });
+
+  it("unions required rules with saved choices without inventing optional applicability", () => {
+    const rules = { requirements: [
+      ...descriptor.requirements,
+      { key: "conditional", label: "Conditional", applicability: "conditional" as const, sourceUrls: [] },
+      { key: "local", label: "Local", applicability: "locally_defined" as const, sourceUrls: [] },
+    ] };
+    const saved = ["prior_rule", "required_part", "prior_rule", "conditional"];
+    expect(applicablePlanRequirementKeys(rules, saved)).toEqual(["prior_rule", "required_part", "conditional"]);
+    expect(applicablePlanRequirementKeys(rules, [])).toEqual(["required_part"]);
+    expect(saved).toEqual(["prior_rule", "required_part", "prior_rule", "conditional"]);
+    expect(rules.requirements.map(rule => rule.key)).toEqual(["required_part", "conditional", "local"]);
+  });
+
+  it("keeps newly required content incomplete in both readiness and workflow progress", () => {
+    const ready = { descriptor, applicableRequirementKeys: ["prior_rule"], completedRequirementKeys: ["prior_rule"],
+      hasDesignation: true, hasImplementationAction: true, requiredReviewPrerequisiteKeys: [],
+      completedProcessKeys: [], requiresConsultation: false, consultationStatus: null };
+    expect(buildPublicDraftBlockers(ready)).toEqual(["Complete applicable sections: required_part"]);
+    expect(buildPublicDraftBlockers({ ...ready, completedRequirementKeys: ["required_part"] }))
+      .toEqual(["Complete applicable sections: prior_rule"]);
+    expect(buildPublicDraftBlockers({ ...ready, completedRequirementKeys: ["prior_rule", "required_part"] })).toEqual([]);
+    const steps = buildLandUsePlanWorkflow({ ...workflowInput(), applicableRequirementKeys: ["prior_rule"], completedRequirementKeys: ["prior_rule"] });
+    expect(steps.find(step => step.key === "applicable_content")?.complete).toBe(false);
+    const complete = buildLandUsePlanWorkflow({ ...workflowInput(), applicableRequirementKeys: ["prior_rule"], completedRequirementKeys: ["prior_rule", "required_part"] });
+    expect(complete.find(step => step.key === "applicable_content")?.complete).toBe(true);
   });
 
   it("derives completion from required descriptor records and ignores optional omissions", () => {

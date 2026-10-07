@@ -10,12 +10,13 @@ import {
   preservePendingSynthesisGeneration, listPreservedSynthesisGeneration, SynthesisGenerationSaveError,
   type SynthesisGenerationClientScope, type PendingSynthesisGenerationCommand,
 } from "@/lib/engagement/synthesis-generation-request-recovery";
+import type { SynthesisContinuationProposal } from "@/lib/engagement/synthesis-continuation-records";
 import { SynthesisPreparationPanel } from "./synthesis-preparation-panel";
 import { SynthesisGenerationCancelPanel } from "./synthesis-generation-cancel-panel";
 
 type GenerationChoice = { expanded: boolean; selection: ApiListedConnection | null; modelId: string };
 export type SynthesisGenerationChoiceMemory = { scope: SynthesisGenerationClientScope; current: GenerationChoice | null };
-type Props = SynthesisGenerationClientScope & { onAccessLost: () => void; onCreated: () => void; choiceMemory?: SynthesisGenerationChoiceMemory };
+type Props = SynthesisGenerationClientScope & { onAccessLost: () => void; onCreated: () => void; choiceMemory?: SynthesisGenerationChoiceMemory; continuation?: SynthesisContinuationProposal };
 type Receipt = Awaited<ReturnType<typeof sendPendingSynthesisGeneration>>;
 const inputClass = "mt-1 w-full min-w-0 rounded border border-border bg-background px-3 py-2 text-sm";
 const message = (cause: unknown) => cause instanceof Error ? cause.message : "The request is unconfirmed. Keep its exact saved command and retry.";
@@ -24,10 +25,13 @@ const message = (cause: unknown) => cause instanceof Error ? cause.message : "Th
  * Choosing an API here never authorizes execution or acknowledges provider charges.
  */
 export function SynthesisGenerationCreatePanel(props: Props) {
-  return <Creation key={`${props.userId}:${props.workspaceId}:${props.campaignId}:${props.sourceId}:${props.sourceSha256}`} {...props} />;
+  return <Creation key={`${props.userId}:${props.workspaceId}:${props.campaignId}:${props.sourceId}:${props.sourceSha256}:${JSON.stringify(props.continuation ?? null)}`} {...props} />;
 }
 
-function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onAccessLost, onCreated, choiceMemory }: Props) {
+function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onAccessLost, onCreated, choiceMemory, continuation }: Props) {
+  const operation = continuation ? "continue" : "create";
+  const stage = continuation?.stage ?? "segment";
+  const title = stage === "context" ? "Combine this contribution" : stage === "thematic" ? "Prepare thematic request" : "Optional generated analysis";
   const scope = useMemo(() => ({ userId, workspaceId, campaignId, sourceId, sourceSha256 }), [userId, workspaceId, campaignId, sourceId, sourceSha256]);
   // The source owner retains unsent choices while it hides and revalidates private
   // content. A retained choice is never an authorization or a fresh provider read.
@@ -44,12 +48,12 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
   const activeRead = useRef<AbortController | null>(null), activeWrite = useRef<AbortController | null>(null), mounted = useRef(false), writing = useRef(false);
   const restore = useCallback(() => {
     try {
-      const saved = readPendingSynthesisGeneration(localStorage, scope, "create"); setPending(saved);
-      setCopies(listPreservedSynthesisGeneration(localStorage, scope, "create")); setBlocked(false);
+      const saved = readPendingSynthesisGeneration(localStorage, scope, operation, continuation); setPending(saved);
+      setCopies(listPreservedSynthesisGeneration(localStorage, scope, operation, continuation)); setBlocked(false);
       if (saved) { memory.current = null; setExpanded(true); }
     } catch { setBlocked(true); setExpanded(true); setError("Browser recovery could not be read. Preserve the original before making another request."); }
     setReady(true);
-  }, [scope, memory]);
+  }, [scope, memory, operation, continuation]);
   const loseAccess = useCallback(() => {
     memory.current = null; activeRead.current?.abort(); activeWrite.current?.abort(); setReceipt(null); setPending(null); setConnections([]); setSelection(null); setModelId(""); setCopies([]); setBlocked(true); onAccessLost();
   }, [onAccessLost, memory]);
@@ -113,18 +117,24 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
     try {
       const intentText = JSON.stringify(synthesisGenerationRequestIntentSchema.parse({ schemaVersion: 1, sourceId, sourceSha256,
         connectionId: connection.id, configurationRevisionId: revision.id, configurationHash: revision.configuration_hash, modelId, taskByteLimit: 65_536 }));
-      void send({ version: 1, ...scope, intentText, command: { operation: "create", requestId: crypto.randomUUID(), intentText } });
+      const requestId = crypto.randomUUID();
+      void send({ version: 1, ...scope, intentText, command: continuation
+        ? { operation: "continue", requestId, intentText, continuation }
+        : { operation: "create", requestId, intentText } });
     } catch { setError("The selected API revision or model is invalid. Refresh the choices before saving."); }
   }
   function preserve() {
-    try { preservePendingSynthesisGeneration(localStorage, scope, "create", pending ?? undefined); restore(); setError(null); }
+    try { preservePendingSynthesisGeneration(localStorage, scope, operation, pending ?? undefined, continuation); restore(); setError(null); }
     catch (cause) { setError(message(cause)); }
   }
   const cancelRequest = receipt?.state.request ?? (pending ? { id: pending.command.requestId, intentText: pending.intentText, actorId: userId } : null);
-  return <section aria-label="New analysis request" className="min-w-0 space-y-3 rounded border border-border p-3 [&_button]:h-auto [&_button]:min-h-10 [&_button]:max-w-full [&_button]:whitespace-normal">
-    <Button type="button" variant="outline" aria-expanded={expanded} onClick={() => choose({ expanded: !expanded })}>Optional generated analysis</Button>
+  return <section aria-label={stage === "context" ? "New context request" : stage === "thematic" ? "New thematic request" : "New analysis request"} className="min-w-0 space-y-3 rounded border border-border p-3 [&_button]:h-auto [&_button]:min-h-10 [&_button]:max-w-full [&_button]:whitespace-normal">
+    <Button type="button" variant="outline" aria-expanded={expanded} onClick={() => choose({ expanded: !expanded })}>{title}</Button>
     {expanded ? <div className="min-w-0 space-y-3">
-      <p className="max-w-prose text-sm">Save a request for this complete source. Preparation and permission to send contributions to a provider are separate steps. You can also review contributions manually below.</p>
+      <p className="max-w-prose text-sm">{stage === "context"
+        ? "Save a request to combine this contribution with its complete saved context. Preparation and permission to send material to a provider are separate steps."
+        : stage === "thematic" ? "Save a request for themes across this complete source. Select completed context for every contribution before preparing thematic tasks. Provider permission remains separate."
+        : "Save a request for this complete source. Preparation and permission to send contributions to a provider are separate steps. You can also review contributions manually below."}</p>
       {error ? <p role="alert">{error}</p> : null}{choicesError ? <p role="alert">{choicesError}</p> : null}
       {blocked ? <p>Browser recovery needs attention. Preserve the original before saving another request.</p> : null}
       {receipt ? <div className="space-y-3">
@@ -132,7 +142,7 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
         <p className="text-sm break-all">Request {receipt.state.request?.id ?? receipt.cancellation?.requestId}{receipt.intent ? ` · Model ${receipt.intent.modelId}` : ""}</p>
         {receipt.cleanupError ? <p role="alert">{receipt.cleanupError}</p> : null}
         {receipt.state.request ? <SynthesisPreparationPanel {...scope} requestId={receipt.state.request.id} intentSha256={receipt.state.request.intentSha256}
-          actorId={receipt.state.request.actorId} stage="segment" cancelled={receipt.cancellation !== null} onAccessLost={loseAccess} /> : null}
+          actorId={receipt.state.request.actorId} stage={stage} cancelled={receipt.cancellation !== null} onAccessLost={loseAccess} /> : null}
         <Button type="button" variant="outline" disabled={busy || Boolean(pending) || blocked} onClick={() => { setReceipt(null); setSelection(null); setModelId(""); memory.current = { expanded: true, selection: null, modelId: "" }; void loadChoices(); }}>Start another request</Button>
       </div> : <>
         <label className="block text-sm">Saved API connection<select className={inputClass} disabled={busy || Boolean(pending) || loading || blocked} value={selectionCurrent ? connection?.id : ""}
@@ -147,7 +157,7 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
         <p className="text-sm text-muted-foreground">This workflow currently uses saved OpenAI-compatible APIs. Installed provider connections are available for supported project tasks. Saving this request does not send data, start a model, or accept provider charges.</p>
         <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" disabled={loading || busy} onClick={() => void loadChoices()}>Refresh analysis providers</Button>
           {next !== null ? <Button type="button" variant="outline" disabled={loading || busy} onClick={() => void loadChoices(next)}>Load more analysis providers</Button> : null}
-          <Button type="button" disabled={!canCreate} onClick={create}>Save analysis request</Button></div>
+          <Button type="button" disabled={!canCreate} onClick={create}>{stage === "context" ? "Save context request" : stage === "thematic" ? "Save thematic request" : "Save analysis request"}</Button></div>
         <a className="text-sm underline" href="/workspace">Manage saved APIs in settings</a>
         {loading ? <p role="status">Reading saved API choices…</p> : null}
         {!loading && !choicesError && !connections.some(row => !row.revoked_at && row.current_revision) ? <p>No saved API choices are available. Staff review remains available below.</p> : null}
@@ -156,6 +166,7 @@ function Creation({ userId, workspaceId, campaignId, sourceId, sourceSha256, onA
         <details><summary className="cursor-pointer text-sm">Inspect the original request before retrying</summary>
           <p className="text-sm">The saved provider revision and model below govern the retry. Current provider choices do not replace them.</p>
           <pre className="whitespace-pre-wrap break-all text-xs">{pending.intentText}</pre>
+          {pending.command.operation === "continue" ? <div className="space-y-2"><p className="text-sm">The original parent selection and contribution below govern this retry. Newer results do not replace this saved command.</p><pre className="whitespace-pre-wrap break-all text-xs">{JSON.stringify(pending.command.continuation, null, 2)}</pre></div> : null}
         </details>
         <Button type="button" disabled={busy || blocked} onClick={() => void send(pending)}>Retry saved analysis request</Button></div> : null}
       {pending || blocked ? <Button type="button" variant="outline" disabled={busy} onClick={preserve}>Preserve request recovery copy</Button> : null}

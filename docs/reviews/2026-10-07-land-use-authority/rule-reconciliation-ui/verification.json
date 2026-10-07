@@ -1,0 +1,20 @@
+{
+  "baseCommit": "eba86de3199ed0534d95634909f015ff76079848",
+  "sourceSha256": {
+    "openplan/src/components/land-use-plans/land-use-plan-workbench.tsx": "31d4a10e1361394b418a6485f3408d79540ee07f68e5df1b382c26aa080ca546",
+    "openplan/src/components/land-use-plans/land-use-plan-rule-reconciliation-control.tsx": "6573f97c524c5421d99bddb1b5bf2eea426fb96baa575ee6bd741ff92427c5c3",
+    "openplan/src/components/land-use-plans/use-plan-form-custody.ts": "01c714e7fef6c88388234d23bfafd4332a70476ff14d4b4285a53fa750969083",
+    "openplan/src/lib/land-use-plans/rule-reconciliation-recovery.ts": "ee896246842d4ce24044a47d7645f3c74895c45de87b5956b5464c6985ae378e"
+  },
+  "results": {
+    "typeScriptExit": 0,
+    "eslintExit": 0,
+    "directionExit": 0,
+    "vitestExit": 0,
+    "passedTests": 712,
+    "skippedNativeCases": 13,
+    "passedSuites": 31,
+    "skippedNativeSuites": 7
+  },
+  "browserAcceptance": "Not performed for this source checkpoint; prior T3 snapshot failures remain open."
+}

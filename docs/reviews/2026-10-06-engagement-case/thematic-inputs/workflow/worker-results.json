@@ -1,0 +1,6 @@
+{
+  "preparation": "{\"state\":\"acknowledged\",\"requestId\":\"3620e480-3d20-4934-9d3d-e14fc640e22d\",\"outcome\":{\"sealSha256\":\"29164cf2ede388b35cf460479ba7351c37a8034ecd975232f0c1e7afa4676dfd\"}}\n",
+  "preparation-replay": "{\"state\":\"acknowledged\",\"requestId\":\"3620e480-3d20-4934-9d3d-e14fc640e22d\",\"outcome\":{\"sealSha256\":\"29164cf2ede388b35cf460479ba7351c37a8034ecd975232f0c1e7afa4676dfd\"}}\n",
+  "generation": "\n> openplan@0.67.0 worker:synthesis-generation\n> node --env-file=.env.local --conditions=react-server --import tsx scripts/workers/synthesis-generation.ts --authorization *** --all-tasks --thematic\n\nSynthesis grant: 2 outputs retained; 0 dispatches unobserved; 0 scheduled tasks not processed; 0 tasks outside this schedule. Output still needs complete analysis and review.\n",
+  "generation-replay": "\n> openplan@0.67.0 worker:synthesis-generation\n> node --env-file=.env.local --conditions=react-server --import tsx scripts/workers/synthesis-generation.ts --authorization *** --all-tasks --thematic\n\nSynthesis grant: 2 outputs retained; 0 dispatches unobserved; 0 scheduled tasks not processed; 0 tasks outside this schedule. Output still needs complete analysis and review.\n"
+}

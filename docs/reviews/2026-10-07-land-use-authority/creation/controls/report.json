@@ -1,0 +1,430 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "native": false,
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "harmless",
+      "native": false,
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "native-baseline",
+      "native": true,
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "native-harmless",
+      "native": true,
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "normalized-bytes",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses malformed",
+      "failedTests": [
+        "atomic plan creation preparation refuses malformed or unnormalized commands and retained boundaries before lookup"
+      ]
+    },
+    {
+      "case": "missing-projection",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "keeps exact normalized bytes",
+      "failedTests": [
+        "atomic plan creation preparation keeps exact normalized bytes and prepares unresolved multiple-body context without reading workspace home"
+      ]
+    },
+    {
+      "case": "missing-workspace-scope",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "keeps exact normalized bytes",
+      "failedTests": [
+        "atomic plan creation preparation keeps exact normalized bytes and prepares unresolved multiple-body context without reading workspace home"
+      ]
+    },
+    {
+      "case": "lookup-error",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses an unreadable",
+      "failedTests": [
+        "atomic plan creation preparation refuses an unreadable or mismatched command lookup"
+      ]
+    },
+    {
+      "case": "lookup-mismatch",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses an unreadable",
+      "failedTests": [
+        "atomic plan creation preparation refuses an unreadable or mismatched command lookup"
+      ]
+    },
+    {
+      "case": "fresh-rules-hash",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses changed descriptor",
+      "failedTests": [
+        "atomic plan creation preparation refuses changed descriptor rules and unknown plan kinds"
+      ]
+    },
+    {
+      "case": "replay-lookup",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "replays original context",
+      "failedTests": [
+        "atomic plan creation preparation replays original context before changed installed rules or unavailable boundary lookup"
+      ]
+    },
+    {
+      "case": "changed-command-bytes",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "keeps exact normalized bytes",
+      "failedTests": [
+        "atomic plan creation preparation keeps exact normalized bytes and prepares unresolved multiple-body context without reading workspace home"
+      ]
+    },
+    {
+      "case": "replay-flag",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "rejects a fresh outcome",
+      "failedTests": [
+        "atomic plan creation preparation rejects a fresh outcome for a known replay"
+      ]
+    },
+    {
+      "case": "receipt-actorId",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "rejects substituted actorId",
+      "failedTests": [
+        "atomic plan creation preparation rejects substituted actorId in a receipt"
+      ]
+    },
+    {
+      "case": "receipt-workspaceId",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "rejects substituted workspaceId",
+      "failedTests": [
+        "atomic plan creation preparation rejects substituted workspaceId in a receipt"
+      ]
+    },
+    {
+      "case": "receipt-commandId",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "rejects substituted commandId",
+      "failedTests": [
+        "atomic plan creation preparation rejects substituted commandId in a receipt"
+      ]
+    },
+    {
+      "case": "receipt-descriptorId",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "rejects substituted descriptorId",
+      "failedTests": [
+        "atomic plan creation preparation rejects substituted descriptorId in a receipt"
+      ]
+    },
+    {
+      "case": "receipt-planKindKey",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "rejects substituted planKindKey",
+      "failedTests": [
+        "atomic plan creation preparation rejects substituted planKindKey in a receipt"
+      ]
+    },
+    {
+      "case": "receipt-descriptorHash",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "rejects substituted descriptorHash",
+      "failedTests": [
+        "atomic plan creation preparation rejects substituted descriptorHash in a receipt"
+      ]
+    },
+    {
+      "case": "receipt-title",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "rejects substituted title",
+      "failedTests": [
+        "atomic plan creation preparation rejects substituted title in a receipt"
+      ]
+    },
+    {
+      "case": "receipt-authorityLabel",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "rejects substituted authorityLabel",
+      "failedTests": [
+        "atomic plan creation preparation rejects substituted authorityLabel in a receipt"
+      ]
+    },
+    {
+      "case": "receipt-assessment",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "rejects changed authority",
+      "failedTests": [
+        "atomic plan creation preparation rejects changed authority, boundary, attribution and malformed receipts"
+      ]
+    },
+    {
+      "case": "receipt-captured-place",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "rejects changed authority",
+      "failedTests": [
+        "atomic plan creation preparation rejects changed authority, boundary, attribution and malformed receipts"
+      ]
+    },
+    {
+      "case": "receipt-attribution",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "rejects changed authority",
+      "failedTests": [
+        "atomic plan creation preparation rejects changed authority, boundary, attribution and malformed receipts"
+      ]
+    },
+    {
+      "case": "selected-source",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "verifies selected-place identity",
+      "failedTests": [
+        "atomic plan creation preparation verifies selected-place identity without claiming a later service boundary"
+      ]
+    },
+    {
+      "case": "selected-kind",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "verifies selected-place identity",
+      "failedTests": [
+        "atomic plan creation preparation verifies selected-place identity without claiming a later service boundary"
+      ]
+    },
+    {
+      "case": "selected-ref",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "verifies selected-place identity",
+      "failedTests": [
+        "atomic plan creation preparation verifies selected-place identity without claiming a later service boundary"
+      ]
+    },
+    {
+      "case": "selected-label",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "verifies selected-place identity",
+      "failedTests": [
+        "atomic plan creation preparation verifies selected-place identity without claiming a later service boundary"
+      ]
+    },
+    {
+      "case": "selected-countryCode",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "verifies selected-place identity",
+      "failedTests": [
+        "atomic plan creation preparation verifies selected-place identity without claiming a later service boundary"
+      ]
+    },
+    {
+      "case": "selected-subdivisionCode",
+      "native": false,
+      "exitCode": 1,
+      "matched": true,
+      "target": "verifies selected-place identity",
+      "failedTests": [
+        "atomic plan creation preparation verifies selected-place identity without claiming a later service boundary"
+      ]
+    },
+    {
+      "case": "native-viewer",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "viewer denied: accepted",
+      "failedTests": []
+    },
+    {
+      "case": "native-author",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "different staff replay: accepted",
+      "failedTests": []
+    },
+    {
+      "case": "native-bytes",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "changed bytes replay: accepted",
+      "failedTests": []
+    },
+    {
+      "case": "native-attribution",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "native context attribution",
+      "failedTests": []
+    },
+    {
+      "case": "native-assessment",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "assessment substitution: accepted",
+      "failedTests": []
+    },
+    {
+      "case": "native-geometry",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "geometry substitution: accepted",
+      "failedTests": []
+    },
+    {
+      "case": "native-jurisdiction",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "invented jurisdiction: accepted",
+      "failedTests": []
+    },
+    {
+      "case": "native-rules-hash",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "changed descriptor bytes: accepted",
+      "failedTests": []
+    },
+    {
+      "case": "native-conditional",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "initial version requirements",
+      "failedTests": []
+    },
+    {
+      "case": "native-sections",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "complete initial sections",
+      "failedTests": []
+    },
+    {
+      "case": "native-activation",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "atomic plan context and active version",
+      "failedTests": []
+    },
+    {
+      "case": "native-privacy",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "journal private",
+      "failedTests": []
+    },
+    {
+      "case": "native-rls",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "journal RLS",
+      "failedTests": []
+    },
+    {
+      "case": "native-invoker",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "invoker function",
+      "failedTests": []
+    },
+    {
+      "case": "native-execute",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "authenticated RPC permission",
+      "failedTests": []
+    },
+    {
+      "case": "native-immutability",
+      "native": true,
+      "exitCode": 3,
+      "matched": true,
+      "target": "journal append-only: accepted",
+      "failedTests": []
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/lib/land-use-plans/create-store.ts": "4322f58cfe1ffd6622512f3383826159c658f8b4cff0b2730720d261c901c62a",
+    "src/lib/land-use-plans/create-command.ts": "45aed11709c03bb8ca8821b0a1bd57cf150af20145b5ac845cb18c25b8246a5b",
+    "supabase/migrations/20261016000007_land_use_plan_creation_commands.sql": "1028de9a4143ea24e0378d5c5c38500be2758cd994bf9f3ef2ebf7ebf4ab4a14"
+  }
+}

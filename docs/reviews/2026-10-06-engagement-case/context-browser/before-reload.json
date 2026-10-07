@@ -1,0 +1,57 @@
+{
+  "journey": {
+    "build": "8b707f2fc61c4e47d9f0bd4f790a4f0fc0ee64b0",
+    "dropNext": false,
+    "reads": [
+      {
+        "cacheControl": "private, no-store",
+        "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+        "nextOffset": null,
+        "offset": 0,
+        "parent": {
+          "parentActorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+          "parentIntentSha256": "26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925",
+          "parentRequestId": "3ebc394b-35de-48c2-b65d-65dce0d7c0cb",
+          "segmentResultsManifestSha256": "e64166f3561b16a3dd80ab8595fa65eee5ff8e5475cdc4991f7c1aafca0aba2a",
+          "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+          "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+          "throughSequence": 4
+        },
+        "recordIds": [
+          "item:26e3f37d-ef2c-4080-834f-a3351692a484",
+          "item:99fa474c-7e7f-4ec5-8f80-8be07c2dd4d2"
+        ],
+        "status": 200,
+        "total": 2,
+        "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7"
+      }
+    ],
+    "saves": [
+      {
+        "cacheControl": "private, no-store",
+        "contextSha256": "c29ba951a4868f8e8131ca96c7f55430d926fb3a6b18d5c1fa13abbd6fdac5f2",
+        "parent": {
+          "parentActorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+          "parentIntentSha256": "26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925",
+          "parentRequestId": "3ebc394b-35de-48c2-b65d-65dce0d7c0cb",
+          "segmentResultsManifestSha256": "e64166f3561b16a3dd80ab8595fa65eee5ff8e5475cdc4991f7c1aafca0aba2a",
+          "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+          "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+          "throughSequence": 4
+        },
+        "replayed": false,
+        "requestBodySha256": "a3ef3c42ba9fa8d4e75d212916cad96550d4eb257c6121fb67a87ac510d4d95f",
+        "requestId": "daa0abcc-1942-4949-9afd-c7a30c4fed93",
+        "requestIntentSha256": "26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925",
+        "savedStateSha256": "15aa9e857746f8e9bab9043ab7834e71f400f42e1025df76160bf10368353196",
+        "stage": "context",
+        "status": 201,
+        "targetRecordId": "item:26e3f37d-ef2c-4080-834f-a3351692a484"
+      }
+    ]
+  },
+  "pendingKeys": [
+    "openplan:synthesis-generation:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:6674ea52-e439-4e82-9c4e-15b11cdf9ca7:71e5671b-d3df-43aa-ba1c-75dfce09e0d7:cc77a4d3-1ed3-431c-b5fb-fb352560e26d:continue:3ebc394b-35de-48c2-b65d-65dce0d7c0cb:context:item:26e3f37d-ef2c-4080-834f-a3351692a484"
+  ],
+  "text": "Combine this contribution\n\nSave a request to combine this contribution with its complete saved context. Preparation and permission to send material to a provider are separate steps.\n\nSYNTHETIC lost context acknowledgement after server save\n\nSaved API connection\nChoose a saved API\nSYNTHETIC local browser provider\nSYNTHETIC local browser provider\n\nDestination: http://127.0.0.1:38741/v1/\n\nAnalysis model\nChoose a model\nsynthetic\n\nThis workflow currently uses saved OpenAI-compatible APIs. Installed provider connections are available for supported project tasks. Saving this request does not send data, start a model, or accept provider charges.\n\nRefresh analysis providers\nSave context request\nManage saved APIs in settings\n\nUnconfirmed request daa0abcc-1942-4949-9afd-c7a30c4fed93. Its original intent remains saved in this browser. Retry this same command or inspect saved request history.\n\nInspect the original request before retrying\nRetry saved analysis request\nPreserve request recovery copy\nStop this analysis request\n\nCancellation prevents new work under this request. You can cancel while the original save is unconfirmed. Earlier contributions, approvals and results remain retained; a provider call already sent may still incur charges.\n\nReason for cancelling\nCancel analysis request"
+}

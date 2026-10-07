@@ -1,0 +1,113 @@
+# Preserve the checklist used by a frozen land-use plan
+
+This M1 preparation follows the public-identity correction in PR #123. New
+frozen versions retain the complete installed descriptor, including terminology,
+requirements, process steps, source URLs and source-review dates. The existing
+content hash covers that copy. Changing the installed registry later cannot
+silently change the checklist presented with the reviewed version.
+
+Public readers validate the saved descriptor ID and plan kind. Missing metadata
+on historical versions remains a distinct legacy condition. A present malformed
+or mismatched descriptor returns `incomplete`; it never falls back to the current
+registry. Both public pages explain whether the checklist was retained. A saved
+checklist does not establish that the law remains current.
+
+Adoption verifies the frozen plan, version, version number and recomputed content
+hash. Its evidence manifest retains the descriptor, its hash and its custody
+status. Existing permission, review-closure and required process-evidence checks
+remain. A changed retained descriptor requires source reconciliation before
+adoption. The reconciliation workflow remains open M1 work.
+
+Historical versions without a saved descriptor can still record adoption using
+the installed reference identified by their frozen identity. Their manifest says
+`current_reference_not_retained_at_review`. This preserves the agency's history
+without pretending the current reference was retained during review. It does
+not backfill or change historical frozen bytes. An earlier local implementation
+refused these legacy cases; review found that this could imply a new agency
+review solely because old software lacked metadata, so that behavior was corrected
+before committing.
+
+## Checks and limits
+
+All 109 tests in 12 land-use suites pass. The new tests exercise the actual
+snapshot builder and adoption route, with database doubles that honor selected
+columns and assert ownership filters. Public reader cases cover retained,
+retired-registry, absent and malformed descriptors. Rendered-component checks
+cover both public disclosures. Full TypeScript and changed-file ESLint pass.
+
+The [controls](frozen-rules/controls/report.json) record one harmless comment
+control and 21 deliberate faults. The harmless run passes; every fault fails
+its named assertion. All six mutated source files are restored byte for byte.
+The initial runner stopped at a correctly failing missing-disclosure assertion
+because it expected only `AssertionError`. The runner now also accepts the exact
+Testing Library missing-element error for those two disclosure cases. The
+assertions and product behavior were not weakened.
+
+The [native probe](frozen-rules/native.json) creates two new synthetic versions
+on the isolated restore target. One retains its descriptor through the actual
+snapshot builder. The other deliberately represents legacy absence before it is
+frozen. A registry change confined to probe memory leaves the retained version
+unchanged. The legacy case exposes the current reference and remains explicitly
+not retained. The prior reader reproduces the mutable-reference defect. Both
+new releases are withdrawn afterward, return `not_found`, and remain retained
+for inspection. No older fixture is altered.
+
+These checks do not establish a native adoption transition, a complete readiness
+and freeze journey, production HTTP behavior, desktop or 390px visual evidence,
+keyboard or console acceptance, legal completeness or practitioner acceptance.
+They do not correct workspace-home-based descriptor selection or shared
+California general/specific-plan requirements. Those M1 boundaries and the full
+v1 contract remain open. No release or tag is created by this checkpoint.
+
+## Identified production follow-up
+
+The [clean production build](frozen-rules/build-c2a9.json) passes at
+`c2a991d7a4e6b52ebe81905335bee2511d3cc8f0` with an unchanged checkout. The owned
+server on port 3492 reports that application commit; its process directory is
+verified separately in the [identity record](frozen-rules/identity-c2a9.json).
+
+The [HTTP case](frozen-rules/http-c2a9.json) creates a second synthetic review
+round for each retained native version. Both public APIs and server-rendered
+pages return 200 with the correct custody state. The retained descriptor and
+its public projection match the saved bytes. The HTML includes the appropriate
+retained or legacy disclosure. Withdrawing each new release returns 404. All
+fixture history remains retained. The owned server is stopped before evidence
+edits. This closes the missing production HTTP boundary above for these named
+cases only. Native adoption, complete freeze workflow and rendered browser
+acceptance remain open.
+
+The [integration audit](frozen-rules/integration-audit-c2a9.json) accounts for
+44 worktrees and 55 local branches. Every local branch matches its live origin
+branch, and no stash exists. Seven branches remain outside main. The only
+untracked file is the canonical checkout's pre-existing `.directory`. This
+is an accounting result, not a claim that all work has merged.
+
+## Native adoption and publication follow-up
+
+The [authenticated API case](frozen-rules/adoption-c2a9.json) runs on the same
+identified production application, `c2a991d7`. It uses only the two synthetic
+versions created by the earlier native probe. A new document is pasted through
+the Knowledge Base API and indexed successfully. Its content explicitly says
+that no agency, public review, legal determination or human adoption occurred.
+
+For each version, adoption first returns 409 with review and process evidence
+missing. A new external-review release opens and closes through the API with a
+synthetic disposition summary. Adoption still returns 409 for the missing local
+process prerequisite. Saving that prerequisite permits the correct request; an
+incorrect content hash still returns 409. The actual adoption RPC succeeds, and
+a repeated adoption request returns 409.
+
+The saved manifest contains the expected descriptor and its verified hash. The
+retained version says `frozen`. The legacy version says
+`current_reference_not_retained_at_review`. Both versions retain their original
+frozen bytes; the legacy snapshot still has no descriptor property. Publication
+then succeeds through the API, and each adopted public packet and HTML page
+returns 200 with its correct custody disclosure. The document, decisions,
+releases and reports remain retained on the isolated target. The owned server
+is stopped before this evidence edit.
+
+This closes the previously open native adoption and adopted-packet boundaries
+for these two cases. It does not establish a full readiness/freeze journey, an
+actual external review or agency adoption, rendered desktop/mobile acceptance,
+keyboard, console or practitioner acceptance. The fixture dates, votes, body
+and instruments are explicitly synthetic.

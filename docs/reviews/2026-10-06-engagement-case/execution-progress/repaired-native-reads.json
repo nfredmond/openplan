@@ -1,0 +1,89 @@
+{
+  "checkedAt": "2026-10-07T07:05:23.001Z",
+  "target": "Owned restore-target API29821",
+  "results": [
+    {
+      "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+      "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7",
+      "requestId": "3ebc394b-35de-48c2-b65d-65dce0d7c0cb",
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+      "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+      "requestIntentSha256": "26cba415cf6a22349cb8c04dd732975d8c11d4de189df28e3183a9f755992925",
+      "stage": "segment",
+      "schemaVersion": 1,
+      "checkedAt": "2026-10-07T07:05:21.742Z",
+      "cancelled": false,
+      "status": "ready_for_record_consolidation",
+      "interpretation": "not_assessed",
+      "selectionSequence": 4,
+      "manifestSha256": "e64166f3561b16a3dd80ab8595fa65eee5ff8e5475cdc4991f7c1aafca0aba2a",
+      "taskCount": 4,
+      "counts": [
+        {
+          "disposition": "validated_output",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+      "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7",
+      "requestId": "359abb88-65b5-4682-8ad2-ff786adfad25",
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+      "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+      "requestIntentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+      "stage": "context",
+      "schemaVersion": 1,
+      "checkedAt": "2026-10-07T07:05:22.096Z",
+      "cancelled": false,
+      "status": "frames_complete",
+      "interpretation": "machine_unreviewed",
+      "selectionSequence": 13,
+      "manifestSha256": "d2223b0ca0461b9ccf04f565c5b2544be1302a0094063dab2e24999ad63e9796",
+      "taskCount": 13,
+      "counts": [
+        {
+          "disposition": "verified",
+          "count": 13
+        }
+      ]
+    },
+    {
+      "campaignId": "71e5671b-d3df-43aa-ba1c-75dfce09e0d7",
+      "workspaceId": "6674ea52-e439-4e82-9c4e-15b11cdf9ca7",
+      "requestId": "dd741df4-7b58-4313-877e-55490ca40346",
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "sourceId": "cc77a4d3-1ed3-431c-b5fb-fb352560e26d",
+      "sourceSha256": "910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526",
+      "requestIntentSha256": "effb6cc9b1e5b3e9cdccce958f4ed73defe71e8549360ea982b5f62c574d7441",
+      "stage": "thematic",
+      "schemaVersion": 1,
+      "checkedAt": "2026-10-07T07:05:22.909Z",
+      "cancelled": false,
+      "status": "proposal_complete",
+      "interpretation": "machine_unreviewed",
+      "selectionSequence": 5,
+      "manifestSha256": "9bfea03a34175c062ff77de0cba5de2885f5ed6322665445cff9a55e7299f0fb",
+      "taskCount": 5,
+      "counts": [
+        {
+          "disposition": "verified",
+          "count": 5
+        }
+      ]
+    }
+  ],
+  "refusals": [
+    {
+      "label": "wrong campaign",
+      "rejected": true
+    },
+    {
+      "label": "preserved failed plan",
+      "rejected": true
+    }
+  ],
+  "boundary": "Authenticated reads through actual history reconstruction. No writes, provider calls, semantic, browser or human acceptance."
+}

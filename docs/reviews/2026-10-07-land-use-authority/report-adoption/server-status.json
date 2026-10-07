@@ -1,0 +1,18 @@
+{
+  "unit": "openplan-report-adoption-ac06c23b-prod-20261007.service",
+  "beforeStop": {
+    "ActiveState": "active",
+    "MainPID": "1279687",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "256978944"
+  },
+  "afterStop": {
+    "ActiveState": "inactive",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "[not set]"
+  },
+  "port3498Clear": true
+}

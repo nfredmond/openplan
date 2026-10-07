@@ -1,0 +1,4 @@
+ERROR:  assessment substitution: accepted
+CONTEXT:  PL/pgSQL function pg_temp_56.creation_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.creation_refuses(format('SELECT public.create_land_use_plan_with_context(%L,%L,%L,%L,%L,%L)',workspace,actor,command_id,raw,jsonb_set(prepared,'{assessment,applicability,explanation}','"changed"'),descriptor),'PT400','assessment substitution')"
+PL/pgSQL function inline_code_block line 29 at PERFORM

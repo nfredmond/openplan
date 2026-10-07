@@ -1,0 +1,41 @@
+from pathlib import Path
+import hashlib,json,os,subprocess
+app=Path('/home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan')
+out=Path('/tmp/openplan-context-gate-scheduling-controls-complete');out.mkdir(exist_ok=False)
+paths={'component':'src/components/land-use-plans/land-use-plan-context-editor.tsx','test':'src/test/land-use-plan-context-editor.test.tsx'}
+original={k:(app/p).read_bytes() for k,p in paths.items()}
+effect='useEffect(() => { onBlockChange(scopeKey, blocked); }, [onBlockChange, scopeKey, blocked]);'
+delay='''const initialGateDelivery = useRef(false);
+  useEffect(() => {
+    if (!blocked && !initialGateDelivery.current) {
+      initialGateDelivery.current = true;
+      const timer = setTimeout(() => onBlockChange(scopeKey, false), 50);
+      return () => clearTimeout(timer);
+    }
+    onBlockChange(scopeKey, blocked);
+  }, [onBlockChange, scopeKey, blocked]);'''
+wait='''render(<LandUsePlanContextEditor {...props}/>);await ready();
+    // Editable fields and the parent's freeze gate settle through separate effects.
+    await waitFor(()=>expect(blocked()).toBe(false));'''
+old='render(<LandUsePlanContextEditor {...props}/>);await ready();expect(blocked()).toBe(false);'
+cases=[('baseline',[],True),('harmless',[('component','Context editing retains its own scope','Context editing preserves its own scope')],True),
+ ('delayed-initial-gate',[('component',effect,delay)],True),
+ ('old-assertion-delayed',[('component',effect,delay),('test',wait,old)],False),
+ ('permanently-blocked',[('component',effect,effect.replace('onBlockChange(scopeKey, blocked)','onBlockChange(scopeKey, true)'))],False),
+ ('blocked-after-refresh',[('component',effect,effect.replace('onBlockChange(scopeKey, blocked)', 'onBlockChange(scopeKey, blocked || notice === \"Plan context saved and refreshed.\")'))],False),
+ ('prematurely-unblocked',[('component',effect,effect.replace('onBlockChange(scopeKey, blocked)','onBlockChange(scopeKey, false)'))],False)]
+for name,edits,success in cases:
+ for k,a,b in edits:assert original[k].decode().count(a)==1,(name,k)
+rows=[]
+try:
+ for name,edits,success in cases:
+  try:
+   for k,a,b in edits:(app/paths[k]).write_text(original[k].decode().replace(a,b))
+   report=out/(name+'.json')
+   run=subprocess.run(['npm','exec','--','vitest','run',paths['test'],'--maxWorkers=1','-t','retains an edited draft and command before transport','--reporter=json','--outputFile='+str(report)],cwd=app,env={**os.environ,'NODE_OPTIONS':'--max-old-space-size=6144'},stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=90)
+   (out/(name+'.log')).write_text(run.stdout);data=json.loads(report.read_text());failed=[a['fullName'] for f in data['testResults'] for a in f['assertionResults'] if a['status']=='failed'];matched=run.returncode==0 and data['numPassedTests']==1 if success else run.returncode!=0 and len(failed)==1 and 'retains an edited draft and command before transport' in failed[0]
+   rows.append({'case':name,'expectedPass':success,'exitCode':run.returncode,'failedTests':failed,'matched':matched});print(name,matched,flush=True);assert matched,name
+  finally:
+   for k,b in original.items():(app/paths[k]).write_bytes(b)
+finally:
+ (out/'report.json').write_text(json.dumps({'results':rows,'restored':all((app/paths[k]).read_bytes()==b for k,b in original.items()),'sourceSha256':{paths[k]:hashlib.sha256(b).hexdigest() for k,b in original.items()},'boundary':'One mounted test under a controlled initial notification delay and explicit blocked-state faults. This demonstrates the timing assumption, not reproduction of the complete GitHub scheduler or browser acceptance.'},indent=2)+'\n')

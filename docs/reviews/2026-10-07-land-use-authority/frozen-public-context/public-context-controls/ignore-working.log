@@ -1,0 +1,163 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-first-run-jurisdiction.test.tsx (10 tests | 1 failed) 622ms
+     × shows the same default edition as the workbench: 'Version 1 · working' 60ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-first-run-jurisdiction.test.tsx > plan-owned first-run rule selection > shows the same default edition as the workbench: 'Version 1 · working'
+TestingLibraryElementError: Unable to find an element with the text: Version 1 · working. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto w-full max-w-7xl space-y-6 p-4 md:p-8"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"space-y-5"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-wrap items-start justify-between gap-x-6 gap-y-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-w-0 space-y-1.5"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-2xl font-semibold tracking-tight text-foreground sm:text-[1.75rem]"[39m
+            [36m>[39m
+              [0mLand Use Plans[0m
+            [36m</h1>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"max-w-3xl text-sm leading-6 text-muted-foreground"[39m
+            [36m>[39m
+              [0mAuthor a plan, freeze what the public reviewed, save the exact adoption decision, publish the frozen plan, and keep implementation reporting tied to it.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex shrink-0 flex-wrap items-center gap-2"[39m
+          [36m>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"module-intro-action"[39m
+              [33mhref[39m=[32m"#create-land-use-plan"[39m
+            [36m>[39m
+              [0mNew land use plan[0m
+            [36m</a>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"rounded-lg border border-blue-300 bg-blue-50 p-4 text-sm text-blue-950 dark:border-blue-900 dark:bg-blue-950/20 dark:text-blue-100"[39m
+      [36m>[39m
+        [0mOpenPlan tracks requirements and evidence. It does not certify legal sufficiency, perform environmental review, or replace counsel and qualified planning review.[0m
+      [36m</div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"grid gap-4 md:grid-cols-2 xl:grid-cols-3"[39m
+      [36m>[39m
+        [36m<a[39m
+          [33mclass[39m=[32m"rounded-xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/50 hover:shadow-md"[39m
+          [33mhref[39m=[32m"/land-use-plans/synthetic-plan"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-xs font-semibold uppercase tracking-wide text-muted-foreground"[39m
+          [36m>[39m
+            [0mCommunity plan[0m
+          [36m</p>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"mt-1 text-lg font-semibold"[39m
+          [36m>[39m
+            [0mSYNTHETIC edition list[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-sm text-muted-foreground"[39m
+          [36m>[39m
+            [0mSYNTHETIC body[0m
+            [0m · [0m
+            [0mSYNTHETIC area[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-4 text-sm font-medium"[39m
+          [36m>[39m
+            [0mVersion 2 · adopted[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs text-amber-700 dark:text-amber-300"[39m
+          [36m>[39m
+            [0mLocal legal requirements not configured[0m
+          [36m</p>[39m
+        [36m</a>[39m
+      [36m</section>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"scroll-mt-24"[39m
+        [33mid[39m=[32m"create-land-use-plan"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-labelledby[39m=[32m"create-plan-title"[39m
+          [33mclass[39m=[32m"min-w-0 rounded-xl border border-border bg-card p-4 md:p-6"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [33mid[39m=[32m"create-plan-title"[39m
+          [36m>[39m
+            [0mStart a land use plan[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 max-w-prose text-sm text-muted-foreground"[39m
+          [36m>[39m
+            [0mIdentify the area and responsible bodies for this plan. Your office location does not select its law. Start with unresolved requirements or assess a sourced checklist for this plan.[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-6 space-y-6"[39m
+          [36m>[39m
+            [36m<fieldset[39m
+              [33mclass[39m=[32m"grid min-w-0 gap-4 md:grid-cols-2"[39m
+            [36m>[39m
+              [36m<legend[39m
+                [33mclass[39m=[32m"sr-only"[39m
+              [36m>[39m
+                [0mPlan identity and rules[0m
+              [36m</legend>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"space-y-1 text-sm"[39m
+              [36m>[39m
+                [0mPlan title[0m
+                [36m<input[39m
+                  [33mclass[39m=[32m"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive"[39m
+                  [33mdata-slot[39m=[32m"input"[39m
+                  [33mmaxlength[39m=[32m"180"[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m/>[39m
+              [36m</label>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"space-y-1 text-sm"[39m
+              [36m>[39m
+                [0mDisplay authority label[0m
+                [36m<input[39m
+                  [33mclass[39m=[32m"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive"[39m
+                  [33mdata-slot[39m=[32m"input"[39m
+                  [33mmaxlength[39m=[32m"180"[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m/>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"block text-xs text-...
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-first-run-jurisdiction.test.tsx:37:19
+     35|       current_working_version_id: working, current_adopted_version_id:…
+     36|     render(await LandUsePlansPage());
+     37|     expect(screen.getByText(expected)).toBeVisible();
+       |                   ^
+     38|     expect(screen.queryByText("Version unavailable")).toBeNull();
+     39|     expect(versions.map(version => version.id)).toEqual(["older", "lat…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  10:59:23
+   Duration  1.50s (transform 187ms, setup 55ms, import 409ms, tests 622ms, environment 326ms)
+

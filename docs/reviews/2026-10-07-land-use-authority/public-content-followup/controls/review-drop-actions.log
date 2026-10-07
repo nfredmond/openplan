@@ -1,0 +1,263 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-source-review.test.tsx (19 tests | 1 failed) 737ms
+       × shows the frozen implementation action and its recorded status 53ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > review saved context and download > shows the frozen implementation action and its recorded status
+TestingLibraryElementError: Unable to find an accessible element with the role "heading" and name "SYNTHETIC action"
+
+Here are the accessible roles:
+
+  main:
+
+  Name "":
+  [36m<main[39m
+    [33mclass[39m=[32m"mx-auto max-w-4xl px-5 py-12 print:max-w-none"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"border-b pb-8"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wider text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-lg text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mb-3 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-sm"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "Test published plan":
+  [36m<h1[39m
+    [33mclass[39m=[32m"mt-3 text-4xl font-semibold tracking-tight"[39m
+  [36m/>[39m
+
+  Name "Context not retained with this version":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold"[39m
+  [36m/>[39m
+
+  Name "Draft plan content":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-3xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Mapped designations":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-3xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Implementation program":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-3xl font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Download this exact reviewed plan":
+  [36m<a[39m
+    [33mclass[39m=[32m"mt-4 inline-block text-sm font-medium underline"[39m
+    [33mdownload[39m=[32m"openplan-review-v1.json"[39m
+    [33mhref[39m=[32m"/api/public/land-use-plan-reviews/synthetic-token"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Context not retained with this version":
+  [36m<section[39m
+    [33maria-label[39m=[32m"Context not retained with this version"[39m
+    [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  complementary:
+
+  Name "":
+  [36m<aside[39m
+    [33mclass[39m=[32m"mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"mx-auto max-w-4xl px-5 py-12 print:max-w-none"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-8"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wider text-muted-foreground"[39m
+        [36m>[39m
+          [0mPublic review round [0m
+          [0m1[0m
+          [0m · [0m
+          [0mopen[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-3 text-4xl font-semibold tracking-tight"[39m
+        [36m>[39m
+          [0mTest published plan[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg text-muted-foreground"[39m
+        [36m>[39m
+          [0mTest authority[0m
+          [0m · [0m
+          [0mTest area[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4"[39m
+        [36m>[39m
+          [0mReview period: [0m
+          [0m2026-10-07[0m
+          [0m through [0m
+          [0m2026-10-08[0m
+          [0m. Method: [0m
+          [0mexternal process[0m
+          [0m.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs"[39m
+        [36m>[39m
+          [0mReviewed content hash: [0m
+          [0mtest-hash[0m
+        [36m</p>[39m
+        [36m<a[39m
+          [33mclass[39m=[32m"mt-4 inline-block text-sm font-medium underline"[39m
+          [33mdownload[39m=[32m"openplan-review-v1.json"[39m
+          [33mhref[39m=[32m"/api/public/land-use-plan-reviews/synthetic-token"[39m
+        [36m>[39m
+          [0mDownload this exact reviewed plan[0m
+        [36m</a>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"Context not retained with this version"[39m
+          [33mclass[39m=[32m"min-w-0 space-y-4 rounded-xl border border-border bg-card p-5"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-lg font-semibold"[39m
+            [36m>[39m
+              [0mContext not retained with this version[0m
+            [36m</h2>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-sm"[39m
+          [36m>[39m
+            [0mThis version did not retain its plan context. Current plan context cannot establish what reviewers saw.[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 space-y-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mDraft plan content[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mMapped designations[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mImplementation program[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mb-3 text-sm"[39m
+        [36m>[39m
+          [0mThe checklist, terminology and source-review dates were saved with this version. This does not establish that the law remains current.[0m
+        [36m</p>[39m
+        [36m<p>[39m
+          [0mTest coverage disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mTest privacy disclosure[0m
+        [36m</p>[39m
+      [36m</aside>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-source-review.test.tsx:88:21
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 18 passed (19)
+   Start at  11:23:10
+   Duration  1.41s (transform 115ms, setup 55ms, import 194ms, tests 737ms, environment 327ms)
+

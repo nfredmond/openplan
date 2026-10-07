@@ -1,0 +1,4 @@
+ERROR:  journal private
+CONTEXT:  PL/pgSQL function pg_temp_68.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert(NOT has_table_privilege('authenticated','public.land_use_plan_creation_commands','SELECT'),'journal private')"
+PL/pgSQL function inline_code_block line 21 at PERFORM

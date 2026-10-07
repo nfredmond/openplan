@@ -1,0 +1,15 @@
+{
+  "native": {
+    "sequence": 13,
+    "attemptId": "87e6c593-0d69-424d-aead-4cb740b45561",
+    "requestId": "359abb88-65b5-4682-8ad2-ff786adfad25",
+    "outputBytes": 3326,
+    "outputSha256": "62fb33f5df6f583bb41a7848c5d3d888ba3aca4d5596bebb88383cc10dfc6479",
+    "captureSha256": "cbfe3652456e2cadcace35ed79f056683aa340b8b5e295c2db10dd29552d8838"
+  },
+  "downloadPath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muyly2u4-m-openplan-context-359abb88-65b5-4682-8ad2-ff786adfad25.json",
+  "bytes": 3326,
+  "sha256": "62fb33f5df6f583bb41a7848c5d3d888ba3aca4d5596bebb88383cc10dfc6479",
+  "matches": true,
+  "scope": "Native selected context output bytes; no semantic interpretation or staff approval is established."
+}

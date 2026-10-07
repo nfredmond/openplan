@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts (11 tests | 1 failed) 30ms
+     × keeps required recorded process evidence as an adoption gate 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-frozen-rules-integration.test.ts > adoption of the reviewed descriptor > keeps required recorded process evidence as an adoption gate
+AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts:111:29
+    109|     state.rows.land_use_plan_process_records = [];
+    110|     const response = await adopt();
+    111|     expect(response.status).toBe(409);
+       |                             ^
+    112|     expect((await response.json()).missing).toContain("local_process");
+    113|     expect(state.rpc).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 52 passed (53)
+   Start at  02:39:56
+   Duration  2.43s (transform 125ms, setup 149ms, import 324ms, tests 233ms, environment 1.30s)
+

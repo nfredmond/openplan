@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 44ms
+     × replays retained results without reinstalling old rules or fetching geography 6ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:23
+   Duration  1.41s (transform 201ms, setup 92ms, import 328ms, tests 62ms, environment 682ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > replays retained results without reinstalling old rules or fetching geography
+AssertionError: expected 409 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 409
+
+ ❯ src/test/land-use-plan-context-route.test.ts:86:29
+     84|     mocks.rpc.mockResolvedValue({ data: { ...outcome, replayed: true }…
+     85|     const response = await post(JSON.stringify({ ...command, descripto…
+     86|     expect(response.status).toBe(200); expect((await response.json()).…
+       |                             ^
+     87|     expect(mocks.resolve).not.toHaveBeenCalled();
+     88|     expect(mocks.rpc.mock.calls[0][1].p_prepared_context).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

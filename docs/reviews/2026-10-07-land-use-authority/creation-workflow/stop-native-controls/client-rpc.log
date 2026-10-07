@@ -1,0 +1,4 @@
+ERROR:  stop RPC private
+CONTEXT:  PL/pgSQL function pg_temp_97.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert(NOT has_function_privilege('authenticated','public.cancel_land_use_plan_creation(uuid,uuid,uuid,text)','EXECUTE'),'stop RPC private')"
+PL/pgSQL function inline_code_block line 19 at PERFORM

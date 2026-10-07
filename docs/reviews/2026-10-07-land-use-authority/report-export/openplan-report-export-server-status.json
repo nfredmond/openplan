@@ -1,0 +1,35 @@
+{
+  "unit": "openplan-report-export-f207ad15-prod-20261007.service",
+  "pid": "1978013",
+  "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan",
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-07T20:18:46.690Z",
+    "deployment": {
+      "commit": "f207ad158baf",
+      "version": "0.67.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  },
+  "build": {
+    "commit": "f207ad158bafb3654b70c4af87634341dbcdb1ff",
+    "startedEpoch": 1791404245.6849356,
+    "state": "finished",
+    "exitCode": 0,
+    "finishedEpoch": 1791404310.9981594,
+    "finalCommit": "f207ad158bafb3654b70c4af87634341dbcdb1ff",
+    "checkoutUnchanged": true
+  },
+  "startupRead": "First immediate health request preceded the listener and was refused; subsequent read succeeded.",
+  "beforeStop": "MainPID=1978013\nResult=success\nMemoryPeak=262332416\n",
+  "stopStartedEpoch": 1791404439.8207726,
+  "browserBeforeStop": "T3 tab_k navigated to /api/health at 390x844 after read-only download acceptance.",
+  "stopExitCode": 0,
+  "stopFinishedEpoch": 1791404439.850743,
+  "afterStop": "ActiveState=inactive\nResult=success\nExecMainCode=0\nExecMainStatus=0\n",
+  "portAfterStop": "State Recv-Q Send-Q Local Address:Port Peer Address:Port\n"
+}

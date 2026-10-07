@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 41ms
+     × reads the exact retained context and required projections through the user client 5ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:45
+   Duration  1.36s (transform 195ms, setup 88ms, import 323ms, tests 60ms, environment 649ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > reads the exact retained context and required projections through the user client
+AssertionError: expected [ { table: 'land_use_plans', …(2) } ] to deeply equal [ { table: 'land_use_plans', …(2) } ]
+
+- Expected
++ Received
+
+@@ -3,14 +3,10 @@
+      "filters": [
+        [
+          "id",
+          "10000000-0000-4000-8000-000000000001",
+        ],
+-       [
+-         "workspace_id",
+-         "10000000-0000-4000-8000-000000000004",
+-       ],
+      ],
+      "projection": "plan_context,plan_context_hash,descriptor_id,plan_kind_key,current_working_version_id",
+      "table": "land_use_plans",
+    },
+  ]
+
+ ❯ src/test/land-use-plan-context-route.test.ts:146:21
+    144|       contextState: { status: "retained", context: retained }, context…
+    145|       descriptorId: command.descriptorId, planKindKey: command.planKin…
+    146|     expect(queries).toEqual([{ table: "land_use_plans",
+       |                     ^
+    147|       projection: "plan_context,plan_context_hash,descriptor_id,plan_k…
+    148|       filters: [["id", planId], ["workspace_id", workspaceId]] }]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

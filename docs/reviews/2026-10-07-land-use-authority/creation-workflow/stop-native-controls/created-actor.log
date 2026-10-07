@@ -1,0 +1,4 @@
+ERROR:  existing creation actor: accepted
+CONTEXT:  PL/pgSQL function pg_temp_27.creation_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.creation_refuses(format('SELECT public.cancel_land_use_plan_creation(%L,%L,%L,%L)',other_workspace,member,command_id,raw),'PT409','existing creation actor')"
+PL/pgSQL function inline_code_block line 50 at PERFORM

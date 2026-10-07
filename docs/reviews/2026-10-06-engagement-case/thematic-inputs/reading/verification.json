@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-07T08:54:53.861327+00:00",
+  "parent": "18c724e1",
+  "focusedTests": {
+    "passed": 360,
+    "suites": 14
+  },
+  "typescript": "pass",
+  "eslint": "pass, all 11 changed TypeScript files",
+  "controls": {
+    "harmlessPassed": 174,
+    "suites": 6,
+    "targetedFaultsDetected": 11,
+    "restored": true
+  },
+  "scope": "Read complete original context, verify full output checksum and frozen schema, display notes and uncertainty, preserve original bytes for explicit download, reopen saved choices at their original sequence",
+  "boundary": "Component, route and native-history/worker unit checks. New production build, rendered journey, actual download, console, keyboard and human acceptance remain open."
+}

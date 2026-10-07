@@ -1,0 +1,71 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "write-refusal-removed",
+      "expectedPass": false,
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing refuses form writes in a read-only working view, historical=true",
+        "LandUsePlanWorkbench content editing refuses form writes in a read-only working view, historical=false"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-submit-not-prevented",
+      "expectedPass": false,
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing refuses form writes in a read-only working view, historical=true",
+        "LandUsePlanWorkbench content editing refuses form writes in a read-only working view, historical=false"
+      ],
+      "matched": true
+    },
+    {
+      "case": "add-content-node",
+      "expectedPass": false,
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing refuses form writes in a read-only working view, historical=true",
+        "LandUsePlanWorkbench content editing refuses form writes in a read-only working view, historical=false"
+      ],
+      "matched": true
+    },
+    {
+      "case": "add-implementation-action",
+      "expectedPass": false,
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing refuses form writes in a read-only working view, historical=true",
+        "LandUsePlanWorkbench content editing refuses form writes in a read-only working view, historical=false"
+      ],
+      "matched": true
+    },
+    {
+      "case": "add-relationship",
+      "expectedPass": false,
+      "exitCode": 1,
+      "failedTests": [
+        "LandUsePlanWorkbench content editing refuses form writes in a read-only working view, historical=true",
+        "LandUsePlanWorkbench content editing refuses form writes in a read-only working view, historical=false"
+      ],
+      "matched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": "e19cbf333640155c876b395ce253fa30c2c8afd913a79d7daf6275a857c42ba3",
+  "boundary": "Mounted working-view form submission and button refusal only. Server write authorization, concurrent permission changes and actual browser form behavior require separate evidence."
+}

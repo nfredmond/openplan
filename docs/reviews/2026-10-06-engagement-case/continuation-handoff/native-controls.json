@@ -1,0 +1,26 @@
+{
+  "checkedAt": 1791357858.8261428,
+  "results": [
+    {
+      "case": "native-harmless",
+      "exitCode": 0,
+      "expected": 0,
+      "log": "native-harmless.log"
+    },
+    {
+      "case": "native-manifest-fault",
+      "exitCode": 1,
+      "expected": 1,
+      "log": "native-manifest-fault.log"
+    },
+    {
+      "case": "native-restored",
+      "exitCode": 0,
+      "expected": 0,
+      "log": "native-restored.log"
+    }
+  ],
+  "restored": true,
+  "sourceSha256": "ee92e36cb4c011b477a05a2de375048f3707597afc95ea6f11df2f92e3334d1d",
+  "boundary": "Exact native request replay and paged parent reads. Synthetic fixtures only; no provider execution."
+}

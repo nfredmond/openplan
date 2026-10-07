@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-07T09:19:19.120347+00:00",
+  "base": "3e54ecc3f1a8159d6e26c03b1428d34b285100fc",
+  "tests": {
+    "passed": 48,
+    "suites": 5
+  },
+  "typescript": "pass, full nonincremental run after source restoration",
+  "eslint": "pass, both changed TypeScript files",
+  "controls": {
+    "harmless": 1,
+    "originalFailure": 1,
+    "targetedFaults": 7,
+    "restored": true
+  },
+  "sourceSha256": "6d5aac5027dd6d238be0181736aae6136554e5f41c25d780552f9b6b25b32232",
+  "limits": [
+    "No identified HTTP build or browser evidence yet.",
+    "Native public-review case only; adopted reader has unit evidence.",
+    "No geography ownership, legal applicability, frozen descriptor text or creation recovery correction."
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "inventory-hides-new-relations",
+      "exitCode": 1,
+      "matched": true,
+      "target": "reads every relation",
+      "failedTests": [
+        "migration schema inventory reads every relation the migrations declare"
+      ]
+    },
+    {
+      "case": "undocumented-context-column",
+      "exitCode": 1,
+      "matched": true,
+      "target": "finds no unread column",
+      "failedTests": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for",
+        "a column the application never reads has to say why keeps the ratchet honest \u2014 a column that gained a reader loses its entry"
+      ]
+    },
+    {
+      "case": "stale-column-exemption",
+      "exitCode": 1,
+      "matched": true,
+      "target": "keeps the ratchet honest",
+      "failedTests": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for",
+        "a column the application never reads has to say why keeps the ratchet honest \u2014 a column that gained a reader loses its entry"
+      ]
+    },
+    {
+      "case": "wrong-source-hash",
+      "exitCode": 1,
+      "matched": true,
+      "target": "shows the exact selected cell",
+      "failedTests": [
+        "JurisdictionReadinessPanel shows the exact selected cell and lets a planner change jobs"
+      ]
+    },
+    {
+      "case": "wrong-source-path",
+      "exitCode": 1,
+      "matched": true,
+      "target": "shows the exact selected cell",
+      "failedTests": [
+        "JurisdictionReadinessPanel shows the exact selected cell and lets a planner change jobs"
+      ]
+    },
+    {
+      "case": "retained-area-not-cleared",
+      "exitCode": 1,
+      "matched": true,
+      "target": "requires a new boundary choice",
+      "failedTests": [
+        "plan context authoring fields requires a new boundary choice after leaving the retained study area"
+      ]
+    },
+    {
+      "case": "uploaded-area-label-ignored",
+      "exitCode": 1,
+      "matched": true,
+      "target": "saves an uploaded study area",
+      "failedTests": [
+        "plan context editor saves an uploaded study area and multiple responsible bodies through the mounted fields"
+      ]
+    },
+    {
+      "case": "typing-treated-saved",
+      "exitCode": 1,
+      "matched": true,
+      "target": "blocks freezing until all edited content",
+      "failedTests": [
+        "Live workbench draft custody keeps another section draft when saving a different section",
+        "Live workbench draft custody keeps unsaved section source selections and URLs",
+        "Live workbench draft custody keeps unsaved policy text when a section is saved",
+        "Live workbench draft custody retains both drafts after a refused save without claiming saved status",
+        "Live workbench draft custody retains local drafts and the explicit error when a saved operation cannot refresh",
+        "Live workbench draft custody never acknowledges the only dirty field after its save is refused",
+        "Live workbench draft custody blocks freezing until all edited content is actually saved"
+      ]
+    },
+    {
+      "case": "migration-note-missing",
+      "exitCode": 1,
+      "matched": true,
+      "target": "Unreleased section names every migration",
+      "failedTests": [
+        "released migration ordering the CHANGELOG's Unreleased section names every migration landed since the newest tag"
+      ]
+    },
+    {
+      "case": "jargon-reintroduced",
+      "exitCode": 1,
+      "matched": true,
+      "target": "uses no term from the ledger",
+      "failedTests": [
+        "planner copy says the plain thing uses no term from the ledger more often than the recorded baseline"
+      ]
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/test/migrations/inventory.test.ts": "5691983b28bf750114bfded8c10b5381973da0e36272219d3e90ac709ae54343",
+    "src/test/a-column-nothing-reads-is-a-question.test.ts": "344ef8896f1d2abb05291200386226267edc29507c0f0609f44557ccf2fef340",
+    "src/components/jurisdiction-readiness/jurisdiction-readiness-panel.tsx": "aa57f87ac04fd1791bb538cc6df447b03a8bb32728f61671d2da531e2a757b30",
+    "src/components/land-use-plans/plan-study-area-fields.tsx": "9b421cc97d8f18f2b00d8b2fd644abd4a70ff7a5d266ee1e1ebdfe3c6214b4ce",
+    "src/components/land-use-plans/land-use-plan-context-editor.tsx": "0c4deeb43e2da48695b068402f11d0663f358315e6b31ab4b05d4dc51d3af2d4",
+    "src/components/land-use-plans/land-use-plan-workbench.tsx": "eb7d7c531a92fa7266c7079f9cc916b451e1576b1951c60ae455d1008f5249b6",
+    "../CHANGELOG.md": "a44d302f11d6b5c26817f3ddf5dfabaca69305cdb1de27175e46e6c1d50b8124"
+  }
+}

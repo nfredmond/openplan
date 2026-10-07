@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-source-review.test.tsx (19 tests | 1 failed) 715ms
+       × renders root policies and nested content once while retaining checklist selection 89ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > adopted saved context and download > renders root policies and nested content once while retaining checklist selection
+AssertionError: expected [ <h4 …(1)></h4>, <h3 …(1)></h3> ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ src/test/land-use-plan-source-review.test.tsx:69:65
+     67|       ] });
+     68|       for (const title of ["Selected section", "Nested section", "Nest…
+     69|         expect(screen.getAllByRole("heading", { name: title })).toHave…
+       |                                                                 ^
+     70|       }
+     71|       for (const text of ["Nested policy text", "Root goal text", "Roo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 18 passed (19)
+   Start at  11:23:14
+   Duration  1.40s (transform 116ms, setup 54ms, import 199ms, tests 715ms, environment 343ms)
+

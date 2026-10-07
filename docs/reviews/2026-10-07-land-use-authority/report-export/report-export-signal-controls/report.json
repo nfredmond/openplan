@@ -1,0 +1,42 @@
+{
+  "state": "complete",
+  "cases": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "ignore-plan-link",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds adoption download with plan link alone"
+    },
+    {
+      "name": "ignore-plan-type",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds adoption download with plan type alone"
+    },
+    {
+      "name": "ignore-implementation-type",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds adoption download with implementation type alone"
+    }
+  ],
+  "restored": true,
+  "sourceHashes": {
+    "src/app/api/reports/[reportId]/provenance/route.ts": "f270d8202c3d0fbedaf981bca6fa8623e946ef0fbdd21f8ae07d466e1b8d9fca",
+    "src/lib/land-use-plans/report-adoption.ts": "057735f0c2d5667c8af38a8980977d97cdbec1d467a155fa439791b3a4ed790d",
+    "src/components/reports/land-use-plan-report-adoption.tsx": "de33e19bb72d29a2e1701cdaaf623392067cc16400846fbf0b7016847d5b06bc"
+  },
+  "blindCategory": "Projected query mocks and component output, not live RLS, download transport, printer behavior or practitioner acceptance."
+}

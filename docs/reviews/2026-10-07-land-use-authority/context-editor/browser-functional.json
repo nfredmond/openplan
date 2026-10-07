@@ -1,0 +1,1553 @@
+{
+  "applicationCommit": "c3d26729a599f4c40d9d0d043af92100a8345886",
+  "method": "T3 native browser, semantic input and DOM activation of observed controls. Synthetic fixture authentication uses one-use loopback cookie handoff, not UI sign-in.",
+  "boundary": "Functional desktop evidence only. No screenshots, mobile, pointer, keyboard, full console, accessibility, practitioner, legal or release acceptance.",
+  "steps": [
+    {
+      "step": "land-use-navigation",
+      "result": {
+        "toolIcon": {
+          "_tag": "website",
+          "pageUrl": "http://openplan-plan-context.localhost:3495/dashboard"
+        },
+        "value": {
+          "activated": "Land Use Plans",
+          "href": "http://openplan-plan-context.localhost:3495/land-use-plans"
+        }
+      }
+    },
+    {
+      "step": "plan-list",
+      "result": {
+        "toolIcon": {
+          "_tag": "website",
+          "pageUrl": "http://openplan-plan-context.localhost:3495/land-use-plans"
+        },
+        "value": {
+          "errors": [],
+          "headings": [
+            "Land Use Plans"
+          ],
+          "plans": [
+            {
+              "href": "/land-use-plans/dbb283d2-58a6-4c33-9eaa-ff8929b7def0",
+              "text": "Community planSYNTHETIC context editor 63484482-ddee-4086-84ca-d2e1c749d2b7SYNTHETIC display authority · SYNTHETIC replacement studyVersion 1 · workingLocal legal requirements not configured"
+            }
+          ],
+          "url": "http://openplan-plan-context.localhost:3495/land-use-plans"
+        }
+      }
+    },
+    {
+      "step": "desktop-loaded",
+      "result": {
+        "toolIcon": {
+          "_tag": "website",
+          "pageUrl": "http://openplan-plan-context.localhost:3495/land-use-plans/dbb283d2-58a6-4c33-9eaa-ff8929b7def0"
+        },
+        "value": {
+          "context": {
+            "buttons": [
+              {
+                "disabled": false,
+                "text": "Refresh saved context"
+              },
+              {
+                "disabled": false,
+                "text": "Remove responsible body 1"
+              },
+              {
+                "disabled": false,
+                "text": "Remove responsible body 2"
+              },
+              {
+                "disabled": false,
+                "text": "Add responsible body"
+              },
+              {
+                "disabled": true,
+                "text": "Save plan context"
+              },
+              {
+                "disabled": false,
+                "text": "Download this draft"
+              }
+            ],
+            "inputs": [
+              {
+                "disabled": false,
+                "label": "Restore a downloaded context copy",
+                "tag": "INPUT",
+                "type": "file"
+              },
+              {
+                "disabled": false,
+                "label": "Keep the saved study area unchanged",
+                "tag": "INPUT",
+                "type": "checkbox",
+                "value": "on"
+              },
+              {
+                "disabled": false,
+                "label": "Body name",
+                "tag": "INPUT",
+                "type": "text",
+                "value": "SYNTHETIC revised local body"
+              },
+              {
+                "disabled": false,
+                "label": "Role in this plan",
+                "tag": "INPUT",
+                "type": "text",
+                "value": "Study sponsor"
+              },
+              {
+                "disabled": false,
+                "label": "Type of body",
+                "tag": "INPUT",
+                "type": "text",
+                "value": "County government"
+              },
+              {
+                "disabled": false,
+                "label": "Jurisdiction is not assessed",
+                "tag": "INPUT",
+                "type": "checkbox",
+                "value": "on"
+              },
+              {
+                "disabled": false,
+                "label": "Country code",
+                "tag": "INPUT",
+                "type": "text",
+                "value": "US"
+              },
+              {
+                "disabled": false,
+                "label": "State or subdivision code",
+                "tag": "INPUT",
+                "type": "text",
+                "value": "OR"
+              },
+              {
+                "disabled": false,
+                "label": "Authority sources",
+                "tag": "TEXTAREA",
+                "type": "textarea",
+                "value": "https://example.test/synthetic-local-record\nhttps://example.test/synthetic-revised-record"
+              },
+              {
+                "disabled": false,
+                "label": "Body name",
+                "tag": "INPUT",
+                "type": "text",
+                "value": "SYNTHETIC sovereign body"
+              },
+              {
+                "disabled": false,
+                "label": "Role in this plan",
+                "tag": "INPUT",
+                "type": "text",
+                "value": "Consulting body"
+              },
+              {
+                "disabled": false,
+                "label": "Type of body",
+                "tag": "INPUT",
+                "type": "text",
+                "value": "Tribal government"
+              },
+              {
+                "disabled": false,
+                "label": "Jurisdiction is not assessed",
+                "tag": "INPUT",
+                "type": "checkbox",
+                "value": "on"
+              },
+              {
+                "disabled": false,
+                "label": "Authority sources",
+                "tag": "TEXTAREA",
+                "type": "textarea",
+                "value": ""
+              },
+              {
+                "disabled": false,
+                "label": "Applicability assessment",
+                "tag": "SELECT",
+                "type": "select-one",
+                "value": "unresolved"
+              },
+              {
+                "disabled": false,
+                "label": "Assessment basis and unresolved questions",
+                "tag": "TEXTAREA",
+                "type": "textarea",
+                "value": "Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted."
+              }
+            ],
+            "text": "Study area and responsible bodies\n\nRecord this plan's study area, responsible bodies and the sources for its applicability assessment. These facts belong to the plan, independently of the workspace home.\n\nRefresh saved context\n\nSaved context loaded.\n\nCurrent saved context\nRestore a downloaded context copy\nStudy area\n\nKeep the study boundary separate from the authority assessment below. Searching or drawing an area does not assign a governing body.\n\nKeep the saved study area unchanged\n\nSaving this assessment preserves the saved boundary, label and source identity. It does not fetch a newer boundary.\n\nResponsible bodies and applicability\n\nIdentify the bodies responsible for this plan and their roles. A study boundary or office location does not establish governing authority. Keep private consultation notes in the consultation record.\n\nResponsible body 1\nBody name\nRole in this plan\nType of body\nJurisdiction is not assessed\nCountry codeTwo-letter country code for the jurisdiction of this body.\nState or subdivision codeLeave blank when no single subdivision describes it.\nAuthority sources\nOne public source URL per line. Keep unresolved authority explicit when sources are missing.\nRemove responsible body 1\nResponsible body 2\nBody name\nRole in this plan\nType of body\nJurisdiction is not assessed\nAuthority sources\nOne public source URL per line. Keep unresolved authority explicit when sources are missing.\nRemove responsible body 2\nAdd responsible body\nApplicability assessment\nUnresolved\nAssessed by staff with sources\nAssessment basis and unresolved questions\n\nUnresolved applicability can be retained with the neutral workflow. It cannot authorize a configured legal checklist.\n\nSave plan context\nDownload this draft"
+          },
+          "documentWidth": 1280,
+          "errors": [],
+          "url": "http://openplan-plan-context.localhost:3495/land-use-plans/dbb283d2-58a6-4c33-9eaa-ff8929b7def0",
+          "viewport": {
+            "height": 800,
+            "width": 1280
+          }
+        }
+      }
+    },
+    {
+      "step": "desktop-edit-retained",
+      "result": {
+        "toolIcon": {
+          "_tag": "website",
+          "pageUrl": "http://openplan-plan-context.localhost:3495/land-use-plans/dbb283d2-58a6-4c33-9eaa-ff8929b7def0"
+        },
+        "value": {
+          "bodyName": "SYNTHETIC browser-reviewed local body",
+          "errors": [],
+          "records": [
+            {
+              "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:draft:b9b86968-9b78-47f1-9854-c6842be28d74",
+              "kind": "draft"
+            }
+          ],
+          "saveDisabled": false
+        }
+      }
+    },
+    {
+      "step": "desktop-lost-reply",
+      "result": {
+        "toolIcon": {
+          "_tag": "website",
+          "pageUrl": "http://openplan-plan-context.localhost:3495/land-use-plans/dbb283d2-58a6-4c33-9eaa-ff8929b7def0"
+        },
+        "value": {
+          "alerts": [],
+          "buttons": [
+            {
+              "disabled": false,
+              "text": "Refresh saved context"
+            },
+            {
+              "disabled": false,
+              "text": "Remove responsible body 1"
+            },
+            {
+              "disabled": false,
+              "text": "Remove responsible body 2"
+            },
+            {
+              "disabled": false,
+              "text": "Add responsible body"
+            },
+            {
+              "disabled": false,
+              "text": "Save plan context"
+            },
+            {
+              "disabled": false,
+              "text": "Download this draft"
+            },
+            {
+              "disabled": false,
+              "text": "Keep draft copy and use saved context"
+            }
+          ],
+          "errors": [],
+          "records": [
+            {
+              "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:draft:b9b86968-9b78-47f1-9854-c6842be28d74",
+              "value": {
+                "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+                "base": {
+                  "contextHash": "a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61",
+                  "descriptorId": "local-unconfigured",
+                  "planKindKey": "community",
+                  "versionId": "7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66"
+                },
+                "draft": {
+                  "applicability": {
+                    "authorityIds": [],
+                    "explanation": "Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.",
+                    "sourceText": "",
+                    "status": "unresolved"
+                  },
+                  "authorities": [
+                    {
+                      "country": "US",
+                      "id": "c9e54df3-2a1c-430c-bab1-5e23ef95d45a",
+                      "jurisdictionUnknown": false,
+                      "kind": "county",
+                      "label": "SYNTHETIC browser-reviewed local body",
+                      "role": "Study sponsor",
+                      "sourceText": "https://example.test/synthetic-local-record\nhttps://example.test/synthetic-revised-record",
+                      "subdivision": "OR"
+                    },
+                    {
+                      "country": "",
+                      "id": "26bf85d5-d4fc-4777-8088-e7ff6b39c577",
+                      "jurisdictionUnknown": true,
+                      "kind": "tribal_government",
+                      "label": "SYNTHETIC sovereign body",
+                      "role": "Consulting body",
+                      "sourceText": "",
+                      "subdivision": ""
+                    }
+                  ],
+                  "place": {
+                    "geoid": "",
+                    "geometryText": "{\"type\":\"Polygon\",\"coordinates\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}",
+                    "kind": null,
+                    "label": "SYNTHETIC replacement study",
+                    "mode": "retained"
+                  }
+                },
+                "instanceId": "b9b86968-9b78-47f1-9854-c6842be28d74",
+                "kind": "draft",
+                "planId": "dbb283d2-58a6-4c33-9eaa-ff8929b7def0",
+                "savedAt": "2026-10-07T12:47:21.432Z",
+                "schemaVersion": 1,
+                "workspaceId": "c91d26b4-7f7f-4168-8194-a8f19a375ee8"
+              }
+            }
+          ],
+          "requests": [],
+          "url": "http://openplan-plan-context.localhost:3495/land-use-plans/dbb283d2-58a6-4c33-9eaa-ff8929b7def0"
+        }
+      }
+    },
+    {
+      "step": "desktop-lost-reply-after-dom-activation",
+      "result": {
+        "toolIcon": {
+          "_tag": "website",
+          "pageUrl": "http://openplan-plan-context.localhost:3495/land-use-plans/dbb283d2-58a6-4c33-9eaa-ff8929b7def0"
+        },
+        "value": {
+          "alerts": [
+            "SYNTHETIC lost reply after confirmed server response"
+          ],
+          "buttons": [
+            {
+              "disabled": false,
+              "text": "Refresh saved context"
+            },
+            {
+              "disabled": false,
+              "text": "Download copy"
+            },
+            {
+              "disabled": false,
+              "text": "Retry exact save request"
+            },
+            {
+              "disabled": true,
+              "text": "Open draft copy"
+            },
+            {
+              "disabled": false,
+              "text": "Keep copy aside and refresh"
+            },
+            {
+              "disabled": false,
+              "text": "Remove responsible body 1"
+            },
+            {
+              "disabled": false,
+              "text": "Remove responsible body 2"
+            },
+            {
+              "disabled": false,
+              "text": "Add responsible body"
+            },
+            {
+              "disabled": true,
+              "text": "Save plan context"
+            },
+            {
+              "disabled": false,
+              "text": "Download this draft"
+            },
+            {
+              "disabled": false,
+              "text": "Keep text as a new browser draft"
+            },
+            {
+              "disabled": false,
+              "text": "Keep draft copy and use saved context"
+            }
+          ],
+          "errors": [],
+          "records": [
+            {
+              "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:pending:eda19e50-400f-4291-9dbe-14218447e1c3",
+              "value": {
+                "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+                "base": {
+                  "contextHash": "a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61",
+                  "descriptorId": "local-unconfigured",
+                  "planKindKey": "community",
+                  "versionId": "7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66"
+                },
+                "commandText": "{\"place\":{\"mode\":\"retained\"},\"assessment\":{\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdiction\":{\"country\":\"US\",\"subdivision\":\"OR\"},\"sourceUrls\":[\"https://example.test/synthetic-local-record\",\"https://example.test/synthetic-revised-record\"]},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\"}},\"commandId\":\"eda19e50-400f-4291-9dbe-14218447e1c3\",\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"expectedContextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"}",
+                "draft": {
+                  "applicability": {
+                    "authorityIds": [],
+                    "explanation": "Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.",
+                    "sourceText": "",
+                    "status": "unresolved"
+                  },
+                  "authorities": [
+                    {
+                      "country": "US",
+                      "id": "c9e54df3-2a1c-430c-bab1-5e23ef95d45a",
+                      "jurisdictionUnknown": false,
+                      "kind": "county",
+                      "label": "SYNTHETIC browser-reviewed local body",
+                      "role": "Study sponsor",
+                      "sourceText": "https://example.test/synthetic-local-record\nhttps://example.test/synthetic-revised-record",
+                      "subdivision": "OR"
+                    },
+                    {
+                      "country": "",
+                      "id": "26bf85d5-d4fc-4777-8088-e7ff6b39c577",
+                      "jurisdictionUnknown": true,
+                      "kind": "tribal_government",
+                      "label": "SYNTHETIC sovereign body",
+                      "role": "Consulting body",
+                      "sourceText": "",
+                      "subdivision": ""
+                    }
+                  ],
+                  "place": {
+                    "geoid": "",
+                    "geometryText": "{\"type\":\"Polygon\",\"coordinates\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}",
+                    "kind": null,
+                    "label": "SYNTHETIC replacement study",
+                    "mode": "retained"
+                  }
+                },
+                "kind": "pending",
+                "planId": "dbb283d2-58a6-4c33-9eaa-ff8929b7def0",
+                "retainedPlace": {
+                  "bbox": {
+                    "maxLat": 38.7,
+                    "maxLon": -121.4,
+                    "minLat": 38.5,
+                    "minLon": -121.6
+                  },
+                  "countryCode": null,
+                  "geometry": {
+                    "coordinates": [
+                      [
+                        [
+                          -121.6,
+                          38.5
+                        ],
+                        [
+                          -121.4,
+                          38.5
+                        ],
+                        [
+                          -121.4,
+                          38.7
+                        ],
+                        [
+                          -121.6,
+                          38.5
+                        ]
+                      ]
+                    ],
+                    "type": "Polygon"
+                  },
+                  "kind": null,
+                  "label": "SYNTHETIC replacement study",
+                  "ref": null,
+                  "source": "uploaded_file",
+                  "subdivisionCode": null
+                },
+                "savedAt": "2026-10-07T12:48:04.681Z",
+                "schemaVersion": 1,
+                "workspaceId": "c91d26b4-7f7f-4168-8194-a8f19a375ee8"
+              }
+            },
+            {
+              "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:draft:b9b86968-9b78-47f1-9854-c6842be28d74",
+              "value": {
+                "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+                "base": {
+                  "contextHash": "a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61",
+                  "descriptorId": "local-unconfigured",
+                  "planKindKey": "community",
+                  "versionId": "7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66"
+                },
+                "draft": {
+                  "applicability": {
+                    "authorityIds": [],
+                    "explanation": "Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.",
+                    "sourceText": "",
+                    "status": "unresolved"
+                  },
+                  "authorities": [
+                    {
+                      "country": "US",
+                      "id": "c9e54df3-2a1c-430c-bab1-5e23ef95d45a",
+                      "jurisdictionUnknown": false,
+                      "kind": "county",
+                      "label": "SYNTHETIC browser-reviewed local body",
+                      "role": "Study sponsor",
+                      "sourceText": "https://example.test/synthetic-local-record\nhttps://example.test/synthetic-revised-record",
+                      "subdivision": "OR"
+                    },
+                    {
+                      "country": "",
+                      "id": "26bf85d5-d4fc-4777-8088-e7ff6b39c577",
+                      "jurisdictionUnknown": true,
+                      "kind": "tribal_government",
+                      "label": "SYNTHETIC sovereign body",
+                      "role": "Consulting body",
+                      "sourceText": "",
+                      "subdivision": ""
+                    }
+                  ],
+                  "place": {
+                    "geoid": "",
+                    "geometryText": "{\"type\":\"Polygon\",\"coordinates\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}",
+                    "kind": null,
+                    "label": "SYNTHETIC replacement study",
+                    "mode": "retained"
+                  }
+                },
+                "instanceId": "b9b86968-9b78-47f1-9854-c6842be28d74",
+                "kind": "draft",
+                "planId": "dbb283d2-58a6-4c33-9eaa-ff8929b7def0",
+                "savedAt": "2026-10-07T12:47:21.432Z",
+                "schemaVersion": 1,
+                "workspaceId": "c91d26b4-7f7f-4168-8194-a8f19a375ee8"
+              }
+            }
+          ],
+          "requests": [
+            {
+              "body": "{\"place\":{\"mode\":\"retained\"},\"assessment\":{\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdiction\":{\"country\":\"US\",\"subdivision\":\"OR\"},\"sourceUrls\":[\"https://example.test/synthetic-local-record\",\"https://example.test/synthetic-revised-record\"]},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\"}},\"commandId\":\"eda19e50-400f-4291-9dbe-14218447e1c3\",\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"expectedContextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"}",
+              "commandId": "eda19e50-400f-4291-9dbe-14218447e1c3",
+              "replyIntentionallyDropped": true,
+              "retainedBeforeTransport": true,
+              "status": 201
+            }
+          ],
+          "url": "http://openplan-plan-context.localhost:3495/land-use-plans/dbb283d2-58a6-4c33-9eaa-ff8929b7def0"
+        }
+      }
+    }
+  ],
+  "lostReply": {
+    "alerts": [
+      "SYNTHETIC lost reply after confirmed server response"
+    ],
+    "buttons": [
+      {
+        "disabled": false,
+        "text": "Refresh saved context"
+      },
+      {
+        "disabled": false,
+        "text": "Download copy"
+      },
+      {
+        "disabled": false,
+        "text": "Retry exact save request"
+      },
+      {
+        "disabled": true,
+        "text": "Open draft copy"
+      },
+      {
+        "disabled": false,
+        "text": "Keep copy aside and refresh"
+      },
+      {
+        "disabled": false,
+        "text": "Remove responsible body 1"
+      },
+      {
+        "disabled": false,
+        "text": "Remove responsible body 2"
+      },
+      {
+        "disabled": false,
+        "text": "Add responsible body"
+      },
+      {
+        "disabled": true,
+        "text": "Save plan context"
+      },
+      {
+        "disabled": false,
+        "text": "Download this draft"
+      },
+      {
+        "disabled": false,
+        "text": "Keep text as a new browser draft"
+      },
+      {
+        "disabled": false,
+        "text": "Keep draft copy and use saved context"
+      }
+    ],
+    "errors": [],
+    "records": [
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:pending:eda19e50-400f-4291-9dbe-14218447e1c3",
+        "value": {
+          "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+          "base": {
+            "contextHash": "a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61",
+            "descriptorId": "local-unconfigured",
+            "planKindKey": "community",
+            "versionId": "7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66"
+          },
+          "commandText": "{\"place\":{\"mode\":\"retained\"},\"assessment\":{\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdiction\":{\"country\":\"US\",\"subdivision\":\"OR\"},\"sourceUrls\":[\"https://example.test/synthetic-local-record\",\"https://example.test/synthetic-revised-record\"]},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\"}},\"commandId\":\"eda19e50-400f-4291-9dbe-14218447e1c3\",\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"expectedContextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"}",
+          "draft": {
+            "applicability": {
+              "authorityIds": [],
+              "explanation": "Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.",
+              "sourceText": "",
+              "status": "unresolved"
+            },
+            "authorities": [
+              {
+                "country": "US",
+                "id": "c9e54df3-2a1c-430c-bab1-5e23ef95d45a",
+                "jurisdictionUnknown": false,
+                "kind": "county",
+                "label": "SYNTHETIC browser-reviewed local body",
+                "role": "Study sponsor",
+                "sourceText": "https://example.test/synthetic-local-record\nhttps://example.test/synthetic-revised-record",
+                "subdivision": "OR"
+              },
+              {
+                "country": "",
+                "id": "26bf85d5-d4fc-4777-8088-e7ff6b39c577",
+                "jurisdictionUnknown": true,
+                "kind": "tribal_government",
+                "label": "SYNTHETIC sovereign body",
+                "role": "Consulting body",
+                "sourceText": "",
+                "subdivision": ""
+              }
+            ],
+            "place": {
+              "geoid": "",
+              "geometryText": "{\"type\":\"Polygon\",\"coordinates\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}",
+              "kind": null,
+              "label": "SYNTHETIC replacement study",
+              "mode": "retained"
+            }
+          },
+          "kind": "pending",
+          "planId": "dbb283d2-58a6-4c33-9eaa-ff8929b7def0",
+          "retainedPlace": {
+            "bbox": {
+              "maxLat": 38.7,
+              "maxLon": -121.4,
+              "minLat": 38.5,
+              "minLon": -121.6
+            },
+            "countryCode": null,
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    -121.6,
+                    38.5
+                  ],
+                  [
+                    -121.4,
+                    38.5
+                  ],
+                  [
+                    -121.4,
+                    38.7
+                  ],
+                  [
+                    -121.6,
+                    38.5
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            },
+            "kind": null,
+            "label": "SYNTHETIC replacement study",
+            "ref": null,
+            "source": "uploaded_file",
+            "subdivisionCode": null
+          },
+          "savedAt": "2026-10-07T12:48:04.681Z",
+          "schemaVersion": 1,
+          "workspaceId": "c91d26b4-7f7f-4168-8194-a8f19a375ee8"
+        }
+      },
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:draft:b9b86968-9b78-47f1-9854-c6842be28d74",
+        "value": {
+          "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+          "base": {
+            "contextHash": "a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61",
+            "descriptorId": "local-unconfigured",
+            "planKindKey": "community",
+            "versionId": "7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66"
+          },
+          "draft": {
+            "applicability": {
+              "authorityIds": [],
+              "explanation": "Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.",
+              "sourceText": "",
+              "status": "unresolved"
+            },
+            "authorities": [
+              {
+                "country": "US",
+                "id": "c9e54df3-2a1c-430c-bab1-5e23ef95d45a",
+                "jurisdictionUnknown": false,
+                "kind": "county",
+                "label": "SYNTHETIC browser-reviewed local body",
+                "role": "Study sponsor",
+                "sourceText": "https://example.test/synthetic-local-record\nhttps://example.test/synthetic-revised-record",
+                "subdivision": "OR"
+              },
+              {
+                "country": "",
+                "id": "26bf85d5-d4fc-4777-8088-e7ff6b39c577",
+                "jurisdictionUnknown": true,
+                "kind": "tribal_government",
+                "label": "SYNTHETIC sovereign body",
+                "role": "Consulting body",
+                "sourceText": "",
+                "subdivision": ""
+              }
+            ],
+            "place": {
+              "geoid": "",
+              "geometryText": "{\"type\":\"Polygon\",\"coordinates\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}",
+              "kind": null,
+              "label": "SYNTHETIC replacement study",
+              "mode": "retained"
+            }
+          },
+          "instanceId": "b9b86968-9b78-47f1-9854-c6842be28d74",
+          "kind": "draft",
+          "planId": "dbb283d2-58a6-4c33-9eaa-ff8929b7def0",
+          "savedAt": "2026-10-07T12:47:21.432Z",
+          "schemaVersion": 1,
+          "workspaceId": "c91d26b4-7f7f-4168-8194-a8f19a375ee8"
+        }
+      }
+    ],
+    "requests": [
+      {
+        "body": "{\"place\":{\"mode\":\"retained\"},\"assessment\":{\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdiction\":{\"country\":\"US\",\"subdivision\":\"OR\"},\"sourceUrls\":[\"https://example.test/synthetic-local-record\",\"https://example.test/synthetic-revised-record\"]},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\"}},\"commandId\":\"eda19e50-400f-4291-9dbe-14218447e1c3\",\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"expectedContextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"}",
+        "commandId": "eda19e50-400f-4291-9dbe-14218447e1c3",
+        "replyIntentionallyDropped": true,
+        "retainedBeforeTransport": true,
+        "status": 201
+      }
+    ],
+    "url": "http://openplan-plan-context.localhost:3495/land-use-plans/dbb283d2-58a6-4c33-9eaa-ff8929b7def0"
+  },
+  "reopened": {
+    "activated": "Retry exact save request",
+    "at": "2026-10-07T12:51:12.412Z",
+    "before": [
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:pending:eda19e50-400f-4291-9dbe-14218447e1c3",
+        "raw": "{\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"workspaceId\":\"c91d26b4-7f7f-4168-8194-a8f19a375ee8\",\"planId\":\"dbb283d2-58a6-4c33-9eaa-ff8929b7def0\",\"schemaVersion\":1,\"kind\":\"pending\",\"savedAt\":\"2026-10-07T12:48:04.681Z\",\"base\":{\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"contextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"},\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"SYNTHETIC replacement study\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdictionUnknown\":false,\"country\":\"US\",\"subdivision\":\"OR\",\"sourceText\":\"https://example.test/synthetic-local-record\\nhttps://example.test/synthetic-revised-record\"},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\",\"sourceText\":\"\",\"authorityIds\":[]}},\"commandText\":\"{\\\"place\\\":{\\\"mode\\\":\\\"retained\\\"},\\\"assessment\\\":{\\\"authorities\\\":[{\\\"id\\\":\\\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\\\",\\\"label\\\":\\\"SYNTHETIC browser-reviewed local body\\\",\\\"role\\\":\\\"Study sponsor\\\",\\\"kind\\\":\\\"county\\\",\\\"jurisdiction\\\":{\\\"country\\\":\\\"US\\\",\\\"subdivision\\\":\\\"OR\\\"},\\\"sourceUrls\\\":[\\\"https://example.test/synthetic-local-record\\\",\\\"https://example.test/synthetic-revised-record\\\"]},{\\\"id\\\":\\\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\\\",\\\"label\\\":\\\"SYNTHETIC sovereign body\\\",\\\"role\\\":\\\"Consulting body\\\",\\\"kind\\\":\\\"tribal_government\\\",\\\"jurisdiction\\\":null,\\\"sourceUrls\\\":[]}],\\\"applicability\\\":{\\\"status\\\":\\\"unresolved\\\",\\\"explanation\\\":\\\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\\\"}},\\\"commandId\\\":\\\"eda19e50-400f-4291-9dbe-14218447e1c3\\\",\\\"versionId\\\":\\\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\\\",\\\"expectedContextHash\\\":\\\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\\\",\\\"descriptorId\\\":\\\"local-unconfigured\\\",\\\"planKindKey\\\":\\\"community\\\"}\",\"retainedPlace\":{\"source\":\"uploaded_file\",\"kind\":null,\"ref\":null,\"label\":\"SYNTHETIC replacement study\",\"countryCode\":null,\"subdivisionCode\":null,\"bbox\":{\"minLon\":-121.6,\"minLat\":38.5,\"maxLon\":-121.4,\"maxLat\":38.7},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}}}"
+      },
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:draft:b9b86968-9b78-47f1-9854-c6842be28d74",
+        "raw": "{\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"workspaceId\":\"c91d26b4-7f7f-4168-8194-a8f19a375ee8\",\"planId\":\"dbb283d2-58a6-4c33-9eaa-ff8929b7def0\",\"schemaVersion\":1,\"kind\":\"draft\",\"instanceId\":\"b9b86968-9b78-47f1-9854-c6842be28d74\",\"savedAt\":\"2026-10-07T12:47:21.432Z\",\"base\":{\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"contextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"},\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"SYNTHETIC replacement study\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdictionUnknown\":false,\"country\":\"US\",\"subdivision\":\"OR\",\"sourceText\":\"https://example.test/synthetic-local-record\\nhttps://example.test/synthetic-revised-record\"},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\",\"sourceText\":\"\",\"authorityIds\":[]}}}"
+      }
+    ]
+  },
+  "retry": {
+    "alerts": [
+      "Context or content needs attention. Save edits and resolve recovery before freezing the plan.",
+      "Plan context saved and refreshed."
+    ],
+    "at": "2026-10-07T12:51:17.220Z",
+    "buttons": [
+      {
+        "disabled": false,
+        "text": "SYNTHETIC context editor 63484482-ddee-4086-84ca-d2e1c749d2b7"
+      },
+      {
+        "disabled": false,
+        "text": "Refresh saved context"
+      },
+      {
+        "disabled": false,
+        "text": "Download copy"
+      },
+      {
+        "disabled": false,
+        "text": "Open draft copy"
+      },
+      {
+        "disabled": false,
+        "text": "Keep copy aside and refresh"
+      },
+      {
+        "disabled": true,
+        "text": "Save plan context"
+      },
+      {
+        "disabled": false,
+        "text": "Download this draft"
+      },
+      {
+        "disabled": true,
+        "text": "Freeze public draft"
+      }
+    ],
+    "errors": [],
+    "inputs": [
+      {
+        "disabled": false,
+        "value": "SYNTHETIC browser-reviewed local body"
+      },
+      {
+        "disabled": false,
+        "value": "Study sponsor"
+      },
+      {
+        "disabled": false,
+        "value": "County government"
+      },
+      {
+        "disabled": false,
+        "value": "US"
+      },
+      {
+        "disabled": false,
+        "value": "OR"
+      },
+      {
+        "disabled": false,
+        "value": "SYNTHETIC sovereign body"
+      },
+      {
+        "disabled": false,
+        "value": "Consulting body"
+      },
+      {
+        "disabled": false,
+        "value": "Tribal government"
+      },
+      {
+        "disabled": false,
+        "value": ""
+      },
+      {
+        "disabled": false,
+        "value": ""
+      },
+      {
+        "disabled": false,
+        "value": ""
+      },
+      {
+        "disabled": false,
+        "value": ""
+      },
+      {
+        "disabled": false,
+        "value": ""
+      },
+      {
+        "disabled": false,
+        "value": ""
+      },
+      {
+        "disabled": false,
+        "value": ""
+      }
+    ],
+    "records": [
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:draft:b9b86968-9b78-47f1-9854-c6842be28d74",
+        "raw": "{\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"workspaceId\":\"c91d26b4-7f7f-4168-8194-a8f19a375ee8\",\"planId\":\"dbb283d2-58a6-4c33-9eaa-ff8929b7def0\",\"schemaVersion\":1,\"kind\":\"draft\",\"instanceId\":\"b9b86968-9b78-47f1-9854-c6842be28d74\",\"savedAt\":\"2026-10-07T12:47:21.432Z\",\"base\":{\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"contextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"},\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"SYNTHETIC replacement study\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdictionUnknown\":false,\"country\":\"US\",\"subdivision\":\"OR\",\"sourceText\":\"https://example.test/synthetic-local-record\\nhttps://example.test/synthetic-revised-record\"},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\",\"sourceText\":\"\",\"authorityIds\":[]}}}"
+      }
+    ],
+    "requests": [
+      {
+        "at": "2026-10-07T12:51:12.415Z",
+        "body": "{\"place\":{\"mode\":\"retained\"},\"assessment\":{\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdiction\":{\"country\":\"US\",\"subdivision\":\"OR\"},\"sourceUrls\":[\"https://example.test/synthetic-local-record\",\"https://example.test/synthetic-revised-record\"]},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\"}},\"commandId\":\"eda19e50-400f-4291-9dbe-14218447e1c3\",\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"expectedContextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"}",
+        "reply": {
+          "commandId": "eda19e50-400f-4291-9dbe-14218447e1c3",
+          "context": {
+            "assessment": {
+              "applicability": {
+                "explanation": "Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.",
+                "status": "unresolved"
+              },
+              "authorities": [
+                {
+                  "id": "c9e54df3-2a1c-430c-bab1-5e23ef95d45a",
+                  "jurisdiction": {
+                    "country": "US",
+                    "subdivision": "OR"
+                  },
+                  "kind": "county",
+                  "label": "SYNTHETIC browser-reviewed local body",
+                  "role": "Study sponsor",
+                  "sourceUrls": [
+                    "https://example.test/synthetic-local-record",
+                    "https://example.test/synthetic-revised-record"
+                  ]
+                },
+                {
+                  "id": "26bf85d5-d4fc-4777-8088-e7ff6b39c577",
+                  "jurisdiction": null,
+                  "kind": "tribal_government",
+                  "label": "SYNTHETIC sovereign body",
+                  "role": "Consulting body",
+                  "sourceUrls": []
+                }
+              ]
+            },
+            "place": {
+              "bbox": {
+                "maxLat": 38.7,
+                "maxLon": -121.4,
+                "minLat": 38.5,
+                "minLon": -121.6
+              },
+              "countryCode": null,
+              "geometry": {
+                "coordinates": [
+                  [
+                    [
+                      -121.6,
+                      38.5
+                    ],
+                    [
+                      -121.4,
+                      38.5
+                    ],
+                    [
+                      -121.4,
+                      38.7
+                    ],
+                    [
+                      -121.6,
+                      38.5
+                    ]
+                  ]
+                ],
+                "type": "Polygon"
+              },
+              "kind": null,
+              "label": "SYNTHETIC replacement study",
+              "ref": null,
+              "source": "uploaded_file",
+              "subdivisionCode": null
+            },
+            "savedAt": "2026-10-07T12:48:04.834622Z",
+            "savedBy": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+            "schemaVersion": 1
+          },
+          "contextHash": "84d281020300cc14c4efc444b263840c805de2850ac979befc41142f3cdfdc33",
+          "replayed": true,
+          "versionId": "7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66"
+        },
+        "status": 200
+      }
+    ]
+  },
+  "stale": {
+    "buttons": [
+      {
+        "disabled": false,
+        "text": "SYNTHETIC context editor 63484482-ddee-4086-84ca-d2e1c749d2b7"
+      },
+      {
+        "disabled": false,
+        "text": "Refresh saved context"
+      },
+      {
+        "disabled": false,
+        "text": "Download copy"
+      },
+      {
+        "disabled": true,
+        "text": "Open draft copy"
+      },
+      {
+        "disabled": false,
+        "text": "Keep copy aside and refresh"
+      },
+      {
+        "disabled": true,
+        "text": "Use reviewed assessment with current draft"
+      },
+      {
+        "disabled": true,
+        "text": "Save plan context"
+      },
+      {
+        "disabled": false,
+        "text": "Download this draft"
+      },
+      {
+        "disabled": false,
+        "text": "Keep draft copy and use saved context"
+      },
+      {
+        "disabled": false,
+        "text": "Save review event"
+      },
+      {
+        "disabled": true,
+        "text": "Freeze public draft"
+      }
+    ],
+    "labels": [
+      {
+        "for": "",
+        "text": "Restore a downloaded context copy"
+      },
+      {
+        "for": "",
+        "text": "Study area for the reviewed draft\nUse the current saved study area"
+      },
+      {
+        "for": "",
+        "text": "I reviewed the saved context, responsible bodies and selected study area."
+      },
+      {
+        "for": "",
+        "text": "Keep the saved study area unchanged"
+      },
+      {
+        "for": "",
+        "text": "Body name"
+      },
+      {
+        "for": "",
+        "text": "Role in this plan"
+      },
+      {
+        "for": "",
+        "text": "Type of body"
+      },
+      {
+        "for": "",
+        "text": "Jurisdiction is not assessed"
+      },
+      {
+        "for": "",
+        "text": "Country codeTwo-letter country code for the jurisdiction of this body."
+      },
+      {
+        "for": "",
+        "text": "State or subdivision codeLeave blank when no single subdivision describes it."
+      },
+      {
+        "for": "",
+        "text": "Authority sources\nOne public source URL per line. Keep unresolved authority explicit when sources are missing."
+      },
+      {
+        "for": "",
+        "text": "Body name"
+      },
+      {
+        "for": "",
+        "text": "Role in this plan"
+      },
+      {
+        "for": "",
+        "text": "Type of body"
+      },
+      {
+        "for": "",
+        "text": "Jurisdiction is not assessed"
+      },
+      {
+        "for": "",
+        "text": "Authority sources\nOne public source URL per line. Keep unresolved authority explicit when sources are missing."
+      },
+      {
+        "for": "",
+        "text": "Applicability assessment\nUnresolved\nAssessed by staff with sources"
+      },
+      {
+        "for": "",
+        "text": "Assessment basis and unresolved questions"
+      },
+      {
+        "for": "",
+        "text": "Evidence document\nNo evidence document"
+      },
+      {
+        "for": "",
+        "text": "Official evidence URL"
+      },
+      {
+        "for": "",
+        "text": "Parent section\nTop level\nLocally defined content"
+      },
+      {
+        "for": "",
+        "text": "Node type\ngoal\nobjective\npolicy\nstandard\nprogram\nimplementation action"
+      },
+      {
+        "for": "",
+        "text": "Node title"
+      },
+      {
+        "for": "",
+        "text": "Node text"
+      },
+      {
+        "for": "",
+        "text": "Agency GIS layer\nChoose an agency GIS layer"
+      },
+      {
+        "for": "",
+        "text": "Designation set label"
+      },
+      {
+        "for": "",
+        "text": "Public map fields\nOnly selected fields can be made public. Select none to show shapes only."
+      },
+      {
+        "for": "",
+        "text": "Legend field\nNo feature labels"
+      },
+      {
+        "for": "",
+        "text": "Linked policies"
+      },
+      {
+        "for": "",
+        "text": "Implementation action"
+      },
+      {
+        "for": "",
+        "text": "Responsible party"
+      },
+      {
+        "for": "",
+        "text": "Due date"
+      },
+      {
+        "for": "",
+        "text": "Linked project\nNo linked project"
+      },
+      {
+        "for": "",
+        "text": "Linked program\nNo linked program"
+      },
+      {
+        "for": "",
+        "text": "Related plan label"
+      },
+      {
+        "for": "",
+        "text": "Relationship\nparent\nchild\noverlapping\nsupersedes\nimplements"
+      },
+      {
+        "for": "",
+        "text": "Relationship and consistency notes"
+      },
+      {
+        "for": "",
+        "text": "Process step\nChoose descriptor step\nLocally defined review and adoption process"
+      },
+      {
+        "for": "",
+        "text": "Status\nnot started\nin progress\ncomplete\nnot applicable"
+      },
+      {
+        "for": "",
+        "text": "Actual due date"
+      },
+      {
+        "for": "",
+        "text": "Actual completion date"
+      },
+      {
+        "for": "",
+        "text": "Evidence document\nNo evidence document"
+      },
+      {
+        "for": "",
+        "text": "Process note"
+      },
+      {
+        "for": "",
+        "text": "Consultation status\nnot started\ninitiated\nin progress\ncomplete\nnot applicable"
+      },
+      {
+        "for": "",
+        "text": "Evidence document\nNo evidence document selected"
+      },
+      {
+        "for": "",
+        "text": "Confidential consultation notes"
+      },
+      {
+        "for": "",
+        "text": "Contains sensitive-location information"
+      },
+      {
+        "for": "",
+        "text": "Review event type\ninternal consistency\nenvironmental review\nhearing\nrecommendation\ncomment response"
+      },
+      {
+        "for": "",
+        "text": "Event date"
+      },
+      {
+        "for": "",
+        "text": "Reviewing or hearing body"
+      },
+      {
+        "for": "",
+        "text": "Linked public engagement\nNo linked public engagement"
+      },
+      {
+        "for": "",
+        "text": "Evidence document\nNo evidence document"
+      },
+      {
+        "for": "",
+        "text": "Review notes"
+      },
+      {
+        "for": "",
+        "text": ""
+      }
+    ],
+    "records": [
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:draft:d73ee23c-4b6b-4513-855f-8ca512015929",
+        "raw": "{\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"workspaceId\":\"c91d26b4-7f7f-4168-8194-a8f19a375ee8\",\"planId\":\"dbb283d2-58a6-4c33-9eaa-ff8929b7def0\",\"schemaVersion\":1,\"kind\":\"draft\",\"instanceId\":\"d73ee23c-4b6b-4513-855f-8ca512015929\",\"savedAt\":\"2026-10-07T12:51:47.294Z\",\"base\":{\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"contextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"},\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"SYNTHETIC replacement study\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdictionUnknown\":false,\"country\":\"US\",\"subdivision\":\"OR\",\"sourceText\":\"https://example.test/synthetic-local-record\\nhttps://example.test/synthetic-revised-record\"},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\",\"sourceText\":\"\",\"authorityIds\":[]}}}"
+      },
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:draft:b9b86968-9b78-47f1-9854-c6842be28d74",
+        "raw": "{\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"workspaceId\":\"c91d26b4-7f7f-4168-8194-a8f19a375ee8\",\"planId\":\"dbb283d2-58a6-4c33-9eaa-ff8929b7def0\",\"schemaVersion\":1,\"kind\":\"draft\",\"instanceId\":\"b9b86968-9b78-47f1-9854-c6842be28d74\",\"savedAt\":\"2026-10-07T12:47:21.432Z\",\"base\":{\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"contextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"},\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"SYNTHETIC replacement study\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdictionUnknown\":false,\"country\":\"US\",\"subdivision\":\"OR\",\"sourceText\":\"https://example.test/synthetic-local-record\\nhttps://example.test/synthetic-revised-record\"},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\",\"sourceText\":\"\",\"authorityIds\":[]}}}"
+      }
+    ],
+    "requests": 1,
+    "text": "Study area and responsible bodies\n\nRecord this plan's study area, responsible bodies and the sources for its applicability assessment. These facts belong to the plan, independently of the workspace home.\n\nThe copy is restored. Nothing has been sent.\n\nRefresh saved context\n\nUnsaved assessment. A new freeze is blocked.\n\nCurrent saved context\nBrowser recovery copies\n\nAn unconfirmed request may already have saved. Retry its exact request to find out. Keeping a copy aside does not cancel it. Download copies before clearing browser storage.\n\nSaved browser draft, 2026-10-07T12:47:21.432Z\n\nOriginal working version: 7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\n\nDownload copy\nOpen draft copy\nKeep copy aside and refresh\nRestore a downloaded context copy\nReview this older draft against the saved context\n\nThis copy keeps its original assessment. It cannot save against a newer version or context without your review.\n\nOriginal version: 7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\nOriginal context hash: a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\n\nOriginal study area: SYNTHETIC replacement study. Current saved study area: SYNTHETIC replacement study.\n\nStudy area for the reviewed draft\nUse the current saved study area\n\nReview the saved assessment above and the draft fields below. Keeping the current study area does not change the responsible bodies in your draft.\n\nI reviewed the saved context, responsible bodies and selected study area.\nUse reviewed assessment with current draft\nStudy area\n\nKeep the study boundary separate from the authority assessment below. Searching or drawing an area does not assign a governing body.\n\nKeep the saved study area unchanged\n\nSaving this assessment preserves the saved boundary, label and source identity. It does not fetch a newer boundary.\n\nResponsible bodies and applicability\n\nIdentify the bodies responsible for this plan and their roles. A study boundary or office location does not establish governing authority. Keep private consultation notes in the consultation record.\n\nResponsible body 1\nBody name\nRole in this plan\nType of body\nJurisdiction is not assessed\nCountry codeTwo-letter country code for the jurisdiction of this body.\nState or subdivision codeLeave blank when no single subdivision describes it.\nAuthority sources\nOne public source URL per line. Keep unresolved authority explicit when sources are missing.\nRemove responsible body 1\nResponsible body 2\nBody name\nRole in this plan\nType of body\nJurisdiction is not assessed\nAuthority sources\nOne public source URL per line. Keep unresolved authority explicit when sources are missing.\nRemove responsible body 2\nAdd responsible body\nApplicability assessment\nUnresolved\nAssessed by staff with sources\nAssessment basis and unresolved questions\n\nUnresolved applicability can be retained with the neutral workflow. It cannot authorize a configured legal checklist.\n\nSave plan context\nDownload this draft\nKeep draft copy and use saved context\n"
+  },
+  "reviewed": {
+    "alerts": [
+      "Context or content needs attention. Save edits and resolve recovery before freezing the plan.",
+      "The reviewed assessment now uses the current working version. Review the fields and save when ready; nothing has been sent."
+    ],
+    "at": "2026-10-07T12:52:37.326Z",
+    "buttons": [
+      {
+        "disabled": false,
+        "text": "SYNTHETIC context editor 63484482-ddee-4086-84ca-d2e1c749d2b7"
+      },
+      {
+        "disabled": false,
+        "text": "Refresh saved context"
+      },
+      {
+        "disabled": false,
+        "text": "Download copy"
+      },
+      {
+        "disabled": true,
+        "text": "Open draft copy"
+      },
+      {
+        "disabled": false,
+        "text": "Download copy"
+      },
+      {
+        "disabled": true,
+        "text": "Open draft copy"
+      },
+      {
+        "disabled": false,
+        "text": "Keep copy aside and refresh"
+      },
+      {
+        "disabled": false,
+        "text": "Save plan context"
+      },
+      {
+        "disabled": false,
+        "text": "Download this draft"
+      },
+      {
+        "disabled": false,
+        "text": "Keep draft copy and use saved context"
+      },
+      {
+        "disabled": true,
+        "text": "Freeze public draft"
+      }
+    ],
+    "errors": [],
+    "records": [
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:copy:4f3e0bc9-7044-4585-b19c-137de7fb6a17",
+        "raw": "{\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"workspaceId\":\"c91d26b4-7f7f-4168-8194-a8f19a375ee8\",\"planId\":\"dbb283d2-58a6-4c33-9eaa-ff8929b7def0\",\"schemaVersion\":1,\"kind\":\"draft\",\"instanceId\":\"d73ee23c-4b6b-4513-855f-8ca512015929\",\"savedAt\":\"2026-10-07T12:51:47.294Z\",\"base\":{\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"contextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"},\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"SYNTHETIC replacement study\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdictionUnknown\":false,\"country\":\"US\",\"subdivision\":\"OR\",\"sourceText\":\"https://example.test/synthetic-local-record\\nhttps://example.test/synthetic-revised-record\"},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\",\"sourceText\":\"\",\"authorityIds\":[]}}}"
+      },
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:draft:b9b86968-9b78-47f1-9854-c6842be28d74",
+        "raw": "{\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"workspaceId\":\"c91d26b4-7f7f-4168-8194-a8f19a375ee8\",\"planId\":\"dbb283d2-58a6-4c33-9eaa-ff8929b7def0\",\"schemaVersion\":1,\"kind\":\"draft\",\"instanceId\":\"b9b86968-9b78-47f1-9854-c6842be28d74\",\"savedAt\":\"2026-10-07T12:47:21.432Z\",\"base\":{\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"contextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"},\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"SYNTHETIC replacement study\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdictionUnknown\":false,\"country\":\"US\",\"subdivision\":\"OR\",\"sourceText\":\"https://example.test/synthetic-local-record\\nhttps://example.test/synthetic-revised-record\"},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\",\"sourceText\":\"\",\"authorityIds\":[]}}}"
+      },
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:draft:94cf6f37-c108-46bd-ae50-cf92b9e0dfc7",
+        "raw": "{\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"workspaceId\":\"c91d26b4-7f7f-4168-8194-a8f19a375ee8\",\"planId\":\"dbb283d2-58a6-4c33-9eaa-ff8929b7def0\",\"schemaVersion\":1,\"kind\":\"draft\",\"instanceId\":\"94cf6f37-c108-46bd-ae50-cf92b9e0dfc7\",\"savedAt\":\"2026-10-07T12:52:28.946Z\",\"base\":{\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"contextHash\":\"84d281020300cc14c4efc444b263840c805de2850ac979befc41142f3cdfdc33\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"},\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"SYNTHETIC replacement study\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdictionUnknown\":false,\"country\":\"US\",\"subdivision\":\"OR\",\"sourceText\":\"https://example.test/synthetic-local-record\\nhttps://example.test/synthetic-revised-record\"},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\",\"sourceText\":\"\",\"authorityIds\":[]}}}"
+      }
+    ],
+    "requests": [
+      {
+        "at": "2026-10-07T12:51:12.415Z",
+        "body": "{\"place\":{\"mode\":\"retained\"},\"assessment\":{\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdiction\":{\"country\":\"US\",\"subdivision\":\"OR\"},\"sourceUrls\":[\"https://example.test/synthetic-local-record\",\"https://example.test/synthetic-revised-record\"]},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\"}},\"commandId\":\"eda19e50-400f-4291-9dbe-14218447e1c3\",\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"expectedContextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"}",
+        "reply": {
+          "commandId": "eda19e50-400f-4291-9dbe-14218447e1c3",
+          "context": {
+            "assessment": {
+              "applicability": {
+                "explanation": "Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.",
+                "status": "unresolved"
+              },
+              "authorities": [
+                {
+                  "id": "c9e54df3-2a1c-430c-bab1-5e23ef95d45a",
+                  "jurisdiction": {
+                    "country": "US",
+                    "subdivision": "OR"
+                  },
+                  "kind": "county",
+                  "label": "SYNTHETIC browser-reviewed local body",
+                  "role": "Study sponsor",
+                  "sourceUrls": [
+                    "https://example.test/synthetic-local-record",
+                    "https://example.test/synthetic-revised-record"
+                  ]
+                },
+                {
+                  "id": "26bf85d5-d4fc-4777-8088-e7ff6b39c577",
+                  "jurisdiction": null,
+                  "kind": "tribal_government",
+                  "label": "SYNTHETIC sovereign body",
+                  "role": "Consulting body",
+                  "sourceUrls": []
+                }
+              ]
+            },
+            "place": {
+              "bbox": {
+                "maxLat": 38.7,
+                "maxLon": -121.4,
+                "minLat": 38.5,
+                "minLon": -121.6
+              },
+              "countryCode": null,
+              "geometry": {
+                "coordinates": [
+                  [
+                    [
+                      -121.6,
+                      38.5
+                    ],
+                    [
+                      -121.4,
+                      38.5
+                    ],
+                    [
+                      -121.4,
+                      38.7
+                    ],
+                    [
+                      -121.6,
+                      38.5
+                    ]
+                  ]
+                ],
+                "type": "Polygon"
+              },
+              "kind": null,
+              "label": "SYNTHETIC replacement study",
+              "ref": null,
+              "source": "uploaded_file",
+              "subdivisionCode": null
+            },
+            "savedAt": "2026-10-07T12:48:04.834622Z",
+            "savedBy": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+            "schemaVersion": 1
+          },
+          "contextHash": "84d281020300cc14c4efc444b263840c805de2850ac979befc41142f3cdfdc33",
+          "replayed": true,
+          "versionId": "7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66"
+        },
+        "status": 200
+      }
+    ],
+    "viewport": {
+      "documentWidth": 1280,
+      "height": 800,
+      "width": 1280
+    }
+  },
+  "final": {
+    "alerts": [
+      "Context or content needs attention. Save edits and resolve recovery before freezing the plan.",
+      "The earlier draft is preserved. This form starts from the current saved context."
+    ],
+    "at": "2026-10-07T12:52:48.742Z",
+    "errors": [],
+    "records": [
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:copy:4f3e0bc9-7044-4585-b19c-137de7fb6a17",
+        "raw": "{\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"workspaceId\":\"c91d26b4-7f7f-4168-8194-a8f19a375ee8\",\"planId\":\"dbb283d2-58a6-4c33-9eaa-ff8929b7def0\",\"schemaVersion\":1,\"kind\":\"draft\",\"instanceId\":\"d73ee23c-4b6b-4513-855f-8ca512015929\",\"savedAt\":\"2026-10-07T12:51:47.294Z\",\"base\":{\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"contextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"},\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"SYNTHETIC replacement study\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdictionUnknown\":false,\"country\":\"US\",\"subdivision\":\"OR\",\"sourceText\":\"https://example.test/synthetic-local-record\\nhttps://example.test/synthetic-revised-record\"},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\",\"sourceText\":\"\",\"authorityIds\":[]}}}"
+      },
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:copy:ee85b141-f9fc-46cf-a55d-ab167359d2fe",
+        "raw": "{\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"workspaceId\":\"c91d26b4-7f7f-4168-8194-a8f19a375ee8\",\"planId\":\"dbb283d2-58a6-4c33-9eaa-ff8929b7def0\",\"schemaVersion\":1,\"kind\":\"draft\",\"instanceId\":\"94cf6f37-c108-46bd-ae50-cf92b9e0dfc7\",\"savedAt\":\"2026-10-07T12:52:28.946Z\",\"base\":{\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"contextHash\":\"84d281020300cc14c4efc444b263840c805de2850ac979befc41142f3cdfdc33\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"},\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"SYNTHETIC replacement study\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdictionUnknown\":false,\"country\":\"US\",\"subdivision\":\"OR\",\"sourceText\":\"https://example.test/synthetic-local-record\\nhttps://example.test/synthetic-revised-record\"},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\",\"sourceText\":\"\",\"authorityIds\":[]}}}"
+      },
+      {
+        "key": "openplan:plan-context:3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705:c91d26b4-7f7f-4168-8194-a8f19a375ee8:dbb283d2-58a6-4c33-9eaa-ff8929b7def0:draft:b9b86968-9b78-47f1-9854-c6842be28d74",
+        "raw": "{\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"workspaceId\":\"c91d26b4-7f7f-4168-8194-a8f19a375ee8\",\"planId\":\"dbb283d2-58a6-4c33-9eaa-ff8929b7def0\",\"schemaVersion\":1,\"kind\":\"draft\",\"instanceId\":\"b9b86968-9b78-47f1-9854-c6842be28d74\",\"savedAt\":\"2026-10-07T12:47:21.432Z\",\"base\":{\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"contextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"},\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"SYNTHETIC replacement study\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdictionUnknown\":false,\"country\":\"US\",\"subdivision\":\"OR\",\"sourceText\":\"https://example.test/synthetic-local-record\\nhttps://example.test/synthetic-revised-record\"},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\",\"sourceText\":\"\",\"authorityIds\":[]}}}"
+      }
+    ],
+    "requests": [
+      {
+        "at": "2026-10-07T12:51:12.415Z",
+        "body": "{\"place\":{\"mode\":\"retained\"},\"assessment\":{\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdiction\":{\"country\":\"US\",\"subdivision\":\"OR\"},\"sourceUrls\":[\"https://example.test/synthetic-local-record\",\"https://example.test/synthetic-revised-record\"]},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\"}},\"commandId\":\"eda19e50-400f-4291-9dbe-14218447e1c3\",\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"expectedContextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"}",
+        "reply": {
+          "commandId": "eda19e50-400f-4291-9dbe-14218447e1c3",
+          "context": {
+            "assessment": {
+              "applicability": {
+                "explanation": "Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.",
+                "status": "unresolved"
+              },
+              "authorities": [
+                {
+                  "id": "c9e54df3-2a1c-430c-bab1-5e23ef95d45a",
+                  "jurisdiction": {
+                    "country": "US",
+                    "subdivision": "OR"
+                  },
+                  "kind": "county",
+                  "label": "SYNTHETIC browser-reviewed local body",
+                  "role": "Study sponsor",
+                  "sourceUrls": [
+                    "https://example.test/synthetic-local-record",
+                    "https://example.test/synthetic-revised-record"
+                  ]
+                },
+                {
+                  "id": "26bf85d5-d4fc-4777-8088-e7ff6b39c577",
+                  "jurisdiction": null,
+                  "kind": "tribal_government",
+                  "label": "SYNTHETIC sovereign body",
+                  "role": "Consulting body",
+                  "sourceUrls": []
+                }
+              ]
+            },
+            "place": {
+              "bbox": {
+                "maxLat": 38.7,
+                "maxLon": -121.4,
+                "minLat": 38.5,
+                "minLon": -121.6
+              },
+              "countryCode": null,
+              "geometry": {
+                "coordinates": [
+                  [
+                    [
+                      -121.6,
+                      38.5
+                    ],
+                    [
+                      -121.4,
+                      38.5
+                    ],
+                    [
+                      -121.4,
+                      38.7
+                    ],
+                    [
+                      -121.6,
+                      38.5
+                    ]
+                  ]
+                ],
+                "type": "Polygon"
+              },
+              "kind": null,
+              "label": "SYNTHETIC replacement study",
+              "ref": null,
+              "source": "uploaded_file",
+              "subdivisionCode": null
+            },
+            "savedAt": "2026-10-07T12:48:04.834622Z",
+            "savedBy": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+            "schemaVersion": 1
+          },
+          "contextHash": "84d281020300cc14c4efc444b263840c805de2850ac979befc41142f3cdfdc33",
+          "replayed": true,
+          "versionId": "7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66"
+        },
+        "status": 200
+      }
+    ],
+    "viewport": {
+      "documentWidth": 1280,
+      "height": 800,
+      "width": 1280
+    }
+  },
+  "database": {
+    "commands": [
+      {
+        "id": "eda19e50-400f-4291-9dbe-14218447e1c3",
+        "raw": "{\"place\":{\"mode\":\"retained\"},\"assessment\":{\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdiction\":{\"country\":\"US\",\"subdivision\":\"OR\"},\"sourceUrls\":[\"https://example.test/synthetic-local-record\",\"https://example.test/synthetic-revised-record\"]},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\"}},\"commandId\":\"eda19e50-400f-4291-9dbe-14218447e1c3\",\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"expectedContextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"}",
+        "sha256": "20bd197774d8697ca8b1febd1def125a47d0b6eac5551b61cde17cb6cd9f8dd9"
+      }
+    ],
+    "draftRevision": 5
+  },
+  "assertions": {
+    "exactRetryBytes": true,
+    "oneJournalRow": true,
+    "nativeExactBytes": true,
+    "oneRevisionForBrowserCommand": true,
+    "nativeFixturePreBrowserRevision": 4,
+    "staleRestoreDoesNotSend": true,
+    "reviewDoesNotSend": true,
+    "originalCopyPreserved": true,
+    "staleCopyArchivedExactly": true
+  },
+  "toolFailures": [
+    "Recording start timed out; recording stop failed. No authentication was performed in that tab.",
+    "Native click reported success without activating some controls; DOM activation used.",
+    "Resize to390x844 timed out at15000ms and20000ms. Subsequent open confirms1280x800.",
+    "Snapshot failed on client preview-15c860c89cab5f9b9eeb30c7c9bd70be.",
+    "Initial cookie-handoff fetch was blocked by existing CSP; navigation handoff succeeded after helper timeout and restart. No product CSP change."
+  ],
+  "artifact": {
+    "bytes": 1407,
+    "parsed": "draft",
+    "raw": "{\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"workspaceId\":\"c91d26b4-7f7f-4168-8194-a8f19a375ee8\",\"planId\":\"dbb283d2-58a6-4c33-9eaa-ff8929b7def0\",\"schemaVersion\":1,\"kind\":\"draft\",\"instanceId\":\"b9b86968-9b78-47f1-9854-c6842be28d74\",\"savedAt\":\"2026-10-07T12:47:21.432Z\",\"base\":{\"versionId\":\"7bd2176d-4ad5-4e0e-8dfa-76bd9435bb66\",\"contextHash\":\"a8a8f7915bed4d6156d5328b9a8ea00f801caa9f4948c92c1355e261d0d27a61\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\"},\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"SYNTHETIC replacement study\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[-121.6,38.5],[-121.4,38.5],[-121.4,38.7],[-121.6,38.5]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"c9e54df3-2a1c-430c-bab1-5e23ef95d45a\",\"label\":\"SYNTHETIC browser-reviewed local body\",\"role\":\"Study sponsor\",\"kind\":\"county\",\"jurisdictionUnknown\":false,\"country\":\"US\",\"subdivision\":\"OR\",\"sourceText\":\"https://example.test/synthetic-local-record\\nhttps://example.test/synthetic-revised-record\"},{\"id\":\"26bf85d5-d4fc-4777-8088-e7ff6b39c577\",\"label\":\"SYNTHETIC sovereign body\",\"role\":\"Consulting body\",\"kind\":\"tribal_government\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Synthetic workflow fixture only. No law, jurisdiction, approval or completed consultation is asserted.\",\"sourceText\":\"\",\"authorityIds\":[]}}}"
+  }
+}

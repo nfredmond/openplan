@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 1 failed) 216ms
+     × distinguishes a feature read failure from an empty map 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > distinguishes a feature read failure from an empty map
+AssertionError: expected 200 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 200
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:123:77
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  12:30:29
+   Duration  1.01s (transform 148ms, setup 56ms, import 303ms, tests 216ms, environment 347ms)
+

@@ -1,0 +1,4 @@
+ERROR:  private command journal
+CONTEXT:  PL/pgSQL function pg_temp_0.context_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.context_assert(NOT has_table_privilege('authenticated','public.land_use_plan_context_commands','SELECT'), 'private command journal')"
+PL/pgSQL function inline_code_block line 27 at PERFORM

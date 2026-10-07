@@ -1,0 +1,30 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-descriptor-snapshot.test.ts (5 tests | 1 failed) 17ms
+     × copies every rule, source and date independently from the registry object 14ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-descriptor-snapshot.test.ts > frozen plan descriptor custody > copies every rule, source and date independently from the registry object
+AssertionError: expected '803fa0987dc3bf7effee4cd15579f3289638d…' to be 'b419a0e06b9911f3dd0e7606cfeb1d3785dcd…' // Object.is equality
+
+Expected: "b419a0e06b9911f3dd0e7606cfeb1d3785dcd57fad1a361d2d611c01d0c5ad5c"
+Received: "803fa0987dc3bf7effee4cd15579f3289638da724bd9c4ee55b48d0aa3798f8f"
+
+ ❯ src/test/land-use-plan-descriptor-snapshot.test.ts:15:37
+     13|     original.processSteps[0].sourceUrls.push("https://example.test/lat…
+     14|     original.verifiedAt = "2026-10-07";
+     15|     expect(hashFrozenRecord(saved)).toBe(hash);
+       |                                     ^
+     16|     expect(hashFrozenRecord(original)).not.toBe(hash);
+     17|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 52 passed (53)
+   Start at  02:39:12
+   Duration  2.43s (transform 133ms, setup 148ms, import 335ms, tests 233ms, environment 1.30s)
+

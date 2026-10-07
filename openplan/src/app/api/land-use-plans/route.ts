@@ -1,33 +1,21 @@
+import { isDeepStrictEqual } from "node:util";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
-import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
-import {
-  getJurisdictionPlanDescriptor,
-  defaultApplicableRequirementKeys,
-  recommendJurisdictionPlanDescriptor,
-  SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS,
-} from "@/lib/land-use-plans/registry";
-import { createClient } from "@/lib/supabase/server";
+import { requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
+import { readBytesWithLimitStreaming } from "@/lib/http/body-limit";
+import { planCreationCommandSchema } from "@/lib/land-use-plans/create-command";
+import { createPlanWithContext, PlanCreationError } from "@/lib/land-use-plans/create-store";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
-import {
-  HOME_JURISDICTION_COLUMNS,
-  parseWorkspaceHomeGeography,
-  resolveJurisdiction,
-} from "@/lib/workspaces/home-geography";
 
-const selectableIds = SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.map((item) => item.id) as [string, ...string[]];
-const createSchema = z.object({
-  title: z.string().trim().min(1).max(180),
-  descriptorId: z.enum(selectableIds),
-  planKindKey: z.string().trim().min(1).max(80),
-  authorityLabel: z.string().trim().min(1).max(180),
-  geographyLabel: z.string().trim().min(1).max(180),
-  geographyGeojson: z.record(z.string(), z.unknown()),
-}).strict();
+const privateHeaders = { "Cache-Control": "private, no-store" };
+const messages = {
+  invalid: "Review the plan title, area, responsible bodies and assessment. Keep your draft.",
+  forbidden: "Current staff access in the same account and workspace is required. Staff must assess plan authority.",
+  conflict: "The reviewed rules or saved request changed. Keep the exact request and check its outcome before starting another plan.",
+  unavailable: "OpenPlan could not confirm creation. Keep the exact request and retry it before starting another plan.",
+};
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("land-use-plans.list", request);
@@ -48,121 +36,41 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ plans: data ?? [] });
 }
 
+/** Retain one plan-owned creation command before acknowledging any of its writes. */
 export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("land-use-plans.create", request);
-  audit.info("land_use_plan_create_requested");
-  const body = await readJsonOrNullWithLimit(request, BODY_LIMITS.networkGeoJson);
-  if (!body.ok) return body.response;
-  const parsed = createSchema.safeParse(body.data);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid land use plan payload", issues: parsed.error.issues }, { status: 400 });
+  try {
+    if (["x-openplan-assistant-execution-source", "x-openplan-assistant-input-hash", "x-openplan-assistant-approval-id"].some(key => request.headers.has(key))) {
+      throw new PlanCreationError("forbidden");
+    }
+    try { requireProviderBrowserOrigin(request); } catch { throw new PlanCreationError("forbidden"); }
+    const supabase = await createClient();
+    const { data: auth, error: authError } = await supabase.auth.getUser();
+    if (authError) throw new PlanCreationError("unavailable");
+    if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: privateHeaders });
+    const { membership } = await loadCurrentWorkspaceMembership(supabase, auth.user.id);
+    if (!membership || !canAccessWorkspaceAction("plans.write", membership.role)) throw new PlanCreationError("forbidden");
+    if (request.headers.get("x-openplan-expected-user") !== auth.user.id
+      || request.headers.get("x-openplan-expected-workspace") !== membership.workspace_id) throw new PlanCreationError("forbidden");
+    const body = await readBytesWithLimitStreaming(request, 2_000_000);
+    if (!body.ok) {
+      body.response.headers.set("Cache-Control", privateHeaders["Cache-Control"]);
+      return body.response;
+    }
+    let commandText: string;
+    let raw: unknown;
+    try { commandText = new TextDecoder("utf-8", { fatal: true }).decode(body.bytes); raw = JSON.parse(commandText); }
+    catch { throw new PlanCreationError("invalid"); }
+    const parsed = planCreationCommandSchema.safeParse(raw);
+    if (!parsed.success || !isDeepStrictEqual(parsed.data, raw)) throw new PlanCreationError("invalid");
+    const result = await createPlanWithContext(createServiceRoleClient(), {
+      actorId: auth.user.id, workspaceId: membership.workspace_id,
+    }, commandText);
+    audit.info("land_use_plan_creation_retained", { planId: result.planId, versionId: result.versionId, commandId: result.commandId, replayed: result.replayed });
+    return NextResponse.json(result, { status: result.replayed ? 200 : 201, headers: privateHeaders });
+  } catch (error) {
+    const failed = error instanceof PlanCreationError ? error : new PlanCreationError("unavailable");
+    audit.warn("land_use_plan_creation_unconfirmed", { kind: failed.kind });
+    return NextResponse.json({ kind: failed.kind, error: messages[failed.kind] }, { status: failed.status, headers: privateHeaders });
   }
-
-  const descriptor = getJurisdictionPlanDescriptor(parsed.data.descriptorId);
-  if (!descriptor || !descriptor.planKinds.some((kind) => kind.key === parsed.data.planKindKey)) {
-    return NextResponse.json({ error: "The selected plan kind is not in that jurisdiction descriptor" }, { status: 400 });
-  }
-
-  const supabase = await createClient();
-  const { data: auth, error: authError } = await supabase.auth.getUser();
-  if (authError) return NextResponse.json({ error: "Failed to authenticate" }, { status: 500 });
-  if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { membership } = await loadCurrentWorkspaceMembership(supabase, auth.user.id);
-  if (!membership || !canAccessWorkspaceAction("plans.write", membership.role)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  const jurisdictionResult = await supabase
-    .from("workspaces")
-    .select(HOME_JURISDICTION_COLUMNS)
-    .eq("id", membership.workspace_id)
-    .maybeSingle();
-  if (jurisdictionResult.error) {
-    return NextResponse.json(
-      { error: "The workspace jurisdiction could not be verified; no legal bundle was attached" },
-      { status: 503 }
-    );
-  }
-  const recommendation = recommendJurisdictionPlanDescriptor(
-    resolveJurisdiction(parseWorkspaceHomeGeography(jurisdictionResult.data))
-  );
-  if (descriptor.configured && recommendation.descriptor.id !== descriptor.id) {
-    return NextResponse.json(
-      {
-        error: `${descriptor.jurisdictionLabel} does not match this workspace's home jurisdiction. Use the neutral workflow instead.`,
-      },
-      { status: 409 }
-    );
-  }
-
-  const localNotice = descriptor.configured ? null : descriptor.disclosure;
-  const { data: plan, error: planError } = await supabase
-    .from("land_use_plans")
-    .insert({
-      workspace_id: membership.workspace_id,
-      title: parsed.data.title,
-      descriptor_id: descriptor.id,
-      plan_kind_key: parsed.data.planKindKey,
-      authority_label: parsed.data.authorityLabel,
-      geography_label: parsed.data.geographyLabel,
-      geography_geojson: parsed.data.geographyGeojson,
-      local_requirements_notice: localNotice,
-      created_by: auth.user.id,
-    })
-    .select("id, workspace_id, title")
-    .single();
-  if (planError || !plan) {
-    return NextResponse.json({ error: "Failed to create land use plan" }, { status: 500 });
-  }
-
-  const applicableKeys = defaultApplicableRequirementKeys(descriptor);
-  const { data: version, error: versionError } = await supabase
-    .from("land_use_plan_versions")
-    .insert({
-      workspace_id: membership.workspace_id,
-      plan_id: plan.id,
-      version_number: 1,
-      version_kind: "original",
-      state: "working",
-      applicable_requirement_keys: applicableKeys,
-      created_by: auth.user.id,
-    })
-    .select("id, version_number")
-    .single();
-  if (versionError || !version) {
-    const cleanup = await supabase.from("land_use_plans").delete().eq("id", plan.id).select("id");
-    if (cleanup.error) audit.error("land_use_plan_create_cleanup_failed", { error: cleanup.error });
-    return NextResponse.json({ error: "Failed to create the first working version" }, { status: 500 });
-  }
-
-  const sectionRows = descriptor.requirements.map((requirement, index) => ({
-    workspace_id: membership.workspace_id,
-    version_id: version.id,
-    node_kind: "section",
-    requirement_key: requirement.key,
-    title: requirement.label,
-    sort_order: index,
-    created_by: auth.user.id,
-  }));
-  const { error: sectionsError } = await supabase.from("land_use_plan_content_nodes").insert(sectionRows);
-  if (sectionsError) {
-    const cleanup = await supabase.from("land_use_plans").delete().eq("id", plan.id).select("id");
-    if (cleanup.error) audit.error("land_use_plan_create_cleanup_failed", { error: cleanup.error });
-    return NextResponse.json({ error: "Failed to create the descriptor checklist" }, { status: 500 });
-  }
-
-  const activationResult = await supabase
-    .from("land_use_plans")
-    .update({ current_working_version_id: version.id })
-    .eq("id", plan.id)
-    .select("id")
-    .maybeSingle();
-  if (isWriteFailure(activationResult.error)) {
-    const cleanup = await supabase.from("land_use_plans").delete().eq("id", plan.id).select("id");
-    if (cleanup.error) audit.error("land_use_plan_create_cleanup_failed", { error: cleanup.error });
-    return NextResponse.json({ error: "Failed to activate the working version" }, { status: 500 });
-  }
-  if (writeMatchedNoRows(activationResult)) return noRowsMatchedResponse({ subject: "new land use plan", targetWasVerified: true });
-
-  return NextResponse.json({ planId: plan.id, versionId: version.id }, { status: 201 });
 }

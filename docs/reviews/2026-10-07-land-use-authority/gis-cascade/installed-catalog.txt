@@ -1,0 +1,7 @@
+20261016000009
+20261016000010
+20261016000011
+refuse_finalized_workspace_gis_feature_write|f|{"search_path=public, pg_catalog"}
+refuse_finalized_workspace_gis_version_rewrite|f|{"search_path=public, pg_catalog"}
+285
+758

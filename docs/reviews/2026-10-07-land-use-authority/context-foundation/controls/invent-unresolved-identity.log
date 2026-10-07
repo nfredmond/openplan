@@ -1,0 +1,104 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 1 failed) 23ms
+     × keeps stored absence and malformed attributed context distinct from a valid copy 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > study place capture and attributed context > keeps stored absence and malformed attributed context distinct from a valid copy
+AssertionError: expected { status: 'retained', …(1) } to deeply equal { status: 'invalid' }
+
+- Expected
++ Received
+
+  {
+-   "status": "invalid",
++   "context": {
++     "assessment": {
++       "applicability": {
++         "authorityIds": [
++           "aa000000-0000-4000-8000-000000000001",
++         ],
++         "explanation": "SYNTHETIC staff assessment, not an agency finding",
++         "sourceUrls": [
++           "https://example.org/synthetic-assessment",
++         ],
++         "status": "staff_assessed",
++       },
++       "authorities": [
++         {
++           "id": "aa000000-0000-4000-8000-000000000001",
++           "jurisdiction": {
++             "country": "US",
++             "subdivision": "CA",
++           },
++           "kind": "city",
++           "label": "SYNTHETIC body 1",
++           "role": "Adopting body",
++           "sourceUrls": [
++             "https://example.org/synthetic-authority",
++           ],
++         },
++       ],
++     },
++     "place": {
++       "bbox": {
++         "maxLat": 39,
++         "maxLon": -121,
++         "minLat": 38,
++         "minLon": -122,
++       },
++       "countryCode": "US",
++       "geometry": {
++         "coordinates": [
++           [
++             [
++               -122,
++               38,
++             ],
++             [
++               -121,
++               38,
++             ],
++             [
++               -121,
++               39,
++             ],
++             [
++               -122,
++               38,
++             ],
++           ],
++         ],
++         "type": "Polygon",
++       },
++       "kind": null,
++       "label": "SYNTHETIC study area",
++       "ref": null,
++       "source": "drawn",
++       "subdivisionCode": null,
++     },
++     "savedAt": "2026-10-07T10:04:17.933Z",
++     "savedBy": "aa000000-0000-4000-8000-000000000003",
++     "schemaVersion": 1,
++   },
++   "status": "retained",
+  }
+
+ ❯ src/test/land-use-plan-context.test.ts:103:102
+    101|   expect(readSavedPlanContext(undefined)).toEqual({status:"invalid"});
+    102|   expect(readSavedPlanContext({...result.context,savedBy:"client label…
+    103|   expect(readSavedPlanContext({...result.context,place:{...result.cont…
+       |                                                                                                      ^
+    104|   expect(placeOfRecordFromCapturedArea({mode:"drawn",label:"Empty",geo…
+    105|  });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 passed (21)
+   Start at  03:04:17
+   Duration  669ms (transform 90ms, setup 53ms, import 119ms, tests 23ms, environment 322ms)
+

@@ -61,23 +61,30 @@ export function PublicDesignationMap({ endpoint, bbox, label }: { endpoint: stri
       const current = ++requestNumber;
       const viewport = publicViewport(map);
       if (viewport[0] >= viewport[2] || viewport[1] >= viewport[3]) return;
-      const response = await fetch(`${endpoint}?bbox=${viewport.join(",")}`, { cache: "no-store" });
-      const payload = await response.json() as MapPayload & { error?: string };
-      if (current !== requestNumber) return;
-      if (!response.ok) {
-        setNotice(payload.error ?? "The frozen designation map could not be loaded.");
-        return;
-      }
-      setNotice(payload.coverageNotes[0] ?? (payload.returnedCount === 0 ? "No designation features intersect this map view." : null));
-      const features = payload.features.map((feature) => ({
-        ...feature,
-        properties: {
-          ...feature.properties,
-          label: payload.legendField ? String(feature.properties.attributes[payload.legendField] ?? "") : "",
-        },
-      }));
       const source = map.getSource("designations") as mapboxgl.GeoJSONSource | undefined;
-      source?.setData({ type: "FeatureCollection", features });
+      try {
+        const response = await fetch(`${endpoint}?bbox=${viewport.join(",")}`, { cache: "no-store" });
+        const payload = await response.json() as MapPayload & { error?: string };
+        if (current !== requestNumber) return;
+        if (!response.ok) {
+          source?.setData({ type: "FeatureCollection", features: [] });
+          setNotice(typeof payload.error === "string" ? payload.error : "The frozen designation map could not be loaded.");
+          return;
+        }
+        setNotice(payload.coverageNotes[0] ?? (payload.returnedCount === 0 ? "No designation features intersect this map view." : null));
+        const features = payload.features.map((feature) => ({
+          ...feature,
+          properties: {
+            ...feature.properties,
+            label: payload.legendField ? String(feature.properties.attributes[payload.legendField] ?? "") : "",
+          },
+        }));
+        source?.setData({ type: "FeatureCollection", features });
+      } catch {
+        if (current !== requestNumber) return;
+        source?.setData({ type: "FeatureCollection", features: [] });
+        setNotice("The frozen designation map could not be loaded. Move the map to retry.");
+      }
     }
 
     map.on("load", () => {
@@ -100,7 +107,7 @@ export function PublicDesignationMap({ endpoint, bbox, label }: { endpoint: stri
   }, [bbox, endpoint]);
 
   if (!MAPBOX_ACCESS_TOKEN) {
-    return <p className="mt-3 rounded-lg border p-4 text-sm">The frozen map is unavailable because this OpenPlan instance has no public Mapbox token. The designation and feature hash remain available below.</p>;
+    return <p className="mt-3 rounded-lg border p-4 text-sm">The frozen map is unavailable because this OpenPlan instance has no public Mapbox token. The retained designation and feature hash are still available.</p>;
   }
   return <div className="mt-4"><div ref={containerRef} className="h-80 w-full overflow-hidden rounded-lg border" role="img" aria-label={label}/>{notice ? <p className="mt-2 text-sm text-muted-foreground">{notice}</p> : null}</div>;
 }

@@ -1,0 +1,802 @@
+{
+  "results": [
+    {
+      "case": "route-baseline",
+      "native": false,
+      "expectedPass": true,
+      "exitCode": 0,
+      "passed": 56,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "route-harmless",
+      "native": false,
+      "expectedPass": true,
+      "exitCode": 0,
+      "passed": 56,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "native-baseline",
+      "native": true,
+      "expectedPass": true,
+      "exitCode": 0,
+      "passed": 2,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "native-harmless",
+      "native": true,
+      "expectedPass": true,
+      "exitCode": 0,
+      "passed": 2,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "agent-refusal",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route refuses agent header x-openplan-assistant-execution-source, including an empty value",
+        "scoped rule reconciliation route refuses agent header x-openplan-assistant-input-hash, including an empty value",
+        "scoped rule reconciliation route refuses agent header x-openplan-assistant-approval-id, including an empty value"
+      ],
+      "matched": true
+    },
+    {
+      "case": "origin-refusal",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 4,
+      "failedTests": [
+        "scoped rule reconciliation route refuses untrusted or changed browser scope {\"origin\":\"https://untrusted.invalid\"}",
+        "scoped rule reconciliation route refuses untrusted or changed browser scope {\"sec-fetch-site\":\"cross-site\"}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "write-access",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route retains exact request bytes and selected rules through one server-scoped transaction"
+      ],
+      "matched": true
+    },
+    {
+      "case": "account-scope",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 4,
+      "failedTests": [
+        "scoped rule reconciliation route refuses untrusted or changed browser scope {\"x-openplan-expected-user\":\"20000000-0000-4000-8000-000000000009\"}",
+        "scoped rule reconciliation route refuses untrusted or changed browser scope {\"x-openplan-expected-user\":\"\"}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "workspace-scope",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 4,
+      "failedTests": [
+        "scoped rule reconciliation route refuses untrusted or changed browser scope {\"x-openplan-expected-workspace\":\"20000000-0000-4000-8000-000000000009\"}",
+        "scoped rule reconciliation route refuses untrusted or changed browser scope {\"x-openplan-expected-workspace\":\"\"}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "body-limit",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route bounds request bytes, rejects invalid UTF-8 and validates plan identifiers"
+      ],
+      "matched": true
+    },
+    {
+      "case": "draft-revision",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 2,
+      "failedTests": [
+        "scoped rule reconciliation route refuses stale or unavailable working version {\"id\":\"20000000-0000-4000-8000-000000000004\",\"draft_revision\":8}",
+        "scoped rule reconciliation route refuses stale or unavailable working version {\"id\":\"20000000-0000-4000-8000-000000000004\"}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "working-version",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 3,
+      "failedTests": [
+        "scoped rule reconciliation route refuses stale or unavailable working version {\"id\":\"20000000-0000-4000-8000-000000000009\",\"draft_revision\":7}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "rule-hash",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route refuses unavailable or changed selected rules"
+      ],
+      "matched": true
+    },
+    {
+      "case": "recovery-before-current-rules",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route replays original results before current rules or a newer draft are read"
+      ],
+      "matched": true
+    },
+    {
+      "case": "fresh-status",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route retains exact request bytes and selected rules through one server-scoped transaction"
+      ],
+      "matched": true
+    },
+    {
+      "case": "replay-status",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route replays original results before current rules or a newer draft are read"
+      ],
+      "matched": true
+    },
+    {
+      "case": "lookup-projection",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route retains exact request bytes and selected rules through one server-scoped transaction"
+      ],
+      "matched": true
+    },
+    {
+      "case": "lookup-plan",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route retains exact request bytes and selected rules through one server-scoped transaction"
+      ],
+      "matched": true
+    },
+    {
+      "case": "lookup-workspace",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route retains exact request bytes and selected rules through one server-scoped transaction"
+      ],
+      "matched": true
+    },
+    {
+      "case": "lookup-command",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route retains exact request bytes and selected rules through one server-scoped transaction"
+      ],
+      "matched": true
+    },
+    {
+      "case": "lookup-errors",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 2,
+      "failedTests": [
+        "scoped rule reconciliation route keeps failed or incomplete receipt discovery unconfirmed {\"error\":{\"message\":\"private read failure\"},\"data\":null}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "lookup-identity",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "scoped rule reconciliation route keeps failed or incomplete receipt discovery unconfirmed {\"error\":null,\"data\":{\"wrong\":\"20000000-0000-4000-8000-000000000005\"}}",
+        "scoped rule reconciliation route keeps failed or incomplete receipt discovery unconfirmed {\"error\":null,\"data\":{\"command_id\":\"20000000-0000-4000-8000-000000000009\"}}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "prepared-hash",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route checks the prepared hash again before the transaction"
+      ],
+      "matched": true
+    },
+    {
+      "case": "recovery-receipt",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route requires a replayed receipt when no new descriptor was prepared"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-added-key",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 10,
+      "failedTests": [
+        "scoped rule reconciliation route keeps invalid or mismatched receipts unconfirmed {\"addedSections\":[{\"id\":\"20000000-0000-4000-8000-000000000006\",\"requirementKey\":\"unknown\"}]}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-defaults",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 10,
+      "failedTests": [
+        "scoped rule reconciliation route keeps invalid or mismatched receipts unconfirmed {\"applicableRequirementKeys\":[\"previous_rule\"]}",
+        "scoped rule reconciliation route retains locally defined defaults without turning them into configured legal requirements"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-local-defaults",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route retains locally defined defaults without turning them into configured legal requirements"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-actorId",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route rejects substituted receipt actorId"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-workspaceId",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route rejects substituted receipt workspaceId"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-planId",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route rejects substituted receipt planId"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-commandId",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route rejects substituted receipt commandId"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-versionId",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "scoped rule reconciliation route rejects substituted receipt versionId"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-before-revision",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 10,
+      "failedTests": [
+        "scoped rule reconciliation route keeps invalid or mismatched receipts unconfirmed {\"previousDraftRevision\":8}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-rule-hash",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 10,
+      "failedTests": [
+        "scoped rule reconciliation route keeps invalid or mismatched receipts unconfirmed {\"descriptorHash\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-revision-delta",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 10,
+      "failedTests": [
+        "scoped rule reconciliation route keeps invalid or mismatched receipts unconfirmed {\"draftRevision\":7}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-duplicate-nodes",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 10,
+      "failedTests": [
+        "scoped rule reconciliation route keeps invalid or mismatched receipts unconfirmed {\"addedSections\":[{\"id\":\"20000000-0000-4000-8000-000000000006\",\"requirementKey\":\"specific_land_use\"},{\"id\":\"20000000-0000-4000-8000-000000000006\",\"requirementKey\":\"specific_facilities\"}]}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-duplicate-keys",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 10,
+      "failedTests": [
+        "scoped rule reconciliation route keeps invalid or mismatched receipts unconfirmed {\"addedSections\":[{\"id\":\"20000000-0000-4000-8000-000000000006\",\"requirementKey\":\"specific_land_use\"},{\"id\":\"20000000-0000-4000-8000-000000000007\",\"requirementKey\":\"specific_land_use\"}]}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "receipt-extra-fields",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 10,
+      "failedTests": [
+        "scoped rule reconciliation route keeps invalid or mismatched receipts unconfirmed {\"extra\":true}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "command-extra-fields",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 6,
+      "failedTests": [
+        "scoped rule reconciliation route rejects malformed commands before service access: {\"operation\":\"reconcile\",\"commandId\":\"20000000-0000-4000-8000-000000000005\",\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"expectedDraftRevision\":7,\"expectedDescriptorHash\":\"bc9a7c3c46bfeb1d0e3f0632de2152fd6da2665ebd74a99a56cf74c6139f15e2\",\"actorId\":\"20000000-0000-4000-8000-000000000003\"}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "command-revision-range",
+      "native": false,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 6,
+      "failedTests": [
+        "scoped rule reconciliation route rejects malformed commands before service access: {\"operation\":\"reconcile\",\"commandId\":\"20000000-0000-4000-8000-000000000005\",\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"expectedDraftRevision\":2147483648,\"expectedDescriptorHash\":\"bc9a7c3c46bfeb1d0e3f0632de2152fd6da2665ebd74a99a56cf74c6139f15e2\"}"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-write-permission",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 0,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records",
+        "holds plan, permission and version locks across two native sessions"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-replay-permission",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-workspace-scope",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-replay-actor",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-replay-bytes",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-replay-before-rules",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-command-shape",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-rule-hash",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-family",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-one-kind",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-kind-binding",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-frozen-state",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-current-pointer",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-draft-revision",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-preserve-keys",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-nonconditional-defaults",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-conditional-defaults",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-policy-is-not-section",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-preserve-authored-text",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-preserve-map-reference",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-section-order",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-applicability-validation",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-plan-lock",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "holds plan, permission and version locks across two native sessions"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-membership-lock",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "holds plan, permission and version locks across two native sessions"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-version-lock",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "holds plan, permission and version locks across two native sessions"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-private-journal",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    },
+    {
+      "case": "native-authenticated-rpc",
+      "native": true,
+      "expectedPass": false,
+      "exitCode": 1,
+      "passed": 1,
+      "failedTests": [
+        "reconciles current plan rules atomically while preserving authored and frozen records"
+      ],
+      "matched": true
+    }
+  ],
+  "runs": [
+    {
+      "run": 1,
+      "restored": true,
+      "sourceHashes": {
+        "src/app/api/land-use-plans/[planId]/reconcile-rules/route.ts": "cd5b1efb700364f5a1299ddeb9ffe1dd8dd60b89822033794a0110beeaa673ce",
+        "src/lib/land-use-plans/rule-reconciliation-store.ts": "20486003db0da2ff0282553b6ddc34caa2674647a35b6d63b4c415cf9ac1bbee",
+        "src/lib/land-use-plans/rule-reconciliation-command.ts": "3f1d730570768907445ed1fff91986cf813f2e8d4f38dc3d23693dc1265f6968",
+        "supabase/migrations/20261016000009_land_use_plan_rule_reconciliation.sql": "4d32a516a6286e621fde355782959f364f6c241ef410acc2873f27fbd9320748"
+      },
+      "unmatchedCases": [
+        "rule-hash"
+      ]
+    },
+    {
+      "run": 2,
+      "restored": true,
+      "sourceHashes": {
+        "src/app/api/land-use-plans/[planId]/reconcile-rules/route.ts": "cd5b1efb700364f5a1299ddeb9ffe1dd8dd60b89822033794a0110beeaa673ce",
+        "src/lib/land-use-plans/rule-reconciliation-store.ts": "20486003db0da2ff0282553b6ddc34caa2674647a35b6d63b4c415cf9ac1bbee",
+        "src/lib/land-use-plans/rule-reconciliation-command.ts": "3f1d730570768907445ed1fff91986cf813f2e8d4f38dc3d23693dc1265f6968",
+        "supabase/migrations/20261016000009_land_use_plan_rule_reconciliation.sql": "4d32a516a6286e621fde355782959f364f6c241ef410acc2873f27fbd9320748"
+      },
+      "unmatchedCases": [
+        "prepared-hash"
+      ]
+    },
+    {
+      "run": 3,
+      "restored": true,
+      "sourceHashes": {
+        "src/app/api/land-use-plans/[planId]/reconcile-rules/route.ts": "cd5b1efb700364f5a1299ddeb9ffe1dd8dd60b89822033794a0110beeaa673ce",
+        "src/lib/land-use-plans/rule-reconciliation-store.ts": "20486003db0da2ff0282553b6ddc34caa2674647a35b6d63b4c415cf9ac1bbee",
+        "src/lib/land-use-plans/rule-reconciliation-command.ts": "3f1d730570768907445ed1fff91986cf813f2e8d4f38dc3d23693dc1265f6968",
+        "supabase/migrations/20261016000009_land_use_plan_rule_reconciliation.sql": "4d32a516a6286e621fde355782959f364f6c241ef410acc2873f27fbd9320748"
+      },
+      "unmatchedCases": [
+        "receipt-extra-fields"
+      ]
+    },
+    {
+      "run": 4,
+      "restored": true,
+      "sourceHashes": {
+        "src/app/api/land-use-plans/[planId]/reconcile-rules/route.ts": "cd5b1efb700364f5a1299ddeb9ffe1dd8dd60b89822033794a0110beeaa673ce",
+        "src/lib/land-use-plans/rule-reconciliation-store.ts": "20486003db0da2ff0282553b6ddc34caa2674647a35b6d63b4c415cf9ac1bbee",
+        "src/lib/land-use-plans/rule-reconciliation-command.ts": "3f1d730570768907445ed1fff91986cf813f2e8d4f38dc3d23693dc1265f6968",
+        "supabase/migrations/20261016000009_land_use_plan_rule_reconciliation.sql": "4d32a516a6286e621fde355782959f364f6c241ef410acc2873f27fbd9320748"
+      },
+      "unmatchedCases": []
+    }
+  ],
+  "migrationRename": "20261016000009 to 20261016000010; identical source bytes",
+  "finalSourceHashes": {
+    "src/app/api/land-use-plans/[planId]/reconcile-rules/route.ts": "cd5b1efb700364f5a1299ddeb9ffe1dd8dd60b89822033794a0110beeaa673ce",
+    "src/lib/land-use-plans/rule-reconciliation-store.ts": "20486003db0da2ff0282553b6ddc34caa2674647a35b6d63b4c415cf9ac1bbee",
+    "src/lib/land-use-plans/rule-reconciliation-command.ts": "3f1d730570768907445ed1fff91986cf813f2e8d4f38dc3d23693dc1265f6968",
+    "supabase/migrations/20261016000010_land_use_plan_rule_reconciliation.sql": "4d32a516a6286e621fde355782959f364f6c241ef410acc2873f27fbd9320748"
+  },
+  "boundary": "Route mocks, transactional native preservation/rollback and two-session row locks. No browser recovery, installed migration upgrade, two concurrent HTTP commands, full public/export agreement or practitioner acceptance."
+}

@@ -1,0 +1,2 @@
+ERROR:  stop workspace cascade: Creation stop receipts are immutable
+CONTEXT:  PL/pgSQL function inline_code_block line 61 at RAISE

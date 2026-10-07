@@ -1,0 +1,4 @@
+ERROR:  RPC remains security invoker
+CONTEXT:  PL/pgSQL function pg_temp_83.context_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.context_assert(NOT (SELECT prosecdef FROM pg_proc WHERE oid='public.save_land_use_plan_context(uuid,uuid,uuid,uuid,text,text,jsonb,text,text)'::regprocedure), 'RPC remains security invoker')"
+PL/pgSQL function inline_code_block line 25 at PERFORM

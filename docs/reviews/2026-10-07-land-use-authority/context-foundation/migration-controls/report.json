@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expected": "pass",
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "expected": "pass",
+      "matched": true
+    },
+    {
+      "case": "nullable-check",
+      "exitCode": 3,
+      "expected": "targeted failure",
+      "matched": true
+    },
+    {
+      "case": "constant-hash",
+      "exitCode": 3,
+      "expected": "targeted failure",
+      "matched": true
+    }
+  ],
+  "allTransactionsRolledBack": true,
+  "persistentSchemaChanged": false,
+  "sourceUnchanged": true,
+  "sourceSha256": "39c3d920d3d8473aa0897cd092b4531c9c0151f986cd047cb00b2749ae5443ab",
+  "boundary": "Real PostgreSQL DDL, nullable CHECK and generated hash. Not RLS, attribution, concurrent update, route or workflow acceptance."
+}

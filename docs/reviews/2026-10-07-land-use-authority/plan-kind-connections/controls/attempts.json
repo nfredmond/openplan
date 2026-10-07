@@ -1,0 +1,852 @@
+[
+  {
+    "run": 2,
+    "restored": true,
+    "results": [
+      {
+        "case": "baseline",
+        "expectedPass": true,
+        "exitCode": 0,
+        "passed": 256,
+        "failedTests": [],
+        "failures": [],
+        "matched": true
+      },
+      {
+        "case": "harmless",
+        "expectedPass": true,
+        "exitCode": 0,
+        "passed": 256,
+        "failedTests": [],
+        "failures": [],
+        "matched": true
+      },
+      {
+        "case": "creation-family-rules",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "atomic plan creation preparation uses assessed plan authority and the selected area rules without a workspace-home read"
+        ],
+        "failures": [
+          [
+            "Error: conflict\n    at Module.createPlanWithContext (/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/lib/land-use-plans/create-store.ts:32:78)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-creation.test.ts:42:10"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "creation-replay-after-live-rules",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "atomic plan creation preparation replays original context before changed installed rules or unavailable boundary lookup"
+        ],
+        "failures": [
+          [
+            "Error: conflict\n    at Module.createPlanWithContext (/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/lib/land-use-plans/create-store.ts:30:100)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-creation.test.ts:75:10"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "context-family-scope",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "plan context route checks context against a selected kind's authority scope rather than its broader family"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 201 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-context-route.test.ts:70:37\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "freeze-builder-family",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "freezing a descriptor with authored content freezes the selected specific-plan rules without rewriting earlier snapshots"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected { id: 'us-ca-general-plan', \u2026(13) } to deeply equal { id: 'us-ca-general-plan', \u2026(13) }\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:309:49\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "working-detail-family",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules returns the specific-plan checklist and its selected hash for a current working version"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected [ Array(2) ] to deeply equal [ { key: 'area', \u2026(1) } ]\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:228:39\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "applicability-family",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules preserves previously selected keys while requiring the new kind's mandatory content"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 400 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:292:77\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "applicability-drops-older-keys",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules preserves previously selected keys while requiring the new kind's mandatory content"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 400 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:292:77\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "applicability-omits-required",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules preserves previously selected keys while requiring the new kind's mandatory content"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:296:119\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "applicability-allows-unknown",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules preserves previously selected keys while requiring the new kind's mandatory content"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:296:119\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "applicability-writes-before-validation",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules preserves previously selected keys while requiring the new kind's mandatory content"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected [ { table: 'land_use_plans', \u2026(2) } ] to deeply equal []\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:297:28\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "content-family",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules validates newly keyed section specific_land_use against the selected rules"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 400 to be 201 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:277:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "content-unknown-key",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules validates newly keyed section land_use against the selected rules",
+          "connected plan-kind rules validates newly keyed section invented_rule against the selected rules"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 201 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:277:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          [
+            "AssertionError: expected 201 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:277:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "content-policy-key",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules does not put a checklist key on a policy node"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 201 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:284:169\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "process-working-family",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules validates current process selection specific_amendment_procedure against the plan kind"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 400 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:238:41\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "process-uses-live-not-retained",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules uses the retained process definition after the current plan family changes"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 400 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:250:52\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "process-legacy-family",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules selects specific-plan process rules for a legacy version without inventing retained rules"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 400 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:258:68\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "process-snapshot-identity-bypass",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules refuses frozen process hash corruption before writing",
+          "connected plan-kind rules refuses frozen process identity corruption before writing",
+          "connected plan-kind rules refuses frozen process context corruption before writing"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:271:53\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:271:53\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:271:53\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "process-malformed-rules-bypass",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules refuses frozen process rules corruption before writing"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:271:53\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "process-state-bypass",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules refuses frozen process state corruption before writing"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:271:53\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "process-projection-incomplete",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules validates current process selection specific_amendment_procedure against the plan kind"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 'id, state, version_number, content_ha\u2026' to be 'id, state, version_number, content_ha\u2026' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:243:41\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "process-plan-scope-missing",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "connected plan-kind rules validates current process selection specific_amendment_procedure against the plan kind"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected [ [ 'id', \u2026(1) ] ] to deeply equal [ [ 'id', \u2026(1) ], [ 'plan_id', \u2026(1) ] ]\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:244:38\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "public-legacy-family",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "adopted public frozen identity uses the selected kind for an explicitly unretained legacy reference",
+          "review public frozen identity uses the selected kind for an explicitly unretained legacy reference"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 'general plan' to be 'specific plan' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-public-identity.test.ts:77:56\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          [
+            "AssertionError: expected 'general plan' to be 'specific plan' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-public-identity.test.ts:77:56\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "freeze-gate-family",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "atomic plan freeze route reports required area rules absent from an older saved checklist before preparing a snapshot"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected { kind: 'conflict', \u2026(1) } to match object { Object (blockers) }\n(2 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-freeze-route.test.ts:118:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "adoption-does-not-compare-rules",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "adoption of the reviewed descriptor does not reinterpret a retained general-plan checklist as a specific-plan review"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 'Adoption review is incomplete' to contain 'installed descriptor differs'\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:447:43\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "adoption-compares-other-kinds",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "adoption of the reviewed descriptor compares the selected kind while retaining the complete reviewed descriptor"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 409 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:474:36\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "adoption-legacy-content-bypass",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "adoption of the reviewed descriptor checks legacy required section content with blank evidence",
+          "adoption of the reviewed descriptor checks legacy required section content with number evidence",
+          "adoption of the reviewed descriptor checks legacy required section content with policy evidence",
+          "adoption of the reviewed descriptor checks legacy required section content with null evidence"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:467:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:467:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:467:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:467:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "adoption-legacy-blank-content",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "adoption of the reviewed descriptor checks legacy required section content with blank evidence"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:467:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "adoption-legacy-number-content",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "adoption of the reviewed descriptor checks legacy required section content with number evidence"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:467:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "adoption-legacy-policy-content",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "adoption of the reviewed descriptor checks legacy required section content with policy evidence"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:467:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "adoption-legacy-family",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "adoption of the reviewed descriptor does not let a legacy specific plan omit current mandatory content"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected { \u2026(2) } to match object { missing: [ \u2026(5) ] }\n(1 matching property omitted from actual)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:453:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "creator-review-survives-kind-change",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "mounted creation recovery retains a distinct checklist hash and requires another review when the plan kind changes"
+        ],
+        "failures": [
+          [
+            "Error: expect(element).not.toBeChecked()\n\nReceived element is checked:\n  <input\n  class=\"mt-1\"\n  type=\"checkbox\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-creator-recovery.test.tsx:35:67\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": false
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "restored": true,
+    "results": [
+      {
+        "case": "baseline",
+        "expectedPass": true,
+        "exitCode": 0,
+        "passed": 256,
+        "failedTests": [],
+        "failures": [],
+        "matched": true
+      },
+      {
+        "case": "harmless",
+        "expectedPass": true,
+        "exitCode": 0,
+        "passed": 256,
+        "failedTests": [],
+        "failures": [],
+        "matched": true
+      },
+      {
+        "case": "creator-review-survives-kind-change",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "mounted creation recovery retains a distinct checklist hash and requires another review when the plan kind changes"
+        ],
+        "failures": [
+          [
+            "Error: expect(element).not.toBeChecked()\n\nReceived element is checked:\n  <input\n  class=\"mt-1\"\n  type=\"checkbox\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-creator-recovery.test.tsx:35:67\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "creator-kind-keeps-old-hash",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "mounted creation recovery retains a distinct checklist hash and requires another review when the plan kind changes"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 'd0889233b4e18fec6e6d186369b243bc789fa\u2026' to be 'bc9a7c3c46bfeb1d0e3f0632de2152fd6da26\u2026' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-creator-recovery.test.tsx:42:41\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "creator-hides-other-kind-options",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "mounted creation recovery retains a distinct checklist hash and requires another review when the plan kind changes"
+        ],
+        "failures": [
+          [
+            "TestingLibraryElementError: Unable to find an accessible element with the role \"option\" and name \"General plan\"\n\nHere are the accessible roles:\n\n  region:\n\n  Name \"Start a land use plan\":\n  \u001b[36m<section\u001b[39m\n    \u001b[33maria-labelledby\u001b[39m=\u001b[32m\"create-plan-title\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"min-w-0 rounded-xl border border-border bg-card p-4 md:p-6\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  heading:\n\n  Name \"Start a land use plan\":\n  \u001b[36m<h2\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"text-lg font-semibold\"\u001b[39m\n    \u001b[33mid\u001b[39m=\u001b[32m\"create-plan-title\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Saved creation copies\":\n  \u001b[36m<h3\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"font-medium\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  paragraph:\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 max-w-prose text-sm text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose text-sm text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose text-sm text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose text-sm text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose text-sm text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"break-words text-sm\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  group:\n\n  Name \"Plan identity and rules\":\n  \u001b[36m<fieldset\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"grid min-w-0 gap-4 md:grid-cols-2\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Plan area\":\n  \u001b[36m<fieldset\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"min-w-0 space-y-3\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Responsible bodies and applicability\":\n  \u001b[36m<fieldset\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"min-w-0 space-y-5\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Responsible body 1\":\n  \u001b[36m<fieldset\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"min-w-0 space-y-3 border-l-2 border-border pl-4\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  textbox:\n\n  Name \"Plan title\":\n  \u001b[36m<input\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n    \u001b[33mmaxlength\u001b[39m=\u001b[32m\"180\"\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Display authority label The short label shown on the plan list. Describe the role of each body below.\":\n  \u001b[36m<input\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n    \u001b[33mmaxlength\u001b[39m=\u001b[32m\"180\"\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Plan area label\":\n  \u001b[36m<input\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n    \u001b[33mmaxlength\u001b[39m=\u001b[32m\"240\"\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Body name\":\n  \u001b[36m<input\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n    \u001b[33mmaxlength\u001b[39m=\u001b[32m\"240\"\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Role in this plan\":\n  \u001b[36m<input\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n    \u001b[33mmaxlength\u001b[39m=\u001b[32m\"240\"\u001b[39m\n    \u001b[33mplaceholder\u001b[39m=\u001b[32m\"For example, adopting or consulting\"\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Authority sources\":\n  \u001b[36m<textarea\u001b[39m\n    \u001b[33maria-describedby\u001b[39m=\u001b[32m\"_r_1_-e3ea32cf-371a-4ba1-904b-dc2e381afa58-sources\"\u001b[39m\n    \u001b[33maria-label\u001b[39m=\u001b[32m\"Authority sources\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"border-input placeholder:text-muted-foreground flex field-sizing-content min-h-24 w-full rounded-xl border bg-background px-3.5 py-2.5 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"textarea\"\u001b[39m\n    \u001b[33mmaxlength\u001b[39m=\u001b[32m\"62000\"\u001b[39m\n    \u001b[33mrows\u001b[39m=\u001b[32m\"3\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Assessment reasons and unresolved questions\":\n  \u001b[36m<textarea\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"border-input placeholder:text-muted-foreground flex field-sizing-content min-h-24 w-full rounded-xl border bg-background px-3.5 py-2.5 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"textarea\"\u001b[39m\n    \u001b[33mmaxlength\u001b[39m=\u001b[32m\"6000\"\u001b[39m\n    \u001b[33mrows\u001b[39m=\u001b[32m\"4\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  combobox:\n\n  Name \"Legal checklist\":\n  \u001b[36m<select\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-select w-full\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Plan kind\":\n  \u001b[36m<select\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-select w-full\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Type of body\":\n  \u001b[36m<input\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n    \u001b[33mlist\u001b[39m=\u001b[32m\"_r_1_\"\u001b[39m\n    \u001b[33mmaxlength\u001b[39m=\u001b[32m\"240\"\u001b[39m\n    \u001b[33mplaceholder\u001b[39m=\u001b[32m\"Select a suggestion or enter another type\"\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Applicability assessment\":\n  \u001b[36m<select\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-select mt-1 w-full\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  option:\n\n  Name \"Select a checklist\":\n  \u001b[36m<option\u001b[39m\n    \u001b[33mdisabled\u001b[39m=\u001b[32m\"\"\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"California\":\n  \u001b[36m<option\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"us-ca-general-plan\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Local requirements not configured\":\n  \u001b[36m<option\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"local-unconfigured\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Unresolved\":\n  \u001b[36m<option\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"unresolved\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Assessed by staff with sources\":\n  \u001b[36m<option\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"staff_assessed\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  alert:\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mrole\u001b[39m=\u001b[32m\"alert\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-4 text-sm text-destructive\"\u001b[39m\n    \u001b[33mrole\u001b[39m=\u001b[32m\"alert\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  checkbox:\n\n  Name \"Jurisdiction is not assessed\":\n  \u001b[36m<input\u001b[39m\n    \u001b[33mchecked\u001b[39m=\u001b[32m\"\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"checkbox\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"I reviewed the plan area, responsible bodies and selected checklist. Unresolved authority remains stated above.\":\n  \u001b[36m<input\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"checkbox\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  button:\n\n  Name \"Remove responsible body 1\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n    \u001b[33mdisabled\u001b[39m=\u001b[32m\"\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Add responsible body\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Create plan and first working version\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mdisabled\u001b[39m=\u001b[32m\"\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Download this draft\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Download saved copy\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-9 gap-1.5 px-3.5 has-[>svg]:px-3\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"sm\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Restore draft to a new copy\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-9 gap-1.5 px-3.5 has-[>svg]:px-3\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"sm\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-labelledby\u001b[39m=\u001b[32m\"create-plan-title\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"min-w-0 rounded-xl border border-border bg-card p-4 md:p-6\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<h2\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"text-lg font-semibold\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"create-plan-title\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mStart a land use plan\u001b[0m\n      \u001b[36m</h2>\u001b[39m\n      \u001b[36m<p\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 max-w-prose text-sm text-muted-foreground\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mIdentify the area and responsible bodies for this plan. Your office location does not select its law. Start with unresolved requirements or assess a sourced checklist for this plan.\u001b[0m\n      \u001b[36m</p>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-6 space-y-6\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<fieldset\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"grid min-w-0 gap-4 md:grid-cols-2\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<legend\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"sr-only\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mPlan identity and rules\u001b[0m\n          \u001b[36m</legend>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mPlan title\u001b[0m\n            \u001b[36m<input\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n              \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n              \u001b[33mmaxlength\u001b[39m=\u001b[32m\"180\"\u001b[39m\n              \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n            \u001b[36m/>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mDisplay authority label\u001b[0m\n            \u001b[36m<input\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n              \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n              \u001b[33mmaxlength\u001b[39m=\u001b[32m\"180\"\u001b[39m\n              \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n            \u001b[36m/>\u001b[39m\n            \u001b[36m<span\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"block text-xs text-muted-foreground\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mThe short label shown on the plan list. Describe the role of each body below.\u001b[0m\n            \u001b[36m</span>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mLegal checklist\u001b[0m\n            \u001b[36m<select\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"module-select w-full\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mdisabled\u001b[39m=\u001b[32m\"\"\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mSelect a checklist\u001b[0m\n              \u001b[36m</option>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"us-ca-general-plan\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mCalifornia\u001b[0m\n              \u001b[36m</option>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"local-unconfigured\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mLocal requirements not configured\u001b[0m\n              \u001b[36m</option>\u001b[39m\n            \u001b[36m</select>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mPlan kind\u001b[0m\n            \u001b[36m<select\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"module-select w-full\"\u001b[39m\n            \u001b[36m/>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n        \u001b[36m</fieldset>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mrole\u001b[39m=\u001b[32m\"alert\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mThis saved checklist is no longer installed. Select and assess a current checklist.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<fieldset\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"min-w-0 space-y-3\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<legend\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"text-base font-semibold\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mPlan area\u001b[0m\n          \u001b[36m</legend>\u001b[39m\n          \u001b[36m<p\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose text-sm text-muted-foreground\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mKeep the study boundary separate from the authority assessment below. Searching or drawing an area does not assign a governing body.\u001b[0m\n          \u001b[36m</p>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"block space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mPlan area label\u001b[0m\n            \u001b[36m<input\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n              \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n              \u001b[33mmaxlength\u001b[39m=\u001b[32m\"240\"\u001b[39m\n              \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n            \u001b[36m/>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mdata-testid\u001b[39m=\u001b[32m\"study-picker\"\u001b[39m\n          \u001b[36m/>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"block space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mOr upload a study boundary\u001b[0m\n            \u001b[36m<input\u001b[39m\n              \u001b[33maccept\u001b[39m=\u001b[32m\".geojson,.json,application/geo+json,applic...\n    at Object.getElementError (/home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38\n    at /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17\n    at /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-creator-recovery.test.tsx:36:19\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "creator-shows-family-disclosure",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "mounted creation recovery retains a distinct checklist hash and requires another review when the plan kind changes"
+        ],
+        "failures": [
+          [
+            "TestingLibraryElementError: Unable to find an element with the text: /This specific-plan checklist covers selected cited provisions/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-labelledby\u001b[39m=\u001b[32m\"create-plan-title\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"min-w-0 rounded-xl border border-border bg-card p-4 md:p-6\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<h2\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"text-lg font-semibold\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"create-plan-title\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mStart a land use plan\u001b[0m\n      \u001b[36m</h2>\u001b[39m\n      \u001b[36m<p\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 max-w-prose text-sm text-muted-foreground\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mIdentify the area and responsible bodies for this plan. Your office location does not select its law. Start with unresolved requirements or assess a sourced checklist for this plan.\u001b[0m\n      \u001b[36m</p>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-6 space-y-6\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<fieldset\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"grid min-w-0 gap-4 md:grid-cols-2\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<legend\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"sr-only\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mPlan identity and rules\u001b[0m\n          \u001b[36m</legend>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mPlan title\u001b[0m\n            \u001b[36m<input\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n              \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n              \u001b[33mmaxlength\u001b[39m=\u001b[32m\"180\"\u001b[39m\n              \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n            \u001b[36m/>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mDisplay authority label\u001b[0m\n            \u001b[36m<input\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n              \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n              \u001b[33mmaxlength\u001b[39m=\u001b[32m\"180\"\u001b[39m\n              \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n            \u001b[36m/>\u001b[39m\n            \u001b[36m<span\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"block text-xs text-muted-foreground\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mThe short label shown on the plan list. Describe the role of each body below.\u001b[0m\n            \u001b[36m</span>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mLegal checklist\u001b[0m\n            \u001b[36m<select\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"module-select w-full\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mdisabled\u001b[39m=\u001b[32m\"\"\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mSelect a checklist\u001b[0m\n              \u001b[36m</option>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"us-ca-general-plan\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mCalifornia\u001b[0m\n              \u001b[36m</option>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"local-unconfigured\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mLocal requirements not configured\u001b[0m\n              \u001b[36m</option>\u001b[39m\n            \u001b[36m</select>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mPlan kind\u001b[0m\n            \u001b[36m<select\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"module-select w-full\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"comprehensive\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mGeneral plan\u001b[0m\n              \u001b[36m</option>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"area\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mSpecific plan\u001b[0m\n              \u001b[36m</option>\u001b[39m\n            \u001b[36m</select>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n        \u001b[36m</fieldset>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose space-y-2 border-l-2 border-border pl-4 text-sm\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<p>\u001b[39m\n            \u001b[0mThis is a scoped California statutory workflow, not a complete statement of every law that may apply. OpenPlan tracks cited requirements and attached evidence. It does not determine legal sufficiency, complete environmental review, or replace agency counsel and qualified planning review.\u001b[0m\n          \u001b[36m</p>\u001b[39m\n          \u001b[36m<p\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"text-muted-foreground\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mSource review: \u001b[0m\n            \u001b[0m2026-08-23\u001b[0m\n            \u001b[0m. Review due: \u001b[0m\n            \u001b[0m2027-01-15\u001b[0m\n            \u001b[0m. These dates do not establish current legal sufficiency.\u001b[0m\n          \u001b[36m</p>\u001b[39m\n          \u001b[36m<ul\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"list-disc space-y-1 pl-5\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<li>\u001b[39m\n              \u001b[36m<a\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"break-all underline\"\u001b[39m\n                \u001b[33mhref\u001b[39m=\u001b[32m\"https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=5.&chapter=3.&division=1.&lawCode=GOV&part=&title=7.\"\u001b[39m\n                \u001b[33mrel\u001b[39m=\u001b[32m\"noreferrer\"\u001b[39m\n                \u001b[33mtarget\u001b[39m=\u001b[32m\"_blank\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mhttps://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=5.&chapter=3.&division=1.&lawCode=GOV&part=&title=7.\u001b[0m\n              \u001b[36m</a>\u001b[39m\n            \u001b[36m</li>\u001b[39m\n            \u001b[36m<li>\u001b[39m\n              \u001b[36m<a\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"break-all underline\"\u001b[39m\n                \u001b[33mhref\u001b[39m=\u001b[32m\"https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=6.&chapter=3.&div...\n    at Object.getElementError (/home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38\n    at /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17\n    at /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-creator-recovery.test.tsx:37:19\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "creator-stale-hash-accepted",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "mounted creation recovery keeps an older family-hash draft until staff explicitly reviews the selected-kind rules"
+        ],
+        "failures": [
+          [
+            "Error: Unable to find an element with the text: The checklist changed. Review the current rules before creating the plan.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-labelledby\u001b[39m=\u001b[32m\"create-plan-title\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"min-w-0 rounded-xl border border-border bg-card p-4 md:p-6\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<h2\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"text-lg font-semibold\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"create-plan-title\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mStart a land use plan\u001b[0m\n      \u001b[36m</h2>\u001b[39m\n      \u001b[36m<p\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 max-w-prose text-sm text-muted-foreground\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mIdentify the area and responsible bodies for this plan. Your office location does not select its law. Start with unresolved requirements or assess a sourced checklist for this plan.\u001b[0m\n      \u001b[36m</p>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-6 space-y-6\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<fieldset\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"grid min-w-0 gap-4 md:grid-cols-2\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<legend\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"sr-only\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mPlan identity and rules\u001b[0m\n          \u001b[36m</legend>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mPlan title\u001b[0m\n            \u001b[36m<input\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n              \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n              \u001b[33mmaxlength\u001b[39m=\u001b[32m\"180\"\u001b[39m\n              \u001b[33mvalue\u001b[39m=\u001b[32m\"SYNTHETIC plan\"\u001b[39m\n            \u001b[36m/>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mDisplay authority label\u001b[0m\n            \u001b[36m<input\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n              \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n              \u001b[33mmaxlength\u001b[39m=\u001b[32m\"180\"\u001b[39m\n              \u001b[33mvalue\u001b[39m=\u001b[32m\"SYNTHETIC display body\"\u001b[39m\n            \u001b[36m/>\u001b[39m\n            \u001b[36m<span\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"block text-xs text-muted-foreground\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mThe short label shown on the plan list. Describe the role of each body below.\u001b[0m\n            \u001b[36m</span>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mLegal checklist\u001b[0m\n            \u001b[36m<select\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"module-select w-full\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mdisabled\u001b[39m=\u001b[32m\"\"\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mSelect a checklist\u001b[0m\n              \u001b[36m</option>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"us-ca-general-plan\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mCalifornia\u001b[0m\n              \u001b[36m</option>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"local-unconfigured\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mLocal requirements not configured\u001b[0m\n              \u001b[36m</option>\u001b[39m\n            \u001b[36m</select>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-1 text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mPlan kind\u001b[0m\n            \u001b[36m<select\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"module-select w-full\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"comprehensive\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mComprehensive plan\u001b[0m\n              \u001b[36m</option>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"area\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mArea or neighborhood plan\u001b[0m\n              \u001b[36m</option>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"community\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mCommunity plan\u001b[0m\n              \u001b[36m</option>\u001b[39m\n            \u001b[36m</select>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n        \u001b[36m</fieldset>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose space-y-2 border-l-2 border-border pl-4 text-sm\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<p>\u001b[39m\n            \u001b[0mLocal legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.\u001b[0m\n          \u001b[36m</p>\u001b[39m\n          \u001b[36m<p\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"text-muted-foreground\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mSource review: \u001b[0m\n            \u001b[0m2026-08-23\u001b[0m\n            \u001b[0m. Review due: \u001b[0m\n            \u001b[0m2027-01-15\u001b[0m\n            \u001b[0m. These dates do not establish current legal sufficiency.\u001b[0m\n          \u001b[36m</p>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2 text-sm\"\u001b[39m\n          \u001b[33mrole\u001b[39m=\u001b[32m\"alert\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<p>\u001b[39m\n            \u001b[0mThe saved draft refers to older rules. Its original copy remains available.\u001b[0m\n          \u001b[36m</p>\u001b[39m\n          \u001b[36m<button\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-...\n    at waitForWrapper (/home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/wait-for.js:163:27)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:86:33\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-creator-recovery.test.tsx:54:25\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": false
+      }
+    ]
+  },
+  {
+    "run": 4,
+    "restored": true,
+    "results": [
+      {
+        "case": "baseline",
+        "expectedPass": true,
+        "exitCode": 0,
+        "passed": 256,
+        "failedTests": [],
+        "failures": [],
+        "matched": true
+      },
+      {
+        "case": "harmless",
+        "expectedPass": true,
+        "exitCode": 0,
+        "passed": 256,
+        "failedTests": [],
+        "failures": [],
+        "matched": true
+      },
+      {
+        "case": "creator-stale-hash-accepted",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "mounted creation recovery keeps an older family-hash draft until staff explicitly reviews the selected-kind rules"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      \"/api/land-use-plans\",\n      Object {\n        \"body\": \"{\"place\":{\"mode\":\"uploaded\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[1,0],[1,1],[0,0]]]},\"label\":\"SYNTHETIC area\"},\"assessment\":{\"authorities\":[{\"id\":\"00000000-0000-4000-8000-000000000004\",\"label\":\"SYNTHETIC body\",\"role\":\"Sponsor\",\"kind\":\"tribal_government\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"SYNTHETIC unresolved authority. No legal finding.\"}},\"commandId\":\"7deb1e78-b424-4c5f-b2cc-98101bec8d2e\",\"title\":\"SYNTHETIC plan\",\"authorityLabel\":\"SYNTHETIC display body\",\"descriptorId\":\"local-unconfigured\",\"planKindKey\":\"community\",\"expectedDescriptorHash\":\"19ec738f9e267237b8236075b15750d64e81b41e82eac433f49ba6d97ae5ff16\"}\",\n        \"cache\": \"no-store\",\n        \"headers\": Object {\n          \"Content-Type\": \"application/json\",\n          \"x-openplan-expected-user\": \"00000000-0000-4000-8000-000000000001\",\n          \"x-openplan-expected-workspace\": \"00000000-0000-4000-8000-000000000002\",\n        },\n        \"method\": \"POST\",\n        \"signal\": AbortSignal {\n          Symbol(kEvents): undefined,\n          Symbol(events.maxEventTargetListeners): 0,\n          Symbol(events.maxEventTargetListenersWarned): false,\n          Symbol(kHandlers): undefined,\n          Symbol(kAborted): false,\n          Symbol(kReason): undefined,\n          Symbol(kComposite): true,\n          Symbol(kSourceSignals): Set {\n            SafeWeakRef {},\n            SafeWeakRef {},\n          },\n          Symbol(kTimeout): true,\n        },\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-creator-recovery.test.tsx:54:27\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "creator-initial-hash-family-key",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "plan-owned first-run rule selection passes each family-kind hash from the real page into the saved creation draft"
+        ],
+        "failures": [
+          [
+            "Error: Page did not supply a usable selection\n    at savedHash (/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx:30:42)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx:33:12\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": false
+      }
+    ]
+  },
+  {
+    "run": 5,
+    "restored": true,
+    "results": [
+      {
+        "case": "baseline",
+        "expectedPass": true,
+        "exitCode": 0,
+        "passed": 256,
+        "failedTests": [],
+        "failures": [],
+        "matched": true
+      },
+      {
+        "case": "harmless",
+        "expectedPass": true,
+        "exitCode": 0,
+        "passed": 256,
+        "failedTests": [],
+        "failures": [],
+        "matched": true
+      },
+      {
+        "case": "creator-initial-hash-family-key",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "plan-owned first-run rule selection passes each family-kind hash from the real page into the saved creation draft"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected undefined to be 'draft' // Object.is equality\n    at savedHash (/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx:30:27)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx:34:12\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "creator-family-hash-wrong-kind",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "plan-owned first-run rule selection passes each family-kind hash from the real page into the saved creation draft"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 'bc9a7c3c46bfeb1d0e3f0632de2152fd6da26\u2026' to be 'd0889233b4e18fec6e6d186369b243bc789fa\u2026' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx:36:25\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "page-hashes-family-key",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "plan-owned first-run rule selection passes each family-kind hash from the real page into the saved creation draft"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected undefined to be 'draft' // Object.is equality\n    at savedHash (/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx:30:27)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx:34:12\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "page-hashes-wrong-kind",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "plan-owned first-run rule selection passes each family-kind hash from the real page into the saved creation draft"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected '0000000000000000000000000000000000000\u2026' to be 'c6f0f81f64d56b1237fccb740ca21533a7b12\u2026' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-first-run-jurisdiction.test.tsx:34:25\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      }
+    ]
+  },
+  {
+    "run": 6,
+    "restored": true,
+    "results": [
+      {
+        "case": "baseline",
+        "expectedPass": true,
+        "exitCode": 0,
+        "passed": 256,
+        "failedTests": [],
+        "failures": [],
+        "matched": true
+      },
+      {
+        "case": "harmless",
+        "expectedPass": true,
+        "exitCode": 0,
+        "passed": 256,
+        "failedTests": [],
+        "failures": [],
+        "matched": true
+      },
+      {
+        "case": "adoption-legacy-content-bypass",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "adoption of the reviewed descriptor checks legacy required section content with blank evidence",
+          "adoption of the reviewed descriptor checks legacy required section content with number evidence",
+          "adoption of the reviewed descriptor checks legacy required section content with policy evidence",
+          "adoption of the reviewed descriptor checks legacy required section content with null evidence"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:468:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:468:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:468:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:468:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "adoption-legacy-blank-content",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "adoption of the reviewed descriptor checks legacy required section content with blank evidence"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:468:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "adoption-legacy-number-content",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "adoption of the reviewed descriptor checks legacy required section content with number evidence"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:468:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      },
+      {
+        "case": "adoption-legacy-policy-content",
+        "expectedPass": false,
+        "exitCode": 1,
+        "passed": 0,
+        "failedTests": [
+          "adoption of the reviewed descriptor checks legacy required section content with policy evidence"
+        ],
+        "failures": [
+          [
+            "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts:468:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        ],
+        "matched": true
+      }
+    ]
+  }
+]

@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan
+
+ ❯ src/test/migrations/inventory.test.ts (29 tests | 1 failed) 198ms
+     × reads every relation the migrations declare 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/migrations/inventory.test.ts > migration schema inventory > reads every relation the migrations declare
+AssertionError: expected [ …(297) ] to have a length of 296 but got 297
+
+- Expected
++ Received
+
+- 296
++ 297
+
+ ❯ src/test/migrations/inventory.test.ts:813:32
+    811| describe("migration schema inventory", () => {
+    812|   it("reads every relation the migrations declare", () => {
+    813|     expect(schema.relations()).toHaveLength(EXPECTED.relations);
+       |                                ^
+    814|     expect(schema.tables()).toHaveLength(EXPECTED.tables);
+    815|     expect(schema.views()).toHaveLength(EXPECTED.views);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 39 passed (40)
+   Start at  06:18:57
+   Duration  2.89s (transform 107ms, setup 117ms, import 539ms, tests 972ms, environment 989ms)
+

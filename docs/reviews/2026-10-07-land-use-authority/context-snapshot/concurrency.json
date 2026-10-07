@@ -1,0 +1,58 @@
+{
+  "cases": [
+    {
+      "case": "real-save-first",
+      "namespace": "real",
+      "planId": "cc8eaf93-db4b-4034-9ddd-276e06cff3d4",
+      "versionId": "ee822bf8-224d-4fdc-be4e-b91a9b005367",
+      "freezeBeforeSaveCommit": "waiting_on_lock",
+      "racingStaleFreezeRefused": true,
+      "staleFreezeRefused": true,
+      "currentContextFrozen": true,
+      "matched": true
+    },
+    {
+      "case": "real-freeze-first",
+      "namespace": "real",
+      "planId": "119f2461-48dd-424c-839a-848d3bbee0cc",
+      "versionId": "6e94d595-570b-4e62-8d3c-2a19eeca14fc",
+      "busySaveRefused": true,
+      "postFreezeSaveRefused": true,
+      "frozenContextUnchanged": true,
+      "matched": true
+    },
+    {
+      "case": "harmless-save-first",
+      "namespace": "private-control",
+      "planId": "6fb5f071-1196-4bba-89c7-f599c3603082",
+      "versionId": "81d864b2-b66f-46d3-9b94-929fd7caf055",
+      "freezeBeforeSaveCommit": "waiting_on_lock",
+      "racingStaleFreezeRefused": true,
+      "staleFreezeRefused": true,
+      "currentContextFrozen": true,
+      "matched": true
+    },
+    {
+      "case": "harmless-freeze-first",
+      "namespace": "private-control",
+      "planId": "9b1039d8-75b4-45ef-b51e-f706e4d25411",
+      "versionId": "36bfa571-49c4-4c01-b873-ce0c933ee66a",
+      "busySaveRefused": true,
+      "postFreezeSaveRefused": true,
+      "frozenContextUnchanged": true,
+      "matched": true
+    },
+    {
+      "case": "missing-version-and-freeze-locks",
+      "namespace": "private-control",
+      "planId": "ebac1321-9925-4ed7-9b8c-f710eeb3cabb",
+      "versionId": "33b29eeb-fbe8-4558-baa4-7b16345ac107",
+      "freezeBeforeSaveCommit": "terminal",
+      "observedFault": "stale context frozen concurrently with a committed save",
+      "matched": true
+    }
+  ],
+  "originalFunctionsUnchanged": true,
+  "privateProbeSchemaRemoved": true,
+  "boundary": "Synthetic direct database transactions only. This does not exercise route readiness, full snapshot contents, atomic pointer/event updates, real human freeze, publication or browser behavior."
+}

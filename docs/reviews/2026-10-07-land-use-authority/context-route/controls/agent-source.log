@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 41ms
+     × refuses an agent write carrying x-openplan-assistant-execution-source 5ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:00
+   Duration  1.34s (transform 187ms, setup 85ms, import 311ms, tests 59ms, environment 645ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > refuses an agent write carrying x-openplan-assistant-execution-source
+AssertionError: expected 201 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 201
+
+ ❯ src/test/land-use-plan-context-route.test.ts:91:59
+     89|   });
+     90|   it.each(["x-openplan-assistant-execution-source", "x-openplan-assist…
+     91|     expect((await post(undefined, { [key]: "" })).status).toBe(403);
+       |                                                           ^
+     92|     expect(mocks.access).not.toHaveBeenCalled(); expect(mocks.service)…
+     93|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
