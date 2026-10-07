@@ -222,3 +222,23 @@ This is an HTTP-handler test, not a deployed browser/session test. The route doe
 not discover work, start workers or claim completion. Full package type/build
 checks, live HTTP recovery, worker pickup and the visible scheduling journey
 remain required before release.
+
+## Bounded worker discovery checkpoint
+
+The queue reader queries only explicit queue records, with a 32-row bound and
+an exact custody-field projection. It verifies command hashes, queue identity,
+request, permission and stage before returning a page. UUID ordering preserves
+the cursor without timestamp precision loss. A short page retains its cursor;
+an empty page instructs the future coordinator to wrap and include later inserts
+behind that cursor. No worker starts from this reader alone.
+
+All 12 reader tests and changed-file ESLint pass. The harmless control passes.
+Removing order, identity, page-bound or cancellation checks, or dropping the hash
+from the query projection, causes assertion failures. `reader-controls.json`
+records these results. Mocks assert the projection but do not establish live
+pagination, fairness, coordinator journals, concurrent workers or dispatch safety.
+
+A full package type check with a 4 GB JavaScript heap limit exhausted that limit
+before producing diagnostics. It is not a passing type check. The process was
+confirmed absent before considering another run. Full package checking remains
+open; focused tests do not substitute for it.
