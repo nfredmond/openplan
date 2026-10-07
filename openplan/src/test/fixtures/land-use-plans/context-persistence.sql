@@ -107,7 +107,12 @@ BEGIN
   replay := pg_temp.save_context(plan,version,actor,command,NULL,raw_command,NULL);
   PERFORM pg_temp.context_assert(replay-'replayed'=result-'replayed','lost acknowledgment recoverable after freeze');
   SET LOCAL ROLE postgres;
-  DELETE FROM public.land_use_plans WHERE id=plan;
+  IF current_setting('openplan.test_cascade_workspace',true)='1' THEN
+    DELETE FROM public.workspaces WHERE id=workspace;
+    PERFORM pg_temp.context_assert(NOT EXISTS(SELECT 1 FROM public.land_use_plans WHERE id=plan),'workspace cascade removes contextual plan');
+  ELSE
+    DELETE FROM public.land_use_plans WHERE id=plan;
+  END IF;
   PERFORM pg_temp.context_assert(NOT EXISTS(SELECT 1 FROM public.land_use_plan_context_commands WHERE plan_id=plan),'parent cascade retains no orphan journal');
 END $test$;
 SELECT 'context persistence verified';

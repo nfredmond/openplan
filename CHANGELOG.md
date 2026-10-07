@@ -40,6 +40,11 @@ keys without rewriting earlier content. Migration
 `20261016000010_land_use_plan_rule_reconciliation.sql` adds its private receipt
 journal. The workbench action and browser recovery remain unfinished.
 
+Parent deletion now tolerates restored foreign-key cascade order while preserving
+direct frozen-content and receipt protections. Migration
+`20261016000009_land_use_plan_cascade_guards.sql` applies this correction.
+The complete restore drill remains pending on the corrected commit.
+
 Apply these additive migrations in order before using these candidate changes:
 
 - `20261016000002_land_use_plan_context.sql` adds nullable historical context and

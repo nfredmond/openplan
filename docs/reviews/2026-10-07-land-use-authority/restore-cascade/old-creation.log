@@ -1,0 +1,7 @@
+ERROR:  insert or update on table "land_use_plan_versions" violates foreign key constraint "land_use_plan_versions_workspace_id_fkey"
+DETAIL:  Key (workspace_id)=(677bad5b-2195-4306-90e6-2378b3ae675d) is not present in table "workspaces".
+CONTEXT:  SQL statement "UPDATE public.land_use_plan_versions SET draft_revision = draft_revision + 1 WHERE id = target"
+PL/pgSQL function advance_land_use_plan_child_revision() line 20 at SQL statement
+SQL statement "DELETE FROM ONLY "public"."land_use_plan_content_nodes" WHERE $1 OPERATOR(pg_catalog.=) "workspace_id""
+SQL statement "DELETE FROM public.workspaces WHERE id=workspace"
+PL/pgSQL function inline_code_block line 79 at SQL statement

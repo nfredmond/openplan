@@ -182,7 +182,28 @@ BEGIN
   PERFORM pg_temp.freeze_assert((SELECT state='working' FROM public.land_use_plan_versions WHERE id=next_version),'replay does not freeze next draft');
   SET LOCAL ROLE postgres;
   PERFORM pg_temp.freeze_refuses(format('UPDATE public.land_use_plan_freeze_commands SET actor_id=%L WHERE plan_id=%L',other_actor,plan),'P0001','journal rewrite refused');
-  DELETE FROM public.land_use_plans WHERE id=plan;
+  -- A live owner still forbids direct frozen edits under native writer RLS.
+  PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',actor,'role','authenticated')::text,true);
+  SET LOCAL ROLE authenticated;
+  PERFORM pg_temp.freeze_refuses(format('DELETE FROM public.land_use_plan_content_nodes WHERE id=%L',section),'P0001','direct frozen content deletion refused');
+  PERFORM pg_temp.freeze_refuses(format('UPDATE public.land_use_plan_content_nodes SET title=%L WHERE id=%L','changed',section),'P0001','direct frozen content update refused');
+  PERFORM pg_temp.freeze_refuses(format('DELETE FROM public.land_use_plan_relationships WHERE id=%L',relation),'P0001','direct frozen relationship deletion refused');
+  PERFORM pg_temp.freeze_refuses(format('DELETE FROM public.land_use_plan_implementation_actions WHERE id=%L',action),'P0001','direct frozen action deletion refused');
+  PERFORM pg_temp.freeze_refuses(format('UPDATE public.land_use_plan_implementation_actions SET title=%L WHERE id=%L','changed',action),'P0001','direct frozen action rewrite refused');
+  UPDATE public.land_use_plan_implementation_actions SET status='in_progress' WHERE id=action;
+  PERFORM pg_temp.freeze_assert((SELECT status='in_progress' AND title='SYNTHETIC action' FROM public.land_use_plan_implementation_actions WHERE id=action),'frozen action status remains editable');
+  SET LOCAL ROLE postgres;
+  PERFORM pg_temp.freeze_refuses(format('DELETE FROM public.land_use_plan_freeze_commands WHERE plan_id=%L',plan),'P0001','direct journal deletion refused');
+  IF current_setting('openplan.test_cascade_workspace',true)='1' THEN
+    DELETE FROM public.workspaces WHERE id=workspace;
+    PERFORM pg_temp.freeze_assert(NOT EXISTS(SELECT 1 FROM public.land_use_plans WHERE id=plan),'workspace cascade removes plan');
+  ELSE
+    DELETE FROM public.land_use_plans WHERE id=plan;
+  END IF;
+  PERFORM pg_temp.freeze_assert(NOT EXISTS(SELECT 1 FROM public.land_use_plan_versions WHERE plan_id=plan),'parent cascade removes versions');
+  PERFORM pg_temp.freeze_assert(NOT EXISTS(SELECT 1 FROM public.land_use_plan_content_nodes WHERE version_id=version),'parent cascade removes content');
+  PERFORM pg_temp.freeze_assert(NOT EXISTS(SELECT 1 FROM public.land_use_plan_relationships WHERE version_id=version),'parent cascade removes relationships');
+  PERFORM pg_temp.freeze_assert(NOT EXISTS(SELECT 1 FROM public.land_use_plan_implementation_actions WHERE version_id=version),'parent cascade removes actions');
   PERFORM pg_temp.freeze_assert(NOT EXISTS(SELECT 1 FROM public.land_use_plan_freeze_commands WHERE plan_id=plan),'journal parent cascade allowed');
 END $test$;
 SELECT 'freeze persistence verified';

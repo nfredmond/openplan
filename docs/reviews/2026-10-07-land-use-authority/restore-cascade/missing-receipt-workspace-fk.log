@@ -1,0 +1,4 @@
+ERROR:  update or delete on table "land_use_plan_review_events" violates foreign key constraint "land_use_plan_freeze_commands_review_event_id_workspace_id_fkey" on table "land_use_plan_freeze_commands"
+DETAIL:  Key (id, workspace_id)=(3bca2881-6624-47bc-8754-5f0f47afc05d, b45b812f-4a55-4f84-b9a1-6f17564b3ac2) is still referenced from table "land_use_plan_freeze_commands".
+CONTEXT:  SQL statement "DELETE FROM public.workspaces WHERE id=workspace"
+PL/pgSQL function inline_code_block line 174 at SQL statement
