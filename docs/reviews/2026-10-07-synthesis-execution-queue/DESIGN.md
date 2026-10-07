@@ -550,3 +550,31 @@ original empty state. All nine panel tests and lint pass. A harmless comment
 passes, and removing the pending-command distinction causes the regression tests
 to fail. `uncertain-receipt-controls.json` records this check. The latest wording
 correction requires a new browser build; 87d8a3c3 remains the running build.
+
+
+## Context acceptance found a first-task resource mismatch
+
+From the completed segment request, T3 selected the long multilingual
+contribution and saved context request ec8dbd11-1473-4465-a072-496c4da12fd8.
+Preparation sealed four frames totaling 206,380 saved bytes. Staff controls saved
+allowance 8fc67324-e4a0-4f00-9fd6-4fa5705d0a5e and explicitly queued it.
+
+The worker refused before claiming the first task. Reconstructing the exact
+continuation reports 68,699 required task bytes against the request's 65,536-byte
+limit. `context-resource-boundary.json` records this result. The first task
+journal remains prepared; T3 reports four tasks with no selected attempt. No
+successful synthetic provider call was logged. The queue summary reports one
+unconfirmed schedule, so this is not successful context acceptance.
+
+The create panel currently fixes taskByteLimit at 65,536. The preparation frame
+budget and the assembled task budget do not account for the same material.
+Correct request budgeting and visible refusal/recovery before claiming a complete
+context workflow. Preserve this request and its original limit. Do not silently
+raise retained authority, clip source text, reduce the test contribution or use
+the short contribution as a substitute for this failing case.
+
+The context test provider and pinned originals remain in the private context-run
+directory under the queue acceptance root. Its current tool session is 97446 on
+port 34667. It checks the pinned frame sequence and preceding output. This fixture
+has not yet reached it successfully. The browser still runs build 87d8a3c3;
+worker code runs the queue branch checkpoint 4ce39f57.
