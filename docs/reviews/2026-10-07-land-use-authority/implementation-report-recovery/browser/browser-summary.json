@@ -1,0 +1,150 @@
+{
+  "originalBuild": "8b7018b4589f79b44e5ff970878b2000dab24e1b",
+  "wrappedBuild": "3cfdc59c51aee541946616cea87467672e8712a0",
+  "firstCall": {
+    "body": "{\"operation\":\"generate\",\"commandId\":\"83e6104c-72df-4e66-8645-02dd7c544a3e\",\"versionId\":\"da327c80-ee2d-456b-b4db-263b57ac50ce\",\"expectedVersionHash\":\"fc9818674bd5d0d6ea354f42ef6bb9c9dba8c8a81464b5225e8c2e94bc5211e1\",\"reportingPeriodStart\":\"2026-10-01\",\"reportingPeriodEnd\":\"2026-10-07\",\"title\":\"SYNTHETIC exact report recovery 2026-10-07\",\"summary\":\"SYNTHETIC lost-response acceptance. Saved statuses are not evidence of completed agency work.\"}",
+    "receipt": {
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "adoptedVersionContentHash": "fc9818674bd5d0d6ea354f42ef6bb9c9dba8c8a81464b5225e8c2e94bc5211e1",
+      "artifactId": "95bbc877-b4ff-4c5a-ac73-0961f2b54cd5",
+      "commandId": "83e6104c-72df-4e66-8645-02dd7c544a3e",
+      "commandSha256": "2ad843f8a22732be9ba9f8cf2279ae31adc266bdb47e1a9c37028f0b60a2b455",
+      "contentHash": "978a89ab2625d531f8128dba44d6ad009956d0721c21e052097d8d87c9cdd271",
+      "generatedAt": "2026-10-07T21:30:17.379274Z",
+      "implementationReportId": "b0e72ce2-0c1d-47bd-a8ba-ef792e88673a",
+      "planId": "fb049e81-a3a7-4ae0-be50-752410899be8",
+      "replayed": false,
+      "reportId": "59c9ded0-751f-439d-b827-b40967374d75",
+      "reportingPeriodEnd": "2026-10-07",
+      "reportingPeriodStart": "2026-10-01",
+      "summary": "SYNTHETIC lost-response acceptance. Saved statuses are not evidence of completed agency work.",
+      "title": "SYNTHETIC exact report recovery 2026-10-07",
+      "versionId": "da327c80-ee2d-456b-b4db-263b57ac50ce",
+      "workspaceId": "ef79280b-99ac-4d8f-a10e-87adbe624635"
+    },
+    "retainedBeforeSend": true,
+    "simulatedResponseLoss": true,
+    "status": 201
+  },
+  "correctedRetry": {
+    "body": "{\"operation\":\"generate\",\"commandId\":\"83e6104c-72df-4e66-8645-02dd7c544a3e\",\"versionId\":\"da327c80-ee2d-456b-b4db-263b57ac50ce\",\"expectedVersionHash\":\"fc9818674bd5d0d6ea354f42ef6bb9c9dba8c8a81464b5225e8c2e94bc5211e1\",\"reportingPeriodStart\":\"2026-10-01\",\"reportingPeriodEnd\":\"2026-10-07\",\"title\":\"SYNTHETIC exact report recovery 2026-10-07\",\"summary\":\"SYNTHETIC lost-response acceptance. Saved statuses are not evidence of completed agency work.\"}",
+    "receipt": {
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "adoptedVersionContentHash": "fc9818674bd5d0d6ea354f42ef6bb9c9dba8c8a81464b5225e8c2e94bc5211e1",
+      "artifactId": "95bbc877-b4ff-4c5a-ac73-0961f2b54cd5",
+      "commandId": "83e6104c-72df-4e66-8645-02dd7c544a3e",
+      "commandSha256": "2ad843f8a22732be9ba9f8cf2279ae31adc266bdb47e1a9c37028f0b60a2b455",
+      "contentHash": "978a89ab2625d531f8128dba44d6ad009956d0721c21e052097d8d87c9cdd271",
+      "generatedAt": "2026-10-07T21:30:17.379274Z",
+      "implementationReportId": "b0e72ce2-0c1d-47bd-a8ba-ef792e88673a",
+      "planId": "fb049e81-a3a7-4ae0-be50-752410899be8",
+      "replayed": true,
+      "reportId": "59c9ded0-751f-439d-b827-b40967374d75",
+      "reportingPeriodEnd": "2026-10-07",
+      "reportingPeriodStart": "2026-10-01",
+      "summary": "SYNTHETIC lost-response acceptance. Saved statuses are not evidence of completed agency work.",
+      "title": "SYNTHETIC exact report recovery 2026-10-07",
+      "versionId": "da327c80-ee2d-456b-b4db-263b57ac50ce",
+      "workspaceId": "ef79280b-99ac-4d8f-a10e-87adbe624635"
+    },
+    "status": 200,
+    "timeOrigin": 1791408863518.2
+  },
+  "restoredWithoutSending": true,
+  "noPendingAfterReply": true,
+  "pageNotReloaded": true,
+  "wrappedButton": {
+    "bottom": 450.6034049987793,
+    "height": 57.3491325378418,
+    "left": 70.04309844970703,
+    "right": 332.15515899658203,
+    "top": 393.2542724609375,
+    "width": 262.112060546875,
+    "x": 70.04309844970703,
+    "y": 393.2542724609375
+  },
+  "panel": {
+    "bottom": 450.6034164428711,
+    "height": 370.5172119140625,
+    "left": 52.67240905761719,
+    "right": 332.15513610839844,
+    "top": 80.0862045288086,
+    "width": 279.48272705078125,
+    "x": 52.67240905761719,
+    "y": 80.0862045288086
+  },
+  "native": {
+    "receipt": {
+      "title": "SYNTHETIC exact report recovery 2026-10-07",
+      "planId": "fb049e81-a3a7-4ae0-be50-752410899be8",
+      "actorId": "3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705",
+      "summary": "SYNTHETIC lost-response acceptance. Saved statuses are not evidence of completed agency work.",
+      "replayed": false,
+      "reportId": "59c9ded0-751f-439d-b827-b40967374d75",
+      "commandId": "83e6104c-72df-4e66-8645-02dd7c544a3e",
+      "versionId": "da327c80-ee2d-456b-b4db-263b57ac50ce",
+      "artifactId": "95bbc877-b4ff-4c5a-ac73-0961f2b54cd5",
+      "contentHash": "978a89ab2625d531f8128dba44d6ad009956d0721c21e052097d8d87c9cdd271",
+      "generatedAt": "2026-10-07T21:30:17.379274Z",
+      "workspaceId": "ef79280b-99ac-4d8f-a10e-87adbe624635",
+      "commandSha256": "2ad843f8a22732be9ba9f8cf2279ae31adc266bdb47e1a9c37028f0b60a2b455",
+      "reportingPeriodEnd": "2026-10-07",
+      "reportingPeriodStart": "2026-10-01",
+      "implementationReportId": "b0e72ce2-0c1d-47bd-a8ba-ef792e88673a",
+      "adoptedVersionContentHash": "fc9818674bd5d0d6ea354f42ef6bb9c9dba8c8a81464b5225e8c2e94bc5211e1"
+    },
+    "commands": 1,
+    "reportId": "59c9ded0-751f-439d-b827-b40967374d75",
+    "reportCount": 1,
+    "artifactCount": 1,
+    "commandSha256": "2ad843f8a22732be9ba9f8cf2279ae31adc266bdb47e1a9c37028f0b60a2b455",
+    "snapshotSha256": "978a89ab2625d531f8128dba44d6ad009956d0721c21e052097d8d87c9cdd271",
+    "implementationReports": 2
+  },
+  "httpRefusals": [
+    {
+      "body": {
+        "error": "Current staff access in the same account and workspace is required. Report generation is not available to agents.",
+        "kind": "forbidden"
+      },
+      "expected": 403,
+      "name": "explicit agent refusal",
+      "status": 403
+    },
+    {
+      "body": {
+        "error": "Current staff access in the same account and workspace is required. Report generation is not available to agents.",
+        "kind": "forbidden"
+      },
+      "expected": 403,
+      "name": "wrong workspace header",
+      "status": 403
+    },
+    {
+      "body": {
+        "error": "The adopted plan changed or this request conflicts with an earlier command. Keep the request and review the plan before generating another report.",
+        "kind": "conflict"
+      },
+      "expected": 409,
+      "name": "changed exact command",
+      "status": 409
+    },
+    {
+      "body": {
+        "error": "The saved report request is invalid. Keep a copy before reviewing the plan.",
+        "kind": "invalid"
+      },
+      "expected": 400,
+      "name": "malformed UTF8",
+      "status": 400
+    }
+  ],
+  "limitations": [
+    "Synthetic acceptance, not practitioner acceptance",
+    "Date fields set with native DOM setter and input/change events through T3; native date entry unverified",
+    "Actual downloaded copy supplied to File/DataTransfer through T3; native OS file chooser unverified",
+    "First retry instrumentation mishandled URL object and triggered RSC fallback; corrected probe retained its record in sessionStorage",
+    "The first file injection returned an error after change handler cleared FileList; second local import was idempotent; neither sent a request",
+    "Only one new report created; previous acceptance records were not rewritten"
+  ]
+}

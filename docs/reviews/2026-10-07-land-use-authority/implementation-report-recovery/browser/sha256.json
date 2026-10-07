@@ -1,0 +1,14 @@
+{
+  "desktop-confirmation.png": "3ddabbe1ddf71b2eb9e78f3f5d0cbf5bb68563fecc4faded151fc99a33a13055",
+  "mobile-confirmation.png": "291f7088f869a749cbec199ee148b8c91dcf89ba0ce8a30f5e9db5df8500930b",
+  "mobile-wrapped.png": "487ceed0a5de2d83cc64dfe01bbd49ce03f0436cd5bade76ec93543b3ecf8f72",
+  "desktop-report.png": "633b0b3d3dcd053c044bef313458d3bec014acc2ed4adc88ffc8a7cd71cf5fb3",
+  "download-native-verification.json": "4bdb7bb57145bf6cf082d412432a390bf2d49f42031d2e5b5e92bfd40e9196b2",
+  "mobile-report.png": "e7ca4fdf7a2485e47331946908e5ea46112e9f4b1369145ba1173e01916f1881",
+  "build-mobile-fix-status.json": "d6142a6f9aa779150158a88ff330d16d50585ae82aaf55d66f48e0ffa3269679",
+  "mobile-before-wrap.png": "8bdf96d83b17d03fbf0230af11a3da44ee224e5469fab848e03bad9b1c02b21a",
+  "desktop-pending.png": "f60f8ee4226cd4dd23a77b9e9a248eaf79d122bc84249bd44311baee1f901a51",
+  "build-status.json": "8308144f147d88afbf636ef8c5d05a5758142ec276952f12f02acb74d418fdf0",
+  "browser-summary.json": "9a0d86f861b9eef22c1825a019ebc1e0aae91ae75eed6c1378bd4289f50660bc",
+  "desktop-form.png": "6fb4797271baff92df4b0c02c5075606423867e58d7491d228872e7557530a91"
+}
