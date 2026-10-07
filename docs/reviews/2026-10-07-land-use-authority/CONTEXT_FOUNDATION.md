@@ -67,3 +67,17 @@ The storage check is deliberately shallow. RLS, trustworthy database attribution
 concurrent context/freeze behavior, actual route writes, browser recovery and
 public/exported version agreement remain unproved and must be implemented or
 verified before this branch can claim the plan-owned context workflow.
+
+## Restart review of the source record
+
+The October 7 restart check caught an omitted source-hash update after the
+foundation commit. The registry diff adds only `authorityKinds: ["city", "county"]`
+to the existing California descriptor. This makes its existing local-government
+scope machine-readable for the new, unwired context preparation helper. It adds
+no jurisdiction, legal requirement or accepted journey. California remains
+partial; Oregon and Puerto Rico statutory bundles remain unavailable. The
+source hash and containing readiness-registry hash now identify the reviewed
+bytes. Review dates, readiness statuses and scientific claims remain unchanged.
+The expired registry reminders remain visible. This bounded review does not
+replace the outstanding whole-registry reassessment or general/specific-plan
+correction described above.

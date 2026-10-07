@@ -1,0 +1,4 @@
+ERROR:  authenticated RPC permission
+CONTEXT:  PL/pgSQL function pg_temp_73.context_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.context_assert(NOT has_function_privilege('authenticated','public.save_land_use_plan_context(uuid,uuid,uuid,uuid,text,text,jsonb,text,text)','EXECUTE'), 'authenticated RPC permission')"
+PL/pgSQL function inline_code_block line 23 at PERFORM

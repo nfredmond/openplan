@@ -1,0 +1,4 @@
+ERROR:  outsider refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_34.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(replace(call_sql,actor::text,outsider::text),'42501','outsider refused')"
+PL/pgSQL function inline_code_block line 34 at PERFORM

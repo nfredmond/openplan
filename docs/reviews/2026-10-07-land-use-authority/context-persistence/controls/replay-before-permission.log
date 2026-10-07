@@ -1,0 +1,4 @@
+ERROR:  revoked writer replay refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_13.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(call_sql,'42501','revoked writer replay refused')"
+PL/pgSQL function inline_code_block line 73 at PERFORM

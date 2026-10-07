@@ -1,0 +1,4 @@
+ERROR:  noncurrent version refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_41.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(replace(call_sql,version::text,other_version::text),'PT409','noncurrent version refused')"
+PL/pgSQL function inline_code_block line 36 at PERFORM

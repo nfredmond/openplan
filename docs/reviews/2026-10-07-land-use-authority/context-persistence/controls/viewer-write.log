@@ -1,0 +1,4 @@
+ERROR:  viewer refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_27.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(replace(call_sql,actor::text,viewer::text),'42501','viewer refused')"
+PL/pgSQL function inline_code_block line 35 at PERFORM

@@ -1,0 +1,4 @@
+ERROR:  changed replay plan kind refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_47.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(format('SELECT public.save_land_use_plan_context(%L,%L,%L,%L,NULL,%L,%L,%L,%L)',plan,version,actor,command,raw_command,prepared,'local-unconfigured','wrong-kind'),'PT409','changed replay plan kind refused')"
+PL/pgSQL function inline_code_block line 57 at PERFORM

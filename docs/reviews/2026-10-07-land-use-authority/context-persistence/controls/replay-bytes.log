@@ -1,0 +1,4 @@
+ERROR:  changed command bytes refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_45.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(format('SELECT pg_temp.save_context(%L,%L,%L,%L,NULL,%L,NULL)',plan,version,actor,command,raw_command||' '),'PT409','changed command bytes refused')"
+PL/pgSQL function inline_code_block line 61 at PERFORM

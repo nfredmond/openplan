@@ -1,0 +1,4 @@
+ERROR:  direct context insert refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_90.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(format('INSERT INTO public.land_use_plans(workspace_id,title,descriptor_id,plan_kind_key,authority_label,geography_label,plan_context) VALUES(%L,%L,%L,%L,%L,%L,%L)',workspace,'SYNTHETIC','local-unconfigured','community','SYNTHETIC','SYNTHETIC',prepared),'42501','direct context insert refused')"
+PL/pgSQL function inline_code_block line 32 at PERFORM

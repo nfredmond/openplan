@@ -79,7 +79,7 @@
     {
       "id": "land-use-plan-registry",
       "path": "openplan/src/lib/land-use-plans/registry.ts",
-      "sha256": "f63f563d8b5813bd3c69124a7e19c2fa77d48aa1b834b0d76b1eeb38a8f071fd"
+      "sha256": "70049a88d403f1ae9a25b00d16e60ae96482ef743fbf0ae494c329c24af0cfff"
     },
     {
       "id": "crash-source-registry",

@@ -1,0 +1,4 @@
+ERROR:  direct plan kind change refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_94.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(format('UPDATE public.land_use_plans SET plan_kind_key=%L WHERE id=%L','wrong-kind',plan),'42501','direct plan kind change refused')"
+PL/pgSQL function inline_code_block line 47 at PERFORM

@@ -1,0 +1,4 @@
+ERROR:  database actor attribution
+CONTEXT:  PL/pgSQL function pg_temp_4.context_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.context_assert(result#>>'{context,savedBy}'=actor::text,'database actor attribution')"
+PL/pgSQL function inline_code_block line 51 at PERFORM
