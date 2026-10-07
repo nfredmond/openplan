@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-report-provenance-route.test.ts (39 tests | 1 failed | 38 skipped) 17ms
+     × preserves unrelated report downloads without land-use reads 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-report-provenance-route.test.ts > direct report source download > preserves unrelated report downloads without land-use reads
+AssertionError: expected 503 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 503
+
+ ❯ src/test/land-use-report-provenance-route.test.ts:148:63
+    146|     rows.reports!.report_type = "project_report"; rows.reports!.land_u…
+    147|     rows.report_artifacts!.metadata_json = { sources: ["SYNTHETIC proj…
+    148|     const response = await request(); expect(response.status).toBe(200…
+       |                                                               ^
+    149|     expect(await response.json()).toEqual({ report: rows.reports, arti…
+    150|     expect(queries.map(q => q.table)).toEqual(["reports", "workspace_m…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 38 skipped (39)
+   Start at  13:14:59
+   Duration  651ms (transform 107ms, setup 54ms, import 158ms, tests 17ms, environment 330ms)
+

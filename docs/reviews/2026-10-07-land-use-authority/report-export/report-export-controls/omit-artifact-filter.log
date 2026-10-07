@@ -1,0 +1,49 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-report-provenance-route.test.ts (39 tests | 1 failed | 38 skipped) 22ms
+     × downloads the retained adopted plan and complete decision 21ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-report-provenance-route.test.ts > direct report source download > downloads the retained adopted plan and complete decision
+AssertionError: expected [ { table: 'reports', …(2) }, …(4) ] to deeply equal [ { table: 'reports', …(2) }, …(4) ]
+
+- Expected
++ Received
+
+@@ -22,16 +22,11 @@
+      ],
+      "projection": "workspace_id, role",
+      "table": "workspace_members",
+    },
+    {
+-     "filters": [
+-       [
+-         "report_id",
+-         "34000000-0000-4000-8000-000000000001",
+-       ],
+-     ],
++     "filters": [],
+      "limit": 1,
+      "order": [
+        "generated_at",
+        {
+          "ascending": false,
+
+ ❯ src/test/land-use-report-provenance-route.test.ts:77:21
+     75|     expect(response.headers.get("content-type")).toBe("application/jso…
+     76|     expect(response.headers.get("content-disposition")).toBe(`attachme…
+     77|     expect(queries).toEqual([
+       |                     ^
+     78|       { table: "reports", projection: REPORT_ACCESS_COLUMNS, filters: …
+     79|       { table: "workspace_members", projection: "workspace_id, role", …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 38 skipped (39)
+   Start at  13:15:02
+   Duration  662ms (transform 102ms, setup 55ms, import 151ms, tests 22ms, environment 340ms)
+

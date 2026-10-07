@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-report-provenance-route.test.ts (39 tests | 1 failed | 38 skipped) 17ms
+     × rejects invalid report id before opening a client 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-report-provenance-route.test.ts > direct report source download > rejects invalid report id before opening a client
+AssertionError: expected 200 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 200
+
+ ❯ src/test/land-use-report-provenance-route.test.ts:143:47
+    141|   });
+    142|   it("rejects invalid report id before opening a client", async () => {
+    143|     expect((await request("invalid")).status).toBe(400); expect(mocks.…
+       |                                               ^
+    144|   });
+    145|   it("preserves unrelated report downloads without land-use reads", as…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 38 skipped (39)
+   Start at  13:15:09
+   Duration  674ms (transform 113ms, setup 57ms, import 165ms, tests 17ms, environment 339ms)
+
