@@ -32,9 +32,27 @@ async function inspect() {
 }
 
 describe("thematic context selection", () => {
+  it("reads the exact saved choice on demand without choosing a newer result or writing", async () => {
+    render(<SynthesisThematicContextChoice {...choiceProps()} saved={f.choice()} />); expect(transport).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Read saved context" })); await screen.findByText(f.noteText);
+    const query = new URL(String(transport.mock.calls[0][0]), "http://localhost").searchParams;
+    expect(Object.fromEntries(query)).toMatchObject({ mode: "inspect", contextRequestId: f.entry.requestId, throughSequence: "13" });
+    expect(transport).toHaveBeenCalledTimes(1); expect(posts()).toHaveLength(0);
+    expect(screen.queryByRole("button", { name: "Use this context" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Download complete context" })).toBeTruthy();
+  });
+  it("refuses a self-hashed replacement while reading a saved choice", async () => {
+    const saved = f.choice();
+    const changed = JSON.stringify({ ...JSON.parse(f.preview.command.expected.choiceText), finalCaptureSha256: hash("another capture") });
+    f.preview.command.expected.choiceText = changed; f.preview.choiceSha256 = hash(changed);
+    render(<SynthesisThematicContextChoice {...choiceProps()} saved={saved} />);
+    fireEvent.click(screen.getByRole("button", { name: "Read saved context" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("differs from the saved choice");
+    expect(screen.queryByText(f.noteText)).toBeNull(); expect(posts()).toHaveLength(0);
+  });
   it("discovers and inspects on demand, retaining the exact choice before an explicit save", async () => {
     render(<SynthesisThematicContextChoice {...choiceProps()} />); expect(transport).not.toHaveBeenCalled();
-    const use = await inspect(); expect(posts()).toHaveLength(0); expect(screen.getByText(f.preview.outputExcerpt)).toBeTruthy();
+    const use = await inspect(); expect(posts()).toHaveLength(0); expect(screen.getByText(f.noteText)).toBeTruthy();
     const query = new URL(String(transport.mock.calls[2][0]), "http://localhost").searchParams;
     expect(Object.fromEntries(query)).toMatchObject({ contextRequestId: f.entry.requestId, throughSequence: "13", targetRecordId: f.entries[0].recordId });
     transport.mockImplementationOnce(async (_url, init) => {
@@ -113,15 +131,15 @@ describe("thematic context selection", () => {
   });
   it("clears an already inspected private preview when the account changes", async () => {
     const view = render(<SynthesisThematicContextChoice {...choiceProps()} />); await inspect();
-    expect(screen.getByText(f.preview.outputExcerpt)).toBeTruthy();
+    expect(screen.getByText(f.noteText)).toBeTruthy();
     view.rerender(<SynthesisThematicContextChoice {...choiceProps()} userId={id(99)} />);
-    expect(screen.queryByText(f.preview.outputExcerpt)).toBeNull();
+    expect(screen.queryByText(f.noteText)).toBeNull();
     expect(screen.queryByRole("button", { name: "Use this context" })).toBeNull(); expect(posts()).toHaveLength(0);
   });
   it.each([401, 403])("clears previews on current denial %s and preserves uncertain writes", async status => {
     render(<SynthesisThematicContextChoice {...choiceProps()} />); const use = await inspect();
     transport.mockResolvedValueOnce(json({}, status)); fireEvent.click(use);
-    await waitFor(() => expect(onAccessLost).toHaveBeenCalledOnce()); expect(screen.queryByText(f.preview.outputExcerpt)).toBeNull();
+    await waitFor(() => expect(onAccessLost).toHaveBeenCalledOnce()); expect(screen.queryByText(f.noteText)).toBeNull();
     expect(readPendingThematicChoice(localStorage, f.recoveryScope)).not.toBeNull(); expect(onSaved).not.toHaveBeenCalled();
   });
 });

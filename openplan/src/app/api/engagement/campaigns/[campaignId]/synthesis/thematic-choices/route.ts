@@ -86,7 +86,7 @@ export async function GET(request: NextRequest, context: Context) {
       command: { ...selected, expected: { requestIntentSha256: prepared.request.state.request.intentSha256,
         thematicSha256: prepared.request.state.thematic.thematicSha256, choiceText: prepared.choiceText } },
       choiceSha256: digest(prepared.choiceText), cancelled: prepared.request.state.cancellation !== null,
-      outputExcerpt: prepared.outputText.slice(0, 1600), outputExcerptTruncated: prepared.outputText.length > 1600,
+      outputText: prepared.outputText, outputExcerpt: prepared.outputText.slice(0, 1600), outputExcerptTruncated: prepared.outputText.length > 1600,
       outputBytes: Buffer.byteLength(prepared.outputText, "utf8"), outputSha256: digest(prepared.outputText), interpretation: "machine_unreviewed" });
     audit.info("context_inspected", { requestId: selected.requestId, contextRequestId: selected.contextRequestId });
     return NextResponse.json(result, { headers });

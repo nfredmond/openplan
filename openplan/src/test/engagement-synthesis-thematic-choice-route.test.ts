@@ -60,7 +60,7 @@ describe("staff thematic input HTTP boundary", () => {
     expect(response.status).toBe(200); expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(body).toMatchObject({ campaignId, workspaceId, actorId: userId, command, choiceSha256: hash(choiceText), interpretation: "machine_unreviewed",
       outputExcerptTruncated: true, outputBytes: Buffer.byteLength(outputText), outputSha256: hash(outputText) });
-    expect(body.outputExcerpt).toBe(outputText.slice(0, 1600));
+    expect(body.outputText).toBe(outputText); expect(body.outputExcerpt).toBe(outputText.slice(0, 1600));
     expect(mocks.prepare).toHaveBeenCalledExactlyOnceWith(client, service, { campaignId, workspaceId, actorId: userId, ...selection }, expect.any(AbortSignal));
     expect(mocks.service.mock.invocationCallOrder[0]).toBeGreaterThan(mocks.access.mock.invocationCallOrder[0]);
     expect(mocks.write).not.toHaveBeenCalled(); expect(JSON.stringify(mocks.info.mock.calls)).not.toContain("PRIVATE");

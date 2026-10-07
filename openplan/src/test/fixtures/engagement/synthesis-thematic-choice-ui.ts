@@ -31,10 +31,12 @@ export function thematicChoiceUiFixture() {
     requestId: entry.requestId, actorId: entry.actorId, requestIntentSha256: entry.intentSha256, stage: "context", checkedAt: entry.createdAt,
     cancelled: false, status: "frames_complete", interpretation: "machine_unreviewed", selectionSequence: 13, manifestSha256: hash("history"),
     taskCount: 1, counts: [{ disposition: "verified", count: 1 }] };
-  const outputExcerpt = "SYNTHETIC context wording, not a reviewed finding.";
+  const noteText = "SYNTHETIC context wording, not a reviewed finding.";
+  const outputExcerpt = JSON.stringify({ status: "complete", coveredPartIds: [hash("part")], notes: [{ id: 0, text: noteText,
+    citations: [{ partId: hash("part"), quote: "SYNTHETIC original contribution" }], relatedNoteIds: [] }], uncertainties: ["SYNTHETIC uncertainty"] });
   const preview = { schemaVersion: 1, campaignId: scope.campaignId, workspaceId: scope.workspaceId, actorId: scope.actorId,
-    command: command(), choiceSha256: choice().choiceSha256, cancelled: false, outputExcerpt, outputExcerptTruncated: false,
+    command: command(), choiceSha256: choice().choiceSha256, cancelled: false, outputText: outputExcerpt, outputExcerpt, outputExcerptTruncated: false,
     outputBytes: Buffer.byteLength(outputExcerpt), outputSha256: hash(outputExcerpt), interpretation: "machine_unreviewed" };
   const recoveryScope = { userId: scope.actorId, workspaceId: scope.workspaceId, campaignId: scope.campaignId, requestId: scope.requestId, targetRecordId: entries[0].recordId };
-  return { scope, parent, entries, entry, command, choice, contributionPage, contextPage, progress, preview, recoveryScope };
+  return { scope, parent, entries, entry, command, choice, contributionPage, contextPage, progress, preview, recoveryScope, noteText };
 }

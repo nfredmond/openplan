@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { SynthesisContextOutputReader } from "./synthesis-context-output-reader";
 import { readSynthesisHistory } from "@/lib/engagement/synthesis-history-read";
 import { inspectThematicContextPage, type ThematicInputScope, type inspectThematicContributionPage } from "@/lib/engagement/synthesis-thematic-choice-discovery";
 import { inspectSynthesisThematicChoicePreview, type synthesisThematicChoiceReceiptSchema } from "@/lib/engagement/synthesis-thematic-choice-command";
@@ -87,6 +88,22 @@ function Choice({ userId, workspaceId, campaignId, sourceId, sourceSha256, reque
     } catch (cause) { if (current()) setError(message(cause)); }
     finally { if (current()) setBusy(false); }
   }
+  async function inspectSaved() {
+    if (!saved || writing.current) return;
+    active.current?.abort(); const controller = new AbortController(); active.current = controller;
+    const current = () => active.current === controller && !controller.signal.aborted;
+    setBusy(true); setError(null); setPreview(null);
+    try {
+      const choice = JSON.parse(saved.choiceText) as { contextRequestId: string; selectionSequence: number };
+      const selection = { requestId, targetRecordId, contextRequestId: choice.contextRequestId, throughSequence: choice.selectionSequence };
+      const query = new URLSearchParams(Object.entries({ mode: "inspect", ...selection }).map(([key, value]) => [key, String(value)]));
+      const result = await inspectSynthesisThematicChoicePreview(await read(`/api/engagement/campaigns/${campaignId}/synthesis/thematic-choices?${query}`, controller), { campaignId, workspaceId, actorId: userId }, selection);
+      if (result.command.expected.requestIntentSha256 !== requestIntentSha256 || result.command.expected.thematicSha256 !== thematicSha256 ||
+        result.command.expected.choiceText !== saved.choiceText) throw new Error("Inspected context differs from the saved choice");
+      if (current()) setPreview(result);
+    } catch (cause) { if (current()) setError(message(cause)); }
+    finally { if (current()) setBusy(false); }
+  }
   async function save(retry = false) {
     if (writing.current || storageBlocked || !storageReady || (!retry && (saved || !preview || preview.cancelled))) return;
     writing.current = true; active.current?.abort(); const controller = new AbortController(); active.current = controller;
@@ -116,6 +133,7 @@ function Choice({ userId, workspaceId, campaignId, sourceId, sourceSha256, reque
     {error ? <p role="alert">{error}</p> : null}{notice ? <p role="status">{notice}</p> : null}{busy ? <p role="status">Checking saved context…</p> : null}
     {saved ? <div className="space-y-2">
       <p className="text-sm">A context choice is saved for this contribution. It is fixed for this theme request. Start another theme request to use different input.</p>
+      <Button type="button" variant="outline" disabled={busy} onClick={() => void inspectSaved()}>Read saved context</Button>
       <details><summary className="cursor-pointer">Saved context choice reference</summary><pre className="whitespace-pre-wrap break-all text-xs">{saved.choiceText}</pre></details>
     </div> : null}
     {pending ? <div className="space-y-2">
@@ -135,14 +153,12 @@ function Choice({ userId, workspaceId, campaignId, sourceId, sourceSha256, reque
         {entry.cancelled ? <p className="text-sm">Cancellation recorded. Earlier completed output may still be inspected.</p> : null}
       </li>)}</ul>
       {cursor ? <Button type="button" variant="outline" disabled={busy} onClick={() => void discover(cursor)}>Check older context requests</Button> : null}
-      {preview ? <div className="space-y-2">
-        <p className="text-sm font-medium">Completed context, machine wording not reviewed</p>
-        <p className="whitespace-pre-wrap break-words text-sm [overflow-wrap:anywhere]">{preview.outputExcerpt}</p>
-        {preview.outputExcerptTruncated ? <p className="text-sm">This is a shortened preview. Theme preparation uses the complete saved context.</p> : null}
-        {preview.cancelled ? <p className="text-sm">This theme request is cancelled. Start another request to choose inputs.</p> : null}
-        <Button type="button" disabled={busy || !storageReady || storageBlocked || preview.cancelled} onClick={() => void save()}>Use this context</Button>
-      </div> : null}
     </> : null}
+    {preview ? <div className="space-y-2">
+        <SynthesisContextOutputReader outputText={preview.outputText} outputSha256={preview.outputSha256} contextRequestId={preview.command.contextRequestId} />
+        {preview.cancelled ? <p className="text-sm">This theme request is cancelled. Start another request to choose inputs.</p> : null}
+        {!saved && !pending ? <Button type="button" disabled={busy || !storageReady || storageBlocked || preview.cancelled} onClick={() => void save()}>Use this context</Button> : null}
+      </div> : null}
     {copies.length ? <details><summary className="cursor-pointer">Preserved context choice copies ({copies.length})</summary>
       <p className="text-sm">These private copies retain exact commands. Downloading a copy does not send it.</p>
       {copies.map((copy, index) => <Button key={copy.key} type="button" variant="outline" onClick={() => {

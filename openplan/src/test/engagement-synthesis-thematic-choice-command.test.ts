@@ -11,9 +11,9 @@ const choice = { schemaVersion: 1, targetRecordId: selection.targetRecordId, con
   selectionSequence: 7, historyManifestSha256: hash("history"), finalCaptureSha256: hash("capture"), finalResultSha256: hash("result") };
 const choiceText = JSON.stringify(choice);
 const command = { ...selection, expected: { requestIntentSha256: hash("intent"), thematicSha256: hash("thematic"), choiceText } };
-const outputExcerpt = "SYNTHETIC completed context, sin aprobación";
+const outputExcerpt = JSON.stringify({ status: "complete", coveredPartIds: [], notes: [], uncertainties: ["SYNTHETIC completed context, sin aprobación"] });
 const preview = { schemaVersion: 1, ...scope, command, choiceSha256: hash(choiceText), cancelled: false,
-  outputExcerpt, outputExcerptTruncated: false, outputBytes: Buffer.byteLength(outputExcerpt), outputSha256: hash(outputExcerpt), interpretation: "machine_unreviewed" };
+  outputText: outputExcerpt, outputExcerpt, outputExcerptTruncated: false, outputBytes: Buffer.byteLength(outputExcerpt), outputSha256: hash(outputExcerpt), interpretation: "machine_unreviewed" };
 const receipt = { schemaVersion: 1, campaignId: scope.campaignId, workspaceId: scope.workspaceId, requestId: selection.requestId,
   targetRecordId: selection.targetRecordId, choiceText, choiceSha256: hash(choiceText), createdBy: scope.actorId,
   createdAt: "2026-10-07T08:00:00Z", replayed: false };
@@ -51,8 +51,17 @@ describe("exact inspected thematic choice contract", () => {
     const expected = { ...selection, [key]: key === "throughSequence" ? 8 : key === "targetRecordId" ? `item:${id(99)}` : id(99) };
     await expect(inspectSynthesisThematicChoicePreview(preview, scope, expected)).rejects.toThrow("differs");
   });
-  it("keeps truncated excerpts distinct from complete output verification", async () => {
-    const truncated = { ...preview, outputExcerpt: "SYNTHETIC ".repeat(160), outputExcerptTruncated: true, outputBytes: 10000, outputSha256: hash("unreturned full bytes") };
-    expect((await inspectSynthesisThematicChoicePreview(truncated, scope, selection)).outputExcerptTruncated).toBe(true);
+  it("verifies complete output beyond a shortened raw excerpt", async () => {
+    const outputText = JSON.stringify({ status: "complete", coveredPartIds: Array(50).fill(hash("part")), notes: [], uncertainties: ["SYNTHETIC meaning after identifiers"] });
+    const full = { ...preview, outputText, outputExcerpt: outputText.slice(0, 1600), outputExcerptTruncated: true,
+      outputBytes: Buffer.byteLength(outputText), outputSha256: hash(outputText) };
+    expect((await inspectSynthesisThematicChoicePreview(full, scope, selection)).outputText).toBe(outputText);
+    await expect(inspectSynthesisThematicChoicePreview({ ...full, outputText: outputText.replace("meaning", "altered") }, scope, selection)).rejects.toThrow("differs");
+    await expect(inspectSynthesisThematicChoicePreview({ ...full, outputExcerptTruncated: false }, scope, selection)).rejects.toThrow("differs");
+  });
+  it.each(["incomplete", "invalid"])("refuses self-hashed %s context output", async kind => {
+    const outputText = kind === "invalid" ? "SYNTHETIC invalid structure" : JSON.stringify({ status: "incomplete", coveredPartIds: [], notes: [], uncertainties: [] });
+    await expect(inspectSynthesisThematicChoicePreview({ ...preview, outputText, outputExcerpt: outputText,
+      outputBytes: Buffer.byteLength(outputText), outputSha256: hash(outputText) }, scope, selection)).rejects.toThrow();
   });
 });

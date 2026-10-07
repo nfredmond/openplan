@@ -185,3 +185,34 @@ The [fresh integration audit](thematic-inputs/ui/integration-audit-53a6.json)
 accounts for 42 worktrees and 53 local branches. Every local branch matches its
 GitHub branch, with no stashes or missing remotes. Five engagement branches remain
 outside main. Only the canonical checkout's unrelated `.directory` is untracked.
+
+## Readable original context correction
+
+The next correction returns the complete original context within the existing
+4 MiB output limit. The browser verifies its byte length and full checksum before
+reading the unchanged frozen output schema. The engine and browser now share
+that schema; the modeling and generation rules do not change.
+
+The reading view presents generated notes and recorded uncertainties separately.
+It shows source quotations under each note and keeps empty output explicit without
+implying no issues. Each list starts with 20 entries, retains its total and has an
+explicit control to read the rest. The complete original JSON remains available
+for private download, preserving whitespace and all source references.
+
+Saved choices gain a read-only action for their original context and sequence.
+It compares the reconstructed choice with the saved bytes before exposing output.
+It does not substitute the latest result or offer another selection for an
+immutable choice. Choosing input still does not approve generated wording.
+
+The [reading controls](thematic-inputs/reading/controls.json) include a harmless
+run and 11 targeted faults. They detect changed full output beyond the excerpt,
+incomplete output, substituted saved custody, missing notes or uncertainties,
+broken pagination, a stale reader, reformatted downloads, absent quotations and
+changed Unicode limits. The runner restores source bytes. Component checks verify
+the offered Blob and filename, not completion of a browser or native-app download.
+Production rendering, download and current-build evidence follow separately.
+
+The [correction verification](thematic-inputs/reading/verification.json) records
+360 passing tests across 14 suites, full TypeScript and ESLint for all 11 changed
+TypeScript files. The harmless control passes 174 tests across six suites. These
+checks include the existing context continuation, history and worker behavior.

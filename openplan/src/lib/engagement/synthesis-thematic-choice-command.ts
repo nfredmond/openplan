@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { synthesisContextOutputSchema } from "./synthesis-context-output";
 
 const id = z.string().uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/);
 const sequence = z.number().int().nonnegative().safe();
@@ -22,7 +23,7 @@ export const synthesisThematicChoiceCommandSchema = synthesisThematicChoiceSelec
 export type SynthesisThematicChoiceCommand = z.infer<typeof synthesisThematicChoiceCommandSchema>;
 export const synthesisThematicChoicePreviewSchema = z.object({ schemaVersion: z.literal(1), campaignId: id, workspaceId: id,
   actorId: id, command: synthesisThematicChoiceCommandSchema, choiceSha256: hash, cancelled: z.boolean(),
-  outputExcerpt: z.string().max(1600), outputExcerptTruncated: z.boolean(), outputBytes: z.number().int().positive().max(4_194_304),
+  outputText: z.string().max(4_194_304), outputExcerpt: z.string().max(1600), outputExcerptTruncated: z.boolean(), outputBytes: z.number().int().positive().max(4_194_304),
   outputSha256: hash, interpretation: z.literal("machine_unreviewed"),
 }).strict();
 export const synthesisThematicChoiceReceiptSchema = z.object({ schemaVersion: z.literal(1), campaignId: id, workspaceId: id,
@@ -46,8 +47,8 @@ export async function inspectSynthesisThematicChoiceReceipt(raw: unknown, scope:
   return record;
 }
 
-/** The excerpt assists inspection. It never substitutes for full context or
- * establishes that generated wording correctly represents a contribution.
+/** Verify complete original output before displaying its notes or downloading it.
+ * Checksums and the frozen structure do not establish semantic correctness.
  */
 export async function inspectSynthesisThematicChoicePreview(raw: unknown, scope: Scope,
   rawSelection: z.infer<typeof synthesisThematicChoiceSelectionSchema>) {
@@ -55,9 +56,11 @@ export async function inspectSynthesisThematicChoicePreview(raw: unknown, scope:
   if (preview.campaignId !== scope.campaignId || preview.workspaceId !== scope.workspaceId || preview.actorId !== scope.actorId ||
     (Object.keys(selection) as Array<keyof typeof selection>).some(key => selection[key] !== preview.command[key]) ||
     preview.choiceSha256 !== await digest(preview.command.expected.choiceText) ||
-    (!preview.outputExcerptTruncated && (preview.outputBytes !== new TextEncoder().encode(preview.outputExcerpt).byteLength ||
-      preview.outputSha256 !== await digest(preview.outputExcerpt)))) {
+    preview.outputExcerpt !== preview.outputText.slice(0, 1600) || preview.outputExcerptTruncated !== (preview.outputText.length > 1600) ||
+    preview.outputBytes !== new TextEncoder().encode(preview.outputText).byteLength || preview.outputSha256 !== await digest(preview.outputText)) {
     throw new Error("Inspected thematic choice differs from the selected context");
   }
+  const output = synthesisContextOutputSchema.parse(JSON.parse(preview.outputText));
+  if (output.status !== "complete") throw new Error("Inspected context output is incomplete");
   return preview;
 }
