@@ -11,7 +11,7 @@ export const synthesisExecutionQueueCommandSchema = synthesisExecutionScopeSchem
 }).strict();
 export type SynthesisExecutionQueueCommand = z.infer<typeof synthesisExecutionQueueCommandSchema>;
 
-const receiptSchema = z.object({ schemaVersion: z.literal(1), queueId: id,
+export const synthesisExecutionQueueReceiptSchema = z.object({ schemaVersion: z.literal(1), queueId: id,
   commandText: text, commandSha256: hash, createdAt: z.iso.datetime({ offset: true }),
 }).strict();
 
@@ -30,7 +30,7 @@ export function parseSynthesisExecutionQueueCommand(raw: unknown) {
  */
 export async function verifySynthesisExecutionQueueReceipt(raw: unknown, originalText: string) {
   const { commandText, command } = parseSynthesisExecutionQueueCommand(originalText);
-  const receipt = receiptSchema.parse(raw);
+  const receipt = synthesisExecutionQueueReceiptSchema.parse(raw);
   if (receipt.queueId !== command.queueId || receipt.commandText !== commandText) {
     throw new Error("Execution queue receipt differs from the original command");
   }

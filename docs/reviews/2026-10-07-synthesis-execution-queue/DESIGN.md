@@ -265,3 +265,29 @@ The 6 GB heap retry completed and reported one route-test type error: its
 Uint8Array annotation allowed SharedArrayBuffer while NextRequest requires an
 ArrayBuffer-backed body. The fixture now declares the narrower type. The route
 tests pass after correction. Another full type check remains required.
+
+## Durable page coordinator checkpoint
+
+The coordinator saves target, canonical worker root, queue cursor and up to 32
+exact receipts before invoking any scheduler. It validates saved receipts on
+restart and rejects changed roots, targets, checksums or page ordering. Progress
+is saved only after a scheduler returns or refuses. Interruption leaves the
+original pending entry on disk. A failed scheduler does not prevent the remaining
+page from proceeding; the immutable queue revisits it after cursor wrap using
+the same authorization journals. No service or CLI polling loop is installed yet.
+
+Eleven coordinator tests use real private filesystem journals and mocked queue
+reads/schedulers. Together with 20 record tests, all 31 pass. They cover interrupted
+replay, failed discovery persistence, failed progress persistence, changed saved
+identity, pagination wrap and the exclusive local coordinator lock. ESLint passes.
+The harmless control passes. Removing pre-dispatch persistence, root binding,
+cursor binding or the complete cancellation boundary causes assertion failures.
+An intermediate mutation removing only the post-scheduler cancellation checks
+survived: the save guard still refuses the aborted signal before changing disk.
+Both controls remain in `coordinator-controls.json`. No check was weakened.
+
+The full package type check at 1cd76295 passes with the bounded 6 GB heap run.
+The new coordinator still needs full package checking. Real provider interruption,
+multiple worker processes, live status reporting and desktop/mobile staff
+acceptance remain open. `schedule_returned` is a coordinator observation, not a
+claim that all outputs were delivered, analyzed or approved.
