@@ -79,7 +79,8 @@ describe("adopted plan report custody", () => {
     ["missing version reference", () => { delete metadata.versionId; }],
   ] as const)("withholds %s without rendering retained content", async (_name, mutate) => {
     mutate(); await show();
-    expect(screen.getByRole("alert")).toHaveTextContent("does not match its recorded plan version");
+    expect(screen.getByRole("alert")).toHaveTextContent("does not match its frozen plan version");
+    expect(screen.getByRole("alert")).toHaveTextContent("This does not mean the agency withdrew the plan.");
     expect(screen.queryByText("Retained policy text")).toBeNull();
     expect(screen.queryByRole("link", { name: "Download source JSON" })).toBeNull();
   });

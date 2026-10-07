@@ -60,9 +60,11 @@ describe("adopted report retained decision and relationships", () => {
   it.each(["adopted", "superseded", "repealed"])("renders the retained decision for %s editions", async state => {
     rows.land_use_plan_versions!.state = state;
     await show();
-    const section = within(screen.getByRole("region", { name: "Recorded adoption decision" }));
+    const section = within(screen.getByRole("region", { name: "Saved adoption decision" }));
     for (const value of ["SYNTHETIC recorded decision body", "amendment", "SYNTHETIC resolution TEST-2", "2026-10-07", "2026-10-08", "SYNTHETIC no actual vote"]) expect(section.getByText(value)).toBeVisible();
     expect(section.queryByRole("alert")).toBeNull();
+    expect(section.getByText(/These details do not establish legal validity/)).toBeVisible();
+    expect(section.getByText(/Later decisions do not replace it here/)).toBeVisible();
     expect(queries.find(q => q.table === "land_use_plan_decisions")).toEqual({ table: "land_use_plan_decisions", projection: "plan_id, version_id, version_content_hash, review_release_id, adoption_manifest, adoption_manifest_hash", filters: [["plan_id", planId], ["version_id", versionId], ["adoption_manifest_hash", "a".repeat(64)]] });
   });
   it("accepts reordered native keys without replacing the retained record", async () => {
@@ -72,12 +74,13 @@ describe("adopted report retained decision and relationships", () => {
   it("labels missing vote and effective date without inventing them", async () => {
     decision().vote = null; decision().effectiveOn = null; anchorDecision();
     await show();
-    expect(within(screen.getByRole("region", { name: "Recorded adoption decision" })).getAllByText("Not recorded")).toHaveLength(2);
+    expect(within(screen.getByRole("region", { name: "Saved adoption decision" })).getAllByText("Not recorded")).toHaveLength(2);
   });
   it("discloses a legacy record that was not retained without querying a later decision", async () => {
     delete metadata.adoptionManifest; delete metadata.adoptionManifestHash;
     await show();
-    expect(screen.getByText(/This report did not retain an adoption record/)).toBeVisible();
+    expect(screen.getByText(/This report did not retain the adoption details/)).toBeVisible();
+    expect(screen.getByText(/This does not establish whether an agency adopted the plan/)).toBeVisible();
     expect(queries.some(q => q.table === "land_use_plan_decisions")).toBe(false);
     expect(screen.getByText("Retained policy text")).toBeVisible();
   });
@@ -101,7 +104,7 @@ describe("adopted report retained decision and relationships", () => {
     ["unreadable native decision", () => { errors.land_use_plan_decisions = { message: "read failed" }; }],
   ] as const)("withholds %s and preserves separately verified plan content", async (_name, mutate) => {
     mutate(); await show();
-    expect(screen.getByRole("alert")).toHaveTextContent("adoption record could not be verified");
+    expect(screen.getByRole("alert")).toHaveTextContent("adoption details could not be verified");
     expect(screen.queryByText("SYNTHETIC recorded decision body")).toBeNull();
     expect(screen.queryByText("ALTERED decision")).toBeNull();
     expect(screen.getByText("Retained policy text")).toBeVisible();
@@ -112,7 +115,7 @@ describe("adopted report retained decision and relationships", () => {
     await show();
     const section = within(screen.getByRole("region", { name: "Related plans retained with this version" }));
     expect(section.getByRole("heading", { name: "SYNTHETIC predecessor" })).toBeVisible();
-    expect(section.getByText("Relationship recorded as: supersedes")).toBeVisible();
+    expect(section.getByText("Relationship saved as: supersedes")).toBeVisible();
     expect(section.getByText("SYNTHETIC related plan note")).toBeVisible();
     expect(section.queryByRole("link")).toBeNull();
   });
@@ -124,6 +127,6 @@ describe("adopted report retained decision and relationships", () => {
     frozen.relationships = [{ id: "incomplete" }]; anchorArtifact(); manifest.versionContentHash = metadata.contentHash; native().version_content_hash = metadata.contentHash; anchorDecision();
     await show();
     expect(screen.getByText("Related plan label not recorded")).toBeVisible();
-    expect(screen.getByText("Relationship recorded as: not recorded")).toBeVisible();
+    expect(screen.getByText("Relationship saved as: not recorded")).toBeVisible();
   });
 });

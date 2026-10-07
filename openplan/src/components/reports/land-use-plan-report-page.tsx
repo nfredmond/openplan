@@ -45,7 +45,7 @@ export async function LandUsePlanReportPage({ report }: { report: Report }) {
     && version.published_report_id === report.id && metadata.contentHash === version.content_hash && version.content_hash
     ? readFrozenPlanIdentity(frozen, report.land_use_plan_id, version.id, version.version_number, version.content_hash) : null;
   if (!identity || !frozen || !version) {
-    return <div className="mx-auto max-w-3xl p-8"><h1 className="text-3xl font-semibold">This plan report could not be verified</h1><p role="alert" className="mt-4">The saved report does not match its recorded plan version. OpenPlan withheld the report content. This does not mean the agency withdrew the plan.</p></div>;
+    return <div className="mx-auto max-w-3xl p-8"><h1 className="text-3xl font-semibold">This plan report could not be verified</h1><p role="alert" className="mt-4">The saved report does not match its frozen plan version. OpenPlan withheld the report content. This does not mean the agency withdrew the plan.</p></div>;
   }
   return <LandUsePlanReportDetail report={report}
     plan={{ id: identity.id, title: identity.title, authority_label: identity.authorityLabel, geography_label: identity.geographyLabel }}

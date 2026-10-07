@@ -49,7 +49,7 @@ export function LandUsePlanReportDetail({ report, plan, artifact, retainedContex
       <h2 id="report-relationships-heading" className="text-2xl font-semibold">Related plans retained with this version</h2>
       {relationships.length ? <ul className="mt-4 space-y-4">{relationships.map((relationship, index) => <li className="rounded-lg border p-4" key={text(relationship, "id") ?? index}>
         <h3 className="font-semibold">{text(relationship, "related_plan_label") ?? "Related plan label not recorded"}</h3>
-        <p className="mt-1 text-sm">Relationship recorded as: {(text(relationship, "relationship_kind") ?? "not recorded").replaceAll("_", " ")}</p>
+        <p className="mt-1 text-sm">Relationship saved as: {(text(relationship, "relationship_kind") ?? "not recorded").replaceAll("_", " ")}</p>
         {text(relationship, "notes") ? <p className="mt-2 whitespace-pre-wrap">{text(relationship, "notes")}</p> : null}
       </li>)}</ul> : <p className="mt-3">No related-plan references were retained with this version.</p>}
     </section> : null}

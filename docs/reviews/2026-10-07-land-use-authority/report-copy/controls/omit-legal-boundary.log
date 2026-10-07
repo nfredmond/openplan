@@ -1,0 +1,125 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-adoption.test.tsx (26 tests | 3 failed) 689ms
+     × renders the retained decision for adopted editions 183ms
+     × renders the retained decision for superseded editions 61ms
+     × renders the retained decision for repealed editions 58ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > renders the retained decision for adopted editions
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > renders the retained decision for superseded editions
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > renders the retained decision for repealed editions
+TestingLibraryElementError: Unable to find an element with the text: /These details do not establish legal validity/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<section[39m
+  [33maria-labelledby[39m=[32m"report-adoption-heading"[39m
+  [33mclass[39m=[32m"mt-8 rounded-lg border p-5"[39m
+[36m>[39m
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+    [33mid[39m=[32m"report-adoption-heading"[39m
+  [36m>[39m
+    [0mSaved adoption decision[0m
+  [36m</h2>[39m
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-sm text-muted-foreground"[39m
+  [36m>[39m
+    [0mThis is the decision retained when this report was published. Later decisions do not replace it here. [0m
+  [36m</p>[39m
+  [36m<dl[39m
+    [33mclass[39m=[32m"mt-4 grid gap-4 sm:grid-cols-2"[39m
+  [36m>[39m
+    [36m<div>[39m
+      [36m<dt[39m
+        [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+      [36m>[39m
+        [0mDecision body[0m
+      [36m</dt>[39m
+      [36m<dd[39m
+        [33mclass[39m=[32m"mt-1 whitespace-pre-wrap"[39m
+      [36m>[39m
+        [0mSYNTHETIC recorded decision body[0m
+      [36m</dd>[39m
+    [36m</div>[39m
+    [36m<div>[39m
+      [36m<dt[39m
+        [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+      [36m>[39m
+        [0mDecision type[0m
+      [36m</dt>[39m
+      [36m<dd[39m
+        [33mclass[39m=[32m"mt-1 capitalize"[39m
+      [36m>[39m
+        [0mamendment[0m
+      [36m</dd>[39m
+    [36m</div>[39m
+    [36m<div>[39m
+      [36m<dt[39m
+        [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+      [36m>[39m
+        [0mInstrument[0m
+      [36m</dt>[39m
+      [36m<dd[39m
+        [33mclass[39m=[32m"mt-1"[39m
+      [36m>[39m
+        [0mSYNTHETIC resolution[0m
+        [0m [0m
+        [0mTEST-2[0m
+      [36m</dd>[39m
+    [36m</div>[39m
+    [36m<div>[39m
+      [36m<dt[39m
+        [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+      [36m>[39m
+        [0mDecision date[0m
+      [36m</dt>[39m
+      [36m<dd[39m
+        [33mclass[39m=[32m"mt-1"[39m
+      [36m>[39m
+        [0m2026-10-07[0m
+      [36m</dd>[39m
+    [36m</div>[39m
+    [36m<div>[39m
+      [36m<dt[39m
+        [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+      [36m>[39m
+        [0mEffective date[0m
+      [36m</dt>[39m
+      [36m<dd[39m
+        [33mclass[39m=[32m"mt-1"[39m
+      [36m>[39m
+        [0m2026-10-08[0m
+      [36m</dd>[39m
+    [36m</div>[39m
+    [36m<div>[39m
+      [36m<dt[39m
+        [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+      [36m>[39m
+        [0mVote[0m
+      [36m</dt>[39m
+      [36m<dd[39m
+        [33mclass[39m=[32m"mt-1 whitespace-pre-wrap"[39m
+      [36m>[39m
+        [0mSYNTHETIC no actual vote[0m
+      [36m</dd>[39m
+    [36m</div>[39m
+  [36m</dl>[39m
+[36m</section>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-report-adoption.test.tsx:66:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 23 passed (26)
+   Start at  12:39:34
+   Duration  1.43s (transform 121ms, setup 54ms, import 264ms, tests 689ms, environment 333ms)
+
