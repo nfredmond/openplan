@@ -1,0 +1,96 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-content-workbench.test.tsx (8 tests | 3 failed) 1639ms
+     × separates retained reviewed identity and context from current request recovery 272ms
+     × separates staff_assessed reviewed identity and context from current request recovery 271ms
+     × separates legacy reviewed identity and context from current request recovery 231ms
+ ❯ src/test/land-use-plan-version-navigation.test.tsx (5 tests | 4 failed) 4104ms
+     × passes the exact selected version to the workbench request: undefined 1023ms
+     × passes the exact selected version to the workbench request: 22222222-2222-4222-8222-222222222222 1005ms
+     × passes the exact selected version to the workbench request:  1003ms
+     × passes the exact selected version to the workbench request: bad&versionId=another 1003ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-content-workbench.test.tsx > LandUsePlanWorkbench content editing > separates retained reviewed identity and context from current request recovery
+ FAIL  src/test/land-use-plan-content-workbench.test.tsx > LandUsePlanWorkbench content editing > separates staff_assessed reviewed identity and context from current request recovery
+ FAIL  src/test/land-use-plan-content-workbench.test.tsx > LandUsePlanWorkbench content editing > separates legacy reviewed identity and context from current request recovery
+Error: expect(element).not.toBeInTheDocument()
+
+expected document not to contain element, found <button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5"
+  data-size="default"
+  data-slot="button"
+  data-variant="default"
+  disabled=""
+>
+  Save plan context
+</button> instead
+ ❯ src/test/land-use-plan-content-workbench.test.tsx:217:77
+    215|     await screen.findByText("Saved context loaded.");
+    216|     expect(screen.getByText("Plan area: SYNTHETIC later area")).not.to…
+    217|     expect(screen.queryByRole("button", { name: "Save plan context" })…
+       |                                                                             ^
+    218|   });
+    219|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  src/test/land-use-plan-version-navigation.test.tsx > plan version page navigation > passes the exact selected version to the workbench request: undefined
+ FAIL  src/test/land-use-plan-version-navigation.test.tsx > plan version page navigation > passes the exact selected version to the workbench request: 22222222-2222-4222-8222-222222222222
+ FAIL  src/test/land-use-plan-version-navigation.test.tsx > plan version page navigation > passes the exact selected version to the workbench request: 
+ FAIL  src/test/land-use-plan-version-navigation.test.tsx > plan version page navigation > passes the exact selected version to the workbench request: bad&versionId=another
+TestingLibraryElementError: Unable to find an element with the text: SYNTHETIC read refusal. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto w-full max-w-7xl p-4 md:p-8"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"rounded-lg border border-destructive p-4 text-destructive"[39m
+        [33mrole[39m=[32m"alert"[39m
+      [36m>[39m
+        [0mSYNTHETIC read refusal[0m
+        [0m. This is a read failure, not an empty plan.[0m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mx-auto w-full max-w-7xl p-4 md:p-8"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"rounded-lg border border-destructive p-4 text-destructive"[39m
+        [33mrole[39m=[32m"alert"[39m
+      [36m>[39m
+        [0mSYNTHETIC read refusal[0m
+        [0m. This is a read failure, not an empty plan.[0m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/test/land-use-plan-version-navigation.test.tsx:16:25
+     14|     const query = versionId === undefined ? "" : `?versionId=${encodeU…
+     15|     await waitFor(() => expect(fetch).toHaveBeenCalledWith(`/api/land-…
+     16|     expect(await screen.findByText("SYNTHETIC read refusal")).toBeVisi…
+       |                         ^
+     17|   });
+     18|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  7 failed | 66 passed (73)
+   Start at  07:58:54
+   Duration  7.93s (transform 332ms, setup 117ms, import 782ms, tests 5.81s, environment 955ms)
+

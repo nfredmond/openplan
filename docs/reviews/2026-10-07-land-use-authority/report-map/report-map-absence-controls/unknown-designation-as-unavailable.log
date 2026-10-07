@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 1 failed) 213ms
+     × refuses a designation not retained in the report 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses a designation not retained in the report
+AssertionError: expected 503 to be 404 // Object.is equality
+
+- Expected
++ Received
+
+- 404
++ 503
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:112:85
+    110|   });
+    111|   it("refuses a designation not retained in the report", async () => {
+    112|     expect((await request(undefined, { reportId, designationId: otherI…
+       |                                                                                     ^
+    113|     expect(mocks.rpc).not.toHaveBeenCalled();
+    114|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  12:32:24
+   Duration  1.00s (transform 159ms, setup 56ms, import 317ms, tests 213ms, environment 325ms)
+

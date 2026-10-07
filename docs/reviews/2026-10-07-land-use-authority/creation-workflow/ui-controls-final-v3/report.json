@@ -1,0 +1,360 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "target": null,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "target": null,
+      "failedTests": [],
+      "matched": true
+    },
+    {
+      "case": "confirmation-collision",
+      "exitCode": 1,
+      "target": "leaves a newer browser copy",
+      "failedTests": [
+        "creation request recovery leaves a newer browser copy untouched when confirming an earlier request"
+      ],
+      "matched": true
+    },
+    {
+      "case": "ui-review",
+      "exitCode": 1,
+      "target": "opens without sending",
+      "failedTests": [
+        "mounted creation recovery opens without sending, preserves the original draft and requires explicit review"
+      ],
+      "matched": true
+    },
+    {
+      "case": "ui-reset-review",
+      "exitCode": 1,
+      "target": "opens without sending",
+      "failedTests": [
+        "mounted creation recovery opens without sending, preserves the original draft and requires explicit review",
+        "mounted creation recovery requires explicit current-rule review for a restored draft and keeps its old copy"
+      ],
+      "matched": true
+    },
+    {
+      "case": "ui-retain-first",
+      "exitCode": 1,
+      "target": "retains before transport",
+      "failedTests": [
+        "mounted creation recovery retains before transport and prevents a second creation after confirmation",
+        "mounted creation recovery recovers a lost reply after remount only through an explicit exact retry",
+        "mounted creation recovery preserves an earlier scope's pending copy when its response arrives after an account change",
+        "mounted creation recovery sends nothing when request storage fails",
+        "mounted creation recovery stops an uncertain creation before allowing its draft to become a new reviewed request",
+        "mounted creation recovery retains a lost stop across reload and opens a plan if creation won the race"
+      ],
+      "matched": true
+    },
+    {
+      "case": "ui-duplicate-after-confirmation",
+      "exitCode": 1,
+      "target": "prevents a second creation",
+      "failedTests": [
+        "mounted creation recovery retains before transport and prevents a second creation after confirmation"
+      ],
+      "matched": true
+    },
+    {
+      "case": "ui-current-rules",
+      "exitCode": 1,
+      "target": "requires explicit current-rule review",
+      "failedTests": [
+        "mounted creation recovery requires explicit current-rule review for a restored draft and keeps its old copy"
+      ],
+      "matched": true
+    },
+    {
+      "case": "page-writer",
+      "exitCode": 1,
+      "target": "keeps read-only members",
+      "failedTests": [
+        "plan-owned first-run rule selection keeps read-only members from creating or retrying plans"
+      ],
+      "matched": true
+    },
+    {
+      "case": "agent-x-openplan-assistant-execution-source",
+      "exitCode": 1,
+      "target": "refuses unsupported agent writes marked by x-openplan-assistant-execution-source",
+      "failedTests": [
+        "plan-owned creation route refuses unsupported agent writes marked by x-openplan-assistant-execution-source"
+      ],
+      "matched": true
+    },
+    {
+      "case": "agent-x-openplan-assistant-input-hash",
+      "exitCode": 1,
+      "target": "refuses unsupported agent writes marked by x-openplan-assistant-input-hash",
+      "failedTests": [
+        "plan-owned creation route refuses unsupported agent writes marked by x-openplan-assistant-input-hash"
+      ],
+      "matched": true
+    },
+    {
+      "case": "agent-x-openplan-assistant-approval-id",
+      "exitCode": 1,
+      "target": "refuses unsupported agent writes marked by x-openplan-assistant-approval-id",
+      "failedTests": [
+        "plan-owned creation route refuses unsupported agent writes marked by x-openplan-assistant-approval-id"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-replayed",
+      "exitCode": 1,
+      "target": "returns the retained created plan",
+      "failedTests": [
+        "authenticated creation stop route returns the retained created plan without claiming cancellation"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-actor",
+      "exitCode": 1,
+      "target": "refuses substituted stop receipt actorId",
+      "failedTests": [
+        "creation stop recovery refuses substituted stop receipt actorId"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-workspace",
+      "exitCode": 1,
+      "target": "refuses substituted stop receipt workspaceId",
+      "failedTests": [
+        "creation stop recovery refuses substituted stop receipt workspaceId"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-id",
+      "exitCode": 1,
+      "target": "refuses substituted stop receipt commandId",
+      "failedTests": [
+        "creation stop recovery refuses substituted stop receipt commandId"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-bytes",
+      "exitCode": 1,
+      "target": "refuses substituted stop receipt commandText",
+      "failedTests": [
+        "authenticated creation stop route does not confirm a stop receipt for different bytes",
+        "creation stop recovery refuses substituted stop receipt commandText"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-date",
+      "exitCode": 1,
+      "target": "refuses substituted stop receipt cancelledAt",
+      "failedTests": [
+        "creation stop recovery refuses substituted stop receipt cancelledAt"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-created-identity",
+      "exitCode": 1,
+      "target": "refuses changed copies, lost storage",
+      "failedTests": [
+        "creation stop recovery refuses changed copies, lost storage writes and false created outcomes"
+      ],
+      "matched": true
+    },
+    {
+      "case": "import-trust",
+      "exitCode": 1,
+      "target": "reconfirms imported terminal receipts",
+      "failedTests": [
+        "creation stop recovery reconfirms imported terminal receipts through stop, preserving their claims without trusting them"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-retention-collision",
+      "exitCode": 1,
+      "target": "refuses changed copies, lost storage",
+      "failedTests": [
+        "creation stop recovery refuses changed copies, lost storage writes and false created outcomes"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-retention-write",
+      "exitCode": 1,
+      "target": "refuses changed copies, lost storage",
+      "failedTests": [
+        "creation stop recovery refuses changed copies, lost storage writes and false created outcomes"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-intent-required",
+      "exitCode": 1,
+      "target": "retains stop intent before transport",
+      "failedTests": [
+        "creation stop recovery retains stop intent before transport and forbids creation retry while stopping"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-forbids-create",
+      "exitCode": 1,
+      "target": "retains stop intent before transport",
+      "failedTests": [
+        "creation stop recovery retains stop intent before transport and forbids creation retry while stopping"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-status",
+      "exitCode": 1,
+      "target": "preserves stopping through malformed replies",
+      "failedTests": [
+        "creation stop recovery preserves stopping through malformed replies, non-200 statuses and aborts"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-confirm-collision",
+      "exitCode": 1,
+      "target": "refuses changed copies, lost storage",
+      "failedTests": [
+        "creation stop recovery refuses changed copies, lost storage writes and false created outcomes"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-ui-route",
+      "exitCode": 1,
+      "target": "stops an uncertain creation before allowing",
+      "failedTests": [
+        "mounted creation recovery stops an uncertain creation before allowing its draft to become a new reviewed request",
+        "mounted creation recovery retains a lost stop across reload and opens a plan if creation won the race"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-ui-restore",
+      "exitCode": 1,
+      "target": "stops an uncertain creation before allowing",
+      "failedTests": [
+        "mounted creation recovery stops an uncertain creation before allowing its draft to become a new reviewed request"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-route-origin",
+      "exitCode": 1,
+      "target": "requires origin, authentication",
+      "failedTests": [
+        "authenticated creation stop route requires origin, authentication and current write membership"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-route-viewer",
+      "exitCode": 1,
+      "target": "requires origin, authentication",
+      "failedTests": [
+        "authenticated creation stop route requires origin, authentication and current write membership"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-route-actor",
+      "exitCode": 1,
+      "target": "refuses unapproved stop scope x-openplan-expected-user",
+      "failedTests": [
+        "authenticated creation stop route refuses unapproved stop scope x-openplan-expected-user"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-route-workspace",
+      "exitCode": 1,
+      "target": "refuses unapproved stop scope x-openplan-expected-workspace",
+      "failedTests": [
+        "authenticated creation stop route refuses unapproved stop scope x-openplan-expected-workspace"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-route-id",
+      "exitCode": 1,
+      "target": "refuses invalid IDs, bodies",
+      "failedTests": [
+        "authenticated creation stop route refuses invalid IDs, bodies, scope fields and normalization before privileged access"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-route-normalization",
+      "exitCode": 1,
+      "target": "refuses invalid IDs, bodies",
+      "failedTests": [
+        "authenticated creation stop route refuses invalid IDs, bodies, scope fields and normalization before privileged access"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-route-size",
+      "exitCode": 1,
+      "target": "refuses invalid IDs, bodies",
+      "failedTests": [
+        "authenticated creation stop route refuses invalid IDs, bodies, scope fields and normalization before privileged access"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-agent-x-openplan-assistant-execution-source",
+      "exitCode": 1,
+      "target": "refuses unapproved stop scope x-openplan-assistant-execution-source",
+      "failedTests": [
+        "authenticated creation stop route refuses unapproved stop scope x-openplan-assistant-execution-source"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-agent-x-openplan-assistant-input-hash",
+      "exitCode": 1,
+      "target": "refuses unapproved stop scope x-openplan-assistant-input-hash",
+      "failedTests": [
+        "authenticated creation stop route refuses unapproved stop scope x-openplan-assistant-input-hash"
+      ],
+      "matched": true
+    },
+    {
+      "case": "stop-agent-x-openplan-assistant-approval-id",
+      "exitCode": 1,
+      "target": "refuses unapproved stop scope x-openplan-assistant-approval-id",
+      "failedTests": [
+        "authenticated creation stop route refuses unapproved stop scope x-openplan-assistant-approval-id"
+      ],
+      "matched": true
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/app/api/land-use-plans/route.ts": "6f1bf5935415f30a5b0c3ac9ff273ee8b990588fe9c7dc4f1bdebbb07dc889ad",
+    "src/lib/land-use-plans/create-recovery.ts": "c98ecb1850748354f43b9dc608806c18fe03d3aac1559ebfa07f2b0916cb4a56",
+    "src/components/land-use-plans/land-use-plan-creator.tsx": "836963993e5c035a1b007a4ca730f852d0334483f62f5f9cb7674fbc27e8d6d2",
+    "src/app/(app)/land-use-plans/page.tsx": "77a011d02f46e995ef26a1c73ff992039fb27fc291aac53cc4ca486f2773eae9",
+    "src/lib/land-use-plans/create-stop.ts": "c6b8722c75e12d12b9c9f323a7e286906df7af991d4155c6dbbebac08483ccfe",
+    "src/app/api/land-use-plans/creation-requests/[commandId]/stop/route.ts": "02fe7cdafd69361df6a6514263fcc02f084d20107fecee0dd24f312bb51bacc7"
+  },
+  "boundary": "Synthetic HTTP mocks, local browser-storage simulation, mounted DOM and static guards. No native HTTP or rendered acceptance."
+}

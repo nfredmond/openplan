@@ -1,0 +1,4 @@
+ERROR:  direct context update refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_2.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(format('UPDATE public.land_use_plans SET plan_context=%L WHERE id=%L',prepared,plan),'42501','direct context update refused')"
+PL/pgSQL function inline_code_block line 31 at PERFORM

@@ -1,0 +1,55 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-custody.test.tsx (17 tests | 13 failed) 481ms
+     × withholds changed artifact without rendering retained content 11ms
+     × withholds self-rehashed artifact without rendering retained content 8ms
+     × withholds wrong artifact plan without rendering retained content 8ms
+     × withholds wrong queried plan without rendering retained content 8ms
+     × withholds wrong queried version without rendering retained content 8ms
+     × withholds wrong version number without rendering retained content 8ms
+     × withholds wrong report pointer without rendering retained content 7ms
+     × withholds unadopted version without rendering retained content 7ms
+     × withholds kind substitution without rendering retained content 7ms
+     × withholds invalid retained context without rendering retained content 9ms
+     × withholds unreadable native version without rendering retained content 7ms
+     × withholds missing native version without rendering retained content 7ms
+     × withholds missing version reference without rendering retained content 7ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds changed artifact without rendering retained content
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds self-rehashed artifact without rendering retained content
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds wrong artifact plan without rendering retained content
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds wrong queried plan without rendering retained content
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds wrong queried version without rendering retained content
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds wrong version number without rendering retained content
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds wrong report pointer without rendering retained content
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds unadopted version without rendering retained content
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds kind substitution without rendering retained content
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds invalid retained context without rendering retained content
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds unreadable native version without rendering retained content
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds missing native version without rendering retained content
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > withholds missing version reference without rendering retained content
+Error: expect(element).toHaveTextContent()
+
+Expected element to have text content:
+  This does not mean the agency withdrew the plan.
+Received:
+  The saved report does not match its frozen plan version. OpenPlan withheld the report content.
+ ❯ src/test/land-use-plan-report-custody.test.tsx:83:39
+     81|     mutate(); await show();
+     82|     expect(screen.getByRole("alert")).toHaveTextContent("does not matc…
+     83|     expect(screen.getByRole("alert")).toHaveTextContent("This does not…
+       |                                       ^
+     84|     expect(screen.queryByText("Retained policy text")).toBeNull();
+     85|     expect(screen.queryByRole("link", { name: "Download source JSON" }…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  13 failed | 4 passed (17)
+   Start at  12:39:44
+   Duration  1.22s (transform 121ms, setup 55ms, import 267ms, tests 481ms, environment 327ms)
+

@@ -1,0 +1,18 @@
+{
+  "unit": "openplan-report-adoption-ac06c23b-prod-20261007.service",
+  "pid": "1279687",
+  "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan",
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-07T19:14:42.116Z",
+    "deployment": {
+      "commit": "ac06c23bec73",
+      "version": "0.67.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 38ms
+     × refuses unnormalized fields before any write 4ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:14
+   Duration  1.34s (transform 191ms, setup 91ms, import 314ms, tests 56ms, environment 641ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > refuses unnormalized fields before any write
+AssertionError: expected 201 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 201
+
+ ❯ src/test/land-use-plan-context-route.test.ts:113:110
+    111|   it("refuses unnormalized fields before any write", async () => {
+    112|     expect((await post(JSON.stringify({ ...command, assessment: { ...c…
+    113|       applicability: { ...command.assessment.applicability, explanatio…
+       |                                                                                                              ^
+    114|     expect(mocks.service).not.toHaveBeenCalled();
+    115|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

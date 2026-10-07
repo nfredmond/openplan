@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts (11 tests | 1 failed) 30ms
+     × requires reassessment when the installed descriptor differs from the saved one 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-frozen-rules-integration.test.ts > adoption of the reviewed descriptor > requires reassessment when the installed descriptor differs from the saved one
+AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts:129:29
+    127|     snapshot.descriptorSnapshot!.processSteps[0].label = "Original sou…
+    128|     const response = await adopt();
+    129|     expect(response.status).toBe(409);
+       |                             ^
+    130|     expect((await response.json()).error).toContain("installed descrip…
+    131|     expect(state.rpc).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 52 passed (53)
+   Start at  02:39:34
+   Duration  2.43s (transform 130ms, setup 150ms, import 333ms, tests 240ms, environment 1.29s)
+

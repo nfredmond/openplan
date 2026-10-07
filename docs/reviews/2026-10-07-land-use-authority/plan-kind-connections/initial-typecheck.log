@@ -1,0 +1,3 @@
+src/test/land-use-plan-frozen-rules-integration.test.ts(462,28): error TS2571: Object is of type 'unknown'.
+src/test/land-use-plan-frozen-rules-integration.test.ts(463,29): error TS2571: Object is of type 'unknown'.
+src/test/land-use-plan-frozen-rules-integration.test.ts(464,29): error TS2571: Object is of type 'unknown'.

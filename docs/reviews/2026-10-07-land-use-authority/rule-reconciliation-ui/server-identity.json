@@ -1,0 +1,18 @@
+{
+  "unit": "openplan-reconciliation-ui-866be9e0-prod-20261007.service",
+  "pid": 3978857,
+  "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan",
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-07T16:56:58.124Z",
+    "deployment": {
+      "commit": "866be9e0ee0e",
+      "version": "0.67.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  }
+}

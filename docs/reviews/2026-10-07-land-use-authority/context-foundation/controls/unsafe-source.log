@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 1 failed) 22ms
+     × refuses source-free assessment, unsafe links and invented client attribution 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > plan-owned applicability > refuses source-free assessment, unsafe links and invented client attribution
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/test/land-use-plan-context.test.ts:55:148
+     53|   const value=assessed();if(value.applicability.status==="staff_assess…
+     54|   expect(planAuthorityAssessmentSchema.safeParse(value).success).toBe(…
+     55|   const unsafe=assessed();unsafe.authorities[0].sourceUrls=["javascrip…
+       |                                                                                                                                                    ^
+     56|   expect(planContextCommandSchema.safeParse({...command(),savedBy:id(9…
+     57|  });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 passed (21)
+   Start at  03:04:15
+   Duration  697ms (transform 96ms, setup 59ms, import 126ms, tests 22ms, environment 326ms)
+

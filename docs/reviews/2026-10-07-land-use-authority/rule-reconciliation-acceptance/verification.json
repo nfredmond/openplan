@@ -1,0 +1,106 @@
+{
+  "date": "2026-10-07",
+  "httpCommit": "3f1b6a882ca9b29dc69dbc749887a25c06919486",
+  "finalUiCommit": "4e0a373e33f3296ed4973104ca2ffbe213fff8fd",
+  "nativeHttp": {
+    "firstState": "interrupted",
+    "interruption": "Error: Native operation failed: OP409",
+    "continuation": "verified",
+    "requests": 30,
+    "duplicateStatuses": [
+      201,
+      409
+    ],
+    "competingStatuses": [
+      201,
+      409
+    ],
+    "journalRows": 3,
+    "authoredNodesPreserved": 2,
+    "currentOwnerRestored": "owner restored"
+  },
+  "browser": {
+    "system": "T3 preview only",
+    "tab": "tab_i",
+    "desktopCssPixels": [
+      1280,
+      800
+    ],
+    "mobileCssPixels": [
+      390,
+      844
+    ],
+    "lostReplyStatus": 201,
+    "explicitRetryStatus": 200,
+    "postBuildKeyboardRetryStatus": 200,
+    "exactCommandSha256": "e062f5b9654938d2a00d9c0554b86ee34295685ad54c65d1169568c278db1125",
+    "importDoesNotSend": true,
+    "preserveDoesNotSend": true,
+    "restoreDoesNotSend": true,
+    "reloadDoesNotSend": true,
+    "unsavedEditBlocksReview": true,
+    "finalDraftRevision": 10,
+    "finalNodes": 3,
+    "remainingLocalCopies": [
+      {
+        "archived": true,
+        "pending": false
+      }
+    ],
+    "mobileDefect": {
+      "beforeRight": 414.50428771972656,
+      "viewportWidth": 390,
+      "afterRight": 352.8448028564453,
+      "panelRight": 352.84481620788574
+    },
+    "console": "Four historical preview/runtime/network errors predate this journey. No additional console entries appeared. Bounded snapshots omit those four retained entries; earlier text-only inspection records their timestamps."
+  },
+  "download": {
+    "name": "openplan-checklist-request.json",
+    "bytes": 504,
+    "sha256": "704236057b740c2b79364dafa105d3da246c7d36d53e26f5439f3170d0837290",
+    "nativePath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-muydnsl0-9-openplan-checklist-request.json",
+    "matchesBrowserBlobAndEveryRetry": true,
+    "restoreMethod": "The exact downloaded bytes are placed in a browser File and supplied to the displayed file input through T3. This exercises the application import handler, not the operating-system file picker."
+  },
+  "runtime": {
+    "serverPid": 123228,
+    "serverParentPid": 123206,
+    "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan",
+    "port": 3498,
+    "health": {
+      "checkedAt": "2026-10-07T17:27:22.951Z",
+      "checks": {
+        "app": "ok",
+        "database": "not_checked"
+      },
+      "deployment": {
+        "commit": "4e0a373e33f3",
+        "version": "0.67.0"
+      },
+      "service": "openplan",
+      "status": "ok"
+    },
+    "serverMemoryPeakBytes": 272289792,
+    "serverStopped": true,
+    "buildLimitGiB": 8,
+    "buildJournalPeakGiB": 5.6
+  },
+  "privateCustody": {
+    "reconciliation-native-http.mts": "110db6d8bbe27cb6f5db22474bfb4caffc355075016a9af75dc86a72a5121a7e",
+    "reconciliation-native-http-private.json": "3d1f6aeeee067669d9985b2b350384076eb4828949f7f60600d3b16eeb07f5bd",
+    "reconciliation-native-http-continuation.mts": "637aa897fb3bb77e3191742d67fa7e1cc153004ff34d9ba7e3faf71bc0afb780",
+    "reconciliation-native-http-continuation-private.json": "f7883eac5ed981563414b98428c13ae9fdb448cc66c72f495619d9f1cb4f7ed6",
+    "reconciliation-browser-preparation.mts": "496d5559114a5fbdcd1a65d025ed6b50c94c1c0137f1dda9c22d0247e4a0740f",
+    "reconciliation-browser-preparation-private.json": "d5fcb023665a8b73f4d73d7d6136010437312776f1d2a73472feedeaf8c01890",
+    "reconciliation-browser-before-wrap-private.json": "1599c074edeb65b52027a37ccf071c8c9e25d1d085a71934884a58c86ca91fed",
+    "reconciliation-browser-after-wrap-private.json": "57639da768f1c2efbadfe1a465489c1067410a2aa9e381b1931944a9262a7122"
+  },
+  "boundaries": [
+    "Synthetic agent exercise, not practitioner acceptance.",
+    "One local-unconfigured community plan with uploaded geometry and explicitly unresolved authority.",
+    "No complete plan-kind switching, context authoring, frozen-edition/publication or statutory applicability browser acceptance.",
+    "No screen-reader audit, operating-system file-picker acceptance, browser matrix or model validation.",
+    "Record mutations validate the offline checker, not new product faults. Existing backend and UI mutation reports remain separate."
+  ]
+}

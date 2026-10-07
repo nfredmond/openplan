@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-source-review.test.tsx (19 tests | 1 failed) 750ms
+       × renders root policies and nested content once while retaining checklist selection 98ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > adopted saved context and download > renders root policies and nested content once while retaining checklist selection
+AssertionError: expected <p …(1)></p> to be null
+
+- Expected:
+null
+
++ Received:
+<p
+  class="mt-3 whitespace-pre-wrap text-reading leading-relaxed"
+>
+  Unselected text
+</p>
+
+ ❯ src/test/land-use-plan-source-review.test.tsx:72:53
+     70|       }
+     71|       for (const text of ["Nested policy text", "Root goal text", "Roo…
+     72|       expect(screen.queryByText("Unselected text")).toBeNull();
+       |                                                     ^
+     73|       expect(screen.queryByText("Unselected child text")).toBeNull();
+     74|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 18 passed (19)
+   Start at  11:23:16
+   Duration  1.41s (transform 113ms, setup 55ms, import 192ms, tests 750ms, environment 323ms)
+

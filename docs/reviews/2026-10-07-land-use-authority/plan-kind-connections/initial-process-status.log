@@ -1,0 +1,53 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts (78 tests | 2 failed) 82ms
+     × validates current process selection specific_amendment_procedure against the plan kind 5ms
+     × uses the retained process definition after the current plan family changes 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-frozen-rules-integration.test.ts > connected plan-kind rules > validates current process selection specific_amendment_procedure against the plan kind
+AssertionError: expected 200 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 200
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts:238:41
+    236|   it.each(["specific_amendment_procedure", "not_a_process"])("validate…
+    237|     workingSpecific();
+    238|     expect((await process(key)).status).toBe(key === "specific_amendme…
+       |                                         ^
+    239|     expect(state.writes).toHaveLength(key === "specific_amendment_proc…
+    240|     if (state.writes.length) expect(state.writes[0]).toMatchObject({ t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-plan-frozen-rules-integration.test.ts > connected plan-kind rules > uses the retained process definition after the current plan family changes
+AssertionError: expected 200 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 200
+
+ ❯ src/test/land-use-plan-frozen-rules-integration.test.ts:250:52
+    248|     snapshot.descriptorSnapshot!.processSteps = [{ key: "prior_review"…
+    249|     Object.assign(state.access.plan as object, { descriptor_id: "remov…
+    250|     expect((await process("prior_review")).status).toBe(201);
+       |                                                    ^
+    251|     expect(state.writes[0].payload.descriptor_id).toBe("local-unconfig…
+    252|     state.writes.length = 0;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  2 failed | 165 passed (167)
+   Start at  08:27:22
+   Duration  5.82s (transform 418ms, setup 175ms, import 1.04s, tests 2.52s, environment 1.65s)
+

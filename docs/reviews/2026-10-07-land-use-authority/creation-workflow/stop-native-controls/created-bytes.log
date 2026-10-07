@@ -1,0 +1,4 @@
+ERROR:  existing creation exact bytes: accepted
+CONTEXT:  PL/pgSQL function pg_temp_71.creation_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.creation_refuses(format('SELECT public.cancel_land_use_plan_creation(%L,%L,%L,%L)',other_workspace,actor,command_id,raw||' '),'PT409','existing creation exact bytes')"
+PL/pgSQL function inline_code_block line 49 at PERFORM

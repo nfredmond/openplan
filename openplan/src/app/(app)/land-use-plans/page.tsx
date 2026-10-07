@@ -6,18 +6,17 @@ import { navLabel } from "@/components/nav/nav-registry";
 import { PageHeader } from "@/components/ui/page-header";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import {
-  getJurisdictionPlanDescriptor,
-  recommendJurisdictionPlanDescriptor,
+  getPlanKindDescriptor,
+  SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS,
 } from "@/lib/land-use-plans/registry";
 import { createClient } from "@/lib/supabase/server";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
-import {
-  HOME_JURISDICTION_COLUMNS,
-  parseWorkspaceHomeGeography,
-  resolveJurisdiction,
-} from "@/lib/workspaces/home-geography";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
+import { planDescriptorSelectionKey } from "@/lib/land-use-plans/plan-kind-rules";
+import { snapshotPlanDescriptor } from "@/lib/land-use-plans/descriptor-snapshot";
 
 export const metadata = moduleMetadata("Land Use Plans");
 
@@ -28,27 +27,18 @@ export default async function LandUsePlansPage() {
   if (!auth.user) redirect("/sign-in");
   const { membership } = await loadCurrentWorkspaceMembership(supabase, auth.user.id);
   if (!membership) return <WorkspaceMembershipRequired moduleLabel="Land Use Plans" title="Land use plans need a team" description="Drafts, evidence, review, adoption, and implementation history belong to an agency team." />;
-  const [plansResult, jurisdictionResult] = await Promise.all([
-    supabase.from("land_use_plans")
-      .select("id, title, descriptor_id, plan_kind_key, authority_label, geography_label, current_working_version_id, current_adopted_version_id, updated_at, land_use_plan_versions!land_use_plan_versions_plan_id_workspace_id_fkey(id, version_number, state, content_hash)")
-      .eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false }),
-    supabase.from("workspaces")
-      .select(HOME_JURISDICTION_COLUMNS)
-      .eq("id", membership.workspace_id)
-      .maybeSingle(),
-  ]);
+  const plansResult = await supabase.from("land_use_plans")
+    .select("id, title, descriptor_id, plan_kind_key, authority_label, geography_label, current_working_version_id, current_adopted_version_id, updated_at, land_use_plan_versions!land_use_plan_versions_plan_id_workspace_id_fkey(id, version_number, state, content_hash)")
+    .eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false });
   const reads = new ReadFailureLog();
   const unreadable = reads.check("land use plans", plansResult);
-  const jurisdictionUnreadable = reads.check(
-    "this workspace's home jurisdiction",
-    jurisdictionResult
-  );
   const plans = plansResult.data;
-  const recommendation = recommendJurisdictionPlanDescriptor(
-    jurisdictionUnreadable
-      ? null
-      : resolveJurisdiction(parseWorkspaceHomeGeography(jurisdictionResult.data))
-  );
+  const descriptorHashes = Object.fromEntries(SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.flatMap(family =>
+    family.planKinds.map(kind => {
+      const descriptor = getPlanKindDescriptor(family.id, kind.key);
+      if (!descriptor) throw new Error("A selectable plan kind has no installed rules");
+      return [planDescriptorSelectionKey(family.id, kind.key), hashFrozenRecord(snapshotPlanDescriptor(descriptor, kind.key))];
+    })));
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 p-4 md:p-8">
@@ -70,9 +60,11 @@ export default async function LandUsePlansPage() {
       {!unreadable && plans?.length ? (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {plans.map((plan) => {
-            const descriptor = getJurisdictionPlanDescriptor(plan.descriptor_id);
+            const descriptor = getPlanKindDescriptor(plan.descriptor_id, plan.plan_kind_key);
             const versions = plan.land_use_plan_versions ?? [];
-            const active = versions.find((version) => version.id === plan.current_working_version_id) ?? versions.find((version) => version.id === plan.current_adopted_version_id);
+            const active = versions.find((version) => version.id === plan.current_working_version_id)
+              ?? versions.find((version) => version.id === plan.current_adopted_version_id)
+              ?? [...versions].sort((a, b) => b.version_number - a.version_number)[0];
             return (
               <Link key={plan.id} href={`/land-use-plans/${plan.id}`} className="rounded-xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{descriptor?.planKinds.find((kind) => kind.key === plan.plan_kind_key)?.label ?? plan.plan_kind_key}</p>
@@ -86,12 +78,8 @@ export default async function LandUsePlansPage() {
         </section>
       ) : !unreadable ? <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">No land use plans yet. The setup below creates the first working version and its requirements checklist.</p> : null}
       <div id="create-land-use-plan" className="scroll-mt-24">
-        <LandUsePlanCreator
-          recommendedDescriptorId={recommendation.descriptor.id}
-          recommendationKind={
-            jurisdictionUnreadable ? "workspace_jurisdiction_unreadable" : recommendation.kind
-          }
-        />
+        <LandUsePlanCreator actorId={auth.user.id} workspaceId={membership.workspace_id}
+          canWrite={canAccessWorkspaceAction("plans.write", membership.role)} descriptorHashes={descriptorHashes} />
       </div>
     </div>
   );

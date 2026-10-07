@@ -1,0 +1,73 @@
+import pathlib,subprocess,json,uuid,hashlib,selectors,concurrent.futures,time,os
+app=pathlib.Path('/home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan');private=pathlib.Path('/home/nathaniel/.local/state/openplan/t3-restart-recovery-20261006/land-use-authority');journal=private/'creation-concurrency-private.json';out=pathlib.Path('/tmp/openplan-plan-creation-concurrency');out.mkdir(exist_ok=False)
+container='supabase_db_openplan-restore-target-2026091050';base=['docker','exec','-i',container,'psql','-U','postgres','-d','postgres','-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose']
+actor=str(uuid.uuid4());workspace=str(uuid.uuid4());first=str(uuid.uuid4());simultaneous=str(uuid.uuid4());rows=[];state={'actor':actor,'workspace':workspace,'command':first,'simultaneous':simultaneous,'stage':'starting','rows':rows};journal.write_text(json.dumps(state),encoding='utf8') if not journal.exists() else (_ for _ in ()).throw(RuntimeError('Journal exists; inspect rather than rerun'))
+def retain(stage):state['stage']=stage;journal.write_text(json.dumps(state,indent=2)+'\n');journal.chmod(0o600)
+def quote(x):return "'"+str(x).replace("'","''")+"'"
+def run(sql):return subprocess.run(base,input=sql,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=20)
+def checked(sql):
+ r=run(sql)
+ if r.returncode:raise RuntimeError(r.stderr)
+ return r.stdout.strip()
+geometry={'type':'Polygon','coordinates':[[[0,0],[1,0],[1,1],[0,0]]]}
+assessment={'authorities':[{'id':str(uuid.uuid4()),'label':'SYNTHETIC body','role':'Sponsor','kind':'unassessed','jurisdiction':None,'sourceUrls':[]}],'applicability':{'status':'unresolved','explanation':'SYNTHETIC concurrency only. No legal finding.'}}
+prepared={'schemaVersion':1,'place':{'source':'uploaded_file','label':'SYNTHETIC area','kind':None,'ref':None,'countryCode':None,'subdivisionCode':None,'bbox':{'minLon':0,'minLat':0,'maxLon':1,'maxLat':1},'geometry':geometry},'assessment':assessment,'savedBy':actor,'savedAt':'2026-10-07T00:00:00Z'}
+descriptor=json.dumps({'id':'synthetic-neutral','configured':False,'disclosure':'SYNTHETIC unresolved law','planKinds':[{'key':'community','label':'Community'}],'requirements':[{'key':'local','label':'Local section','applicability':'locally_defined'}]},separators=(',',':'))
+def raw(cid):return ' \n'+json.dumps({'commandId':cid,'title':'SYNTHETIC concurrent creation','authorityLabel':'SYNTHETIC display body','descriptorId':'synthetic-neutral','planKindKey':'community','expectedDescriptorHash':hashlib.sha256(descriptor.encode()).hexdigest(),'assessment':assessment,'place':{'mode':'uploaded','label':'SYNTHETIC area','geometry':geometry}},separators=(',',':'))+'\n'
+def call(cid,function='public.create_land_use_plan_with_context',replay=False):return 'SELECT '+function+'('+','.join([quote(workspace),quote(actor),quote(cid),quote(raw(cid)),'NULL' if replay else quote(json.dumps(prepared)),'NULL' if replay else quote(descriptor)])+');'
+source=(app/'supabase/migrations/20261016000007_land_use_plan_creation_commands.sql').read_text();function=source[source.index('CREATE FUNCTION public.create_land_use_plan_with_context'):source.index('REVOKE ALL ON FUNCTION')];temporary=function.replace('CREATE FUNCTION public.create_land_use_plan_with_context','CREATE FUNCTION pg_temp.creation_control')
+# A holder is observed through an explicit SQL marker, never through a stale PID file.
+def holder(sql):
+ p=subprocess.Popen(base,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1);p.stdin.write("BEGIN; SET LOCAL statement_timeout='15s';\n"+sql+"\nSELECT 'OPENPLAN_HOLDER_READY';\n");p.stdin.flush();selector=selectors.DefaultSelector();selector.register(p.stdout,selectors.EVENT_READ);deadline=time.monotonic()+15
+ # Read the descriptor directly; buffered text reads can hide an already-arrived marker.
+ line=''
+ while time.monotonic()<deadline:
+  if p.poll() is not None:raise RuntimeError('Holder terminated: '+p.stderr.read())
+  ready=selector.select(.2)
+  if ready:
+   line+=os.read(p.stdout.fileno(),4096).decode()
+   if 'OPENPLAN_HOLDER_READY\n' in line:selector.close();return p
+ p.stdin.write('ROLLBACK;\n\\q\n');p.stdin.flush();p.communicate(timeout=10)
+ raise RuntimeError('Holder readiness not observed; owned holder released')
+def release(p):
+ if p.poll() is None:p.stdin.write('ROLLBACK;\n\\q\n');p.stdin.flush()
+ p.communicate(timeout=10)
+checked('INSERT INTO auth.users(id,email) VALUES('+quote(actor)+','+quote(actor+'@synthetic.invalid')+');INSERT INTO public.workspaces(id,name,slug) VALUES('+quote(workspace)+",'SYNTHETIC creation concurrency',"+quote(workspace)+');INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES('+quote(workspace)+','+quote(actor)+",'owner');")
+retain('fixtures-ready')
+# Hold exactly the creation key, then challenge the installed function and source clones.
+h=None
+try:
+ lock="SELECT pg_advisory_xact_lock(hashtextextended('land-use-create:"+workspace+':'+first+"',0));"
+ h=holder(lock);retain('creation-key-held')
+ variants=[('installed',None,False),('baseline',temporary,False),('harmless',temporary+'\n-- Harmless native concurrency comment.\n',False),('missing-command-lock',temporary.replace("IF NOT pg_try_advisory_xact_lock(hashtextextended('land-use-create:' || p_workspace_id::text || ':' || p_command_id::text, 0)) THEN","IF false THEN"),True)]
+ for name,definition,mutant in variants:
+  sql="BEGIN; SET LOCAL statement_timeout='5s';"+(definition or '')+'SET LOCAL ROLE service_role;'+call(first,'pg_temp.creation_control' if definition else 'public.create_land_use_plan_with_context')+'ROLLBACK;'
+  r=run(sql);(out/(name+'.log')).write_text(r.stdout+r.stderr)
+  blocked=r.returncode!=0 and 'PT409' in r.stderr and 'This creation command is running' in r.stderr
+  accepted=r.returncode==0 and '"replayed": false' in r.stdout
+  matched=accepted if mutant else blocked;rows.append({'case':name,'blocked':blocked,'accepted':accepted,'targetedFaultDetected':mutant and accepted,'matched':matched});retain('creation-key-'+name);assert matched,name
+finally:
+ if h:release(h)
+# Two calls compete for the same absent journal. Retry either outcome explicitly.
+retain('simultaneous-start')
+def send():return run('BEGIN; SET LOCAL statement_timeout=\'5s\';SET LOCAL ROLE service_role;'+call(simultaneous)+'COMMIT;')
+with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:results=list(pool.map(lambda _:send(),range(2)))
+for i,r in enumerate(results):
+ (out/('simultaneous-'+str(i)+'.log')).write_text(r.stdout+r.stderr)
+ assert r.returncode==0 or ('PT409' in r.stderr),r.stderr
+replies=[json.loads(checked('SET ROLE service_role;'+call(simultaneous,replay=True))) for _ in range(2)]
+assert all(x['replayed'] for x in replies) and replies[0]==replies[1]
+counts=json.loads(checked("SELECT jsonb_build_object('plans',(SELECT count(*) FROM public.land_use_plans WHERE workspace_id="+quote(workspace)+"),'versions',(SELECT count(*) FROM public.land_use_plan_versions WHERE workspace_id="+quote(workspace)+"),'commands',(SELECT count(*) FROM public.land_use_plan_creation_commands WHERE workspace_id="+quote(workspace)+"),'exactBytes',(SELECT command_text="+quote(raw(simultaneous))+" FROM public.land_use_plan_creation_commands WHERE workspace_id="+quote(workspace)+" AND command_id="+quote(simultaneous)+"));"))
+assert counts=={'plans':1,'versions':1,'commands':1,'exactBytes':True},counts
+rows.append({'case':'simultaneous-one-plan','outcomes':[r.returncode for r in results],'counts':counts,'retriesMatch':True,'matched':True});retain('simultaneous-verified')
+# The permission row stays locked through commit, including receipt-only retries.
+for name,definition,mutant in [('permission-installed',None,False),('permission-harmless',temporary+'\n-- Harmless permission comment.\n',False),('permission-lock-removed',temporary.replace(' FOR SHARE NOWAIT',''),True)]:
+ h=None
+ try:
+  h=holder((definition or '')+'SET LOCAL ROLE service_role;'+call(simultaneous,'pg_temp.creation_control' if definition else 'public.create_land_use_plan_with_context',True));retain(name+'-held')
+  r=run('BEGIN; SET LOCAL statement_timeout=\'5s\';SELECT user_id FROM public.workspace_members WHERE workspace_id='+quote(workspace)+' AND user_id='+quote(actor)+' FOR UPDATE NOWAIT;ROLLBACK;');(out/(name+'.log')).write_text(r.stdout+r.stderr)
+  locked=r.returncode!=0 and '55P03' in r.stderr;accepted=r.returncode==0;matched=accepted if mutant else locked
+  rows.append({'case':name,'locked':locked,'targetedFaultDetected':mutant and accepted,'matched':matched});retain(name+'-verified');assert matched,name
+ finally:
+  if h:release(h)
+retain('verified');(out/'report.json').write_text(json.dumps({'workspaceId':workspace,'actorId':actor,'results':rows,'fixturesPreserved':True,'nativeMigration':'20261016000007','boundary':'Native SQL concurrency and temporary-function fault controls. No browser, HTTP route, legal or usability acceptance.'},indent=2)+'\n');print('creation concurrency verified')

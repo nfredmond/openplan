@@ -1,0 +1,2 @@
+live RLS isolation	Start Supabase	2026-10-07T18:34:10.9198574Z ^[[31mfailed to start docker container "supabase_db_openplan": Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint supabase_db_openplan (af50d2acfd021d7ef7ac5af82b24a16a1f52d4de301fe402e1bf0dd45c991142): failed to bind host port for 0.0.0.0:54322:172.18.0.2:5432/tcp: address already in use
+live RLS isolation	Start Supabase	2026-10-07T18:34:10.9450636Z ##[error]Process completed with exit code 1.

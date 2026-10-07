@@ -1,0 +1,175 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "target": null,
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "target": null,
+      "matched": true
+    },
+    {
+      "case": "omit-content_nodes",
+      "exitCode": 3,
+      "target": "node insert revision delta",
+      "matched": true
+    },
+    {
+      "case": "omit-relationships",
+      "exitCode": 3,
+      "target": "relationship insert revision delta",
+      "matched": true
+    },
+    {
+      "case": "omit-designations",
+      "exitCode": 3,
+      "target": "designation insert revision delta",
+      "matched": true
+    },
+    {
+      "case": "omit-designation_policy_links",
+      "exitCode": 3,
+      "target": "policy link insert revision delta",
+      "matched": true
+    },
+    {
+      "case": "omit-implementation_actions",
+      "exitCode": 3,
+      "target": "implementation insert revision delta",
+      "matched": true
+    },
+    {
+      "case": "omit-process_records",
+      "exitCode": 3,
+      "target": "process insert revision delta",
+      "matched": true
+    },
+    {
+      "case": "omit-consultation_records",
+      "exitCode": 3,
+      "target": "consultation insert revision delta",
+      "matched": true
+    },
+    {
+      "case": "identity-title",
+      "exitCode": 3,
+      "target": "plan title revision delta",
+      "matched": true
+    },
+    {
+      "case": "identity-descriptor_id",
+      "exitCode": 3,
+      "target": "plan descriptor_id revision delta",
+      "matched": true
+    },
+    {
+      "case": "identity-plan_kind_key",
+      "exitCode": 3,
+      "target": "plan plan_kind_key revision delta",
+      "matched": true
+    },
+    {
+      "case": "identity-authority_label",
+      "exitCode": 3,
+      "target": "plan authority_label revision delta",
+      "matched": true
+    },
+    {
+      "case": "identity-geography_label",
+      "exitCode": 3,
+      "target": "plan geography_label revision delta",
+      "matched": true
+    },
+    {
+      "case": "identity-geography_geojson",
+      "exitCode": 3,
+      "target": "plan study geometry revision delta",
+      "matched": true
+    },
+    {
+      "case": "identity-plan_context",
+      "exitCode": 3,
+      "target": "saved plan context revision delta",
+      "matched": true
+    },
+    {
+      "case": "metadata-version_number",
+      "exitCode": 3,
+      "target": "version number revision delta",
+      "matched": true
+    },
+    {
+      "case": "metadata-version_kind",
+      "exitCode": 3,
+      "target": "version kind revision delta",
+      "matched": true
+    },
+    {
+      "case": "metadata-based_on_version_id",
+      "exitCode": 3,
+      "target": "base version revision delta",
+      "matched": true
+    },
+    {
+      "case": "metadata-applicable_requirement_keys",
+      "exitCode": 3,
+      "target": "applicability revision delta",
+      "matched": true
+    },
+    {
+      "case": "initial-counter",
+      "exitCode": 3,
+      "target": "invented initial counter refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "direct-counter",
+      "exitCode": 3,
+      "target": "direct counter overwrite refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "ownership",
+      "exitCode": 3,
+      "target": "version ownership rewrite refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "frozen-counter",
+      "exitCode": 3,
+      "target": "nested frozen counter rewrite refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "move-source",
+      "exitCode": 3,
+      "target": "move source revision",
+      "matched": true
+    },
+    {
+      "case": "frozen-move",
+      "exitCode": 3,
+      "target": "move out of frozen content refused: accepted",
+      "matched": true
+    },
+    {
+      "case": "child-counter",
+      "exitCode": 3,
+      "target": "node insert revision delta",
+      "matched": true
+    },
+    {
+      "case": "identity-counter",
+      "exitCode": 3,
+      "target": "plan title revision delta",
+      "matched": true
+    }
+  ],
+  "sourceUnchanged": true,
+  "migrationSha256": "969804874bbe99a86b997619e937c9e5a776241ab970eed2669c03533f8aa965",
+  "fixtureSha256": "f532be8ad0494448f9a58c7476f28344f55a720497c13b0940cfed75cc66a0ae"
+}

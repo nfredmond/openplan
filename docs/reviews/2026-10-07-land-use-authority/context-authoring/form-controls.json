@@ -1,0 +1,220 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "retained-hash",
+      "exitCode": 1,
+      "matched": true,
+      "target": "hash precondition changed",
+      "failedTests": [
+        "plan context route refuses retained geography when its hash precondition changed"
+      ]
+    },
+    {
+      "case": "retained-version",
+      "exitCode": 1,
+      "matched": true,
+      "target": "version precondition changed",
+      "failedTests": [
+        "plan context route refuses retained geography when its version precondition changed"
+      ]
+    },
+    {
+      "case": "retained-descriptor",
+      "exitCode": 1,
+      "matched": true,
+      "target": "descriptor precondition changed",
+      "failedTests": [
+        "plan context route refuses retained geography when its descriptor precondition changed"
+      ]
+    },
+    {
+      "case": "retained-kind",
+      "exitCode": 1,
+      "matched": true,
+      "target": "kind precondition changed",
+      "failedTests": [
+        "plan context route refuses retained geography when its kind precondition changed"
+      ]
+    },
+    {
+      "case": "retained-applicability",
+      "exitCode": 1,
+      "matched": true,
+      "target": "requires an applicability assessment",
+      "failedTests": [
+        "plan context route requires an applicability assessment even when retaining an existing configured study area"
+      ]
+    },
+    {
+      "case": "retained-place-copy",
+      "exitCode": 1,
+      "matched": true,
+      "target": "authority-only edit",
+      "failedTests": [
+        "plan context route retains exact saved geography during an authority-only edit without resolving it again"
+      ]
+    },
+    {
+      "case": "no-default-jurisdiction",
+      "exitCode": 1,
+      "matched": true,
+      "target": "inherited labels",
+      "failedTests": [
+        "plan context authoring fields keeps inherited labels distinct from assessed authority and study geometry"
+      ]
+    },
+    {
+      "case": "saved-area-mode",
+      "exitCode": 1,
+      "matched": true,
+      "target": "without resending resolver",
+      "failedTests": [
+        "plan context authoring fields retains exact saved geography without resending resolver or geometry claims",
+        "plan context authoring fields requires a new boundary choice after leaving the retained study area"
+      ]
+    },
+    {
+      "case": "ignore-jurisdiction-unknown",
+      "exitCode": 1,
+      "matched": true,
+      "target": "does not assign jurisdiction",
+      "failedTests": [
+        "plan context authoring fields retains exact saved geography without resending resolver or geometry claims",
+        "plan context authoring fields round trips a sourced multi-authority assessment without normalizing it into one jurisdiction",
+        "plan context authoring fields changes a study place without changing authorities or their assessment",
+        "plan context authoring fields preserves incomplete source text while typing and validates only when preparing the command",
+        "plan context authoring fields does not assign jurisdiction until staff enter it"
+      ]
+    },
+    {
+      "case": "drawn-identity",
+      "exitCode": 1,
+      "matched": true,
+      "target": "changes a study place",
+      "failedTests": [
+        "plan context authoring fields changes a study place without changing authorities or their assessment"
+      ]
+    },
+    {
+      "case": "place-borrows-old-label",
+      "exitCode": 1,
+      "matched": true,
+      "target": "missing place labels",
+      "failedTests": [
+        "plan context authoring fields bounds boundary files before reading them and handles missing place labels"
+      ]
+    },
+    {
+      "case": "erase-authority-on-place",
+      "exitCode": 1,
+      "matched": true,
+      "target": "changes a study place",
+      "failedTests": [
+        "plan context authoring fields changes a study place without changing authorities or their assessment",
+        "plan context authoring fields requires a new boundary choice after leaving the retained study area"
+      ]
+    },
+    {
+      "case": "dangling-selected-authority",
+      "exitCode": 1,
+      "matched": true,
+      "target": "without dangling",
+      "failedTests": [
+        "plan context authoring fields adds and removes distinct bodies without dangling assessment references"
+      ]
+    },
+    {
+      "case": "trim-typing",
+      "exitCode": 1,
+      "matched": true,
+      "target": "incomplete source text",
+      "failedTests": [
+        "plan context authoring fields preserves incomplete source text while typing and validates only when preparing the command"
+      ]
+    },
+    {
+      "case": "reuse-inherited-geometry",
+      "exitCode": 1,
+      "matched": true,
+      "target": "requires a new boundary choice",
+      "failedTests": [
+        "plan context authoring fields requires a new boundary choice after leaving the retained study area"
+      ]
+    },
+    {
+      "case": "late-file-overwrite",
+      "exitCode": 1,
+      "matched": true,
+      "target": "delayed file read",
+      "failedTests": [
+        "plan context authoring fields prevents a delayed file read from replacing a newer place selection"
+      ]
+    },
+    {
+      "case": "uploaded-identity",
+      "exitCode": 1,
+      "matched": true,
+      "target": "keeps uploads distinct",
+      "failedTests": [
+        "plan context authoring fields keeps uploads distinct from resolved jurisdictions and refuses invalid coordinates"
+      ]
+    },
+    {
+      "case": "skip-geometry-validation",
+      "exitCode": 1,
+      "matched": true,
+      "target": "refuses invalid coordinates",
+      "failedTests": [
+        "plan context authoring fields keeps uploads distinct from resolved jurisdictions and refuses invalid coordinates"
+      ]
+    },
+    {
+      "case": "ignore-disabled",
+      "exitCode": 1,
+      "matched": true,
+      "target": "pending upload or map callback",
+      "failedTests": [
+        "plan context authoring fields prevents a pending upload or map callback from changing disabled fields"
+      ]
+    },
+    {
+      "case": "body-type-label",
+      "exitCode": 1,
+      "matched": true,
+      "target": "shows body type names",
+      "failedTests": [
+        "plan context authoring fields shows body type names and preserves a custom type without imposing a closed taxonomy"
+      ]
+    },
+    {
+      "case": "file-size",
+      "exitCode": 1,
+      "matched": true,
+      "target": "bounds boundary files",
+      "failedTests": [
+        "plan context authoring fields bounds boundary files before reading them and handles missing place labels"
+      ]
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/lib/land-use-plans/plan-context-store.ts": "8e4ba51ed596c88df3d9d7e03e88d36bf430719691920b05270fd33629c48b50",
+    "src/lib/land-use-plans/plan-context-draft.ts": "9345280b8f11ad20a9a1b28bee3d2837aeef7639658810e114aa4909893e6389",
+    "src/components/land-use-plans/plan-authority-fields.tsx": "dd261c941f529c7c2e96a5b5773413dd51f2c9801d997fbc1203a79681bb1c56",
+    "src/components/land-use-plans/plan-study-area-fields.tsx": "4ad2da19d3bf3102ecf6ebbdb5fe092fb65e56898705b7a865f6343f7967a4f8"
+  }
+}

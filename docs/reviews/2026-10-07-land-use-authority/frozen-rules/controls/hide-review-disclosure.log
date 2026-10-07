@@ -1,0 +1,227 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+ ❯ src/test/land-use-plan-source-review.test.tsx (5 tests | 2 failed) 150ms
+     × discloses frozen rules on the public review page 24ms
+     × discloses not_retained rules on the public review page 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > discloses frozen rules on the public review page
+TestingLibraryElementError: Unable to find an element with the text: /checklist, terminology and source-review dates were saved with this version/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"mx-auto max-w-4xl px-5 py-12 print:max-w-none"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-8"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wider text-muted-foreground"[39m
+        [36m>[39m
+          [0mPublic review round [0m
+          [0m1[0m
+          [0m · [0m
+          [0mopen[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-3 text-4xl font-semibold tracking-tight"[39m
+        [36m>[39m
+          [0mTest published plan[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg text-muted-foreground"[39m
+        [36m>[39m
+          [0mTest authority[0m
+          [0m · [0m
+          [0mTest area[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4"[39m
+        [36m>[39m
+          [0mReview period: [0m
+          [0m2026-10-07[0m
+          [0m through [0m
+          [0m2026-10-08[0m
+          [0m. Method: [0m
+          [0mexternal process[0m
+          [0m.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs"[39m
+        [36m>[39m
+          [0mReviewed content hash: [0m
+          [0mtest-hash[0m
+        [36m</p>[39m
+        [36m<a[39m
+          [33mclass[39m=[32m"mt-4 inline-block text-sm font-medium underline"[39m
+          [33mhref[39m=[32m"/api/public/land-use-plan-reviews/synthetic-token"[39m
+        [36m>[39m
+          [0mDownload this exact reviewed plan[0m
+        [36m</a>[39m
+      [36m</header>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 space-y-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mDraft plan content[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mMapped designations[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mb-3 text-sm"[39m
+        [36m/>[39m
+        [36m<p>[39m
+          [0mTest coverage disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mTest privacy disclosure[0m
+        [36m</p>[39m
+      [36m</aside>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-source-review.test.tsx:28:19
+     26|     vi.mocked(loadPublicLandUsePlanReviewPacket).mockResolvedValue({ o…
+     27|     render(await PublicLandUsePlanReviewPage({ params: Promise.resolve…
+     28|     expect(screen.getByText(custody === "frozen" ? /checklist, termino…
+       |                   ^
+     29|   });
+     30|   it("withholds review dates when the descriptor has no sources", asyn…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > discloses not_retained rules on the public review page
+TestingLibraryElementError: Unable to find an element with the text: /may differ from what reviewers saw/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"mx-auto max-w-4xl px-5 py-12 print:max-w-none"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-8"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wider text-muted-foreground"[39m
+        [36m>[39m
+          [0mPublic review round [0m
+          [0m1[0m
+          [0m · [0m
+          [0mopen[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-3 text-4xl font-semibold tracking-tight"[39m
+        [36m>[39m
+          [0mTest published plan[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg text-muted-foreground"[39m
+        [36m>[39m
+          [0mTest authority[0m
+          [0m · [0m
+          [0mTest area[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4"[39m
+        [36m>[39m
+          [0mReview period: [0m
+          [0m2026-10-07[0m
+          [0m through [0m
+          [0m2026-10-08[0m
+          [0m. Method: [0m
+          [0mexternal process[0m
+          [0m.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs"[39m
+        [36m>[39m
+          [0mReviewed content hash: [0m
+          [0mtest-hash[0m
+        [36m</p>[39m
+        [36m<a[39m
+          [33mclass[39m=[32m"mt-4 inline-block text-sm font-medium underline"[39m
+          [33mhref[39m=[32m"/api/public/land-use-plan-reviews/synthetic-token"[39m
+        [36m>[39m
+          [0mDownload this exact reviewed plan[0m
+        [36m</a>[39m
+      [36m</header>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 space-y-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mDraft plan content[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mMapped designations[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mb-3 text-sm"[39m
+        [36m/>[39m
+        [36m<p>[39m
+          [0mTest coverage disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mTest privacy disclosure[0m
+        [36m</p>[39m
+      [36m</aside>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-source-review.test.tsx:28:19
+     26|     vi.mocked(loadPublicLandUsePlanReviewPacket).mockResolvedValue({ o…
+     27|     render(await PublicLandUsePlanReviewPage({ params: Promise.resolve…
+     28|     expect(screen.getByText(custody === "frozen" ? /checklist, termino…
+       |                   ^
+     29|   });
+     30|   it("withholds review dates when the descriptor has no sources", asyn…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  2 failed | 51 passed (53)
+   Start at  02:40:01
+   Duration  2.40s (transform 125ms, setup 151ms, import 322ms, tests 212ms, environment 1.29s)
+

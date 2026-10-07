@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-first-run-jurisdiction.test.tsx (10 tests | 2 failed) 620ms
+     × shows the same default edition as the workbench: 'Version 3 · public review' 36ms
+     × shows the same default edition as the workbench: 'Version 3 · public review' 30ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-first-run-jurisdiction.test.tsx > plan-owned first-run rule selection > shows the same default edition as the workbench: 'Version 3 · public review'
+ FAIL  src/test/land-use-plan-first-run-jurisdiction.test.tsx > plan-owned first-run rule selection > shows the same default edition as the workbench: 'Version 3 · public review'
+AssertionError: expected [ 'latest', 'middle', 'older' ] to deeply equal [ 'older', 'latest', 'middle' ]
+
+- Expected
++ Received
+
+  [
+-   "older",
+    "latest",
+    "middle",
++   "older",
+  ]
+
+ ❯ src/test/land-use-plan-first-run-jurisdiction.test.tsx:39:49
+     37|     expect(screen.getByText(expected)).toBeVisible();
+     38|     expect(screen.queryByText("Version unavailable")).toBeNull();
+     39|     expect(versions.map(version => version.id)).toEqual(["older", "lat…
+       |                                                 ^
+     40|     expect(mocks.select).toHaveBeenCalledWith(expect.stringContaining(…
+     41|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 8 passed (10)
+   Start at  10:59:27
+   Duration  1.54s (transform 204ms, setup 54ms, import 430ms, tests 620ms, environment 334ms)
+

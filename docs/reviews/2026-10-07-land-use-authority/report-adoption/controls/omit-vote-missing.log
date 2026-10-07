@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-adoption.test.tsx (26 tests | 1 failed) 697ms
+     × labels missing vote and effective date without inventing them 25ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > labels missing vote and effective date without inventing them
+AssertionError: expected [ <dd class="mt-1"></dd> ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ src/test/land-use-plan-report-adoption.test.tsx:75:117
+     73|     decision().vote = null; decision().effectiveOn = null; anchorDecis…
+     74|     await show();
+     75|     expect(within(screen.getByRole("region", { name: "Recorded adoptio…
+       |                                                                                                                     ^
+     76|   });
+     77|   it("discloses a legacy record that was not retained without querying…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 25 passed (26)
+   Start at  12:12:17
+   Duration  1.44s (transform 126ms, setup 55ms, import 266ms, tests 697ms, environment 327ms)
+

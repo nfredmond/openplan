@@ -1,0 +1,4 @@
+ERROR:  existing creation returned
+CONTEXT:  PL/pgSQL function pg_temp_68.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert(repeated->>'outcome'='created' AND repeated->'result'=created||jsonb_build_object('replayed',true),'existing creation returned')"
+PL/pgSQL function inline_code_block line 47 at PERFORM

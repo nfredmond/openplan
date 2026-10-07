@@ -1,0 +1,4 @@
+ERROR:  stop journal RLS
+CONTEXT:  PL/pgSQL function pg_temp_66.creation_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.creation_assert((SELECT relrowsecurity FROM pg_class WHERE oid='public.land_use_plan_creation_cancellations'::regclass),'stop journal RLS')"
+PL/pgSQL function inline_code_block line 17 at PERFORM

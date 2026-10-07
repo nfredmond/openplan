@@ -1,0 +1,20 @@
+{
+  "unit": "openplan-land-use-public-61e8-prod-20261007.service",
+  "pid": "3254823",
+  "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-authority-20261007/openplan",
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-07T09:22:26.512Z",
+    "deployment": {
+      "commit": "61e824600a45",
+      "version": "0.67.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  },
+  "buildExitCode": 0,
+  "checkoutUnchanged": true
+}

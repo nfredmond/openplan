@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 1 failed) 218ms
+     × refuses invalid identifiers before authentication or data reads 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses invalid identifiers before authentication or data reads
+AssertionError: expected 200 to be 404 // Object.is equality
+
+- Expected
++ Received
+
+- 404
++ 200
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:116:87
+    114|   });
+    115|   it("refuses invalid identifiers before authentication or data reads"…
+    116|     expect((await request(undefined, { reportId: "invalid", designatio…
+       |                                                                                       ^
+    117|     expect(mocks.create).not.toHaveBeenCalled();
+    118|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  12:29:42
+   Duration  998ms (transform 140ms, setup 54ms, import 294ms, tests 218ms, environment 345ms)
+

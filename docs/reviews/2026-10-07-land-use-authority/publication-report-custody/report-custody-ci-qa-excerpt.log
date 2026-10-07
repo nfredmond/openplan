@@ -1,0 +1,14 @@
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2398131Z ^[[41m^[[1m FAIL ^[[22m^[[49m src/test/land-use-plan-content-workbench.test.tsx^[[2m > ^[[22mLandUsePlanWorkbench content editing^[[2m > ^[[22mseparates legacy reviewed identity and context from current request recovery
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2406348Z ^[[31m^[[1mTestingLibraryElementError^[[22m^[[39m: Unable to find an accessible element with the role "region" and name "Context retained with this version"
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2407109Z 
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2407347Z Here are the accessible roles:
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2407751Z 
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2407884Z   banner:
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2408075Z 
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2408224Z   Name "":
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2408628Z   ^[[36m<header^[[39m
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2409362Z     ^[[33mclass^[[39m=^[[32m"rounded-xl border border-border bg-card p-5 shadow-sm"^[[39m
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2410085Z   ^[[36m/>^[[39m
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2410274Z 
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2796427Z ^[[2m Test Files ^[[22m ^[[1m^[[31m1 failed^[[39m^[[22m^[[2m | ^[[22m^[[1m^[[32m1462 passed^[[39m^[[22m^[[2m | ^[[22m^[[33m92 skipped^[[39m^[[90m (1555)^[[39m
+verify (qa gate)	QA gate	2026-10-07T18:55:23.2798065Z ^[[2m      Tests ^[[22m ^[[1m^[[31m1 failed^[[39m^[[22m^[[2m | ^[[22m^[[1m^[[32m18873 passed^[[39m^[[22m^[[2m | ^[[22m^[[33m1544 skipped^[[39m^[[90m (20418)^[[39m

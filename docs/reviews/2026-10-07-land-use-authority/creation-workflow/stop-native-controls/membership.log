@@ -1,0 +1,4 @@
+ERROR:  viewer stop denied: accepted
+CONTEXT:  PL/pgSQL function pg_temp_74.creation_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.creation_refuses(replace(stopping,actor::text,viewer::text),'42501','viewer stop denied')"
+PL/pgSQL function inline_code_block line 24 at PERFORM

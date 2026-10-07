@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 1 failed) 22ms
+     × rejects duplicate and dangling authority references 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > plan-owned applicability > rejects duplicate and dangling authority references
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/test/land-use-plan-context.test.ts:46:137
+     44|  });
+     45|  it("rejects duplicate and dangling authority references",()=>{
+     46|   const duplicate=assessed();duplicate.authorities.push(authority());e…
+       |                                                                                                                                         ^
+     47|   for(const ids of [[id(2)],[id(1),id(1)]]){
+     48|    const value=assessed();if(value.applicability.status==="staff_asses…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 passed (21)
+   Start at  03:04:11
+   Duration  644ms (transform 101ms, setup 55ms, import 131ms, tests 22ms, environment 331ms)
+

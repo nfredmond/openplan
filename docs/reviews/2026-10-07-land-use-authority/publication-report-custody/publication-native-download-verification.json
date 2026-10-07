@@ -1,0 +1,19 @@
+{
+  "observedAt": "2026-10-07T18:55:16.702Z",
+  "sourceCommit": "70ad9299fbf87681d77148eebee026505324debf",
+  "file": "browser-download-muygg0jp-f-openplan-adopted-v2.json",
+  "bytes": 5866,
+  "sha256": "ee80ce01aeb242523c88afdc995a5a5f2a92ebcdce27cb35ab583835335bb0a3",
+  "versionId": "da327c80-ee2d-456b-b4db-263b57ac50ce",
+  "contentHash": "fc9818674bd5d0d6ea354f42ef6bb9c9dba8c8a81464b5225e8c2e94bc5211e1",
+  "reportId": "e0aab60e-a9ff-4d51-a98e-4f01e99ceb45",
+  "decisionId": "3aa4bc4d-57c6-40e4-bd08-eda7c065e175",
+  "nativeDownloadAndAnonymousEqual": true,
+  "reportArtifactAndAuthenticatedProvenanceEqual": true,
+  "priorFrozenSnapshotsUnchanged": true,
+  "decisions": 1,
+  "artifacts": 1,
+  "harmlessKeyOrder": true,
+  "changedContextRefused": true,
+  "blindCategory": "Synthetic local UI happy path and recorded native reads. Does not prove interruption/concurrency recovery, legal adoption, or nonempty mapped content."
+}

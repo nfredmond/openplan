@@ -1,0 +1,60 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 8 failed) 220ms
+     × refuses unavailable or invalid counts 0 4ms
+     × refuses unavailable or invalid counts 1 1ms
+     × refuses unavailable or invalid counts 2 1ms
+     × refuses unavailable or invalid counts 3 1ms
+     × refuses unavailable or invalid counts 4 1ms
+     × refuses unavailable or invalid counts 5 1ms
+     × refuses unavailable or invalid counts 6 1ms
+     × refuses inconsistent counts across returned rows 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses unavailable or invalid counts 0
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses unavailable or invalid counts 1
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses unavailable or invalid counts 2
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses unavailable or invalid counts 3
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses unavailable or invalid counts 4
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses unavailable or invalid counts 5
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses unavailable or invalid counts 6
+AssertionError: expected 200 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 200
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:126:58
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses inconsistent counts across returned rows
+AssertionError: expected 200 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 200
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:130:38
+    128|   it("refuses inconsistent counts across returned rows", async () => {
+    129|     featureRows!.push({ ...featureRows![0], id: otherId, matched_count…
+    130|     expect((await request()).status).toBe(503);
+       |                                      ^
+    131|   });
+    132|   it("refuses an incomplete feature list instead of drawing a subset",…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 41 passed (49)
+   Start at  12:30:37
+   Duration  999ms (transform 149ms, setup 55ms, import 305ms, tests 220ms, environment 325ms)
+

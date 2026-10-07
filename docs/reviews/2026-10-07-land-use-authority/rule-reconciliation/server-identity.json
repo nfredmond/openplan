@@ -1,0 +1,17 @@
+{
+  "pid": 3667600,
+  "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan",
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-07T16:27:52.084Z",
+    "deployment": {
+      "commit": "d7c9215c1d6e",
+      "version": "0.67.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  }
+}

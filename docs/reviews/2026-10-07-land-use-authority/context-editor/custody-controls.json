@@ -1,0 +1,84 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "section-freeze-gate",
+      "exitCode": 1,
+      "matched": true,
+      "target": "blocks freezing until all edited content",
+      "failedTests": [
+        "Live workbench draft custody keeps a deliberate reversion to the old saved text during the request",
+        "Live workbench draft custody retains both drafts after a refused save without claiming saved status",
+        "Live workbench draft custody retains local drafts and the explicit error when a saved operation cannot refresh",
+        "Live workbench draft custody never acknowledges the only dirty field after its save is refused",
+        "Live workbench draft custody blocks freezing until all edited content is actually saved"
+      ]
+    },
+    {
+      "case": "erase-other-drafts",
+      "exitCode": 1,
+      "matched": true,
+      "target": "keeps another section draft",
+      "failedTests": [
+        "Live workbench draft custody keeps another section draft when saving a different section",
+        "Live workbench draft custody keeps typing in the saving section after the submitted snapshot",
+        "Live workbench draft custody keeps unsaved section source selections and URLs",
+        "Live workbench draft custody keeps unsaved policy text when a section is saved",
+        "Live workbench draft custody keeps a deliberate reversion to the old saved text during the request"
+      ]
+    },
+    {
+      "case": "refused-save-treated-saved",
+      "exitCode": 1,
+      "matched": true,
+      "target": "never acknowledges the only dirty field",
+      "failedTests": [
+        "Live workbench draft custody retains both drafts after a refused save without claiming saved status",
+        "Live workbench draft custody never acknowledges the only dirty field after its save is refused"
+      ]
+    },
+    {
+      "case": "read-failure-treated-empty",
+      "exitCode": 1,
+      "matched": true,
+      "target": "saved operation cannot refresh",
+      "failedTests": [
+        "Live workbench draft custody retains local drafts and the explicit error when a saved operation cannot refresh"
+      ]
+    },
+    {
+      "case": "acknowledge-current-not-submitted",
+      "exitCode": 1,
+      "matched": false,
+      "target": "deliberate reversion",
+      "failedTests": [
+        "Live workbench draft custody keeps another section draft when saving a different section",
+        "Live workbench draft custody keeps unsaved section source selections and URLs",
+        "Live workbench draft custody keeps unsaved policy text when a section is saved",
+        "Live workbench draft custody retains both drafts after a refused save without claiming saved status",
+        "Live workbench draft custody retains local drafts and the explicit error when a saved operation cannot refresh",
+        "Live workbench draft custody never acknowledges the only dirty field after its save is refused",
+        "Live workbench draft custody blocks freezing until all edited content is actually saved"
+      ]
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/components/land-use-plans/land-use-plan-context-editor.tsx": "fab2069532994b4cb086549b75fb75f9e9fbafa1d9a01a299208096431650c3e",
+    "src/components/land-use-plans/land-use-plan-workbench.tsx": "49fc7bfc829c7b5f7451f3074292aad9cc63a2cef74a2c61db6de601e1d5bed1",
+    "src/lib/land-use-plans/plan-context-recovery.ts": "dc7512c4dadc3c8af515d12226ce51ddf5db5157397e302c7aefbb34381d6f92"
+  }
+}

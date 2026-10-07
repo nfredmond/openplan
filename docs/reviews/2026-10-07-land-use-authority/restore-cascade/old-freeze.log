@@ -1,0 +1,5 @@
+ERROR:  Frozen land-use plan content is immutable
+CONTEXT:  PL/pgSQL function refuse_frozen_land_use_plan_content() line 9 at RAISE
+SQL statement "DELETE FROM ONLY "public"."land_use_plan_relationships" WHERE $1 OPERATOR(pg_catalog.=) "plan_id" AND $2 OPERATOR(pg_catalog.=) "workspace_id""
+SQL statement "DELETE FROM public.land_use_plans WHERE id=plan"
+PL/pgSQL function inline_code_block line 177 at SQL statement

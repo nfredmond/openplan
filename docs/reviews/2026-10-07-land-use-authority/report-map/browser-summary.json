@@ -1,0 +1,157 @@
+{
+  "commit": "416def7b9b5ec67eadcbeab895ee8056bded5f5c",
+  "journey": [
+    "/land-use-plans",
+    "actual plan card",
+    "Open adopted-plan report"
+  ],
+  "screenshots": {
+    "desktop": "map-desktop.png",
+    "mobile": "map-mobile.png"
+  },
+  "desktop": {
+    "fetchNative": true,
+    "ready": true,
+    "scrollWidth": 1440,
+    "text": "Mapped designations retained with this version\nSYNTHETIC empty map\n\nFuture land-use designations express plan policy. They are not zoning and do not change parcel entitlements.\n\nFrozen GIS feature hash: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\n\nThe frozen map is unavailable because this OpenPlan instance has no public Mapbox token. The retained designation and feature hash are still available.",
+    "url": "http://openplan-history.localhost:3498/reports/e0aab60e-a9ff-4d51-a98e-4f01e99ceb45",
+    "width": 1440
+  },
+  "mobile": {
+    "scrollWidth": 390,
+    "text": "Mapped designations retained with this version\nSYNTHETIC empty map\n\nFuture land-use designations express plan policy. They are not zoning and do not change parcel entitlements.\n\nFrozen GIS feature hash: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\n\nThe frozen map is unavailable because this OpenPlan instance has no public Mapbox token. The retained designation and feature hash are still available.",
+    "url": "http://openplan-history.localhost:3498/reports/e0aab60e-a9ff-4d51-a98e-4f01e99ceb45",
+    "width": 390
+  },
+  "api": {
+    "fetchNative": true,
+    "health": {
+      "checkedAt": "2026-10-07T19:47:55.379Z",
+      "checks": {
+        "app": "ok",
+        "database": "not_checked"
+      },
+      "deployment": {
+        "commit": "416def7b9b5e",
+        "version": "0.67.0"
+      },
+      "service": "openplan",
+      "status": "ok"
+    },
+    "results": [
+      {
+        "body": {
+          "contentHash": "fc9818674bd5d0d6ea354f42ef6bb9c9dba8c8a81464b5225e8c2e94bc5211e1",
+          "coverageNotes": [],
+          "designationLabel": "SYNTHETIC empty map",
+          "features": [],
+          "legendField": null,
+          "limit": 1000,
+          "matchedCount": 0,
+          "reportId": "e0aab60e-a9ff-4d51-a98e-4f01e99ceb45",
+          "returnedCount": 0,
+          "tooDenseToDraw": false,
+          "type": "FeatureCollection",
+          "versionId": "da327c80-ee2d-456b-b4db-263b57ac50ce"
+        },
+        "cacheControl": "private, no-store",
+        "name": "retained-empty",
+        "status": 200
+      },
+      {
+        "body": {
+          "error": "Unauthorized"
+        },
+        "cacheControl": null,
+        "name": "anonymous",
+        "status": 401
+      },
+      {
+        "body": {
+          "error": "Map not found"
+        },
+        "cacheControl": null,
+        "name": "unknown-designation",
+        "status": 404
+      },
+      {
+        "body": {
+          "error": "Pass a valid bbox=west,south,east,north"
+        },
+        "cacheControl": null,
+        "name": "invalid-bbox",
+        "status": 400
+      }
+    ]
+  },
+  "console": [
+    {
+      "level": "error",
+      "text": "Electron sandboxed_renderer.bundle.js script failed to run",
+      "timestamp": "2026-10-07T17:48:48.542Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "TypeError: Cannot destructure property 'preloadScripts' of 'binding.startupData' as it is null.\n    at node:electron/js2c/sandbox_bundle:2:124925\n    at node:electron/js2c/sandbox_bundle:2:125860\n    at ___electron_webpack_init__ (node:electron/js2c/sandbox_bundle:2:125864)\n    at node:electron/js2c/sandbox_bundle:2:125987",
+      "timestamp": "2026-10-07T17:48:48.542Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Fetch API cannot load chrome-error://chromewebdata/api/health. URL scheme \"chrome-error\" is not supported.",
+      "timestamp": "2026-10-07T18:03:52.344Z",
+      "source": "javascript"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:398)\n    at n (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://\u2026",
+      "timestamp": "2026-10-07T18:38:41.585Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:285)\n    at n (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://\u2026",
+      "timestamp": "2026-10-07T18:40:09.032Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:285)\n    at n (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://\u2026",
+      "timestamp": "2026-10-07T18:40:55.768Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://openplan-history.localhost:3498/land-use-plans/fb049e81-a3a7-4ae0-be50-752410899be8. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:285)\n    at n (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:52:54142)\n    at w (http://openplan-history.localhost:3498/_next/static/chunks/70146-b7f413504ed3720a.js:2:89556)\n    at async R (http://\u2026",
+      "timestamp": "2026-10-07T18:41:19.145Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "timestamp": "2026-10-07T19:47:55.222Z",
+      "source": "network"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "timestamp": "2026-10-07T19:47:55.308Z",
+      "source": "network"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "timestamp": "2026-10-07T19:47:55.346Z",
+      "source": "network"
+    }
+  ],
+  "omitted": [
+    "accessibilityTree (use interactiveElements locators or preview_evaluate)",
+    "console entries text after 500 characters",
+    "160 older network entries",
+    "147 older action timeline entries",
+    "30 of 40 actionTimeline"
+  ],
+  "producerWrites": 0
+}

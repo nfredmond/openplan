@@ -1,0 +1,133 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "target": null,
+      "exitCode": 0,
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "target": null,
+      "exitCode": 0,
+      "matched": true
+    },
+    {
+      "case": "viewer",
+      "target": "viewer stop denied: accepted",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "membership",
+      "target": "viewer stop denied: accepted",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "stop-bytes",
+      "target": "stop changed bytes: accepted",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "stop-actor",
+      "target": "stop different actor: accepted",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "created-bytes",
+      "target": "existing creation exact bytes: accepted",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "created-actor",
+      "target": "existing creation actor: accepted",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "stop-scope",
+      "target": "independent stop workspace",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "created-scope",
+      "target": "existing creation workspace scope",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "cancelled-can-create",
+      "target": "stopped request cannot create: accepted",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "journal-rls",
+      "target": "stop journal RLS",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "journal-read",
+      "target": "stop journal private",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "client-rpc",
+      "target": "stop RPC private",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "definer",
+      "target": "stop RPC invoker",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "append-only",
+      "target": "stop append only: accepted",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "cascade",
+      "target": "stop workspace cascade",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "command-id",
+      "target": "stop command identity: accepted",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "replayed",
+      "target": "exact stop replay",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "created-outcome",
+      "target": "existing creation returned",
+      "exitCode": 3,
+      "matched": true
+    },
+    {
+      "case": "receipt-bytes",
+      "target": "retained stop receipt",
+      "exitCode": 3,
+      "matched": true
+    }
+  ],
+  "sourceUnchanged": true,
+  "sourceSha256": "491a59dfcebeff40f5a74710bce369680e14a67483b3400ef31e7105ab2b6214",
+  "boundary": "Rollback-only candidate migration8 probe. Must not run after persistent installation."
+}

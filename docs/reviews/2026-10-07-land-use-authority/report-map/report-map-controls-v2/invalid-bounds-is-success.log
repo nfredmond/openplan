@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 5 failed) 212ms
+     × refuses malformed or unsupported viewport  4ms
+     × refuses malformed or unsupported viewport 10,,12,35 1ms
+     × refuses malformed or unsupported viewport -181,0,-170,5 1ms
+     × refuses malformed or unsupported viewport 0,0,0,1 0ms
+     × refuses malformed or unsupported viewport 170,-10,-170,10 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses malformed or unsupported viewport 
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses malformed or unsupported viewport 10,,12,35
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses malformed or unsupported viewport -181,0,-170,5
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses malformed or unsupported viewport 0,0,0,1
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses malformed or unsupported viewport 170,-10,-170,10
+AssertionError: expected 200 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 200
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:120:44
+    118|   });
+    119|   it.each(["", "10,,12,35", "-181,0,-170,5", "0,0,0,1", "170,-10,-170,…
+    120|     expect((await request(bounds)).status).toBe(400); expect(mocks.cre…
+       |                                            ^
+    121|   });
+    122|   it("distinguishes a feature read failure from an empty map", async (…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 44 passed (49)
+   Start at  12:29:43
+   Duration  1.01s (transform 152ms, setup 55ms, import 307ms, tests 212ms, environment 339ms)
+

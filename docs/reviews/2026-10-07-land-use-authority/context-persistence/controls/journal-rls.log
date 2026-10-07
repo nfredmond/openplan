@@ -1,0 +1,4 @@
+ERROR:  command journal RLS enabled
+CONTEXT:  PL/pgSQL function pg_temp_84.context_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.context_assert((SELECT relrowsecurity FROM pg_class WHERE oid='public.land_use_plan_context_commands'::regclass),'command journal RLS enabled')"
+PL/pgSQL function inline_code_block line 26 at PERFORM

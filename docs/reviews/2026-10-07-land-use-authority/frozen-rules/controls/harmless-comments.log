@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-frozen-rules-20261007/openplan
+
+
+ Test Files  4 passed (4)
+      Tests  53 passed (53)
+   Start at  02:39:07
+   Duration  2.44s (transform 128ms, setup 150ms, import 323ms, tests 235ms, environment 1.32s)
+

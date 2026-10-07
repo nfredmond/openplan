@@ -1,0 +1,18 @@
+{
+  "controls.py": "1813caa77299116d317b89b6793913b7fa87dbfc066576b016c1417ab2644f23",
+  "before.log": "d93390256d178af7d1fbeb693013623c073e37afd8e7dd2707c05a0878db5749",
+  "focused.log": "501b61ca2fa361c40b0b1e98004974e2c53e4d76080afcbde0f645a2c16b0313",
+  "controls/omit-saved-heading.log": "b2a0fb91edfc9a2328f616c2574644ef129e87cb61e6c1526fd18caf20f96a43",
+  "controls/regress-copy.log": "ad9cbcd6456863bbb7a7b50549e750466cd63e913b6e63d1167e879ecf6f0af5",
+  "controls/report.json": "654f2c672fe1706404d6aa36fa8043c30915a879a12da081f69b9b604fbc714e",
+  "controls/harmless.log": "f3483e0b5a02c210ca6e2751fcd95be3a6731803a09605a4d0597ad4ed406269",
+  "controls/omit-legacy-boundary.log": "fd29d1f0a2e990ff3621d64cf1d6a434730d22c81d091b7e035446db60c1df1d",
+  "controls/omit-invalid-disclosure.log": "77353f23df1fa3b1b7c64fc730f9288d7fc02ca4f9cb853ba4adf76b36fc2f05",
+  "controls/omit-refusal-boundary.log": "14754fac8aed354599ea0abc4a3ae11264890c6b4605d4974059637dd4ce44f0",
+  "controls/omit-related-kind.log": "3b8c4d8e2e413e010889ed37826a3e305f927b69657b2ed82241daa4d60c6c8b",
+  "controls/omit-legal-boundary.log": "cab551b5095b85cba3d7ee7bd6041cfe426154f7e500bfaf95a972de2af471bd",
+  "controls/baseline.log": "604f0f96297162828acfbfbbf3ba2a3509f7a8a7871ed91ced6eabf3f79dd961",
+  "controls/omit-refusal-identity.log": "9905449771d7e733e5ffe3a071d287f5dc54526762577e056ae28f44fdd60318",
+  "controls/omit-historical-boundary.log": "5095f9c665512c20860e099c2c5de2b0791b470d7d5745660fbb4bb4da23dc86",
+  "controls/omit-legacy-absence.log": "236a78cd1e3be56ebdaa018edfc25a5859996b64d581628e6a0b32b1619c15cd"
+}

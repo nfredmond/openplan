@@ -1,0 +1,4 @@
+ERROR:  stop append only: accepted
+CONTEXT:  PL/pgSQL function pg_temp_14.creation_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.creation_refuses(format('UPDATE public.land_use_plan_creation_cancellations SET command_text=%L WHERE workspace_id=%L',raw||' ',workspace),'42501','stop append only')"
+PL/pgSQL function inline_code_block line 40 at PERFORM

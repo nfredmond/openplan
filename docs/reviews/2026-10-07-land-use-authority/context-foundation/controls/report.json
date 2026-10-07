@@ -1,0 +1,165 @@
+{
+  "results": [
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "expected": "pass",
+      "target": null
+    },
+    {
+      "case": "unresolved-is-assessed",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "keeps unresolved"
+    },
+    {
+      "case": "country-scope",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "unsupported authority country"
+    },
+    {
+      "case": "subdivision-scope",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "unsupported authority subdivision"
+    },
+    {
+      "case": "authority-kind",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "unsupported authority kind"
+    },
+    {
+      "case": "authority-sources",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "unsupported authority sources"
+    },
+    {
+      "case": "first-authority-only",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "checks every selected authority"
+    },
+    {
+      "case": "duplicate-authorities",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "rejects duplicate and dangling"
+    },
+    {
+      "case": "dangling-authority",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "rejects duplicate and dangling"
+    },
+    {
+      "case": "assessment-sources",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "refuses source-free assessment"
+    },
+    {
+      "case": "unsafe-source",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "refuses source-free assessment"
+    },
+    {
+      "case": "missing-is-legacy",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "keeps stored absence"
+    },
+    {
+      "case": "invent-unresolved-identity",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "keeps stored absence"
+    },
+    {
+      "case": "client-attribution",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "invented client attribution"
+    },
+    {
+      "case": "actor-substitution",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "geometry without inventing"
+    },
+    {
+      "case": "wrong-resolver-kind",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "wrong-kind resolver result"
+    },
+    {
+      "case": "wrong-resolver-id",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "wrong-id resolver result"
+    },
+    {
+      "case": "skip-applicability",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "refuses unsupported authority before"
+    },
+    {
+      "case": "geometry-validation",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "rejects projected coordinates"
+    },
+    {
+      "case": "lose-upload-source",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "keeps uploaded geometry"
+    },
+    {
+      "case": "lose-resolver-extent",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "retains the server boundary and extent"
+    },
+    {
+      "case": "drop-frozen-scope",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "targeted failure",
+      "target": "retains the adapter authority scope"
+    }
+  ],
+  "restored": true,
+  "sourceSha256": {
+    "src/lib/land-use-plans/plan-context.ts": "c220b7e64a152ea5844bf50b7e45ad8a6ed6ace85a3be34802b8ffa5ee6b9ab1",
+    "src/lib/land-use-plans/plan-context-server.ts": "f96f3f90b51c16a6e990c749903277a6517325d9122daabc5d02288043d0291d",
+    "src/lib/geographies/study-area-capture.ts": "0f9b4b6b2dd5453006cbfd1055736bd418c77e70f67923241d02f65048e2c0da",
+    "src/lib/land-use-plans/descriptor-snapshot.ts": "6bddf29275a14e88c6ae3916d9a136c20e4dbcd4a087fb745b001bc0a4bbed3e"
+  }
+}

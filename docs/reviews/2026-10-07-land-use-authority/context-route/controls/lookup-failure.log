@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context-route.test.ts (31 tests | 1 failed) 40ms
+     × preserves unavailability when retained-command discovery fails 4ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 51 passed (52)
+   Start at  03:34:21
+   Duration  1.36s (transform 190ms, setup 85ms, import 315ms, tests 58ms, environment 651ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context-route.test.ts > plan context route > preserves unavailability when retained-command discovery fails
+AssertionError: expected 201 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 201
+
+ ❯ src/test/land-use-plan-context-route.test.ts:127:60
+    125|   it("preserves unavailability when retained-command discovery fails",…
+    126|     tables.land_use_plan_context_commands = { data: null, error: { mes…
+    127|     const response = await post(); expect(response.status).toBe(503);
+       |                                                            ^
+    128|     expect(JSON.stringify(await response.json())).not.toContain("priva…
+    129|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

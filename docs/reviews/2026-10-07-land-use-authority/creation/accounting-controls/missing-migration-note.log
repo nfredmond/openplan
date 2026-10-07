@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan
+
+ ❯ src/test/migrations/release-ordering.test.ts (6 tests | 1 failed) 16ms
+     × the CHANGELOG's Unreleased section names every migration landed since the newest tag 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/migrations/release-ordering.test.ts > released migration ordering > the CHANGELOG's Unreleased section names every migration landed since the newest tag
+AssertionError: Every migration landed since the newest tag must be named in the CHANGELOG's Unreleased section — that section is what an operator reads to know what to run before deploying. Missing: 20261016000007_land_use_plan_creation_commands.sql: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "20261016000007_land_use_plan_creation_commands.sql",
++ ]
+
+ ❯ src/test/migrations/release-ordering.test.ts:607:7
+    605|         "section — that section is what an operator reads to know what…
+    606|         `Missing: ${missing.join(", ")}`
+    607|     ).toEqual([]);
+       |       ^
+    608|   });
+    609|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 39 passed (40)
+   Start at  06:19:14
+   Duration  2.96s (transform 104ms, setup 121ms, import 549ms, tests 983ms, environment 985ms)
+

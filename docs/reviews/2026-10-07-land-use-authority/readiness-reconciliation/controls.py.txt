@@ -1,0 +1,38 @@
+from pathlib import Path
+import hashlib, json, os, subprocess
+app=Path('/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan')
+out=Path('/tmp/openplan-plan-kind-readiness-controls');out.mkdir(exist_ok=False)
+paths={'workflow':'src/lib/land-use-plans/workflow.ts','route':'src/app/api/land-use-plans/[planId]/freeze/route.ts','workbench':'src/components/land-use-plans/land-use-plan-workbench.tsx'}
+original={k:(app/p).read_bytes() for k,p in paths.items()}
+cases=[
+ ('baseline',None,None,None,None),
+ ('harmless','workflow','Saved choices cannot waive required rules','Saved choices cannot waive mandatory rules',None),
+ ('drops-saved-choices','workflow','    ...savedKeys,','', 'unions required rules'),
+ ('drops-new-required','workflow','requirement.applicability === "required"','false','keeps newly required content'),
+ ('forces-optional','workflow','requirement.applicability === "required"','true','unions required rules'),
+ ('duplicates-choices','workflow','return [...new Set([\n    ...savedKeys,','return [...Array.of(...[\n    ...savedKeys,','unions required rules'),
+ ('changes-saved-order','workflow','    ...savedKeys,','    ...savedKeys.reverse(),','unions required rules'),
+ ('readiness-skips-union','workflow','applicablePlanRequirementKeys(input.descriptor, input.applicableRequirementKeys).filter(','input.applicableRequirementKeys.filter(','keeps newly required content'),
+ ('progress-skips-union','workflow','const applicable = applicablePlanRequirementKeys(input.descriptor, input.applicableRequirementKeys);','const applicable = input.applicableRequirementKeys;','keeps newly required content'),
+ ('route-ignores-rules','route','      descriptor,\n      applicableRequirementKeys:','      descriptor: { requirements: [] },\n      applicableRequirementKeys:','reports required rules absent'),
+ ('workbench-ignores-rules','workbench','      descriptor: data.descriptor,\n      applicableRequirementKeys:','      descriptor: { requirements: [] },\n      applicableRequirementKeys:','shows required sections missing'),
+ ('workbench-forces-local','workbench','      descriptor: data.descriptor,\n      applicableRequirementKeys: data.activeVersion.applicable_requirement_keys,','      descriptor: data.descriptor,\n      applicableRequirementKeys: [...data.activeVersion.applicable_requirement_keys, ...data.descriptor.requirements.map(rule => rule.key)],','shows required sections missing'),
+]
+for name,key,old,new,target in cases:
+ if key: assert original[key].decode().count(old)==1,(name,original[key].decode().count(old))
+rows=[]
+try:
+ for name,key,old,new,target in cases:
+  try:
+   if key:(app/paths[key]).write_text(original[key].decode().replace(old,new))
+   report=out/(name+'.json')
+   run=subprocess.run(['npm','exec','--','vitest','run','src/test/land-use-plan-review-reporting.test.ts','src/test/land-use-plan-freeze-route.test.ts','src/test/land-use-plan-content-workbench.test.tsx','--maxWorkers=1','--reporter=json','--outputFile='+str(report)],cwd=app,env={**os.environ,'NODE_OPTIONS':'--max-old-space-size=6144'},stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=90)
+   (out/(name+'.log')).write_text(run.stdout)
+   data=json.loads(report.read_text()); failed=[a['fullName'] for f in data['testResults'] for a in f['assertionResults'] if a['status']=='failed']
+   matched=(run.returncode==0 and data['numPassedTests']>0) if target is None else run.returncode!=0 and any(target in name for name in failed)
+   rows.append({'case':name,'target':target,'exitCode':run.returncode,'failedTests':failed,'matched':matched})
+   print(name,matched,flush=True);assert matched,name
+  finally:
+   for k,b in original.items():(app/paths[k]).write_bytes(b)
+finally:
+ (out/'report.json').write_text(json.dumps({'results':rows,'restored':all((app/paths[k]).read_bytes()==b for k,b in original.items()),'sourceSha256':{paths[k]:hashlib.sha256(b).hexdigest() for k,b in original.items()},'boundary':'Shared checklist computation, actual route with projected mock database reads, and mounted workbench DOM. Does not establish native database enforcement, concurrent freezes, rendered browser behavior, legal adequacy or planner acceptance.'},indent=2)+'\n')

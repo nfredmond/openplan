@@ -1,0 +1,6 @@
+
+/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/components/reports/land-use-plan-report-adoption.tsx
+  52:205  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+✖ 1 problem (1 error, 0 warnings)
+

@@ -1,0 +1,4 @@
+ERROR:  stop different actor: accepted
+CONTEXT:  PL/pgSQL function pg_temp_39.creation_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.creation_refuses(replace(stopping,actor::text,member::text),'PT409','stop different actor')"
+PL/pgSQL function inline_code_block line 33 at PERFORM

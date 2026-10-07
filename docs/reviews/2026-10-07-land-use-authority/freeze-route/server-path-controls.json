@@ -1,0 +1,42 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "matched": true,
+      "expected": "pass"
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "expected": "pass"
+    },
+    {
+      "case": "insert-bypass",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "direct authenticated frozen insert refused"
+    },
+    {
+      "case": "update-bypass",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "direct authenticated freeze update refused"
+    },
+    {
+      "case": "jwt-role",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "forged JWT role cannot freeze directly"
+    },
+    {
+      "case": "definer-bypass",
+      "exitCode": 1,
+      "matched": true,
+      "expected": "direct authenticated freeze update refused"
+    }
+  ],
+  "restored": true,
+  "sourceSha256": "1dc7a9de66c4b029720485ca910d11b7f12b9ec986a08adea4dd6e155833f57e"
+}

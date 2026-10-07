@@ -1,0 +1,63 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-adoption.test.tsx (26 tests | 17 failed) 623ms
+     × withholds changed artifact decision and preserves separately verified plan content 13ms
+     × withholds changed ancillary evidence and preserves separately verified plan content 11ms
+     × withholds wrong native plan and preserves separately verified plan content 12ms
+     × withholds wrong native version and preserves separately verified plan content 11ms
+     × withholds wrong native content hash and preserves separately verified plan content 11ms
+     × withholds wrong native manifest hash and preserves separately verified plan content 10ms
+     × withholds wrong native review release and preserves separately verified plan content 10ms
+     × withholds wrong manifest plan and preserves separately verified plan content 10ms
+     × withholds wrong manifest version and preserves separately verified plan content 12ms
+     × withholds wrong manifest content hash and preserves separately verified plan content 10ms
+     × withholds wrong artifact review release and preserves separately verified plan content 10ms
+     × withholds invalid decision shape and preserves separately verified plan content 10ms
+     × withholds invalid manifest hash and preserves separately verified plan content 10ms
+     × withholds manifest without hash and preserves separately verified plan content 10ms
+     × withholds hash without manifest and preserves separately verified plan content 10ms
+     × withholds missing native decision and preserves separately verified plan content 12ms
+     × withholds unreadable native decision and preserves separately verified plan content 10ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds changed artifact decision and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds changed ancillary evidence and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds wrong native plan and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds wrong native version and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds wrong native content hash and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds wrong native manifest hash and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds wrong native review release and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds wrong manifest plan and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds wrong manifest version and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds wrong manifest content hash and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds wrong artifact review release and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds invalid decision shape and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds invalid manifest hash and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds manifest without hash and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds hash without manifest and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds missing native decision and preserves separately verified plan content
+ FAIL  src/test/land-use-plan-report-adoption.test.tsx > adopted report retained decision and relationships > withholds unreadable native decision and preserves separately verified plan content
+Error: expect(element).toHaveTextContent()
+
+Expected element to have text content:
+  adoption details could not be verified
+Received:
+  Details unavailable against the version retained in this report. OpenPlan withheld the decision details. The plan content below passed its separate version check.
+ ❯ src/test/land-use-plan-report-adoption.test.tsx:107:39
+    105|   ] as const)("withholds %s and preserves separately verified plan con…
+    106|     mutate(); await show();
+    107|     expect(screen.getByRole("alert")).toHaveTextContent("adoption deta…
+       |                                       ^
+    108|     expect(screen.queryByText("SYNTHETIC recorded decision body")).toB…
+    109|     expect(screen.queryByText("ALTERED decision")).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  17 failed | 9 passed (26)
+   Start at  12:39:38
+   Duration  1.38s (transform 134ms, setup 56ms, import 277ms, tests 623ms, environment 326ms)
+

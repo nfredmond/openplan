@@ -1,0 +1,920 @@
+[
+  {
+    "run": "zube7k9x",
+    "results": [
+      {
+        "name": "baseline",
+        "expected": "pass",
+        "exit": 0,
+        "passed": 116,
+        "failed": 0,
+        "correct": true,
+        "failures": []
+      },
+      {
+        "name": "harmless",
+        "expected": "pass",
+        "exit": 0,
+        "passed": 116,
+        "failed": 0,
+        "correct": true,
+        "failures": []
+      },
+      {
+        "name": "transport-exact-bytes",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery sends retained exact bytes and scope, then clears only the confirmed command",
+            "messages": [
+              "AssertionError: expected \"vi.fn()\" to be called with arguments: [ \u2026(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"/api/land-use-plans/10000000-0000-4000-8000-000000000003/reconcile-rules\",\n-   ObjectContaining {\n-     \"body\": \" \n- {\\\"operation\\\":\\\"reconcile\\\",\\\"commandId\\\":\\\"10000000-0000-4000-8000-000000000004\\\",\\\"versionId\\\":\\\"10000000-0000-4000-8000-000000000005\\\",\\\"expectedDraftRevision\\\":7,\\\"expectedDescriptorHash\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\"}\n- \",\n+   {\n+     \"body\": \"{\\\"operation\\\":\\\"reconcile\\\",\\\"commandId\\\":\\\"10000000-0000-4000-8000-000000000004\\\",\\\"versionId\\\":\\\"10000000-0000-4000-8000-000000000005\\\",\\\"expectedDraftRevision\\\":7,\\\"expectedDescriptorHash\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\"}\",\n      \"cache\": \"no-store\",\n      \"headers\": {\n        \"Content-Type\": \"application/json\",\n        \"x-openplan-expected-user\": \"10000000-0000-4000-8000-000000000001\",\n        \"x-openplan-expected-workspace\": \"10000000-0000-4000-8000-000000000002\",\n      },\n      \"method\": \"POST\",\n+     \"signal\": AbortSignal {\n+       Symbol(kEvents): undefined,\n+       Symbol(events.maxEventTargetListeners): 0,\n+       Symbol(events.maxEventTargetListenersWarned): false,\n+       Symbol(kHandlers): undefined,\n+       Symbol(kAborted): false,\n+       Symbol(kReason): undefined,\n+       Symbol(kComposite): true,\n+       Symbol(kSourceSignals): Set {\n+         SafeWeakRef {},\n+       },\n+       Symbol(kTimeout): true,\n+     },\n    },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1487:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:26:23\n    at processTicksAndRejections (node:int"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "transport-scope",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery sends retained exact bytes and scope, then clears only the confirmed command",
+            "messages": [
+              "AssertionError: expected \"vi.fn()\" to be called with arguments: [ \u2026(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"/api/land-use-plans/10000000-0000-4000-8000-000000000003/reconcile-rules\",\n-   ObjectContaining {\n+   {\n      \"body\": \" \n  {\\\"operation\\\":\\\"reconcile\\\",\\\"commandId\\\":\\\"10000000-0000-4000-8000-000000000004\\\",\\\"versionId\\\":\\\"10000000-0000-4000-8000-000000000005\\\",\\\"expectedDraftRevision\\\":7,\\\"expectedDescriptorHash\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\"}\n  \",\n      \"cache\": \"no-store\",\n      \"headers\": {\n        \"Content-Type\": \"application/json\",\n-       \"x-openplan-expected-user\": \"10000000-0000-4000-8000-000000000001\",\n+       \"x-openplan-expected-user\": \"10000000-0000-4000-8000-000000000002\",\n        \"x-openplan-expected-workspace\": \"10000000-0000-4000-8000-000000000002\",\n      },\n      \"method\": \"POST\",\n+     \"signal\": AbortSignal {\n+       Symbol(kEvents): undefined,\n+       Symbol(events.maxEventTargetListeners): 0,\n+       Symbol(events.maxEventTargetListenersWarned): false,\n+       Symbol(kHandlers): undefined,\n+       Symbol(kAborted): false,\n+       Symbol(kReason): undefined,\n+       Symbol(kComposite): true,\n+       Symbol(kSourceSignals): Set {\n+         SafeWeakRef {},\n+       },\n+       Symbol(kTimeout): true,\n+     },\n    },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1487:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:26:23\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "retention-required",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery refuses transport before retention and after changed retention",
+            "messages": [
+              "Error: expected [Function] to throw error including 'saved request changed' but got 'Cannot read properties of undefined (\u2026'\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:40:69\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "retain-overwrite",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery refuses overwrites, quota failures and missing storage readback",
+            "messages": [
+              "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:50:87\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "retain-readback",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery refuses overwrites, quota failures and missing storage readback",
+            "messages": [
+              "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:55:62\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "receipt-bindings",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 21,
+        "failed": 6,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery keeps requests with mismatched or malformed replies {\"actorId\":\"10000000-0000-4000-8000-000000000008\"}",
+            "messages": [
+              "Error: promise resolved \"{ \u2026(12) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:69:157\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+            ]
+          },
+          {
+            "name": "checklist request recovery keeps requests with mismatched or malformed replies {\"workspaceId\":\"10000000-0000-4000-8000-000000000008\"}",
+            "messages": [
+              "Error: promise resolved \"{ \u2026(12) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:69:157\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+            ]
+          },
+          {
+            "name": "checklist request recovery keeps requests with mismatched or malformed replies {\"planId\":\"10000000-0000-4000-8000-000000000008\"}",
+            "messages": [
+              "Error: promise resolved \"{ \u2026(12) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:69:157\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+            ]
+          },
+          {
+            "name": "checklist request recovery keeps requests with mismatched or malformed replies {\"commandId\":\"10000000-0000-4000-8000-000000000008\"}",
+            "messages": [
+              "Error: promise resolved \"{ \u2026(12) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:69:157\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+            ]
+          },
+          {
+            "name": "checklist request recovery keeps requests with mismatched or malformed replies {\"versionId\":\"10000000-0000-4000-8000-000000000008\"}",
+            "messages": [
+              "Error: promise resolved \"{ \u2026(12) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:69:157\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+            ]
+          },
+          {
+            "name": "checklist request recovery keeps requests with mismatched or malformed replies {\"descriptorHash\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}",
+            "messages": [
+              "Error: promise resolved \"{ \u2026(12) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:69:157\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "receipt-status",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery keeps requests with mismatched or malformed replies {\"replayed\":true}",
+            "messages": [
+              "Error: promise resolved \"{ \u2026(12) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:69:157\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "receipt-schema",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 23,
+        "failed": 4,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery keeps requests with mismatched or malformed replies {\"draftRevision\":6}",
+            "messages": [
+              "Error: promise resolved \"{ \u2026(12) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:69:157\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+            ]
+          },
+          {
+            "name": "checklist request recovery keeps requests with mismatched or malformed replies {\"reconciledAt\":\"yesterday\"}",
+            "messages": [
+              "Error: promise resolved \"{ \u2026(12) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:69:157\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+            ]
+          },
+          {
+            "name": "checklist request recovery keeps requests with mismatched or malformed replies {\"addedSections\":[{\"id\":\"invalid\",\"requirementKey\":\"required\"}]}",
+            "messages": [
+              "Error: promise resolved \"{ \u2026(12) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:69:157\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+            ]
+          },
+          {
+            "name": "checklist request recovery keeps requests with mismatched or malformed replies {\"unexpected\":true}",
+            "messages": [
+              "Error: promise resolved \"{ \u2026(13) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:69:157\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "abort-before-transport",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery keeps the original through lost, unreadable and aborted replies",
+            "messages": [
+              "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      \"/api/land-use-plans/10000000-0000-4000-8000-000000000003/reconcile-rules\",\n      Object {\n        \"body\": \" \n    {\"operation\":\"reconcile\",\"commandId\":\"10000000-0000-4000-8000-000000000004\",\"versionId\":\"10000000-0000-4000-8000-000000000005\",\"expectedDraftRevision\":7,\"expectedDescriptorHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}\n    \",\n        \"cache\": \"no-store\",\n        \"headers\": Object {\n          \"Content-Type\": \"application/json\",\n          \"x-openplan-expected-user\": \"10000000-0000-4000-8000-000000000001\",\n          \"x-openplan-expected-workspace\": \"10000000-0000-4000-8000-000000000002\",\n        },\n        \"method\": \"POST\",\n        \"signal\": AbortSignal {\n          Symbol(kEvents): undefined,\n          Symbol(events.maxEventTargetListeners): 0,\n          Symbol(events.maxEventTargetListenersWarned): false,\n          Symbol(kHandlers): undefined,\n          Symbol(kAborted): true,\n          Symbol(kReason): [AbortError: This operation was aborted],\n          Symbol(kComposite): true,\n          Symbol(kSourceSignals): Set {},\n        },\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:81:23\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "abort-after-transport",
+        "expected": "assertion_failure",
+        "exit": 0,
+        "passed": 27,
+        "failed": 0,
+        "correct": false,
+        "failures": []
+      },
+      {
+        "name": "abort-after-json",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery keeps a request when cancellation arrives while reading its receipt",
+            "messages": [
+              "Error: promise resolved \"{ \u2026(12) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:96:125\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ack-changed-copy",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery refuses transport before retention and after changed retention",
+            "messages": [
+              "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:45:67\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ack-readback",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery reports failed cleanup without removing a different request",
+            "messages": [
+              "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:120:67\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "preserve-readback",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery copies before removing and refuses an unverified copy",
+            "messages": [
+              "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:102:70\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "restore-size",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery restores locally and isolates accounts, workspaces and plans",
+            "messages": [
+              "AssertionError: expected [Function] to throw error including 'larger' but got 'Unexpected end of JSON input'\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:116:80\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "restore-scope-actorId",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery restores locally and isolates accounts, workspaces and plans",
+            "messages": [
+              "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:113:75\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "restore-scope-workspaceId",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery restores locally and isolates accounts, workspaces and plans",
+            "messages": [
+              "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:113:75\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "restore-scope-planId",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery restores locally and isolates accounts, workspaces and plans",
+            "messages": [
+              "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:113:75\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "no-auto-send",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 0,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "explicit checklist review and recovery does not send on mount, storage events, remount or restored local copy",
+            "messages": [
+              "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 2 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      \"/api/land-use-plans/10000000-0000-4000-8000-000000000003/reconcile-rules\",\n      Object {\n        \"body\": \" \n    {\"operation\":\"reconcile\",\"commandId\":\"10000000-0000-4000-8000-000000000004\",\"versionId\":\"10000000-0000-4000-8000-000000000005\",\"expectedDraftRevision\":7,\"expectedDescriptorHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}\n    \",\n        \"cache\": \"no-store\",\n        \"headers\": Object {\n          \"Content-Type\": \"application/json\",\n          \"x-openplan-expected-user\": \"10000000-0000-4000-8000-000000000001\",\n          \"x-openplan-expected-workspace\": \"10000000-0000-4000-8000-000000000002\",\n        },\n        \"method\": \"POST\",\n        \"signal\": AbortSignal {\n          Symbol(kEvents): undefined,\n          Symbol(events.maxEventTargetListeners): 0,\n          Symbol(events.maxEventTargetListenersWarned): false,\n          Symbol(kHandlers): undefined,\n          Symbol(kAborted): false,\n          Symbol(kReason): undefined,\n          Symbol(kComposite): true,\n          Symbol(kSourceSignals): Set {\n            SafeWeakRef {},\n          },\n          Symbol(kTimeout): true,\n        },\n      },\n    ]\n\n  2nd vi.fn() call:\n\n    Array [\n      \"/api/land-use-plans/10000000-0000-4000-8000-000000000003/reconcile-rules\",\n      Object {\n        \"body\": \" \n    {\"operation\":\"reconcile\",\"commandId\":\"10000000-0000-4000-8000-000000000004\",\"versionId\":\"10000000-0000-4000-8000-000000000005\",\"expectedDraftRevision\":7,\"expectedDescriptorHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}\n    \",\n        \"cache\": \"no-store\",\n        \"headers\": Object {\n          \"Content-Type\": \"application/json\",\n          \"x-openplan-expected-user\": \"10000000-0000-4000-8000-000000000001\",\n          \"x-openplan-expected-workspace\": \"10000000-0000-4000-8000-000000000002\",\n        },\n        \"method\": \"POST\",\n        \"signal\": AbortSignal {\n          Symbol(kEvents): undefined,\n          Symbol(events.maxEventTargetListeners): 0,\n          Symbol(events.maxEventTargetListenersWarned): false,\n          Symbol(k"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "review-stale",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 15,
+        "failed": 4,
+        "correct": true,
+        "failures": [
+          {
+            "name": "explicit checklist review and recovery requires a new review when the displayed change changes {\"draftRevision\":8}",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:41:101\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+            ]
+          },
+          {
+            "name": "explicit checklist review and recovery requires a new review when the displayed change changes {\"descriptorHash\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:41:101\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+            ]
+          },
+          {
+            "name": "explicit checklist review and recovery requires a new review when the displayed change changes {\"versionId\":\"10000000-0000-4000-8000-000000000009\"}",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:41:101\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+            ]
+          },
+          {
+            "name": "explicit checklist review and recovery requires a new review when the displayed change changes {\"missingSections\":[{\"key\":\"other\",\"label\":\"Other section\"}]}",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:41:101\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "retained-before-send",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 0,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "explicit checklist review and recovery requires displayed review, retains before transport and acknowledges the scoped receipt",
+            "messages": [
+              "Error: Unable to find role=\"status\"\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Checklist review and recovery\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 border-l-2 border-border pl-4\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<h3\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mReview the current checklist\u001b[0m\n      \u001b[36m</h3>\u001b[39m\n      \u001b[36m<p\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose text-sm text-muted-foreground\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mAdd missing blank sections and mark the listed sections as applicable. Earlier text, evidence and maps stay intact. These additions do not establish legal sufficiency or complete the plan.\u001b[0m\n      \u001b[36m</p>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-medium\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mBlank sections to add\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<ul\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 list-disc space-y-1 pl-5\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<li>\u001b[39m\n            \u001b[0mRequired text\u001b[0m\n          \u001b[36m</li>\u001b[39m\n        \u001b[36m</ul>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-medium\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mSections to mark as applicable\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<ul\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 list-disc space-y-1 pl-5\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<li>\u001b[39m\n            \u001b[0mLocal text\u001b[0m\n          \u001b[36m</li>\u001b[39m\n        \u001b[36m</ul>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n      \u001b[36m<label\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"flex max-w-prose items-start gap-2 text-sm\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<input\u001b[39m\n          \u001b[33mtype\u001b[39m=\u001b[32m\"checkbox\"\u001b[39m\n        \u001b[36m/>\u001b[39m\n        \u001b[0mI reviewed these section additions and applicability changes.\u001b[0m\n      \u001b[36m</label>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "dirty-refresh",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 18,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "explicit checklist review and recovery defers a confirmed refresh when new unsaved edits arrive during transport",
+            "messages": [
+              "TestingLibraryElementError: Unable to find an accessible element with the role \"alert\"\n\nHere are the accessible roles:\n\n  region:\n\n  Name \"Checklist review and recovery\":\n  \u001b[36m<section\u001b[39m\n    \u001b[33maria-label\u001b[39m=\u001b[32m\"Checklist review and recovery\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 border-l-2 border-border pl-4\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  heading:\n\n  Name \"Review the current checklist\":\n  \u001b[36m<h3\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  paragraph:\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose text-sm text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"font-medium\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"font-medium\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  list:\n\n  Name \"\":\n  \u001b[36m<ul\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 list-disc space-y-1 pl-5\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<ul\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 list-disc space-y-1 pl-5\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  listitem:\n\n  Name \"\":\n  \u001b[36m<li />\u001b[39m\n\n  Name \"\":\n  \u001b[36m<li />\u001b[39m\n\n  --------------------------------------------------\n  checkbox:\n\n  Name \"I reviewed these section additions and applicability changes.\":\n  \u001b[36m<input\u001b[39m\n    \u001b[33mdisabled\u001b[39m=\u001b[32m\"\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"checkbox\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  button:\n\n  Name \"Add reviewed checklist items\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "readiness-button",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 18,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "explicit checklist review and recovery blocks sending until saved requests can be read",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:127:22\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "stale-storage-error",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 18,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "explicit checklist review and recovery blocks sending until saved requests can be read",
+            "messages": [
+              "Error: expect(element).not.toBeInTheDocument()\n\nexpected document not to contain element, found <p\n  class=\"text-sm text-destructive\"\n  role=\"alert\"\n>\n  Saved checklist requests could not be read. Check browser storage before sending a request.\n</p> instead\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:129:77\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "frozen-new-request",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 18,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "explicit checklist review and recovery offers no new mutation for a frozen edition or an unchanged checklist",
+            "messages": [
+              "Error: expect(element).not.toBeInTheDocument()\n\nexpected document not to contain element, found <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n  disabled=\"\"\n>\n  Add reviewed checklist items\n</button> instead\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:117:88\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_mo"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "pending-preserve-disabled",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 18,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "explicit checklist review and recovery does not preserve or refresh a pending request over unsaved edits",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"outline\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:135:22\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathanie"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "file-account-generation",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 18,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "explicit checklist review and recovery ignores file contents that arrive after the account changes",
+            "messages": [
+              "AssertionError: expected [ { \u2026(4) } ] to deeply equal []\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:158:65\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "request-ack",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 17,
+        "failed": 2,
+        "correct": true,
+        "failures": [
+          {
+            "name": "explicit checklist review and recovery requires displayed review, retains before transport and acknowledges the scoped receipt",
+            "messages": [
+              "AssertionError: expected [ { \u2026(4) } ] to deeply equal []\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:36:65\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          },
+          {
+            "name": "explicit checklist review and recovery defers a confirmed refresh when new unsaved edits arrive during transport",
+            "messages": [
+              "AssertionError: expected [ { \u2026(4) } ] to deeply equal []\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:78:113\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "request-no-refresh",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 15,
+        "failed": 4,
+        "correct": true,
+        "failures": [
+          {
+            "name": "explicit checklist review and recovery requires displayed review, retains before transport and acknowledges the scoped receipt",
+            "messages": [
+              "AssertionError: expected \"vi.fn()\" to be called 1 times, but got 0 times\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:35:73\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          },
+          {
+            "name": "explicit checklist review and recovery retries original bytes after a newer working draft or rule set exists",
+            "messages": [
+              "AssertionError: expected \"vi.fn()\" to be called 1 times, but got 0 times\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:63:97\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          },
+          {
+            "name": "explicit checklist review and recovery defers a confirmed refresh when new unsaved edits arrive during transport",
+            "messages": [
+              "TestingLibraryElementError: Unable to find an accessible element with the role \"alert\"\n\nHere are the accessible roles:\n\n  region:\n\n  Name \"Checklist review and recovery\":\n  \u001b[36m<section\u001b[39m\n    \u001b[33maria-label\u001b[39m=\u001b[32m\"Checklist review and recovery\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 border-l-2 border-border pl-4\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  heading:\n\n  Name \"Review the current checklist\":\n  \u001b[36m<h3\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  paragraph:\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose text-sm text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"font-medium\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"font-medium\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  list:\n\n  Name \"\":\n  \u001b[36m<ul\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 list-disc space-y-1 pl-5\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<ul\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 list-disc space-y-1 pl-5\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  listitem:\n\n  Name \"\":\n  \u001b[36m<li />\u001b[39m\n\n  Name \"\":\n  \u001b[36m<li />\u001b[39m\n\n  --------------------------------------------------\n  checkbox:\n\n  Name \"I reviewed these section additions and applicability changes.\":\n  \u001b[36m<input\u001b[39m\n    \u001b[33mdisabled\u001b[39m=\u001b[32m\"\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"checkbox\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  button:\n\n  Name \"Add reviewed checklist items\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus"
+            ]
+          },
+          {
+            "name": "explicit checklist review and recovery keeps confirmation distinct from refresh failure and retries refresh explicitly",
+            "messages": [
+              "Error: Unable to find role=\"alert\"\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Checklist review and recovery\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 border-l-2 border-border pl-4\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<h3\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mReview the current checklist\u001b[0m\n      \u001b[36m</h3>\u001b[39m\n      \u001b[36m<p\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-prose text-sm text-muted-foreground\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mAdd missing blank sections and mark the listed sections as applicable. Earlier text, evidence and maps stay intact. These additions do not establish legal sufficiency or complete the plan.\u001b[0m\n      \u001b[36m</p>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-medium\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mBlank sections to add\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<ul\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 list-disc space-y-1 pl-5\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<li>\u001b[39m\n            \u001b[0mRequired text\u001b[0m\n          \u001b[36m</li>\u001b[39m\n        \u001b[36m</ul>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-medium\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mSections to mark as applicable\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<ul\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 list-disc space-y-1 pl-5\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<li>\u001b[39m\n            \u001b[0mLocal text\u001b[0m\n          \u001b[36m</li>\u001b[39m\n        \u001b[36m</ul>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n      \u001b[36m<label\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"flex max-w-prose items-start gap-2 text-sm\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<input\u001b[39m\n          \u001b[33mtype\u001b[39m=\u001b[32m\"checkbox\"\u001b[39m\n        \u001b[36m/>\u001b[39m\n        \u001b[0mI reviewed these section additions and applicability changes.\u001b[0m\n      \u001b[36m</label>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm "
+            ]
+          }
+        ]
+      },
+      {
+        "name": "form-dirty",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 20,
+        "failed": 5,
+        "correct": true,
+        "failures": [
+          {
+            "name": "Working-plan checklist reconciliation integration blocks reconciliation while relationship edits are unsaved",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-draft-custody.test.tsx:262:22\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          },
+          {
+            "name": "Working-plan checklist reconciliation integration blocks reconciliation while consultation edits are unsaved",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-draft-custody.test.tsx:262:22\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          },
+          {
+            "name": "Working-plan checklist reconciliation integration unblocks after a staff form reverts to its original values",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-draft-custody.test.tsx:266:81\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          },
+          {
+            "name": "Working-plan checklist reconciliation integration resets an unchanged submitted staff form and clears its draft guard",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-draft-custody.test.tsx:271:96\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          },
+          {
+            "name": "Working-plan checklist reconciliation integration keeps staff form text entered after submission and acknowledges only submitted bytes",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-draft-custody.test.tsx:284:77\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "form-late-reset",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 24,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "Working-plan checklist reconciliation integration keeps staff form text entered after submission and acknowledges only submitted bytes",
+            "messages": [
+              "Error: expect(element).toHaveValue(Newer relationship draft)\n\nExpected the element to have value:\n  Newer relationship draft\nReceived:\n\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-draft-custody.test.tsx:284:19\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "form-ack-current",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 24,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "Working-plan checklist reconciliation integration keeps staff form text entered after submission and acknowledges only submitted bytes",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-draft-custody.test.tsx:284:77\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "form-snapshot",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 23,
+        "failed": 2,
+        "correct": true,
+        "failures": [
+          {
+            "name": "Working-plan checklist reconciliation integration unblocks after a staff form reverts to its original values",
+            "messages": [
+              "Error: expect(element).toBeEnabled()\n\nReceived element is not enabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n  disabled=\"\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-draft-custody.test.tsx:267:74\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          },
+          {
+            "name": "Working-plan checklist reconciliation integration keeps staff form text entered after submission and acknowledges only submitted bytes",
+            "messages": [
+              "Error: expect(element).toBeEnabled()\n\nReceived element is not enabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n  disabled=\"\"\n/>\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-6\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<header\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-xl border border-border bg-card p-5 shadow-sm\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"flex flex-wrap items-start justify-between gap-4\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div>\u001b[39m\n              \u001b[36m<p\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-xs font-semibold uppercase tracking-wide text-muted-foreground\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mplan\u001b[0m\n                \u001b[0m \u00b7 version \u001b[0m\n                \u001b[0m1\u001b[0m\n              \u001b[36m</p>\u001b[39m\n              \u001b[36m<h1\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 text-3xl font-bold\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mEXERCISE ONLY draft custody\u001b[0m\n              \u001b[36m</h1>\u001b[39m\n              \u001b[36m<p\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 text-sm text-muted-foreground\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mLocal planning\u001b[0m\n                \u001b[0m \u00b7 \u001b[0m\n                \u001b[0mFixture geography\u001b[0m\n              \u001b[36m</p>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg bg-muted px-4 py-3 text-right\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<p\u001b[39m\n        "
+            ]
+          }
+        ]
+      },
+      {
+        "name": "old-section-edit",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 0,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "Working-plan checklist reconciliation integration adds reviewed blank sections while displaying retained keyed and unkeyed text",
+            "messages": [
+              "Error: expect(element).toBeEnabled()\n\nReceived element is not enabled:\n  <textarea\n  aria-labelledby=\"section-title-section-a\"\n  class=\"border-input placeholder:text-muted-foreground flex field-sizing-content w-full rounded-xl border bg-background px-3.5 py-2.5 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive mt-3 min-h-36\"\n  data-slot=\"textarea\"\n  disabled=\"\"\n  placeholder=\"Author the plan text, with evidence links and policy details.\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-draft-custody.test.tsx:243:23\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "inventory-count",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 44,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "migration schema inventory reads every relation the migrations declare",
+            "messages": [
+              "AssertionError: expected [ \u2026(299) ] to have a length of 298 but got 299\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1389:20)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/migrations/inventory.test.ts:817:32\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "column-accounting",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 43,
+        "failed": 2,
+        "correct": true,
+        "failures": [
+          {
+            "name": "a column the application never reads has to say why finds no unread column that is not accounted for",
+            "messages": [
+              "AssertionError: these columns exist and nothing in the application ever names them. Each is either dead schema, something written and never surfaced, or a capability the schema implies and the code never built. Read it, delete it, or add it to UNREAD_COLUMNS with which of the three it is.: expected [ Array(1) ] to deeply equal []\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/a-column-nothing-reads-is-a-question.test.ts:417:7\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+            ]
+          },
+          {
+            "name": "a column the application never reads has to say why keeps the ratchet honest \u2014 a column that gained a reader loses its entry",
+            "messages": [
+              "AssertionError: these columns are now read (or no longer exist) \u2014 remove them from UNREAD_COLUMNS so the count keeps meaning something: expected [ Array(1) ] to deeply equal []\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/a-column-nothing-reads-is-a-question.test.ts:430:7\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+            ]
+          }
+        ]
+      }
+    ],
+    "restored": {
+      "recovery": {
+        "before": "ee896246842d4ce24044a47d7645f3c74895c45de87b5956b5464c6985ae378e",
+        "after": "ee896246842d4ce24044a47d7645f3c74895c45de87b5956b5464c6985ae378e"
+      },
+      "control": {
+        "before": "12713fdbd259e2f5b6abfbadb3da20e38271aeba794cd85a75b16085090848db",
+        "after": "12713fdbd259e2f5b6abfbadb3da20e38271aeba794cd85a75b16085090848db"
+      },
+      "form": {
+        "before": "01c714e7fef6c88388234d23bfafd4332a70476ff14d4b4285a53fa750969083",
+        "after": "01c714e7fef6c88388234d23bfafd4332a70476ff14d4b4285a53fa750969083"
+      },
+      "workbench": {
+        "before": "ce0c1d021558ee0a112389ce8d20da966c462787015629d2c7ef168255326d40",
+        "after": "ce0c1d021558ee0a112389ce8d20da966c462787015629d2c7ef168255326d40"
+      },
+      "command": {
+        "before": "3f1d730570768907445ed1fff91986cf813f2e8d4f38dc3d23693dc1265f6968",
+        "after": "3f1d730570768907445ed1fff91986cf813f2e8d4f38dc3d23693dc1265f6968"
+      },
+      "inventory": {
+        "before": "1300cbfc88555912db341ec55499a2659339fce45d9485faf980be81cf87c45f",
+        "after": "1300cbfc88555912db341ec55499a2659339fce45d9485faf980be81cf87c45f"
+      },
+      "columns": {
+        "before": "b9626e76e5625eab17214deb16597d94c6a0188be5924cd4050e75123560f355",
+        "after": "b9626e76e5625eab17214deb16597d94c6a0188be5924cd4050e75123560f355"
+      }
+    }
+  },
+  {
+    "run": "1_owbc5x",
+    "results": [
+      {
+        "name": "baseline",
+        "expected": "pass",
+        "exit": 0,
+        "passed": 117,
+        "failed": 0,
+        "correct": true,
+        "failures": []
+      },
+      {
+        "name": "harmless",
+        "expected": "pass",
+        "exit": 0,
+        "passed": 117,
+        "failed": 0,
+        "correct": true,
+        "failures": []
+      },
+      {
+        "name": "abort-after-transport",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 26,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "checklist request recovery keeps the original through lost, unreadable and aborted replies",
+            "messages": [
+              "AssertionError: expected \"json\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st json call:\n\n    Array []\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-recovery.test.ts:80:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "account-record-clear",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 0,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "explicit checklist review and recovery clears the previous account's requests even when the new account cannot read storage",
+            "messages": [
+              "Error: expect(element).not.toBeInTheDocument()\n\nexpected document not to contain element, found <p\n  class=\"text-sm\"\n>\n  Saved request for draft 2\n</p> instead\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-rule-reconciliation-control.test.tsx:146:65\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+            ]
+          }
+        ]
+      }
+    ],
+    "restored": {
+      "recovery": {
+        "before": "ee896246842d4ce24044a47d7645f3c74895c45de87b5956b5464c6985ae378e",
+        "after": "ee896246842d4ce24044a47d7645f3c74895c45de87b5956b5464c6985ae378e"
+      },
+      "control": {
+        "before": "6573f97c524c5421d99bddb1b5bf2eea426fb96baa575ee6bd741ff92427c5c3",
+        "after": "6573f97c524c5421d99bddb1b5bf2eea426fb96baa575ee6bd741ff92427c5c3"
+      },
+      "form": {
+        "before": "01c714e7fef6c88388234d23bfafd4332a70476ff14d4b4285a53fa750969083",
+        "after": "01c714e7fef6c88388234d23bfafd4332a70476ff14d4b4285a53fa750969083"
+      },
+      "workbench": {
+        "before": "ce0c1d021558ee0a112389ce8d20da966c462787015629d2c7ef168255326d40",
+        "after": "ce0c1d021558ee0a112389ce8d20da966c462787015629d2c7ef168255326d40"
+      },
+      "command": {
+        "before": "3f1d730570768907445ed1fff91986cf813f2e8d4f38dc3d23693dc1265f6968",
+        "after": "3f1d730570768907445ed1fff91986cf813f2e8d4f38dc3d23693dc1265f6968"
+      },
+      "inventory": {
+        "before": "1300cbfc88555912db341ec55499a2659339fce45d9485faf980be81cf87c45f",
+        "after": "1300cbfc88555912db341ec55499a2659339fce45d9485faf980be81cf87c45f"
+      },
+      "columns": {
+        "before": "b9626e76e5625eab17214deb16597d94c6a0188be5924cd4050e75123560f355",
+        "after": "b9626e76e5625eab17214deb16597d94c6a0188be5924cd4050e75123560f355"
+      }
+    }
+  },
+  {
+    "run": "iza8fj40",
+    "results": [
+      {
+        "name": "review-form-baseline",
+        "expected": "pass",
+        "exit": 0,
+        "passed": 27,
+        "failed": 0,
+        "correct": true,
+        "failures": []
+      },
+      {
+        "name": "review-form-harmless",
+        "expected": "pass",
+        "exit": 0,
+        "passed": 27,
+        "failed": 0,
+        "correct": true,
+        "failures": []
+      },
+      {
+        "name": "disposition-field-custody",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 0,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "Working-plan checklist reconciliation integration blocks saved checklist retries over unfinished Disposition summary for external review",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"outline\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-draft-custody.test.tsx:301:19\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "withdrawal-field-custody",
+        "expected": "assertion_failure",
+        "exit": 1,
+        "passed": 0,
+        "failed": 1,
+        "correct": true,
+        "failures": [
+          {
+            "name": "Working-plan checklist reconciliation integration blocks saved checklist retries over unfinished Reason for withdrawal",
+            "messages": [
+              "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"outline\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan/src/test/land-use-plan-draft-custody.test.tsx:301:19\n    at file:///home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ]
+      }
+    ],
+    "restored": {
+      "recovery": {
+        "before": "ee896246842d4ce24044a47d7645f3c74895c45de87b5956b5464c6985ae378e",
+        "after": "ee896246842d4ce24044a47d7645f3c74895c45de87b5956b5464c6985ae378e"
+      },
+      "control": {
+        "before": "6573f97c524c5421d99bddb1b5bf2eea426fb96baa575ee6bd741ff92427c5c3",
+        "after": "6573f97c524c5421d99bddb1b5bf2eea426fb96baa575ee6bd741ff92427c5c3"
+      },
+      "form": {
+        "before": "01c714e7fef6c88388234d23bfafd4332a70476ff14d4b4285a53fa750969083",
+        "after": "01c714e7fef6c88388234d23bfafd4332a70476ff14d4b4285a53fa750969083"
+      },
+      "workbench": {
+        "before": "31d4a10e1361394b418a6485f3408d79540ee07f68e5df1b382c26aa080ca546",
+        "after": "31d4a10e1361394b418a6485f3408d79540ee07f68e5df1b382c26aa080ca546"
+      },
+      "command": {
+        "before": "3f1d730570768907445ed1fff91986cf813f2e8d4f38dc3d23693dc1265f6968",
+        "after": "3f1d730570768907445ed1fff91986cf813f2e8d4f38dc3d23693dc1265f6968"
+      },
+      "inventory": {
+        "before": "1300cbfc88555912db341ec55499a2659339fce45d9485faf980be81cf87c45f",
+        "after": "1300cbfc88555912db341ec55499a2659339fce45d9485faf980be81cf87c45f"
+      },
+      "columns": {
+        "before": "b9626e76e5625eab17214deb16597d94c6a0188be5924cd4050e75123560f355",
+        "after": "b9626e76e5625eab17214deb16597d94c6a0188be5924cd4050e75123560f355"
+      }
+    }
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "stack": "supabase_db_openplan-restore-target-2026091050",
+  "installedThrough": "20261016000006",
+  "applicationTables": 282,
+  "applicationViews": 14,
+  "applicationRlsTables": 282,
+  "policies": 758,
+  "extensionRelationsExcluded": [
+    "spatial_ref_sys",
+    "geometry_columns",
+    "geography_columns"
+  ],
+  "newJournals": [
+    {
+      "name": "land_use_plan_context_commands",
+      "rls": true,
+      "policies": 0
+    },
+    {
+      "name": "land_use_plan_freeze_commands",
+      "rls": true,
+      "policies": 0
+    }
+  ]
+}

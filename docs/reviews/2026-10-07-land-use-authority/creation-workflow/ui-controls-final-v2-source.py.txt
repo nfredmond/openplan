@@ -1,0 +1,95 @@
+from pathlib import Path
+import hashlib,json,os,subprocess
+app=Path('/home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan')
+out=Path('/tmp/openplan-plan-creation-ui-controls-final-v2');out.mkdir(exist_ok=False)
+paths={'route':'src/app/api/land-use-plans/route.ts','recovery':'src/lib/land-use-plans/create-recovery.ts','ui':'src/components/land-use-plans/land-use-plan-creator.tsx','page':'src/app/(app)/land-use-plans/page.tsx'}
+paths['stop']='src/lib/land-use-plans/create-stop.ts'
+paths['stoproute']='src/app/api/land-use-plans/creation-requests/[commandId]/stop/route.ts'
+original={key:(app/path).read_bytes() for key,path in paths.items()}
+tests=['src/test/land-use-plan-create-jurisdiction.test.ts','src/test/land-use-plan-creation-recovery.test.ts','src/test/land-use-plan-creator-recovery.test.tsx','src/test/land-use-plan-first-run-jurisdiction.test.tsx','src/test/land-use-plan-route-guards.test.ts']
+cases=[
+ ('baseline',None,None,None,None),
+ ('harmless','recovery','/** Inspect without sending','/** Harmless control: inspect without sending',None),
+ ('origin','route','requireProviderBrowserOrigin(request);','void request;','refuses another origin'),
+ ('expected-actor','route','request.headers.get("x-openplan-expected-user") !== auth.user.id','false','refuses changed scope x-openplan-expected-user'),
+ ('expected-workspace','route','request.headers.get("x-openplan-expected-workspace") !== membership.workspace_id','false','refuses changed scope x-openplan-expected-workspace'),
+ ('viewer','route','!canAccessWorkspaceAction("plans.write", membership.role)','false','refuses absent or read-only membership'),
+ ('auth-failure','route','if (authError) throw new PlanCreationError("unavailable");','if (false) throw new PlanCreationError("unavailable");','distinguishes missing authentication'),
+ ('normalization','route','!parsed.success || !isDeepStrictEqual(parsed.data, raw)','!parsed.success','rejects malformed'),
+ ('body-bound','route','readBytesWithLimitStreaming(request, 2_000_000)','readBytesWithLimitStreaming(request, 3_000_000)','rejects malformed'),
+ ('status','route','status: result.replayed ? 200 : 201','status: 201','replays the original receipt'),
+ ('no-store','route','"Cache-Control": "private, no-store"','"Cache-Control": "public"','uses exact bytes'),
+ ('draft-collision','recovery','if (storage.getItem(key) !== previousRaw)','if (false)','keeps incomplete drafts'),
+ ('draft-lost-write','recovery','if (storage.getItem(key) !== raw) throw new Error("The browser could not retain this draft. Download a copy before leaving.");','','refuses unavailable'),
+ ('request-collision','recovery','if (existing !== null && existing !== retained)','if (false)','imports pretty-printed'),
+ ('request-lost-write','recovery','if (storage.getItem(key) !== retained)','if (false)','refuses unavailable'),
+ ('draft-consistency','recovery','if (!same(command, creationCommandFromDraft(value.draft, command.commandId)))','if (false)','imports pretty-printed'),
+ ('outer-scope','recovery','if (!same(scopeOf(value), scopeOf(scope)))','if (false)','rejects imported outer'),
+ ('draft-scope','recovery','if (!same(scopeOf(value.draft), scopeOf(scope)))','if (false)','rejects imported outer'),
+ ('key-match','recovery','if (keyOf(parsed) === key) value = parsed;','value = parsed;','preserves unknown copies'),
+ ('retained-before-send','recovery','value.kind !== "pending" || value.stopRequested || storage.getItem(keyOf(value)) !== raw','value.kind !== "pending" || value.stopRequested','refuses changed or missing'),
+ ('transport-workspace','recovery','"x-openplan-expected-workspace": value.workspaceId','"x-openplan-expected-workspace": value.actorId','retains before sending'),
+ ('transport-bytes','recovery','body: value.commandText','body: JSON.stringify(JSON.parse(value.commandText))','imports pretty-printed'),
+ ('reply-status','recovery','response.status !== (result.replayed ? 200 : 201)','false','refuses malformed, altered'),
+ ('reply-identity','recovery','!matchesPlanCreation(result, planCreationCommandSchema.parse(JSON.parse(value.commandText)), scopeOf(value))','false','keeps a substituted receipt'),
+ ('confirmation-identity','recovery','value.kind === "confirmed" && !matchesPlanCreation(value.result, command, scope)','false','keeps a substituted receipt'),
+ ('confirmation-collision','recovery','if (storage.getItem(key) !== JSON.stringify(pending))','if (false)','leaves a newer browser copy'),
+ ('ui-review','ui','|| !reviewed','', 'opens without sending'),
+ ('ui-reset-review','ui','setForm(next); setReviewed(false);','setForm(next);','opens without sending'),
+ ('ui-retain-first','ui','const retained = retainCreationRequest(localStorage, form, command.commandId); read();','const retained = { ...scope, schemaVersion: 1 as const, kind: "pending" as const, draft: form, commandText: JSON.stringify(command) }; read();','retains before transport'),
+ ('ui-duplicate-after-confirmation','ui',' || submitted','', 'prevents a second creation'),
+ ('ui-current-rules','ui','if (!descriptor || descriptorHashes[descriptor.id] !== form.fields.descriptorHash)','if (!descriptor)','requires explicit current-rule review'),
+ ('page-writer','page','canWrite={canAccessWorkspaceAction("plans.write", membership.role)}','canWrite={true}','keeps read-only members'),
+]
+for header in ['x-openplan-assistant-execution-source','x-openplan-assistant-input-hash','x-openplan-assistant-approval-id']:
+ cases.append(('agent-'+header,'route','"'+header+'"','"unused-'+header+'"','refuses unsupported agent writes marked by '+header))
+cases.extend([
+ ('stop-replayed','stop','refine(result => result.replayed)','refine(() => true)','returns the retained created plan'),
+ ('stop-actor','stop','result.actorId !== scope.actorId','false','refuses substituted stop receipt actorId'),
+ ('stop-workspace','stop','result.workspaceId !== scope.workspaceId','false','refuses substituted stop receipt workspaceId'),
+ ('stop-id','stop','result.commandId !== command.commandId','false','refuses substituted stop receipt commandId'),
+ ('stop-bytes','stop','result.commandText !== commandText','false','refuses substituted stop receipt commandText'),
+ ('stop-date','stop','cancelledAt: z.iso.datetime()','cancelledAt: z.string()','refuses substituted stop receipt cancelledAt'),
+ ('stop-created-identity','stop','if (!matchesPlanCreation(result.result, command, scope))','if (false)','refuses changed copies, lost storage'),
+ ('import-trust','recovery','parsed.kind === "confirmed" || parsed.kind === "cancelled"','false','reconfirms imported terminal receipts'),
+ ('stop-retention-collision','recovery','checked.kind !== "pending" || storage.getItem(keyOf(checked)) !== original','checked.kind !== "pending"','refuses changed copies, lost storage'),
+ ('stop-retention-write','recovery','if (storage.getItem(keyOf(value)) !== raw) throw new Error("Stop intent could not be saved. Nothing was sent.");','','refuses changed copies, lost storage'),
+ ('stop-intent-required','recovery','value.kind !== "pending" || !value.stopRequested || storage.getItem(keyOf(value)) !== raw','value.kind !== "pending" || storage.getItem(keyOf(value)) !== raw','retains stop intent before transport'),
+ ('stop-forbids-create','recovery','value.kind !== "pending" || value.stopRequested || storage.getItem(keyOf(value)) !== raw','value.kind !== "pending" || storage.getItem(keyOf(value)) !== raw','retains stop intent before transport'),
+ ('stop-status','recovery','if (response.status !== 200)','if (false)','preserves stopping through malformed replies'),
+ ('stop-confirm-collision','recovery','if (storage.getItem(key) !== JSON.stringify(pending)) throw new Error("Stopping succeeded, but the saved request changed. Keep both copies.");','','refuses changed copies, lost storage'),
+ ('stop-ui-route','ui','await sendCreationStop(localStorage, pendingStop, fetch, abort.signal)','await sendCreationRequest(localStorage, pendingStop, fetch, abort.signal)','stops an uncertain creation before allowing'),
+ ('stop-ui-restore','ui','(record.value.kind === "pending" || record.value.kind === "confirmed")','record.value.kind !== "draft"','stops an uncertain creation before allowing'),
+ ('stop-route-origin','stoproute','requireProviderBrowserOrigin(request);','void request;','requires origin, authentication'),
+ ('stop-route-viewer','stoproute','!canAccessWorkspaceAction("plans.write", membership.role)','false','requires origin, authentication'),
+ ('stop-route-actor','stoproute','request.headers.get("x-openplan-expected-user") !== auth.user.id','false','refuses unapproved stop scope x-openplan-expected-user'),
+ ('stop-route-workspace','stoproute','request.headers.get("x-openplan-expected-workspace") !== membership.workspace_id','false','refuses unapproved stop scope x-openplan-expected-workspace'),
+ ('stop-route-id','stoproute','command.data.commandId !== params.data.commandId','false','refuses invalid IDs, bodies'),
+ ('stop-route-normalization','stoproute','!isDeepStrictEqual(command.data, raw)','false','refuses invalid IDs, bodies'),
+ ('stop-route-size','stoproute','readBytesWithLimitStreaming(request, 2_000_000)','readBytesWithLimitStreaming(request, 3_000_000)','refuses invalid IDs, bodies'),
+])
+for header in ['x-openplan-assistant-execution-source','x-openplan-assistant-input-hash','x-openplan-assistant-approval-id']:
+ cases.append(('stop-agent-'+header,'stoproute','"'+header+'"','"unused-'+header+'"','refuses unapproved stop scope '+header))
+cases=cases[:2]+cases[20:]
+rows=[]
+try:
+ for name,key,old,new,target in cases:
+  if key:
+   source=original[key].decode();assert old in source,name
+   if name=='ui-review': source=source.replace(old,new)
+   elif name in ['transport-workspace','transport-bytes']: source=source.replace(old,new,1)
+   else:
+    assert source.count(old)==1,(name,source.count(old));source=source.replace(old,new)
+   (app/paths[key]).write_text(source)
+  try:
+   run=subprocess.run(['npx','vitest','run',*tests,'--maxWorkers=1','--reporter=json','--outputFile='+str(out/(name+'.json'))],cwd=app,env={**os.environ,'NODE_OPTIONS':'--max-old-space-size=6144'},stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=90)
+   (out/(name+'.log')).write_text(run.stdout)
+   result=json.loads((out/(name+'.json')).read_text());failed=[a['fullName'] for f in result['testResults'] for a in f['assertionResults'] if a['status']=='failed']
+   matched=run.returncode==0 if target is None else run.returncode!=0 and any(target in title for title in failed)
+   rows.append({'case':name,'exitCode':run.returncode,'target':target,'failedTests':failed,'matched':matched})
+   (out/'report.json').write_text(json.dumps({'results':rows},indent=2)+'\n');print(name,matched,flush=True)
+   assert matched,name
+  finally:
+   for path,data in original.items():(app/paths[path]).write_bytes(data)
+finally:
+ (out/'report.json').write_text(json.dumps({'results':rows,'restored':all((app/paths[k]).read_bytes()==v for k,v in original.items()),'sourceSha256':{paths[k]:hashlib.sha256(v).hexdigest() for k,v in original.items()},'boundary':'Synthetic HTTP mocks, local browser-storage simulation, mounted DOM and static guards. No native HTTP or rendered acceptance.'},indent=2)+'\n')

@@ -1,0 +1,4 @@
+ERROR:  changed descriptor bytes: accepted
+CONTEXT:  PL/pgSQL function pg_temp_14.creation_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.creation_refuses(format('SELECT public.create_land_use_plan_with_context(%L,%L,%L,%L,%L,%L)',workspace,actor,command_id,raw,prepared,descriptor||' '),'PT400','changed descriptor bytes')"
+PL/pgSQL function inline_code_block line 32 at PERFORM

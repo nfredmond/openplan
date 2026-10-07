@@ -1,0 +1,4 @@
+ERROR:  database time attribution
+CONTEXT:  PL/pgSQL function pg_temp_88.context_assert(boolean,text) line 2 at RAISE
+SQL statement "SELECT pg_temp.context_assert((result#>>'{context,savedAt}')::timestamptz BETWEEN transaction_timestamp() AND clock_timestamp(),'database time attribution')"
+PL/pgSQL function inline_code_block line 52 at PERFORM

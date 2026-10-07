@@ -1,0 +1,31 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-source-review.test.tsx (13 tests | 1 failed) 454ms
+       × shows saved area, authority and caveat with an explicit JSON download 161ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > adopted saved context and download > shows saved area, authority and caveat with an explicit JSON download
+Error: expect(element).toHaveAttribute("download", "openplan-adopted-v1.json") // element.getAttribute("download") === "openplan-adopted-v1.json"
+
+Expected the element to have attribute:
+  download="openplan-adopted-v1.json"
+Received:
+  null
+ ❯ src/test/land-use-plan-source-review.test.tsx:47:62
+     45|       expect(screen.getByText(/They do not establish legal sufficiency…
+     46|       expect(screen.queryByText("SYNTHETIC private sentinel")).toBeNul…
+     47|       expect(screen.getByRole("link", { name: /Download/ })).toHaveAtt…
+       |                                                              ^
+     48|       expect(screen.getByRole("link", { name: /Download/ })).toHaveAtt…
+     49|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 passed (13)
+   Start at  11:00:33
+   Duration  1.13s (transform 112ms, setup 55ms, import 195ms, tests 454ms, environment 335ms)
+

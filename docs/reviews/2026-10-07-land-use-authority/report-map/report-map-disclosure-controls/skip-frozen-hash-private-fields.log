@@ -1,0 +1,30 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 1 failed) 201ms
+     × refuses altered saved disclosure fields before reading features 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > historical report map read > refuses altered saved disclosure fields before reading features
+AssertionError: expected '{"type":"FeatureCollection","features…' not to contain 'PRIVATE'
+
+Expected: "PRIVATE"
+Received: "{"type":"FeatureCollection","features":[{"type":"Feature","id":"33000000-0000-4000-8000-000000000009","geometry":{"type":"Point","coordinates":[-121.5,38.5]},"properties":{"featureIndex":0,"attributes":{"designation":"SYNTHETIC mixed use","owner":"PRIVATE OWNER"}}}],"matchedCount":1,"returnedCount":1,"tooDenseToDraw":false,"limit":1000,"designationLabel":"SYNTHETIC retained designations","legendField":"designation","coverageNotes":[],"reportId":"33000000-0000-4000-8000-000000000001","versionId":"33000000-0000-4000-8000-000000000003","contentHash":"d850f13307eaef7b901f3368f84fcf3aa3a0a156e1274ffe713c48b681c3a734"}"
+
+ ❯ src/test/land-use-plan-report-map.test.tsx:104:55
+    102|   ] as const)("refuses %s before reading features", async (_name, stat…
+    103|     mutate(); const response = await request();
+    104|     expect(JSON.stringify(await response.json())).not.toContain("PRIVA…
+       |                                                       ^
+    105|     expect(response.status).toBe(status);
+    106|     expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.service).no…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  12:33:27
+   Duration  978ms (transform 144ms, setup 55ms, import 309ms, tests 201ms, environment 323ms)
+

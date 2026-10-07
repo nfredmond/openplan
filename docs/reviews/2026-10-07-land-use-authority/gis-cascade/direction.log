@@ -1,0 +1,10 @@
+
+> openplan@0.67.0 product:direction:check
+> node scripts/ops/product-direction-review.mjs --check
+
+Review reminder: jurisdiction readiness registry review expired on 2026-09-28
+Review reminder: capability matrix review expired on 2026-10-05
+Review reminder: capability registry review expired on 2026-10-05
+Review reminder: latest review covers v0.66.0; package is v0.67.0
+Review reminder: latest direction review predates substantive changes: .gitattributes, LICENSE-NOTICE.md, docs/ARCHITECTURE.md, docs/README.md, docs/ops/BCA_WORKBENCH.md, docs/research/BCA_PROGRAM_METHODS_2026-10-06.md, docs/reviews/2026-10-06-bca/METHOD_FOLLOWUP.md, docs/reviews/2026-10-06-bca/METHOD_REVIEW.md
+Product direction records checked; review deadline 2026-11-06: docs/reviews/product-direction/2026-10-06-integration-review.md (2 independent contexts, review v0.66.0, package v0.67.0).

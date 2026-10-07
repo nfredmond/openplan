@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 
 import { PublicDesignationMap } from "@/components/land-use-plans/public-designation-map";
 import { loadPublicLandUsePlanReviewPacket } from "@/lib/land-use-plans/public";
+import { describeDescriptorCustody } from "@/lib/land-use-plans/descriptor-snapshot";
+import { LandUsePlanPublicContext } from "@/components/land-use-plans/land-use-plan-public-context";
 
 export const metadata = {
   title: "Land use plan public review",
@@ -9,6 +11,7 @@ export const metadata = {
 };
 
 type FrozenNode = { id?: string; parent_node_id?: string | null; node_kind?: string; requirement_key?: string | null; title?: string; body?: string | null };
+type FrozenAction = { id?: string; title?: string; description?: string | null; responsible_party?: string | null; due_on?: string | null; status?: string };
 type FrozenDesignation = { id?: string; designation_set_label?: string; map_note?: string; layer_version_evidence?: { bbox?: unknown; feature_hash?: string } | null };
 
 function records(value: unknown): Record<string, unknown>[] {
@@ -32,12 +35,14 @@ export default async function LandUsePlanReviewPage({ params }: { params: Promis
   if (!result.ok) return <main className="mx-auto max-w-3xl px-5 py-12"><h1 className="text-3xl font-semibold">This review release could not be verified</h1><p className="mt-4">OpenPlan withheld the draft because its stored version and release hash did not agree.</p></main>;
   const { packet } = result;
   const nodes = records(packet.content.nodes) as FrozenNode[];
+  const actions = records(packet.content.implementationActions) as FrozenAction[];
   const designations = records(packet.content.designations) as FrozenDesignation[];
   const version = packet.content.version && typeof packet.content.version === "object" ? packet.content.version as Record<string, unknown> : {};
   const applicableKeys = Array.isArray(version.applicableRequirementKeys)
     ? new Set(version.applicableRequirementKeys.filter((key): key is string => typeof key === "string"))
     : null;
-  const sections = nodes.filter((node) => node.node_kind === "section" && (applicableKeys ? Boolean(node.requirement_key && applicableKeys.has(node.requirement_key)) : Boolean(node.body)));
+  // Root policies and goals are authored content even when they have no checklist section.
+  const roots = nodes.filter((node) => !node.parent_node_id && (node.node_kind !== "section" || (applicableKeys ? Boolean(node.requirement_key && applicableKeys.has(node.requirement_key)) : Boolean(node.body))));
 
   return <main className="mx-auto max-w-4xl px-5 py-12 print:max-w-none">
     <header className="border-b pb-8">
@@ -46,10 +51,12 @@ export default async function LandUsePlanReviewPage({ params }: { params: Promis
       <p className="mt-3 text-lg text-muted-foreground">{packet.plan.authorityLabel} · {packet.plan.geographyLabel}</p>
       <p className="mt-4">Review period: {packet.release.reviewOpenOn} through {packet.release.reviewCloseOn}. Method: {packet.release.reviewMethod.replaceAll("_", " ")}.</p>
       <p className="mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs">Reviewed content hash: {packet.version.contentHash}</p>
-      <a className="mt-4 inline-block text-sm font-medium underline" href={`/api/public/land-use-plan-reviews/${shareToken}`}>Download this exact reviewed plan</a>
+      <a className="mt-4 inline-block text-sm font-medium underline" href={`/api/public/land-use-plan-reviews/${shareToken}`} download={`openplan-review-v${packet.version.versionNumber}.json`}>Download this exact reviewed plan</a>
     </header>
-    <section className="mt-8 space-y-8"><h2 className="text-3xl font-semibold">Draft plan content</h2>{sections.map((section, index) => <ContentBranch key={section.id ?? index} node={section} nodes={nodes}/>)}</section>
+    <div className="mt-8"><LandUsePlanPublicContext snapshot={packet.content} /></div>
+    <section className="mt-8 space-y-8"><h2 className="text-3xl font-semibold">Draft plan content</h2>{roots.map((node, index) => <ContentBranch key={node.id ?? index} node={node} nodes={nodes}/>)}</section>
     <section className="mt-10 border-t pt-8"><h2 className="text-3xl font-semibold">Mapped designations</h2>{designations.map((designation, index) => <article className="mt-5 rounded-lg border p-4" key={designation.id ?? index}><h3 className="text-xl font-semibold">{designation.designation_set_label ?? "Mapped designations"}</h3><p className="mt-1 break-all text-xs text-muted-foreground">Frozen GIS feature hash: {designation.layer_version_evidence?.feature_hash ?? "unavailable"}</p>{designation.id ? <PublicDesignationMap endpoint={`/api/public/land-use-plan-reviews/${shareToken}/map/${designation.id}`} bbox={designation.layer_version_evidence?.bbox} label={designation.designation_set_label ?? "Mapped designations"}/> : null}{designation.map_note ? <p className="mt-3">{designation.map_note}</p> : null}</article>)}</section>
-    <aside className="mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"><p>{packet.descriptor?.disclosure ?? "Local legal requirements were not configured for this plan."}</p><p className="mt-3 text-sm">{packet.privacy}</p>{packet.release.status === "closed" ? <p className="mt-3 text-sm">This closed release remains available to the public. Outcome hash: {packet.release.outcomeHash}</p> : null}</aside>
+      <section className="mt-10 border-t pt-8"><h2 className="text-3xl font-semibold">Implementation program</h2>{actions.map((action, index) => <article key={action.id ?? index} className="mt-5"><h3 className="text-xl font-semibold">{action.title ?? "Implementation action"}</h3><p className="mt-2 leading-relaxed">{action.description || "No description provided."}</p><p className="mt-2 text-sm text-muted-foreground">{action.responsible_party || "No responsible party"} · {action.due_on || "No due date"} · {(action.status ?? "not_started").replaceAll("_", " ")}</p></article>)}</section>
+    <aside className="mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"><p className="mb-3 text-sm">{describeDescriptorCustody(packet.descriptorCustody)}</p><p>{packet.descriptor?.disclosure ?? "Local legal requirements were not configured for this plan."}</p><p className="mt-3 text-sm">{packet.privacy}</p>{packet.release.status === "closed" ? <p className="mt-3 text-sm">This closed release remains available to the public. Outcome hash: {packet.release.outcomeHash}</p> : null}</aside>
   </main>;
 }

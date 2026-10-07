@@ -1,0 +1,43 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-source-review.test.tsx (19 tests | 4 failed) 660ms
+       × discloses unretained context without substituting display labels 20ms
+       × discloses unretained context without substituting display labels 19ms
+       × discloses unretained context without substituting display labels 12ms
+       × discloses unretained context without substituting display labels 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > adopted saved context and download > discloses unretained context without substituting display labels
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > adopted saved context and download > discloses unretained context without substituting display labels
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > review saved context and download > discloses unretained context without substituting display labels
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > review saved context and download > discloses unretained context without substituting display labels
+AssertionError: expected <p …(1)></p> to be null
+
+- Expected:
+null
+
++ Received:
+<p
+  class="mt-1 text-sm text-muted-foreground"
+>
+  These are the saved area and staff assessment reviewed with this version. They do not establish legal sufficiency.
+</p>
+
+ ❯ src/test/land-use-plan-source-review.test.tsx:54:83
+     52|       expect(screen.getByText(/This version did not retain its plan co…
+     53|       expect(screen.getByRole("region", { name: "Context not retained …
+     54|       expect(screen.queryByText(/These are the saved area and staff as…
+       |                                                                                   ^
+     55|       expect(screen.queryByRole("heading", { name: "Responsible bodies…
+     56|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 15 passed (19)
+   Start at  11:23:23
+   Duration  1.34s (transform 117ms, setup 55ms, import 201ms, tests 660ms, environment 331ms)
+

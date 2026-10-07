@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+
+ ❯ src/test/land-use-plan-context.test.ts (21 tests | 1 failed) 23ms
+     × re-resolves a selected place and retains the server boundary and extent 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-context.test.ts > study place capture and attributed context > re-resolves a selected place and retains the server boundary and extent
+AssertionError: expected { source: 'tigerweb', …(7) } to match object { source: 'tigerweb', …(6) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+@@ -1,11 +1,11 @@
+  {
+    "bbox": {
+      "maxLat": 39,
+-     "maxLon": -170,
++     "maxLon": -121,
+      "minLat": 38,
+-     "minLon": 170,
++     "minLon": -122,
+    },
+    "countryCode": "US",
+    "geometry": {
+      "coordinates": [
+        [
+
+ ❯ src/test/land-use-plan-context.test.ts:78:32
+     76|   const result=await preparePlanContext({...command(),place:{mode:"pla…
+     77|   expect(resolve).toHaveBeenCalledWith("county","06067");expect(result…
+     78|   expect(result.context.place).toMatchObject({source:"tigerweb",kind:"…
+       |                                ^
+     79|   boundary.bbox.minLon=0;expect(result.context.place.bbox.minLon).toBe…
+     80|  });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 passed (21)
+   Start at  03:04:26
+   Duration  622ms (transform 97ms, setup 53ms, import 127ms, tests 23ms, environment 324ms)
+

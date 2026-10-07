@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan
+
+ ❯ src/test/land-use-plan-cascade-rls.test.ts (8 tests | 1 failed | 7 skipped) 1499ms
+   × preserves direct-write guards with reordered cascades: gis-cascade workspace=false 1498ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-cascade-rls.test.ts > preserves direct-write guards with reordered cascades: gis-cascade workspace=false
+AssertionError: ERROR:  move out of ready version: accepted
+CONTEXT:  PL/pgSQL function pg_temp_60.gis_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.gis_refuses(format('UPDATE public.workspace_gis_features SET version_id=%L,feature_index=1 WHERE id=%L',draft_version,ready_feature),feature_error,'move out of ready version')"
+PL/pgSQL function inline_code_block line 23 at PERFORM
+: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ src/test/land-use-plan-cascade-rls.test.ts:27:40
+     25|   });
+     26|   expect(result.error).toBeUndefined();
+     27|   expect(result.status, result.stderr).toBe(0);
+       |                                        ^
+     28|   expect(result.stdout).toContain(name === "creation" ? "atomic plan c…
+     29| }, 30_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  10:10:52
+   Duration  2.02s (transform 37ms, setup 55ms, import 37ms, tests 1.50s, environment 329ms)
+

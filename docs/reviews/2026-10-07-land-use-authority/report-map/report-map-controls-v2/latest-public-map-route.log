@@ -1,0 +1,31 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-map.test.tsx (49 tests | 1 failed) 199ms
+     × uses the report map endpoint, saved extent, hash and note 115ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-map.test.tsx > report designation presentation > uses the report map endpoint, saved extent, hash and note
+Error: expect(element).toHaveAttribute("data-endpoint", "/api/reports/33000000-0000-4000-8000-000000000001/land-use-map/33000000-0000-4000-8000-000000000006") // element.getAttribute("data-endpoint") === "/api/reports/33000000-0000-4000-8000-000000000001/land-use-map/33000000-0000-4000-8000-000000000006"
+
+Expected the element to have attribute:
+  data-endpoint="/api/reports/33000000-0000-4000-8000-000000000001/land-use-map/33000000-0000-4000-8000-000000000006"
+Received:
+  data-endpoint="/api/public/land-use-plans/33000000-0000-4000-8000-000000000002/map/33000000-0000-4000-8000-000000000006"
+ ❯ src/test/land-use-plan-report-map.test.tsx:155:82
+    153|   it("uses the report map endpoint, saved extent, hash and note", asyn…
+    154|     render(await LandUsePlanReportPage({ report }));
+    155|     expect(screen.getByRole("img", { name: "SYNTHETIC retained designa…
+       |                                                                                  ^
+    156|     expect(screen.getByRole("img", { name: "SYNTHETIC retained designa…
+    157|     expect(screen.getByText("SYNTHETIC map is not zoning")).toBeVisibl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  12:30:43
+   Duration  995ms (transform 159ms, setup 59ms, import 318ms, tests 199ms, environment 325ms)
+

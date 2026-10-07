@@ -1,0 +1,10 @@
+{
+  "MainPID": "763188",
+  "MemoryPeak": "232419328",
+  "cwd": "/home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan",
+  "after": "ActiveState=failed\nResult=exit-code\n",
+  "listeners": "State Recv-Q Send-Q Local Address:Port Peer Address:Port\n",
+  "requestedStop": true,
+  "execMainStatus": 143,
+  "explanation": "Node exits 143 after systemctl stop. Systemd records exit-code; port is clear. This is not an OOM."
+}

@@ -1,0 +1,4 @@
+ERROR:  frozen insert omission refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_89.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(format('INSERT INTO public.land_use_plan_versions(workspace_id,plan_id,version_number,version_kind,state,content_hash,frozen_snapshot,frozen_at,frozen_by) VALUES(%L,%L,3,%L,%L,%L,%L,now(),%L)',workspace,plan,'amendment','public_review',repeat('a',64),'{}',actor),'PT409','frozen insert omission refused')"
+PL/pgSQL function inline_code_block line 78 at PERFORM

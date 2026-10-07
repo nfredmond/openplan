@@ -1,0 +1,4 @@
+ERROR:  omitted frozen context refused: accepted
+CONTEXT:  PL/pgSQL function pg_temp_8.context_refuses(text,text,text) line 7 at RAISE
+SQL statement "SELECT pg_temp.context_refuses(freeze_sql,'PT409','omitted frozen context refused')"
+PL/pgSQL function inline_code_block line 80 at PERFORM

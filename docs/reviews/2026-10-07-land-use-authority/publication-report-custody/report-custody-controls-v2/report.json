@@ -1,0 +1,143 @@
+{
+  "state": "complete",
+  "cases": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "live-identity",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "recorded identity and context"
+    },
+    {
+      "name": "omit-context",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "recorded identity and context"
+    },
+    {
+      "name": "omit-legacy-context",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "discloses legacy context"
+    },
+    {
+      "name": "omit-superseded",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "shows the superseded"
+    },
+    {
+      "name": "omit-repealed",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "shows the repealed"
+    },
+    {
+      "name": "omit-download",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "recorded identity and context"
+    },
+    {
+      "name": "omit-wrap",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "recorded identity and context"
+    },
+    {
+      "name": "omit-projection",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "recorded identity and context"
+    },
+    {
+      "name": "omit-plan-filter",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "recorded identity and context"
+    },
+    {
+      "name": "trust-artifact-hash",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds self-rehashed artifact"
+    },
+    {
+      "name": "ignore-artifact-plan",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong artifact plan"
+    },
+    {
+      "name": "ignore-native-plan",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong queried plan"
+    },
+    {
+      "name": "ignore-native-id",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong queried version"
+    },
+    {
+      "name": "ignore-version-number",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong version number"
+    },
+    {
+      "name": "ignore-report-pointer",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds wrong report pointer"
+    },
+    {
+      "name": "ignore-adopted-state",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds unadopted version"
+    },
+    {
+      "name": "ignore-kind",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds kind substitution"
+    },
+    {
+      "name": "ignore-version-error",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds unreadable native version"
+    },
+    {
+      "name": "skip-frozen-verification",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed artifact"
+    },
+    {
+      "name": "skip-context-verification",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds invalid retained context"
+    }
+  ],
+  "restored": true,
+  "sourceHashes": {
+    "src/components/reports/land-use-plan-report-page.tsx": "a395a091e27952eb9091440b57baa6e1b2eedf2c2009daacc5ed551d86b4e4b0",
+    "src/components/reports/land-use-plan-report-detail.tsx": "1551bb27cfb1ecb94710735b638b3309458e13311777774756d6b1e75e8d7b63"
+  },
+  "blindCategory": "Mounted pages and projected mocks only. Does not prove native authorization, browser download, layout, or practitioner acceptance."
+}

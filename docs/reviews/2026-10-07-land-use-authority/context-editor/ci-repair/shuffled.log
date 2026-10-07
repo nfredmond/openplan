@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-context-20261007/openplan
+      Running tests with seed "443012"
+
+
+ Test Files  8 passed (8)
+      Tests  101 passed (101)
+   Start at  05:58:28
+   Duration  11.74s (transform 378ms, setup 284ms, import 1.56s, tests 6.54s, environment 2.59s)
+

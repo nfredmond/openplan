@@ -1,0 +1,638 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-source-review.test.tsx (13 tests | 4 failed) 440ms
+       × shows saved area, authority and caveat with an explicit JSON download 179ms
+       × discloses unretained context without substituting display labels 5ms
+       × discloses unretained context without substituting display labels 3ms
+       × withholds an invalid saved assessment in a malformed reader result 74ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > adopted saved context and download > shows saved area, authority and caveat with an explicit JSON download
+TestingLibraryElementError: Unable to find an accessible element with the role "region" and name "Context retained with this version"
+
+Here are the accessible roles:
+
+  main:
+
+  Name "":
+  [36m<main[39m
+    [33mclass[39m=[32m"mx-auto max-w-3xl px-5 py-12 print:max-w-none"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"border-b pb-8"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wider text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-lg text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 leading-relaxed"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mb-3 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-sm"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "Test published plan":
+  [36m<h1[39m
+    [33mclass[39m=[32m"mt-3 text-4xl font-semibold tracking-tight"[39m
+  [36m/>[39m
+
+  Name "Adoption decision":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Plan content":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-3xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Mapped designations":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-3xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Implementation program":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-3xl font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Download the frozen plan data":
+  [36m<a[39m
+    [33mclass[39m=[32m"mt-4 inline-block text-sm font-medium underline"[39m
+    [33mdownload[39m=[32m"openplan-adopted-v1.json"[39m
+    [33mhref[39m=[32m"/api/public/land-use-plans/test-plan"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  complementary:
+
+  Name "":
+  [36m<aside[39m
+    [33mclass[39m=[32m"mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"mx-auto max-w-3xl px-5 py-12 print:max-w-none"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-8"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wider text-muted-foreground"[39m
+        [36m>[39m
+          [0mPublished [0m
+          [0mplan[0m
+          [0m · frozen version [0m
+          [0m1[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-3 text-4xl font-semibold tracking-tight"[39m
+        [36m>[39m
+          [0mTest published plan[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg text-muted-foreground"[39m
+        [36m>[39m
+          [0mTest authority[0m
+          [0m · [0m
+          [0mTest area[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs"[39m
+        [36m>[39m
+          [0mContent hash: [0m
+          [0mtest-hash[0m
+        [36m</p>[39m
+        [36m<a[39m
+          [33mclass[39m=[32m"mt-4 inline-block text-sm font-medium underline"[39m
+          [33mdownload[39m=[32m"openplan-adopted-v1.json"[39m
+          [33mhref[39m=[32m"/api/public/land-use-plans/test-plan"[39m
+        [36m>[39m
+          [0mDownload the frozen plan data[0m
+        [36m</a>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m/>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 rounded-lg border p-5"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mAdoption decision[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 leading-relaxed"[39m
+        [36m>[39m
+          [0mTest body[0m
+          [0m adopted this exact frozen version by [0m
+          [0mtest[0m
+          [0m [0m
+          [0mtest[0m
+          [0m on [0m
+          [0m2026-08-01[0m
+          [0m.[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 space-y-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mPlan content[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mMapped designations[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mImplementation program[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mb-3 text-sm"[39m
+        [36m>[39m
+          [0mThe checklist, terminology and source-review dates were saved with this version. This does not establish that the law remains current.[0m
+        [36m</p>[39m
+        [36m<p>[39m
+          [0mTest coverage disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mTest privacy disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mNo legal sources are configured; source review is not established.[0m
+        [36m</p>[39m
+      [36m</aside>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-source-review.test.tsx:41:21
+     39|       context.assessment.authorities[0].label = "SYNTHETIC retained re…
+     40|       await show({ planContext: context, confidential_notes: "SYNTHETI…
+     41|       expect(screen.getByRole("region", { name: "Context retained with…
+       |                     ^
+     42|       expect(screen.getByText(context.place.label)).toBeVisible();
+     43|       expect(screen.getByText(context.assessment.authorities[0].label)…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > adopted saved context and download > discloses unretained context without substituting display labels
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > adopted saved context and download > discloses unretained context without substituting display labels
+TestingLibraryElementError: Unable to find an element with the text: /This version did not retain its plan context/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"mx-auto max-w-3xl px-5 py-12 print:max-w-none"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-8"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wider text-muted-foreground"[39m
+        [36m>[39m
+          [0mPublished [0m
+          [0mplan[0m
+          [0m · frozen version [0m
+          [0m1[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-3 text-4xl font-semibold tracking-tight"[39m
+        [36m>[39m
+          [0mTest published plan[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg text-muted-foreground"[39m
+        [36m>[39m
+          [0mTest authority[0m
+          [0m · [0m
+          [0mTest area[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs"[39m
+        [36m>[39m
+          [0mContent hash: [0m
+          [0mtest-hash[0m
+        [36m</p>[39m
+        [36m<a[39m
+          [33mclass[39m=[32m"mt-4 inline-block text-sm font-medium underline"[39m
+          [33mdownload[39m=[32m"openplan-adopted-v1.json"[39m
+          [33mhref[39m=[32m"/api/public/land-use-plans/test-plan"[39m
+        [36m>[39m
+          [0mDownload the frozen plan data[0m
+        [36m</a>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m/>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 rounded-lg border p-5"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mAdoption decision[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 leading-relaxed"[39m
+        [36m>[39m
+          [0mTest body[0m
+          [0m adopted this exact frozen version by [0m
+          [0mtest[0m
+          [0m [0m
+          [0mtest[0m
+          [0m on [0m
+          [0m2026-08-01[0m
+          [0m.[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 space-y-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mPlan content[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mMapped designations[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mImplementation program[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mb-3 text-sm"[39m
+        [36m>[39m
+          [0mThe checklist, terminology and source-review dates were saved with this version. This does not establish that the law remains current.[0m
+        [36m</p>[39m
+        [36m<p>[39m
+          [0mTest coverage disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mTest privacy disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mNo legal sources are configured; source review is not established.[0m
+        [36m</p>[39m
+      [36m</aside>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-source-review.test.tsx:52:21
+     50|     it.each([{}, { planContext: null }])("discloses unretained context…
+     51|       await show(content);
+     52|       expect(screen.getByText(/This version did not retain its plan co…
+       |                     ^
+     53|       expect(screen.queryByRole("heading", { name: "Responsible bodies…
+     54|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/test/land-use-plan-source-review.test.tsx > published plan source-review disclosure > adopted saved context and download > withholds an invalid saved assessment in a malformed reader result
+TestingLibraryElementError: Unable to find an accessible element with the role "alert"
+
+Here are the accessible roles:
+
+  main:
+
+  Name "":
+  [36m<main[39m
+    [33mclass[39m=[32m"mx-auto max-w-3xl px-5 py-12 print:max-w-none"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"border-b pb-8"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wider text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-lg text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 leading-relaxed"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mb-3 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 text-sm"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "Test published plan":
+  [36m<h1[39m
+    [33mclass[39m=[32m"mt-3 text-4xl font-semibold tracking-tight"[39m
+  [36m/>[39m
+
+  Name "Adoption decision":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Plan content":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-3xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Mapped designations":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-3xl font-semibold"[39m
+  [36m/>[39m
+
+  Name "Implementation program":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-3xl font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Download the frozen plan data":
+  [36m<a[39m
+    [33mclass[39m=[32m"mt-4 inline-block text-sm font-medium underline"[39m
+    [33mdownload[39m=[32m"openplan-adopted-v1.json"[39m
+    [33mhref[39m=[32m"/api/public/land-use-plans/test-plan"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  complementary:
+
+  Name "":
+  [36m<aside[39m
+    [33mclass[39m=[32m"mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"mx-auto max-w-3xl px-5 py-12 print:max-w-none"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"border-b pb-8"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-semibold uppercase tracking-wider text-muted-foreground"[39m
+        [36m>[39m
+          [0mPublished [0m
+          [0mplan[0m
+          [0m · frozen version [0m
+          [0m1[0m
+        [36m</p>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"mt-3 text-4xl font-semibold tracking-tight"[39m
+        [36m>[39m
+          [0mTest published plan[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-lg text-muted-foreground"[39m
+        [36m>[39m
+          [0mTest authority[0m
+          [0m · [0m
+          [0mTest area[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs"[39m
+        [36m>[39m
+          [0mContent hash: [0m
+          [0mtest-hash[0m
+        [36m</p>[39m
+        [36m<a[39m
+          [33mclass[39m=[32m"mt-4 inline-block text-sm font-medium underline"[39m
+          [33mdownload[39m=[32m"openplan-adopted-v1.json"[39m
+          [33mhref[39m=[32m"/api/public/land-use-plans/test-plan"[39m
+        [36m>[39m
+          [0mDownload the frozen plan data[0m
+        [36m</a>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-8"[39m
+      [36m/>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 rounded-lg border p-5"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-2xl font-semibold"[39m
+        [36m>[39m
+          [0mAdoption decision[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 leading-relaxed"[39m
+        [36m>[39m
+          [0mTest body[0m
+          [0m adopted this exact frozen version by [0m
+          [0mtest[0m
+          [0m [0m
+          [0mtest[0m
+          [0m on [0m
+          [0m2026-08-01[0m
+          [0m.[0m
+        [36m</p>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-8 space-y-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mPlan content[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mMapped designations[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"mt-10 border-t pt-8"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-3xl font-semibold"[39m
+        [36m>[39m
+          [0mImplementation program[0m
+        [36m</h2>[39m
+      [36m</section>[39m
+      [36m<aside[39m
+        [33mclass[39m=[32m"mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mb-3 text-sm"[39m
+        [36m>[39m
+          [0mThe checklist, terminology and source-review dates were saved with this version. This does not establish that the law remains current.[0m
+        [36m</p>[39m
+        [36m<p>[39m
+          [0mTest coverage disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mTest privacy disclosure[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-3 text-sm"[39m
+        [36m>[39m
+          [0mNo legal sources are configured; source review is not established.[0m
+        [36m</p>[39m
+      [36m</aside>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../land-use-plan-context-20261007/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/test/land-use-plan-source-review.test.tsx:57:21
+     55|     it("withholds an invalid saved assessment in a malformed reader re…
+     56|       await show({ planContext: { ...syntheticPlanContext(), savedBy: …
+     57|       expect(screen.getByRole("alert")).toHaveTextContent("could not b…
+       |                     ^
+     58|       expect(screen.queryByRole("heading", { name: "Responsible bodies…
+     59|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 9 passed (13)
+   Start at  11:00:29
+   Duration  1.10s (transform 110ms, setup 53ms, import 188ms, tests 440ms, environment 328ms)
+

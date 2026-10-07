@@ -1,0 +1,6 @@
+BEGIN
+ALTER TABLE
+ALTER TABLE
+COMMENT
+ERROR:  Missing context fields were accepted
+CONTEXT:  PL/pgSQL function inline_code_block line 12 at RAISE

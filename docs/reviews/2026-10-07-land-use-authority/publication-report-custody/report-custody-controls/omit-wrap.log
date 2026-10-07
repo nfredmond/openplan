@@ -1,0 +1,30 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-plan-kinds-20261007/openplan
+
+ ❯ src/test/land-use-plan-report-custody.test.tsx (17 tests | 3 failed) 446ms
+     × shows the adopted recorded identity and context, independent of later labels 202ms
+     × shows the superseded recorded identity and context, independent of later labels 70ms
+     × shows the repealed recorded identity and context, independent of later labels 67ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > shows the adopted recorded identity and context, independent of later labels
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > shows the superseded recorded identity and context, independent of later labels
+ FAIL  src/test/land-use-plan-report-custody.test.tsx > adopted plan report custody > shows the repealed recorded identity and context, independent of later labels
+Error: expect(element).toHaveClass("[overflow-wrap:anywhere]")
+
+Expected the element to have class:
+  [overflow-wrap:anywhere]
+Received:
+  mx-auto min-w-0 w-full max-w-4xl p-5 md:p-10 print:max-w-none print:p-0
+ ❯ src/test/land-use-plan-report-custody.test.tsx:57:110
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 14 passed (17)
+   Start at  11:54:11
+   Duration  1.19s (transform 121ms, setup 53ms, import 271ms, tests 446ms, environment 325ms)
+

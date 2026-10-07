@@ -1,0 +1,28 @@
+{
+  "sourceCommit": "ce10cfb896ceb8ec1f1f7a2f2ec17fe620f13593",
+  "entries": [
+    {
+      "level": "error",
+      "text": "Electron sandboxed_renderer.bundle.js script failed to run",
+      "timestamp": "2026-10-07T17:48:48.542Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "TypeError: Cannot destructure property 'preloadScripts' of 'binding.startupData' as it is null.\n    at node:electron/js2c/sandbox_bundle:2:124925\n    at node:electron/js2c/sandbox_bundle:2:125860\n    at ___electron_webpack_init__ (node:electron/js2c/sandbox_bundle:2:125864)\n    at node:electron/js2c/sandbox_bundle:2:125987",
+      "timestamp": "2026-10-07T17:48:48.542Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Fetch API cannot load chrome-error://chromewebdata/api/health. URL scheme \"chrome-error\" is not supported.",
+      "timestamp": "2026-10-07T18:03:52.344Z",
+      "source": "javascript"
+    }
+  ],
+  "omitted": [
+    "accessibilityTree (use interactiveElements locators or preview_evaluate)",
+    "160 older network entries",
+    "34 older action timeline entries"
+  ]
+}

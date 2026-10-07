@@ -525,10 +525,19 @@ const EXPECTED = {
   // 20261015000009 adds private thematic dynamic attempt inputs.
   // Installed isolated catalog confirms 277 application RLS tables and 14 views.
   // Explicit preparation jobs and immutable worker claim attempts add two RLS tables.
-  relations: 294,
-  tables: 280,
+  // 20261016000002/00004 add private context/freeze command journals.
+  // Installed isolated catalog: 282 RLS application tables, 14 views,
+  // 758 policies. Both new journals have zero client policies.
+  // 20261016000007 adds one private creation journal with no client policies.
+  // Installed isolated catalog: 283 RLS application tables, 14 views, 758 policies.
+  // 20261016000008 adds one private creation-stop journal, with no client policies.
+  // Installed isolated catalog: 284 RLS application tables, 14 views, 758 policies.
+  // 20261016000010 adds one private rule-reconciliation journal, with no client policies.
+  // Installed isolated catalog: 285 RLS application tables, 14 views, 758 policies.
+  relations: 299,
+  tables: 285,
   views: 14,
-  rlsEnabledTables: 280,
+  rlsEnabledTables: 285,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

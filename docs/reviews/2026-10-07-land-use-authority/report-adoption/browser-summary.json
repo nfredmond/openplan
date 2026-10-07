@@ -1,0 +1,52 @@
+{
+  "sourceCommit": "ac06c23bec73f807347507cbd8692986056f777a",
+  "read": {
+    "adoptionText": "Recorded adoption decision\n\nThis is the decision retained when this report was published. Later decisions do not replace it here. The record does not establish legal validity.\n\nDecision body\nSYNTHETIC browser test body. No agency authority\nDecision type\nAdoption\nInstrument\nSYNTHETIC test instrument SYNTHETIC-publication-20261007-v2\nDecision date\n2026-10-07\nEffective date\nNot recorded\nVote\nSYNTHETIC fixture. No vote occurred",
+    "documentWidth": 390,
+    "fetchNative": true,
+    "focused": {
+      "href": "/api/reports/e0aab60e-a9ff-4d51-a98e-4f01e99ceb45/provenance",
+      "text": "Download source JSON"
+    },
+    "overflow": [],
+    "relationshipsText": "Related plans retained with this version\n\nNo related-plan references were retained with this version.",
+    "url": "http://openplan-history.localhost:3498/reports/e0aab60e-a9ff-4d51-a98e-4f01e99ceb45",
+    "viewport": {
+      "height": 844,
+      "width": 390
+    }
+  },
+  "screenshots": [
+    "reportAdoptionDesktop",
+    "reportAdoptionMobile",
+    "reportRelationshipsMobile",
+    "reportRelationshipsDesktop"
+  ],
+  "consoleReview": {
+    "existingErrorCount": 7,
+    "errorTimestamps": [
+      "2026-10-07T17:48:48.542Z",
+      "2026-10-07T17:48:48.542Z",
+      "2026-10-07T18:03:52.344Z",
+      "2026-10-07T18:38:41.585Z",
+      "2026-10-07T18:40:09.032Z",
+      "2026-10-07T18:40:55.768Z",
+      "2026-10-07T18:41:19.145Z"
+    ],
+    "newErrorsDuringReadJourney": 0,
+    "limitations": [
+      "accessibilityTree (use interactiveElements locators or preview_evaluate)",
+      "console entries text after 500 characters",
+      "160 older network entries",
+      "126 older action timeline entries",
+      "30 of 40 actionTimeline"
+    ]
+  },
+  "nativeBeforeBrowser": {
+    "versions": 2,
+    "decisions": 1,
+    "artifacts": 1,
+    "reportArtifactDecisionsAndFrozenVersionsUnchangedFromPublication": true,
+    "method": "Read-only SQL on isolated DB29822; private native records retained outside git."
+  }
+}

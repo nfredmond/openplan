@@ -1,0 +1,422 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "matched": true,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "case": "actor-scope",
+      "exitCode": 1,
+      "matched": true,
+      "target": "another actorId",
+      "failedTests": [
+        "context recovery refuses another actorId on reads and recovered copies"
+      ]
+    },
+    {
+      "case": "workspace-scope",
+      "exitCode": 1,
+      "matched": true,
+      "target": "another workspaceId",
+      "failedTests": [
+        "context recovery refuses another workspaceId on reads and recovered copies"
+      ]
+    },
+    {
+      "case": "plan-scope",
+      "exitCode": 1,
+      "matched": true,
+      "target": "another planId",
+      "failedTests": [
+        "context recovery refuses another planId on reads and recovered copies"
+      ]
+    },
+    {
+      "case": "read-hash-state",
+      "exitCode": 1,
+      "matched": true,
+      "target": "unreadable current state",
+      "failedTests": [
+        "context recovery preserves unreadable current state as failure {\"contextHash\":null}",
+        "context recovery preserves unreadable current state as failure {\"contextState\":{\"status\":\"legacy\"}}"
+      ]
+    },
+    {
+      "case": "read-normalization",
+      "exitCode": 1,
+      "matched": true,
+      "target": "unreadable current state",
+      "failedTests": [
+        "context recovery preserves unreadable current state as failure {\"contextState\":{\"status\":\"retained\",\"context\":{\"schemaVersion\":1,\"savedBy\":\"20000000-0000-4000-8000-000000000001\",\"savedAt\":\"2026-10-07T00:00:00Z\",\"place\":{\"source\":\"drawn\",\"kind\":null,\"ref\":null,\"label\":\"Synthetic study area\",\"countryCode\":null,\"subdivisionCode\":null,\"bbox\":{\"minLon\":0,\"minLat\":0,\"maxLon\":1,\"maxLat\":1},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[1,0],[1,1],[0,0]]]}},\"assessment\":{\"authorities\":[{\"id\":\"20000000-0000-4000-8000-000000000005\",\"label\":\" padded \",\"role\":\"Study sponsor\",\"kind\":\"unassessed\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Scope remains unassessed.\"}}}}}"
+      ]
+    },
+    {
+      "case": "read-status",
+      "exitCode": 1,
+      "matched": true,
+      "target": "read status",
+      "failedTests": [
+        "context recovery refuses read status 201",
+        "context recovery refuses read status 401",
+        "context recovery refuses read status 403",
+        "context recovery refuses read status 404",
+        "context recovery refuses read status 500"
+      ]
+    },
+    {
+      "case": "command-byte-limit",
+      "exitCode": 1,
+      "matched": true,
+      "target": "bounds command bytes",
+      "failedTests": [
+        "context recovery bounds command bytes including multibyte text and recovery file bytes"
+      ]
+    },
+    {
+      "case": "copy-byte-limit",
+      "exitCode": 1,
+      "matched": true,
+      "target": "bounds command bytes",
+      "failedTests": [
+        "context recovery bounds command bytes including multibyte text and recovery file bytes"
+      ]
+    },
+    {
+      "case": "base-command-match",
+      "exitCode": 1,
+      "matched": true,
+      "target": "diverge from retained draft",
+      "failedTests": [
+        "context recovery refuses commands that diverge from retained draft and base {\"base\":{\"versionId\":\"20000000-0000-4000-8000-000000000030\",\"contextHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"descriptorId\":\"neutral\",\"planKindKey\":\"general\"}}",
+        "context recovery refuses commands that diverge from retained draft and base {\"base\":{\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"contextHash\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"descriptorId\":\"neutral\",\"planKindKey\":\"general\"}}",
+        "context recovery refuses commands that diverge from retained draft and base {\"base\":{\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"contextHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"descriptorId\":\"changed\",\"planKindKey\":\"general\"}}",
+        "context recovery refuses commands that diverge from retained draft and base {\"base\":{\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"contextHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"descriptorId\":\"neutral\",\"planKindKey\":\"changed\"}}",
+        "context recovery refuses commands that diverge from retained draft and base {\"draft\":{\"place\":{\"mode\":\"retained\",\"label\":\"Synthetic study area\",\"geometryText\":\"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[0,0],[1,0],[1,1],[0,0]]]}\",\"kind\":null,\"geoid\":\"\"},\"authorities\":[{\"id\":\"20000000-0000-4000-8000-000000000005\",\"label\":\"Changed body\",\"role\":\"Study sponsor\",\"kind\":\"unassessed\",\"jurisdictionUnknown\":true,\"country\":\"\",\"subdivision\":\"\",\"sourceText\":\"\"}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Scope remains unassessed.\",\"sourceText\":\"\",\"authorityIds\":[]}}}"
+      ]
+    },
+    {
+      "case": "retained-required",
+      "exitCode": 1,
+      "matched": true,
+      "target": "diverge from retained draft",
+      "failedTests": [
+        "context recovery refuses commands that diverge from retained draft and base {\"retainedPlace\":null}",
+        "context recovery refuses commands that diverge from retained draft and base {\"base\":{\"versionId\":\"20000000-0000-4000-8000-000000000004\",\"contextHash\":null,\"descriptorId\":\"neutral\",\"planKindKey\":\"general\"},\"commandText\":\"{\\\"place\\\":{\\\"mode\\\":\\\"retained\\\"},\\\"assessment\\\":{\\\"authorities\\\":[{\\\"id\\\":\\\"20000000-0000-4000-8000-000000000005\\\",\\\"label\\\":\\\"Synthetic planning body\\\",\\\"role\\\":\\\"Study sponsor\\\",\\\"kind\\\":\\\"unassessed\\\",\\\"jurisdiction\\\":null,\\\"sourceUrls\\\":[]}],\\\"applicability\\\":{\\\"status\\\":\\\"unresolved\\\",\\\"explanation\\\":\\\"Scope remains unassessed.\\\"}},\\\"commandId\\\":\\\"20000000-0000-4000-8000-000000000006\\\",\\\"versionId\\\":\\\"20000000-0000-4000-8000-000000000004\\\",\\\"expectedContextHash\\\":null,\\\"descriptorId\\\":\\\"neutral\\\",\\\"planKindKey\\\":\\\"general\\\"}\"}"
+      ]
+    },
+    {
+      "case": "capture-no-retained",
+      "exitCode": 1,
+      "matched": true,
+      "target": "returned drawn",
+      "failedTests": [
+        "context recovery verifies the returned drawn study area",
+        "context recovery verifies the returned uploaded study area",
+        "context recovery verifies the returned place study area"
+      ]
+    },
+    {
+      "case": "key-match",
+      "exitCode": 1,
+      "matched": true,
+      "target": "wrong-key records",
+      "failedTests": [
+        "context recovery refuses wrong-key records and refuses preservation without verified copy or scope"
+      ]
+    },
+    {
+      "case": "draft-previous",
+      "exitCode": 1,
+      "matched": true,
+      "target": "owns mutable drafts",
+      "failedTests": [
+        "context recovery owns mutable drafts separately and preserves a stale base when restoring"
+      ]
+    },
+    {
+      "case": "draft-readback",
+      "exitCode": 1,
+      "matched": true,
+      "target": "failed draft storage readback",
+      "failedTests": [
+        "context recovery retains incomplete text and refuses failed draft storage readback"
+      ]
+    },
+    {
+      "case": "restore-base",
+      "exitCode": 1,
+      "matched": true,
+      "target": "owns mutable drafts",
+      "failedTests": [
+        "context recovery owns mutable drafts separately and preserves a stale base when restoring"
+      ]
+    },
+    {
+      "case": "current-base",
+      "exitCode": 1,
+      "matched": true,
+      "target": "owns mutable drafts",
+      "failedTests": [
+        "context recovery owns mutable drafts separately and preserves a stale base when restoring"
+      ]
+    },
+    {
+      "case": "current-scope",
+      "exitCode": 1,
+      "matched": true,
+      "target": "owns mutable drafts",
+      "failedTests": [
+        "context recovery owns mutable drafts separately and preserves a stale base when restoring"
+      ]
+    },
+    {
+      "case": "immutable-command",
+      "exitCode": 1,
+      "matched": true,
+      "target": "duplicate command overwrites",
+      "failedTests": [
+        "context recovery refuses sending before retention, changed originals and duplicate command overwrites"
+      ]
+    },
+    {
+      "case": "command-readback",
+      "exitCode": 1,
+      "matched": true,
+      "target": "missing pending readback",
+      "failedTests": [
+        "context recovery refuses missing pending readback and quota errors before transport"
+      ]
+    },
+    {
+      "case": "only-pending-restored",
+      "exitCode": 1,
+      "matched": true,
+      "target": "preserves malformed originals",
+      "failedTests": [
+        "context recovery preserves malformed originals exactly and restores valid requests without sending"
+      ]
+    },
+    {
+      "case": "receipt-command",
+      "exitCode": 1,
+      "matched": true,
+      "target": "mismatched save replies",
+      "failedTests": [
+        "context recovery keeps malformed or mismatched save replies {\"commandId\":\"20000000-0000-4000-8000-000000000020\"}",
+        "context recovery requires a matching receipt and reports failed cleanup without losing originals"
+      ]
+    },
+    {
+      "case": "receipt-version",
+      "exitCode": 1,
+      "matched": true,
+      "target": "mismatched save replies",
+      "failedTests": [
+        "context recovery keeps malformed or mismatched save replies {\"versionId\":\"20000000-0000-4000-8000-000000000020\"}"
+      ]
+    },
+    {
+      "case": "receipt-actor",
+      "exitCode": 1,
+      "matched": true,
+      "target": "mismatched save replies",
+      "failedTests": [
+        "context recovery keeps malformed or mismatched save replies {\"context\":{\"schemaVersion\":1,\"savedBy\":\"20000000-0000-4000-8000-000000000020\",\"savedAt\":\"2026-10-07T00:00:00Z\",\"place\":{\"source\":\"drawn\",\"kind\":null,\"ref\":null,\"label\":\"Synthetic study area\",\"countryCode\":null,\"subdivisionCode\":null,\"bbox\":{\"minLon\":0,\"minLat\":0,\"maxLon\":1,\"maxLat\":1},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[1,0],[1,1],[0,0]]]}},\"assessment\":{\"authorities\":[{\"id\":\"20000000-0000-4000-8000-000000000005\",\"label\":\"Synthetic planning body\",\"role\":\"Study sponsor\",\"kind\":\"unassessed\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Scope remains unassessed.\"}}}}"
+      ]
+    },
+    {
+      "case": "receipt-assessment",
+      "exitCode": 1,
+      "matched": true,
+      "target": "mismatched save replies",
+      "failedTests": [
+        "context recovery keeps malformed or mismatched save replies {\"context\":{\"schemaVersion\":1,\"savedBy\":\"20000000-0000-4000-8000-000000000001\",\"savedAt\":\"2026-10-07T00:00:00Z\",\"place\":{\"source\":\"drawn\",\"kind\":null,\"ref\":null,\"label\":\"Synthetic study area\",\"countryCode\":null,\"subdivisionCode\":null,\"bbox\":{\"minLon\":0,\"minLat\":0,\"maxLon\":1,\"maxLat\":1},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[1,0],[1,1],[0,0]]]}},\"assessment\":{\"authorities\":[{\"id\":\"20000000-0000-4000-8000-000000000005\",\"label\":\"Synthetic planning body\",\"role\":\"Study sponsor\",\"kind\":\"unassessed\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Different assessment\"}}}}"
+      ]
+    },
+    {
+      "case": "receipt-retained-place",
+      "exitCode": 1,
+      "matched": true,
+      "target": "mismatched save replies",
+      "failedTests": [
+        "context recovery keeps malformed or mismatched save replies {\"context\":{\"schemaVersion\":1,\"savedBy\":\"20000000-0000-4000-8000-000000000001\",\"savedAt\":\"2026-10-07T00:00:00Z\",\"place\":{\"source\":\"drawn\",\"kind\":null,\"ref\":null,\"label\":\"Different boundary\",\"countryCode\":null,\"subdivisionCode\":null,\"bbox\":{\"minLon\":0,\"minLat\":0,\"maxLon\":1,\"maxLat\":1},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[1,0],[1,1],[0,0]]]}},\"assessment\":{\"authorities\":[{\"id\":\"20000000-0000-4000-8000-000000000005\",\"label\":\"Synthetic planning body\",\"role\":\"Study sponsor\",\"kind\":\"unassessed\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Scope remains unassessed.\"}}}}",
+        "context recovery keeps malformed or mismatched save replies {\"context\":{\"schemaVersion\":1,\"savedBy\":\"20000000-0000-4000-8000-000000000001\",\"savedAt\":\"2026-10-07T00:00:00Z\",\"place\":{\"source\":\"drawn\",\"kind\":null,\"ref\":null,\"label\":\"Synthetic study area\",\"countryCode\":null,\"subdivisionCode\":null,\"bbox\":{\"minLon\":0,\"minLat\":0,\"maxLon\":1,\"maxLat\":1},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[2,0],[2,1],[0,0]]]}},\"assessment\":{\"authorities\":[{\"id\":\"20000000-0000-4000-8000-000000000005\",\"label\":\"Synthetic planning body\",\"role\":\"Study sponsor\",\"kind\":\"unassessed\",\"jurisdiction\":null,\"sourceUrls\":[]}],\"applicability\":{\"status\":\"unresolved\",\"explanation\":\"Scope remains unassessed.\"}}}}"
+      ]
+    },
+    {
+      "case": "receipt-captured-place",
+      "exitCode": 1,
+      "matched": true,
+      "target": "returned drawn",
+      "failedTests": [
+        "context recovery verifies the returned drawn study area",
+        "context recovery verifies the returned uploaded study area"
+      ]
+    },
+    {
+      "case": "receipt-resolved-source",
+      "exitCode": 1,
+      "matched": true,
+      "target": "returned place",
+      "failedTests": [
+        "context recovery verifies the returned place study area"
+      ]
+    },
+    {
+      "case": "receipt-resolved-kind",
+      "exitCode": 1,
+      "matched": true,
+      "target": "returned place",
+      "failedTests": [
+        "context recovery verifies the returned place study area"
+      ]
+    },
+    {
+      "case": "receipt-resolved-ref",
+      "exitCode": 1,
+      "matched": true,
+      "target": "returned place",
+      "failedTests": [
+        "context recovery verifies the returned place study area"
+      ]
+    },
+    {
+      "case": "receipt-resolved-label",
+      "exitCode": 1,
+      "matched": true,
+      "target": "returned place",
+      "failedTests": [
+        "context recovery verifies the returned place study area"
+      ]
+    },
+    {
+      "case": "receipt-resolved-country",
+      "exitCode": 1,
+      "matched": true,
+      "target": "returned place",
+      "failedTests": [
+        "context recovery verifies the returned place study area"
+      ]
+    },
+    {
+      "case": "receipt-resolved-subdivision",
+      "exitCode": 1,
+      "matched": true,
+      "target": "returned place",
+      "failedTests": [
+        "context recovery verifies the returned place study area"
+      ]
+    },
+    {
+      "case": "send-retention",
+      "exitCode": 1,
+      "matched": true,
+      "target": "sending before retention",
+      "failedTests": [
+        "context recovery refuses sending before retention, changed originals and duplicate command overwrites"
+      ]
+    },
+    {
+      "case": "send-exact-bytes",
+      "exitCode": 1,
+      "matched": true,
+      "target": "sends exact bytes",
+      "failedTests": [
+        "context recovery sends exact bytes and current-account headers and clears only the confirmed command"
+      ]
+    },
+    {
+      "case": "send-scope-header",
+      "exitCode": 1,
+      "matched": true,
+      "target": "sends exact bytes",
+      "failedTests": [
+        "context recovery sends exact bytes and current-account headers and clears only the confirmed command"
+      ]
+    },
+    {
+      "case": "reply-status",
+      "exitCode": 1,
+      "matched": true,
+      "target": "mismatched save replies",
+      "failedTests": [
+        "context recovery keeps malformed or mismatched save replies {\"replayed\":true}"
+      ]
+    },
+    {
+      "case": "cleanup-receipt",
+      "exitCode": 1,
+      "matched": true,
+      "target": "matching receipt",
+      "failedTests": [
+        "context recovery requires a matching receipt and reports failed cleanup without losing originals"
+      ]
+    },
+    {
+      "case": "cleanup-exact-copy",
+      "exitCode": 1,
+      "matched": true,
+      "target": "sending before retention",
+      "failedTests": [
+        "context recovery refuses sending before retention, changed originals and duplicate command overwrites"
+      ]
+    },
+    {
+      "case": "cleanup-readback",
+      "exitCode": 1,
+      "matched": true,
+      "target": "failed cleanup",
+      "failedTests": [
+        "context recovery requires a matching receipt and reports failed cleanup without losing originals"
+      ]
+    },
+    {
+      "case": "preserve-scope",
+      "exitCode": 1,
+      "matched": true,
+      "target": "preservation without verified copy or scope",
+      "failedTests": [
+        "context recovery refuses wrong-key records and refuses preservation without verified copy or scope"
+      ]
+    },
+    {
+      "case": "preserve-original",
+      "exitCode": 1,
+      "matched": true,
+      "target": "preservation without verified copy or scope",
+      "failedTests": [
+        "context recovery refuses wrong-key records and refuses preservation without verified copy or scope"
+      ]
+    },
+    {
+      "case": "preserve-copy",
+      "exitCode": 1,
+      "matched": true,
+      "target": "preservation without verified copy or scope",
+      "failedTests": [
+        "context recovery refuses wrong-key records and refuses preservation without verified copy or scope"
+      ]
+    },
+    {
+      "case": "preserve-clear-readback",
+      "exitCode": 1,
+      "matched": true,
+      "target": "failed cleanup",
+      "failedTests": [
+        "context recovery requires a matching receipt and reports failed cleanup without losing originals"
+      ]
+    }
+  ],
+  "restored": true,
+  "sourceSha256": "ad230009ae332f9e407dfd536dea88d60f3e5b47042a96b8c5a1432ec25cc579"
+}

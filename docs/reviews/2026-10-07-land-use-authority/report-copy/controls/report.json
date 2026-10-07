@@ -1,0 +1,84 @@
+{
+  "state": "complete",
+  "cases": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "verified": true,
+      "expectedFailure": null
+    },
+    {
+      "name": "omit-saved-heading",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders the retained decision"
+    },
+    {
+      "name": "omit-legacy-absence",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "discloses a legacy"
+    },
+    {
+      "name": "omit-legacy-boundary",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "discloses a legacy"
+    },
+    {
+      "name": "omit-legal-boundary",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders the retained decision"
+    },
+    {
+      "name": "omit-historical-boundary",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders the retained decision"
+    },
+    {
+      "name": "omit-invalid-disclosure",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed artifact decision"
+    },
+    {
+      "name": "omit-related-kind",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "renders related plan labels"
+    },
+    {
+      "name": "omit-refusal-identity",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed artifact"
+    },
+    {
+      "name": "omit-refusal-boundary",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "withholds changed artifact"
+    },
+    {
+      "name": "regress-copy",
+      "exitCode": 1,
+      "verified": true,
+      "expectedFailure": "uses no term from the ledger"
+    }
+  ],
+  "restored": true,
+  "sourceHashes": {
+    "src/components/reports/land-use-plan-report-page.tsx": "46254dacbfd84e6c978070de12e796cc5501a2a28f6b109bb18838f5e986b635",
+    "src/components/reports/land-use-plan-report-detail.tsx": "6a3fb1a61e2b75b544518a7248a34b1d851550f98c4f20cceaf0b7189363c5ee",
+    "src/components/reports/land-use-plan-report-adoption.tsx": "e8377b6adc4492e4dcca9ae00d5032ff31768219b377ec8bccd05db00dd2cecd"
+  },
+  "blindCategory": "Mounted pages and projected mocks only. Does not prove native authorization, browser download, layout, or practitioner acceptance."
+}

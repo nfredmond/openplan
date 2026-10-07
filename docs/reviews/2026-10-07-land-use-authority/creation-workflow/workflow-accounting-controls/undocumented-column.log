@@ -1,0 +1,57 @@
+
+ RUN  v4.1.11 /home/nathaniel/.local/state/openplan/land-use-creation-20261007/openplan
+
+ ❯ src/test/a-column-nothing-reads-is-a-question.test.ts (5 tests | 2 failed) 783ms
+     × finds no unread column that is not accounted for 205ms
+     × keeps the ratchet honest — a column that gained a reader loses its entry 196ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/a-column-nothing-reads-is-a-question.test.ts > a column the application never reads has to say why > finds no unread column that is not accounted for
+AssertionError: these columns exist and nothing in the application ever names them. Each is either dead schema, something written and never surfaced, or a capability the schema implies and the code never built. Read it, delete it, or add it to UNREAD_COLUMNS with which of the three it is.: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "land_use_plan_creation_cancellations.command_text",
++ ]
+
+ ❯ src/test/a-column-nothing-reads-is-a-question.test.ts:413:7
+    411|         "code never built. Read it, delete it, or add it to UNREAD_COL…
+    412|         "it is."
+    413|     ).toEqual([]);
+       |       ^
+    414|   });
+    415|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/test/a-column-nothing-reads-is-a-question.test.ts > a column the application never reads has to say why > keeps the ratchet honest — a column that gained a reader loses its entry
+AssertionError: these columns are now read (or no longer exist) — remove them from UNREAD_COLUMNS so the count keeps meaning something: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "land_use_plan_creation_cancellations.nonexistent",
++ ]
+
+ ❯ src/test/a-column-nothing-reads-is-a-question.test.ts:426:7
+    424|       "these columns are now read (or no longer exist) — remove them f…
+    425|         "count keeps meaning something"
+    426|     ).toEqual([]);
+       |       ^
+    427|   });
+    428|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  2 failed | 38 passed (40)
+   Start at  07:00:25
+   Duration  2.96s (transform 115ms, setup 124ms, import 553ms, tests 987ms, environment 967ms)
+

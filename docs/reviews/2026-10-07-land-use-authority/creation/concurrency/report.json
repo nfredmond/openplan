@@ -1,0 +1,70 @@
+{
+  "workspaceId": "8faf7fe7-ae39-4f01-98a3-d2e33fc94c3f",
+  "actorId": "01327053-2a33-4780-9aee-149e7db3b419",
+  "results": [
+    {
+      "case": "installed",
+      "blocked": true,
+      "accepted": false,
+      "targetedFaultDetected": false,
+      "matched": true
+    },
+    {
+      "case": "baseline",
+      "blocked": true,
+      "accepted": false,
+      "targetedFaultDetected": false,
+      "matched": true
+    },
+    {
+      "case": "harmless",
+      "blocked": true,
+      "accepted": false,
+      "targetedFaultDetected": false,
+      "matched": true
+    },
+    {
+      "case": "missing-command-lock",
+      "blocked": false,
+      "accepted": true,
+      "targetedFaultDetected": true,
+      "matched": true
+    },
+    {
+      "case": "simultaneous-one-plan",
+      "outcomes": [
+        3,
+        0
+      ],
+      "counts": {
+        "plans": 1,
+        "commands": 1,
+        "versions": 1,
+        "exactBytes": true
+      },
+      "retriesMatch": true,
+      "matched": true
+    },
+    {
+      "case": "permission-installed",
+      "locked": true,
+      "targetedFaultDetected": false,
+      "matched": true
+    },
+    {
+      "case": "permission-harmless",
+      "locked": true,
+      "targetedFaultDetected": false,
+      "matched": true
+    },
+    {
+      "case": "permission-lock-removed",
+      "locked": false,
+      "targetedFaultDetected": true,
+      "matched": true
+    }
+  ],
+  "fixturesPreserved": true,
+  "nativeMigration": "20261016000007",
+  "boundary": "Native SQL concurrency and temporary-function fault controls. No browser, HTTP route, legal or usability acceptance."
+}
