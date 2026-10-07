@@ -1,0 +1,20 @@
+{
+  "commit": "920a4b39ebd62e77fb77436a2e74347a8f955b37",
+  "integratedMain": "176feca86cfbab9a610d93618ea67ef88a3da058",
+  "combinedFocusedTests": 111,
+  "productionBuild": "passed, including TypeScript",
+  "serverPid": 968349,
+  "serverCwd": "/home/nathaniel/.local/state/openplan/bca-workbench-20261006/openplan",
+  "zeroYear": 2027,
+  "zeroWidthsCss": [
+    "0%",
+    "0%"
+  ],
+  "zeroWidthsRenderedPx": [
+    0,
+    0
+  ],
+  "unchangedDisplayedBcr": "1.59",
+  "unchangedDisplayedNpv": "$1,188,105",
+  "browserBoundary": "T3 disconnected during an additional cross-project navigation check after chart verification. A second synthetic project was created, but cross-project draft navigation was not verified. Earlier mandatory navigation/recovery/export and desktop/mobile evidence remains separately identified."
+}
