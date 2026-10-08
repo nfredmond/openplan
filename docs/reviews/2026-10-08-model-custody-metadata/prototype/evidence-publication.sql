@@ -64,7 +64,7 @@ RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
 DECLARE
  request jsonb; receipt public.model_evidence_publication_receipts%ROWTYPE;
  parent public.model_runs%ROWTYPE; previous jsonb; current_evidence jsonb;
- claim jsonb; metric jsonb; result jsonb;
+ claim jsonb; metric jsonb; result jsonb; text_key text;
 BEGIN
  IF p_request IS NULL OR p_workspace IS NULL OR p_run IS NULL OR p_track IS NULL
   OR p_track NOT IN('assignment','behavioral_demand') OR p_expected IS NULL
@@ -94,6 +94,11 @@ BEGIN
    OR jsonb_typeof(metric->'metadata_json') IS DISTINCT FROM 'object' THEN
    RAISE EXCEPTION 'Invalid publication metric scope or fields';
   END IF;
+  FOREACH text_key IN ARRAY ARRAY['metric_key','metric_label','threshold_comparator','status','detail'] LOOP
+   IF jsonb_typeof(metric->text_key) IS DISTINCT FROM 'string' OR btrim(metric->>text_key)='' THEN
+    RAISE EXCEPTION 'Invalid publication metric text';
+   END IF;
+  END LOOP;
  END LOOP;
  IF (SELECT count(*) FROM jsonb_array_elements(p_payload->'metrics'))<>(SELECT count(DISTINCT value->>'metric_key') FROM jsonb_array_elements(p_payload->'metrics')) THEN
   RAISE EXCEPTION 'Duplicate or missing publication metric';
@@ -115,7 +120,7 @@ BEGIN
  INSERT INTO public.modeling_claim_decisions(workspace_id,model_run_id,track,claim_status,status_reason,validation_summary_json)
  VALUES(p_workspace,p_run,p_track,claim->>'claim_status',claim->>'status_reason',claim->'validation_summary_json')
  ON CONFLICT(model_run_id,track) DO UPDATE SET claim_status=EXCLUDED.claim_status,status_reason=EXCLUDED.status_reason,
-  validation_summary_json=EXCLUDED.validation_summary_json,decided_at=clock_timestamp();
+  validation_summary_json=EXCLUDED.validation_summary_json,reasons_json='[]'::jsonb,decided_at=clock_timestamp();
  FOR metric IN SELECT value FROM jsonb_array_elements(p_payload->'metrics') LOOP
   INSERT INTO public.modeling_validation_results(workspace_id,model_run_id,track,metric_key,metric_label,threshold_comparator,status,blocks_claim_grade,detail,metadata_json)
   VALUES(p_workspace,p_run,p_track,metric->>'metric_key',metric->>'metric_label',metric->>'threshold_comparator',metric->>'status',(metric->>'blocks_claim_grade')::boolean,metric->>'detail',metric->'metadata_json');

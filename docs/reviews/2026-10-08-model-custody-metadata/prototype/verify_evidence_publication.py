@@ -24,6 +24,9 @@ def verify():
       ('direct-write-bypass','IF EXISTS(\n  SELECT 1 FROM public.model_evidence_publication_receipts r','IF false AND EXISTS(\n  SELECT 1 FROM public.model_evidence_publication_receipts r','Direct claim update accepted'),
       ('read-scope-bypass','WHERE id=p_run AND workspace_id=p_workspace','WHERE id=p_run','Wrong read workspace accepted'),
       ('duplicate-metric-bypass',"IF (SELECT count(*) FROM jsonb_array_elements(p_payload->'metrics'))<>","IF false AND (SELECT count(*) FROM jsonb_array_elements(p_payload->'metrics'))<>",'Duplicate metric accepted'),
+      ('prior-reasons-retained',"reasons_json='[]'::jsonb,",'', 'Replacement retained prior current reasons'),
+      ('metric-text-type-bypass',"jsonb_typeof(metric->text_key) IS DISTINCT FROM 'string' OR ",'','Invalid metric text accepted: metric_key true'),
+      ('metric-blank-bypass'," OR btrim(metric->>text_key)=''",'','Invalid metric text accepted: metric_key " "'),
     ]
     variants=[('baseline',source,None),('harmless',source+'\n-- Harmless publication comment.\n',None)]
     for name,before,after,error in mutations:

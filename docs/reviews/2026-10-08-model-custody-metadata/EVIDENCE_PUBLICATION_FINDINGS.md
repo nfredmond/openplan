@@ -225,3 +225,25 @@ Evidence is retained under
 two concurrency orders on actual application constraints; it does not prove
 publication/reaper ordering, HTTP delivery, worker adoption, county refresh,
 higher-tier policy, complete field validation or scientific acceptance.
+
+## Complete replacement and metric text corrections
+
+New native fixtures reproduced two candidate defects before correction. The
+claim upsert retained a prior `reasons_json` list even after replacing its current
+status reason. A Boolean metric key also reached the table as the text `true`.
+Both failed the new assertions on the uncorrected candidate.
+
+The upsert now resets current reasons to the empty default used by the prepared
+legacy payload, while retaining the original reason list in the prior-evidence
+snapshot. Required metric text fields must be JSON strings with nonblank content.
+Thirty type/blank combinations cover five fields against Boolean, numeric, null,
+object, array and whitespace values. Existing database enum constraints continue
+to reject unsupported string values.
+
+The native rollback suite passes baseline, harmless and restored cases and
+detects ten targeted faults, including the three new reason/type/blank faults.
+The eight separate-session concurrency cases also pass against the corrected
+candidate. Proof objects are removed after both suites. Results are retained
+under `model-command-client-20261008-proof/atomic-publication-fields/` and
+`publication-contention-fields/`. This does not close the candidate's remaining
+installation, HTTP/client, county, managed-ingestion or scientific boundaries.

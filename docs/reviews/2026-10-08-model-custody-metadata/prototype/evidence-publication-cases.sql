@@ -9,7 +9,7 @@ CREATE TRIGGER synthetic_publication_receipt_failure BEFORE INSERT ON public.mod
 DO $$
 DECLARE
  run uuid:=gen_random_uuid(); ws uuid; req uuid:=gen_random_uuid(); fail_req uuid:=gen_random_uuid();
- wrong_ws uuid:=gen_random_uuid(); stage uuid:=gen_random_uuid();
+ wrong_ws uuid:=gen_random_uuid(); stage uuid:=gen_random_uuid(); text_key text; bad_value jsonb;
  before_state jsonb; after_state jsonb; payload jsonb; changed jsonb; response jsonb; rejected boolean;
 BEGIN
  INSERT INTO public.model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by)
@@ -17,8 +17,8 @@ BEGIN
  FROM public.model_runs WHERE id=current_setting('openplan.proof_fixture')::uuid;
  SELECT workspace_id INTO ws FROM public.model_runs WHERE id=run;
  IF ws IS NULL THEN RAISE EXCEPTION 'Fixture unavailable'; END IF;
- INSERT INTO public.modeling_claim_decisions(workspace_id,model_run_id,track,claim_status,status_reason)
- VALUES(ws,run,'assignment','prototype_only','Prior synthetic claim');
+ INSERT INTO public.modeling_claim_decisions(workspace_id,model_run_id,track,claim_status,status_reason,reasons_json)
+ VALUES(ws,run,'assignment','prototype_only','Prior synthetic claim','["Prior synthetic reason"]');
  INSERT INTO public.modeling_validation_results(workspace_id,model_run_id,track,metric_key,metric_label,status,detail)
  VALUES(ws,run,'assignment','prior','Prior synthetic metric','warn','Prior retained metric');
  before_state:=public.read_legacy_model_evidence(ws,run,'assignment');
@@ -37,10 +37,19 @@ BEGIN
   OR EXISTS(SELECT 1 FROM public.model_evidence_publication_context WHERE run_id=run) THEN
   RAISE EXCEPTION 'Failed publication did not roll back';
  END IF;
+ FOREACH text_key IN ARRAY ARRAY['metric_key','metric_label','threshold_comparator','status','detail'] LOOP
+  FOR bad_value IN SELECT value FROM jsonb_array_elements('[true,23,null,{},[]," "]'::jsonb) LOOP
+   rejected:=false;
+   BEGIN PERFORM public.publish_legacy_model_evidence(gen_random_uuid(),ws,run,'assignment',before_state,jsonb_set(payload,ARRAY['metrics','0',text_key],bad_value));
+   EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'Invalid publication metric text' THEN RAISE; END IF; rejected:=true; END;
+   IF NOT rejected THEN RAISE EXCEPTION 'Invalid metric text accepted: % %',text_key,bad_value; END IF;
+  END LOOP;
+ END LOOP;
  response:=public.publish_legacy_model_evidence(req,ws,run,'assignment',before_state,payload);
  after_state:=public.read_legacy_model_evidence(ws,run,'assignment');
  IF response->'evidence' IS DISTINCT FROM after_state OR after_state=before_state
   OR after_state->'metrics'->0->>'metric_key' IS DISTINCT FROM 'replacement' THEN RAISE EXCEPTION 'Replacement receipt differs'; END IF;
+ IF after_state->'claims'->0->'reasons_json' IS DISTINCT FROM '[]'::jsonb THEN RAISE EXCEPTION 'Replacement retained prior current reasons'; END IF;
  IF (SELECT prior_evidence FROM public.model_evidence_publication_receipts WHERE request_id=req) IS DISTINCT FROM before_state THEN
   RAISE EXCEPTION 'Prior evidence not retained';
  END IF;
