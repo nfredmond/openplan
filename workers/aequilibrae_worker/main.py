@@ -2788,16 +2788,15 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
     if os.path.exists(proj_dir):
         shutil.rmtree(proj_dir)
 
-    project = Project()
-    project.new(proj_dir)
-    # Download OSM for a buffered bbox so boundary-crossing highways extend past
-    # the study area and can be detected as external gateways below. Zone
-    # selection stays on the un-buffered bbox.
-    b = GATEWAY_BUFFER_DEG
-    buffered_bbox = (bbox[0] - b, bbox[1] - b, bbox[2] + b, bbox[3] + b)
-    model_area = box(*buffered_bbox)
-    project.network.create_from_osm(model_area=model_area, modes=["car"], clean=True)
-    project.close()
+    from model_engine_scope import project_scope
+    with project_scope(Project, proj_dir, create=True) as project:
+        # Download OSM for a buffered bbox so boundary-crossing highways extend past
+        # the study area and can be detected as external gateways below. Zone
+        # selection stays on the un-buffered bbox.
+        b = GATEWAY_BUFFER_DEG
+        buffered_bbox = (bbox[0] - b, bbox[1] - b, bbox[2] + b, bbox[3] + b)
+        model_area = box(*buffered_bbox)
+        project.network.create_from_osm(model_area=model_area, modes=["car"], clean=True)
 
     log += "OSM download complete.\n"
     sb_patch_stage(stage_id, {"log_tail": log})
@@ -4251,708 +4250,707 @@ def stage_assignment(
             else "Selected count inputs are unavailable; no substitute was selected during retention.\n")
     sb_patch_stage(stage_id, {"log_tail": log})
 
-    project = Project()
-    project.open(proj_dir)
-    project.network.build_graphs(modes=["c"])
-    graph = project.network.graphs["c"]
-    # distance_net zeroes virtual centroid connectors so the routed-distance
-    # skim shares resident_vmt_network's connector-excluded basis (the
-    # convergence diagnostic compares like with like; connectors are modeling
-    # artifacts, counted by neither VMT estimator). graph.network carries no
-    # link_type column, so connector ids come from the project DB. Added
-    # BEFORE prepare_graph so the field is carried into the compressed graph.
-    # Diagnostic-only plumbing: any failure here must degrade to the plain
-    # travel-time skim (diagnostic silently absent), never fail the stage.
-    skim_fields = ["travel_time"]
-    try:
-        _conn_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
+    from model_engine_scope import project_scope
+    with project_scope(Project, proj_dir) as project:
+        project.network.build_graphs(modes=["c"])
+        graph = project.network.graphs["c"]
+        # distance_net zeroes virtual centroid connectors so the routed-distance
+        # skim shares resident_vmt_network's connector-excluded basis (the
+        # convergence diagnostic compares like with like; connectors are modeling
+        # artifacts, counted by neither VMT estimator). graph.network carries no
+        # link_type column, so connector ids come from the project DB. Added
+        # BEFORE prepare_graph so the field is carried into the compressed graph.
+        # Diagnostic-only plumbing: any failure here must degrade to the plain
+        # travel-time skim (diagnostic silently absent), never fail the stage.
+        skim_fields = ["travel_time"]
         try:
-            connector_ids = {
-                int(r[0]) for r in _conn_db.execute(
-                    "SELECT link_id FROM links WHERE link_type = 'centroid_connector'"
-                )
-            }
-        finally:
-            _conn_db.close()
-        graph.network["distance_net"] = np.where(
-            graph.network["link_id"].isin(connector_ids), 0.0, graph.network["distance"]
-        )
-        skim_fields = ["travel_time", "distance", "distance_net"]
-    except Exception as e:
-        log += f"Convergence skim setup warning ({e}); routed-circuity diagnostic disabled.\n"
-    graph.set_graph("travel_time")
-    graph.prepare_graph(np.array(assignment_centroids))
-    graph.set_blocked_centroid_flows(True)
-    if persisted_network_settings is None:
-        if (
-            persisted_network_settings_payload_json is not None
-            or persisted_network_settings_digest is not None
-        ):
-            raise AssignmentSettingsError(
-                "Network-settings payload/digest were supplied without a settings object"
-            )
-        applied_network_settings = assignment_network_settings()
-        applied_network_settings_payload = network_settings_payload_json(
-            applied_network_settings
-        )
-        applied_network_settings_digest = network_settings_digest(
-            applied_network_settings, applied_network_settings_payload
-        )
-    else:
-        (
-            applied_network_settings,
-            applied_network_settings_payload,
-            applied_network_settings_digest,
-        ) = validated_network_settings_record(
-            persisted_network_settings,
-            persisted_network_settings_payload_json,
-            persisted_network_settings_digest,
-            "assignment-stage handoff",
-        )
-    reused_network_links = apply_persisted_network_settings(
-        graph, proj_dir, applied_network_settings
-    )
-    if persisted_network_settings is not None:
-        log += (
-            "Applied the trip-based assignment's persisted, accepted road-class "
-            f"speed/capacity factors to {reused_network_links} retained-network links; "
-            "no trip-based OD adjustment was reused. "
-            f"Settings SHA-256: {applied_network_settings_digest}.\n"
-        )
-    # "distance"/"distance_net" ride along so the assignment classes carry
-    # blended, flow-consistent routed-distance skims (diagnostic inputs).
-    graph.set_skimming(skim_fields)
-
-    log += f"Graph: {graph.num_links} links, {graph.num_nodes} nodes\n"
-    log += "Running skims...\n"
-    sb_patch_stage(stage_id, {"log_tail": log})
-
-    skimming = NetworkSkimming(graph)
-    skimming.set_cores(AEQ_CORES)
-    skimming.execute()
-    skim_mat = skimming.results.skims
-    time_skim_full = skim_mat.matrix["travel_time"]          # (n_assign × n_assign)
-    time_skim = time_skim_full[np.ix_(ii, ii)]               # internal sub-block
-
-    finite = np.isfinite(time_skim) & (time_skim > 0)
-    np.fill_diagonal(finite, False)
-    n_reachable = int(finite.sum())
-    n_pairs = n_zones * (n_zones - 1)
-
-    avg_time = float(np.mean(time_skim[finite])) if n_reachable > 0 else None
-    max_time = float(np.max(time_skim[finite])) if n_reachable > 0 else None
-
-    skim_mat.export(os.path.join(out_dir, "travel_time_skims.omx"))
-    log += f"Reachable OD pairs: {n_reachable}/{n_pairs}\n"
-
-    # Load demand
-    log += "Loading demand...\n"
-    sb_patch_stage(stage_id, {"log_tail": log})
-
-    od_full = pd.read_csv(os.path.join(pkg_dir, "od_trip_matrix.csv"), index_col=0)
-    remap_inv = {v: k for k, v in centroid_map.items()}
-    ordered_zone_ids = [int(remap_inv[c]) for c in centroids_sorted]
-    od_array = np.zeros((n_zones, n_zones))
-    for i, ci in enumerate(centroids_sorted):
-        for j, cj in enumerate(centroids_sorted):
+            _conn_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
             try:
-                od_array[i, j] = od_full.loc[remap_inv[ci], str(remap_inv[cj])]
-            except KeyError:
-                pass
-
-    internal_person_trips = float(od_array.sum())
-
-    # --- Mode choice: split internal person-trips into auto / transit / active;
-    # only the auto matrix is assigned. Transit LOS comes from the bundled GTFS
-    # (gtfs_skim); transit share is 0 where no service. Through-traffic (gateways,
-    # below) stays 100% auto. ---
-    # A stale od_auto_matrix.csv from a prior in-place run of the same run_id
-    # must never outlive a disabled/failed split, or stage_artifacts would
-    # mislabel the resident VMT basis. Remove it unless THIS invocation writes
-    # a fresh one below.
-    auto_od_path = os.path.join(pkg_dir, "od_auto_matrix.csv")
-
-    def _clear_stale_auto_od():
-        if os.path.exists(auto_od_path):
-            try:
-                os.remove(auto_od_path)
-            except OSError:
-                pass
-
-    mode_split = (
-        {
-            "method": "supplied_vehicle_trip_matrix",
-            "note": (
-                "ActivitySim person trips were converted to vehicles before assignment; "
-                "the trip-based mode split was not applied a second time."
-            ),
-        }
-        if demand_is_vehicle
-        else None
-    )
-    if should_apply_trip_based_mode_split(demand_is_vehicle):
-        try:
-            zattr_mc = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
-            zattr_mc["zone_id"] = zattr_mc["zone_id"].astype(int)
-            zattr_mc = zattr_mc.set_index("zone_id", drop=False)
-            zc = zattr_mc.loc[ordered_zone_ids, ["centroid_lon", "centroid_lat", "area_sq_mi"]]
-            lons = zc["centroid_lon"].to_numpy(dtype=float)
-            lats = zc["centroid_lat"].to_numpy(dtype=float)
-            areas = zc["area_sq_mi"].to_numpy(dtype=float)
-            dist_miles = np.zeros((n_zones, n_zones))
-            for i in range(n_zones):
-                for j in range(n_zones):
-                    dist_miles[i, j] = (
-                        intrazonal_miles(areas[i]) if i == j
-                        else haversine_miles(lons[i], lats[i], lons[j], lats[j])
+                connector_ids = {
+                    int(r[0]) for r in _conn_db.execute(
+                        "SELECT link_id FROM links WHERE link_type = 'centroid_connector'"
                     )
-
-            # Transit LOS from a published GTFS feed. A feed failure falls back to
-            # the auto/active split, but records transit_status so a 0 transit
-            # share is never mistaken for "no transit demand".
-            #
-            # `transit_los_meta` is written on EVERY outcome, hits and misses
-            # alike, because it is what the run-detail evidence panel reads. A
-            # planner defending a VMT number has to be able to say which feed and
-            # from when; a run with no feed has to state that as a coverage fact
-            # rather than by leaving the provenance blank.
-            transit_skim = None
-            transit_status = "modeled"
-            transit_los_meta = {}
-            try:
-                # One wall-clock budget for the WHOLE transit stage — discovery,
-                # feed download and skim together — started before any of it runs.
-                # The worker's stages are serial inside one queued job, so an
-                # unbounded transit stage stalls every run behind this one. The
-                # budget is COOPERATIVE — it stops the stage at the next
-                # check_deadline call, not the instant it expires, so a stalled
-                # download is still bounded by requests' own timeout rather than by
-                # this. It never changes a modeled number, only converts an
-                # open-ended stall into a named refusal.
-                transit_deadline = gtfs_skim.stage_deadline()
-                discovery = None
-                env_url = os.getenv("GTFS_URL")
-                env_path = os.getenv("GTFS_PATH")
-                explicit_feed = bool(env_path or env_url)
-                # The run's OWN choice of feed, if the planner made one. It
-                # outranks the operator's env feed and the catalog both — see
-                # gtfs_skim.plan_feed for why a per-run act beats a
-                # deployment-wide default — so discovery is not even attempted
-                # when one is present, rather than attempted and then discarded.
-                feed_selection = gtfs_skim.parse_feed_selection(run_row)
-                discovering = GTFS_DISCOVER and not explicit_feed and feed_selection is None
-                if discovering:
-                    study_bbox = (float(lons.min()), float(lats.min()), float(lons.max()), float(lats.max()))
-                    discovery = gtfs_skim.discover_feed(study_bbox)
-                    if discovery.url:
-                        log += f"GTFS discovery selected a feed covering this study area: {discovery.url}\n"
-
-                # WHICH feed this run tries, and what it may say when it has none.
-                # The decision itself lives in gtfs_skim.plan_feed so it is unit
-                # testable — main.py cannot be imported by the stdlib worker suites.
-                feed_plan = gtfs_skim.plan_feed(
-                    discovery, discovering=discovering, env_url=env_url, env_path=env_path,
-                    selection=feed_selection,
-                )
-                feed_origin = feed_plan.origin
-                transit_los_meta = {"feed_origin": feed_origin}
-                if feed_plan.operator_env_overridden:
-                    # An operator who pinned GTFS_URL/GTFS_PATH and finds a run
-                    # skimmed something else is owed the reason, on the run, not
-                    # in a changelog. This is the disclosure that makes the
-                    # precedence reversal honest rather than surprising.
-                    transit_los_meta["operator_env_overridden"] = True
-                    log += (
-                        "This run names its own transit feed, which takes precedence over the "
-                        "deployment-wide GTFS_URL/GTFS_PATH feed for this run only.\n"
-                    )
-                if feed_plan.selection_reason:
-                    transit_los_meta["selection_reason"] = feed_plan.selection_reason[:300]
-                if feed_plan.discovery_error:
-                    # Kept even when the fallback below goes on to model transit
-                    # successfully: a run that says "modeled" must still disclose
-                    # that discovery never actually ran for this study area.
-                    # Truncated so an unexpectedly long message cannot bloat the packet.
-                    transit_los_meta["discovery_error"] = feed_plan.discovery_error[:300]
-                if feed_plan.fallback_after_catalog_failure:
-                    log += (
-                        "GTFS feed catalog could not be reached "
-                        f"({feed_plan.discovery_error or 'reason not reported'}); falling back to the feed "
-                        "bundled with the worker, which is applied only if its own stops fall inside "
-                        "this study area. Discovery did NOT run for this study area, so a published "
-                        "feed covering it may exist and was not looked for.\n"
-                    )
-
-                if not feed_plan.load:
-                    # Two very different refusals share this branch, and each says
-                    # its own sentence. Neither may fall back to another feed:
-                    # discovery's is a checked coverage fact about the AREA, and a
-                    # selection's is a fact about the feed the planner CHOSE.
-                    transit_status = feed_plan.status
-                    transit_los_meta["no_feed_reason"] = feed_plan.no_feed_reason
-                    if feed_plan.origin == "workspace_feed_version":
-                        log += (
-                            "The transit feed chosen for this run could not be used "
-                            f"({feed_plan.no_feed_reason}"
-                            + (f": {feed_plan.selection_reason}" if feed_plan.selection_reason else "")
-                            + "); transit not modeled (transit share 0 — NOT 'no transit demand'). "
-                            "No other feed was substituted: a run that names one feed must not "
-                            "report numbers produced by another.\n"
-                        )
-                    else:
-                        log += (
-                            "GTFS discovery found no scheduled feed covering this study area; "
-                            "transit not modeled (transit share 0 — NOT 'no transit demand').\n"
-                        )
-                elif feed_plan.feed_version_id:
-                    # The run named one of the workspace's own ingested feeds.
-                    # Everything this path does lives in one function so a test can
-                    # DRIVE it — the rest of this stage cannot be called without a
-                    # built AequilibraE project, which is how a branch that does
-                    # nothing would otherwise reach production green.
-                    _sel_meta, transit_skim, _sel_log = skim_selected_feed_version(
-                        feed_plan.feed_version_id,
-                        run_row.get("workspace_id"),
-                        lons,
-                        lats,
-                        deadline=transit_deadline,
-                        feed_origin=feed_origin,
-                    )
-                    transit_los_meta.update(_sel_meta)
-                    log += _sel_log
-                else:
-                    los = gtfs_skim.load_feed(url=feed_plan.url)
-                    transit_los_meta["source_url"] = los.source_url
-                    transit_los_meta["source_name"] = los.source_name
-                    # A slow-drip download can outlast requests' per-read timeout;
-                    # check before committing to the skim rather than starting one
-                    # there is no longer time to finish.
-                    gtfs_skim.check_deadline(transit_deadline, "downloading and parsing the feed")
-                    if not gtfs_skim.feed_covers(los, lons, lats):
-                        # The feed loaded but none of its stops fall within the study
-                        # area — skimming it would report a misleading transit_status
-                        # of "modeled" with a 0 share.
-                        if feed_plan.fallback_after_catalog_failure:
-                            # The bundled feed was standing in for a catalog we could
-                            # not read, so its miss says only that IT is the wrong
-                            # feed. Nothing was established about this area, and
-                            # calling that "no local feed" would state a coverage
-                            # fact nobody checked.
-                            transit_status = "feed_unavailable"
-                            transit_los_meta["no_feed_reason"] = "feed_catalog_unavailable"
-                            log += (
-                                "The bundled fallback feed has no stops in this study area, and the "
-                                "feed catalog could not be reached — so whether a feed covers this "
-                                "study area is UNKNOWN, not an absence of local service.\n"
-                            )
-                        else:
-                            transit_status = "no_local_feed"
-                            transit_los_meta["no_feed_reason"] = "feed_has_no_stops_in_study_area"
-                            log += (
-                                "No GTFS feed covers this study area; transit not modeled "
-                                "(transit share 0 — NOT 'no transit demand'). Provide a local feed "
-                                "via GTFS_PATH/GTFS_URL to model transit for this area.\n"
-                            )
-                    else:
-                        transit_skim = gtfs_skim.transit_skim(los, lons, lats, deadline=transit_deadline)
-                        transit_los_meta.update(_transit_feed_summary(los))
-                        log += (
-                            f"Transit LOS from {los.source_url or los.source_name} "
-                            f"({feed_origin}): {los.n_routes} route(s), {los.n_stops} served stop(s), "
-                            f"service day {los.service_day}, service window "
-                            f"{transit_los_meta['service_period'] or 'not stated in the feed calendar'}.\n"
-                        )
-                        # The SAME sentence the chosen-feed path prints. The
-                        # operator-env, discovered-catalog and bundled feeds are
-                        # exactly the origins that used to say nothing about an
-                        # expired schedule — and the bundled feed is expired
-                        # today, so this is the ordinary deployment rather than
-                        # an edge case.
-                        log += _feed_expiry_log_note(transit_los_meta)
-            except Exception as te:
-                transit_status = "feed_unavailable"
-                # Carry forward whatever provenance was already established, then
-                # name the REAL reason (e.g. the loud frequencies.txt rejection).
-                # Truncated so an unexpectedly long message cannot bloat the packet.
-                #
-                # Which failure it was decides what we may say. `load_feed` stamps
-                # the feed's identity the moment it succeeds, so the presence of a
-                # source is the evidence that the feed WAS read and something after
-                # it — the coverage check or the skim itself — is what failed.
-                # Reporting that as "the feed could not be read" would give a real
-                # refusal the wrong reason, and would send a planner off to fix a
-                # feed that is fine.
-                _feed_was_read = bool(transit_los_meta.get("source_url") or transit_los_meta.get("source_name"))
-                if isinstance(te, gtfs_skim.SelectedFeedError):
-                    # A run that NAMED a feed already knows exactly what went
-                    # wrong with it, and that specificity is the whole value of
-                    # letting a planner choose. Flattening it into
-                    # "feed_load_failed" would send someone to re-upload an
-                    # archive when the real answer was "that feed does not serve
-                    # this study area".
-                    _no_feed_reason = te.no_feed_reason
-                elif isinstance(te, gtfs_skim.GtfsFrequencyOnly):
-                    # Not a broken feed: an agency that publishes headway bands
-                    # instead of a timetable. Named separately so nobody is sent
-                    # to fix a feed that is fine.
-                    _no_feed_reason = "feed_publishes_frequencies_only"
-                elif isinstance(te, gtfs_skim.GtfsTimeout):
-                    # Ran out of time, not out of data. Reported separately because
-                    # nothing about the feed is wrong — a rerun, a smaller zone
-                    # system or a larger GTFS_STAGE_BUDGET_S is the answer, and
-                    # calling it a feed problem would send a planner to their
-                    # transit agency over a budget the operator sets.
-                    _no_feed_reason = "transit_skim_timed_out"
-                elif _feed_was_read:
-                    _no_feed_reason = "transit_skim_failed"
-                else:
-                    _no_feed_reason = "feed_load_failed"
-                transit_los_meta = {
-                    **transit_los_meta,
-                    "no_feed_reason": _no_feed_reason,
-                    "error": str(te)[:300],
                 }
-                log += f"Transit LOS unavailable ({te}); transit reported as 0 (feed_unavailable).\n"
-
-            auto_float, auto_int, transit_int, active_int, mm = mode_choice.split_matrix(
-                od_array, time_skim, dist_miles, transit=transit_skim
-            )
-            _write_auto_od_matrix(auto_od_path, auto_int, ordered_zone_ids, od_full)
-            od_array = auto_float
-            # Shares from the INTEGER trip counts so the percent KPIs agree with
-            # the *_person_trips count KPIs (active is the residual → sums to 100).
-            total_int = mm["auto_trips"] + mm["transit_trips"] + mm["active_trips"]
-            if total_int > 0:
-                share_auto = round(100.0 * mm["auto_trips"] / total_int, 2)
-                share_transit = round(100.0 * mm["transit_trips"] / total_int, 2)
-                shares = {
-                    "auto": share_auto,
-                    "transit": share_transit,
-                    "active": round(max(100.0 - share_auto - share_transit, 0.0), 2),
-                }
-            else:
-                shares = {"auto": 100.0, "transit": 0.0, "active": 0.0}
-            mode_split = {
-                **mm,
-                "shares_pct": shares,
-                "transit_status": transit_status,
-                "transit_los": transit_los_meta,
-            }
-            log += (
-                f"Mode choice: auto {mm['auto_trips']:,} / transit {mm['transit_trips']:,} / "
-                f"active {mm['active_trips']:,} "
-                f"(auto {shares['auto']:.1f}% · transit {shares['transit']:.2f}% · active {shares['active']:.1f}%; "
-                f"transit {transit_status}, {mm['transit_available_pairs']}/{mm['transit_total_pairs']} pairs served)\n"
-            )
-        except Exception as e:
-            log += f"Mode choice warning ({e}); assigning all internal trips as auto.\n"
-            mode_split = None
-            _clear_stale_auto_od()
-    else:
-        _clear_stale_auto_od()
-
-    # The guided build lane may carry one explicit planner-entered screening
-    # adjustment. It changes internal assigned-auto demand only; external
-    # gateway counts remain observed inputs. Missing or malformed evidence is
-    # exactly no adjustment, never an inferred project benefit.
-    guided_adjustment = scenario_adjustment.resolve_assigned_auto_trip_adjustment(run_row)
-    if guided_adjustment is not None:
-        od_array = scenario_adjustment.apply_assigned_auto_trip_adjustment(
-            od_array, guided_adjustment
-        )
-        log += (
-            "Guided build assumption: assigned daily auto trips "
-            f"{guided_adjustment['auto_trip_change_pct']:+.1f}% versus no-build "
-            f"(planner basis: {guided_adjustment['basis'][:300]}). This is a "
-            "screening input, not a calibrated forecast. External gateway demand unchanged.\n"
-        )
-
-    # --- Assemble the full assignment demand matrix over internal + cordon
-    # zones. Internal auto demand (od_array = auto_float from mode choice, or the
-    # full internal OD if mode choice is off) sits in the internal block.
-    # External gateway trips enter/exit at CORDON centroids placed on the
-    # boundary highways, so through-traffic is forced ACROSS the crossing highway
-    # link instead of dumping onto local roads. Each cordon's boundary-crossing
-    # volume splits into an internal-destined portion (1−share; distributed by
-    # job/pop share) and a pass-through portion (share; routed to the SAME route's
-    # other cordon) — this loads the interior mainline ONLY for routes detected
-    # crossing the boundary at two cordons (e.g. an interstate that traverses the
-    # county); single-crossing routes have no partner and stay 100% internal. The
-    # share is a fixed, documented screening assumption — NOT tuned to counts. ---
-    # Demand is kept in TWO matrices so the assignment can run one traffic
-    # class per matrix (M7): `resident` = internal auto demand; `external` =
-    # cordon-injected boundary trips + routed pass-through. Per-class link
-    # flows then give network-routed resident VMT with through-traffic
-    # isolated exactly (link_vmt.py) instead of the circuity approximation.
-    resident_od = np.zeros((n_assign, n_assign))
-    resident_od[np.ix_(ii, ii)] = od_array
-    external_od = np.zeros((n_assign, n_assign))
-    external_gateway_trips = 0.0
-    passthrough_trips = 0.0
-    gateways = setup_result.get("gateways") or []
-    active_gws = [g for g in gateways if g.get("cordon_zone_id") and int(g["cordon_zone_id"]) in cordon_map]
-    if active_gws:
-        try:
-            zattr = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
-            zattr["zone_id"] = zattr["zone_id"].astype(int)
-            zattr = zattr.set_index("zone_id", drop=False)
-            ordered_df = zattr.loc[ordered_zone_ids, ["est_population", "total_jobs"]].reset_index(drop=True)
-            job_shares, pop_shares = build_cordon_injections(ordered_df)
-            partners = pair_passthrough_cordons(active_gws)  # cordon_zid → same-route partners
-            for g in active_gws:
-                cordon_zid = int(g["cordon_zone_id"])
-                cpos = _pos[cordon_map[cordon_zid]]
-                pt = PASSTHROUGH_SHARE if partners.get(cordon_zid) else 0.0  # only paired routes pass through
-                internal_frac = 1.0 - pt
-                external_od[cpos, ii] += float(g["daily_in"]) * internal_frac * job_shares    # external → internal
-                external_od[ii, cpos] += float(g["daily_out"]) * internal_frac * pop_shares   # internal → external
-                external_gateway_trips += float(g["daily_in"]) + float(g["daily_out"])
-                if pt > 0.0:
-                    through_vol = float(g["daily_in"]) * pt
-                    dest_cordons = partners[cordon_zid]
-                    per_dest = through_vol / len(dest_cordons)
-                    for dest_zid in dest_cordons:
-                        dpos = _pos[cordon_map[int(dest_zid)]]
-                        external_od[cpos, dpos] += per_dest   # enter at this cordon, exit at same-route cordon
-                        passthrough_trips += per_dest
-            log += (
-                f"Loaded {external_gateway_trips:,.0f} external gateway trips via {len(active_gws)} "
-                f"cordon centroid(s) on boundary highways ({passthrough_trips:,.0f} routed as "
-                f"pass-through at share {PASSTHROUGH_SHARE:.2f} across {len(partners)} paired cordon(s)).\n"
-            )
-        except Exception as e:
-            log += f"Cordon gateway loading warning: {e}\n"
-
-    # total_trips stays person-scale (internal person + gateway); routable_trips
-    # reflects the assigned (auto + gateway) demand.
-    total_trips = internal_person_trips + external_gateway_trips
-    unreachable = ~np.isfinite(time_skim_full)
-    resident_od[unreachable] = 0
-    external_od[unreachable] = 0
-    routable_trips = float(resident_od.sum() + external_od.sum())
-
-    # NOTE: AequilibraE names assignment-result columns after the matrix CORE
-    # (matrix.view_names), NOT the TrafficClass name — so each class's matrix
-    # needs a distinct core name or the per-class columns collide. The cores
-    # "resident"/"external" become link_volumes.csv columns resident_ab/ba/tot
-    # and external_ab/ba/tot, which link_vmt.py reads.
-    def _demand_matrix(file_stem: str, core_name: str, demand_array: np.ndarray) -> AequilibraeMatrix:
-        mat = AequilibraeMatrix()
-        mat.create_empty(
-            file_name=os.path.join(out_dir, f"{file_stem}.omx"),
-            zones=n_assign, matrix_names=[core_name], memory_only=False,
-        )
-        mat.index = np.array(assignment_centroids)
-        mat.matrix[core_name][:, :] = demand_array
-        mat.computational_view([core_name])
-        return mat
-
-    # demand.omx keeps its historical meaning (the full assigned demand) for
-    # artifact continuity; the per-class matrices are what get assigned.
-    _demand_matrix("demand", "demand", resident_od + external_od)
-    resident_mat = _demand_matrix("resident_demand", "resident", resident_od)
-    external_mat = _demand_matrix("external_demand", "external", external_od)
-
-    log += f"Demand: {total_trips:,.0f} total, {routable_trips:,.0f} routable "
-    log += f"(resident {resident_od.sum():,.0f} · external {external_od.sum():,.0f})\n"
-    log += "Running BFW assignment (2 classes: resident, external)...\n"
-    sb_patch_stage(stage_id, {"log_tail": log})
-
-    resident_class = TrafficClass(name="resident", graph=graph, matrix=resident_mat)
-    external_class = TrafficClass(name="external", graph=graph, matrix=external_mat)
-    assig = build_traffic_assignment(
-        TrafficAssignment,
-        (resident_class, external_class),
-        profile=assignment_profile,
-    )
-
-    # Select-link corridor attribution: resolve the validation-station
-    # screenlines to link_ids and attach them to BOTH traffic classes BEFORE
-    # execute (aequilibrae copies each class's _selected_links into its results
-    # at execute start; setting after has no effect). Purely diagnostic — any
-    # failure logs and skips, and set_select_links is all-or-nothing on an
-    # unknown link_id, so screenlines are pre-filtered to graph-present links.
-    select_link_sets: dict[str, list[tuple[int, int]]] = {}
-    try:
-        if COUNT_VALIDATION_ENABLED and os.path.exists(counts_path):
-            import csv as _csv
-            with open(counts_path) as _f:
-                _sl_stations = list(_csv.DictReader(_f))
-            _sl_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
-            _sl_db.enable_load_extension(True)
-            _sl_db.load_extension(SPATIALITE_PATH)
-            try:
-                _sl_rows = _sl_db.execute(
-                    "SELECT link_id, COALESCE(name,''), COALESCE(link_type,''), "
-                    "X(Centroid(geometry)), Y(Centroid(geometry)) FROM links "
-                    "WHERE name IS NOT NULL AND name != '' AND link_type != 'centroid_connector'"
-                ).fetchall()
             finally:
-                _sl_db.close()
-            _sl_modeled = [
-                {"link_id": int(lid), "name": nm, "link_type": lt,
-                 "lon": float(cx) if cx is not None else None,
-                 "lat": float(cy) if cy is not None else None}
-                for lid, nm, lt, cx, cy in _sl_rows
-            ]
-            _screenlines = select_link.select_link_screenlines(_sl_stations, _sl_modeled)
-            _graph_link_ids = {int(x) for x in graph.graph["link_id"].values}
-            for _name, _link_ids in _screenlines.items():
-                _present = [lid for lid in _link_ids if lid in _graph_link_ids]
-                if _present:
-                    select_link_sets[_name] = [(lid, 0) for lid in _present]  # dir 0 = both
-            if select_link_sets:
-                resident_class.set_select_links(select_link_sets)
-                external_class.set_select_links(select_link_sets)
-                log += (
-                    f"Select-link: {len(select_link_sets)} corridor screenline(s) attached "
-                    f"({sum(len(v) for v in select_link_sets.values())} links).\n"
+                _conn_db.close()
+            graph.network["distance_net"] = np.where(
+                graph.network["link_id"].isin(connector_ids), 0.0, graph.network["distance"]
+            )
+            skim_fields = ["travel_time", "distance", "distance_net"]
+        except Exception as e:
+            log += f"Convergence skim setup warning ({e}); routed-circuity diagnostic disabled.\n"
+        graph.set_graph("travel_time")
+        graph.prepare_graph(np.array(assignment_centroids))
+        graph.set_blocked_centroid_flows(True)
+        if persisted_network_settings is None:
+            if (
+                persisted_network_settings_payload_json is not None
+                or persisted_network_settings_digest is not None
+            ):
+                raise AssignmentSettingsError(
+                    "Network-settings payload/digest were supplied without a settings object"
                 )
-                sb_patch_stage(stage_id, {"log_tail": log})
-    except Exception as e:
-        select_link_sets = {}
-        log += f"Select-link setup warning ({e}); corridor attribution skipped.\n"
+            applied_network_settings = assignment_network_settings()
+            applied_network_settings_payload = network_settings_payload_json(
+                applied_network_settings
+            )
+            applied_network_settings_digest = network_settings_digest(
+                applied_network_settings, applied_network_settings_payload
+            )
+        else:
+            (
+                applied_network_settings,
+                applied_network_settings_payload,
+                applied_network_settings_digest,
+            ) = validated_network_settings_record(
+                persisted_network_settings,
+                persisted_network_settings_payload_json,
+                persisted_network_settings_digest,
+                "assignment-stage handoff",
+            )
+        reused_network_links = apply_persisted_network_settings(
+            graph, proj_dir, applied_network_settings
+        )
+        if persisted_network_settings is not None:
+            log += (
+                "Applied the trip-based assignment's persisted, accepted road-class "
+                f"speed/capacity factors to {reused_network_links} retained-network links; "
+                "no trip-based OD adjustment was reused. "
+                f"Settings SHA-256: {applied_network_settings_digest}.\n"
+            )
+        # "distance"/"distance_net" ride along so the assignment classes carry
+        # blended, flow-consistent routed-distance skims (diagnostic inputs).
+        graph.set_skimming(skim_fields)
 
-    network_state_record, network_state_digest_value = assignment_network_state(
-        assig,
-        graph,
-        assignment_centroids,
-        proj_dir,
-        network_settings_digest_value=applied_network_settings_digest,
-    )
-    require_expected_network_state(
-        network_state_record,
-        network_state_digest_value,
-        expected_network_state_record,
-        expected_network_state_digest,
-        applied_network_settings_digest,
-        "assignment-stage handoff",
-    )
-
-    # The assignment is one blocking call that can run for minutes. Without
-    # this the stage log froze on its last line and a healthy long run looked
-    # identical to a hung one — the stuck-run banner only fires after ten
-    # minutes, which is longer than many assignments take in total. The engine
-    # already logs an iteration line; this forwards it, throttled.
-    def _emit_progress(line: str) -> None:
-        nonlocal log
-        log += line + "\n"
+        log += f"Graph: {graph.num_links} links, {graph.num_nodes} nodes\n"
+        log += "Running skims...\n"
         sb_patch_stage(stage_id, {"log_tail": log})
 
-    with stream_assignment_progress(
-        _emit_progress,
-        target_gap=assig.rgap_target,
-        max_iterations=assig.max_iter,
-    ):
-        assig.execute()
+        skimming = NetworkSkimming(graph)
+        skimming.set_cores(AEQ_CORES)
+        skimming.execute()
+        skim_mat = skimming.results.skims
+        time_skim_full = skim_mat.matrix["travel_time"]          # (n_assign × n_assign)
+        time_skim = time_skim_full[np.ix_(ii, ii)]               # internal sub-block
 
-    rgap = getattr(assig.assignment, "rgap", float("nan"))
-    iters = assignment_iteration_count(assig.assignment)
+        finite = np.isfinite(time_skim) & (time_skim > 0)
+        np.fill_diagonal(finite, False)
+        n_reachable = int(finite.sum())
+        n_pairs = n_zones * (n_zones - 1)
 
-    results_df = assig.results()
-    convergence_record = assignment_convergence_record(rgap, iters, assignment_profile)
-    results_df.attrs["convergence"] = convergence_record
-    results_df.attrs["network_state_record"] = network_state_record
-    results_df.attrs["network_state_digest"] = network_state_digest_value
-    results_df.to_csv(os.path.join(out_dir, "link_volumes.csv"))
-    loaded_links = int((results_df["PCE_tot"] > 0).sum()) if "PCE_tot" in results_df.columns else 0
+        avg_time = float(np.mean(time_skim[finite])) if n_reachable > 0 else None
+        max_time = float(np.max(time_skim[finite])) if n_reachable > 0 else None
 
-    # Convergence diagnostic: what circuity does THIS run's routing imply?
-    # Demand-weighted routed distance (blended assignment skim, resident class)
-    # over great-circle distance, interzonal pairs only. Diagnostic — never
-    # alters the OD estimator's fixed 1.30, never fails the run.
-    convergence_diag = None
-    try:
-        zattr_cd = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
-        zattr_cd["zone_id"] = zattr_cd["zone_id"].astype(int)
-        zattr_cd = zattr_cd.set_index("zone_id", drop=False)
-        zc_cd = zattr_cd.loc[ordered_zone_ids, ["centroid_lon", "centroid_lat"]]
-        lons_cd = zc_cd["centroid_lon"].to_numpy(dtype=float)
-        lats_cd = zc_cd["centroid_lat"].to_numpy(dtype=float)
-        straight_mi = np.zeros((n_zones, n_zones))
-        for i in range(n_zones):
-            for j in range(n_zones):
-                if i != j:
-                    straight_mi[i, j] = haversine_miles(lons_cd[i], lats_cd[i], lons_cd[j], lats_cd[j])
-        routed_m = resident_class.results.skims.matrix["distance_net"][np.ix_(ii, ii)]
-        convergence_diag = convergence.routed_effective_circuity(
-            resident_od[np.ix_(ii, ii)], routed_m, straight_mi
-        )
-        if convergence_diag:
-            log += (
-                f"Routed effective circuity (resident, demand-weighted): "
-                f"{convergence_diag['effective_circuity']} vs {convergence_diag['assumed_circuity']} assumed\n"
-            )
-    except Exception as e:
-        log += f"Convergence diagnostic warning: {e}\n"
+        skim_mat.export(os.path.join(out_dir, "travel_time_skims.omx"))
+        log += f"Reachable OD pairs: {n_reachable}/{n_pairs}\n"
 
-    # Select-link corridor attribution: classify each screenline's OD (the
-    # trips that route through it) into local / commute / through by cordon
-    # endpoint. Diagnostic; the SL-OD matrices are indexed over the assignment
-    # centroids, so cordon membership marks the boundary-injection zones.
-    select_link_analysis = None
-    if select_link_sets:
-        cordon_nodes = set(cordon_map.values())
-        is_cordon = np.array([c in cordon_nodes for c in assignment_centroids])
+        # Load demand
+        log += "Loading demand...\n"
+        sb_patch_stage(stage_id, {"log_tail": log})
 
-        def _sl_od(cls, name):
-            arr = np.asarray(cls.results.select_link_od.matrix[name])
-            return arr[:, :, 0] if arr.ndim == 3 else arr
+        od_full = pd.read_csv(os.path.join(pkg_dir, "od_trip_matrix.csv"), index_col=0)
+        remap_inv = {v: k for k, v in centroid_map.items()}
+        ordered_zone_ids = [int(remap_inv[c]) for c in centroids_sorted]
+        od_array = np.zeros((n_zones, n_zones))
+        for i, ci in enumerate(centroids_sorted):
+            for j, cj in enumerate(centroids_sorted):
+                try:
+                    od_array[i, j] = od_full.loc[remap_inv[ci], str(remap_inv[cj])]
+                except KeyError:
+                    pass
 
-        # Per-screenline try/except: one anomalous screenline logs and skips
-        # rather than voiding the whole run's corridor attribution.
-        screenlines_out = []
-        for name in select_link_sets:
-            try:
-                combined = _sl_od(resident_class, name) + _sl_od(external_class, name)
-                attr = select_link.link_attribution(combined, is_cordon)
-                attr["screenline"] = name
-                attr["link_ids"] = [lid for lid, _ in select_link_sets[name]]
-                screenlines_out.append(attr)
-            except Exception as e:
-                log += f"Select-link screenline {name} skipped ({e}).\n"
-        if screenlines_out:
-            select_link_analysis = {
-                "screenlines": screenlines_out,
-                "cordon_zone_count": int(is_cordon.sum()),
+        internal_person_trips = float(od_array.sum())
+
+        # --- Mode choice: split internal person-trips into auto / transit / active;
+        # only the auto matrix is assigned. Transit LOS comes from the bundled GTFS
+        # (gtfs_skim); transit share is 0 where no service. Through-traffic (gateways,
+        # below) stays 100% auto. ---
+        # A stale od_auto_matrix.csv from a prior in-place run of the same run_id
+        # must never outlive a disabled/failed split, or stage_artifacts would
+        # mislabel the resident VMT basis. Remove it unless THIS invocation writes
+        # a fresh one below.
+        auto_od_path = os.path.join(pkg_dir, "od_auto_matrix.csv")
+
+        def _clear_stale_auto_od():
+            if os.path.exists(auto_od_path):
+                try:
+                    os.remove(auto_od_path)
+                except OSError:
+                    pass
+
+        mode_split = (
+            {
+                "method": "supplied_vehicle_trip_matrix",
+                "note": (
+                    "ActivitySim person trips were converted to vehicles before assignment; "
+                    "the trip-based mode split was not applied a second time."
+                ),
             }
-            reached = [s for s in screenlines_out if s["total_trips"] > 0]
-            if reached:
-                log += (
-                    f"Select-link attribution: {len(reached)}/{len(screenlines_out)} screenline(s) "
-                    f"reached; through share "
-                    f"{min(s['through_share'] for s in reached):.0%}–"
-                    f"{max(s['through_share'] for s in reached):.0%}.\n"
+            if demand_is_vehicle
+            else None
+        )
+        if should_apply_trip_based_mode_split(demand_is_vehicle):
+            try:
+                zattr_mc = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
+                zattr_mc["zone_id"] = zattr_mc["zone_id"].astype(int)
+                zattr_mc = zattr_mc.set_index("zone_id", drop=False)
+                zc = zattr_mc.loc[ordered_zone_ids, ["centroid_lon", "centroid_lat", "area_sq_mi"]]
+                lons = zc["centroid_lon"].to_numpy(dtype=float)
+                lats = zc["centroid_lat"].to_numpy(dtype=float)
+                areas = zc["area_sq_mi"].to_numpy(dtype=float)
+                dist_miles = np.zeros((n_zones, n_zones))
+                for i in range(n_zones):
+                    for j in range(n_zones):
+                        dist_miles[i, j] = (
+                            intrazonal_miles(areas[i]) if i == j
+                            else haversine_miles(lons[i], lats[i], lons[j], lats[j])
+                        )
+
+                # Transit LOS from a published GTFS feed. A feed failure falls back to
+                # the auto/active split, but records transit_status so a 0 transit
+                # share is never mistaken for "no transit demand".
+                #
+                # `transit_los_meta` is written on EVERY outcome, hits and misses
+                # alike, because it is what the run-detail evidence panel reads. A
+                # planner defending a VMT number has to be able to say which feed and
+                # from when; a run with no feed has to state that as a coverage fact
+                # rather than by leaving the provenance blank.
+                transit_skim = None
+                transit_status = "modeled"
+                transit_los_meta = {}
+                try:
+                    # One wall-clock budget for the WHOLE transit stage — discovery,
+                    # feed download and skim together — started before any of it runs.
+                    # The worker's stages are serial inside one queued job, so an
+                    # unbounded transit stage stalls every run behind this one. The
+                    # budget is COOPERATIVE — it stops the stage at the next
+                    # check_deadline call, not the instant it expires, so a stalled
+                    # download is still bounded by requests' own timeout rather than by
+                    # this. It never changes a modeled number, only converts an
+                    # open-ended stall into a named refusal.
+                    transit_deadline = gtfs_skim.stage_deadline()
+                    discovery = None
+                    env_url = os.getenv("GTFS_URL")
+                    env_path = os.getenv("GTFS_PATH")
+                    explicit_feed = bool(env_path or env_url)
+                    # The run's OWN choice of feed, if the planner made one. It
+                    # outranks the operator's env feed and the catalog both — see
+                    # gtfs_skim.plan_feed for why a per-run act beats a
+                    # deployment-wide default — so discovery is not even attempted
+                    # when one is present, rather than attempted and then discarded.
+                    feed_selection = gtfs_skim.parse_feed_selection(run_row)
+                    discovering = GTFS_DISCOVER and not explicit_feed and feed_selection is None
+                    if discovering:
+                        study_bbox = (float(lons.min()), float(lats.min()), float(lons.max()), float(lats.max()))
+                        discovery = gtfs_skim.discover_feed(study_bbox)
+                        if discovery.url:
+                            log += f"GTFS discovery selected a feed covering this study area: {discovery.url}\n"
+
+                    # WHICH feed this run tries, and what it may say when it has none.
+                    # The decision itself lives in gtfs_skim.plan_feed so it is unit
+                    # testable — main.py cannot be imported by the stdlib worker suites.
+                    feed_plan = gtfs_skim.plan_feed(
+                        discovery, discovering=discovering, env_url=env_url, env_path=env_path,
+                        selection=feed_selection,
+                    )
+                    feed_origin = feed_plan.origin
+                    transit_los_meta = {"feed_origin": feed_origin}
+                    if feed_plan.operator_env_overridden:
+                        # An operator who pinned GTFS_URL/GTFS_PATH and finds a run
+                        # skimmed something else is owed the reason, on the run, not
+                        # in a changelog. This is the disclosure that makes the
+                        # precedence reversal honest rather than surprising.
+                        transit_los_meta["operator_env_overridden"] = True
+                        log += (
+                            "This run names its own transit feed, which takes precedence over the "
+                            "deployment-wide GTFS_URL/GTFS_PATH feed for this run only.\n"
+                        )
+                    if feed_plan.selection_reason:
+                        transit_los_meta["selection_reason"] = feed_plan.selection_reason[:300]
+                    if feed_plan.discovery_error:
+                        # Kept even when the fallback below goes on to model transit
+                        # successfully: a run that says "modeled" must still disclose
+                        # that discovery never actually ran for this study area.
+                        # Truncated so an unexpectedly long message cannot bloat the packet.
+                        transit_los_meta["discovery_error"] = feed_plan.discovery_error[:300]
+                    if feed_plan.fallback_after_catalog_failure:
+                        log += (
+                            "GTFS feed catalog could not be reached "
+                            f"({feed_plan.discovery_error or 'reason not reported'}); falling back to the feed "
+                            "bundled with the worker, which is applied only if its own stops fall inside "
+                            "this study area. Discovery did NOT run for this study area, so a published "
+                            "feed covering it may exist and was not looked for.\n"
+                        )
+
+                    if not feed_plan.load:
+                        # Two very different refusals share this branch, and each says
+                        # its own sentence. Neither may fall back to another feed:
+                        # discovery's is a checked coverage fact about the AREA, and a
+                        # selection's is a fact about the feed the planner CHOSE.
+                        transit_status = feed_plan.status
+                        transit_los_meta["no_feed_reason"] = feed_plan.no_feed_reason
+                        if feed_plan.origin == "workspace_feed_version":
+                            log += (
+                                "The transit feed chosen for this run could not be used "
+                                f"({feed_plan.no_feed_reason}"
+                                + (f": {feed_plan.selection_reason}" if feed_plan.selection_reason else "")
+                                + "); transit not modeled (transit share 0 — NOT 'no transit demand'). "
+                                "No other feed was substituted: a run that names one feed must not "
+                                "report numbers produced by another.\n"
+                            )
+                        else:
+                            log += (
+                                "GTFS discovery found no scheduled feed covering this study area; "
+                                "transit not modeled (transit share 0 — NOT 'no transit demand').\n"
+                            )
+                    elif feed_plan.feed_version_id:
+                        # The run named one of the workspace's own ingested feeds.
+                        # Everything this path does lives in one function so a test can
+                        # DRIVE it — the rest of this stage cannot be called without a
+                        # built AequilibraE project, which is how a branch that does
+                        # nothing would otherwise reach production green.
+                        _sel_meta, transit_skim, _sel_log = skim_selected_feed_version(
+                            feed_plan.feed_version_id,
+                            run_row.get("workspace_id"),
+                            lons,
+                            lats,
+                            deadline=transit_deadline,
+                            feed_origin=feed_origin,
+                        )
+                        transit_los_meta.update(_sel_meta)
+                        log += _sel_log
+                    else:
+                        los = gtfs_skim.load_feed(url=feed_plan.url)
+                        transit_los_meta["source_url"] = los.source_url
+                        transit_los_meta["source_name"] = los.source_name
+                        # A slow-drip download can outlast requests' per-read timeout;
+                        # check before committing to the skim rather than starting one
+                        # there is no longer time to finish.
+                        gtfs_skim.check_deadline(transit_deadline, "downloading and parsing the feed")
+                        if not gtfs_skim.feed_covers(los, lons, lats):
+                            # The feed loaded but none of its stops fall within the study
+                            # area — skimming it would report a misleading transit_status
+                            # of "modeled" with a 0 share.
+                            if feed_plan.fallback_after_catalog_failure:
+                                # The bundled feed was standing in for a catalog we could
+                                # not read, so its miss says only that IT is the wrong
+                                # feed. Nothing was established about this area, and
+                                # calling that "no local feed" would state a coverage
+                                # fact nobody checked.
+                                transit_status = "feed_unavailable"
+                                transit_los_meta["no_feed_reason"] = "feed_catalog_unavailable"
+                                log += (
+                                    "The bundled fallback feed has no stops in this study area, and the "
+                                    "feed catalog could not be reached — so whether a feed covers this "
+                                    "study area is UNKNOWN, not an absence of local service.\n"
+                                )
+                            else:
+                                transit_status = "no_local_feed"
+                                transit_los_meta["no_feed_reason"] = "feed_has_no_stops_in_study_area"
+                                log += (
+                                    "No GTFS feed covers this study area; transit not modeled "
+                                    "(transit share 0 — NOT 'no transit demand'). Provide a local feed "
+                                    "via GTFS_PATH/GTFS_URL to model transit for this area.\n"
+                                )
+                        else:
+                            transit_skim = gtfs_skim.transit_skim(los, lons, lats, deadline=transit_deadline)
+                            transit_los_meta.update(_transit_feed_summary(los))
+                            log += (
+                                f"Transit LOS from {los.source_url or los.source_name} "
+                                f"({feed_origin}): {los.n_routes} route(s), {los.n_stops} served stop(s), "
+                                f"service day {los.service_day}, service window "
+                                f"{transit_los_meta['service_period'] or 'not stated in the feed calendar'}.\n"
+                            )
+                            # The SAME sentence the chosen-feed path prints. The
+                            # operator-env, discovered-catalog and bundled feeds are
+                            # exactly the origins that used to say nothing about an
+                            # expired schedule — and the bundled feed is expired
+                            # today, so this is the ordinary deployment rather than
+                            # an edge case.
+                            log += _feed_expiry_log_note(transit_los_meta)
+                except Exception as te:
+                    transit_status = "feed_unavailable"
+                    # Carry forward whatever provenance was already established, then
+                    # name the REAL reason (e.g. the loud frequencies.txt rejection).
+                    # Truncated so an unexpectedly long message cannot bloat the packet.
+                    #
+                    # Which failure it was decides what we may say. `load_feed` stamps
+                    # the feed's identity the moment it succeeds, so the presence of a
+                    # source is the evidence that the feed WAS read and something after
+                    # it — the coverage check or the skim itself — is what failed.
+                    # Reporting that as "the feed could not be read" would give a real
+                    # refusal the wrong reason, and would send a planner off to fix a
+                    # feed that is fine.
+                    _feed_was_read = bool(transit_los_meta.get("source_url") or transit_los_meta.get("source_name"))
+                    if isinstance(te, gtfs_skim.SelectedFeedError):
+                        # A run that NAMED a feed already knows exactly what went
+                        # wrong with it, and that specificity is the whole value of
+                        # letting a planner choose. Flattening it into
+                        # "feed_load_failed" would send someone to re-upload an
+                        # archive when the real answer was "that feed does not serve
+                        # this study area".
+                        _no_feed_reason = te.no_feed_reason
+                    elif isinstance(te, gtfs_skim.GtfsFrequencyOnly):
+                        # Not a broken feed: an agency that publishes headway bands
+                        # instead of a timetable. Named separately so nobody is sent
+                        # to fix a feed that is fine.
+                        _no_feed_reason = "feed_publishes_frequencies_only"
+                    elif isinstance(te, gtfs_skim.GtfsTimeout):
+                        # Ran out of time, not out of data. Reported separately because
+                        # nothing about the feed is wrong — a rerun, a smaller zone
+                        # system or a larger GTFS_STAGE_BUDGET_S is the answer, and
+                        # calling it a feed problem would send a planner to their
+                        # transit agency over a budget the operator sets.
+                        _no_feed_reason = "transit_skim_timed_out"
+                    elif _feed_was_read:
+                        _no_feed_reason = "transit_skim_failed"
+                    else:
+                        _no_feed_reason = "feed_load_failed"
+                    transit_los_meta = {
+                        **transit_los_meta,
+                        "no_feed_reason": _no_feed_reason,
+                        "error": str(te)[:300],
+                    }
+                    log += f"Transit LOS unavailable ({te}); transit reported as 0 (feed_unavailable).\n"
+
+                auto_float, auto_int, transit_int, active_int, mm = mode_choice.split_matrix(
+                    od_array, time_skim, dist_miles, transit=transit_skim
                 )
+                _write_auto_od_matrix(auto_od_path, auto_int, ordered_zone_ids, od_full)
+                od_array = auto_float
+                # Shares from the INTEGER trip counts so the percent KPIs agree with
+                # the *_person_trips count KPIs (active is the residual → sums to 100).
+                total_int = mm["auto_trips"] + mm["transit_trips"] + mm["active_trips"]
+                if total_int > 0:
+                    share_auto = round(100.0 * mm["auto_trips"] / total_int, 2)
+                    share_transit = round(100.0 * mm["transit_trips"] / total_int, 2)
+                    shares = {
+                        "auto": share_auto,
+                        "transit": share_transit,
+                        "active": round(max(100.0 - share_auto - share_transit, 0.0), 2),
+                    }
+                else:
+                    shares = {"auto": 100.0, "transit": 0.0, "active": 0.0}
+                mode_split = {
+                    **mm,
+                    "shares_pct": shares,
+                    "transit_status": transit_status,
+                    "transit_los": transit_los_meta,
+                }
+                log += (
+                    f"Mode choice: auto {mm['auto_trips']:,} / transit {mm['transit_trips']:,} / "
+                    f"active {mm['active_trips']:,} "
+                    f"(auto {shares['auto']:.1f}% · transit {shares['transit']:.2f}% · active {shares['active']:.1f}%; "
+                    f"transit {transit_status}, {mm['transit_available_pairs']}/{mm['transit_total_pairs']} pairs served)\n"
+                )
+            except Exception as e:
+                log += f"Mode choice warning ({e}); assigning all internal trips as auto.\n"
+                mode_split = None
+                _clear_stale_auto_od()
+        else:
+            _clear_stale_auto_od()
 
-    # ── Count-based calibration (OPT-IN, off by default) ──────────────────
-    # Staged: (1) per-road-class free-flow speed + capacity toward counts, then
-    # (2) a select-link-guided demand nudge on the resident internal OD. Each
-    # step re-runs equilibrium and is kept ONLY if it improves a held-out
-    # (never-fit) count set. The OD-based resident_vmt (CEQA input) is never
-    # touched; calibrated outputs get distinct KPI names.
-    calibration_result = None
-    if should_run_calibration(calibrate_requested and not demand_is_vehicle, counts_path):
-        try:
-            def _make_resident_mat(demand_array):
-                m = AequilibraeMatrix()
-                m.create_empty(zones=n_assign, matrix_names=["resident"], memory_only=True)
-                m.index = np.array(assignment_centroids)
-                m.matrix["resident"][:, :] = demand_array
-                m.computational_view(["resident"])
-                return m
-
-            calibration_result, log = _run_calibration(
-                proj_dir, out_dir, graph, resident_mat, external_mat, results_df, log,
-                counts_path=counts_path,
-                resident_od=resident_od, ii=ii, assignment_centroids=assignment_centroids,
-                make_resident_mat=_make_resident_mat, pkg_dir=pkg_dir, ordered_zone_ids=ordered_zone_ids,
-                assignment_profile=assignment_profile,
+        # The guided build lane may carry one explicit planner-entered screening
+        # adjustment. It changes internal assigned-auto demand only; external
+        # gateway counts remain observed inputs. Missing or malformed evidence is
+        # exactly no adjustment, never an inferred project benefit.
+        guided_adjustment = scenario_adjustment.resolve_assigned_auto_trip_adjustment(run_row)
+        if guided_adjustment is not None:
+            od_array = scenario_adjustment.apply_assigned_auto_trip_adjustment(
+                od_array, guided_adjustment
             )
-        except Exception as e:
-            log += f"Calibration warning ({e}); keeping the uncalibrated screening result.\n"
+            log += (
+                "Guided build assumption: assigned daily auto trips "
+                f"{guided_adjustment['auto_trip_change_pct']:+.1f}% versus no-build "
+                f"(planner basis: {guided_adjustment['basis'][:300]}). This is a "
+                "screening input, not a calibrated forecast. External gateway demand unchanged.\n"
+            )
 
-    project.close()
+        # --- Assemble the full assignment demand matrix over internal + cordon
+        # zones. Internal auto demand (od_array = auto_float from mode choice, or the
+        # full internal OD if mode choice is off) sits in the internal block.
+        # External gateway trips enter/exit at CORDON centroids placed on the
+        # boundary highways, so through-traffic is forced ACROSS the crossing highway
+        # link instead of dumping onto local roads. Each cordon's boundary-crossing
+        # volume splits into an internal-destined portion (1−share; distributed by
+        # job/pop share) and a pass-through portion (share; routed to the SAME route's
+        # other cordon) — this loads the interior mainline ONLY for routes detected
+        # crossing the boundary at two cordons (e.g. an interstate that traverses the
+        # county); single-crossing routes have no partner and stay 100% internal. The
+        # share is a fixed, documented screening assumption — NOT tuned to counts. ---
+        # Demand is kept in TWO matrices so the assignment can run one traffic
+        # class per matrix (M7): `resident` = internal auto demand; `external` =
+        # cordon-injected boundary trips + routed pass-through. Per-class link
+        # flows then give network-routed resident VMT with through-traffic
+        # isolated exactly (link_vmt.py) instead of the circuity approximation.
+        resident_od = np.zeros((n_assign, n_assign))
+        resident_od[np.ix_(ii, ii)] = od_array
+        external_od = np.zeros((n_assign, n_assign))
+        external_gateway_trips = 0.0
+        passthrough_trips = 0.0
+        gateways = setup_result.get("gateways") or []
+        active_gws = [g for g in gateways if g.get("cordon_zone_id") and int(g["cordon_zone_id"]) in cordon_map]
+        if active_gws:
+            try:
+                zattr = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
+                zattr["zone_id"] = zattr["zone_id"].astype(int)
+                zattr = zattr.set_index("zone_id", drop=False)
+                ordered_df = zattr.loc[ordered_zone_ids, ["est_population", "total_jobs"]].reset_index(drop=True)
+                job_shares, pop_shares = build_cordon_injections(ordered_df)
+                partners = pair_passthrough_cordons(active_gws)  # cordon_zid → same-route partners
+                for g in active_gws:
+                    cordon_zid = int(g["cordon_zone_id"])
+                    cpos = _pos[cordon_map[cordon_zid]]
+                    pt = PASSTHROUGH_SHARE if partners.get(cordon_zid) else 0.0  # only paired routes pass through
+                    internal_frac = 1.0 - pt
+                    external_od[cpos, ii] += float(g["daily_in"]) * internal_frac * job_shares    # external → internal
+                    external_od[ii, cpos] += float(g["daily_out"]) * internal_frac * pop_shares   # internal → external
+                    external_gateway_trips += float(g["daily_in"]) + float(g["daily_out"])
+                    if pt > 0.0:
+                        through_vol = float(g["daily_in"]) * pt
+                        dest_cordons = partners[cordon_zid]
+                        per_dest = through_vol / len(dest_cordons)
+                        for dest_zid in dest_cordons:
+                            dpos = _pos[cordon_map[int(dest_zid)]]
+                            external_od[cpos, dpos] += per_dest   # enter at this cordon, exit at same-route cordon
+                            passthrough_trips += per_dest
+                log += (
+                    f"Loaded {external_gateway_trips:,.0f} external gateway trips via {len(active_gws)} "
+                    f"cordon centroid(s) on boundary highways ({passthrough_trips:,.0f} routed as "
+                    f"pass-through at share {PASSTHROUGH_SHARE:.2f} across {len(partners)} paired cordon(s)).\n"
+                )
+            except Exception as e:
+                log += f"Cordon gateway loading warning: {e}\n"
+
+        # total_trips stays person-scale (internal person + gateway); routable_trips
+        # reflects the assigned (auto + gateway) demand.
+        total_trips = internal_person_trips + external_gateway_trips
+        unreachable = ~np.isfinite(time_skim_full)
+        resident_od[unreachable] = 0
+        external_od[unreachable] = 0
+        routable_trips = float(resident_od.sum() + external_od.sum())
+
+        # NOTE: AequilibraE names assignment-result columns after the matrix CORE
+        # (matrix.view_names), NOT the TrafficClass name — so each class's matrix
+        # needs a distinct core name or the per-class columns collide. The cores
+        # "resident"/"external" become link_volumes.csv columns resident_ab/ba/tot
+        # and external_ab/ba/tot, which link_vmt.py reads.
+        def _demand_matrix(file_stem: str, core_name: str, demand_array: np.ndarray) -> AequilibraeMatrix:
+            mat = AequilibraeMatrix()
+            mat.create_empty(
+                file_name=os.path.join(out_dir, f"{file_stem}.omx"),
+                zones=n_assign, matrix_names=[core_name], memory_only=False,
+            )
+            mat.index = np.array(assignment_centroids)
+            mat.matrix[core_name][:, :] = demand_array
+            mat.computational_view([core_name])
+            return mat
+
+        # demand.omx keeps its historical meaning (the full assigned demand) for
+        # artifact continuity; the per-class matrices are what get assigned.
+        _demand_matrix("demand", "demand", resident_od + external_od)
+        resident_mat = _demand_matrix("resident_demand", "resident", resident_od)
+        external_mat = _demand_matrix("external_demand", "external", external_od)
+
+        log += f"Demand: {total_trips:,.0f} total, {routable_trips:,.0f} routable "
+        log += f"(resident {resident_od.sum():,.0f} · external {external_od.sum():,.0f})\n"
+        log += "Running BFW assignment (2 classes: resident, external)...\n"
+        sb_patch_stage(stage_id, {"log_tail": log})
+
+        resident_class = TrafficClass(name="resident", graph=graph, matrix=resident_mat)
+        external_class = TrafficClass(name="external", graph=graph, matrix=external_mat)
+        assig = build_traffic_assignment(
+            TrafficAssignment,
+            (resident_class, external_class),
+            profile=assignment_profile,
+        )
+
+        # Select-link corridor attribution: resolve the validation-station
+        # screenlines to link_ids and attach them to BOTH traffic classes BEFORE
+        # execute (aequilibrae copies each class's _selected_links into its results
+        # at execute start; setting after has no effect). Purely diagnostic — any
+        # failure logs and skips, and set_select_links is all-or-nothing on an
+        # unknown link_id, so screenlines are pre-filtered to graph-present links.
+        select_link_sets: dict[str, list[tuple[int, int]]] = {}
+        try:
+            if COUNT_VALIDATION_ENABLED and os.path.exists(counts_path):
+                import csv as _csv
+                with open(counts_path) as _f:
+                    _sl_stations = list(_csv.DictReader(_f))
+                _sl_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
+                _sl_db.enable_load_extension(True)
+                _sl_db.load_extension(SPATIALITE_PATH)
+                try:
+                    _sl_rows = _sl_db.execute(
+                        "SELECT link_id, COALESCE(name,''), COALESCE(link_type,''), "
+                        "X(Centroid(geometry)), Y(Centroid(geometry)) FROM links "
+                        "WHERE name IS NOT NULL AND name != '' AND link_type != 'centroid_connector'"
+                    ).fetchall()
+                finally:
+                    _sl_db.close()
+                _sl_modeled = [
+                    {"link_id": int(lid), "name": nm, "link_type": lt,
+                     "lon": float(cx) if cx is not None else None,
+                     "lat": float(cy) if cy is not None else None}
+                    for lid, nm, lt, cx, cy in _sl_rows
+                ]
+                _screenlines = select_link.select_link_screenlines(_sl_stations, _sl_modeled)
+                _graph_link_ids = {int(x) for x in graph.graph["link_id"].values}
+                for _name, _link_ids in _screenlines.items():
+                    _present = [lid for lid in _link_ids if lid in _graph_link_ids]
+                    if _present:
+                        select_link_sets[_name] = [(lid, 0) for lid in _present]  # dir 0 = both
+                if select_link_sets:
+                    resident_class.set_select_links(select_link_sets)
+                    external_class.set_select_links(select_link_sets)
+                    log += (
+                        f"Select-link: {len(select_link_sets)} corridor screenline(s) attached "
+                        f"({sum(len(v) for v in select_link_sets.values())} links).\n"
+                    )
+                    sb_patch_stage(stage_id, {"log_tail": log})
+        except Exception as e:
+            select_link_sets = {}
+            log += f"Select-link setup warning ({e}); corridor attribution skipped.\n"
+
+        network_state_record, network_state_digest_value = assignment_network_state(
+            assig,
+            graph,
+            assignment_centroids,
+            proj_dir,
+            network_settings_digest_value=applied_network_settings_digest,
+        )
+        require_expected_network_state(
+            network_state_record,
+            network_state_digest_value,
+            expected_network_state_record,
+            expected_network_state_digest,
+            applied_network_settings_digest,
+            "assignment-stage handoff",
+        )
+
+        # The assignment is one blocking call that can run for minutes. Without
+        # this the stage log froze on its last line and a healthy long run looked
+        # identical to a hung one — the stuck-run banner only fires after ten
+        # minutes, which is longer than many assignments take in total. The engine
+        # already logs an iteration line; this forwards it, throttled.
+        def _emit_progress(line: str) -> None:
+            nonlocal log
+            log += line + "\n"
+            sb_patch_stage(stage_id, {"log_tail": log})
+
+        with stream_assignment_progress(
+            _emit_progress,
+            target_gap=assig.rgap_target,
+            max_iterations=assig.max_iter,
+        ):
+            assig.execute()
+
+        rgap = getattr(assig.assignment, "rgap", float("nan"))
+        iters = assignment_iteration_count(assig.assignment)
+
+        results_df = assig.results()
+        convergence_record = assignment_convergence_record(rgap, iters, assignment_profile)
+        results_df.attrs["convergence"] = convergence_record
+        results_df.attrs["network_state_record"] = network_state_record
+        results_df.attrs["network_state_digest"] = network_state_digest_value
+        results_df.to_csv(os.path.join(out_dir, "link_volumes.csv"))
+        loaded_links = int((results_df["PCE_tot"] > 0).sum()) if "PCE_tot" in results_df.columns else 0
+
+        # Convergence diagnostic: what circuity does THIS run's routing imply?
+        # Demand-weighted routed distance (blended assignment skim, resident class)
+        # over great-circle distance, interzonal pairs only. Diagnostic — never
+        # alters the OD estimator's fixed 1.30, never fails the run.
+        convergence_diag = None
+        try:
+            zattr_cd = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
+            zattr_cd["zone_id"] = zattr_cd["zone_id"].astype(int)
+            zattr_cd = zattr_cd.set_index("zone_id", drop=False)
+            zc_cd = zattr_cd.loc[ordered_zone_ids, ["centroid_lon", "centroid_lat"]]
+            lons_cd = zc_cd["centroid_lon"].to_numpy(dtype=float)
+            lats_cd = zc_cd["centroid_lat"].to_numpy(dtype=float)
+            straight_mi = np.zeros((n_zones, n_zones))
+            for i in range(n_zones):
+                for j in range(n_zones):
+                    if i != j:
+                        straight_mi[i, j] = haversine_miles(lons_cd[i], lats_cd[i], lons_cd[j], lats_cd[j])
+            routed_m = resident_class.results.skims.matrix["distance_net"][np.ix_(ii, ii)]
+            convergence_diag = convergence.routed_effective_circuity(
+                resident_od[np.ix_(ii, ii)], routed_m, straight_mi
+            )
+            if convergence_diag:
+                log += (
+                    f"Routed effective circuity (resident, demand-weighted): "
+                    f"{convergence_diag['effective_circuity']} vs {convergence_diag['assumed_circuity']} assumed\n"
+                )
+        except Exception as e:
+            log += f"Convergence diagnostic warning: {e}\n"
+
+        # Select-link corridor attribution: classify each screenline's OD (the
+        # trips that route through it) into local / commute / through by cordon
+        # endpoint. Diagnostic; the SL-OD matrices are indexed over the assignment
+        # centroids, so cordon membership marks the boundary-injection zones.
+        select_link_analysis = None
+        if select_link_sets:
+            cordon_nodes = set(cordon_map.values())
+            is_cordon = np.array([c in cordon_nodes for c in assignment_centroids])
+
+            def _sl_od(cls, name):
+                arr = np.asarray(cls.results.select_link_od.matrix[name])
+                return arr[:, :, 0] if arr.ndim == 3 else arr
+
+            # Per-screenline try/except: one anomalous screenline logs and skips
+            # rather than voiding the whole run's corridor attribution.
+            screenlines_out = []
+            for name in select_link_sets:
+                try:
+                    combined = _sl_od(resident_class, name) + _sl_od(external_class, name)
+                    attr = select_link.link_attribution(combined, is_cordon)
+                    attr["screenline"] = name
+                    attr["link_ids"] = [lid for lid, _ in select_link_sets[name]]
+                    screenlines_out.append(attr)
+                except Exception as e:
+                    log += f"Select-link screenline {name} skipped ({e}).\n"
+            if screenlines_out:
+                select_link_analysis = {
+                    "screenlines": screenlines_out,
+                    "cordon_zone_count": int(is_cordon.sum()),
+                }
+                reached = [s for s in screenlines_out if s["total_trips"] > 0]
+                if reached:
+                    log += (
+                        f"Select-link attribution: {len(reached)}/{len(screenlines_out)} screenline(s) "
+                        f"reached; through share "
+                        f"{min(s['through_share'] for s in reached):.0%}–"
+                        f"{max(s['through_share'] for s in reached):.0%}.\n"
+                    )
+
+        # ── Count-based calibration (OPT-IN, off by default) ──────────────────
+        # Staged: (1) per-road-class free-flow speed + capacity toward counts, then
+        # (2) a select-link-guided demand nudge on the resident internal OD. Each
+        # step re-runs equilibrium and is kept ONLY if it improves a held-out
+        # (never-fit) count set. The OD-based resident_vmt (CEQA input) is never
+        # touched; calibrated outputs get distinct KPI names.
+        calibration_result = None
+        if should_run_calibration(calibrate_requested and not demand_is_vehicle, counts_path):
+            try:
+                def _make_resident_mat(demand_array):
+                    m = AequilibraeMatrix()
+                    m.create_empty(zones=n_assign, matrix_names=["resident"], memory_only=True)
+                    m.index = np.array(assignment_centroids)
+                    m.matrix["resident"][:, :] = demand_array
+                    m.computational_view(["resident"])
+                    return m
+
+                calibration_result, log = _run_calibration(
+                    proj_dir, out_dir, graph, resident_mat, external_mat, results_df, log,
+                    counts_path=counts_path,
+                    resident_od=resident_od, ii=ii, assignment_centroids=assignment_centroids,
+                    make_resident_mat=_make_resident_mat, pkg_dir=pkg_dir, ordered_zone_ids=ordered_zone_ids,
+                    assignment_profile=assignment_profile,
+                )
+            except Exception as e:
+                log += f"Calibration warning ({e}); keeping the uncalibrated screening result.\n"
+
 
     log += (
         f"Converged: {'yes' if convergence_record['converged'] else 'NO'}, "

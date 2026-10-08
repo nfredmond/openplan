@@ -126,6 +126,8 @@ class CountRetentionTests(unittest.TestCase):
                 self_test.assertEqual((output / 'count_inputs/counts.csv').read_bytes(), source.read_bytes())
                 self_test.assertTrue((output / 'count_inputs/manifest.json').is_file())
                 raise StopBeforeEngine()
+            def close(self):
+                pass
         self_test = self
         with patch.object(aequilibrae, 'Project', Project), patch.object(aeq, 'sb_get_run', return_value={}), patch.object(
             aeq, 'auto_ingest_counts', return_value=str(self.source)), patch.object(aeq, 'sb_patch_stage'):

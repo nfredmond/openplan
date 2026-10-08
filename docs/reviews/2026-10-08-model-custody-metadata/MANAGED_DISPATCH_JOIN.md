@@ -1901,3 +1901,28 @@ path. Exception-safe cleanup and verified engine quiescence remain required;
 this directory change does not claim either. Completed output retention, managed
 dispatch integration and full publication/terminal handling remain unfinished.
 No scientific, browser or human acceptance boundary changes.
+
+### Project cleanup on exceptional exits
+
+Setup and assignment now use a project scope that attempts close after success,
+partial creation/opening, computation failure and BaseException interruption.
+A cleanup failure propagates, preserving the earlier error in its exception
+context. Any exceptional exit stops a bound managed writer. The numerical
+assignment body is only reindented; whitespace-insensitive review confirms no
+calculation changes in this checkpoint.
+
+Seven tests cover ordinary closure, partial create/open, interruption, combined
+computation/cleanup failure and actual setup/assignment entry points with
+injected download or graph failures. An older count-retention project fixture
+needed a close method after the lifecycle change; its count-before-open assertion
+remains. The warning-enabled broader suite passes 256 tests. Baseline, harmless
+and restored controls pass. Four faults detect omitted close, ignored
+BaseException, omitted managed stop and swallowed cleanup failure.
+`prototype/engine-scope-controls.json` records scope and worker source hashes.
+
+This proves cleanup is attempted and failures are not hidden. It does not prove
+that AequilibraE closes every native handle or that engine threads, matrices and
+SQLite connections are quiescent. Native cleanup evidence and a boundary before
+completed-file capture remain required. Normal managed dispatch, full publication
+and terminal handling, scientific acceptance and browser/human acceptance remain
+unfinished.
