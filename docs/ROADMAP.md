@@ -659,6 +659,7 @@ Stage the outcome as follows:
 
 ## S1. Scientific custody and comparable measurement
 
+- **October 8 bounded evidence:** [native metadata probes](reviews/2026-10-08-model-custody-metadata/VERIFICATION.md) reject omitted, null and wrong schema metadata in each of five v2 artifact positions. Five null-unsafe mutations fail; a harmless mutation passes. This is synthetic SQL integrity coverage pending main integration, not ingestion/display completeness or scientific acceptance.
 - **Planning outcome:** a modeler can determine exactly what was compared, what is unsupported, and why no accuracy claim follows yet.
 - **Gap/evidence:** v0.39-v0.44 reports, frozen nationwide preregistration and science appendix. v0.44 did not advance overall; base-period/use acceptance and ingestion/display integrity remain incomplete.
 - **Dependencies/scope:** M3 for durable execution. Preserve every existing frozen byte, consumed partition and negative result. Verify production custody ingestion, SQL omitted/NULL-field behavior, displayed-versus-downloaded hash/summary consistency and explicit loader errors. Align year/day/direction/lane/vehicle units, model quantities and source-supported observation intervals.
