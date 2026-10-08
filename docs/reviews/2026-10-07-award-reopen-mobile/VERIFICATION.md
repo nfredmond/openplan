@@ -89,3 +89,41 @@ copy correction. Its rebuilt browser check remains open. These synthetic checks
 do not establish practitioner acceptance, actual obligation compliance or
 the complete grant-administration requirements. GitHub QA and live isolation
 checks remain running when this checkpoint is written.
+
+## Notice correction and refreshed integration audit
+
+The follow-up production build at `15e22c220a75ffbf6085960e64ce9ff1c392fecf`
+passes from 04:43:38 to 04:45:31 UTC on October 8. Build ID
+`qeZehy9nVhlCyQ4Fw5-e9` runs on port 3512, under
+`openplan-award-acceptance-prod-15e22c22.service`, process 3431194, invocation
+`05068b73eefd41359ae85d8727e5df62`. The process cwd is the separate
+`award-acceptance-20261007/openplan` checkout. Health identifies the same commit.
+
+A new synthetic imported award is created through the actual funding-award
+API. At 390px, native form opening, reason entry and confirmation succeed.
+The select key tools report failures, but settled DOM confirms Not started
+before submission. The successful notice reads “Previous closure basis:
+recorded as closed on import.” API readback confirms the selected status,
+saved reason and unchanged October 1 obligation deadline. The earlier paid
+coverage fixture is not changed by this check.
+
+This follow-up uses direct navigation to Grants after fresh-tab menu clicks
+return without navigating. It is not a new complete navigation pass.
+Post-submit snapshots fail on both the existing T3 tab and a fresh T3 tab.
+T3 recording start times out, and recording stop returns a tool failure.
+No recording or replacement screenshot is claimed. Final image and console
+review remain incomplete. Private evidence is
+`award-acceptance-20261007-proof/browser-15e22c22.json`.
+
+The refreshed Git audit accounts for 66 registered worktrees and 166 local
+and origin refs. All worktree heads have a containing remote ref, and every
+checked ref is an ancestor of `15e22c22`. Only the canonical checkout's
+untracked `.directory` differs; it is preserved. This is not a claim about
+unknown external clones or unsaved buffers. The machine-readable record is
+`award-acceptance-20261007-proof/integration-audit.json`. PRs 145 and 146 still
+await main integration; being pushed does not establish a passing release.
+
+Product direction validation passes with existing review-age and intervening
+change reminders. No review date, capability grade, frozen scientific record
+or V1 requirement is changed. The build, interaction and audit evidence above
+does not replace the still-running GitHub QA, shuffled and live isolation runs.
