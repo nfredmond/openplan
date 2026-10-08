@@ -156,3 +156,27 @@ its installed Vitest 4.1.11.
 GitHub RLS run `37762423910` and restore-drill run `37762323035` both passed at
 `7b727dfb`. These results do not cover later changed files or establish normal
 worker activation, scientific acceptance or practitioner acceptance.
+
+## Completed local checks and build continuation
+
+At `124f0a69`, local QA passed lint, dead-code checks, 1,511 test files
+(20,083 tests), connector checks (387 passed, four skipped), vendor checks
+(18 passed), and the dependency audit (zero vulnerabilities). Unit tests skipped
+95 files and 1,587 tests. Live RLS proof was explicitly skipped in this local
+command; it is not tenant-isolation evidence.
+
+The QA service then reached its 4 GiB memory limit during the production build
+and terminated with `oom-kill`. The same unchanged commit passed a build-only
+continuation with a 7 GiB limit and a 5.7 GiB peak. The continuation finished
+on October 8 at 04:46:44 Pacific. The completed suites were not restarted.
+The services are `openplan-model-attempt-schema-qa-124f0a69.service` and
+`openplan-model-attempt-schema-build-124f0a69.service`; their journals retain
+the separate failure and success. This is not a claim that one uninterrupted
+QA command passed.
+
+Main at `b814e453` was then merged normally. That merge changes ancestry but
+introduces no file changes relative to `124f0a69`. This evidence note is the
+only subsequent content change at this checkpoint. Exact-head GitHub checks
+remain required before merge. Normal managed worker activation, complete
+consumer integration, scientific acceptance and practitioner acceptance remain
+open.
