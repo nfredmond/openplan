@@ -1720,3 +1720,28 @@ PostgREST gateways are removed. These are synthetic output fixtures, including
 synthetic skim bytes, not scientific runs. Native file-format validation,
 engine closure, mutable output paths, state/count pairing and normal managed
 dispatch remain open. Receipt recovery does not authorize resumed computation.
+
+### Independent assignment-output working files
+
+The writer now prepares a separate mutable output directory from the exact
+owned retained consumption manifest. It verifies the complete inventory and
+registers an initial working inventory with its input hash and producer identity.
+Only a confirmed registration activates the invocation-local path. Resolution
+requires the same attempt and unchanged directory identity. Execution readiness
+remains false; this helper does not resume or authorize model computation.
+
+Six tests cover independent writes, foreign and changed inputs, uncertain
+registration, attempt mismatch and directory replacement. A lost reply retains
+the initial manifest and exact pending command but leaves the working path
+inactive. Baseline, harmless and restored controls pass. Five targeted faults
+detect retained-input aliasing, erased provenance and omitted ownership checks.
+The broader warning-enabled worker suite passes 227 tests. Existing package
+working-copy controls also pass after narrowing their mutation scope to the
+package method. Reports are `prototype/output-working-copy-controls.json` and
+`prototype/package-working-copy-controls.json`.
+
+Transport is mocked in these new tests. Native recovery for working-output
+registration, stage output-path enforcement, combined state/count mapping,
+engine closure and full managed dispatch remain unfinished. Earlier native
+producer/consumer receipt evidence remains separate. No scientific, browser or
+human acceptance claim changes.

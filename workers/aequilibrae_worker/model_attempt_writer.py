@@ -47,6 +47,7 @@ class AttemptWriter:
         self.files = None
         self._working_project = None
         self._working_package = None
+        self._working_outputs = None
         if context.destination != client.destination(base_url, deployment_id) or not service_key:
             raise ValueError('Managed writer requires its original installation and credential')
         saved = journal.read_existing(self.directory, context.destination, context.claim_request_id)
@@ -322,6 +323,45 @@ class AttemptWriter:
             self.stopped = True
             raise
 
+    def prepare_output_working_copy(self, record):
+        """Make an exclusive mutable copy while retaining original consumed inputs.
+
+        The registered manifest describes initial bytes, not later engine state.
+        Preparing files does not authorize execution or confirm engine closure.
+        """
+        import model_package_inputs
+        self.require_open()
+        try:
+            if self.files is None:
+                raise ValueError('Output preparation requires an owned attempt')
+            expected = self.files.path / 'predecessor_outputs' / 'manifest.json'
+            if record.get('manifest_path') != str(expected) or expected.resolve(strict=True) != expected:
+                raise ValueError('Output preparation requires the owned consumed outputs')
+            retained = model_package_inputs.consume(record, self.files.path / 'output_working')
+            self.files.verify()
+            self.record_artifact({
+                'run_id': self.context.run_id, 'stage_id': self.context.stage_id,
+                'artifact_type': 'model_output_working_copy',
+                'file_url': 'local://' + retained['manifest_path'],
+                'file_size_bytes': retained['manifest_size_bytes'], 'content_hash': retained['manifest_sha256'],
+                'metadata_json': {'schema': 'openplan.output-working-copy.v1',
+                                  'role': 'initial_working_inventory', 'files_mutable': True,
+                                  'input_manifest_sha256': record['manifest_sha256'],
+                                  'producer': record['producer'],
+                                  'execution_ready': False,
+                                  'scientific_acceptance': 'unassessed'},
+            }, logical_name='output-working-copy')
+            package_path = Path(retained['package_directory'])
+            self._working_outputs = (package_path, self.files._identity(package_path.stat()))
+            return {'outputs_directory': retained['package_directory'],
+                    'initial_manifest_path': retained['manifest_path'],
+                    'initial_manifest_sha256': retained['manifest_sha256'],
+                    'input_manifest_sha256': record['manifest_sha256'],
+                    'producer': record['producer'], 'execution_ready': False}
+        except BaseException:
+            self.stopped = True
+            raise
+
     def project_directory(self, work_dir):
         """Resolve only this invocation's confirmed, independently prepared copy."""
         self.require_open()
@@ -345,6 +385,20 @@ class AttemptWriter:
             path, identity = self._working_package
             if path.resolve(strict=True) != path or self.files._identity(path.stat()) != identity:
                 raise ValueError('Managed working package directory changed')
+            return str(path)
+        except BaseException:
+            self.stopped = True
+            raise
+
+    def output_directory(self, work_dir):
+        """Resolve only this invocation's confirmed, independently prepared copy."""
+        self.require_open()
+        try:
+            if self.files is None or Path(work_dir) != self.files.path or self._working_outputs is None:
+                raise ValueError('Managed outputs requires a confirmed working copy in this attempt')
+            path, identity = self._working_outputs
+            if path.resolve(strict=True) != path or self.files._identity(path.stat()) != identity:
+                raise ValueError('Managed working output directory changed')
             return str(path)
         except BaseException:
             self.stopped = True

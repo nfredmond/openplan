@@ -27,10 +27,20 @@
       "targeted_test": "test_foreign_manifest_stops_before_copy"
     },
     {
+      "control": "ignore-attempt-directory",
+      "exit_code": 1,
+      "targeted_test": "test_confirmed_directory_is_bound_to_current_attempt"
+    },
+    {
+      "control": "ignore-directory-replacement",
+      "exit_code": 1,
+      "targeted_test": "test_replaced_working_directory_refused"
+    },
+    {
       "control": "restored",
       "exit_code": 0,
       "targeted_test": null
     }
   ],
-  "limits": "Owned mutable working copy with real package file writes and mocked transport. Native receipt recovery, closure enforcement, cross-database consistency, normal dispatch and scientific acceptance remain unproved."
+  "limits": "Owned mutable working copy with real output file writes and mocked transport. Native receipt recovery, closure enforcement, cross-database consistency, normal dispatch and scientific acceptance remain unproved."
 }

@@ -12,21 +12,29 @@ WORKER = ROOT.parents[3] / 'workers/aequilibrae_worker'
 def main():
     source = (WORKER / 'model_attempt_writer.py').read_text()
     def change(old, new):
-        begin=source.index('    def prepare_package_working_copy')
-        end=source.index('    def prepare_output_working_copy',begin)
+        begin=source.index('    def prepare_output_working_copy')
+        end=source.index('    def project_directory',begin)
         part=source[begin:end]
         if part.count(old)!=1:raise AssertionError('Package working mutation anchor changed')
         return source[:begin]+part.replace(old,new)+source[end:]
+    def resolver_change(old, new):
+        begin=source.index('    def output_directory')
+        end=source.index('    def retain_input_mapping',begin)
+        part=source[begin:end]
+        if part.count(old)!=1:raise AssertionError('Output resolver mutation anchor changed')
+        return source[:begin]+part.replace(old,new)+source[end:]
     cases = [('baseline', source, None), ('harmless', source + '\n# Harmless comment.\n', None),
-        ('alias-retained-input', change("'package_directory': retained['package_directory']", "'package_directory': record['package_directory']"), 'test_mutating_working_file_preserves_retained_input'),
+        ('alias-retained-input', change("'outputs_directory': retained['package_directory']", "'outputs_directory': record['outputs_directory']"), 'test_mutating_working_file_preserves_retained_input'),
         ('erase-producer-reference', change("'producer': record['producer'],\n                                  'execution_ready'", "'producer': {},\n                                  'execution_ready'"), 'test_mutating_working_file_preserves_retained_input'),
         ('ignore-foreign-path', change("if record.get('manifest_path') != str(expected) or expected.resolve(strict=True) != expected:", 'if False:'), 'test_foreign_manifest_stops_before_copy'),
+        ('ignore-attempt-directory', resolver_change('Path(work_dir) != self.files.path', 'False'), 'test_confirmed_directory_is_bound_to_current_attempt'),
+        ('ignore-directory-replacement', resolver_change('self.files._identity(path.stat()) != identity', 'False'), 'test_replaced_working_directory_refused'),
         ('restored', source, None)]
     runner = """
 import importlib.util,sys,unittest
 spec=importlib.util.spec_from_file_location('model_attempt_writer',sys.argv[1])
 module=importlib.util.module_from_spec(spec);sys.modules[spec.name]=module;spec.loader.exec_module(module)
-name='test_package_working_copy'+('.PackageWorkingCopyTests.'+sys.argv[2] if sys.argv[2] else '')
+name='test_output_working_copy'+('.OutputWorkingCopyTests.'+sys.argv[2] if sys.argv[2] else '')
 result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromName(name))
 raise SystemExit(0 if result.wasSuccessful() else 1)
 """
@@ -43,8 +51,8 @@ raise SystemExit(0 if result.wasSuccessful() else 1)
                 raise AssertionError(name+' failed:\n'+result.stderr)
             records.append({'control':name,'exit_code':result.returncode,'targeted_test':target})
     report={'source_sha256':hashlib.sha256(source.encode()).hexdigest(),'controls':records,
-            'limits':'Owned mutable working copy with real package file writes and mocked transport. Native receipt recovery, closure enforcement, cross-database consistency, normal dispatch and scientific acceptance remain unproved.'}
-    (ROOT/'package-working-copy-controls.json').write_text(json.dumps(report,indent=2)+'\n')
+            'limits':'Owned mutable working copy with real output file writes and mocked transport. Native receipt recovery, closure enforcement, cross-database consistency, normal dispatch and scientific acceptance remain unproved.'}
+    (ROOT/'output-working-copy-controls.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(report,indent=2))
 
 
