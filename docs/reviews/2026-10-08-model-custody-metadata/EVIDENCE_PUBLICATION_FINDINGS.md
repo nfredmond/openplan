@@ -454,3 +454,32 @@ all submitted artifact bytes, sizes or metadata, so this comparison cannot prove
 those bindings. Full retained-artifact verification, idempotent reconciliation
 of this legacy write, atomic higher-tier publication and scientific acceptance
 remain open. No assessment or validation threshold is promoted by this change.
+
+## Native assessment receipt round trip
+
+`prototype/verify_assessment_receipt.py` exercises the changed worker helper
+against the actual `record_modeling_validation_assessment` RPC through isolated
+PostgREST. It restricts execution to the named owned proof database and creates
+synthetic run, stage and artifact records. No application or preview database
+is a target.
+
+Run `581c6f0f-9011-44f3-baf0-182c5ad17fe5` receives assessment
+`c3e64857-050b-4c28-be8e-de24a0389d77`; the accepted response exactly matches
+the stored row. A wrong workspace returns HTTP 400 and adds no assessment.
+A response altered to name a different run is refused after the actual HTTP 200
+commit. Discarding another HTTP 200 response also leaves the helper unconfirmed
+while the database contains its committed assessment. Neither uncertain case
+is reported as a rollback or retried.
+
+Harmless and restored native cases pass. Omitting the run binding from the
+receipt comparison lets the altered response through and is detected for that
+specific error. Results are retained under
+`model-command-client-20261008-proof/assessment-native/` and
+`assessment-native-controls.json`. Temporary PostgREST gateways are removed;
+synthetic database records remain.
+
+The loss case discards a completed HTTP reply, not a TCP connection. The artifact
+references are synthetic and no Storage bytes are uploaded. This proves the
+helper's native response shape and tested refusal behavior, not file integrity,
+normal-dispatch recovery, idempotent assessment requests or scientific validity.
+The previously documented omitted stage and artifact-field checks remain open.
