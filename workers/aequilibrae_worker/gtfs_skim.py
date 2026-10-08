@@ -283,28 +283,14 @@ class TransitLos:
         self.source_name: str | None = None  # feed file name, when read from disk
 
 
-def load_feed(
-    path: str | None = None,
-    url: str | None = None,
-    *,
-    raw: bytes | None = None,
-    source_url: str | None = None,
-    source_name: str | None = None,
-) -> TransitLos:
-    """Load + reduce a GTFS feed to per-line transit patterns.
+def acquire_feed_archive(
+    path: str | None = None, url: str | None = None, *, raw: bytes | None = None,
+    source_url: str | None = None, source_name: str | None = None,
+) -> tuple[bytes, str | None, str | None]:
+    """Return the exact archive and resolved identity before numerical parsing.
 
-    Raises GtfsError on any structural problem so callers fail loudly rather than
-    silently degrade to transit=0 while claiming transit is modeled.
-
-    `raw` hands over BYTES THAT HAVE ALREADY BEEN OBTAINED, which is how a run
-    that named a workspace feed version is skimmed: the caller reads the exact
-    archive OpenPlan parsed out of private storage and verifies its checksum
-    before calling here, so this function does no network work and cannot reach
-    for a different copy. `source_url` / `source_name` then carry the provenance,
-    because bytes in hand know nothing about where they came from. Neither the
-    `url` cache nor `GTFS_URL` / `GTFS_PATH` is consulted on that path — a
-    refetch of `source_url` could return bytes the operator republished since,
-    and the run would cite a URL for numbers those bytes never produced.
+    Preserve supplied bytes, URL-cache behavior and operator/bundled precedence.
+    Callers can retain this result without downloading the feed a second time.
     """
     supplied_bytes = raw is not None
     if not supplied_bytes:
@@ -344,6 +330,39 @@ def load_feed(
         with open(path, "rb") as fh:
             raw = fh.read()
 
+    if supplied_bytes:
+        return raw, source_url, source_name
+    if url:
+        return raw, url, None
+    return raw, None, os.path.basename(path)
+
+
+def load_feed(
+    path: str | None = None,
+    url: str | None = None,
+    *,
+    raw: bytes | None = None,
+    source_url: str | None = None,
+    source_name: str | None = None,
+) -> TransitLos:
+    """Load + reduce a GTFS feed to per-line transit patterns.
+
+    Raises GtfsError on any structural problem so callers fail loudly rather than
+    silently degrade to transit=0 while claiming transit is modeled.
+
+    `raw` hands over BYTES THAT HAVE ALREADY BEEN OBTAINED, which is how a run
+    that named a workspace feed version is skimmed: the caller reads the exact
+    archive OpenPlan parsed out of private storage and verifies its checksum
+    before calling here, so this function does no network work and cannot reach
+    for a different copy. `source_url` / `source_name` then carry the provenance,
+    because bytes in hand know nothing about where they came from. Neither the
+    `url` cache nor `GTFS_URL` / `GTFS_PATH` is consulted on that path — a
+    refetch of `source_url` could return bytes the operator republished since,
+    and the run would cite a URL for numbers those bytes never produced.
+    """
+    raw, source_url, source_name = acquire_feed_archive(
+        path, url, raw=raw, source_url=source_url, source_name=source_name)
+
     try:
         zf = zipfile.ZipFile(io.BytesIO(raw))
     except zipfile.BadZipFile as exc:
@@ -353,13 +372,8 @@ def load_feed(
     # Record the feed's identity before parsing so the caller can name it in the
     # evidence packet. Only the file NAME of a local feed is kept — the absolute
     # path is the operator's server layout, not planning provenance.
-    if supplied_bytes:
-        los.source_url = source_url
-        los.source_name = source_name
-    elif url:
-        los.source_url = url
-    else:
-        los.source_name = os.path.basename(path)
+    los.source_url = source_url
+    los.source_name = source_name
     with zf:
         # Trips whose stop_times are a TEMPLATE for a published headway band
         # rather than real departures. They are dropped from the skim below (the

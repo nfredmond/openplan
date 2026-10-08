@@ -2619,3 +2619,29 @@ cover operator, discovered or bundled feed preparation. Native registration
 recovery, parser settings, acquisition supervision, the complete assignment
 entrypoint and operating-system containment remain unfinished. No normal
 managed dispatcher is enabled and no scientific acceptance claim changes.
+
+### Exact archive acquisition for the remaining feed origins
+
+`gtfs_skim.acquire_feed_archive` separates existing byte acquisition from parsing
+and returns the archive plus resolved source URL/name. `load_feed` delegates to
+it before reducing the archive. Supplied bytes still bypass environment lookup
+and downloads. URL/cache behavior, URL-over-path precedence, operator path and
+bundled fallback are preserved. Local provenance remains a basename rather than
+an absolute server path. The new boundary lets parent preparation retain the exact
+archive without a second fetch.
+
+Five new tests cover supplied identity, download/cache bytes, local origins,
+existing precedence and parser forwarding. The warning-enabled transit suite
+passes 34 tests, including the reserved child and confirmed-input tests. All 16
+GTFS skim checks, 25 discovery checks and 51 transit-handoff checks pass. Baseline,
+harmless and restored controls pass; five faults fail for lost supplied identity,
+wrong cache key, exposed local path, ignored URL acquisition and lost parser
+identity. See `prototype/transit-acquisition-controls.json`.
+
+This refactor preserves the existing shared-cache and transport behavior. It does
+not establish atomic cache publication, live provider reliability, a hard download
+deadline or acquisition containment. The parent still needs to retain/register
+operator, discovered and bundled inputs and preserve their distinct coverage and
+catalog-failure outcomes before joining them to the child channel. Full assignment
+execution and scientific acceptance remain open. GitHub run 37862059125 remains
+in progress on live polling.
