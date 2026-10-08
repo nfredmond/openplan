@@ -116,6 +116,7 @@ SELECT pg_temp.check_skip('succeeded','failed','not_skipped');
 SELECT pg_temp.check_skip('failed','failed','not_skipped');
 SELECT pg_temp.check_skip('cancelled','failed','not_skipped');
 SELECT pg_temp.check_skip('skipped','failed','not_skipped');
+{(ROOT / 'skip-blocked-managed-cases.sql').read_text().replace('__FIXTURE_RUN__', fixture)}
 DO $$ BEGIN
  IF has_function_privilege('anon','public.skip_blocked_model_stage(uuid,uuid,uuid,uuid,uuid,text)','EXECUTE')
  OR has_function_privilege('authenticated','public.skip_blocked_model_stage(uuid,uuid,uuid,uuid,uuid,text)','EXECUTE')
@@ -135,7 +136,9 @@ ROLLBACK;
             'running_and_terminal_targets_preserved': True, 'exact_retry': True,
             'changed_request_scope_and_order_refused': True,
             'no_new_attempt_or_execution_start': True, 'parent_unchanged': True,
-            'permissions_checked': True, 'receipt_failure_atomic_and_retryable': True, 'rolled_back': True}
+            'permissions_checked': True, 'actual_role_invocations': True,
+            'managed_failure_and_reaper_preserved': True,
+            'receipt_failure_atomic_and_retryable': True, 'rolled_back': True}
 
 
 def main():
@@ -149,6 +152,8 @@ def main():
         ('ignore-order', 'NOT FOUND OR blocker.sort_order>=target.sort_order', 'NOT FOUND', 'Later predecessor accepted'),
         ('omit-receipt', 'VALUES(p_request_id,p_run_id,p_stage_id,p_blocker_id,request,response);',
          'SELECT p_request_id,p_run_id,p_stage_id,p_blocker_id,request,response WHERE false;', 'Exact retry changed'),
+        ('expose-anonymous', 'TO service_role;', 'TO service_role,anon;', 'Anonymous skip invocation allowed'),
+        ('expose-authenticated', 'TO service_role;', 'TO service_role,authenticated;', 'Authenticated skip invocation allowed'),
     ]:
         if source.count(old) != 1:
             raise AssertionError('Mutation anchor must match exactly once: ' + name)
@@ -167,7 +172,7 @@ def main():
                 raise AssertionError('Broken behavior passed: ' + name)
             records.append({'control': name, 'result': result})
     report = {'source_sha256': hashlib.sha256(source.encode()).hexdigest(), 'controls': records,
-              'limits': 'Rollback-only native SQL. No concurrent processes, worker dispatch, HTTP recovery, migration installation, browser or scientific acceptance.'}
+              'limits': 'Rollback-only native SQL with actual role calls and managed terminal histories. Reaper called directly with synthetic cutoff, not a liveness test. No concurrent processes, worker dispatch, HTTP recovery, migration installation, browser or scientific acceptance.'}
     output = Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_OUTPUT'])
     output.mkdir(mode=0o700, parents=True, exist_ok=False)
     (output / 'skip-blocked-stage-controls.json').write_text(json.dumps(report, indent=2) + '\n')

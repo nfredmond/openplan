@@ -130,3 +130,25 @@ The cases use new unmanaged synthetic rows. Managed-parent cases, simultaneous
 processes, HTTP uncertainty, worker packaging, journal delivery, migration and
 retention integration remain open. No application database or running worker
 was changed. This prototype is not an installed feature or scientific evidence.
+
+### Managed history and actual role follow-up
+
+The verifier now also loads `prototype/skip-blocked-managed-cases.sql`. Real
+`anon` and `authenticated` calls fail with insufficient privilege. A real
+`service_role` call skips the eligible unmanaged fixture and recovers its exact
+receipt; a direct receipt UPDATE under that role is refused. Two added controls
+grant anonymous or authenticated execution and fail at their actual invocation
+assertions. The original six broken controls still fail; baseline, harmless and
+restored cases pass.
+
+Separate fixtures acquire real managed attempts, then terminate through either
+`write_model_stage_attempt` failure or the native reaper. The skip operation
+returns `not_skipped` and preserves every parent, stage and attempt row in those
+terminal histories. The reaper uses an explicit synthetic cutoff to exercise
+the transaction, not to establish timeout or heartbeat correctness.
+
+This closes the preceding entry's actual-role and managed-terminal-history
+checks. It does not establish concurrent-process ordering, an eligible managed
+queued skip, HTTP uncertainty, worker integration, installed migration custody
+or scientific acceptance. The updated controls file records eight targeted
+broken variants. All synthetic records and prototype objects roll back.

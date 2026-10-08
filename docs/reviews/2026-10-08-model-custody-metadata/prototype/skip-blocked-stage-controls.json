@@ -12,6 +12,8 @@
         "no_new_attempt_or_execution_start": true,
         "parent_unchanged": true,
         "permissions_checked": true,
+        "actual_role_invocations": true,
+        "managed_failure_and_reaper_preserved": true,
         "receipt_failure_atomic_and_retryable": true,
         "rolled_back": true
       }
@@ -27,6 +29,8 @@
         "no_new_attempt_or_execution_start": true,
         "parent_unchanged": true,
         "permissions_checked": true,
+        "actual_role_invocations": true,
+        "managed_failure_and_reaper_preserved": true,
         "receipt_failure_atomic_and_retryable": true,
         "rolled_back": true
       }
@@ -56,6 +60,14 @@
       "expected_failure": "Exact retry changed"
     },
     {
+      "control": "expose-anonymous",
+      "expected_failure": "Anonymous skip invocation allowed"
+    },
+    {
+      "control": "expose-authenticated",
+      "expected_failure": "Authenticated skip invocation allowed"
+    },
+    {
       "control": "restored",
       "result": {
         "queued_blocked_skipped": true,
@@ -66,10 +78,12 @@
         "no_new_attempt_or_execution_start": true,
         "parent_unchanged": true,
         "permissions_checked": true,
+        "actual_role_invocations": true,
+        "managed_failure_and_reaper_preserved": true,
         "receipt_failure_atomic_and_retryable": true,
         "rolled_back": true
       }
     }
   ],
-  "limits": "Rollback-only native SQL. No concurrent processes, worker dispatch, HTTP recovery, migration installation, browser or scientific acceptance."
+  "limits": "Rollback-only native SQL with actual role calls and managed terminal histories. Reaper called directly with synthetic cutoff, not a liveness test. No concurrent processes, worker dispatch, HTTP recovery, migration installation, browser or scientific acceptance."
 }
