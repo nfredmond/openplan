@@ -290,6 +290,38 @@ and verified predecessor artifacts. No automatic cleanup removes prior execution
 This retention change does not establish cross-process recovery, actual model
 execution, prepared-instrument ordering or scientific acceptance.
 
+## Verified ActivitySim predecessor copies
+
+The ActivitySim handoff query now requests artifact and run identities, byte size
+and content hash as well as type and location. Before materializing preflight
+inputs, the worker requires exactly one artifact per required type, the selected
+run ID, a canonical artifact ID and an absolute local reference inside that
+run's full-ID directory beneath `AEQ_WORK_DIR`. Resolved symlink escapes are
+refused. Missing or ambiguous predecessor records stop the handoff.
+
+Each input is streamed into a new execution-owned file while checking its byte
+count and SHA-256. Preflight receives the verified copy, not the mutable source
+path. Missing hashes/sizes and changed bytes are refused. A failed copy may leave
+an unverified partial file in the private execution directory; it is not passed
+to materialization or registered as an accepted artifact. Execution retention is
+not a declaration that every retained file is valid.
+
+All 43 ActivitySim worker tests pass. Tests use actual temporary files, synthetic
+screening inputs and injected HTTP. They assert the full database projection,
+source/copy independence, wrong-run and escaping paths, an outside symlink,
+ambiguous inventory, absent metadata and changed bytes. A corrupt handoff cannot
+reach preflight materialization. Harmless controls and six targeted faults cover
+run binding, local scope, hash comparison, strict byte-size type, retained-copy
+use and the query projection. The first size mutation failed incidentally on a
+type error; its replacement specifically admits false as zero and fails the
+empty-file refusal assertion. Restored tests pass.
+
+This verifies retained input bytes, not scientific suitability, required-stage
+completion or database attempt ownership. Local filesystem administrators can
+still mutate directories, and concurrent path replacement was not tested.
+Cross-host Storage input delivery, prepared-observation custody and automatic
+restart remain open. No scientific model or consumed holdout was run.
+
 ## Remaining connection work
 
 Normal dispatchers still use their current receipt-checked legacy writes. Before

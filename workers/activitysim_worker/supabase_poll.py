@@ -312,7 +312,7 @@ def sb_get_run(run_id: str) -> dict:
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
-        "&select=artifact_type,file_url,metadata_json"
+        "&select=id,run_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
@@ -441,13 +441,44 @@ def _local_path(file_url: str | None) -> str | None:
     return None
 
 
-def _find_artifact_path(artifacts: list[dict], artifact_type: str) -> str | None:
-    for art in artifacts:
-        if art.get("artifact_type") == artifact_type:
-            path = _local_path(art.get("file_url"))
-            if path and os.path.exists(path):
-                return path
-    return None
+def _retain_handoff_file(artifacts: list[dict], artifact_type: str, run_id: str, execution_dir: str) -> str:
+    """Copy and verify registered bytes before the preflight pipeline sees them."""
+    validate_run_identity(run_id)
+    if not isinstance(artifacts, list) or any(not isinstance(row, dict) for row in artifacts):
+        raise RuntimeError("Invalid screening handoff inventory")
+    candidates = [row for row in artifacts if row.get("artifact_type") == artifact_type]
+    if len(candidates) != 1:
+        raise RuntimeError("Missing or ambiguous AequilibraE screening handoff: " + artifact_type)
+    artifact = candidates[0]
+    if artifact.get("run_id") != run_id:
+        raise RuntimeError("Screening handoff run identity differs")
+    validate_run_identity(artifact.get("id"))
+    source = _local_path(artifact.get("file_url"))
+    if not source or not os.path.isabs(source):
+        raise RuntimeError("Screening handoff requires an absolute local:// reference")
+    shared_root = Path(os.getenv("AEQ_WORK_DIR", os.path.join(tempfile.gettempdir(), "openplan-model-runs"))).resolve()
+    run_root = shared_root / "runs" / run_id
+    resolved = Path(source).resolve(strict=True)
+    if not resolved.is_relative_to(run_root) or not resolved.is_file():
+        raise RuntimeError("Screening handoff path is outside the complete run identity")
+    expected_hash, expected_size = artifact.get("content_hash"), artifact.get("file_size_bytes")
+    if not isinstance(expected_hash, str) or len(expected_hash) != 64 or any(c not in "0123456789abcdef" for c in expected_hash):
+        raise RuntimeError("Screening handoff hash is unavailable")
+    if type(expected_size) is not int or expected_size < 0:
+        raise RuntimeError("Screening handoff byte size is unavailable")
+    destination = Path(execution_dir) / (artifact_type + ".retained")
+    digest = hashlib.sha256()
+    size = 0
+    with resolved.open("rb") as reader, destination.open("xb") as writer:
+        while chunk := reader.read(1024 * 1024):
+            size += len(chunk)
+            if size > expected_size:
+                raise RuntimeError("Screening handoff byte size differs")
+            digest.update(chunk)
+            writer.write(chunk)
+    if size != expected_size or digest.hexdigest() != expected_hash:
+        raise RuntimeError("Screening handoff bytes differ from the registered artifact")
+    return str(destination)
 
 
 def _adapt_zone_attributes(src_csv: str, dest_csv: str) -> int:
@@ -550,22 +581,13 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     # 1. Locate the screening handoff (skim + zone attributes) the AequilibraE
     #    worker registered as local:// artifacts (same-host consumers only).
     artifacts = sb_get_run_artifacts(run_id)
-    skim_path = _find_artifact_path(artifacts, "skim_matrix")
-    zone_attr_path = _find_artifact_path(artifacts, "zone_attributes")
-    setup_summary_path = _find_artifact_path(artifacts, "network_setup_summary")
-    if not skim_path or not zone_attr_path or not setup_summary_path:
-        raise RuntimeError(
-            "Missing AequilibraE screening handoff (skim_matrix / zone_attributes / "
-            "network_setup_summary local:// "
-            "artifacts). The behavioral lane needs the ActivitySim worker co-located with "
-            "the AequilibraE worker (shared filesystem)."
-        )
-    log += f"- Screening handoff located (skim + zone attributes).\n"
+    run_root = create_run_workspace(run_id)
+    skim_path = _retain_handoff_file(artifacts, "skim_matrix", run_id, run_root)
+    zone_attr_path = _retain_handoff_file(artifacts, "zone_attributes", run_id, run_root)
+    setup_summary_path = _retain_handoff_file(artifacts, "network_setup_summary", run_id, run_root)
+    log += "- Screening handoff copied and verified against registered bytes.\n"
     sb_patch_stage(stage_id, {"log_tail": log})
 
-    # 2. Materialize the screening-run-dir + build the bundle + run the preflight
-    #    pipeline. All stdlib; no ActivitySim needed for the preflight path.
-    run_root = create_run_workspace(run_id)
     screening_dir = _materialize_screening_dir(
         run_id, skim_path, zone_attr_path, setup_summary_path, run_root
     )

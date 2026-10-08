@@ -8,6 +8,7 @@ double-processing on a lost race, a real bundle preflight producing an evidence
 packet + scaffold (non-forecast) KPIs, and honest failures.
 """
 import json
+import hashlib
 import os
 import sys
 import tempfile
@@ -85,9 +86,9 @@ class FakeRequests:
             }])
         if "/rest/v1/model_run_artifacts?run_id=eq" in url:
             return FakeResponse(200, [
-                {"artifact_type": "skim_matrix", "file_url": f"local://{self.skim_path}", "metadata_json": {}},
-                {"artifact_type": "zone_attributes", "file_url": f"local://{self.za_path}", "metadata_json": {}},
-                {"artifact_type": "network_setup_summary", "file_url": f"local://{self.setup_path}", "metadata_json": {}},
+                {"id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "skim_matrix", "file_url": f"local://{self.skim_path}", "file_size_bytes": Path(self.skim_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.skim_path).read_bytes()).hexdigest(), "metadata_json": {}},
+                {"id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "zone_attributes", "file_url": f"local://{self.za_path}", "file_size_bytes": Path(self.za_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.za_path).read_bytes()).hexdigest(), "metadata_json": {}},
+                {"id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "network_setup_summary", "file_url": f"local://{self.setup_path}", "file_size_bytes": Path(self.setup_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.setup_path).read_bytes()).hexdigest(), "metadata_json": {}},
             ])
         if "model_run_stages" in url and "status=neq.succeeded" in url:
             return FakeResponse(200, [])
@@ -142,16 +143,64 @@ class RunWorkspaceTests(unittest.TestCase):
             claim.assert_not_called()
 
 
+class HandoffCopyTests(unittest.TestCase):
+    def test_registered_bytes_are_retained_independently_of_source_changes(self):
+        run = "12345678-1234-4123-8123-123456789abc"
+        with tempfile.TemporaryDirectory() as root, mock.patch.dict(os.environ, {"AEQ_WORK_DIR": root}):
+            source = Path(root, "runs", run, "input.csv"); source.parent.mkdir(parents=True)
+            source.write_bytes(b"original")
+            destination = Path(root, "execution"); destination.mkdir()
+            row = {"id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": 8, "content_hash": hashlib.sha256(b"original").hexdigest()}
+            retained = Path(supabase_poll._retain_handoff_file([row], "zone_attributes", run, str(destination)))
+            source.write_bytes(b"replaced")
+            self.assertEqual(retained.read_bytes(), b"original")
+
+    def test_boolean_size_cannot_describe_empty_bytes(self):
+        run = "12345678-1234-4123-8123-123456789abc"
+        with tempfile.TemporaryDirectory() as root, mock.patch.dict(os.environ, {"AEQ_WORK_DIR": root}):
+            source = Path(root, "runs", run, "empty"); source.parent.mkdir(parents=True)
+            source.write_bytes(b"")
+            destination = Path(root, "execution"); destination.mkdir()
+            row = {"id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": False, "content_hash": hashlib.sha256(b"").hexdigest()}
+            with self.assertRaisesRegex(RuntimeError, "byte size is unavailable"):
+                supabase_poll._retain_handoff_file([row], "zone_attributes", run, str(destination))
+
+    def test_scope_hash_size_and_inventory_faults_are_refused(self):
+        run = "12345678-1234-4123-8123-123456789abc"
+        with tempfile.TemporaryDirectory() as root, mock.patch.dict(os.environ, {"AEQ_WORK_DIR": root}):
+            source = Path(root, "runs", run, "input.csv"); source.parent.mkdir(parents=True)
+            source.write_bytes(b"original")
+            outside = Path(root, "other.csv"); outside.write_bytes(b"original")
+            linked = source.parent / "linked.csv"; linked.symlink_to(outside)
+            row = {"id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": 8, "content_hash": hashlib.sha256(b"original").hexdigest()}
+            bad_rows = [[{**row, **patch}] for patch in [
+                {"run_id": "12345678-1234-4567-8567-987654321abc"},
+                {"file_url": "local://" + str(outside)}, {"file_url": "local://" + str(linked)},
+                {"content_hash": None}, {"content_hash": "0" * 64},
+                {"file_size_bytes": None}, {"file_size_bytes": True}, {"file_size_bytes": 7}, {"file_size_bytes": 9},
+            ]] + [[row, row], [], [None]]
+            for index, rows in enumerate(bad_rows):
+                with self.subTest(index=index):
+                    destination = Path(root, str(index)); destination.mkdir()
+                    with self.assertRaises((RuntimeError, ValueError)):
+                        supabase_poll._retain_handoff_file(rows, "zone_attributes", run, str(destination))
+
+
 class SupabasePollTests(unittest.TestCase):
     def setUp(self):
         self._fixdir = tempfile.mkdtemp(prefix="astest-fix-")
-        za, skim, setup = _write_fixtures(self._fixdir)
+        self._root_env = mock.patch.dict(os.environ, {"AEQ_WORK_DIR": self._fixdir})
+        self._root_env.start()
+        source_dir = Path(self._fixdir, "runs", "12345678-1234-4123-8123-123456789abc")
+        source_dir.mkdir(parents=True)
+        za, skim, setup = _write_fixtures(str(source_dir))
         self.fake = FakeRequests(za, skim, setup)
         self._patcher = mock.patch.object(supabase_poll, "requests", self.fake)
         self._patcher.start()
 
     def tearDown(self):
         self._patcher.stop()
+        self._root_env.stop()
 
     def test_normal_preflight_retains_prior_execution_files(self):
         stage = make_stage()
@@ -170,6 +219,21 @@ class SupabasePollTests(unittest.TestCase):
             for execution in Path(root, stage["run_id"]).iterdir():
                 manifest = json.loads((execution / "screening/bundle_manifest.json").read_text())
                 self.assertEqual(manifest["run_name"], "behavioral-" + stage["run_id"])
+
+    def test_handoff_query_retains_identity_and_byte_fields(self):
+        supabase_poll.sb_get_run_artifacts(make_stage()["run_id"])
+        url = self.fake.calls[-1][1]
+        self.assertIn("run_id=eq." + make_stage()["run_id"], url)
+        self.assertEqual(url.split("&select=")[1], "id,run_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json")
+
+    def test_unverified_handoff_never_reaches_preflight_materialization(self):
+        stage = make_stage()
+        rows = supabase_poll.sb_get_run_artifacts(stage["run_id"])
+        rows[0]["content_hash"] = "0" * 64
+        with mock.patch.object(supabase_poll, "sb_get_run_artifacts", return_value=rows), mock.patch.object(supabase_poll, "_materialize_screening_dir") as materialize:
+            with self.assertRaisesRegex(RuntimeError, "bytes differ"):
+                supabase_poll.run_bundle_and_preflight_stage(stage["run_id"], {"corridor_geojson": {"type": "Polygon"}}, stage["id"])
+            materialize.assert_not_called()
 
     # ---- claim semantics -------------------------------------------------
     def test_claim_returns_true_when_rows_present(self):

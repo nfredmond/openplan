@@ -258,3 +258,14 @@ GB of RAM**, several vCPUs, minutes-to-hours of runtime, and an always-on poller
 Verified locally on 2026-07-22: `activitysim==1.5.1` runs an OpenPlan-built bundle
 end-to-end on Python 3.11 (`activitysim_cli`, settings-checker passes, 0 models →
 no fabricated demand). See `docs/ops/2026-07-22-activitysim-behavioral-lane-smoke.md`.
+
+## Same-host screening input identity
+
+For the local screening handoff, set `AEQ_WORK_DIR` to the AequilibraE worker's
+shared scratch root. If unset, both workers use the system temporary directory
+plus `openplan-model-runs`. Required inputs must be registered beneath
+`<AEQ_WORK_DIR>/runs/<full-run-uuid>` with their exact SHA-256 and byte size.
+The behavioral worker verifies copies inside its new execution directory before
+preflight. Missing, ambiguous, shortened-path or unverifiable inputs stop the
+handoff. Do not invent hashes or rename old files based on a shortened prefix.
+Cross-host Storage input delivery and automated legacy reconciliation remain open.
