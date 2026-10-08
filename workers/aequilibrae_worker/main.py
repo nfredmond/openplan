@@ -4944,6 +4944,37 @@ def _network_coverage_for_run(run_id: str, db_path: str, link_volumes_csv: str) 
         return {"measured": False, "reason": f"{type(error).__name__}: {error}"}
 
 
+def upload_volume_geojson_bytes(run_id: str, stage_id: str, data: bytes) -> str:
+    """Retain content-addressed map bytes and reconcile through an exact read."""
+    digest = hashlib.sha256(data).hexdigest()
+    object_path = f"model-runs/{run_id}/stages/{stage_id}/sha256-{digest}/volumes.geojson"
+    headers = {
+        "apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/geo+json", "x-upsert": "false",
+    }
+    try:
+        requests.post(
+            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
+            headers=headers, data=data, timeout=60,
+        )
+    except requests.RequestException:
+        # The upload may have committed. Resolve custody by reading, not by
+        # repeating or overwriting the object.
+        pass
+    try:
+        retained = requests.get(
+            f"{SUPABASE_URL}/storage/v1/object/authenticated/run-artifacts/{object_path}",
+            headers=HEADERS, timeout=60,
+        )
+        if retained.status_code != 200 or retained.content != data:
+            raise WorkerStateWriteUnconfirmed("GeoJSON stored bytes unconfirmed")
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except requests.RequestException as error:
+        raise WorkerStateWriteUnconfirmed("GeoJSON stored bytes unconfirmed") from error
+    return f"storage://run-artifacts/{object_path}"
+
+
 def publish_volume_geojson(
     run_id: str, stage_id: str, work_dir: str,
     verified_engine_stamp: str, baseline_assignment_metadata: dict,
@@ -5005,42 +5036,24 @@ def publish_volume_geojson(
             with open(geojson_path, "w") as f:
                 json.dump(fc, f)
 
-            # Upload to the (private) run-artifacts bucket. Store the storage
-            # PATH — not a public URL — so the app resolves it through a
-            # service-role signed URL and workspace RLS is never bypassed.
-            bucket = "run-artifacts"
-            object_path = f"model-runs/{run_id}/volumes.geojson"
-            upload_url = f"{SUPABASE_URL}/storage/v1/object/{bucket}/{object_path}"
-            with open(geojson_path, "rb") as f:
-                upload_headers = {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": f"Bearer {SUPABASE_KEY}",
-                    "Content-Type": "application/geo+json",
-                    "x-upsert": "true",
-                }
-                upload_res = requests.post(upload_url, headers=upload_headers, data=f.read(), timeout=60)
-
-            if upload_res.status_code in (200, 201):
-                storage_ref = f"storage://{bucket}/{object_path}"
-                with open(geojson_path, "rb") as geojson_file:
-                    geojson_hash = hashlib.sha256(geojson_file.read()).hexdigest()
-                sb_post_artifact({
-                    "run_id": run_id,
-                    "stage_id": stage_id,
-                    "artifact_type": "volumes_geojson",
-                    "file_url": storage_ref,
-                    "file_size_bytes": os.path.getsize(geojson_path),
-                    "content_hash": geojson_hash,
-                    "metadata_json": {
-                        **baseline_assignment_metadata,
-                        "format": "geojson",
-                        "features": len(features),
-                        "maxVolume": max_vol,
-                    },
-                })
-                log += f"Uploaded volumes GeoJSON ({len(features)} features) to private Storage as {storage_ref}.\n"
-            else:
-                log += f"Storage upload failed ({upload_res.status_code}): {upload_res.text[:200]}\n"
+            with open(geojson_path, "rb") as geojson_file:
+                geojson_bytes = geojson_file.read()
+            storage_ref = upload_volume_geojson_bytes(run_id, stage_id, geojson_bytes)
+            sb_post_artifact({
+                "run_id": run_id,
+                "stage_id": stage_id,
+                "artifact_type": "volumes_geojson",
+                "file_url": storage_ref,
+                "file_size_bytes": len(geojson_bytes),
+                "content_hash": hashlib.sha256(geojson_bytes).hexdigest(),
+                "metadata_json": {
+                    **baseline_assignment_metadata,
+                    "format": "geojson",
+                    "features": len(features),
+                    "maxVolume": max_vol,
+                },
+            })
+            log += f"Uploaded volumes GeoJSON ({len(features)} features) to private Storage as {storage_ref}.\n"
         else:
             log += f"Skipped GeoJSON generation because project database was missing at {db_path}.\n"
     except WorkerStateWriteUnconfirmed:

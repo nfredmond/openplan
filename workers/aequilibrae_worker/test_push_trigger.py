@@ -1015,6 +1015,7 @@ def test_volume_geojson_retains_registration_uncertainty():
                 calls.append((url, kwargs))
                 if "/storage/" in url:
                     assert kwargs["timeout"] == 60
+                    assert kwargs["headers"]["x-upsert"] == "false"
                     return mock.Mock(status_code=201)
                 if uncertain:
                     raise main.requests.Timeout("synthetic registration acknowledgement lost")
@@ -1023,7 +1024,7 @@ def test_volume_geojson_retains_registration_uncertainty():
                 assert payload["content_hash"] == hashlib.sha256(retained_bytes).hexdigest()
                 assert payload["metadata_json"]["features"] == 1
                 return mock.Mock(status_code=201, json=lambda: [{"id": "retained-artifact", **payload}])
-            with mock.patch.object(main.sqlite3, "connect", return_value=connection), mock.patch.object(main.requests, "post", side_effect=post):
+            with mock.patch.object(main.sqlite3, "connect", return_value=connection), mock.patch.object(main.requests, "post", side_effect=post), mock.patch.object(main.requests, "get", side_effect=lambda *a, **k: mock.Mock(status_code=200, content=(root / "run_output/volumes.geojson").read_bytes())):
                 try:
                     result = main.publish_volume_geojson(RUN_ID, "stage", work, "synthetic-engine", {})
                 except main.WorkerStateWriteUnconfirmed:
@@ -1043,6 +1044,25 @@ def test_volume_geojson_missing_database_remains_explicit():
         result = main.publish_volume_geojson(RUN_ID, "stage", work, "synthetic-engine", {})
     assert "Skipped GeoJSON generation because project database was missing" in result
     post.assert_not_called()
+
+
+def test_geojson_storage_requires_exact_bytes_and_reconciles_lost_upload():
+    import hashlib
+    from unittest import mock
+    data = b'{"type":"FeatureCollection","features":[]}'
+    for status, retained, accepted in ((200, data, True), (200, b"changed", False), (404, data, False)):
+        with mock.patch.object(main.requests, "post", side_effect=main.requests.Timeout("lost upload acknowledgement")) as post, mock.patch.object(main.requests, "get", return_value=mock.Mock(status_code=status, content=retained)) as get:
+            try:
+                reference = main.upload_volume_geojson_bytes(RUN_ID, "stage", data)
+            except main.WorkerStateWriteUnconfirmed:
+                assert not accepted
+            else:
+                if not accepted:
+                    raise AssertionError("unverified GeoJSON bytes accepted")
+                assert hashlib.sha256(data).hexdigest() in reference
+            assert post.call_count == 1 and get.call_count == 1
+            assert post.call_args.kwargs["headers"]["x-upsert"] == "false"
+            assert get.call_args.kwargs["timeout"] == 60
 
 
 TESTS = [value for name, value in sorted(globals().items()) if name.startswith("test_")]

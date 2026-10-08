@@ -41,3 +41,11 @@ The October 8 continuation exercises the extracted publisher with an actual synt
 The runner uses a fresh synthetic run and stage, then independently reads the artifact row through PostgreSQL and downloads the object through the authenticated Storage endpoint. Downloaded bytes equal the locally generated file. The retained hash and size match those bytes, and the GeoJSON contains the expected synthetic feature and volume. The stack database port is checked against the named restore-target container before writes.
 
 Private script and results are `native-aequilibrae-geojson.py`, `native-aequilibrae-geojson.json` and the generated `.geojson` file in the local proof directory. This extends the mocked transport tests to an actual upload/registration/download path. No scientific computation or real geography is represented. The run-scoped key still permits upsert, so later overwrite protection, attempt ownership, restart recovery and scientific validity remain open.
+
+## Content-addressed GeoJSON objects
+
+The next October 8 checkpoint changes new GeoJSON objects to stage-specific SHA-256 paths and disables upsert. Before metadata registration, the publisher reads the object through authenticated Storage and compares all bytes with the generated file. A rejected duplicate upload or lost upload acknowledgement can resolve through that exact read. Missing, changed or unreadable bytes raise write uncertainty. No automatic upload retry occurs.
+
+All 36 push-trigger checks pass. Harmless/restored controls pass; removing byte comparison fails at `unverified GeoJSON bytes accepted`. The native SQLite/SpatiaLite publisher probe also passes with the new paths. Repeating identical bytes resolves the same object key. Appending one newline produces another key, and a new authenticated read confirms that the first object's bytes remain unchanged. Private evidence is `native-aequilibrae-content-addressed.py/json/geojson`; earlier run-scoped evidence is preserved separately.
+
+This supersedes the run-scoped upsert behavior for this GeoJSON publisher only. Other upload paths, privileged Storage mutation, attempt ownership, metadata-request deduplication, retained-attempt readers and restart recovery remain open. A content hash is byte identity, not proof of scientific correctness.
