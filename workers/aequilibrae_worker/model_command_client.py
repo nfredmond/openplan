@@ -5,6 +5,7 @@ claim, output, assessment, completion and restart paths to use attempt custody.
 Credentials stay in memory; every request is bound to a deployment and URL.
 """
 import json
+import math
 import re
 from urllib.parse import urlsplit
 from uuid import UUID
@@ -46,6 +47,63 @@ def _validate_artifact(command: dict):
         raise ValueError('Artifact metadata must be an object')
 
 
+def _kpi_number(value):
+    if value is None:
+        return None
+    if type(value) not in (int, float):
+        raise ValueError('KPI value must be a finite number or explicit null')
+    try:
+        number = float(value)
+    except OverflowError:
+        raise ValueError('KPI value exceeds stored numeric precision') from None
+    if not math.isfinite(number) or number != value:
+        raise ValueError('KPI value exceeds stored numeric precision')
+    return number
+
+
+def _validate_kpi(command: dict):
+    args = command['arguments']
+    if set(args) != {'run_id', 'stage_id', 'attempt_id', 'payload'}:
+        raise ValueError('Invalid KPI command arguments')
+    for key in ('run_id', 'stage_id', 'attempt_id'):
+        _uuid(args[key])
+    payload = args['payload']
+    required = {'kpi_name', 'kpi_label', 'value'}
+    optional = {'kpi_category', 'unit', 'geometry_ref', 'breakdown_json'}
+    if not isinstance(payload, dict) or not required <= set(payload) or set(payload) - required - optional:
+        raise ValueError('Invalid KPI payload fields')
+    if any(not isinstance(payload[key], str) for key in ('kpi_name', 'kpi_label')):
+        raise ValueError('KPI name and label must be strings')
+    for key in ('kpi_category', 'unit', 'geometry_ref'):
+        if payload.get(key) is not None and not isinstance(payload[key], str):
+            raise ValueError('KPI text field has an invalid type')
+    if payload.get('breakdown_json') is not None and not isinstance(payload['breakdown_json'], dict):
+        raise ValueError('KPI breakdown must be an object or null')
+    _kpi_number(payload['value'])
+
+
+def _kpi_receipt(command: dict, receipt: object) -> dict:
+    try:
+        if not isinstance(receipt, dict):
+            raise ValueError('KPI receipt is not an object')
+        _uuid(receipt.get('id'))
+        args = command['arguments']
+        payload = args['payload']
+        expected = {'run_id': args['run_id'], 'attempt_id': args['attempt_id'],
+                    'kpi_name': payload['kpi_name'], 'kpi_label': payload['kpi_label'],
+                    'kpi_category': payload.get('kpi_category') if payload.get('kpi_category') is not None else 'accessibility',
+                    'unit': payload.get('unit') if payload.get('unit') is not None else '',
+                    'geometry_ref': payload.get('geometry_ref'),
+                    'breakdown_json': payload.get('breakdown_json', {})}
+        if any(key not in receipt for key in expected) or journal.canonical({key: receipt[key] for key in expected}) != journal.canonical(expected):
+            raise ValueError('KPI receipt identity or metadata differs')
+        if 'value' not in receipt or _kpi_number(receipt['value']) != _kpi_number(payload['value']):
+            raise ValueError('KPI receipt value differs')
+    except (ValueError, TypeError, AttributeError, KeyError, OverflowError):
+        raise DeliveryUnconfirmed('KPI receipt does not match the prepared command') from None
+    return receipt
+
+
 def _artifact_receipt(command: dict, receipt: object) -> dict:
     if not isinstance(receipt, dict):
         raise DeliveryUnconfirmed('Artifact receipt is not an object')
@@ -74,6 +132,9 @@ def validate_command(command: dict):
     operation = command['operation']
     if operation == 'write_model_attempt_artifact':
         _validate_artifact(command)
+        return
+    if operation == 'write_model_attempt_kpi':
+        _validate_kpi(command)
         return
     fields = {
         'claim_model_stage_attempt': {'run_id', 'stage_id', 'worker_id'},
@@ -110,6 +171,8 @@ def _timestamp(value):
 def checked_receipt(command: dict, receipt: object) -> dict:
     if command['operation'] == 'write_model_attempt_artifact':
         return _artifact_receipt(command, receipt)
+    if command['operation'] == 'write_model_attempt_kpi':
+        return _kpi_receipt(command, receipt)
     args = command['arguments']
     try:
         if not isinstance(receipt, dict):
@@ -156,6 +219,7 @@ def rpc_arguments(command: dict) -> dict:
         'claim_model_stage_attempt': ('stage_id', 'worker_id'),
         'write_model_stage_attempt': ('attempt_id', 'status', 'log_tail', 'error'),
         'write_model_attempt_artifact': ('attempt_id', 'payload'),
+        'write_model_attempt_kpi': ('attempt_id', 'payload'),
     }[command['operation']]
     result.update({'p_' + key: args[key] for key in keys})
     return result

@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parent
-FILES = ('model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py')
+FILES = ('model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py')
 
 
 class MutationTests(unittest.TestCase):
@@ -47,6 +47,23 @@ class MutationTests(unittest.TestCase):
                 test = 'test_model_command_journal.py' if filename.endswith('journal.py') else 'test_model_command_client.py'
                 result = self.run_case(filename, old, new, test=test)
                 self.assertNotEqual(result.returncode, 0, 'broken behavior escaped checks')
+                self.assertIn(boundary, result.stderr)
+                self.assertNotIn('SyntaxError', result.stderr)
+                self.assertNotIn('ModuleNotFoundError', result.stderr)
+
+    def test_kpi_faults_fail_at_the_quantity_or_custody_boundary(self):
+        cases = [
+            ("if type(value) not in (int, float):", "if not isinstance(value, (int, float)):", 'missing_or_invalid_value'),
+            ("if not math.isfinite(number) or number != value:", "if not math.isfinite(number):", 'missing_or_invalid_value'),
+            ("if 'value' not in receipt or _kpi_number(receipt['value']) != _kpi_number(payload['value']):", "if False:", 'changed_value_or_binding'),
+            ("raise ValueError('KPI receipt identity or metadata differs')", 'pass', 'changed_value_or_binding'),
+            ("_kpi_number(payload['value'])\n\n\ndef _kpi_receipt", "pass\n\n\ndef _kpi_receipt", 'missing_or_invalid_value'),
+            ("'breakdown_json': payload.get('breakdown_json', {})", "'breakdown_json': payload.get('breakdown_json') or {}", 'explicit_null_defaults'),
+        ]
+        for old, new, boundary in cases:
+            with self.subTest(boundary=boundary, old=old):
+                result = self.run_case('model_command_client.py', old, new, test='test_model_command_kpi.py')
+                self.assertNotEqual(result.returncode, 0, 'KPI fault escaped checks')
                 self.assertIn(boundary, result.stderr)
                 self.assertNotIn('SyntaxError', result.stderr)
                 self.assertNotIn('ModuleNotFoundError', result.stderr)

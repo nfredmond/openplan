@@ -6,11 +6,18 @@ M3/S1. It does not activate attempt management in either stage dispatcher.
 ## What changed
 
 `workers/aequilibrae_worker/model_command_client.py` delivers stage claims,
-stage status writes and artifact writes through the candidate command RPCs.
+stage status writes, artifact writes and KPI writes through the candidate command
+RPCs.
 It retains the exact request before dispatch, binds it to a deployment and URL,
 and resolves it only after checking the returned identity and outcome. A lost
 reply stays pending. A resolved retry returns the retained receipt without
 another POST. Credentials remain outside the journal.
+
+KPI requests require an explicit value, including null when unknown. Receipt
+checks distinguish null from zero and reject booleans, nonfinite values and
+integers that the stored double-precision value cannot represent exactly.
+Numeric `1` and `1.0` represent the same quantity. Supporting breakdown metadata
+remains exact, including explicit null versus an omitted default object.
 
 The client checks claim ownership identities, lost-claim outcomes, completion
 timestamps, parent outcomes and exact artifact metadata and byte identities.
@@ -32,13 +39,14 @@ Run from the repository root:
 ```sh
 python3 -B workers/aequilibrae_worker/test_model_command_client.py
 python3 -B workers/aequilibrae_worker/test_model_command_journal.py
+python3 -B workers/aequilibrae_worker/test_model_command_kpi.py
 python3 -B workers/aequilibrae_worker/test_model_command_mutations.py
 ```
 
-Nine delivery tests and six journal tests pass. Journal tests include separate
+Nine general delivery tests, five KPI tests and six journal tests pass. Journal tests include separate
 process exit after preparation and resolution, concurrent first-open requests,
-private permissions, immutable responses and deployment filtering. Two mutation
-runner tests retain harmless controls and detect ten targeted broken behaviors.
+private permissions, immutable responses and deployment filtering. Three mutation
+runner tests retain harmless controls and detect sixteen targeted broken behaviors.
 They modify temporary copies, never the checkout under validation.
 
 The parent-outcome fault initially survived because the fixture's timestamp also
@@ -54,11 +62,12 @@ Do not target a demo or application database.
 
 The check passed against the installed candidate migration in the retained
 synthetic CLI-upgrade database. Each of two runs exercised a claim, artifact
-write and terminal write through authenticated PostgREST. One run succeeded and
-one failed. For all six commands the transport discarded the first reply after
+write, three KPI writes and terminal write through authenticated PostgREST. One run succeeded and
+one failed. For all twelve commands the transport discarded the first reply after
 HTTP confirmed commit. The client retained the request and retried it exactly.
 Each command sent two POSTs; subsequent delivery reused the local receipt. An
-independent SQL count found one attempt, artifact and completion receipt per run.
+independent SQL count found one attempt, artifact and completion receipt per run,
+plus three KPI records retaining null, zero and 1.25 separately.
 The temporary PostgREST gateway was removed. Synthetic database rows remain in
 the owned proof database.
 
@@ -67,7 +76,7 @@ server's missing `/rest/v1` prefix and to discard the reply. It does not simulat
 a TCP disconnect or a worker process crash. The prior prototype's separate TCP
 recovery evidence does not establish those properties for this new caller.
 Local evidence is retained at
-`~/.local/state/openplan/model-command-client-20261008-proof/reproducible/native.json`.
+`~/.local/state/openplan/model-command-client-20261008-proof/kpi/native.json`.
 
 ## Remaining connection work
 
