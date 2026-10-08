@@ -4793,6 +4793,21 @@ def assess_rules_v5_validation_instrument(
     )
 
 
+def materialize_validation_records(record_dir: str, bundle: dict, basis: dict, assessment: dict) -> dict:
+    """Reuse exact retained JSON files and refuse any conflicting local bytes."""
+    import model_record_files
+    values = {"validation_input_bundle": bundle, "model_comparison_basis": basis,
+              "model_validation_assessment": assessment}
+    try:
+        paths = model_record_files.materialize(record_dir, {
+            kind + ".json": model_validation_core.canonical_json(value).encode("utf-8")
+            for kind, value in values.items()
+        })
+        return {kind: paths[kind + ".json"] for kind in values}
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Retained assessment files differ or cannot be materialized; reconcile original bytes") from None
+
+
 def persist_rules_v4_validation_records(
     *,
     run_id: str,
@@ -4809,22 +4824,12 @@ def persist_rules_v4_validation_records(
 
     Storage uploads precede the database transaction and are immutable unique
     objects. If the transaction fails they remain unreferenced pending objects;
-    the returned local assessment says the evidence write failed and no claim
-    path treats it as checked.
+    the returned in-memory assessment says the evidence write failed and no claim
+    path treats it as checked. Retained file bytes remain unchanged.
     """
-    os.makedirs(record_dir, exist_ok=False)
-    paths = {
-        "validation_input_bundle": os.path.join(record_dir, "validation_input_bundle.json"),
-        "model_comparison_basis": os.path.join(record_dir, "model_comparison_basis.json"),
-        "model_validation_assessment": os.path.join(record_dir, "model_validation_assessment.json"),
-    }
-    for artifact_type, payload in (
-        ("validation_input_bundle", validation_input_bundle),
-        ("model_comparison_basis", comparison_basis),
-        ("model_validation_assessment", assessment),
-    ):
-        with open(paths[artifact_type], "w") as handle:
-            handle.write(model_validation_core.canonical_json(payload))
+    paths = materialize_validation_records(
+        record_dir, validation_input_bundle, comparison_basis, assessment,
+    )
 
     try:
         urls = {
@@ -4892,8 +4897,7 @@ def persist_rules_v4_validation_records(
         assessment["reasons"].append(
             "Validation evidence write failed. The computation is scientifically unchecked until custody succeeds."
         )
-        with open(paths["model_validation_assessment"], "w") as handle:
-            handle.write(model_validation_core.canonical_json(assessment))
+        # Keep failure status outside the original retained assessment bytes.
         assessment["validation_evidence_write_error"] = str(exc)
     return assessment
 
@@ -5669,19 +5673,9 @@ def stage_artifacts(
     validation_record_dir = os.path.join(
         out_dir, "validation_assessments", validation_assessment["assessment_id"]
     )
-    os.makedirs(validation_record_dir, exist_ok=False)
-    validation_record_paths = {
-        "validation_input_bundle": os.path.join(validation_record_dir, "validation_input_bundle.json"),
-        "model_comparison_basis": os.path.join(validation_record_dir, "model_comparison_basis.json"),
-        "model_validation_assessment": os.path.join(validation_record_dir, "model_validation_assessment.json"),
-    }
-    for artifact_type, payload in (
-        ("validation_input_bundle", validation_input_bundle),
-        ("model_comparison_basis", comparison_basis),
-        ("model_validation_assessment", validation_assessment),
-    ):
-        with open(validation_record_paths[artifact_type], "w") as handle:
-            handle.write(model_validation_core.canonical_json(payload))
+    validation_record_paths = materialize_validation_records(
+        validation_record_dir, validation_input_bundle, comparison_basis, validation_assessment,
+    )
 
     # One artifact contract for the evidence that may (or may not) support a
     # count-backed claim. Calibration's own holdout is selection evidence, so
@@ -5961,8 +5955,7 @@ def stage_artifacts(
         validation_assessment["reasons"].append(
             "Validation evidence write failed. The computation is scientifically unchecked until custody succeeds."
         )
-        with open(validation_record_paths["model_validation_assessment"], "w") as handle:
-            handle.write(model_validation_core.canonical_json(validation_assessment))
+        # Keep failure status outside the original retained assessment bytes.
         log += f"Validation evidence write failed: {exc}\n"
 
     try:

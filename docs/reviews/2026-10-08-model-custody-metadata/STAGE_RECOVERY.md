@@ -450,3 +450,26 @@ callers. A call can leave a subset of complete files if a later file fails; this
 is not a multi-file transaction. Tests do not prove power-loss durability or
 protection against an actor who can replace the caller-owned parent directory.
 A crash can leave an unreferenced temporary file; no partial target is published.
+
+
+## Normal record file recovery
+
+Both rules-v4 record writers now call `materialize_validation_records`, which
+encodes the original records and uses nonoverwriting materialization. Exact local
+files are reused, missing files are restored, and conflicting files stop with
+`WorkerStateWriteUnconfirmed` before upload. Both generic failure handlers now
+keep failure status in the returned in-memory state and preserve the original
+assessment file bytes. They still remove stale acknowledged receipt identities.
+
+The actual shared writer and assignment materialization statement pass retry,
+missing-file and conflicting-file tests. Both actual custody blocks preserve
+bytes on generic failures as well as uncertain delivery. Harmless and restored
+controls pass. Reintroducing either failure rewrite fails the corresponding
+byte-preservation assertion. Private evidence is
+`model-command-client-20261008-proof/record-caller-controls.json`.
+
+All 78 worker suites pass, with none failed or not run. The owned
+`openplan-record-recovery-workers-20261008.service` completed at 07:27:42 Pacific
+on October 8, invocation `07e506a11bee4ebea7a62c079883d412`, with a 175.3 MiB peak
+under its 1 GiB limit. No files changed during that regression. Whole-stage
+replay still requires the remaining output writes and current ownership checks.
