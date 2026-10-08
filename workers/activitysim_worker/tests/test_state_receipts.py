@@ -62,6 +62,22 @@ class StateReceipts(unittest.TestCase):
                 self.assertEqual(run_write.call_args_list, [mock.call("fixture", {"status": "running"})])
                 complete.assert_not_called()
 
+    def test_evidence_upload_requires_exact_bytes(self):
+        import hashlib
+        data = b'{"synthetic":true}'
+        for status, retained, accepted in ((200, data, True), (200, b"changed", False), (404, data, False)):
+            with self.subTest(status=status, retained=retained), mock.patch.object(worker.requests, "post", side_effect=worker.requests.Timeout("private upload")) as post, mock.patch.object(worker.requests, "get", return_value=mock.Mock(status_code=status, content=retained)) as get:
+                result = worker.sb_upload_evidence("run", "evidence.json", data, "application/json", stage_id="stage")
+                if accepted:
+                    self.assertIn(hashlib.sha256(data).hexdigest(), result)
+                    self.assertIn("/stages/stage/", result)
+                else:
+                    self.assertIsNone(result, "unverified evidence accepted")
+                self.assertEqual(post.call_count, 1)
+                self.assertEqual(get.call_count, 1)
+                self.assertEqual(post.call_args.kwargs["headers"]["x-upsert"], "false")
+                self.assertEqual(get.call_args.kwargs["timeout"], 60)
+
     def test_completion_read_requires_a_list(self):
         for status, value in ((200, None), (200, {}), (200, False), (200, ""), (503, [])):
             with self.subTest(value=value, status=status), mock.patch.object(worker.requests, "get", return_value=mock.Mock(status_code=status, json=lambda: value)), mock.patch.object(worker, "sb_patch_run") as write:
