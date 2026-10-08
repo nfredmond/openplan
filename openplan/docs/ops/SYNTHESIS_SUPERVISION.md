@@ -131,3 +131,11 @@ Systemd behavior follows its upstream
 and [execution-environment reference](https://github.com/systemd/systemd/blob/main/man/systemd.exec.xml).
 The local probe uses systemd 259 and Node 24.21.0. Verify your host's units before
 starting them.
+
+
+A disposable Ubuntu guest check also starts both actual services automatically
+after a clean reboot and after abrupt termination of the guest process, retaining
+identical coordinator journals for an unavailable endpoint. The guest explicitly
+enables user lingering. This adds a bounded boot/restart result; real queued work,
+production database recovery and commissioning on the agency's host remain open.
+See the [dated verification record](../../../docs/reviews/2026-10-07-synthesis-execution-queue/SUPERVISION_VERIFICATION.md).

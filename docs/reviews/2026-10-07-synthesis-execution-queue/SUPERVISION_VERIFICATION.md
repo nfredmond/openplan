@@ -120,3 +120,51 @@ This check covers control characters in resolved paths at generation time. It
 does not establish filesystem immutability between generation and service start,
 real queued-task recovery, boot behavior or host power-loss acceptance. The
 running full QA at `d2f92dcc` does not cover this follow-up.
+
+## Linux guest restart and retained coordinator journals
+
+On October 8 UTC, both actual worker entry points run inside a disposable Ubuntu
+Minimal 24.04 guest using source `13c52963`, Node 24.21.0 and the installed
+application dependencies. The later integration head `713e3188` has an identical
+source tree. The Ubuntu release-20261001 image matches its signed SHA256 manifest,
+verified with the installed Ubuntu cloud-image keyring. QEMU 10.2.1 supplies KVM,
+2 GiB guest RAM and a private overlay; the host remains running throughout.
+
+The initial optical seed attachment is not discovered by this minimal guest.
+The setup does not run and SSH times out. Retained diagnostics show no optical
+device. Changing the seed to a read-only virtio block device and mounting its
+`cidata` label allows cloud-init to complete on the same overlay. This is a test
+setup correction, not an OpenPlan recovery pass. The first source archive also
+omits sibling connector workers; source inspection catches the omission before
+acceptance, and both entry points pass CLI-help loading from the corrected archive.
+
+Inside the guest, the real generator creates both user units against the retained
+private state roots. The guest explicitly enables lingering for its test user.
+Both services retry an unavailable guest-loopback endpoint using synthetic keys.
+After a clean guest reboot, both start automatically with a new boot ID. After
+SIGKILL of the verified, owned QEMU process, the same overlay starts again with a
+third boot ID. Both services resume retries. Across all three accepted states,
+each service has identical unit-file and coordinator-journal hashes, retains the
+expected target, and runs from the intended checkout. No journal is reconstructed.
+
+Both services are disabled and stopped, then the guest powers off. The owned host
+unit is inactive with PID zero and successful exit; its loopback SSH forwarding
+port is closed. Image, source and media custody, phase JSON, setup failure logs
+and cleanup results remain in `synthesis-supervision-20261007-proof/guest-boot`.
+The image source is
+[Ubuntu Minimal release-20261001](https://cloud-images.ubuntu.com/minimal/releases/noble/release-20261001/).
+Initialization follows the
+[cloud-init NoCloud reference](https://docs.cloud-init.io/en/26.1/reference/datasources/nocloud.html).
+
+This verifies the generated units and retained empty-coordinator state across
+restart and abrupt loss of this guest. It does not prove recovery of nonempty
+tasks, provider deduplication, a real database, physical-disk loss, either demand
+worker, production capacity or independent agency commissioning. Full M3 remains
+open. Copying installed dependencies into the guest is not a clean dependency
+installation proof.
+
+The earlier full local QA at `d2f92dcc` also completes successfully: 20,065 tests
+pass, 1,565 skip, dependency auditing reports zero vulnerabilities, and the
+production webpack build completes. Live RLS is disabled in that local gate.
+These results do not cover the later generator fixes; the exact integrated
+supervisor head has separate GitHub checks in progress.
