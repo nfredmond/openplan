@@ -68,3 +68,11 @@ The next October 8 checkpoint closes a failed run within the stage-write transac
 Native checks cover retained prior success, failed parent and dependents, revocation, original error preservation, exact retry, refusal of later success and removal of temporary authorization. A temporary trigger refuses the parent failure update and independent SQL confirms that the stage change, revocation and receipt roll back. After removing the trigger, the same request succeeds. Baseline, harmless and restored cases pass. Sixteen adverse controls detect their intended assertions, including omitted parent failure closure and omitted failure revocation.
 
 This supersedes earlier notes that failed-stage closure is absent from the prototype. It does not integrate the packaged workers or launch route, stop a scientific process, protect artifact uploads, implement relaunch, prove concurrent locking or cover whole-run deletion. It remains outside application migrations and all native test changes roll back.
+
+## Whole-run deletion checkpoint
+
+The October 8 continuation reproduced a managed-run deletion gap before adding the guard. An empty run can be reaped and become managed without any attempt rows, so foreign keys on the attempt ledger do not protect it. The baseline test deleted that run and failed with `managed run deletion accepted`.
+
+The parent trigger now refuses direct deletion of managed runs. A service-role fixture confirms this refusal without relying on an incidental foreign-key violation, while an unmanaged fixture remains deletable. Baseline, harmless and restored cases pass; seventeen adverse controls detect their intended defects, including removal of the managed-run deletion guard. All fixtures and prototype DDL roll back.
+
+This is a preservation guard, not an implemented retention policy. An authorized retention/deletion command and its user workflow remain unimplemented. Concurrent locking, relaunch, artifact binding, both worker adapters and interruption recovery also remain open. The prototype must not be installed as a complete lifecycle replacement.

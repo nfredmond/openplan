@@ -62,6 +62,12 @@ REVOKE ALL ON public.model_run_write_context FROM PUBLIC, anon, authenticated, s
 CREATE FUNCTION public.guard_model_run_attempt_write() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 BEGIN
+  IF TG_OP='DELETE' THEN
+    IF OLD.attempt_managed THEN
+      RAISE EXCEPTION 'Managed model run deletion requires an explicit retention command';
+    END IF;
+    RETURN OLD;
+  END IF;
   IF NEW.attempt_managed OR OLD.attempt_managed THEN
     IF NOT NEW.attempt_managed OR NEW.id IS DISTINCT FROM OLD.id OR NOT EXISTS (
       SELECT 1 FROM public.model_run_write_context c
@@ -72,7 +78,7 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.guard_model_run_attempt_write() FROM PUBLIC, anon, authenticated, service_role;
-CREATE TRIGGER guard_model_run_attempt_write BEFORE UPDATE ON public.model_runs
+CREATE TRIGGER guard_model_run_attempt_write BEFORE UPDATE OR DELETE ON public.model_runs
   FOR EACH ROW EXECUTE FUNCTION public.guard_model_run_attempt_write();
 
 -- Serialize changes to the required stage set with lifecycle commands.
