@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Migration `20261016000014_model_attempt_command_custody.sql` adds private model
+attempts, exact command receipts and guarded output writes. Apply it before
+deploying code that uses these commands. Existing runs remain unmanaged, and
+normal workers do not enroll runs yet. This prepares recoverable model execution;
+it does not establish scientific acceptance or enable the unfinished workflow.
+
 A Linux setup command generates reviewable systemd user units for the existing
 synthesis preparation and execution workers. It checks private paths and pins
 the chosen checkout and journal directory without installing or starting a

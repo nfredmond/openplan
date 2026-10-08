@@ -124,3 +124,59 @@ The CLI and HTTP evidence is retained under the private proof directory's
 an application or preview target. Full CI, broader application RLS regression
 and normal worker/consumer activation remain open. These synthetic fixtures do
 not establish scientific or practitioner acceptance.
+
+## Integration accounting and timeout follow-up
+
+The full local QA run at `7b727dfb` failed. Six files failed: the unread-column
+ledger, relation inventory and migration release note, plus eight timeouts in
+three thematic suites. Lint passed; later QA stages did not run. The full run
+reported 20,072 passing tests, 11 failures and 1,587 skipped tests.
+
+The installed CLI-upgrade catalog independently reports 299 application tables,
+all with RLS enabled, and 14 views, excluding extension-owned relations. The
+inventory now accounts for the 12 private tables. The unread-column ledger
+explains 21 SQL-read fields and three write-only audit fields. The prior run and
+stage snapshots and attempt revocation reason still lack application readers.
+The Unreleased changelog names the migration and its enrollment boundary.
+
+All 41 focused accounting tests pass. Harmless comments preserve that result.
+Adding an unaccounted column or table triggers its respective guard; removing
+the migration filename triggers the release-note guard. Restoring the original
+files returns all 41 tests to passing. These lexical guards do not establish SQL
+permissions, command semantics or application use. The catalog probe and native
+proofs cover separate boundaries.
+
+The three timeout-affected thematic files pass all 169 tests with one worker and
+unchanged 20-second timeouts in 170.57 seconds. The earlier full run experienced
+memory reclamation, but this targeted rerun does not establish the sole cause
+or replace a full QA pass. An initial accounting command used the repository
+root and failed to find migrations; the accepted run used the nested app and
+its installed Vitest 4.1.11.
+
+GitHub RLS run `37762423910` and restore-drill run `37762323035` both passed at
+`7b727dfb`. These results do not cover later changed files or establish normal
+worker activation, scientific acceptance or practitioner acceptance.
+
+## Completed local checks and build continuation
+
+At `124f0a69`, local QA passed lint, dead-code checks, 1,511 test files
+(20,083 tests), connector checks (387 passed, four skipped), vendor checks
+(18 passed), and the dependency audit (zero vulnerabilities). Unit tests skipped
+95 files and 1,587 tests. Live RLS proof was explicitly skipped in this local
+command; it is not tenant-isolation evidence.
+
+The QA service then reached its 4 GiB memory limit during the production build
+and terminated with `oom-kill`. The same unchanged commit passed a build-only
+continuation with a 7 GiB limit and a 5.7 GiB peak. The continuation finished
+on October 8 at 04:46:44 Pacific. The completed suites were not restarted.
+The services are `openplan-model-attempt-schema-qa-124f0a69.service` and
+`openplan-model-attempt-schema-build-124f0a69.service`; their journals retain
+the separate failure and success. This is not a claim that one uninterrupted
+QA command passed.
+
+Main at `b814e453` was then merged normally. That merge changes ancestry but
+introduces no file changes relative to `124f0a69`. This evidence note is the
+only subsequent content change at this checkpoint. Exact-head GitHub checks
+remain required before merge. Normal managed worker activation, complete
+consumer integration, scientific acceptance and practitioner acceptance remain
+open.
