@@ -11,15 +11,11 @@ def main():
         if source.count(old)!=1:raise AssertionError('Engine scope mutation anchor changed')
         return source.replace(old,new)
     cases=[('baseline',source,None),('harmless',source+'\n# Harmless comment.\n',None),
-      ('omit-close',change('            project.close()','            pass'),'test_actual_assignment_closes_after_graph_failure'),
-      ('ignore-interruption',change('''        finally:
-            project.close()''','''        except Exception:
-            project.close()
-            raise
-        else:
-            project.close()'''),'test_interrupt_closes_and_preserves_exception'),
+      ('omit-close',change('                project.close()','                pass'),'test_actual_assignment_closes_after_graph_failure'),
+      ('ignore-interruption',change('                project.close()',"                if not isinstance(__import__('sys').exception(), KeyboardInterrupt): project.close()"),'test_interrupt_closes_and_preserves_exception'),
       ('ignore-managed-stop',change('            writer.stopped = True','            pass'),'test_partial_open_closes_and_stops_managed_writer'),
-      ('swallow-close-error',change('            project.close()', '            try: project.close()\n            except OSError: pass'),'test_cleanup_failure_propagates_with_original_error'),
+      ('swallow-close-error',change('                project.close()', '                try: project.close()\n                except OSError: pass'),'test_cleanup_failure_propagates_with_original_error'),
+      ('omit-project-log-close',change('                close_project_log(project, directory)','                pass'),'test_project_log_closes_without_touching_unrelated_handler'),
       ('restored',source,None)]
     runner='''
 import importlib.util,sys,unittest

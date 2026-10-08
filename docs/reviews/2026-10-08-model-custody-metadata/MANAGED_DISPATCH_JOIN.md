@@ -1926,3 +1926,33 @@ SQLite connections are quiescent. Native cleanup evidence and a boundary before
 completed-file capture remain required. Normal managed dispatch, full publication
 and terminal handling, scientific acceptance and browser/human acceptance remain
 unfinished.
+
+### Native interruption exposed project-log handles
+
+The first native scope check failed. After Project.close cleared the active
+project, two descriptors still pointed to its aequilibrae.log. Installed
+AequilibraE 1.6.2 creates handlers on a project-specific logger, while its close
+method closes the global logger's handlers. Private `native-engine-scope-v1`
+retains that failure and its log. The check was not relaxed.
+
+The scope now closes and removes only FileHandlers whose resolved filename is
+this project's aequilibrae.log, including when native project closure raises.
+It leaves unrelated handlers untouched and propagates cleanup errors. Eight
+focused tests and the warning-enabled 257-test broader suite pass. Local
+baseline, harmless and restored controls pass; five faults detect omitted engine
+or log closure, ignored interruption, missed managed stop and swallowed errors.
+
+Private `native-engine-scope-v2` and `prototype/native-engine-scope.json` record
+passing native baseline, harmless and restored cases. Each opens a two-node,
+one-link spatial project, injects KeyboardInterrupt after a completed read,
+checks the same interruption propagates, verifies active-project deactivation
+and scans current-process descriptors for files under that project. No such
+descriptors remain. Both copied SQLite databases pass integrity checks, and
+native reopen preserves exact node geometry. Omitting engine close leaves the
+project active and fails the intended native assertion.
+
+This is bounded native cleanup evidence. It does not exercise assignment
+threads or matrices, interruption during SQLite writes, process crashes or
+cross-process file use. Full engine quiescence before capture, managed dispatch,
+publication/terminal handling and scientific/browser/human acceptance remain
+open.

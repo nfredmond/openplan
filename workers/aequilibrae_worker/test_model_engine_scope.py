@@ -55,5 +55,21 @@ class EngineScopeTests(unittest.TestCase):
                 aeq.stage_assignment('run','stage',temp,{'centroid_map':{}},str(Path(temp)/'package'),counts_path_override='/synthetic/counts.csv')
         project.open.assert_called_once();project.close.assert_called_once_with()
 
+    def test_project_log_closes_without_touching_unrelated_handler(self):
+        import logging
+        with tempfile.TemporaryDirectory() as temp:
+            logger=logging.Logger('synthetic-owned-project')
+            owned=logging.FileHandler(Path(temp)/'aequilibrae.log')
+            unrelated=logging.FileHandler(Path(temp)/'unrelated.log')
+            self.addCleanup(unrelated.close);self.addCleanup(owned.close)
+            logger.addHandler(owned);logger.addHandler(unrelated)
+            project=Mock(logger=logger);project.close.side_effect=OSError('native close failed')
+            with self.assertRaisesRegex(OSError,'native close failed'):
+                with scope.project_scope(lambda:project,temp):pass
+            self.assertIsNone(owned.stream)
+            self.assertNotIn(owned,logger.handlers)
+            self.assertIsNotNone(unrelated.stream)
+            self.assertIn(unrelated,logger.handlers)
+
 
 if __name__=='__main__':unittest.main()

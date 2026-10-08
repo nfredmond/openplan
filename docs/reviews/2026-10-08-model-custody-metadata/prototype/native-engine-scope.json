@@ -1,0 +1,76 @@
+{
+  "scope_sha256": "09033d6d5e0252f1d27b7618e5a5ca93b9265c0ad68a6aa20ceaea99934d77b7",
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "aequilibrae_version": "1.6.2",
+        "interruption_preserved": true,
+        "active_project_cleared": true,
+        "project_file_descriptors_after_interruption": [],
+        "native_reopen_preserves_nodes": true,
+        "copied_databases": {
+          "project_database.sqlite": {
+            "integrity": "ok",
+            "sha256": "b31e2ac4dae2330d60ee44a7d1ae9d33a4bdbc262eb5ae4223bc8ad561a91192",
+            "size_bytes": 6397952
+          },
+          "public_transport.sqlite": {
+            "integrity": "ok",
+            "sha256": "e8b782d495221444e989de179a20e9824721c84a51adb71e9c7687389c5995fc",
+            "size_bytes": 6483968
+          }
+        }
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "aequilibrae_version": "1.6.2",
+        "interruption_preserved": true,
+        "active_project_cleared": true,
+        "project_file_descriptors_after_interruption": [],
+        "native_reopen_preserves_nodes": true,
+        "copied_databases": {
+          "project_database.sqlite": {
+            "integrity": "ok",
+            "sha256": "00c2e8b98016c281f76c3ab9229b5e70ae6c67bc8bf8d36c1d264c35557cee14",
+            "size_bytes": 6397952
+          },
+          "public_transport.sqlite": {
+            "integrity": "ok",
+            "sha256": "6cba3a0b14d0067f020db810d58021ccdd609091e03b5be071eb7cf19f4530f7",
+            "size_bytes": 6483968
+          }
+        }
+      }
+    },
+    {
+      "control": "omit-close",
+      "expected_failure": "Interrupted native project remains active"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "aequilibrae_version": "1.6.2",
+        "interruption_preserved": true,
+        "active_project_cleared": true,
+        "project_file_descriptors_after_interruption": [],
+        "native_reopen_preserves_nodes": true,
+        "copied_databases": {
+          "project_database.sqlite": {
+            "integrity": "ok",
+            "sha256": "ba79ce7a9b58d16a514a7bc7b728440cb09f7e791334d164d50e6a2678b22735",
+            "size_bytes": 6397952
+          },
+          "public_transport.sqlite": {
+            "integrity": "ok",
+            "sha256": "a1f4d5d90e2bf705ec8793faafddac25c652baafabd2322d92047726c5b4329e",
+            "size_bytes": 6483968
+          }
+        }
+      }
+    }
+  ],
+  "limits": "Native two-node one-link project, interruption after completed spatial read, actual project deactivation, current-process file-descriptor scan, copied SQLite integrity and native reopen. No assignment threads/matrices, mid-write crash, cross-process quiescence, full dispatch or scientific acceptance."
+}

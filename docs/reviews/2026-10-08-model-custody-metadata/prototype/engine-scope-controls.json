@@ -1,5 +1,5 @@
 {
-  "scope_sha256": "f3a5664b99b5184e0adb1311c8d43d6dcaea42d16fe8cd82e0208f3411b92793",
+  "scope_sha256": "09033d6d5e0252f1d27b7618e5a5ca93b9265c0ad68a6aa20ceaea99934d77b7",
   "worker_sha256": "65ab279efdef8fb78dce417f95abd076926f70ab4837162ecd6fe99b81679537",
   "controls": [
     {
@@ -31,6 +31,11 @@
       "control": "swallow-close-error",
       "exit_code": 1,
       "targeted_test": "test_cleanup_failure_propagates_with_original_error"
+    },
+    {
+      "control": "omit-project-log-close",
+      "exit_code": 1,
+      "targeted_test": "test_project_log_closes_without_touching_unrelated_handler"
     },
     {
       "control": "restored",
