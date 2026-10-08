@@ -1079,3 +1079,26 @@ consumer ownership, artifact ownership, producer ambiguity and an omitted stage
 order projection. The combined suite passes 156 tests. Native predecessor reads,
 complete consumer mapping, project transfer and scientific acceptance remain
 unproved. The SQLite ResourceWarning remains unresolved.
+
+### Native predecessor-read proof
+
+The bound adapter now has native HTTP evidence using a fresh admitted consumer
+and two completed managed producers in an isolated clone. Both producers register
+the same artifact type; the unrelated stage registers later. Baseline, harmless
+and restored controls select the declared Network Assignment producer. A changed
+predecessor-name mapping selects the unrelated native artifact, exposing the fault
+against the expected producer identity. A locally injected wrong consumer-attempt
+context is refused and stops the writer. No native row is rewritten to manufacture
+an inconsistent attempt.
+
+The proof makes one claim POST and 11 GET requests, all returning HTTP 200.
+Checksums for seven model/receipt tables are unchanged across the read controls.
+`prototype/predecessor-http.json` records the results and source hashes. The owned
+private `predecessor-http-v1` directory preserves the clone and admission journal;
+the temporary gateway is removed. Source application databases are unchanged.
+
+This verifies actual query projections and read-time selection. It does not read
+package/state files, exercise complete normal dispatch, establish an exhaustive
+RLS matrix, fence concurrent revocation or prove scientific acceptance. The next
+join must bind these selected identities to verified local copies and explicit
+consumer-state mappings, with separate coherent project-database transfer.
