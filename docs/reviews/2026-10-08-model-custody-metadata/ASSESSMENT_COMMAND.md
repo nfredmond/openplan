@@ -132,3 +132,31 @@ This verifies native legacy assessment receipt recovery after response loss.
 It does not install the candidate, activate normal workers, verify Storage
 bytes, cover managed ingestion or establish scientific acceptance. Those
 boundaries remain open, as does the full worker suite on this branch.
+
+## Full worker checkpoint and adoption boundary
+
+At `e5a1b4c3`, the repository worker runner passes all 69 suites, with zero
+failures and zero suites not run. Each worker uses its own existing environment
+through ignored symlinks in this isolated checkout. Unit
+`openplan-assessment-workers-e5a1b4c3.service`, invocation
+`af2fff4410954ce0a2cb8c50570497b2`, finishes successfully at 06:19 Pacific on
+October 8. It runs under a 1 GiB memory cap, zero swap and one CPU quota.
+Peak memory is 178.4 MB; wall time is 34.501 seconds. This is worker software
+regression evidence, not model or human acceptance.
+
+Source review identifies an adoption prerequisite. Both existing assessment
+callers catch write failures and annotate the assessment before subsequent
+publication. The shared persistence helper catches all exceptions and rewrites
+its local assessment JSON. An unresolved retained command must instead remain
+recoverable with the exact original payload and must not fall through to later
+publication or terminal writes. Persist a stable operation identity before
+transport; do not generate another request for an unresolved logical write.
+Recovery must reconcile the saved receipt before continuing the original work.
+
+The publication candidate currently accepts only `prototype_only`. Installing
+it as a universal replacement would refuse existing higher-tier payloads.
+Do not silently downgrade or discard those payloads to fit the candidate.
+Complete the evidence-bound publication policy and the normal caller recovery
+path before treating atomic publication as adopted. The assessment command can
+be installed additively without enrolling a run in managed attempts, but an
+installed unused function would not close the worker connection requirement.
