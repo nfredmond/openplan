@@ -2349,3 +2349,31 @@ parent's chosen name from the actual stage and preserve the distinct demand
 methods; this channel does not itself validate stage-name policy. Completed
 output capture/publication, count preparation, engine entry, descriptor-pinned
 later opens, descendant containment and supervisor recovery remain open.
+
+### Separate count preparation from native assignment
+
+The actual assignment now calls prepare_assignment_count_inputs before opening
+the engine project. This extracts source selection and confirmed retention into
+a callable parent-side boundary. Fresh selection still forwards run geography,
+calibration choice and explicit source precedence to the existing acquisition
+and retention code.
+
+A retained count record now bypasses new acquisition entirely. Previously, a
+record supplied without a separate path override could trigger acquisition even
+though retention later consumed the original record. An explicit path that
+contradicts the retained record now refuses before copying. Missing explicit
+sources remain unavailable and do not select a populated default during retention.
+No observation, holdout, tolerance or scientific grade is changed.
+
+Four new tests use real count files and manifests with mocked acquisition.
+Baseline, harmless and restored controls pass; four faults detect lost calibration
+choice, reacquisition, ignored explicit source and conflicting-path acceptance.
+The warning-enabled broader suite passes 320 tests, including actual assignment
+checks that validate counts before engine opening. The control runner initially
+classified callback AssertionError as an error rather than a unittest failure;
+its correction retains checks for the exact intended assertion messages. See
+prototype/count-preparation-controls.json.
+
+The parent channel still needs to invoke this preparation with its own declared
+inputs and output destination. Live provider acquisition, native registration,
+full child entry, containment and interruption recovery remain open.

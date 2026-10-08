@@ -4144,6 +4144,32 @@ def retain_assignment_counts(counts_path: str | None, out_dir: str, *, status_di
         raise
 
 
+def prepare_assignment_count_inputs(run_row: dict, setup_result: dict, proj_dir: str,
+                                    out_dir: str, *, calibrate_requested: bool,
+                                    counts_path_override: str | None = None,
+                                    count_inputs_override: dict | None = None) -> dict:
+    """Prepare and confirm count inputs before native engine work begins.
+
+    A retained record is authoritative. Consuming it never acquires replacement
+    counts, even when its original source is no longer available.
+    """
+    if count_inputs_override is not None:
+        if not isinstance(count_inputs_override, dict) or not isinstance(count_inputs_override.get("counts_path"), str):
+            raise ValueError("Retained count preparation requires its recorded path")
+        recorded_path = count_inputs_override["counts_path"]
+        if counts_path_override is not None and counts_path_override != recorded_path:
+            raise ValueError("Count path override differs from the retained record")
+        return retain_assignment_counts(recorded_path, out_dir,
+            status_directory=os.path.dirname(recorded_path), retained_record=count_inputs_override)
+    counts_path = counts_path_override or (
+        auto_ingest_counts(run_row, setup_result.get("bbox"), proj_dir, out_dir,
+                           calibrate_requested=calibrate_requested)
+        or VALIDATION_COUNTS_PATH
+    )
+    return retain_assignment_counts(counts_path, out_dir,
+        status_directory=os.path.dirname(counts_path_override) if counts_path_override else out_dir)
+
+
 def stage_assignment(
     run_id: str,
     stage_id: str,
@@ -4242,15 +4268,9 @@ def stage_assignment(
     # process (or after this process has handled a different run), where a global
     # would silently be someone else's count set. See the note by
     # VALIDATION_COUNTS_PATH.
-    counts_path = counts_path_override or (
-        auto_ingest_counts(run_row, setup_result.get("bbox"), proj_dir, out_dir,
-                           calibrate_requested=calibrate_requested)
-        or VALIDATION_COUNTS_PATH
-    )
-    count_inputs = retain_assignment_counts(
-        counts_path, out_dir,
-        status_directory=os.path.dirname(counts_path_override) if counts_path_override else out_dir,
-        retained_record=count_inputs_override,
+    count_inputs = prepare_assignment_count_inputs(
+        run_row, setup_result, proj_dir, out_dir, calibrate_requested=calibrate_requested,
+        counts_path_override=counts_path_override, count_inputs_override=count_inputs_override,
     )
     counts_path = count_inputs["counts_path"]
     log += ("Selected count inputs retained before assignment.\n" if count_inputs["counts_status"] == "retained"
