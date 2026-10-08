@@ -435,3 +435,31 @@ response deadline or response-body size cap. Unit transports do not prove HTTP,
 RLS, Storage contents or dispatcher behavior. The native proof does not verify
 Storage bytes, scientific results, prepared-instrument ordering, cross-consumer
 presentation, practitioner acceptance or V1 completion. Those remain required.
+
+## Combined local QA and dependency repair
+
+At `d4399e5f`, lint and dead-code checks passed. The full unit run then reported
+20,083 passing tests, five failures and 1,587 skipped tests across 1,509 passing,
+three failing and 95 skipped files. All five failures reported a missing
+`better-sqlite3` native binding in three GeoPackage/evidence test files. The
+checkout's earlier dependency install had disabled installation scripts.
+
+`npm rebuild better-sqlite3` repaired that local dependency without source or
+lockfile changes. A real in-memory SQLite query passed. The three affected test
+files then passed all seven tests. No test expectation or timeout was changed.
+The original full run remains a failure; this targeted rerun establishes the
+affected native dependency boundary after repair.
+
+A separate continuation on the unchanged commit passed 387 connector checks
+(four skipped), 18 vendor checks, the dependency audit (zero vulnerabilities),
+and the production build. The build finished October 8 at 05:26:38 Pacific;
+the continuation used a 7 GiB memory limit and peaked at 6.4 GiB. Local live RLS
+was explicitly skipped, so this command supplies no tenant-isolation proof.
+The service is `openplan-model-command-client-tail-d4399e5f.service`, invocation
+`a3212eacf0724240894beb984e18dbb9`. The original failed service is
+`openplan-model-command-client-qa-d4399e5f.service`.
+
+These are separate verified stages, not a claim that one uninterrupted QA gate
+passed. Exact-head GitHub integration, normal managed dispatcher adoption,
+complete consumer recovery, scientific acceptance and practitioner acceptance
+remain open. This checkpoint adds only this evidence note after the tested head.
