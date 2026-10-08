@@ -38,7 +38,7 @@ proved consistent recovery point.
 ## Model worker recovery records
 
 Include the complete durable worker root in the recovery inventory. This
-includes original inputs and outputs, `run-state.json`, assessment
+includes original inputs and outputs, `state.json`, assessment
 `command-journal` directories and `stage-journals/<stage_id>/model-commands.sqlite3`.
 The journal can hold unresolved delivery requests, resolved receipts and
 interrupted computation starts. None of these records is a disposable cache.
