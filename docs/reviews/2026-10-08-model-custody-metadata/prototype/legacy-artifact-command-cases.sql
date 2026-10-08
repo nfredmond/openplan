@@ -8,12 +8,32 @@ CREATE TRIGGER synthetic_artifact_receipt_failure BEFORE INSERT ON public.model_
 DO $$
 DECLARE
  run uuid:=gen_random_uuid(); stage uuid:=gen_random_uuid(); artifact uuid:=gen_random_uuid(); ws uuid;
- payload jsonb; response jsonb; changed jsonb; rejected boolean; legacy uuid:=gen_random_uuid();
+ invalid_case record; payload jsonb; response jsonb; changed jsonb; rejected boolean; legacy uuid:=gen_random_uuid();
 BEGIN
  INSERT INTO public.model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by)
  SELECT run,workspace_id,model_id,'aequilibrae','queued','Synthetic artifact command',created_by FROM public.model_runs WHERE id=current_setting('openplan.proof_fixture')::uuid RETURNING workspace_id INTO ws;
  INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order) VALUES(stage,run,'Synthetic artifact command','queued',1);
  payload:=jsonb_build_object('id',artifact,'run_id',run,'stage_id',stage,'artifact_type','link_volumes','file_url','local://synthetic','file_size_bytes',2,'content_hash',repeat('a',64),'metadata_json','{}'::jsonb);
+ -- Exercise values that the underlying column types could otherwise accept.
+ FOR invalid_case IN SELECT * FROM (VALUES
+  (payload || '{"unexpected":true}'::jsonb, 'Invalid legacy artifact fields', 'Extra artifact field accepted'),
+  (jsonb_set(payload,'{id}','"AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA"'), 'Invalid legacy artifact identity', 'Noncanonical artifact identity accepted'),
+  (jsonb_set(payload,'{file_url}','"   "'), 'Invalid legacy artifact text', 'Blank artifact URL accepted'),
+  (jsonb_set(payload,'{metadata_json}','[]'), 'Invalid legacy artifact bytes', 'Nonobject artifact metadata accepted'),
+  (jsonb_set(payload,'{file_size_bytes}','"2"'), 'Invalid legacy artifact bytes', 'String artifact size accepted'),
+  (jsonb_set(payload,'{content_hash}',to_jsonb(repeat('A',64))), 'Invalid legacy artifact bytes', 'Noncanonical artifact hash accepted')
+ ) AS c(body,expected_error,accepted_error) LOOP
+  rejected:=false;
+  BEGIN PERFORM public.record_legacy_model_artifact(ws,invalid_case.body);
+  EXCEPTION WHEN raise_exception THEN
+   IF SQLERRM<>invalid_case.expected_error THEN RAISE; END IF;
+   rejected:=true;
+  END;
+  IF NOT rejected THEN RAISE EXCEPTION '%',invalid_case.accepted_error; END IF;
+ END LOOP;
+ IF EXISTS(SELECT 1 FROM public.model_run_artifacts WHERE run_id=run)
+  OR EXISTS(SELECT 1 FROM public.model_legacy_artifact_receipts WHERE run_id=run)
+  THEN RAISE EXCEPTION 'Invalid artifact input left a write'; END IF;
  response:=public.record_legacy_model_artifact(ws,payload);
  IF response->>'id' IS DISTINCT FROM artifact::text OR public.record_legacy_model_artifact(ws,payload) IS DISTINCT FROM response OR (SELECT count(*) FROM public.model_run_artifacts WHERE run_id=run)<>1 THEN RAISE EXCEPTION 'Artifact retry changed or duplicated'; END IF;
  rejected:=false;

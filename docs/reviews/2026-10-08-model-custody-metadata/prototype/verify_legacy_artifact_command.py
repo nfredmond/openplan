@@ -25,6 +25,17 @@ def check(source_path=None):
         ('workspace', 'IF NOT FOUND OR parent.workspace_id IS DISTINCT FROM p_workspace THEN', 'IF false THEN', 'Wrong workspace accepted'),
         ('private-table', 'REVOKE ALL ON public.model_legacy_artifact_receipts FROM PUBLIC,anon,authenticated,service_role;', 'REVOKE ALL ON public.model_legacy_artifact_receipts FROM PUBLIC,anon,authenticated; GRANT INSERT ON public.model_legacy_artifact_receipts TO service_role;', 'Artifact command privileges exposed'),
     ]
+    input_guards = [
+        ('fields', 'Invalid legacy artifact fields', 'Extra artifact field accepted'),
+        ('identity', 'Invalid legacy artifact identity', 'Noncanonical artifact identity accepted'),
+        ('text', 'Invalid legacy artifact text', 'Blank artifact URL accepted'),
+        ('bytes', 'Invalid legacy artifact bytes', 'Nonobject artifact metadata accepted'),
+    ]
+    for name, rejection, error in input_guards:
+        end = source.index(" THEN RAISE EXCEPTION '"+rejection+"'")
+        start = source.rfind('IF ', 0, end)
+        before = source[start:end]
+        faults.append(('input-'+name, before, 'IF false', error))
     variants = [('baseline', source, None), ('harmless', source+'\n-- Harmless command comment.\n', None)]
     for name, before, after, error in faults:
         if source.count(before) != 1:

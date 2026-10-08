@@ -127,3 +127,31 @@ or a lost response through the retained client. Those checks precede migration
 and adoption. Existing direct legacy writes remain mutable. A saved response is
 historical evidence, not proof of current ownership or Storage byte existence.
 The ordinary primary artifact POST still needs this recovery integration.
+
+
+## Artifact input and contention checks
+
+Additional native input cases reject unexpected fields, noncanonical UUIDs,
+blank URLs, nonobject metadata, string byte sizes and noncanonical hashes.
+Invalid requests leave no artifact or receipt. Disabling each of the four
+input guard blocks fails its stated assertion; harmless and restored controls
+pass alongside the earlier six faults. These controls cover guard blocks,
+not every possible malformed JSON value or each individual predicate.
+Private results are in `legacy-artifact-input-controls/` under the proof root.
+
+`prototype/verify_legacy_artifact_contention.py` uses independent PostgreSQL
+service-role sessions and observes actual lock waits. It verifies simultaneous
+exact retries, conflicting requests, stale-run cleanup committing first and
+artifact registration committing first. The first two retain one artifact and
+one receipt. Cleanup committing first refuses the new artifact and leaves
+neither row. Registration committing first preserves its historical receipt
+after cleanup marks the run failed. Each scenario passes with baseline, harmless
+and restored candidates. Three fault controls detect changed-request acceptance,
+a wrong retry receipt and registration after cleanup.
+
+All 15 contention cases passed. Candidate objects were removed after the proof;
+synthetic fixture rows remain in the isolated database. Evidence is retained in
+`model-command-client-20261008-proof/legacy-artifact-contention/`. This does not
+prove HTTP lost-response recovery, actual worker integration, immutable Storage
+bytes, full stage replay or scientific acceptance. The candidate remains
+uninstalled in application databases.
