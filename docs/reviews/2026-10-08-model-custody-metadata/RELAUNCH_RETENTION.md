@@ -74,3 +74,36 @@ attempts and consumed scientific evidence. Do not enable full-stage replay.
 The V1 contract and roadmap M3 remain unchanged. This checkpoint prevents no
 production action yet and closes neither independent scientific acceptance nor
 practitioner acceptance.
+
+## Start boundary prototype
+
+A second [prototype](prototype/stage-execution-start.sql) records a new stage's
+transition from queued to running in the same database transaction. It also
+records a stage inserted directly in running state. The marker records an
+observed start boundary, not a worker identity, execution lease, completed
+calculation or scientific result. It does not invent historical attempts.
+
+The retained-run guard includes these start records, so a claimed stage needs no
+artifact or KPI receipt to refuse destructive reset. Conditional claim retries
+and ordinary running-stage log updates do not add another marker. A terminal
+stage cannot return to running through this prototype. The marker table is
+private and refuses updates and deletion.
+
+[Native checks](prototype/verify_stage_execution_start.py) confirm these cases
+with service-role stage writes in the owned disposable database. A deliberately
+raised error after marker insertion rolls back both the new running stage and
+its marker. Baseline, harmless-comment and restored-source checks pass. Four
+adverse variants fail for the expected assertion: missing update-claim trigger,
+missing start-record selector, missing running-insert trigger and mutable start
+records. The first test invocation had a Python string-delimiter syntax error;
+no database command ran. Correcting the delimiter leaves the assertions intact.
+All successful and adverse native transactions roll back.
+
+This narrows the computation-before-receipt gap for newly observed claims. It
+does not establish safe behavior for an already-running process during upgrade,
+historical cleared/requeued stages, concurrent claims and cleanup, or a lost
+HTTP acknowledgement through the normal worker. Historical rows are deliberately
+not backfilled by this prototype. Those upgrade and reconciliation decisions
+remain required before any migration or production adoption. Run/stage scope
+mutation, the projection guards and full authenticated launch behavior also
+remain open. No browser or scientific acceptance is added by these tests.
