@@ -72,3 +72,12 @@ runs remain in progress at this checkpoint. No merge or release tag is declared.
 [The staff response and export record](STAFF_RESPONSE_ACCEPTANCE.md) retains the
 new queued-proposal handoff and public/private export checks, together with the
 unresolved browser errors and mobile findings.
+
+The original local suite terminates with 19,976 passing tests, one failed test and
+1,565 skipped tests across 1,600 files. The sole failure is the original column
+ratchet already corrected in 93171b93. The docs configuration correction was read
+later in the same run. Therefore this mixed-checkpoint run is retained as diagnostic
+evidence, not a passing exact-commit suite. The dependent validation service stops
+on that nonzero result and does not run its remaining stages. Build 9dfbeaa4 and
+its desktop/390px layout checks subsequently pass as recorded in the staff-response
+acceptance note. A fresh suite must verify the corrected source.

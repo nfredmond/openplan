@@ -92,3 +92,32 @@ The diagnostic screenshot is retained privately as
 injected diagnostic styles, not a rebuilt candidate. These causal checks do not
 replace desktop and 390px acceptance against the next identified production build.
 The three earlier HTTP 503 entries remain unexplained.
+
+## Rebuilt layout acceptance
+
+Build 9dfbeaa4 compiles in 29.5 seconds and finishes TypeScript in 19.6 seconds.
+The bounded build exits 0 on October 8 at 01:04:35 UTC. The replacement owned service
+`openplan-synthesis-queue-prod-9dfbeaa4.service` uses port 3505. PID 965166 has the
+expected isolated application cwd; health names commit 9dfbeaa4a8f3 and version 0.67.0.
+
+T3 navigates from the campaign Record tab through the real Projects rail link at
+390 by 844 and 1440 by 900 CSS pixels. Both pointer activations reach Projects.
+There is no injected diagnostic stylesheet. At 390px all six rail headings retain
+zero height and margin after focus. The three header actions fit between x 15.991
+and 262.780. New project opens its dialog; Escape closes it without creating a row.
+The desktop header retains its single action row and visible navigation labels.
+
+Both screenshots were visually inspected:
+`browser-screenshot-openplan-history-localhost-muyu46fe-baf792ac.png` and
+`browser-screenshot-openplan-history-localhost-muyu4dhj-3aed3456.png` in the private
+T3 browser-artifacts directory. The compact Projects snapshot includes the console
+history and shows no new entries after 01:05 UTC during this bounded check.
+This does not erase earlier errors or establish whole-app mobile acceptance.
+
+Database logs at 00:41:22.564,00:41:22.727 and 00:41:23.371 UTC identify the earlier
+three 503 responses as request-lock contention in
+`lock_synthesis_generation_request_scope`. Direct inspection later reads the
+interrupted request successfully, preserving one selected attempt without output
+and three unselected tasks. A tab-return probe also records review and approval
+reads returning 503 then 200 through existing retries. No locking, dispatch or
+retry behavior changes here; console-visible transient read contention remains.
