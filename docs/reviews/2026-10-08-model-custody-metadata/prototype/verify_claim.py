@@ -11,7 +11,7 @@ if not re.fullmatch(r"supabase_db_openplan-restore-target-[1-9][0-9]*", containe
 root = Path(__file__).resolve().parent
 source = (root / "claim.sql").read_text() + "\n" + (root / "write.sql").read_text() + "\n" + (root / "reap.sql").read_text()
 run_cases = (root / "run-cases.sql").read_text()
-cases = (root / "claim-cases.sql").read_text() + run_cases + (root / "stage-set-cases.sql").read_text() + "\n" + (root / "write-cases.sql").read_text() + "\n" + (root / "reap-cases.sql").read_text() + run_cases + (root / "completion-cases.sql").read_text()
+cases = (root / "claim-cases.sql").read_text() + run_cases + (root / "stage-set-cases.sql").read_text() + "\n" + (root / "write-cases.sql").read_text() + "\n" + (root / "reap-cases.sql").read_text() + run_cases + (root / "completion-cases.sql").read_text() + (root / "failure-cases.sql").read_text()
 command = ["docker", "exec", "-i", container, "psql", "-X", "-qAt", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"]
 absence_query = "SELECT to_regclass('public.model_stage_attempts') IS NULL AND to_regclass('public.model_stage_claim_receipts') IS NULL AND to_regclass('public.model_stage_write_context') IS NULL AND to_regclass('public.model_stage_write_receipts') IS NULL AND to_regclass('public.model_run_write_context') IS NULL;"
 
@@ -41,6 +41,8 @@ for name, sql, expected_failure in [
     ("allow-stage-insertion", source.replace("IF TG_OP IN ('INSERT','DELETE') THEN", "IF TG_OP='INSERT' THEN RETURN NEW; END IF; IF TG_OP='DELETE' THEN"), "managed stage insertion accepted"),
     ("allow-stage-deletion", source.replace("IF TG_OP IN ('INSERT','DELETE') THEN", "IF TG_OP='DELETE' THEN RETURN OLD; END IF; IF TG_OP='INSERT' THEN"), "required stage deletion accepted"),
     ("allow-unclaimed-stage-update", source.replace("IF NOT EXISTS (SELECT 1 FROM public.model_stage_write_context c", "IF NEW.active_attempt_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.model_stage_write_context c"), "unclaimed required stage bypass accepted"),
+    ("omit-failure-closure", source.replace("IF p_status='failed' THEN", "IF false THEN"), "parent failure omitted"),
+    ("omit-failure-revocation", source.replace("s.run_id=v_run.id AND s.active_attempt_id=a.id", "false"), "failure left authority active"),
     ("restored", source, None),
 ]:
     result = subprocess.run(command, input="BEGIN; SET LOCAL statement_timeout=10000; SET LOCAL lock_timeout=1000;\n" + sql + "\n" + cases + "\nROLLBACK;\n", text=True, capture_output=True, timeout=40)

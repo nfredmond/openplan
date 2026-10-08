@@ -57,6 +57,25 @@ BEGIN
       DELETE FROM public.model_run_write_context WHERE transaction_id=txid_current() AND run_id=v_run.id;
     END IF;
   END IF;
+  IF p_status='failed' THEN
+    PERFORM id FROM public.model_run_stages WHERE run_id=v_run.id ORDER BY id FOR UPDATE;
+    INSERT INTO public.model_stage_write_context(transaction_id,stage_id,attempt_id)
+      SELECT txid_current(),id,NULL FROM public.model_run_stages WHERE run_id=v_run.id;
+    UPDATE public.model_stage_attempts a SET revoked_at=clock_timestamp(),
+      revocation_reason=coalesce(p_error,'Model stage failed')
+      FROM public.model_run_stages s WHERE s.run_id=v_run.id AND s.active_attempt_id=a.id;
+    UPDATE public.model_run_stages SET attempt_managed=true,active_attempt_id=NULL,
+      status=CASE WHEN status IN ('queued','running') THEN 'failed' ELSE status END,
+      error_message=CASE WHEN status IN ('queued','running') THEN 'Stopped because another required stage failed' ELSE error_message END,
+      completed_at=CASE WHEN status IN ('queued','running') THEN clock_timestamp() ELSE completed_at END
+      WHERE run_id=v_run.id;
+    DELETE FROM public.model_stage_write_context WHERE transaction_id=txid_current()
+      AND stage_id IN (SELECT id FROM public.model_run_stages WHERE run_id=v_run.id);
+    INSERT INTO public.model_run_write_context VALUES(txid_current(),v_run.id);
+    UPDATE public.model_runs SET status='failed',error_message=p_error,completed_at=clock_timestamp()
+      WHERE id=v_run.id RETURNING * INTO v_run;
+    DELETE FROM public.model_run_write_context WHERE transaction_id=txid_current() AND run_id=v_run.id;
+  END IF;
   v_response := jsonb_build_object('stage_id',v_stage.id,'attempt_id',p_attempt_id,
     'status',v_stage.status,'completed_at',v_stage.completed_at,'request_id',p_request_id,
     'run_status',v_run.status,'run_completed_at',v_run.completed_at);
