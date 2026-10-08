@@ -1,0 +1,56 @@
+"""Prove assessment command retry and rollback in the named owned database."""
+from pathlib import Path
+import json
+import os
+import re
+import subprocess
+import uuid
+
+ROOT = Path(__file__).resolve().parent
+
+
+def check():
+    meta = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
+    if not re.fullmatch('openplan_attempt_cli_[0-9a-f]{32}', meta['database']) or meta['container'] != 'supabase_db_openplan-restore-target-2026091050':
+        raise ValueError('Select the named owned proof database')
+    fixture = str(uuid.UUID(meta['fixture_run']))
+    source = (ROOT/'assessment-command.sql').read_text()
+    cases = (ROOT/'assessment-command-cases.sql').read_text()
+    faults = [
+        ('changed-request', 'IF saved.request_payload IS DISTINCT FROM p_payload THEN', 'IF false THEN', 'Changed assessment request accepted'),
+        ('retry-receipt', 'RETURN saved.response_payload;', "RETURN '{}'::jsonb;", 'Assessment exact retry duplicated or changed'),
+        ('size-type', "OR jsonb_typeof(p_payload->(prefix||'_size')) IS DISTINCT FROM 'number'", 'OR false', 'Coerced assessment size accepted'),
+        ('stopped-run', "IF parent.status IN('failed','cancelled') THEN", 'IF false THEN', 'Stopped assessment command accepted'),
+        ('extra-fields', "OR (p_payload-fields)<>'{}'::jsonb", 'OR false', 'Unexpected assessment fields accepted'),
+        ('missing-receipt', 'VALUES(p_request,run,p_payload,result);', 'SELECT p_request,run,p_payload,result WHERE false;', 'Assessment exact retry duplicated or changed'),
+        ('private-table', 'REVOKE ALL ON public.model_assessment_command_receipts FROM PUBLIC,anon,authenticated,service_role;', 'REVOKE ALL ON public.model_assessment_command_receipts FROM PUBLIC,anon,authenticated; GRANT INSERT ON public.model_assessment_command_receipts TO service_role;', 'Assessment command privileges exposed'),
+    ]
+    variants = [('baseline', source, None), ('harmless', source+'\n-- Harmless command comment.\n', None)]
+    for name, before, after, error in faults:
+        if source.count(before) != 1:
+            raise AssertionError('Mutation anchor is not unique: '+name)
+        variants.append((name, source.replace(before, after, 1), error))
+    variants.append(('restored', source, None))
+    command = ['docker','exec','-i',meta['container'],'psql','-X','-qAt','-U','postgres','-d',meta['database'],'-v','ON_ERROR_STOP=1']
+    results = []
+    for name, candidate, error in variants:
+        script = "BEGIN; SET LOCAL openplan.proof_fixture='"+fixture+"';\n"+candidate+'\n'+cases+'\nROLLBACK;'
+        result = subprocess.run(command, input=script, text=True, capture_output=True, timeout=30)
+        if error is None:
+            if result.returncode or 'assessment-command:' not in result.stderr:
+                raise AssertionError(name+': '+result.stderr)
+        elif result.returncode == 0 or error not in result.stderr:
+            raise AssertionError(name+': '+result.stderr)
+        results.append({'case': name, 'exit': result.returncode, 'expected_error': error})
+    probe = subprocess.run(command, input="SELECT to_regclass('public.model_assessment_command_receipts') IS NULL AND to_regprocedure('public.record_legacy_model_assessment(uuid,jsonb)') IS NULL;", text=True, capture_output=True, timeout=20)
+    if probe.returncode or probe.stdout.strip() != 't':
+        raise AssertionError('Assessment command rollback cleanup not confirmed')
+    evidence = {'cases': results, 'rollback_cleanup_confirmed': True, 'scope': 'Actual database RPC and constraints, synthetic artifacts, rollback-only candidate. No installed migration, concurrency, HTTP, Storage bytes, retained client, normal dispatcher recovery or scientific acceptance.'}
+    output = Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_OUTPUT']).resolve()
+    output.mkdir(mode=0o700, parents=True, exist_ok=True)
+    (output/'assessment-command.json').write_text(json.dumps(evidence, indent=2)+'\n')
+    return evidence
+
+
+if __name__ == '__main__':
+    print(json.dumps(check(), indent=2))
