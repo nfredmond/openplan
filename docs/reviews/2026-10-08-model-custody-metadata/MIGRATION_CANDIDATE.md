@@ -40,8 +40,8 @@ adding a client enrollment bypass.
 
 ## Remaining before landing or activation
 
-- Apply and inspect the candidate on a separate disposable database, including
-  Supabase advisors and populated legacy-record preservation.
+- Finish the Supabase migration-history upgrade path and populated historical
+  v4 custody check; the committed SQL and advisor checkpoint below is partial.
 - Complete exact-head CI and live permission/upgrade checks for the migration.
 - Connect all lifecycle commands, worker journals and output writes, then prove
   normal worker restart and cancellation through both worker entry points.
@@ -52,3 +52,44 @@ adding a client enrollment bypass.
 
 The roadmap remains the sole queue. This note records the current migration
 boundary; it does not replace or reduce any V1 requirement.
+
+## Committed schema and advisor checkpoint
+
+A separate database in the disposable restore-target container now contains the
+committed candidate. Its starting schema was restored from the installed
+`20261016000013` database with original object owners and permissions. No source
+records were copied. Twelve synthetic legacy records were seeded before the
+candidate: one run, one stage, five instrument artifacts, two KPIs (null and
+zero), one claim decision, one validation result and one v2 custody row.
+Exact before/after JSON agrees for every pre-existing field. The newly added
+ownership fields remain false or null.
+
+The initial restore as `postgres` failed on a restricted Realtime function
+setting. Following `full_restore.py`, restoring as `supabase_admin` succeeded.
+The candidate itself was applied as `postgres`. This proof used a committed SQL
+transaction, not Supabase migration-history registration. Historical v4 custody
+was not populated in this fixture.
+
+The native command cases also pass against the already-installed candidate, in
+a rollback transaction. All 12 new private tables have RLS enabled; service-role
+direct INSERT and anonymous/authenticated SELECT privileges are absent.
+
+Supabase advisors initially found five uncovered candidate foreign keys. The
+migration now indexes those identities. A repeat advisor run has no new WARN or
+ERROR entries compared with the source database. Candidate INFO findings are
+12 intentionally policy-free private tables and four unused indexes in the
+small fixture. The source and candidate retain a pre-existing PostGIS
+`spatial_ref_sys` RLS error and other pre-existing findings. This is a scoped
+comparison, not a clean whole-database security report. Schema-only cloning also
+changes usage statistics, so unrelated INFO differences are not regressions.
+
+The final migration file, including those indexes, again passes all 54 native
+rollback cases. The private archive, before/after snapshots, advisor comparison
+and scripts remain under
+`~/.local/state/openplan/model-attempt-schema-20261008-proof/`.
+The owned database `openplan_attempt_upgrade_77f0677a3947465ea717aa3cee021fa4`
+is retained for the remaining proof work. No application server points to it.
+
+Remaining upgrade evidence includes the actual Supabase migration command and
+history path, populated historical v4 custody, and full authenticated HTTP
+permission checks. Exact-head CI and worker/consumer activation remain open.

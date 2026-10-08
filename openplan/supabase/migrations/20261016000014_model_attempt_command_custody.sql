@@ -726,3 +726,8 @@ CREATE INDEX model_stage_attempts_run_idx ON public.model_stage_attempts(run_id)
 CREATE INDEX model_run_artifacts_attempt_idx ON public.model_run_artifacts(attempt_id) WHERE attempt_id IS NOT NULL;
 CREATE INDEX model_run_kpis_attempt_idx ON public.model_run_kpis(attempt_id) WHERE attempt_id IS NOT NULL;
 CREATE INDEX model_attempt_instrument_run_method_idx ON public.model_attempt_instrument_custody(model_run_id,demand_method);
+CREATE INDEX model_attempt_instrument_attempt_idx ON public.model_attempt_instrument_custody(attempt_id);
+CREATE INDEX model_attempt_instrument_output_idx ON public.model_attempt_instrument_custody(model_output_artifact_id);
+CREATE INDEX model_attempt_instrument_stage_idx ON public.model_attempt_instrument_custody(stage_id);
+CREATE INDEX model_attempt_instrument_workspace_idx ON public.model_attempt_instrument_custody(workspace_id);
+CREATE INDEX model_run_stages_active_attempt_identity_idx ON public.model_run_stages(id,active_attempt_id) WHERE active_attempt_id IS NOT NULL;
