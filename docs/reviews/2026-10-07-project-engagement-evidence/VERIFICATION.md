@@ -22,3 +22,9 @@ Private logs and mutation results remain under `/home/nathaniel/.local/state/ope
 ## Remaining boundaries
 
 The tests use mocked database reads. They do not prove live row-level security, campaign coverage completeness, practitioner acceptance or rendered layout. Production build, TypeScript verification, and identified-build desktop and 390px browser journeys remain pending for this change. The earlier browser finding establishes the defect, not acceptance of this implementation. This checkpoint does not declare a release or completion of V1.
+
+## Combined-branch build correction
+
+The first production build of `4e72fb85` compiled but failed TypeScript because the packet-geography and crosslink-board test fixtures omitted the required `campaignCount`. The combined follow-up branch supplies explicit zero counts for those empty fixtures. Its component suite also caught a changed caveat fragment. The wording now preserves the adopted-outreach/public-response warning while distinguishing representative participation.
+
+All four related suites pass 115 tests on the corrected combined branch. The prior failed build is retained; this result does not relabel that checkpoint as passing. The next production build targets the combined follow-up head, which includes the project, resource assessment and published model changes. Browser acceptance remains pending.

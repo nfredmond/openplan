@@ -307,7 +307,7 @@ describe("the packet's study-area wording agrees with the project page's", () =>
         unfundedAfterLikelyAmount: 0,
         awardRiskCount: 0,
       },
-      engagement: { label: "Not linked", itemCount: 0, handoffReadyCount: 0 },
+      engagement: { campaignCount: 0, label: "Not linked", itemCount: 0, handoffReadyCount: 0 },
       analysis: { recentRunCount: 0, comparisonBackedReportCount: 0 },
       safety: {
         ingestCount: 0,

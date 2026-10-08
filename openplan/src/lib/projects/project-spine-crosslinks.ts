@@ -633,7 +633,7 @@ export function buildProjectSpineCrosslinkSummary(
             : engagementReadiness === "attention"
               ? "Review contribution status and report scope before preparing a new handoff."
               : "Confirm the retained engagement excerpts remain appropriate for the downstream report.",
-      caveat: "Linked campaigns and retained contributions do not establish representative participation, adopted findings or public agency response records.",
+      caveat: "Linked campaigns and retained contributions do not establish representative participation and are not a substitute for adopted outreach findings or public agency response records.",
       href: laneHrefForProject("/engagement", input.projectId),
       actionLabel: "Open engagement",
     },
