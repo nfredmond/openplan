@@ -231,6 +231,7 @@ function fixtures() {
       },
       {
         id: "fa-spent",
+        closure_basis: "recorded_on_import",
         workspace_id: WORKSPACE_ONE,
         project_id: PROJECT_TWO,
         title: "Closed-out award",

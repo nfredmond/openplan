@@ -985,7 +985,7 @@ const awardObligationsSource: MyWorkSource = {
           .join(" · "),
         href: projectHref(asString(row.project_id), "project-funding-opportunities"),
         // A milestone cannot replace the closure evidence warning.
-        dedupKey: review ? undefined : `award:${String(row.id)}`,
+        dedupKey: review ? null : `award:${String(row.id)}`,
       } satisfies MyWorkItem;
     }),
 };
