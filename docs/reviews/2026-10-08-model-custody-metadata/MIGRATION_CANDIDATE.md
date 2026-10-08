@@ -40,8 +40,8 @@ adding a client enrollment bypass.
 
 ## Remaining before landing or activation
 
-- Finish the Supabase migration-history upgrade path and populated historical
-  v4 custody check; the committed SQL and advisor checkpoint below is partial.
+- Complete full exact-head CI and application RLS regression. The scoped
+  migration-history, v4/v2 preservation and HTTP checkpoints below pass.
 - Complete exact-head CI and live permission/upgrade checks for the migration.
 - Connect all lifecycle commands, worker journals and output writes, then prove
   normal worker restart and cancellation through both worker entry points.
@@ -90,6 +90,37 @@ and scripts remain under
 The owned database `openplan_attempt_upgrade_77f0677a3947465ea717aa3cee021fa4`
 is retained for the remaining proof work. No application server points to it.
 
-Remaining upgrade evidence includes the actual Supabase migration command and
-history path, populated historical v4 custody, and full authenticated HTTP
-permission checks. Exact-head CI and worker/consumer activation remain open.
+At this checkpoint, the Supabase migration-history path, populated v4 custody
+and authenticated HTTP checks remained open. The following checkpoint records
+those results. Exact-head CI and worker/consumer activation remain open.
+
+## Supabase history and authenticated HTTP checkpoint
+
+A second owned database restored the same baseline schema, original owners and
+385 applied migration-history records. The actual `supabase migration up`
+command applied the final candidate and recorded one new history row. A second
+invocation was a no-op, with that row still unique. All 17 seeded records remain
+unchanged, now including one historical rules-v4 assessment and its four bound
+artifacts alongside the v2 custody fixture. Legacy ownership fields remain
+false/null. Native command cases also pass against this CLI-installed schema.
+
+An isolated PostgREST instance then exposed this proof database. A valid workspace
+member reads the legacy run; an authenticated outsider reads zero runs. The
+service-only output reader returns all 11 legacy outputs to the service role,
+classified as `legacy_unknown`. It returns 403 to the member and outsider and
+401 to anonymous and unsigned requests. All 12 private tables return 403 to the
+member.
+
+A targeted privilege mutation temporarily granted the reader to authenticated
+users in the owned database. The outsider then received the synthetic run,
+demonstrating a real authorization bypass. Revoking the grant restored 403.
+The PostgREST container was removed and removal checked. Separate scope tests
+prove that the helper rejects unowned database/schema targets before contacting
+Docker; baseline, harmless and restored cases plus two adverse controls pass.
+
+The CLI and HTTP evidence is retained under the private proof directory's
+`cli-upgrade/` subdirectory. The owned database is
+`openplan_attempt_cli_dad18e40db104802aa9187f4c05dfd32`. Neither proof database is
+an application or preview target. Full CI, broader application RLS regression
+and normal worker/consumer activation remain open. These synthetic fixtures do
+not establish scientific or practitioner acceptance.
