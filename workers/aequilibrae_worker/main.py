@@ -1075,6 +1075,202 @@ def sb_post_kpi(payload: dict):
     _confirmed_record_insert("model_run_kpis", payload)
 
 
+def build_model_run_modeling_evidence(
+    run_id: str,
+    workspace_id: str | None,
+    validation: dict | None,
+    calibration: dict | None = None,
+    independent_validation: dict | None = None,
+    track: str = "assignment",
+) -> dict:
+    """Calculate one complete publication payload without performing writes."""
+    matched = int((validation or {}).get("stations_matched", 0) or 0)
+    median_ape = (validation or {}).get("median_ape")
+    max_ape = (validation or {}).get("max_ape")
+    gate = (validation or {}).get("screening_gate")
+    assessment = (validation or {}).get("model_validation_assessment") or {}
+    rules_v4 = (validation or {}).get("validation_rules_version") == 4
+    scientific_outcome = assessment.get("scientific_outcome")
+    evidence_write = assessment.get("validation_evidence_write")
+    # THE ZONE SYSTEM GATES BOTH LINK-BASED TIERS.
+    #
+    # `screening_grade` and `calibrated_to_counts` rest on exactly one kind
+    # of evidence: modelled link volumes compared to observed counts. Where
+    # a large share of travel never reaches a link, that comparison
+    # establishes nothing, so NEITHER tier is established — and this must be
+    # checked before the calibration branch, not after, because
+    # `calibrated_to_counts` outranks `screening_grade` and closing only the
+    # lower one would leave the hole open at the higher.
+    #
+    # Calibration is the sharper case. Tuning a model until coarse-zone link
+    # volumes match observed counts does not recover the missing intrazonal
+    # travel; it distorts the parameters that CAN move until they absorb its
+    # absence. The held-out APE improves and the model gets worse.
+    #
+    # This only ever LOWERS a tier. `prototype_only` is the floor already
+    # used for a failed gate and for a coverage gap, so nothing here can
+    # promote anything — only the reason changes, and only to a truer one.
+    zone_block = (validation or {}).get("zone_resolution") or {}
+    zone_support = zone_block.get("supports_link_level_validation")
+    if rules_v4 and evidence_write == "validation evidence write failed":
+        claim_status, reason = "prototype_only", (
+            "Validation evidence write failed. The computation remains available, but its "
+            "exact inputs and output are not in immutable custody, so this run is scientifically unchecked."
+        )
+    elif rules_v4 and not assessment:
+        claim_status, reason = "prototype_only", (
+            "Rules-v4 validation did not produce a model-validation assessment. A point-count "
+            "diagnostic without the assessment cannot support an outward claim."
+        )
+    elif rules_v4 and scientific_outcome != "pass":
+        claim_status, reason = "prototype_only", (
+            f"The rules-v4 scientific outcome is {scientific_outcome or 'inconclusive'}. "
+            + " ".join(str(item) for item in assessment.get("reasons", [])[:2])
+        ).strip()
+    elif rules_v4:
+        claim_status, reason = "screening_grade", (
+            "The rules-v4 assessment passed its exact frozen, use-specific acceptance rule. "
+            "That result applies only to the recorded planning use and partition."
+        )
+    elif zone_support is False:
+        zone_note = zone_block.get("note") or (
+            "At this zone resolution a large share of travel never reaches a link."
+        )
+        if calibration:
+            detail = (
+                "Count calibration ran, but is not recorded as a calibrated tier: tuning to "
+                "link volumes cannot recover travel that never reaches a link, and may instead "
+                "absorb its absence into the calibrated parameters."
+            )
+        elif zone_block.get("gate_withheld"):
+            detail = (
+                f"The count comparison ({matched} stations, median APE {median_ape}%) met the "
+                "screening thresholds, but a screening claim is NOT recorded from it, because "
+                "at this zone resolution matching the counts does not establish one."
+            )
+        else:
+            detail = (
+                f"The count comparison ({matched} stations, median APE {median_ape}%) did not "
+                "meet the screening thresholds, and at this zone resolution it could not have "
+                "settled the question either way."
+            )
+        claim_status, reason = "prototype_only", (
+            f"{detail} {zone_note} Trip totals, mode share and VMT do count intrazonal travel "
+            "and remain usable; a finer zone system is what would let a link-level comparison "
+            "support a claim. This banding is OpenPlan's own screening heuristic, not an "
+            "adopted standard."
+        )
+    elif validation and matched > 0 and zone_support is not True:
+        claim_status, reason = "prototype_only", (
+            f"The observed-count check ran ({matched} stations, median APE {median_ape}%), "
+            "but no screening claim is recorded because the share of travel that never "
+            "reaches a link was not measured. The check remains part of this run's evidence; "
+            "an unmeasured zone-resolution qualification cannot establish a passing tier."
+        )
+    elif calibration:
+        independent = model_credibility.summarize_independent_validation(
+            validation, calibration, independent_validation
+        )
+        if independent["supports_claim_tier"]:
+            claim_status, reason = "calibrated_to_counts", (
+                "The selected calibration passed a separate untouched observed-count "
+                f"validation ({independent['stations_matched']} stations, median APE "
+                f"{independent['median_ape']}%). Calibration-selection results remain "
+                "distinct from this independent accuracy result."
+            )
+        else:
+            claim_status, reason = "prototype_only", (
+                "Count calibration ran, but no calibrated tier is recorded. "
+                f"{independent['reason']} Calibrated VMT remains under distinct KPI names "
+                "and is not the CEQA screening input."
+            )
+    elif gate == "bounded screening-ready":
+        claim_status, reason = "screening_grade", (
+            f"Observed-count validation passed the screening gate ({matched} stations, "
+            f"median APE {median_ape}%)."
+        )
+    elif validation and matched > 0:
+        claim_status, reason = "prototype_only", (
+            f"Observed-count validation did not meet the screening gate ({matched} stations, "
+            f"median APE {median_ape}%)."
+        )
+    elif (validation or {}).get("coverage") and not (validation or {})["coverage"].get("covered", True):
+        # A coverage gap is not a validation failure, and must not be
+        # reported as one. Name the gap so the planner knows it is about
+        # data availability in their state, not about their model.
+        claim_status, reason = "prototype_only", (
+            f"{(validation or {})['coverage'].get('reason', 'No observed-count source covers this study area.')} "
+            "Screening-grade claims require a validation pass against local counts."
+        )
+    else:
+        claim_status, reason = "prototype_only", (
+            "No observed-count validation for this study area; screening-grade claims require a "
+            "validation pass."
+        )
+    if track not in {"assignment", "behavioral_demand"}:
+        raise ValueError(f"unsupported modeling evidence track: {track}")
+    claim = {
+        "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
+        "claim_status": claim_status, "status_reason": reason,
+        "validation_summary_json": {
+            **(validation or {}),
+            **({"calibration": calibration} if calibration else {}),
+            "independent_validation": model_credibility.summarize_independent_validation(
+                validation, calibration, independent_validation
+            ),
+        },
+    }
+    rows = []
+    if validation and matched > 0:
+        # Same zone qualification the claim decision above applied, so the
+        # metric row and the claim beside it cannot tell a planner two
+        # different stories about one comparison.
+        if rules_v4:
+            status = (
+                "pass" if scientific_outcome == "pass"
+                else "fail" if scientific_outcome == "fail"
+                else "warn"
+            )
+            detail = (
+                f"Raw median APE {median_ape}% across {matched} station(s). The rules-v4 "
+                f"scientific outcome is {scientific_outcome or 'inconclusive'}; this raw point-count "
+                "metric does not decide the claim without proven comparable quantities."
+            )
+        elif zone_support is None:
+            status, detail = "warn", (
+                f"Median APE {median_ape}% across {matched} station(s), but the share of "
+                "travel that never reaches a link was not measured, so this comparison "
+                "does not establish screening grade."
+            )
+        else:
+            status, detail = count_validation.metric_status_for_gate(
+                median_ape, max_ape, matched,
+                intrazonal_share_pct=zone_block.get("intrazonal_share_pct"),
+            )
+        rows = [{
+            "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
+            "metric_key": "count_median_ape", "metric_label": "Median APE vs observed counts",
+            "threshold_comparator": "lte", "status": status, "blocks_claim_grade": True,
+            "detail": detail,
+            "metadata_json": {
+                "median_ape": median_ape, "max_ape": max_ape,
+                "percent_rmse": (validation or {}).get("percent_rmse"),
+                "geh_mean": ((validation or {}).get("geh") or {}).get("mean"),
+                "spearman_rho": (validation or {}).get("spearman_rho"),
+                "scientific_outcome": scientific_outcome,
+            },
+        }, {
+            "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
+            "metric_key": "count_stations_matched", "metric_label": "Matched count stations",
+            "threshold_comparator": "gte", "status": "pass" if matched >= 3 else "fail",
+            "blocks_claim_grade": True,
+            "detail": f"{matched} station(s) matched; >=3 required for a screening claim.",
+            "metadata_json": {"stations_matched": matched},
+        }]
+    # Copy nested source records and reject values JSON delivery cannot retain.
+    return json.loads(json.dumps({"claim": claim, "metrics": rows}, allow_nan=False))
+
+
 def write_model_run_modeling_evidence(
     run_id: str,
     workspace_id: str | None,
@@ -1083,217 +1279,34 @@ def write_model_run_modeling_evidence(
     independent_validation: dict | None = None,
     track: str = "assignment",
 ) -> None:
-    """Write the shared modeling claim-grade spine for THIS model run — the same
-    tables the county lane populates (modeling_validation_results +
-    modeling_claim_decisions) so reports read one consistent claim grade. Derived
-    from the observed-count gate. NEVER 'claim_grade_passed' (that needs the
-    county-lane validation-threshold pass). A calibration selection holdout is
-    not independent accuracy evidence: a calibrated tier requires a separate,
-    untouched validation result. Unconfirmed writes stop further publication.
-    These legacy HTTP writes are not atomic; retained publication is still required."""
+    """Deliver legacy evidence while retaining uncertainty at every write boundary.
+
+    Atomic publication and durable request reconciliation remain unfinished.
+    """
     if not workspace_id:
         raise WorkerStateWriteUnconfirmed("Modeling evidence workspace is unavailable")
     try:
-        matched = int((validation or {}).get("stations_matched", 0) or 0)
-        median_ape = (validation or {}).get("median_ape")
-        max_ape = (validation or {}).get("max_ape")
-        gate = (validation or {}).get("screening_gate")
-        assessment = (validation or {}).get("model_validation_assessment") or {}
-        rules_v4 = (validation or {}).get("validation_rules_version") == 4
-        scientific_outcome = assessment.get("scientific_outcome")
-        evidence_write = assessment.get("validation_evidence_write")
-        # THE ZONE SYSTEM GATES BOTH LINK-BASED TIERS.
-        #
-        # `screening_grade` and `calibrated_to_counts` rest on exactly one kind
-        # of evidence: modelled link volumes compared to observed counts. Where
-        # a large share of travel never reaches a link, that comparison
-        # establishes nothing, so NEITHER tier is established — and this must be
-        # checked before the calibration branch, not after, because
-        # `calibrated_to_counts` outranks `screening_grade` and closing only the
-        # lower one would leave the hole open at the higher.
-        #
-        # Calibration is the sharper case. Tuning a model until coarse-zone link
-        # volumes match observed counts does not recover the missing intrazonal
-        # travel; it distorts the parameters that CAN move until they absorb its
-        # absence. The held-out APE improves and the model gets worse.
-        #
-        # This only ever LOWERS a tier. `prototype_only` is the floor already
-        # used for a failed gate and for a coverage gap, so nothing here can
-        # promote anything — only the reason changes, and only to a truer one.
-        zone_block = (validation or {}).get("zone_resolution") or {}
-        zone_support = zone_block.get("supports_link_level_validation")
-        if rules_v4 and evidence_write == "validation evidence write failed":
-            claim_status, reason = "prototype_only", (
-                "Validation evidence write failed. The computation remains available, but its "
-                "exact inputs and output are not in immutable custody, so this run is scientifically unchecked."
-            )
-        elif rules_v4 and not assessment:
-            claim_status, reason = "prototype_only", (
-                "Rules-v4 validation did not produce a model-validation assessment. A point-count "
-                "diagnostic without the assessment cannot support an outward claim."
-            )
-        elif rules_v4 and scientific_outcome != "pass":
-            claim_status, reason = "prototype_only", (
-                f"The rules-v4 scientific outcome is {scientific_outcome or 'inconclusive'}. "
-                + " ".join(str(item) for item in assessment.get("reasons", [])[:2])
-            ).strip()
-        elif rules_v4:
-            claim_status, reason = "screening_grade", (
-                "The rules-v4 assessment passed its exact frozen, use-specific acceptance rule. "
-                "That result applies only to the recorded planning use and partition."
-            )
-        elif zone_support is False:
-            zone_note = zone_block.get("note") or (
-                "At this zone resolution a large share of travel never reaches a link."
-            )
-            if calibration:
-                detail = (
-                    "Count calibration ran, but is not recorded as a calibrated tier: tuning to "
-                    "link volumes cannot recover travel that never reaches a link, and may instead "
-                    "absorb its absence into the calibrated parameters."
-                )
-            elif zone_block.get("gate_withheld"):
-                detail = (
-                    f"The count comparison ({matched} stations, median APE {median_ape}%) met the "
-                    "screening thresholds, but a screening claim is NOT recorded from it, because "
-                    "at this zone resolution matching the counts does not establish one."
-                )
-            else:
-                detail = (
-                    f"The count comparison ({matched} stations, median APE {median_ape}%) did not "
-                    "meet the screening thresholds, and at this zone resolution it could not have "
-                    "settled the question either way."
-                )
-            claim_status, reason = "prototype_only", (
-                f"{detail} {zone_note} Trip totals, mode share and VMT do count intrazonal travel "
-                "and remain usable; a finer zone system is what would let a link-level comparison "
-                "support a claim. This banding is OpenPlan's own screening heuristic, not an "
-                "adopted standard."
-            )
-        elif validation and matched > 0 and zone_support is not True:
-            claim_status, reason = "prototype_only", (
-                f"The observed-count check ran ({matched} stations, median APE {median_ape}%), "
-                "but no screening claim is recorded because the share of travel that never "
-                "reaches a link was not measured. The check remains part of this run's evidence; "
-                "an unmeasured zone-resolution qualification cannot establish a passing tier."
-            )
-        elif calibration:
-            independent = model_credibility.summarize_independent_validation(
-                validation, calibration, independent_validation
-            )
-            if independent["supports_claim_tier"]:
-                claim_status, reason = "calibrated_to_counts", (
-                    "The selected calibration passed a separate untouched observed-count "
-                    f"validation ({independent['stations_matched']} stations, median APE "
-                    f"{independent['median_ape']}%). Calibration-selection results remain "
-                    "distinct from this independent accuracy result."
-                )
-            else:
-                claim_status, reason = "prototype_only", (
-                    "Count calibration ran, but no calibrated tier is recorded. "
-                    f"{independent['reason']} Calibrated VMT remains under distinct KPI names "
-                    "and is not the CEQA screening input."
-                )
-        elif gate == "bounded screening-ready":
-            claim_status, reason = "screening_grade", (
-                f"Observed-count validation passed the screening gate ({matched} stations, "
-                f"median APE {median_ape}%)."
-            )
-        elif validation and matched > 0:
-            claim_status, reason = "prototype_only", (
-                f"Observed-count validation did not meet the screening gate ({matched} stations, "
-                f"median APE {median_ape}%)."
-            )
-        elif (validation or {}).get("coverage") and not (validation or {})["coverage"].get("covered", True):
-            # A coverage gap is not a validation failure, and must not be
-            # reported as one. Name the gap so the planner knows it is about
-            # data availability in their state, not about their model.
-            claim_status, reason = "prototype_only", (
-                f"{(validation or {})['coverage'].get('reason', 'No observed-count source covers this study area.')} "
-                "Screening-grade claims require a validation pass against local counts."
-            )
-        else:
-            claim_status, reason = "prototype_only", (
-                "No observed-count validation for this study area; screening-grade claims require a "
-                "validation pass."
-            )
+        publication = build_model_run_modeling_evidence(
+            run_id, workspace_id, validation, calibration, independent_validation, track,
+        )
         upsert_headers = dict(HEADERS)
         upsert_headers["Prefer"] = "resolution=merge-duplicates,return=minimal"
-        if track not in {"assignment", "behavioral_demand"}:
-            raise ValueError(f"unsupported modeling evidence track: {track}")
         claim_response = requests.post(
             f"{SUPABASE_URL}/rest/v1/modeling_claim_decisions?on_conflict=model_run_id,track",
-            headers=upsert_headers,
-            json={
-                "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
-                "claim_status": claim_status, "status_reason": reason,
-                "validation_summary_json": {
-                    **(validation or {}),
-                    **({"calibration": calibration} if calibration else {}),
-                    "independent_validation": model_credibility.summarize_independent_validation(
-                        validation, calibration, independent_validation
-                    ),
-                },
-            }, timeout=20, allow_redirects=False,
+            headers=upsert_headers, json=publication["claim"], timeout=20, allow_redirects=False,
         )
         if claim_response.status_code not in (200, 201):
             raise WorkerStateWriteUnconfirmed("Modeling claim update unconfirmed")
-        # Refresh the per-metric validation rows for this run/track.
         delete_response = requests.delete(
             f"{SUPABASE_URL}/rest/v1/modeling_validation_results?model_run_id=eq.{run_id}&track=eq.{track}",
             headers=HEADERS, timeout=20, allow_redirects=False,
         )
         if delete_response.status_code not in (200, 204):
             raise WorkerStateWriteUnconfirmed("Modeling metric replacement unconfirmed")
-        if validation and matched > 0:
-            # Same zone qualification the claim decision above applied, so the
-            # metric row and the claim beside it cannot tell a planner two
-            # different stories about one comparison.
-            if rules_v4:
-                status = (
-                    "pass" if scientific_outcome == "pass"
-                    else "fail" if scientific_outcome == "fail"
-                    else "warn"
-                )
-                detail = (
-                    f"Raw median APE {median_ape}% across {matched} station(s). The rules-v4 "
-                    f"scientific outcome is {scientific_outcome or 'inconclusive'}; this raw point-count "
-                    "metric does not decide the claim without proven comparable quantities."
-                )
-            elif zone_support is None:
-                status, detail = "warn", (
-                    f"Median APE {median_ape}% across {matched} station(s), but the share of "
-                    "travel that never reaches a link was not measured, so this comparison "
-                    "does not establish screening grade."
-                )
-            else:
-                status, detail = count_validation.metric_status_for_gate(
-                    median_ape, max_ape, matched,
-                    intrazonal_share_pct=zone_block.get("intrazonal_share_pct"),
-                )
-            rows = [{
-                "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
-                "metric_key": "count_median_ape", "metric_label": "Median APE vs observed counts",
-                "threshold_comparator": "lte", "status": status, "blocks_claim_grade": True,
-                "detail": detail,
-                "metadata_json": {
-                    "median_ape": median_ape, "max_ape": max_ape,
-                    "percent_rmse": (validation or {}).get("percent_rmse"),
-                    "geh_mean": ((validation or {}).get("geh") or {}).get("mean"),
-                    "spearman_rho": (validation or {}).get("spearman_rho"),
-                    "scientific_outcome": scientific_outcome,
-                },
-            }, {
-                "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
-                "metric_key": "count_stations_matched", "metric_label": "Matched count stations",
-                "threshold_comparator": "gte", "status": "pass" if matched >= 3 else "fail",
-                "blocks_claim_grade": True,
-                "detail": f"{matched} station(s) matched; >=3 required for a screening claim.",
-                "metadata_json": {"stations_matched": matched},
-            }]
+        if publication["metrics"]:
             metric_response = requests.post(
                 f"{SUPABASE_URL}/rest/v1/modeling_validation_results",
-                headers=HEADERS, json=rows, timeout=20, allow_redirects=False,
+                headers=HEADERS, json=publication["metrics"], timeout=20, allow_redirects=False,
             )
             if metric_response.status_code not in (200, 201):
                 raise WorkerStateWriteUnconfirmed("Modeling metric write unconfirmed")

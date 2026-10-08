@@ -147,3 +147,26 @@ All source mutations were restored. Native evidence and controls are retained
 under `model-command-client-20261008-proof/native-evidence-delivery/` and
 `native-evidence-controls.json`. Atomic publication, retained history, receipt
 reconciliation, county replacement and reader integration remain open.
+
+## Prepare the complete payload before delivery
+
+`build_model_run_modeling_evidence` now calculates the claim and complete metric
+set before the writer issues any HTTP request. Metric calculation errors and
+non-finite JSON values therefore leave stored evidence untouched. The returned
+payload copies nested source records; later mutation of the caller's assessment
+cannot change that prepared payload. Scientific calculations, thresholds and
+separate method tracks remain unchanged. This supplies a complete body for the
+retained-command integration, but does not yet journal or atomically publish it.
+
+Eight focused tests and the ten existing credibility checks pass. Baseline,
+harmless and restored controls pass, with 12 targeted faults detected. The four
+additional faults expose aliased source records, accepted non-finite values,
+omitted metrics and a write during preparation. The first non-finite mutation
+accidentally targeted an earlier unrelated serializer and survived; correcting
+the target to the publication serializer triggered the intended failure.
+
+The native proof passes again with the extracted builder for synthetic run
+`79a0ea77-48ab-412f-9a2b-fab0fce7e646`. Evidence is retained under
+`model-command-client-20261008-proof/native-evidence-prepared/`. It preserves
+the same rejection and reply-loss boundaries, including the still-incomplete
+claim/metric atomicity. No native scientific model or browser claim is added.

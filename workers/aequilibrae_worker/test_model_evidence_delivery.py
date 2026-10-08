@@ -68,6 +68,41 @@ class EvidenceDeliveryTests(unittest.TestCase):
                 self.assertEqual(kwargs['timeout'], 20)
                 self.assertIs(kwargs['allow_redirects'], False)
 
+    def test_all_calculation_finishes_before_first_write(self):
+        validation = dict(VALIDATION, validation_rules_version=3,
+                          zone_resolution={'supports_link_level_validation': True})
+        with mock.patch.object(main.count_validation, 'metric_status_for_gate', side_effect=ValueError('synthetic invalid metric')), \
+             mock.patch.object(main.requests, 'post') as post, \
+             mock.patch.object(main.requests, 'delete') as delete:
+            with self.assertRaises(main.WorkerStateWriteUnconfirmed):
+                main.write_model_run_modeling_evidence('run-fixture', 'workspace-fixture', validation)
+            post.assert_not_called()
+            delete.assert_not_called()
+
+    def test_prepared_payload_is_detached_and_keeps_both_method_identities(self):
+        import copy
+        source = copy.deepcopy(VALIDATION)
+        source['model_validation_assessment']['reasons'] = ['synthetic unresolved basis']
+        with mock.patch.object(main.requests, 'post') as post, mock.patch.object(main.requests, 'delete') as delete:
+            first = main.build_model_run_modeling_evidence('run-fixture', 'workspace-fixture', source)
+            second = main.build_model_run_modeling_evidence('run-fixture', 'workspace-fixture', source, track='behavioral_demand')
+            post.assert_not_called()
+            delete.assert_not_called()
+        source['model_validation_assessment']['reasons'].clear()
+        for publication, track in ((first, 'assignment'), (second, 'behavioral_demand')):
+            self.assertEqual(publication['claim']['validation_summary_json']['model_validation_assessment']['reasons'], ['synthetic unresolved basis'])
+            self.assertEqual(publication['claim']['track'], track)
+            self.assertEqual(publication['claim']['claim_status'], 'prototype_only')
+            self.assertEqual(len(publication['metrics']), 2)
+            self.assertTrue(all(row['track'] == track for row in publication['metrics']))
+
+    def test_nonfinite_preparation_never_starts_publication(self):
+        with mock.patch.object(main.requests, 'post') as post, mock.patch.object(main.requests, 'delete') as delete:
+            with self.assertRaises(main.WorkerStateWriteUnconfirmed):
+                main.write_model_run_modeling_evidence('run-fixture', 'workspace-fixture', dict(VALIDATION, median_ape=float('nan')))
+            post.assert_not_called()
+            delete.assert_not_called()
+
     def test_artifact_caller_propagates_uncertainty_before_success_log(self):
         # Execute the actual publication try block without running a model.
         import ast
