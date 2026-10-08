@@ -2587,3 +2587,35 @@ Registration transport remains mocked in these tests. Native database lost-reply
 recovery, parent channel handoff, parser-setting custody, other feed origins and
 acquisition containment remain unfinished. No normal dispatcher is enabled and no
 scientific acceptance claim changes.
+
+### Selected transit handoff over the reserved engine channel
+
+The child can request selected transit preparation without supplying a feed id,
+source, path or workspace. The parent supplies the fixed adapter, requires its
+own output directory and consumes a one-time request flag. Count and transit
+preparation now share binding, output-identity and post-callback writer checks.
+The selected transit adapter returns a confirmed retained record or an ordinary
+selected-feed refusal reason. It catches only `SelectedFeedError`; uncertain
+custody remains fatal and never becomes an unavailable-feed response.
+
+A real reserved child requests output creation and transit preparation, consumes
+an independent verified archive copy, parses it and computes a synthetic transit
+skim using the retained settings. The parent confirms the child's observed exit
+with execution readiness still false. Lost registration leaves one pending journal
+command, closes the channel and prevents child consumption and result creation.
+Other cases cover workspace refusal, repeated requests, child-supplied version
+fields and propagation of the original uncertain-write exception.
+
+The warning-enabled broader suite passes 365 tests. Four transit fault controls
+fail for child-field acceptance, repeated preparation, skipped parent preparation
+and downgraded uncertain writes. Baseline, harmless and restored controls pass.
+The four count-channel controls also pass after the shared-helper refactor; their
+report now records the current channel hash. See
+`prototype/engine-transit-channel-controls.json` and
+`prototype/engine-count-channel-controls.json`.
+
+HTTP remains mocked, including registration. The selected-feed path does not
+cover operator, discovered or bundled feed preparation. Native registration
+recovery, parser settings, acquisition supervision, the complete assignment
+entrypoint and operating-system containment remain unfinished. No normal
+managed dispatcher is enabled and no scientific acceptance claim changes.

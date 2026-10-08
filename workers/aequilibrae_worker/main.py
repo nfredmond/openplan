@@ -2368,6 +2368,15 @@ def retain_managed_selected_transit(out_dir: str) -> dict:
         raise WorkerStateWriteUnconfirmed("Transit retention requires reconciliation") from error
 
 
+def prepare_managed_selected_transit_for_engine(out_dir: str) -> dict:
+    """Keep ordinary selected-feed refusal distinct from uncertain custody."""
+    try:
+        record = retain_managed_selected_transit(out_dir)
+    except gtfs_skim.SelectedFeedError as error:
+        return {"status": "unavailable", "no_feed_reason": error.no_feed_reason}
+    return {"status": "retained", "record": record}
+
+
 def build_mode_provenance(mode_split: dict | None) -> str:
     """The sentence a planner quotes when defending this run's transit share.
 

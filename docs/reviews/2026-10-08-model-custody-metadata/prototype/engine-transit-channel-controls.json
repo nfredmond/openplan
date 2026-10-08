@@ -1,0 +1,42 @@
+{
+  "channel_sha256": "4edf04d29c535e4b78e8a598bc74bd2deb417638d8465897e010bd1ea3009691",
+  "adapter_sha256": "70d1b369e1116f1742f86a79ff07ec65837c361a1e7fb9064b8b9b8123671501",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "allow-child-version",
+      "exit_code": 1,
+      "targeted_test": "test_child_cannot_override_selected_version"
+    },
+    {
+      "control": "allow-repeat",
+      "exit_code": 1,
+      "targeted_test": "test_repeat_refused_before_second_preparation"
+    },
+    {
+      "control": "skip-parent-preparation",
+      "exit_code": 1,
+      "targeted_test": "test_child_consumes_registered_bytes_and_skims"
+    },
+    {
+      "control": "downgrade-uncertain-write",
+      "exit_code": 1,
+      "targeted_test": "test_uncertain_write_not_reported_as_feed_unavailable"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real reserved child, retained synthetic GTFS and numerical skim; mocked feed/database transports. Selected-feed path only. No native registration recovery, full assignment, provider containment or scientific acceptance."
+}

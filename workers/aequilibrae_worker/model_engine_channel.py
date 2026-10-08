@@ -109,6 +109,9 @@ class ProgressClient(Channel):
     def read_paths(self):
         return self._request('read_paths', {}, result=True)
 
+    def prepare_selected_transit(self):
+        return self._request('prepare_selected_transit', {}, result=True)
+
     def prepare_counts(self):
         return self._request('prepare_counts', {}, result=True)
 
@@ -117,11 +120,13 @@ class ProgressClient(Channel):
 
 
 class ProgressParent(Channel):
-    def __init__(self, connection, writer, *, output_name=None, count_preparer=None):
+    def __init__(self, connection, writer, *, output_name=None, count_preparer=None, transit_preparer=None):
         super().__init__(connection)
         self.writer = writer
         self.output_name = output_name
         self.count_preparer = count_preparer
+        self.transit_preparer = transit_preparer
+        self.transit_preparation_started = False
         self.output_directory = None
         self.output_identity = None
         self.count_preparation_started = False
@@ -136,7 +141,7 @@ class ProgressParent(Channel):
             if (set(request) != fields
                     or type(request['version']) is not int or request['version'] != VERSION
                     or type(request['sequence']) is not int or request['sequence'] != self.sequence
-                    or operation not in ('progress', 'read_run', 'read_paths', 'create_outputs', 'prepare_counts')):
+                    or operation not in ('progress', 'read_run', 'read_paths', 'create_outputs', 'prepare_counts', 'prepare_selected_transit')):
                 raise ChannelStopped('Engine request is outside the allowed protocol')
             if operation == 'progress':
                 if not isinstance(request['log_tail'], str) or len(request['log_tail']) > 20000:
@@ -157,24 +162,15 @@ class ProgressParent(Channel):
                 info = os.stat(self.output_directory, follow_symlinks=False)
                 self.output_identity = (info.st_dev, info.st_ino)
             elif operation == 'prepare_counts':
-                if self.count_preparer is None or self.output_directory is None:
-                    raise ChannelStopped('Count preparation requires parent configuration and outputs')
                 if self.count_preparation_started:
                     raise ChannelStopped('Count preparation was already requested')
                 self.count_preparation_started = True
-                self._verify_output_directory()
-                owner = managed.current()
-                if owner is not None and owner is not self.writer:
-                    raise ChannelStopped('Count preparation has a different bound writer')
-                # The trusted parent callback uses the assignment preparation
-                # helper, including confirmed registration of its retained input.
-                with managed.bind(self.writer) if owner is None else nullcontext():
-                    result = self.count_preparer(self.output_directory)
-                self.writer.require_open()
-                self._verify_output_directory()
-                if not isinstance(result, dict):
-                    raise ChannelStopped('Count preparation returned no record')
-                response['result'] = result
+                response['result'] = self._prepare_inputs(self.count_preparer)
+            elif operation == 'prepare_selected_transit':
+                if self.transit_preparation_started:
+                    raise ChannelStopped('Transit preparation was already requested')
+                self.transit_preparation_started = True
+                response['result'] = self._prepare_inputs(self.transit_preparer)
             else:
                 if self.writer.files is None:
                     raise ChannelStopped('Engine paths require an owned workspace')
@@ -190,6 +186,22 @@ class ProgressParent(Channel):
             self.stop()
             raise
 
+
+    def _prepare_inputs(self, preparer):
+        if preparer is None or self.output_directory is None:
+            raise ChannelStopped('Input preparation requires parent configuration and outputs')
+        self._verify_output_directory()
+        owner = managed.current()
+        if owner is not None and owner is not self.writer:
+            raise ChannelStopped('Input preparation has a different bound writer')
+        # The parent supplies a fixed adapter that confirms retained artifacts.
+        with managed.bind(self.writer) if owner is None else nullcontext():
+            result = preparer(self.output_directory)
+        self.writer.require_open()
+        self._verify_output_directory()
+        if not isinstance(result, dict):
+            raise ChannelStopped('Input preparation returned no record')
+        return result
 
     def _verify_output_directory(self):
         self.writer.files.verify()
