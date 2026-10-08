@@ -15,7 +15,8 @@ REPO = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO / 'workers/aequilibrae_worker'))
 import model_command_client as client
 import model_command_journal as journal
-import model_assessment_command as assessment_command
+from unittest.mock import patch
+from worker_import_for_tests import import_worker_main
 from isolated_postgrest import gateway
 
 
@@ -85,16 +86,22 @@ def _check():
             payload['p_validation_input_metadata'] = {'schema':'openplan.validation-input-bundle.v1','comparison_basis_sha256':'a'*64}
             payload['p_comparison_basis_metadata'] = {'schema':'openplan.model-comparison-basis.v1'}
             payload['p_assessment_metadata'] = {'schema':'openplan.model-validation-assessment.v1','comparison_basis_sha256':'a'*64,'rules_version':4,'scientific_outcome':payload['p_scientific_outcome'],'planning_use':payload['p_planning_use'],'partition':payload['p_partition'],'reasons':payload['p_reasons']}
-            command = assessment_command.prepare(directory, request, payload, base_url=base, deployment_id=meta['database'])
-            request = command['request_id']
+            worker = import_worker_main()
+            assessment_identity = request
+            def deliver_from_worker():
+                with patch.object(worker, 'SUPABASE_URL', base), patch.object(worker, 'SUPABASE_KEY', token), patch.dict(os.environ, {'OPENPLAN_DEPLOYMENT_ID':meta['database']}):
+                    return worker.sb_record_retained_modeling_validation_assessment(payload, assessment_id=assessment_identity, journal_dir=str(directory))
             try:
-                client.deliver(directory, command, base_url=base, deployment_id=meta['database'], service_key=token)
-            except client.DeliveryUnconfirmed:
+                deliver_from_worker()
+            except worker.WorkerStateWriteUnconfirmed:
                 pass
             else:
-                raise AssertionError('Committed reply was not lost')
-            if errors or len(journal.pending(directory, command['destination'])) != 1:
+                raise AssertionError('Worker did not propagate lost committed reply')
+            pending = journal.pending(directory, client.destination(base, meta['database']))
+            if errors or len(pending) != 1:
                 raise AssertionError('Lost reply did not leave the exact command pending')
+            command = pending[0]['command']
+            request = command['request_id']
             cli = [sys.executable, '-B', str(REPO / 'workers/aequilibrae_worker/model_command_recovery.py'), '--journal', str(directory), '--base-url', base, '--deployment-id', meta['database']]
             def invoke(action):
                 result = subprocess.run([*cli, *action], capture_output=True, text=True, timeout=40, env={**os.environ, 'SUPABASE_SERVICE_ROLE_KEY': token})
@@ -115,13 +122,15 @@ def _check():
             stored = json.loads(sql(f"SELECT response_payload FROM public.model_assessment_command_receipts WHERE request_id='{request}';"))
             if not retained['resolved'] or retained['response'] != stored:
                 raise AssertionError('CLI receipt differs from committed assessment')
+            if deliver_from_worker() != stored['assessment'] or len(posts) != 2:
+                raise AssertionError('Worker did not reuse recovered assessment receipt')
         finally:
             server.shutdown()
             server.server_close()
             thread.join(timeout=5)
             if thread.is_alive():
                 raise RuntimeError('Owned recovery bridge did not stop')
-    result = {'run_id':run,'request_id':request,'http_posts':2,'lost_tcp_reply_after_commit':True,'fresh_cli_recovered':True,'cached_cli_sent_no_request':True,'record_counts':counts,'operation':operation,'model_resumed':False,'scope':'Synthetic legacy assessment, actual PostgREST, dropped TCP reply after native commit and fresh recovery CLI. Candidate objects removed. No normal dispatch, Storage bytes, managed ingestion or scientific acceptance.'}
+    result = {'run_id':run,'request_id':request,'http_posts':2,'lost_tcp_reply_after_commit':True,'fresh_cli_recovered':True,'cached_cli_sent_no_request':True,'worker_reused_recovered_receipt':True,'record_counts':counts,'operation':operation,'model_resumed':False,'scope':'Actual normal worker delivery helper with synthetic assessment, real PostgREST, dropped TCP reply after native commit, fresh recovery CLI and worker receipt reuse. Candidate objects removed. No normal dispatch, Storage bytes, managed ingestion or scientific acceptance.'}
     (output / 'recovery-cli.json').write_text(json.dumps(result, indent=2) + '\n')
     return result
 

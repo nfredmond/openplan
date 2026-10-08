@@ -333,3 +333,35 @@ This connects normal write calls, not complete restart reconciliation. The
 worker does not yet reload and continue the original assessment after receipt
 recovery. Normal-entry-point native HTTP proof and full worker regression for
 this checkpoint remain pending. No running application worker was upgraded.
+
+## Worker helper native recovery and integration QA
+
+At `3f0cf01a`, all 71 worker suites pass with zero failures or skipped suites.
+Unit `openplan-assessment-delivery-workers-20261008.service`, invocation
+`d25b8851049846808b57f1bc81d96705`, finishes at 06:34 Pacific. It uses 209.1 MB
+peak memory and 36.080 seconds under the 1 GiB, zero-swap, one-CPU limits.
+
+The native recovery proof now enters through the actual normal worker delivery
+helper. The helper prepares its own request, receives a lost committed TCP
+reply and propagates uncertainty. A fresh CLI recovers that exact request.
+Calling the worker helper again with the original assessment identity returns
+the recovered assessment without another POST. The database retains one
+assessment, one receipt and three new artifacts. Baseline run
+`2ab2ceff-cece-456d-88ae-657fd8429233` and request
+`e9c2a1e6-bffc-50c0-bdb4-77118afb35cb` are synthetic.
+Harmless and restored controls pass. Swallowing the initial uncertainty and
+returning the wrong cached receipt shape each fail the expected assertion.
+Private evidence is under `assessment-worker-native-cli/` and
+`assessment-worker-native-controls.json` within the existing proof root.
+
+This executes the normal delivery helper with real HTTP, not the entire stage
+dispatcher or a scientific model. Full restart reconciliation remains open.
+No application worker was upgraded.
+
+PR #163's local QA completes successfully at `9385deba`: 20,095 tests pass and
+1,580 are skipped; lint, dead-code, connector checks, dependency audit and the
+production build complete. The gate does not opt into live RLS. Its unit ends
+at 06:34:59 Pacific after 34 minutes, with 6.3 GiB peak memory under a 7 GiB cap.
+Only after that terminal success is its branch merged with main and retargeted.
+The resulting `30ce6651` has no file-content difference from `9385deba`.
+Exact-head GitHub CI, RLS and worker checks are now running for PR #163.
