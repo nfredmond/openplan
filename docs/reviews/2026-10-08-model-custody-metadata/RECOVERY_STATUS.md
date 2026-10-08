@@ -262,3 +262,29 @@ form interactions work, but snapshot capture still fails, including a fresh tab
 showing only the health response. Desktop/390px visual and console acceptance
 remain open. The component tests do not prove rendering, live API behavior or
 scientific recovery. The preview checkout remains unchanged.
+
+## Live RLS cleanup conflicts with intentional enrollment retention
+
+GitHub run `37818820078` on `85a12549` completes with 1,484 passing tests,
+125 skips and one suite teardown failure. The guided model truth suite deletes
+its workspace after testing. Migration 18 correctly refuses that cascade through
+`model_execution_custody_enrollment_run_id_fkey`. The failure is not a passing
+live RLS gate.
+
+The suite now explicitly tests the exact foreign-key refusal and verifies that
+all fixture runs and their workspace survive. Teardown signs users out and
+retains these uniquely named synthetic fixtures until the isolated test stack
+is discarded. It does not disable triggers, delete enrollment, ignore arbitrary
+errors or weaken production retention. This live suite must use a disposable
+stack; repeated local execution retains synthetic records there.
+
+A native transaction probe on the existing isolated migration-proof database
+creates a synthetic workspace, model and run, attempts workspace deletion, checks
+the exact refusal and verifies retained rows. Baseline, harmless comment and
+restored cases pass. Dropping only the enrollment foreign key makes the probe
+fail with `Workspace deletion lost enrolled model run`. Every case rolls back,
+including the adverse transaction when its connection closes. Results are in
+`prototype/model-retention-cleanup-controls.json`. This checks native retention,
+not the updated suite's authenticated HTTP path. Targeted ESLint passes after
+correcting an initial invocation from the repository root. The updated complete
+live RLS suite remains pending on GitHub.
