@@ -1,0 +1,17 @@
+[
+  {
+    "case": "harmless",
+    "exit": 0,
+    "expected": 0
+  },
+  {
+    "case": "false_ownership",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "case": "restored",
+    "exit": 0,
+    "expected": 0
+  }
+]

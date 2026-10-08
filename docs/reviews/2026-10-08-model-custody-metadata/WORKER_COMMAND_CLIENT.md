@@ -531,3 +531,27 @@ responses and the real local SQLite journal, not native database authorization.
 Existing native ownership-reader evidence remains separate. A fresh CLI against
 a native managed claim, operator reconciliation and actual model restart remain
 open. This command is not connected to the legacy normal dispatcher as a lease.
+
+## Fresh-process ownership CLI against native retention schema
+
+`verify_saved_ownership_cli.py` now clones the installed retention/recovery proof
+database and creates a synthetic run, stage and real managed claim over HTTP.
+A fresh CLI process reads the saved claim and confirms current ownership. A
+wrong workspace returns `ownership_unconfirmed`, not false ownership. After an
+explicit synthetic completion through the attempt-write RPC, the same saved
+claim correctly reports no ownership. Every inspection preserves journal rows
+and native run, stage and attempt rows and sends only GET requests. An invalid
+credential is refused by the loopback bridge before it reaches PostgREST.
+
+The native probe passes in baseline, harmless-comment and restored cases. A
+worker-reader mutation that always reports ownership fails on the completed
+attempt. Each run uses its own retained proof database; its bounded gateway is
+removed afterward. The first invocation omitted the required explicit container
+selection and stopped before creating a database. The corrected invocation and
+controls complete. Results are `prototype/saved-ownership-cli-native.json` and
+`prototype/saved-ownership-cli-native-controls.json`.
+
+This closes the fresh native CLI read check from the preceding entry. It does
+not establish model restart, an attempt lease, operator reconciliation, Storage
+recovery or scientific acceptance. No scientific computation runs. The normal
+legacy dispatcher still does not acquire managed claims through this command.

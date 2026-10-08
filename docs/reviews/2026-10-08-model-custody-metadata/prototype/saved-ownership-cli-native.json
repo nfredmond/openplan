@@ -1,0 +1,71 @@
+{
+  "cases": [
+    {
+      "case": "active_claim",
+      "exit": 0,
+      "result": {
+        "request_id": "db105bba-17ce-4599-a8af-f2a04e554b67",
+        "workspace_id": "23e0723b-ae4b-46ec-8de5-7941d1b552e9",
+        "run_id": "eccd79f9-11db-4a49-a19c-5093d2776719",
+        "stage_id": "8ab1b02e-aeb1-468c-a7ec-c3e7351dccec",
+        "ownership": {
+          "owns_stage": true,
+          "active_attempt_id": "5b3d7cfd-537e-4c6f-9f29-f8e0b5b4cf97",
+          "stage_status": "running",
+          "run_status": "running",
+          "stage_managed": true,
+          "run_managed": true
+        },
+        "point_in_time_only": true,
+        "continuation_authorized": false,
+        "model_resumed": false
+      },
+      "read_only": true
+    },
+    {
+      "case": "wrong_workspace",
+      "exit": 2,
+      "result": {
+        "outcome": "ownership_unconfirmed",
+        "continuation_authorized": false,
+        "model_resumed": false
+      },
+      "read_only": true
+    },
+    {
+      "case": "invalid_credential",
+      "exit": 2,
+      "result": {
+        "outcome": "ownership_unconfirmed",
+        "continuation_authorized": false,
+        "model_resumed": false
+      },
+      "read_only": true
+    },
+    {
+      "case": "completed_attempt",
+      "exit": 0,
+      "result": {
+        "request_id": "db105bba-17ce-4599-a8af-f2a04e554b67",
+        "workspace_id": "23e0723b-ae4b-46ec-8de5-7941d1b552e9",
+        "run_id": "eccd79f9-11db-4a49-a19c-5093d2776719",
+        "stage_id": "8ab1b02e-aeb1-468c-a7ec-c3e7351dccec",
+        "ownership": {
+          "owns_stage": false,
+          "active_attempt_id": "5b3d7cfd-537e-4c6f-9f29-f8e0b5b4cf97",
+          "stage_status": "succeeded",
+          "run_status": "succeeded",
+          "stage_managed": true,
+          "run_managed": true
+        },
+        "point_in_time_only": true,
+        "continuation_authorized": false,
+        "model_resumed": false
+      },
+      "read_only": true
+    }
+  ],
+  "http_requests": 5,
+  "gateway_removed": true,
+  "boundary": "Fresh CLI, native installed database, scoped authenticated HTTP, real retained claim. Synthetic explicit completion only. No engine execution, restart, scientific or human acceptance."
+}
