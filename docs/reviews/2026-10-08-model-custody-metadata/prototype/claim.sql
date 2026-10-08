@@ -6,6 +6,8 @@ CREATE TABLE public.model_stage_attempts (
   run_id uuid NOT NULL REFERENCES public.model_runs(id),
   worker_id text NOT NULL,
   claimed_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  revoked_at timestamptz,
+  revocation_reason text,
   UNIQUE(stage_id, id)
 );
 CREATE TABLE public.model_stage_claim_receipts (
@@ -15,6 +17,7 @@ CREATE TABLE public.model_stage_claim_receipts (
   recorded_at timestamptz NOT NULL DEFAULT clock_timestamp()
 );
 ALTER TABLE public.model_run_stages ADD COLUMN active_attempt_id uuid;
+ALTER TABLE public.model_run_stages ADD COLUMN attempt_managed boolean NOT NULL DEFAULT false;
 ALTER TABLE public.model_run_stages ADD CONSTRAINT model_stage_active_attempt_identity
   FOREIGN KEY(id, active_attempt_id) REFERENCES public.model_stage_attempts(stage_id, id);
 ALTER TABLE public.model_stage_attempts ENABLE ROW LEVEL SECURITY;
@@ -25,7 +28,7 @@ REVOKE ALL ON public.model_stage_attempts, public.model_stage_claim_receipts FRO
 CREATE TABLE public.model_stage_write_context (
   transaction_id bigint NOT NULL,
   stage_id uuid NOT NULL,
-  attempt_id uuid NOT NULL,
+  attempt_id uuid,
   PRIMARY KEY(transaction_id, stage_id)
 );
 ALTER TABLE public.model_stage_write_context ENABLE ROW LEVEL SECURITY;
@@ -33,11 +36,11 @@ REVOKE ALL ON public.model_stage_write_context FROM PUBLIC, anon, authenticated,
 CREATE FUNCTION public.guard_model_stage_attempt_write() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 BEGIN
-  IF OLD.active_attempt_id IS NOT NULL OR NEW.active_attempt_id IS NOT NULL THEN
-    IF NEW.run_id IS DISTINCT FROM OLD.run_id OR NOT EXISTS (
+  IF OLD.attempt_managed OR NEW.attempt_managed THEN
+    IF NOT NEW.attempt_managed OR NEW.run_id IS DISTINCT FROM OLD.run_id OR NOT EXISTS (
       SELECT 1 FROM public.model_stage_write_context c
       WHERE c.transaction_id = txid_current() AND c.stage_id = OLD.id
-        AND c.attempt_id = NEW.active_attempt_id
+        AND c.attempt_id IS NOT DISTINCT FROM NEW.active_attempt_id
     ) THEN RAISE EXCEPTION 'Managed model stage requires an attempt command'; END IF;
   END IF;
   RETURN NEW;
@@ -91,7 +94,7 @@ BEGIN
     INSERT INTO public.model_stage_attempts(stage_id, run_id, worker_id)
       VALUES (p_stage_id, v_run.id, p_worker_id) RETURNING id INTO v_attempt;
     INSERT INTO public.model_stage_write_context VALUES (txid_current(), p_stage_id, v_attempt);
-    UPDATE public.model_run_stages SET active_attempt_id = v_attempt, status = 'running',
+    UPDATE public.model_run_stages SET active_attempt_id = v_attempt, attempt_managed = true, status = 'running',
       started_at = clock_timestamp(), completed_at = NULL, error_message = NULL
       WHERE id = p_stage_id;
     DELETE FROM public.model_stage_write_context WHERE transaction_id = txid_current() AND stage_id = p_stage_id;
