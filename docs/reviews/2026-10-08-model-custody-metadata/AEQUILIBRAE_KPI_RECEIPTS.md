@@ -25,3 +25,11 @@ Artifact registration had a related gap: any 2xx response was accepted, and a ma
 All 33 push-trigger and 26 ActivitySim assignment-handoff checks pass. Harmless/restored controls pass; removing the HTTP or field comparison fails at the intended artifact assertion. The native isolated-database probe retains a null KPI and synthetic artifact metadata, then confirms a real committed KPI insert with a lost acknowledgement remains uncertain with one request and one row. Private evidence is `native-aequilibrae-output-inserts.py/json`. Metadata insertion does not prove uploaded artifact bytes.
 
 One call-site gap remains: the GeoJSON upload/registration block in `stage_artifacts` catches broad exceptions and logs a warning. This patch checks its insert receipt but does not yet establish propagation out of that block. Do not describe all artifact errors as stage-stopping. Byte integrity, attempt ownership and process recovery also remain separate work.
+
+## GeoJSON registration uncertainty propagation
+
+The October 8 continuation extracts the existing GeoJSON publication block into `publish_volume_geojson`. The artifact stage calls it outside local exception handling. The helper rethrows `WorkerStateWriteUnconfirmed` before its existing generation-warning handler, so an uncertain registration reaches the stage-level uncertainty boundary. The Storage request now has a 60-second timeout. Existing missing-database warnings remain explicit.
+
+All 35 push-trigger checks pass. The new test reads a synthetic CSV, uses a mocked SQLite geometry result and generates an actual GeoJSON file. A mocked successful metadata response verifies the file hash and feature count. A simulated lost registration acknowledgement escapes as uncertainty, with one upload request and one registration request. The missing-database case makes no requests. Harmless/restored controls pass; removing the dedicated uncertainty handler fails at `uncertain GeoJSON registration swallowed`.
+
+This closes the identified registration-exception gap. It does not prove live Storage upload bytes, arbitrary generation failures, immutable Storage keys, scientific geometry validity or process restart. Ordinary generation/upload warnings retain their prior behavior; only checked metadata-registration uncertainty now propagates.
