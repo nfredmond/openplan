@@ -10,6 +10,7 @@ const runMaybeSingleMock = vi.fn();
 const artifactMaybeSingleMock = vi.fn();
 const createSignedUrlMock = vi.fn();
 const readFileMock = vi.fn();
+const realpathMock = vi.fn();
 
 const MODEL_ID = "11111111-1111-4111-8111-111111111111";
 const MODEL_RUN_ID = "22222222-2222-4222-8222-222222222222";
@@ -64,7 +65,8 @@ vi.mock("@/lib/models/api", () => ({
 
 vi.mock("node:fs/promises", () => {
   const readFile = (...args: unknown[]) => readFileMock(...args);
-  return { readFile, default: { readFile } };
+  const realpath = (value: string) => realpathMock(value);
+  return { readFile, realpath, default: { readFile, realpath } };
 });
 
 import { GET as downloadArtifact } from "@/app/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/download/route";
@@ -103,6 +105,7 @@ function setArtifact(fileUrl: string | null) {
 describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/download", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    realpathMock.mockImplementation(async (value: string) => value);
     vi.unstubAllEnvs();
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
@@ -232,6 +235,17 @@ describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/downloa
     expect(readFileMock).not.toHaveBeenCalled();
   });
 
+  it("refuses a symlink target outside the authorized run before reading bytes", async () => {
+    vi.stubEnv("OPENPLAN_WORKER_LOCAL_ROOT", "/srv/worker");
+    const runDirPath = `/srv/worker/runs/${MODEL_RUN_ID}/run_output/link_volumes.csv`;
+    setArtifact(`local://${runDirPath}`);
+    realpathMock.mockImplementation(async (value: string) => value === runDirPath ? "/srv/worker/runs/another-run/private.csv" : value);
+    readFileMock.mockResolvedValue(Buffer.from("foreign bytes"));
+    const res = await downloadArtifact(request(), routeContext());
+    expect(res.status).toBe(404);
+    expect(readFileMock).not.toHaveBeenCalled();
+  });
+
   it("streams run-local files as attachments in dev", async () => {
     vi.stubEnv("OPENPLAN_WORKER_LOCAL_ROOT", "/srv/worker");
     const runDirPath = `/srv/worker/runs/${MODEL_RUN_ID}/run_output/link_volumes.csv`;
@@ -240,7 +254,7 @@ describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/downloa
 
     const res = await downloadArtifact(request(), routeContext());
 
-    expect(readFileMock).toHaveBeenCalledWith(runDirPath);
+    expect(readFileMock).toHaveBeenCalledWith(runDirPath, expect.objectContaining({ flag: expect.any(Number) }));
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("text/csv");
     expect(res.headers.get("content-disposition")).toContain('filename="link_volumes.csv"');

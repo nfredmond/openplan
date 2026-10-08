@@ -1,4 +1,5 @@
-import { readFile } from "node:fs/promises";
+import { readFile, realpath } from "node:fs/promises";
+import { constants } from "node:fs";
 import path from "node:path";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
@@ -92,6 +93,26 @@ export function resolveContainedLocalPath(fileUrl: string, root: string): string
     : null;
 }
 
+/** Resolve actual filesystem targets before reading authorized local bytes. */
+export async function readContainedLocalArtifact(fileUrl: string, root: string): Promise<Uint8Array> {
+  const envRoot = workerLocalRoot();
+  if (!envRoot) throw new Error("Local artifact reads are disabled.");
+  const contained = resolveContainedLocalPath(fileUrl, root);
+  const scopedRoot = resolveContainedLocalPath(root, envRoot);
+  if (!contained || !scopedRoot) throw new Error("Local artifact path escapes the worker-local root.");
+  const actualEnvRoot = await realpath(envRoot);
+  const expectedRoot = path.resolve(actualEnvRoot, path.relative(path.resolve(envRoot), scopedRoot));
+  const actualRoot = await realpath(scopedRoot);
+  // A run directory cannot redirect reads into a different run's directory.
+  if (actualRoot !== expectedRoot) throw new Error("Local artifact run directory is redirected.");
+  const actualFile = await realpath(contained);
+  if (!resolveContainedLocalPath(actualFile, actualRoot)) {
+    throw new Error("Local artifact target escapes this run's scope.");
+  }
+  // Refuse a final-component link substituted after canonical resolution.
+  return new Uint8Array(await readFile(actualFile, { flag: constants.O_RDONLY | constants.O_NOFOLLOW }));
+}
+
 /** Read the exact stored bytes after applying the same run scope as JSON reads. */
 export async function loadArtifactBytes(
   fileUrl: string,
@@ -133,7 +154,7 @@ export async function loadArtifactBytes(
   if (!contained) {
     throw new Error("Local artifact path escapes the worker-local root.");
   }
-  return new Uint8Array(await readFile(contained));
+  return readContainedLocalArtifact(contained, scope?.localRoot ?? envRoot);
 }
 
 export async function loadJsonArtifact(

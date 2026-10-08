@@ -15,7 +15,8 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("node:fs/promises", () => {
   const readFile = (...args: unknown[]) => readFileMock(...args);
-  return { readFile, default: { readFile } };
+  const realpath = async (value: string) => value;
+  return { readFile, realpath, default: { readFile, realpath } };
 });
 
 import {
@@ -121,7 +122,7 @@ describe("loadJsonArtifact", () => {
     const result = await loadJsonArtifact("local:///srv/runs/runs/abc/volumes.geojson");
 
     expect(result).toEqual(payload);
-    expect(readFileMock).toHaveBeenCalledWith("/srv/runs/runs/abc/volumes.geojson");
+    expect(readFileMock).toHaveBeenCalledWith("/srv/runs/runs/abc/volumes.geojson", expect.objectContaining({ flag: expect.any(Number) }));
   });
 
   it("refuses local paths that escape the worker root", async () => {
