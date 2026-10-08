@@ -7,15 +7,7 @@
         "cases": [
           {
             "worker": "main",
-            "lost_reply": "claim",
-            "handler_calls": 0,
-            "fresh_cli_recovered": true,
-            "native_records_unchanged": true,
-            "cached_no_http": true
-          },
-          {
-            "worker": "main",
-            "lost_reply": "running",
+            "lost_reply": "artifact",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
@@ -23,7 +15,7 @@
           },
           {
             "worker": "main",
-            "lost_reply": "succeeded",
+            "lost_reply": "kpi",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
@@ -31,7 +23,15 @@
           },
           {
             "worker": "main",
-            "lost_reply": "failed",
+            "lost_reply": "retained_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "retained_kpi",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
@@ -39,15 +39,7 @@
           },
           {
             "worker": "supabase_poll",
-            "lost_reply": "claim",
-            "handler_calls": 0,
-            "fresh_cli_recovered": true,
-            "native_records_unchanged": true,
-            "cached_no_http": true
-          },
-          {
-            "worker": "supabase_poll",
-            "lost_reply": "running",
+            "lost_reply": "artifact",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
@@ -55,22 +47,14 @@
           },
           {
             "worker": "supabase_poll",
-            "lost_reply": "succeeded",
-            "handler_calls": 1,
-            "fresh_cli_recovered": true,
-            "native_records_unchanged": true,
-            "cached_no_http": true
-          },
-          {
-            "worker": "supabase_poll",
-            "lost_reply": "failed",
+            "lost_reply": "kpi",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
             "cached_no_http": true
           }
         ],
-        "http_calls": 40,
+        "http_calls": 36,
         "gateway_removed": true
       }
     },
@@ -80,15 +64,7 @@
         "cases": [
           {
             "worker": "main",
-            "lost_reply": "claim",
-            "handler_calls": 0,
-            "fresh_cli_recovered": true,
-            "native_records_unchanged": true,
-            "cached_no_http": true
-          },
-          {
-            "worker": "main",
-            "lost_reply": "running",
+            "lost_reply": "artifact",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
@@ -96,7 +72,7 @@
           },
           {
             "worker": "main",
-            "lost_reply": "succeeded",
+            "lost_reply": "kpi",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
@@ -104,7 +80,15 @@
           },
           {
             "worker": "main",
-            "lost_reply": "failed",
+            "lost_reply": "retained_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "retained_kpi",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
@@ -112,15 +96,7 @@
           },
           {
             "worker": "supabase_poll",
-            "lost_reply": "claim",
-            "handler_calls": 0,
-            "fresh_cli_recovered": true,
-            "native_records_unchanged": true,
-            "cached_no_http": true
-          },
-          {
-            "worker": "supabase_poll",
-            "lost_reply": "running",
+            "lost_reply": "artifact",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
@@ -128,28 +104,24 @@
           },
           {
             "worker": "supabase_poll",
-            "lost_reply": "succeeded",
-            "handler_calls": 1,
-            "fresh_cli_recovered": true,
-            "native_records_unchanged": true,
-            "cached_no_http": true
-          },
-          {
-            "worker": "supabase_poll",
-            "lost_reply": "failed",
+            "lost_reply": "kpi",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
             "cached_no_http": true
           }
         ],
-        "http_calls": 40,
+        "http_calls": 36,
         "gateway_removed": true
       }
     },
     {
-      "control": "erase-log",
-      "expected_failure": "Native stage did not retain partial log"
+      "control": "discard-prepared-id",
+      "expected_failure": "Native artifact lost prepared identity or evidence"
+    },
+    {
+      "control": "replace-null-with-zero",
+      "expected_failure": "Native KPI lost unassessed null value"
     },
     {
       "control": "restored",
@@ -157,15 +129,7 @@
         "cases": [
           {
             "worker": "main",
-            "lost_reply": "claim",
-            "handler_calls": 0,
-            "fresh_cli_recovered": true,
-            "native_records_unchanged": true,
-            "cached_no_http": true
-          },
-          {
-            "worker": "main",
-            "lost_reply": "running",
+            "lost_reply": "artifact",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
@@ -173,7 +137,7 @@
           },
           {
             "worker": "main",
-            "lost_reply": "succeeded",
+            "lost_reply": "kpi",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
@@ -181,7 +145,15 @@
           },
           {
             "worker": "main",
-            "lost_reply": "failed",
+            "lost_reply": "retained_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "retained_kpi",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
@@ -189,15 +161,7 @@
           },
           {
             "worker": "supabase_poll",
-            "lost_reply": "claim",
-            "handler_calls": 0,
-            "fresh_cli_recovered": true,
-            "native_records_unchanged": true,
-            "cached_no_http": true
-          },
-          {
-            "worker": "supabase_poll",
-            "lost_reply": "running",
+            "lost_reply": "artifact",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
@@ -205,25 +169,17 @@
           },
           {
             "worker": "supabase_poll",
-            "lost_reply": "succeeded",
-            "handler_calls": 1,
-            "fresh_cli_recovered": true,
-            "native_records_unchanged": true,
-            "cached_no_http": true
-          },
-          {
-            "worker": "supabase_poll",
-            "lost_reply": "failed",
+            "lost_reply": "kpi",
             "handler_calls": 1,
             "fresh_cli_recovered": true,
             "native_records_unchanged": true,
             "cached_no_http": true
           }
         ],
-        "http_calls": 40,
+        "http_calls": 36,
         "gateway_removed": true
       }
     }
   ],
-  "limits": "Installed native claim and stage commands, fresh invocation helper and both bound worker stage adapters. Synthetic handler only; no normal poll/push loop, outputs, filesystem continuation, engine or scientific acceptance."
+  "limits": "Installed migration21 and actual bound artifact/KPI adapters with native HTTP and fresh CLI recovery. Synthetic references, hashes and handler; no byte/file provenance, normal poll/push activation, model execution or scientific acceptance."
 }

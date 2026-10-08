@@ -509,3 +509,37 @@ native output HTTP recovery is still required, followed by filesystem ownership,
 managed assessment/publication and the complete normal dispatcher switch.
 
 The final direct AequilibraE push-trigger script also passes all 38 checks.
+
+### Native HTTP output registration and recovery
+
+All six bound artifact/KPI paths now pass against an installed migration-21
+clone: direct artifact and KPI helpers in both workers, plus AequilibraE's
+retained artifact and KPI helpers. The fresh invocation uses native claims and
+ownership reads. A synthetic handler confirms a partial log, then registers one
+output. The bridge drops the committed output reply before the adapter sees it.
+Direct inserts and PATCH fallback are forbidden; worker endpoint settings are
+bound to the owned bridge during each case.
+
+Native reads confirm one output owned by the claimed attempt, one execution
+start and a running parent/stage. Artifact IDs, hashes and prototype metadata
+match the synthetic request. The KPI keeps its explicit null and unassessed
+breakdown. A fresh CLI recovers the exact receipt without changing parent,
+stage, attempt, start, output or receipt records. Cached recovery sends no HTTP.
+The original writer remains stopped after recovery; it does not complete the run.
+
+Baseline, harmless and restored controls each pass six cases and 36 HTTP calls.
+Discarding the prepared ID fails `Native artifact lost prepared identity or
+evidence`. Replacing null with zero fails `Native KPI lost unassessed null value`.
+The proof removes each bounded gateway and preserves private clone/journal
+records. Sanitized results are in `output-http.json`.
+
+The shared HTTP helper also reruns the earlier claim/progress/success/failure
+cases on installed migration 21. Baseline, harmless and restored controls each
+pass eight cases; deliberate log erasure still fails. `writer-http.json` now
+records that refreshed result and the current writer source hash.
+
+These checks close the combined native output HTTP boundary. File references
+and hashes are synthetic request data; no actual file or byte provenance is
+claimed. Attempt-owned working files, assessment/publication, complete normal
+poll/push activation and explicit continuation remain unfinished. No scientific
+engine or human acceptance case runs in this proof.

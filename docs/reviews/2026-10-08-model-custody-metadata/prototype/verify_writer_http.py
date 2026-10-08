@@ -25,7 +25,7 @@ import model_command_journal as journal
 from worker_import_for_tests import import_worker_main
 
 
-def verify(output, writer_module):
+def verify(output, writer_module, outputs=False):
     source = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
     if source['container'] != 'supabase_db_openplan-restore-target-2026091050' or not re.fullmatch(r'openplan_retention_upgrade_[0-9a-f]{32}', source['database']):
         raise ValueError('Select owned retention source')
@@ -47,6 +47,8 @@ def verify(output, writer_module):
         'source_database': source['database']}, indent=2) + '\n')
     if sql(database, "SELECT count(*) FROM supabase_migrations.schema_migrations WHERE version='20261016000020';") != '1':
         raise AssertionError('Installed migration20 required')
+    if outputs and sql(database, "SELECT count(*) FROM supabase_migrations.schema_migrations WHERE version='20261016000021';") != '1':
+        raise AssertionError('Installed migration21 required for outputs')
     fixture = str(uuid.UUID(source['fixture_run']))
     aeq = import_worker_main()
     sys.path.insert(0, str(REPO / 'workers/activitysim_worker'))
@@ -63,7 +65,7 @@ def verify(output, writer_module):
             def forward(self, method):
                 path = self.path.removeprefix('/rest/v1')
                 allowed = (method == 'GET' and path.startswith('/model_run_stages?')) or (
-                    method == 'POST' and path in ('/rpc/claim_model_stage_attempt', '/rpc/write_model_stage_attempt'))
+                    method == 'POST' and path in ('/rpc/claim_model_stage_attempt', '/rpc/write_model_stage_attempt', '/rpc/write_model_attempt_artifact', '/rpc/write_model_attempt_kpi'))
                 if not allowed or self.headers.get('Authorization') != 'Bearer ' + key:
                     self.send_error(403)
                     return
@@ -97,7 +99,8 @@ def verify(output, writer_module):
         base = f'http://127.0.0.1:{server.server_port}'
         try:
             for worker in (aeq, supabase_poll):
-                for status in ('claim', 'running', 'succeeded', 'failed'):
+                modes = (('artifact', 'kpi', 'retained_artifact', 'retained_kpi') if worker is aeq else ('artifact', 'kpi')) if outputs else ('claim', 'running', 'succeeded', 'failed')
+                for status in modes:
                     run, stage = [str(uuid.uuid4()) for _ in range(2)]
                     workspace = str(uuid.UUID(sql(database, f"""
 INSERT INTO public.model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by)
@@ -108,6 +111,7 @@ INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order,log_t
 SELECT workspace_id FROM public.model_runs WHERE id='{run}';
 """)))
                     directory = output / worker.__name__ / status
+                    artifact_id = str(uuid.uuid4())
                     handled = []
                     writers = []
                     fault['operation'] = 'claim_model_stage_attempt' if status == 'claim' else None
@@ -119,6 +123,26 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         writers.append(writer)
                         with writer_module.bind(writer):
                             worker.sb_patch_stage(stage, {'log_tail': 'Useful synthetic partial log'})
+                            if outputs:
+                                kind = 'artifact' if status.endswith('artifact') else 'kpi'
+                                fault['operation'] = 'write_model_attempt_' + kind
+                                if kind == 'artifact':
+                                    payload = {'id': artifact_id, 'run_id': run, 'stage_id': stage,
+                                        'artifact_type': 'synthetic', 'file_url': 'local://synthetic-unread',
+                                        'file_size_bytes': 7, 'content_hash': 'a' * 64,
+                                        'metadata_json': {'claim_tier': 'prototype'}}
+                                else:
+                                    payload = {'run_id': run, 'kpi_name': 'synthetic', 'kpi_label': 'Unassessed',
+                                        'value': None, 'breakdown_json': {'status': 'unassessed'}}
+                                if status == 'retained_artifact':
+                                    worker.sb_record_retained_artifact(payload, workspace_id=workspace,
+                                        journal_dir=str(directory), logical_name='synthetic-output')
+                                elif status == 'retained_kpi':
+                                    worker.sb_record_retained_kpi(payload, workspace_id=workspace,
+                                        stage_id=stage, journal_dir=str(directory))
+                                else:
+                                    getattr(worker, 'sb_post_' + kind)(payload)
+                                raise AssertionError('Lost output reply did not stop handler')
                             fault['operation'] = 'write_model_stage_attempt'
                             payload = {'status': status}
                             if status == 'failed':
@@ -126,7 +150,10 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                             worker.sb_patch_stage(stage, payload)
 
                     with patch.dict(sys.modules, {'model_attempt_writer': writer_module}), patch.object(
-                        worker.requests, 'patch', side_effect=AssertionError('Direct PATCH forbidden')):
+                        worker.requests, 'patch', side_effect=AssertionError('Direct PATCH forbidden')), patch.object(
+                        worker, '_confirmed_record_insert', side_effect=AssertionError('Direct insert forbidden')), patch.object(
+                        worker, 'SUPABASE_URL', base), patch.object(worker, 'SUPABASE_KEY', key), patch.dict(
+                        os.environ, {'OPENPLAN_DEPLOYMENT_ID': database}):
                         try:
                             invocation.invoke_new_attempt(directory, run_id=run, stage_id=stage,
                                 worker_id='synthetic-native-writer', workspace_id=workspace,
@@ -143,23 +170,36 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                     command = pending[0]['command']
                     request = command['request_id']
 
+                    receipt_table = ('model_artifact_write_receipts' if status.endswith('artifact') else 'model_kpi_write_receipts') if outputs else ('model_stage_claim_receipts' if status == 'claim' else 'model_stage_write_receipts')
+
                     def native_state():
                         return sql(database, f"""SELECT jsonb_build_object(
  'parent',(SELECT to_jsonb(r) FROM public.model_runs r WHERE id='{run}'),
  'stage',(SELECT to_jsonb(s) FROM public.model_run_stages s WHERE id='{stage}'),
  'attempts',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_stage_attempts a WHERE run_id='{run}'),
  'starts',(SELECT count(*) FROM public.model_stage_execution_starts WHERE run_id='{run}'),
- 'receipt',(SELECT response_payload FROM public.{'model_stage_claim_receipts' if status == 'claim' else 'model_stage_write_receipts'} WHERE request_id='{request}'));""")
+ 'artifacts',(SELECT coalesce(jsonb_agg(to_jsonb(a) ORDER BY id),'[]'::jsonb) FROM public.model_run_artifacts a WHERE run_id='{run}'),
+ 'kpis',(SELECT coalesce(jsonb_agg(to_jsonb(k) ORDER BY id),'[]'::jsonb) FROM public.model_run_kpis k WHERE run_id='{run}'),
+ 'receipt',(SELECT response_payload FROM public.{receipt_table} WHERE request_id='{request}'));""")
 
                     before = native_state()
                     observed = json.loads(before)
-                    expected_status = 'running' if status == 'claim' else status
+                    expected_status = 'running' if outputs or status == 'claim' else status
                     if observed['stage']['status'] != expected_status or observed['parent']['status'] != expected_status:
                         raise AssertionError('Native terminal outcome differs')
                     if status != 'claim' and observed['stage']['log_tail'] != 'Useful synthetic partial log':
                         raise AssertionError('Native stage did not retain partial log')
                     if observed['receipt'] is None or observed['starts'] != 1 or len(observed['attempts']) != 1:
                         raise AssertionError('Native receipt or execution identity missing')
+                    if outputs:
+                        records = observed['artifacts'] if status.endswith('artifact') else observed['kpis']
+                        if len(records) != 1 or records[0]['attempt_id'] != observed['attempts'][0]['id']:
+                            raise AssertionError('Output is absent, duplicated or belongs to another attempt')
+                        if status.endswith('artifact'):
+                            if records[0]['id'] != artifact_id or records[0]['content_hash'] != 'a' * 64 or records[0]['metadata_json'] != {'claim_tier': 'prototype'}:
+                                raise AssertionError('Native artifact lost prepared identity or evidence')
+                        elif records[0]['value'] is not None or records[0]['breakdown_json'] != {'status': 'unassessed'}:
+                            raise AssertionError('Native KPI lost unassessed null value')
                     argv = [sys.executable, '-B', str(REPO / 'workers/aequilibrae_worker/model_command_recovery.py'),
                         '--journal', str(directory), '--base-url', base, '--deployment-id', database, '--request-id', request]
                     recovered = subprocess.run(argv, env={**os.environ, 'SUPABASE_SERVICE_ROLE_KEY': key},
