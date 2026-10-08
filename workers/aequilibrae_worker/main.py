@@ -849,24 +849,10 @@ def register_agreement_artifact(
     with open(path, "rb") as handle:
         payload = handle.read()
     filename = os.path.basename(path)
-    object_path = f"model-runs/{run_id}/agreement/{filename}"
-    upload_url = f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}"
-    response = requests.post(
-        upload_url,
-        headers={
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": content_type,
-            "x-upsert": "true",
-        },
-        data=payload,
-        timeout=60,
-    )
-    file_url = (
-        f"storage://run-artifacts/{object_path}"
-        if response.status_code in (200, 201)
-        else f"local://{path}"
-    )
+    try:
+        file_url = upload_content_addressed_artifact(run_id, stage_id, filename, payload, content_type)
+    except WorkerStateWriteUnconfirmed:
+        file_url = f"local://{path}"
     profile, profile_payload, profile_digest = validated_assignment_profile(
         assignment_profile,
         assignment_profile_payload_json,
@@ -926,7 +912,7 @@ def register_agreement_artifact(
             "network_settings_digest": settings_digest,
             "network_state_record": state,
             "network_state_digest": state_digest,
-            "upload_status": "stored" if response.status_code in (200, 201) else "local_fallback",
+            "upload_status": "stored" if file_url.startswith("storage://") else "local_fallback",
         },
     })
 
@@ -4944,13 +4930,15 @@ def _network_coverage_for_run(run_id: str, db_path: str, link_volumes_csv: str) 
         return {"measured": False, "reason": f"{type(error).__name__}: {error}"}
 
 
-def upload_volume_geojson_bytes(run_id: str, stage_id: str, data: bytes) -> str:
-    """Retain content-addressed map bytes and reconcile through an exact read."""
+def upload_content_addressed_artifact(
+    run_id: str, stage_id: str, filename: str, data: bytes, content_type: str,
+) -> str:
+    """Retain content-addressed artifact bytes and reconcile through an exact read."""
     digest = hashlib.sha256(data).hexdigest()
-    object_path = f"model-runs/{run_id}/stages/{stage_id}/sha256-{digest}/volumes.geojson"
+    object_path = f"model-runs/{run_id}/stages/{stage_id}/sha256-{digest}/{filename}"
     headers = {
         "apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": "application/geo+json", "x-upsert": "false",
+        "Content-Type": content_type, "x-upsert": "false",
     }
     try:
         requests.post(
@@ -4967,12 +4955,18 @@ def upload_volume_geojson_bytes(run_id: str, stage_id: str, data: bytes) -> str:
             headers=HEADERS, timeout=60,
         )
         if retained.status_code != 200 or retained.content != data:
-            raise WorkerStateWriteUnconfirmed("GeoJSON stored bytes unconfirmed")
+            raise WorkerStateWriteUnconfirmed("Artifact stored bytes unconfirmed")
     except WorkerStateWriteUnconfirmed:
         raise
     except requests.RequestException as error:
-        raise WorkerStateWriteUnconfirmed("GeoJSON stored bytes unconfirmed") from error
+        raise WorkerStateWriteUnconfirmed("Artifact stored bytes unconfirmed") from error
     return f"storage://run-artifacts/{object_path}"
+
+
+def upload_volume_geojson_bytes(run_id: str, stage_id: str, data: bytes) -> str:
+    return upload_content_addressed_artifact(
+        run_id, stage_id, "volumes.geojson", data, "application/geo+json",
+    )
 
 
 def publish_volume_geojson(

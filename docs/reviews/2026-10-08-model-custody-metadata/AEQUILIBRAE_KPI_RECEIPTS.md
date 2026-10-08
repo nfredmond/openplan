@@ -49,3 +49,11 @@ The next October 8 checkpoint changes new GeoJSON objects to stage-specific SHA-
 All 36 push-trigger checks pass. Harmless/restored controls pass; removing byte comparison fails at `unverified GeoJSON bytes accepted`. The native SQLite/SpatiaLite publisher probe also passes with the new paths. Repeating identical bytes resolves the same object key. Appending one newline produces another key, and a new authenticated read confirms that the first object's bytes remain unchanged. Private evidence is `native-aequilibrae-content-addressed.py/json/geojson`; earlier run-scoped evidence is preserved separately.
 
 This supersedes the run-scoped upsert behavior for this GeoJSON publisher only. Other upload paths, privileged Storage mutation, attempt ownership, metadata-request deduplication, retained-attempt readers and restart recovery remain open. A content hash is byte identity, not proof of scientific correctness.
+
+## Agreement object retention
+
+The shared byte uploader now accepts the caller's artifact basename and content type. GeoJSON delegates to it, and agreement JSON/report/map artifacts use the same stage-specific content-addressed paths. Agreement registration preserves its explicitly labeled local fallback when stored bytes cannot be verified. Both assignment convergence records and their common settings/network identity remain unchanged; neither model is averaged.
+
+All 26 assignment-handoff checks pass. The agreement fixture covers exact retained bytes, a missing object and changed bytes, including upload failure followed by a successful exact read. Only the verified case is labeled stored. Harmless/restored controls pass; removing byte comparison fails at `unverified agreement storage accepted`. Targeted GeoJSON checks also pass after sharing the helper. The initial refactor left a reference to the removed response variable in upload-status metadata; the suite caught it, and the corrected status now derives from the verified storage reference.
+
+This checkpoint has mocked agreement transport evidence, not a native agreement upload. Both workers' evidence-packet upsert paths remain unchanged. The helper's callers provide an artifact basename or fixed filename. Attempt ownership, metadata deduplication, privileged mutation and restart recovery remain open.

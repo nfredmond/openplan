@@ -1014,52 +1014,57 @@ def test_artifact_registration_refuses_a_non_success_response():
 
 
 def test_agreement_artifact_registration_carries_both_full_convergence_records():
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / "agreement.json"
-        path.write_text("{}")
-        first = identity_record(0.0004)
-        second = identity_record(0.0003)
-        response = mock.Mock(status_code=500, text="storage unavailable")
-        with (
-            mock.patch.object(main.requests, "post", return_value=response),
-            mock.patch.object(main, "sb_post_artifact") as register,
-        ):
-            main.register_agreement_artifact(
-                "run",
-                "stage",
-                "demand_model_agreement",
-                str(path),
-                "application/json",
-                first_assignment_convergence=first["convergence"],
-                second_assignment_convergence=second["convergence"],
-                assignment_profile=first["convergence"]["assignment_profile"],
-                assignment_profile_payload_json=first["convergence"][
-                    "assignment_profile_payload_json"
-                ],
-                assignment_profile_digest=first["convergence"][
-                    "assignment_profile_digest"
-                ],
-                network_settings=first["network_settings"],
-                network_settings_payload_json=first["network_settings_payload_json"],
-                network_settings_digest=first["network_settings_digest"],
-                network_state_record=first["network_state_record"],
-                network_state_digest=first["network_state_digest"],
-            )
-        row = register.call_args.args[0]
-        metadata = row["metadata_json"]
-        assert row["content_hash"] == hashlib.sha256(path.read_bytes()).hexdigest()
-        assert len(row["content_hash"]) == 64
-        assert metadata["first_assignment_convergence"] == first["convergence"]
-        assert metadata["second_assignment_convergence"] == second["convergence"]
-        assert metadata["assignment_profile_payload_json"] == first["convergence"][
-            "assignment_profile_payload_json"
-        ]
-        assert metadata["network_settings_payload_json"] == first[
-            "network_settings_payload_json"
-        ]
-        assert metadata["network_state_digest"] == first["network_state_digest"]
-        assert metadata["upload_status"] == "local_fallback"
-        assert metadata["is_average"] is False
+    for mode in ("retained", "missing", "changed"):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "agreement.json"
+            path.write_text("{}")
+            first = identity_record(0.0004)
+            second = identity_record(0.0003)
+            response = mock.Mock(status_code=500, text="storage unavailable")
+            with (
+                mock.patch.object(main.requests, "post", return_value=response) as upload,
+                mock.patch.object(main.requests, "get", return_value=mock.Mock(status_code=404 if mode == "missing" else 200, content=b"changed" if mode == "changed" else path.read_bytes())),
+                mock.patch.object(main, "sb_post_artifact") as register,
+            ):
+                main.register_agreement_artifact(
+                    "run",
+                    "stage",
+                    "demand_model_agreement",
+                    str(path),
+                    "application/json",
+                    first_assignment_convergence=first["convergence"],
+                    second_assignment_convergence=second["convergence"],
+                    assignment_profile=first["convergence"]["assignment_profile"],
+                    assignment_profile_payload_json=first["convergence"][
+                        "assignment_profile_payload_json"
+                    ],
+                    assignment_profile_digest=first["convergence"][
+                        "assignment_profile_digest"
+                    ],
+                    network_settings=first["network_settings"],
+                    network_settings_payload_json=first["network_settings_payload_json"],
+                    network_settings_digest=first["network_settings_digest"],
+                    network_state_record=first["network_state_record"],
+                    network_state_digest=first["network_state_digest"],
+                )
+            row = register.call_args.args[0]
+            metadata = row["metadata_json"]
+            assert row["content_hash"] == hashlib.sha256(path.read_bytes()).hexdigest()
+            assert len(row["content_hash"]) == 64
+            assert metadata["first_assignment_convergence"] == first["convergence"]
+            assert metadata["second_assignment_convergence"] == second["convergence"]
+            assert metadata["assignment_profile_payload_json"] == first["convergence"][
+                "assignment_profile_payload_json"
+            ]
+            assert metadata["network_settings_payload_json"] == first[
+                "network_settings_payload_json"
+            ]
+            assert metadata["network_state_digest"] == first["network_state_digest"]
+            assert metadata["upload_status"] == ("stored" if mode == "retained" else "local_fallback"), "unverified agreement storage accepted"
+            assert upload.call_args.kwargs["headers"]["x-upsert"] == "false"
+            if mode == "retained":
+                assert hashlib.sha256(path.read_bytes()).hexdigest() in row["file_url"]
+            assert metadata["is_average"] is False
 
 
 def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
