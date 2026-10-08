@@ -94,5 +94,36 @@ UUID generation, missing byte binding, missing scope binding and bypassing the
 registration helper each fail a targeted assertion. Results are retained in
 `model-command-client-20261008-proof/primary-output-controls.json`.
 
-Full worker regression is pending at this checkpoint. The complete stage,
-server write recovery, restart ownership and scientific acceptance remain open.
+Full worker regression passed at `46d64d13`: 74 suites passed, none failed or
+skipped. The owned `openplan-stage-preparation-workers-20261008.service` finished
+on October 8 at 06:47 Pacific, with a 177.3 MiB peak under its 1 GiB limit.
+The complete stage, server write recovery, restart ownership and scientific
+acceptance remain open.
+
+
+## Artifact write recovery candidate
+
+The uninstalled `prototype/legacy-artifact-command.sql` candidate gives a
+prepared legacy artifact one transaction for its row and recovery receipt.
+Exact retries return the original response. Changed requests using the same
+artifact identity are refused. An existing legacy row can be adopted only when
+its complete submitted fields match and it has no managed attempt identity.
+New registration checks workspace, stage, unmanaged ownership and stopped runs.
+An exact historical retry remains readable after a run stops.
+
+Rollback-only checks in the named isolated proof database pass. They cover new
+registration, exact retry, conflicting requests, exact existing-row adoption,
+receipt-insert failure rollback, stopped runs, workspace/stage mismatch, managed
+runs and private receipt privileges. Baseline, harmless and restored candidates
+pass. Six deliberate faults fail their intended assertions: changed-request
+acceptance, wrong retry response, mismatched row adoption, stopped-run bypass,
+workspace bypass and direct receipt insertion privilege. The verifier confirms
+that the candidate function and table are absent after rollback. Private results
+are in `model-command-client-20261008-proof/legacy-artifact-command/`.
+
+This candidate is not installed or connected to a worker. These checks do not
+yet cover all input guards, independent-session contention, HTTP role boundaries
+or a lost response through the retained client. Those checks precede migration
+and adoption. Existing direct legacy writes remain mutable. A saved response is
+historical evidence, not proof of current ownership or Storage byte existence.
+The ordinary primary artifact POST still needs this recovery integration.
