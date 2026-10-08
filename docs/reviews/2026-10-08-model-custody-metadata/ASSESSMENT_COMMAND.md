@@ -249,3 +249,31 @@ an application database. Populated-record upgrade preservation, installed HTTP
 permissions, release ordering, complete CI and normal worker adoption remain
 open. The original prototype remains a historical source; this checkpoint's
 rollback evidence names the exact migration file.
+
+## Migration-history upgrade and preservation
+
+`prototype/verify_assessment_upgrade.py` clones the named, idle 48 MB synthetic
+proof database and applies pending migrations with the Supabase CLI. Running
+migration-up twice produces one `20261016000015` history row. Before/after JSON
+matches across all existing fields in eight tables: 110 runs, 51 stages,
+239 artifacts, 20 KPIs, 59 claims, 19 validation results, one v2 instrument and
+44 legacy assessments. No recovery receipts are fabricated by the migration.
+The installed command cases pass in a rollback transaction and leave the same
+retained records. The source stays at migration `20261016000014`.
+
+The baseline clone is
+`openplan_assessment_upgrade_72966dc0f5df4456acd29ca581f9a394` in the owned restore
+target container. Its metadata and exact snapshots are under
+`model-command-client-20261008-proof/assessment-cli-upgrade/`. The migration hash
+is `aad23c391bf9d0bddf2583468f44701bf4a3ad4bbc0d9c94312b0594be8b8390`.
+
+Harmless-comment and restored upgrade variants also pass. Appending a synthetic
+rewrite of an existing run causes the preservation assertion to fail for the
+expected reason. Source is restored afterward. These separate synthetic clones
+remain for diagnosis; no application database was changed. Control evidence is
+`model-command-client-20261008-proof/assessment-upgrade-controls.json`.
+
+This proves migration-history application and preservation for the captured
+synthetic records. It does not prove installed HTTP permissions, operational
+backup restoration, Storage contents, normal worker restart or scientific
+acceptance. Those remain separate requirements.
