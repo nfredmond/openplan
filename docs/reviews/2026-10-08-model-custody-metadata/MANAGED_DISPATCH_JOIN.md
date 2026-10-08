@@ -1480,3 +1480,39 @@ to inspect the actual stage-local selected path.
 No full assignment ran in these checks. Native engine use through the writer's
 working-copy method, state/package/project pairing, closure enforcement and the
 remaining publication/terminal lifecycle still precede normal managed dispatch.
+
+### Native engine reopen through the managed working path
+
+Installed AequilibraE 1.6.2 now reopens a synthetic spatial project through the
+actual working-copy writer and managed resolver. The proof creates two nodes
+and one link, retains the project, prepares separate working files, resolves
+that working path and reads exact geometry after `Project.open()`. Original
+source and retained input inventories remain unchanged after native open/close.
+This proof creates the consumed inventory fixture directly and mocks artifact
+registration. Native database registration/recovery remains separate evidence
+above, not an implied part of this native-engine check.
+
+Baseline, harmless and restored controls pass. Substituting retained input for
+the working directory fails before native reopen. Private
+`native-project-working-controls-v1` retains separate project files per control;
+`prototype/native-project-working.json` and
+`prototype/native-project-working-controls.json` record geometry, source hashes
+and boundaries. The earlier standalone `native-project-working-v1` also passed.
+No assignment, interrupted-close recovery or scientific acceptance is claimed.
+
+### Observed SQLite warning resolved in the recovery fixture
+
+A tracemalloc-enabled isolated rerun traced the recurring unclosed-connection
+warning to `test_model_command_recovery.py`, where a context manager committed
+a deliberate fixture corruption but did not close its SQLite connection. The
+test now uses explicit `closing` while retaining the transaction context. Its
+mock transport now has a valid possible response, so omitting fixture corruption
+fails at the expected identity assertion instead of an unrelated malformed mock
+response. The production recovery implementation is unchanged.
+
+Baseline, harmless and restored fixture controls pass without warnings. Removing
+closure reproduces the warning. Removing the corruption fails its specific test.
+`prototype/recovery-fixture-controls.json` records those controls. The full
+202-test suite passes with ResourceWarning output enabled and no such warning.
+This supersedes the observed fixture-warning boundary in earlier checkpoints;
+it is not evidence that all engine connections close on every exception path.

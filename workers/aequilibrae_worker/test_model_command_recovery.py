@@ -1,5 +1,6 @@
 """Operator recovery uses selected saved commands, never reconstructed payloads."""
 import copy
+from contextlib import closing
 import json
 import os
 from pathlib import Path
@@ -62,9 +63,9 @@ class RecoveryTests(unittest.TestCase):
     def test_corrupted_request_identity_cannot_dispatch_another_command(self):
         journal.prepare(self.directory, self.cmd)
         changed = copy.deepcopy(self.cmd); changed['request_id'] = IDS[4]
-        with sqlite3.connect(self.directory / 'model-commands.sqlite3') as connection:
+        with closing(sqlite3.connect(self.directory / 'model-commands.sqlite3')) as connection, connection:
             connection.execute('UPDATE commands SET request_json=?', (json.dumps(changed),))
-        post = Mock()
+        post = Mock(return_value=Mock(status_code=200, json=Mock(return_value=receipt(self.cmd))))
         with self.assertRaisesRegex(ValueError, 'does not match'):
             self.recover(post)
         post.assert_not_called()
