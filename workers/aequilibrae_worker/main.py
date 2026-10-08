@@ -1074,8 +1074,24 @@ def activitysim_assignment_package(run_id: str) -> str | None:
 
 
 def sb_post_kpi(payload: dict):
-    url = f"{SUPABASE_URL}/rest/v1/model_run_kpis"
-    requests.post(url, headers=HEADERS, json=payload)
+    """Require the retained KPI receipt without retrying an uncertain insert."""
+    try:
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/model_run_kpis",
+            headers=HEADERS, json=payload, timeout=30,
+        )
+        if response.status_code != 201:
+            raise WorkerStateWriteUnconfirmed("Worker KPI insert unconfirmed: HTTP response failed")
+        rows = response.json()
+        if (not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict)
+                or not isinstance(rows[0].get("id"), str) or not rows[0]["id"]):
+            raise WorkerStateWriteUnconfirmed("Worker KPI insert unconfirmed: missing retained record")
+        if any(field not in rows[0] or rows[0][field] != value for field, value in payload.items()):
+            raise WorkerStateWriteUnconfirmed("Worker KPI insert unconfirmed: returned values differ")
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except (requests.RequestException, ValueError, TypeError) as error:
+        raise WorkerStateWriteUnconfirmed("Worker KPI insert unconfirmed: no valid receipt") from error
 
 
 def write_model_run_modeling_evidence(
