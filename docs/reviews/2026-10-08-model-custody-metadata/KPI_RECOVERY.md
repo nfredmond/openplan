@@ -104,3 +104,29 @@ All 80 worker suites pass. Unit `openplan-kpi-client-workers-20261008.service`,
 invocation `349cde41adfb4ed3ad245b2e28320407`, completed at 08:07:39 Pacific on
 October 8 with a 189.4 MiB peak under a 1 GiB cap. No checkout edits occurred
 during the run. Parent application QA remains active and its checkout unchanged.
+
+## Native committed-response loss
+
+The new native recovery proof calls the retained client through a loopback bridge
+to the owned PostgREST gateway. The bridge forwards the first request, waits for
+the database's successful response, then closes the TCP connection without
+returning it. The client propagates uncertainty and leaves its exact command
+pending. A fresh recovery CLI process lists and resends that saved request.
+Two identical POSTs leave one KPI and one private receipt. A second CLI recovery
+and subsequent client reuse read the cached receipt without another request.
+The retained response equals the database receipt.
+
+Baseline, harmless-wrapper and restored controls pass. A client fault that
+swallows the lost response is caught at uncertainty propagation. Returning an
+incorrect cached response is caught after recovery. The proof restores its
+in-process client function and removes candidate database objects and temporary
+gateway/bridge processes. Synthetic fixture rows and private journals remain as
+evidence. No source mutation is left in the checkout.
+
+Private output is in `legacy-kpi-native-cli/` and
+`legacy-kpi-native-controls/` under the proof root. The original baseline run is
+`e031d8fa-92f6-4b18-ae6f-38b422b29379`; its request is
+`5288a7d8-bef6-5fc0-b4af-df07a2c966b6`. These are synthetic proof identities.
+This closes the retained-client lost-response boundary only. Normal worker
+helper/caller adoption, installed migration and upgrade evidence, current stage
+ownership and complete computation recovery remain required.
