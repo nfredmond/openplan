@@ -543,3 +543,47 @@ and hashes are synthetic request data; no actual file or byte provenance is
 claimed. Attempt-owned working files, assessment/publication, complete normal
 poll/push activation and explicit continuation remain unfinished. No scientific
 engine or human acceptance case runs in this proof.
+
+### Attempt-owned workspace allocation and state publication
+
+The bound AequilibraE and ActivitySim workspace helpers now allocate an exclusive
+attempt directory under the full run UUID. Its path includes an installation
+hash, stage UUID and attempt UUID. A durable private `attempt_owner.json` records
+installation, workspace, run, stage, attempt and claim request. Existing attempt
+directories are refused, including partial directories left by interruption.
+No predecessor directory is adopted or deleted. Repeated allocation within the
+same live invocation verifies and returns its owned directory.
+
+Creation and verification walk components through directory descriptors with
+no-follow flags below the administrator-owned configured root. A different or
+linked ownership record is refused. The managed writer checks ownership again
+before later database writes. Bound AequilibraE state publication writes and
+syncs a private temporary file, replaces `state.json` through the verified
+directory descriptor, then syncs the directory. A directory rename cannot send
+that state write to the replacement pathname. The bound writer verifies the
+canonical path again after publication and stops if ownership changed.
+
+Eight new native filesystem/binding tests cover private records, installation
+separation, existing-directory refusal, symlink refusal, changed/hard-linked
+owners, rename during publication, two competing processes and both actual
+worker allocation hooks. All 75 combined filesystem/state/command checks and
+44 ActivitySim tests pass. The previously observed SQLite ResourceWarning
+remains recorded, not repaired.
+
+Harmless and restored controls pass. Six targeted controls fail on reuse,
+symlink traversal, ignored ownership records, pathname-based state redirection,
+cross-run allocation and skipped ownership rechecks. The first attempted rename
+control still opened the destination descriptor before the rename and therefore
+correctly passed. The corrected fault resolves the destination pathname at
+replacement time and fails the intended owned-directory assertion. Results and
+source hashes are retained in `workspace-controls.json`.
+
+These primitives operate on the tested Linux/POSIX filesystem. They do not
+confine arbitrary engine code or same-user host administrators. Native database
+receipt evidence remains separate from this filesystem proof. Predecessor input
+copying, path-specific handoff validation, complete engine write isolation,
+managed assessment/publication and full normal dispatch remain unfinished.
+The normal claim path still does not activate this binding.
+
+The final AequilibraE push-trigger script passes all 38 checks. Local free disk
+space is 81 GiB at this checkpoint; no existing worktree or proof clone is deleted.

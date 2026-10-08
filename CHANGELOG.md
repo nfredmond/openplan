@@ -27,7 +27,10 @@ registration, and receipt failure rolls back the artifact insert. Apply this
 migration before using prepared IDs with managed output commands. Both workers
 now route artifact and KPI registration through the admitted attempt when a
 managed writer is explicitly bound. Normal claim dispatch remains unchanged;
-filesystem ownership and complete managed continuation are still unfinished.
+complete managed continuation is still unfinished. Bound invocations now allocate
+exclusive attempt directories with retained ownership records and descriptor-based
+state publication. They refuse existing attempt directories; predecessor handoff
+and full normal dispatcher activation remain unfinished.
 
 Candidate migration `20261016000020_model_blocked_stage_receipts.sql` adds a
 service-only blocked-stage command with immutable retry receipts. It checks the

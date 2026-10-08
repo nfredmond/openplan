@@ -634,6 +634,13 @@ def validate_run_identity(run_id: str) -> None:
 def create_run_workspace(run_id: str) -> str:
     """Retain each execution separately without deleting predecessor files."""
     validate_run_identity(run_id)
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return str(writer.workspace(ACTIVITYSIM_WORK_DIR, run_id))
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Attempt workspace requires reconciliation") from error
     directory = os.path.join(ACTIVITYSIM_WORK_DIR, run_id)
     os.makedirs(directory, exist_ok=True)
     return tempfile.mkdtemp(prefix="execution-", dir=directory)

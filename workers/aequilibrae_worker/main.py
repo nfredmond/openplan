@@ -6511,7 +6511,11 @@ def process_stage(stage: dict) -> bool:
 def write_run_state(work_dir: str, state: dict) -> None:
     """Stop the stage when publication of its local handoff state is uncertain."""
     import model_run_state
+    import model_attempt_writer
     try:
+        writer = model_attempt_writer.current()
+        if writer is not None:
+            return writer.publish_state(work_dir, state)
         model_run_state.publish(work_dir, state)
     except Exception:
         raise WorkerStateWriteUnconfirmed("Run state publication unconfirmed; inspect the saved state before continuing") from None
@@ -6521,6 +6525,13 @@ def run_work_directory(run_id: str) -> str:
     """Use the complete database identity; never adopt ambiguous legacy scratch."""
     if not isinstance(run_id, str) or str(uuid.UUID(run_id)) != run_id:
         raise ValueError("Model run identity must be a canonical UUID")
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return str(writer.workspace(os.path.join(RUN_WORK_ROOT, "runs"), run_id))
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Attempt workspace requires reconciliation") from error
     return os.path.join(RUN_WORK_ROOT, "runs", run_id)
 
 

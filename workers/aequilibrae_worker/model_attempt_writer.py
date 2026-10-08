@@ -44,6 +44,7 @@ class AttemptWriter:
         self.thread_id = threading.get_ident()
         self.stopped = False
         self.state = None
+        self.files = None
         if context.destination != client.destination(base_url, deployment_id) or not service_key:
             raise ValueError('Managed writer requires its original installation and credential')
         saved = journal.read_existing(self.directory, context.destination, context.claim_request_id)
@@ -70,6 +71,12 @@ class AttemptWriter:
         if journal.pending(self.directory, self.context.destination):
             self.stopped = True
             raise ReconciliationRequired('Pending model command requires reconciliation before later writes')
+        if self.files is not None:
+            try:
+                self.files.verify()
+            except BaseException:
+                self.stopped = True
+                raise
 
     def _read_state(self):
         """Read the claimed stage's actual log before expanding partial patches."""
@@ -143,6 +150,33 @@ class AttemptWriter:
 
     def patch_run(self, run_id: str, payload: dict):
         raise ReconciliationRequired('Managed parent transitions belong to the stage command transaction')
+
+    def workspace(self, root, run_id):
+        self.require_open()
+        try:
+            if run_id != self.context.run_id:
+                raise ValueError('Attempt workspace crosses run scope')
+            from model_attempt_workspace import AttemptWorkspace
+            if self.files is None:
+                self.files = AttemptWorkspace(root, self.context)
+            elif Path(root).resolve() != self.files.root:
+                raise ValueError('Attempt workspace root changed within invocation')
+            self.files.verify()
+            return self.files.path
+        except BaseException:
+            self.stopped = True
+            raise
+
+    def publish_state(self, directory, state):
+        self.require_open()
+        try:
+            if self.files is None or Path(directory) != self.files.path:
+                raise ValueError('State publication requires the owned attempt directory')
+            self.files.publish_state(state)
+            self.files.verify()
+        except BaseException:
+            self.stopped = True
+            raise
 
     def record_artifact(self, payload: dict, *, workspace_id=None, logical_name=None):
         return self._record_output('write_model_attempt_artifact', payload,
