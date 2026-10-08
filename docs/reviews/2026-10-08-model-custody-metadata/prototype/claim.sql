@@ -113,6 +113,22 @@ REVOKE ALL ON FUNCTION public.guard_model_stage_set() FROM PUBLIC,anon,authentic
 CREATE TRIGGER guard_model_stage_set BEFORE INSERT OR UPDATE OR DELETE ON public.model_run_stages
   FOR EACH ROW EXECUTE FUNCTION public.guard_model_stage_set();
 
+-- Enrollment occurs through a claim, never through client-supplied insert flags.
+CREATE FUNCTION public.guard_model_attempt_enrollment() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+BEGIN
+  IF NEW.attempt_managed THEN
+    RAISE EXCEPTION 'New model rows must start without attempt management';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.guard_model_attempt_enrollment() FROM PUBLIC,anon,authenticated,service_role;
+CREATE TRIGGER guard_model_attempt_enrollment BEFORE INSERT ON public.model_runs
+  FOR EACH ROW EXECUTE FUNCTION public.guard_model_attempt_enrollment();
+CREATE TRIGGER guard_model_attempt_enrollment BEFORE INSERT ON public.model_run_stages
+  FOR EACH ROW EXECUTE FUNCTION public.guard_model_attempt_enrollment();
+
 CREATE FUNCTION public.claim_model_stage_attempt(p_request_id uuid, p_stage_id uuid, p_worker_id text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE

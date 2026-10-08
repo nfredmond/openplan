@@ -446,3 +446,18 @@ the unintended rewrite observable. Baseline, harmless and restored cases now
 pass with 49 adverse controls. All 44 contention cases also pass. The installed
 reaper definition remains unchanged after rollback; this is still a prototype,
 not a deployed lifecycle migration.
+
+## Migration preparation and enrollment control
+
+A separate schema worktree prepares the [additive migration candidate](../MIGRATION_CANDIDATE.md).
+New run and stage rows must start unmanaged, including service-role inserts.
+The command claim remains the enrollment path. Native tests detect both direct
+insert bypasses; baseline, harmless and restored cases plus 51 adverse controls
+pass against both the prototype source and the actual migration source. The
+migration inventory passes. Committed upgrade, advisors and normal worker
+activation evidence remain pending.
+
+To exercise the candidate itself in the rollback runner, set
+`OPENPLAN_MODEL_ATTEMPT_MIGRATION` to its SQL path in addition to the explicit
+restore-target container. The runner checks that the new enrollment function
+also disappears after rollback.
