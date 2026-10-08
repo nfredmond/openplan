@@ -12,6 +12,7 @@ from uuid import UUID
 import model_command_journal as journal
 import model_publication_values as publication
 import model_assessment_values as assessment
+import model_legacy_artifact_command as legacy_artifact
 from datetime import datetime
 
 
@@ -174,6 +175,9 @@ def validate_command(command: dict):
     _uuid(command['request_id'])
     args = command['arguments']
     operation = command['operation']
+    if operation == 'record_legacy_model_artifact':
+        legacy_artifact.validate(command)
+        return
     if operation == 'record_legacy_model_assessment':
         assessment.validate(command)
         return
@@ -222,6 +226,11 @@ def _timestamp(value):
 
 
 def checked_receipt(command: dict, receipt: object) -> dict:
+    if command['operation'] == 'record_legacy_model_artifact':
+        try:
+            return legacy_artifact.check_receipt(command, receipt)
+        except (ValueError, TypeError, KeyError, AttributeError):
+            raise DeliveryUnconfirmed('Legacy artifact receipt does not match the prepared command') from None
     if command['operation'] == 'record_legacy_model_assessment':
         try:
             return assessment.check_receipt(command, receipt)
@@ -279,6 +288,8 @@ def checked_receipt(command: dict, receipt: object) -> dict:
 
 def rpc_arguments(command: dict) -> dict:
     args = command['arguments']
+    if command['operation'] == 'record_legacy_model_artifact':
+        return {'p_workspace': args['workspace_id'], 'p_payload': args['payload']}
     if command['operation'] == 'record_legacy_model_assessment':
         return {'p_request': command['request_id'], 'p_payload': args['payload']}
     if command['operation'] == 'publish_legacy_model_evidence':

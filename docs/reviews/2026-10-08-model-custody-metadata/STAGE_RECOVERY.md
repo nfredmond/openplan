@@ -185,3 +185,37 @@ No application database was selected. Evidence lives under
 This proves HTTP access boundaries and exact service retries against a temporary
 candidate. It does not prove a lost response through the retained worker client,
 normal-stage adoption, Storage bytes, full restart recovery or model validity.
+
+
+## Retained artifact client
+
+The retained-command client now recognizes `record_legacy_model_artifact`.
+Preparation keys the command by deployment and the previously prepared artifact
+UUID. A changed payload cannot obtain a different request identity for that
+artifact, even after the original request resolves. Requests retain workspace,
+run, stage and all eight artifact fields. The client requires the matching
+returned fields and an explicit null attempt identity before resolving the
+journal. Canonical JSON comparison preserves distinctions such as boolean versus
+integer metadata. The existing recovery command can inspect and retry this saved
+operation without resuming a model stage.
+
+Four new focused tests pass. They cover stable identity, conflicting saved
+requests, journal retention before transport, uncertain delivery, exact recovery,
+cached responses, changed receipt fields and invalid requests before transport.
+All 18 tests across artifact, assessment preparation/delivery and publication
+client modules pass. Baseline, harmless and restored controls pass; bypassed
+scope validation, bypassed receipt matching, payload-derived request identity
+and bypassed size validation each fail a targeted assertion. Private results are
+`model-command-client-20261008-proof/legacy-artifact-client-controls.json`.
+
+An initial test command used the wrong relative file path and did not create the
+test file. Correcting the working-directory-relative path resolved it. The first
+scope mutation reached transport and produced an error rather than the intended
+assertion. The invalid-command test now records the exception and explicitly
+asserts that transport was never called; the restored and adverse controls pass.
+
+Transport is mocked in these tests. Native committed-write response loss and
+fresh-process recovery remain unproved for this artifact operation. The normal
+primary artifact registration still uses its existing writer, and the database
+candidate remains outside application migrations. Full worker regression after
+this client addition remains pending.
