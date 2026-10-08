@@ -12,7 +12,12 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
   const [geographyId, setGeographyId] = useState(geographies[0]?.[0] ?? "");
   const [method, setMethod] = useState<"aequilibrae" | "activitysim">("aequilibrae");
   const selected = records.find((record) => record.geographyId === geographyId && record.method === method) ?? null;
-  if (!study) return null;
+  if (!study) return (
+    <section aria-label="Distributed work loading development checkpoint" className="module-section-surface mb-6" role="status">
+      <h2 className="module-section-title">Development evidence unavailable</h2>
+      <p className="module-section-description mt-3">The published work-trip loading checkpoint could not be read and verified. Its results are unavailable, not zero. Reload this page to retry. If the problem continues, ask your administrator to check the installed study files. No model accuracy conclusion follows.</p>
+    </section>
+  );
   return (
     <section aria-label="Distributed work loading development checkpoint" className="module-section-surface mb-6" data-testid="published-distributed-work-loading">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -53,7 +58,7 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
             <div><dt className="text-muted-foreground">Work trips distributed</dt><dd className="font-semibold">{selected.distributedWorkTrips.toLocaleString("en-US", { maximumFractionDigits: 0 })}</dd></div>
             <div><dt className="text-muted-foreground">Work trips retained</dt><dd className="font-semibold">{selected.retainedWorkTrips.toLocaleString("en-US", { maximumFractionDigits: 0 })}</dd></div>
           </dl>
-          <p className="mt-3 text-xs text-muted-foreground">Observed links loaded: {selected.baselineCoverage.loaded ?? 0} before, {selected.candidateCoverage.loaded ?? 0} after. {selected.advanced ? "Development gate met; no default changed." : "County-method candidate failed and was retired."}</p>
+          <p className="mt-3 text-xs text-muted-foreground">Observed links loaded: {selected.baselineCoverage.loaded} before, {selected.candidateCoverage.loaded} after. {selected.advanced ? "Development gate met; no default changed." : "County-method candidate failed and was retired."}</p>
           <dl className="mt-3 min-w-0 space-y-2 text-xs">
             <div><dt className="font-semibold">Work-loading file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-distributed-work-loading-input-v1.json</dd><dt className="font-semibold">Work-loading file SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.inputSha256}</dd></div>
             <div><dt className="font-semibold">Before-output audit file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-pre-output-audit-v1.json</dd><dt className="font-semibold">Before-output audit SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.auditSha256}</dd></div>

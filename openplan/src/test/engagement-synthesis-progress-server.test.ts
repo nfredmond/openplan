@@ -32,6 +32,14 @@ beforeEach(() => {
 });
 
 describe("compact progress from original-output reconstruction", () => {
+  it.each(["context", "thematic"] as const)("carries the reconstructed %s resource assessment without a write", async stage => {
+    const assessment = { taskIndex: 1, requiredTaskBytes: 68699, taskByteLimit: 65536 };
+    mocks[stage].mockResolvedValue({ ...continuation, resourceAssessment: assessment });
+    expect((await run(stage)).resourceAssessment).toEqual(assessment);
+    expect(mocks.request).toHaveBeenCalledTimes(2);
+    expect(service.rpc).not.toHaveBeenCalled();
+  });
+
   it.each(["segment", "context", "thematic"] as const)("brackets %s history with current native access and omits private text", async stage => {
     const result = await run(stage), reader = mocks[stage];
     expect(mocks.request).toHaveBeenCalledTimes(2);

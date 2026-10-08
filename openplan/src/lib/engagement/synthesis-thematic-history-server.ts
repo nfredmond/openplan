@@ -51,7 +51,7 @@ export async function loadSynthesisThematicHistory(client: Pick<SupabaseClient, 
       throughSequence: null, status: "inputs_not_sealed" as const, storedFrameCount: 0, verifiedTaskCount: 0, entries: [] };
     const canonical = JSON.stringify(manifest);
     return { request: inputs.request, plan: null, entries: [], manifest, canonical, sha256: digest(canonical),
-      interpretation: "machine_unreviewed" as const, finalOutputText: null, proposal: null };
+      resourceAssessment: null, interpretation: "machine_unreviewed" as const, finalOutputText: null, proposal: null };
   }
   return replaySynthesisThematicHistory(service, args, inputs, async (throughSequence, afterTaskIndex) => {
     return await client.rpc("read_engagement_synthesis_generation_selection_history", { p_campaign: scope.campaignId,
@@ -189,6 +189,12 @@ async function replaySynthesisThematicHistory(service: Pick<SupabaseClient, "fro
     entry.status = "verified"; entry.resultSha256 = entry.result.sha256; replayed++;
     predecessor = { attemptId: attempt.id, selectionId: selected!.receipt.id, captureSha256: output.capture_sha256, resultSha256: entry.result.sha256 };
   }
+  // Assess only the next task after the verified replay prefix. This is a
+  // resource measurement, separate from selections, attempts and worker liveness.
+  const nextResourceTask = inputs.preparationStatus === "sealed" ? processor.next() : null;
+  const resourceAssessment = nextResourceTask?.status === "resource_limit"
+    ? { taskIndex: nextResourceTask.taskIndex, requiredTaskBytes: nextResourceTask.requiredTaskBytes,
+      taskByteLimit: nextResourceTask.taskByteLimit } : null;
   const current = await recheck();
   const status = inputs.preparationStatus !== "sealed" ? inputs.preparationStatus : replayed === plan.header.taskCount ? "proposal_complete" : "incomplete";
   const manifest = { schemaVersion: 1, purpose: "private_synthesis_thematic_history", ...scope, thematicRequestSha256: request.state.thematic.thematicSha256,
@@ -198,7 +204,7 @@ async function replaySynthesisThematicHistory(service: Pick<SupabaseClient, "fro
   const completion = processor.next();
   if (status === "proposal_complete" && completion.status !== "proposal_complete") return differs();
   const canonical = JSON.stringify(manifest);
-  return { request: current, plan, entries, manifest, canonical, sha256: digest(canonical),
+  return { request: current, plan, entries, manifest, canonical, sha256: digest(canonical), resourceAssessment,
     interpretation: "machine_unreviewed" as const, finalOutputText: status === "proposal_complete" ? entries.at(-1)!.capture!.capture.outputText : null,
     proposal: status === "proposal_complete" && completion.status === "proposal_complete" ? completion.proposal : null };
 }

@@ -10,6 +10,16 @@ const original = { schemaVersion: 1, ...scope, checkedAt: "2026-10-07T01:00:00Z"
   counts: [{ disposition: "validated_output", count: 1 }, { disposition: "awaiting_result", count: 1 }, { disposition: "not_started", count: 1 }] };
 
 describe("private synthesis progress transport", () => {
+  it.each(["context", "thematic"] as const)("validates a separate %s resource assessment", stage => {
+    const next = { ...original, stage, interpretation: "machine_unreviewed", counts: [{ disposition: "unselected", count: 3 }],
+      resourceAssessment: { taskIndex: 0, requiredTaskBytes: 68699, taskByteLimit: 65536 } };
+    expect(verifySynthesisProgress(next, { ...scope, stage })).toEqual(next);
+    for (const patch of [{ taskIndex: 3 }, { requiredTaskBytes: 65536 }, { requiredTaskBytes: 65535 }, { taskByteLimit: 0 }, { requiredTaskBytes: 1.5 }]) {
+      expect(() => verifySynthesisProgress({ ...next, resourceAssessment: { ...next.resourceAssessment, ...patch } }, { ...scope, stage })).toThrow();
+    }
+    expect(() => verifySynthesisProgress({ ...original, resourceAssessment: next.resourceAssessment }, scope)).toThrow(/resource assessment/);
+  });
+
   it("keeps incomplete work distinct from successful output and no selected attempt", () => {
     expect(verifySynthesisProgress(original, scope)).toEqual(original);
   });

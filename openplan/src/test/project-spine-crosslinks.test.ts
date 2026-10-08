@@ -37,6 +37,7 @@ const baseInput = {
     awardRiskCount: 0,
   },
   engagement: {
+    campaignCount: 1,
     label: "Active",
     itemCount: 9,
     handoffReadyCount: 4,
@@ -125,6 +126,7 @@ describe("buildProjectSpineCrosslinkSummary", () => {
         unfundedAfterLikelyAmount: 0,
       },
       engagement: {
+        campaignCount: 0,
         label: "Not linked",
         itemCount: 0,
         handoffReadyCount: 0,
@@ -263,6 +265,7 @@ describe("buildProjectSpineCrosslinkSummary", () => {
         awardRiskCount: 0,
       },
       engagement: {
+        campaignCount: 0,
         label: "Not linked",
         itemCount: 0,
         handoffReadyCount: 0,
@@ -628,5 +631,38 @@ describe("buildProjectSpineCrosslinkSummary", () => {
       expect(geography?.headline).toMatch(/this row opens model validation for this project/i);
       expect(geography?.href).toBe("/county-runs?projectId=project-1");
     });
+  });
+});
+
+
+describe("linked campaigns and retained report evidence", () => {
+  it("keeps linked campaigns visible without inventing retained report items", () => {
+    const row = buildProjectSpineCrosslinkSummary({ ...baseInput,
+      engagement: { campaignCount: 2, label: "Not linked", itemCount: 0, handoffReadyCount: 0 },
+    }).rows.find(row => row.id === "engagement_evidence")!;
+    expect(row.readiness).toBe("attention");
+    expect(row.statusLabel).toBe("Report evidence not retained");
+    expect(row.detail).toBe("2 recent linked campaigns; 0/0 retained report items ready for handoff");
+    expect(row.nextAction).toContain("Review the linked campaigns");
+    expect(row.nextAction).not.toContain("Create or attach");
+  });
+
+  it("retains historical report evidence even when current campaign coverage is empty", () => {
+    const row = buildProjectSpineCrosslinkSummary({ ...baseInput,
+      engagement: { campaignCount: 0, label: "Reviewed", itemCount: 2, handoffReadyCount: 2 },
+    }).rows.find(row => row.id === "engagement_evidence")!;
+    expect(row.readiness).toBe("ready");
+    expect(row.detail).toBe("0 recent linked campaigns; 2/2 retained report items ready for handoff");
+    expect(row.headline).toContain("retained report context");
+    expect(row.evidence).toContain("not current campaign intake or public release");
+  });
+
+  it("does not turn failed combined reads into absent engagement", () => {
+    const row = buildProjectSpineCrosslinkSummary({ ...baseInput,
+      engagement: { campaignCount: 0, label: "Not linked", itemCount: 0, handoffReadyCount: 0 },
+      unreadable: { engagement_evidence: true },
+    }).rows.find(row => row.id === "engagement_evidence")!;
+    expect(row.sourceState).toBe("unreadable");
+    expect(row.statusLabel).not.toBe("No campaign or report evidence");
   });
 });

@@ -1,10 +1,65 @@
 // @vitest-environment node
+import * as continuation from "@/lib/engagement/synthesis-thematic-continuation";
 import { randomUUID } from "node:crypto";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { synthesisThematicHistoryFixture as fixture } from "./fixtures/engagement/synthesis-thematic-history";
 import { sourceHash as hash } from "./fixtures/engagement/synthesis-source";
 
+afterEach(() => vi.restoreAllMocks());
+
 describe("current-staff thematic original proposal history", () => {
+  it("does not use output with a changed predecessor to assess later task bytes", async () => {
+    const f = await fixture(), second = f.history[1];
+    second.output.uncertainties.push(...Array.from({ length: 18 }, () => "😀".repeat(1900)));
+    second.recapture();
+    const valid = await f.load(2);
+    expect(valid.resourceAssessment?.taskIndex).toBe(2);
+    second.input.predecessor_selection_id = randomUUID();
+    const changed = await f.load(2);
+    expect(changed.entries[1].status).toBe("predecessor_changed");
+    expect(changed.resourceAssessment).toBeNull();
+    expect(changed.entries[1].captureSha256).toBe(second.outputRow.capture_sha256);
+  });
+
+  it("measures retained Unicode output before any next attempt and drops it when its selection is cleared", async () => {
+    const f = await fixture(), first = f.history[0];
+    first.output.uncertainties = Array.from({ length: 20 }, () => "😀".repeat(1900));
+    first.recapture();
+    const value = await f.load(1);
+    expect(value.entries[0].status).toBe("verified");
+    expect(value.entries[1].status).toBe("unselected");
+    expect(value.resourceAssessment?.taskIndex).toBe(1);
+    expect(value.resourceAssessment?.requiredTaskBytes).toBeGreaterThan(value.resourceAssessment?.taskByteLimit ?? Infinity);
+    expect(value.entries[0].capture?.capture.outputText).toBe(JSON.stringify(first.output));
+    Object.assign(first.selection, { attemptId: null, origin: "staff", authorizationId: null, previousSelectionId: randomUUID() });
+    const cleared = await f.load(1);
+    expect(cleared.entries[0].status).toBe("cleared");
+    expect(cleared.resourceAssessment).toBeNull();
+    expect(f.serviceRpc).not.toHaveBeenCalled();
+  });
+
+  it.each([0, 1])("assesses the next oversized task after %i selected outputs without replacing attempt state", async selectedCount => {
+    const f = await fixture();
+    const create = continuation.replaySynthesisThematicContinuation;
+    vi.spyOn(continuation, "replaySynthesisThematicContinuation").mockImplementation((...args) => {
+      const processor = create(...args);
+      return { ...processor, next: () => {
+        const next = processor.next();
+        return next.status === "ready" && next.taskIndex === selectedCount
+          ? { status: "resource_limit" as const, taskIndex: selectedCount, requiredTaskBytes: 68699,
+            taskByteLimit: 65536, previousResultSha256: next.previousResultSha256, stage: next.stage }
+          : next;
+      } };
+    });
+    const value = await f.load(selectedCount);
+    expect(value.resourceAssessment).toEqual({ taskIndex: selectedCount, requiredTaskBytes: 68699, taskByteLimit: 65536 });
+    expect(value.entries[selectedCount].status).toBe("unselected");
+    expect(value.entries[selectedCount].attemptId).toBeNull();
+    expect(value.manifest.entries[selectedCount]).not.toHaveProperty("resourceAssessment");
+    expect(value.sha256).toBe(hash(value.canonical));
+    expect(f.serviceRpc).not.toHaveBeenCalled();
+  });
+
   it("replays every original frame and final proposal without current execution scope", async () => {
     const f = await fixture(), pending = f.load(); await expect(pending).resolves.toMatchObject({manifest:{status:"proposal_complete"}}); const result = await pending;
     expect(result.manifest.status).toBe("proposal_complete"); expect(result.manifest.verifiedTaskCount).toBe(f.plan.header.taskCount);

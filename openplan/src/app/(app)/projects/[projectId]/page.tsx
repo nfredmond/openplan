@@ -536,6 +536,7 @@ export default async function ProjectDetailPage({
   // The loader owns the coverage read, its deploy-window tolerance, and the
   // disclosure of a real coverage failure — see campaign-projects.ts.
   const engagementCampaignsResult = await loadEngagementCampaignsCoveringProject(supabase, project.id, reads);
+  const engagementCoverageReadFailed = reads.all.some(failure => failure.label === "campaigns covering this project");
   const engagementCampaignLane = laneOutcome(reads, "engagement campaigns for this project", engagementCampaignsResult);
   const engagementCampaigns = engagementCampaignLane.rows as Array<{
         id: string;
@@ -1087,6 +1088,7 @@ export default async function ProjectDetailPage({
       awardRiskCount: fundingStackSummary.awardRiskCount,
     },
     engagement: {
+      campaignCount: engagementCampaigns.length,
       label: strongestEngagementEvidence?.engagementLabel ?? "Not linked",
       itemCount: strongestEngagementEvidence?.engagementItemCount ?? 0,
       handoffReadyCount: strongestEngagementEvidence?.engagementReadyForHandoffCount ?? 0,
@@ -1115,7 +1117,7 @@ export default async function ProjectDetailPage({
       rtp_packets: lanePendingSchema.rtp || lanePendingSchema.reports,
       scenario_sets: scenarioSetsPending || scenarioEntriesPending,
       funding_profile: lanePendingSchema.grants,
-      engagement_evidence: lanePendingSchema.reports,
+      engagement_evidence: lanePendingSchema.reports || engagementCampaignLane.pending,
       analysis_modeling: lanePendingSchema.analysis || lanePendingSchema.reports,
       safety_evidence: safetyIngestsPending,
       aerial_evidence: lanePendingSchema.aerial,
@@ -1128,7 +1130,7 @@ export default async function ProjectDetailPage({
       rtp_packets: laneUnreadable.rtp || laneUnreadable.reports,
       scenario_sets: scenarioSetLane.failed || scenarioEntryLane.failed,
       funding_profile: laneUnreadable.grants,
-      engagement_evidence: laneUnreadable.reports,
+      engagement_evidence: laneUnreadable.reports || engagementCampaignLane.failed || engagementCoverageReadFailed,
       analysis_modeling: laneUnreadable.analysis,
       safety_evidence: safetyLane.failed,
       aerial_evidence: laneUnreadable.aerial,

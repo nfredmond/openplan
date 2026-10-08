@@ -89,6 +89,11 @@ function Progress({ userId, workspaceId, campaignId, requestId, actorId, sourceI
             <dt className="min-w-0 break-words">{taskLabels[row.disposition]}</dt><dd>{row.count.toLocaleString("en-US")}</dd>
           </div>)}</dl>
         </>}
+        {summary.resourceAssessment ? <section aria-label="Continuation task limit" className="space-y-2 text-sm">
+          <h5 className="font-semibold">Next continuation exceeds its saved task limit</h5>
+          <p>Task {summary.resourceAssessment.taskIndex + 1} requires {summary.resourceAssessment.requiredTaskBytes.toLocaleString("en-US")} bytes. Its saved limit is {summary.resourceAssessment.taskByteLimit.toLocaleString("en-US")} bytes.</p>
+          <p className="max-w-prose">This assessment uses saved source material and verified earlier results. It does not establish whether a provider call occurred. Preserve the original request and inspect saved results before preparing a separate request with a larger task limit and separate execution permission. Do not shorten source material to fit.</p>
+        </section> : null}
         <p className="max-w-prose text-sm text-muted-foreground">Output checks establish retained bytes and required structure. They do not establish meaning, representative support, staff approval or publication.</p>
         <details className="text-sm"><summary className="cursor-pointer py-1">Original selection reference</summary>
           <dl className="mt-2 space-y-1 break-all"><dt>Request</dt><dd>{requestId}</dd>

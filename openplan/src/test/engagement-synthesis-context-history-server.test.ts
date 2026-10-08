@@ -15,6 +15,58 @@ function remove(f: Fixture, table: string, attemptId: unknown) {
 afterEach(() => vi.restoreAllMocks());
 
 describe("current-staff historical context execution", () => {
+  it("does not use output with a changed predecessor to assess later task bytes", async () => {
+    const f = fixture(), second = f.history[1];
+    second.output.uncertainties.push(...Array.from({ length: 18 }, () => "😀".repeat(1900)));
+    second.recapture();
+    const valid = await load(f, 2);
+    expect(valid.resourceAssessment?.taskIndex).toBe(2);
+    second.input.predecessor_selection_id = randomUUID();
+    const changed = await load(f, 2);
+    expect(changed.entries[1].status).toBe("predecessor_changed");
+    expect(changed.resourceAssessment).toBeNull();
+    expect(changed.entries[1].captureSha256).toBe(second.outputRow.capture_sha256);
+  });
+
+  it("measures retained Unicode output before any next attempt and drops it when its selection is cleared", async () => {
+    const f = fixture(), first = f.history[0];
+    first.output.uncertainties = Array.from({ length: 20 }, () => "😀".repeat(1900));
+    first.recapture();
+    const value = await load(f, 1);
+    expect(value.entries[0].status).toBe("verified");
+    expect(value.entries[1].status).toBe("unselected");
+    expect(value.resourceAssessment?.taskIndex).toBe(1);
+    expect(value.resourceAssessment?.requiredTaskBytes).toBeGreaterThan(value.resourceAssessment?.taskByteLimit ?? Infinity);
+    expect(value.entries[0].capture?.capture.outputText).toBe(JSON.stringify(first.output));
+    Object.assign(first.selection, { attemptId: null, origin: "staff", authorizationId: null, previousSelectionId: randomUUID() });
+    const cleared = await load(f, 1);
+    expect(cleared.entries[0].status).toBe("cleared");
+    expect(cleared.resourceAssessment).toBeNull();
+    expect(f.serviceRpc).not.toHaveBeenCalled();
+  });
+
+  it.each([0, 1])("assesses the next oversized task after %i selected outputs without replacing attempt state", async selectedCount => {
+    const f = fixture();
+    const create = continuation.createSynthesisContextContinuation;
+    vi.spyOn(continuation, "createSynthesisContextContinuation").mockImplementation((...args) => {
+      const processor = create(...args);
+      return { ...processor, next: () => {
+        const next = processor.next();
+        return next.status === "ready" && next.frameIndex === selectedCount
+          ? { status: "resource_limit" as const, frameIndex: selectedCount, requiredTaskBytes: 68699,
+            taskByteLimit: 65536, previousResultSha256: next.previousResultSha256 }
+          : next;
+      } };
+    });
+    const value = await load(f, selectedCount);
+    expect(value.resourceAssessment).toEqual({ taskIndex: selectedCount, requiredTaskBytes: 68699, taskByteLimit: 65536 });
+    expect(value.entries[selectedCount].status).toBe("unselected");
+    expect(value.entries[selectedCount].attemptId).toBeNull();
+    expect(value.manifest.entries[selectedCount]).not.toHaveProperty("resourceAssessment");
+    expect(value.sha256).toBe(hash(value.canonical));
+    expect(f.serviceRpc).not.toHaveBeenCalled();
+  });
+
   it("retains selection reasons at the native Unicode character limit", async () => {
     const f = fixture(); f.history[0].selection.reason = "😀".repeat(4000);
     expect((await load(f)).entries[0].selection?.receipt.reason).toBe(f.history[0].selection.reason);

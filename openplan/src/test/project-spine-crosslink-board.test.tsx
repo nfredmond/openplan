@@ -52,6 +52,7 @@ const emptyInput: ProjectSpineCrosslinkInput = {
     awardRiskCount: 0,
   },
   engagement: {
+    campaignCount: 0,
     label: "Not linked",
     itemCount: 0,
     handoffReadyCount: 0,

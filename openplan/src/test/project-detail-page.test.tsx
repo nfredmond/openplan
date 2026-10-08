@@ -126,7 +126,7 @@ const engagementCampaignsSelectMock = vi.fn(() => ({
 
 // The coverage join itself: no rows by default, so the lane behaves exactly
 // as it did when campaigns only carried a lead.
-const campaignProjectsEqMock = vi.fn(async () => ({ data: [], error: null }));
+const campaignProjectsEqMock = vi.fn<() => Promise<{ data: Array<{ campaign_id: string }> | null; error: { message: string } | null }>>(async () => ({ data: [], error: null }));
 const campaignProjectsSelectMock = vi.fn(() => ({ eq: campaignProjectsEqMock }));
 
 const engagementItemsLimitMock = vi.fn();
@@ -753,6 +753,7 @@ describe("ProjectDetailPage", () => {
       error: null,
     });
     reportRunsInMock.mockResolvedValue({ data: [], error: null });
+    campaignProjectsEqMock.mockResolvedValue({ data: [], error: null });
     engagementCampaignsLimitMock.mockResolvedValue({ data: [], error: null });
     engagementItemsLimitMock.mockResolvedValue({ data: [], error: null });
     stageGateLimitMock.mockResolvedValue({ data: [], error: null });
@@ -1233,7 +1234,7 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByText(/Moderation\/handoff pending/i)).toBeInTheDocument();
     expect(screen.getByText(/Source context linked/i)).toBeInTheDocument();
     expect(screen.getAllByText(/No aerial evidence/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/4\/9 items ready for report handoff/i)).toBeInTheDocument();
+    expect(screen.getByText(/4\/9 retained report items ready for handoff/i)).toBeInTheDocument();
     expect(screen.getByText(/Screening\/source-context posture only/i)).toBeInTheDocument();
     expect(screen.getByText("Continue this pilot story")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute(
@@ -1896,6 +1897,42 @@ describe("ProjectDetailPage", () => {
         .map((node) => node.closest("a"))
         .find((node): node is HTMLAnchorElement => Boolean(node)) as HTMLElement;
     }
+
+    it("keeps a linked campaign visible before any report artifact exists", async () => {
+      reportArtifactsOrderMock.mockResolvedValue({ data: [], error: null });
+      engagementCampaignsLimitMock.mockResolvedValue({ data: [{
+        id: "campaign-linked", title: "Linked consultation", status: "draft",
+        created_at: "2026-03-28T18:00:00.000Z", updated_at: "2026-03-28T18:00:00.000Z",
+      }], error: null });
+      await renderPage();
+      const row = crosslinkRow("Engagement evidence");
+      expect(within(row).getByText("Report evidence not retained")).toBeInTheDocument();
+      expect(within(row).getByText("1 recent linked campaign; 0/0 retained report items ready for handoff")).toBeInTheDocument();
+      expect(within(row).queryByText(/Create or attach/)).toBeNull();
+      expect(engagementCampaignsSelectMock).toHaveBeenCalledWith("id, title, status, updated_at, created_at");
+    });
+
+    it("keeps a failed coverage join unknown even when the lead-campaign read succeeds", async () => {
+      reportArtifactsOrderMock.mockResolvedValue({ data: [], error: null });
+      campaignProjectsEqMock.mockResolvedValue({ data: null, error: { message: "coverage join denied" } });
+      await renderPage();
+      const row = crosslinkRow("Engagement evidence");
+      expect(within(row).getByText("Could not be read")).toBeInTheDocument();
+      expect(within(row).queryByText("No campaign or report evidence")).toBeNull();
+      expect(campaignProjectsSelectMock).toHaveBeenCalledWith("campaign_id");
+      expect(campaignProjectsEqMock).toHaveBeenCalledWith("project_id", "project-1");
+    });
+
+    it("keeps failed campaign coverage unknown on the evidence board", async () => {
+      reportArtifactsOrderMock.mockResolvedValue({ data: [], error: null });
+      engagementCampaignsLimitMock.mockResolvedValue({ data: null,
+        error: { code: "42501", message: "campaign coverage denied" } });
+      await renderPage();
+      const row = crosslinkRow("Engagement evidence");
+      expect(within(row).getByText("Could not be read")).toBeInTheDocument();
+      expect(within(row).queryByText("No campaign or report evidence")).toBeNull();
+      expect(within(row).queryByText(/0 recent linked campaigns/)).toBeNull();
+    });
 
     it("names the crash-ingest lane in the banner AND marks it unavailable on the board", async () => {
       safetyIngestsLimitMock.mockResolvedValue({
