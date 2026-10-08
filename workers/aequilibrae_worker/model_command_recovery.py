@@ -27,7 +27,8 @@ def pending_summaries(directory, *, base_url, deployment_id):
     """Expose command identities without credentials, paths or scientific payloads."""
     return [{'request_id': saved['command']['request_id'], 'operation': saved['command']['operation'],
              'run_id': saved['command']['arguments']['run_id'],
-             'stage_id': saved['command']['arguments']['stage_id']}
+             'stage_id': saved['command']['arguments'].get('stage_id'),
+             **({'track': saved['command']['arguments']['track']} if saved['command']['operation'] == 'publish_legacy_model_evidence' else {})}
             for saved in _checked_records(directory, base_url, deployment_id)]
 
 

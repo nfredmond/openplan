@@ -18,7 +18,7 @@ import model_command_journal as journal
 from isolated_postgrest import gateway
 
 
-def check():
+def _check(publication=False):
     meta = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
     if not re.fullmatch(r'openplan_attempt_cli_[0-9a-f]{32}', meta['database']) or meta['container'] != 'supabase_db_openplan-restore-target-2026091050':
         raise ValueError('Select the named owned proof database')
@@ -35,6 +35,7 @@ def check():
         return result.stdout.strip()
 
     sql(f"INSERT INTO public.model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by) SELECT '{run}',workspace_id,model_id,'aequilibrae','queued','Synthetic CLI recovery',created_by FROM public.model_runs WHERE id='{fixture}'; INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order) VALUES('{stage}','{run}','Synthetic CLI recovery','queued',1);")
+    operation = "publish_legacy_model_evidence" if publication else "claim_model_stage_attempt"
     posts, errors = [], []
     with gateway('public', database=meta['database']) as connection:
         token = connection['service_token']
@@ -45,14 +46,14 @@ def check():
 
             def do_POST(self):
                 try:
-                    if self.path != '/rest/v1/rpc/claim_model_stage_attempt' or self.headers.get('Authorization') != 'Bearer ' + token:
+                    if self.path != '/rest/v1/rpc/' + operation or self.headers.get('Authorization') != 'Bearer ' + token:
                         raise AssertionError('Unexpected proof route or credential')
                     length = int(self.headers['Content-Length'])
                     if not 0 < length < 65536:
                         raise AssertionError('Unexpected proof body size')
                     body = json.loads(self.rfile.read(length))
                     posts.append(body)
-                    with requests.post(connection['url'] + '/rpc/claim_model_stage_attempt', headers={'Authorization': 'Bearer ' + token}, json=body, timeout=15) as response:
+                    with requests.post(connection['url'] + '/rpc/' + operation, headers={'Authorization': 'Bearer ' + token}, json=body, timeout=15) as response:
                         if response.status_code != 200:
                             raise AssertionError('Native claim was not confirmed')
                         data = response.content
@@ -74,7 +75,16 @@ def check():
         thread.start()
         try:
             base = 'http://127.0.0.1:' + str(server.server_port)
-            command = {'request_id': request, 'destination': client.destination(base, meta['database']), 'operation': 'claim_model_stage_attempt', 'arguments': {'run_id': run, 'stage_id': stage, 'worker_id': 'synthetic-cli-proof'}}
+            arguments = {'run_id': run, 'stage_id': stage, 'worker_id': 'synthetic-cli-proof'}
+            if publication:
+                from worker_import_for_tests import import_worker_main
+                worker = import_worker_main()
+                workspace = str(uuid.UUID(sql(f"SELECT workspace_id FROM public.model_runs WHERE id='{run}';")))
+                prior = json.loads(sql(f"SELECT public.read_legacy_model_evidence('{workspace}','{run}','behavioral_demand');"))
+                validation = {'stations_matched':1,'median_ape':20,'max_ape':20,'validation_rules_version':4,'model_validation_assessment':{'scientific_outcome':'inconclusive'}}
+                payload = worker.build_model_run_modeling_evidence(run,workspace,validation,track='behavioral_demand')
+                arguments = {'run_id':run,'workspace_id':workspace,'track':'behavioral_demand','expected':prior,'payload':payload}
+            command = {'request_id': request, 'destination': client.destination(base, meta['database']), 'operation': operation, 'arguments': arguments}
             try:
                 client.deliver(directory, command, base_url=base, deployment_id=meta['database'], service_key=token)
             except client.DeliveryUnconfirmed:
@@ -96,7 +106,14 @@ def check():
                 raise AssertionError('CLI recovery summary differs')
             if invoke(['--list-pending']) != {'pending': []} or errors or len(posts) != 2 or posts[0] != posts[1]:
                 raise AssertionError('CLI changed the command or sent a third POST')
-            if sql(f"SELECT count(*) FROM public.model_stage_attempts WHERE run_id='{run}';") != '1' or sql(f"SELECT count(*) FROM public.model_stage_claim_receipts WHERE request_id='{request}';") != '1':
+            if publication:
+                if sql(f"SELECT count(*) FROM public.model_evidence_publication_receipts WHERE request_id='{request}';") != '1':
+                    raise AssertionError('CLI recovery duplicated publication')
+                if sql(f"SELECT response_payload->'evidence'=public.read_legacy_model_evidence('{workspace}','{run}','behavioral_demand') FROM public.model_evidence_publication_receipts WHERE request_id='{request}';") != 't':
+                    raise AssertionError('Recovered publication receipt differs from stored evidence')
+                if sql(f"SELECT count(*) FROM public.modeling_validation_results WHERE model_run_id='{run}';") != '2':
+                    raise AssertionError('Publication metric set differs')
+            elif sql(f"SELECT count(*) FROM public.model_stage_attempts WHERE run_id='{run}';") != '1' or sql(f"SELECT count(*) FROM public.model_stage_claim_receipts WHERE request_id='{request}';") != '1':
                 raise AssertionError('CLI recovery duplicated the native claim')
         finally:
             server.shutdown()
@@ -104,10 +121,43 @@ def check():
             thread.join(timeout=5)
             if thread.is_alive():
                 raise RuntimeError('Owned recovery bridge did not stop')
-    result = {'run_id': run, 'request_id': request, 'http_posts': 2, 'lost_tcp_reply_after_commit': True, 'fresh_cli_recovered': True, 'cached_cli_sent_no_request': True, 'retained_attempts': 1, 'retained_claim_receipts': 1, 'model_resumed': False, 'scope': 'Synthetic claim and operator CLI, installed migration, actual PostgREST. No model execution, file reuse, or scientific acceptance.'}
+    result = {'run_id': run, 'request_id': request, 'http_posts': 2, 'lost_tcp_reply_after_commit': True, 'fresh_cli_recovered': True, 'cached_cli_sent_no_request': True, 'retained_attempts': None if publication else 1, 'retained_claim_receipts': None if publication else 1, 'retained_publication_receipts': 1 if publication else None, 'operation': operation, 'model_resumed': False, 'scope': 'Synthetic command and fresh operator CLI, actual PostgREST and dropped TCP response after commit. Publication mode uses temporary candidate objects and the actual worker payload builder; claim mode uses installed migration. No normal dispatcher, model execution, file reuse or scientific acceptance.'}
     (output / 'recovery-cli.json').write_text(json.dumps(result, indent=2) + '\n')
     return result
 
 
+def check(publication=False):
+    if not publication:
+        return _check()
+    meta = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
+    if not re.fullmatch(r'openplan_attempt_cli_[0-9a-f]{32}', meta['database']) or meta['container'] != 'supabase_db_openplan-restore-target-2026091050':
+        raise ValueError('Select the named owned proof database')
+    def sql(statement):
+        result = subprocess.run(['docker','exec','-i',meta['container'],'psql','-X','-qAt','-U','postgres','-d',meta['database'],'-v','ON_ERROR_STOP=1'],input=statement,text=True,capture_output=True,timeout=25)
+        if result.returncode:
+            raise RuntimeError('Owned publication proof database operation failed')
+        return result.stdout.strip()
+    if sql("SELECT to_regclass('public.model_evidence_publication_receipts') IS NULL AND to_regclass('public.model_evidence_publication_context') IS NULL;") != 't':
+        raise RuntimeError('Candidate proof objects already exist; leave them unchanged')
+    sql('BEGIN;\n'+Path(__file__).with_name('evidence-publication.sql').read_text()+'\nCOMMIT;')
+    try:
+        return _check(publication=True)
+    finally:
+        sql("""BEGIN;
+DROP TRIGGER retained_model_evidence ON public.modeling_claim_decisions;
+DROP TRIGGER retained_model_evidence ON public.modeling_validation_results;
+DROP FUNCTION public.guard_retained_model_evidence();
+DROP FUNCTION public.publish_legacy_model_evidence(uuid,uuid,uuid,text,jsonb,jsonb);
+DROP FUNCTION public.read_legacy_model_evidence(uuid,uuid,text);
+DROP TABLE public.model_evidence_publication_context;
+DROP TABLE public.model_evidence_publication_receipts;
+COMMIT;""")
+        if sql("SELECT to_regclass('public.model_evidence_publication_receipts') IS NULL;") != 't':
+            raise AssertionError('Publication proof cleanup failed')
+
+
 if __name__ == '__main__':
-    print(json.dumps(check(), indent=2))
+    import argparse
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--publication',action='store_true')
+    print(json.dumps(check(publication=parser.parse_args().publication), indent=2))

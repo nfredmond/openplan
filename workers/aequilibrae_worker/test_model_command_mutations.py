@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parent
-FILES = ('model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py', 'test_model_command_ownership.py', 'model_command_recovery.py', 'test_model_command_recovery.py')
+FILES = ('model_receipt_values.py', 'model_publication_values.py', 'test_model_publication_client.py', 'model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py', 'test_model_command_ownership.py', 'model_command_recovery.py', 'test_model_command_recovery.py')
 
 
 class MutationTests(unittest.TestCase):
@@ -110,6 +110,28 @@ class MutationTests(unittest.TestCase):
             with self.subTest(boundary=boundary):
                 result = self.run_case(filename, old, new, test='test_model_command_recovery.py')
                 self.assertNotEqual(result.returncode, 0, 'Recovery fault escaped checks')
+                self.assertIn(boundary, result.stderr)
+                self.assertNotIn('SyntaxError', result.stderr)
+                self.assertNotIn('ModuleNotFoundError', result.stderr)
+
+
+    def test_publication_faults_fail_at_command_or_receipt_boundary(self):
+        cases = [
+            ('or any(receipt.get(key) != value', 'or any(False and receipt.get(key) != value', 'mismatched_receipts_stay_pending'),
+            ('not same_json_value(row[key], value)', 'False', 'mismatched_receipts_stay_pending'),
+            ('not same_json_value(row[key], value)', 'row[key] != value', 'mismatched_receipts_stay_pending'),
+            ("if len(evidence['metrics']) != len(expected_metrics):", 'if False:', 'mismatched_receipts_stay_pending'),
+            ("if row['id'] in identities or row['metric_key'] in keys:", "if row['metric_key'] in keys:", 'mismatched_receipts_stay_pending'),
+            ("if prior_claims and claim['id'] != prior_claims[0]['id']:", 'if False:', 'prior_claim_identity_cannot_change'),
+            ('if any(row.get(key) != value', 'if any(False and row.get(key) != value', 'invalid_commands_never_contact_transport'),
+            ("claim['claim_status'] != 'prototype_only' or ", '', 'invalid_commands_never_contact_transport'),
+            ("or type(row['blocks_claim_grade']) is not bool ", '', 'invalid_commands_never_contact_transport'),
+            ("if row['metric_key'] in keys:", 'if False:', 'invalid_commands_never_contact_transport'),
+        ]
+        for old, new, boundary in cases:
+            with self.subTest(boundary=boundary, old=old):
+                result = self.run_case('model_publication_values.py', old, new, test='test_model_publication_client.py')
+                self.assertNotEqual(result.returncode, 0, 'Publication fault escaped checks')
                 self.assertIn(boundary, result.stderr)
                 self.assertNotIn('SyntaxError', result.stderr)
                 self.assertNotIn('ModuleNotFoundError', result.stderr)
