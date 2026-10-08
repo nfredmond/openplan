@@ -219,6 +219,44 @@ class AttemptWriter:
             self.stopped = True
             raise
 
+    def prepare_project_working_copy(self, record):
+        """Make an exclusive mutable copy while retaining original consumed inputs.
+
+        The registered manifest describes initial bytes, not later engine state.
+        Preparing files does not authorize execution or confirm engine closure.
+        """
+        import model_project_inputs
+        self.require_open()
+        try:
+            if self.files is None:
+                raise ValueError('Project preparation requires an owned attempt')
+            expected = self.files.path / 'predecessor_project' / 'manifest.json'
+            if record.get('manifest_path') != str(expected) or expected.resolve(strict=True) != expected:
+                raise ValueError('Project preparation requires the owned consumed project')
+            retained = model_project_inputs.consume(record, self.files.path / 'project_working')
+            self.files.verify()
+            self.record_artifact({
+                'run_id': self.context.run_id, 'stage_id': self.context.stage_id,
+                'artifact_type': 'model_project_working_copy',
+                'file_url': 'local://' + retained['manifest_path'],
+                'file_size_bytes': retained['manifest_size_bytes'], 'content_hash': retained['manifest_sha256'],
+                'metadata_json': {'schema': 'openplan.project-working-copy.v1',
+                                  'role': 'initial_working_inventory', 'files_mutable': True,
+                                  'input_manifest_sha256': record['manifest_sha256'],
+                                  'producer': record['producer'],
+                                  'database_checks': retained['database_checks'],
+                                  'engine_closure': 'unassessed', 'execution_ready': False,
+                                  'scientific_acceptance': 'unassessed'},
+            }, logical_name='project-working-copy')
+            return {'project_directory': retained['package_directory'],
+                    'initial_manifest_path': retained['manifest_path'],
+                    'initial_manifest_sha256': retained['manifest_sha256'],
+                    'input_manifest_sha256': record['manifest_sha256'],
+                    'producer': record['producer'], 'execution_ready': False}
+        except BaseException:
+            self.stopped = True
+            raise
+
     def retain_input_mapping(self, mapping):
         """Record a partial derived mapping without authorizing computation."""
         self.require_open()

@@ -1403,3 +1403,26 @@ AequilibraE spatial reopen evidence. Stage execution still resolves `aeq_project
 under `work_dir`; a copied project alone does not change that dependency. Explicit
 execution-path mapping, remaining output/count joins, closure enforcement and
 full managed dispatch remain open. No scientific or human acceptance claim changes.
+
+### Separate project working files
+
+`prepare_project_working_copy()` requires this attempt's exact consumed-project
+manifest and makes another exclusive inventory-verified copy. The retained
+consumer input stays separate. A `model_project_working_copy` artifact records
+the initial manifest identity, original producer references and consumed input
+manifest hash. Its metadata explicitly identifies an initial working inventory
+with mutable files. It does not claim those files stay equal to their initial
+hashes after an engine opens or modifies them. The returned project directory
+points to the working files; execution readiness remains false.
+
+Four tests cover an actual SQLite write to the working copy while the retained
+input bytes stay unchanged, distinct file identities, exact initial registration,
+existing-destination refusal, foreign manifest refusal, changed retained input
+and pending registration after a lost reply. The combined relevant suite passes
+76 tests. Baseline, harmless and restored controls pass; targeted faults detect
+returning the retained input as the working path, erased producer provenance and
+ignored source-path ownership. `prototype/project-working-copy-controls.json`
+records source identity and results. Transport is mocked for this new method.
+Native working-copy registration recovery and native engine use of this method
+remain unproved. Explicit stage path selection, closure enforcement and full
+managed dispatch remain unfinished.
