@@ -1,5 +1,8 @@
+import { modelRecoveryNeedsReview, type ModelRecoveryStatus } from "./recovery-status";
+
 type ManagedRunStatusInput = {
   status: string;
+  recovery?: ModelRecoveryStatus;
   engine_key: string;
   artifacts: Array<{ artifact_type: string }>;
 };
@@ -15,6 +18,9 @@ export type ManagedRunStatusPresentation = {
  * execution and must never appear to a planner as a successful model run.
  */
 export function managedRunStatusPresentation(run: ManagedRunStatusInput): ManagedRunStatusPresentation {
+  if (modelRecoveryNeedsReview(run.recovery)) {
+    return { label: run.recovery?.state === "unavailable" ? "Recovery status unavailable" : "Reconciliation required", tone: "warning" };
+  }
   if (run.status === "succeeded" && run.engine_key === "behavioral_demand") {
     const executed = run.artifacts.some(
       (artifact) => artifact.artifact_type === "activitysim_demand_package_manifest"

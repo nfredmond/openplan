@@ -1,5 +1,6 @@
 "use client";
 
+import { modelRecoveryNeedsReview, type ModelRecoveryStatus } from "@/lib/models/recovery-status";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Download, FileJson2, Loader2, RefreshCcw, RotateCcw } from "lucide-react";
@@ -434,6 +435,7 @@ type ModelRunEvidencePanelProps = {
   modelRunId: string;
   runTitle: string;
   runStatus: string;
+  recovery?: ModelRecoveryStatus;
   engineKey: string;
   comparisonCandidates: ModelRunComparisonCandidate[];
   /** The run's REAL claim tier, read from modeling_claim_decisions server-side.
@@ -459,6 +461,7 @@ export function ModelRunEvidencePanel({
   modelRunId,
   runTitle,
   runStatus,
+  recovery,
   engineKey,
   comparisonCandidates,
   claimStatus: claimStatusProp = null,
@@ -524,7 +527,7 @@ export function ModelRunEvidencePanel({
    * do on their behalf.
    */
   const canRelaunch =
-    isWorkerExecutedRunMode(engineKey) && routeAcceptsRelaunchOfStatus(runStatus);
+    !modelRecoveryNeedsReview(recovery) && isWorkerExecutedRunMode(engineKey) && routeAcceptsRelaunchOfStatus(runStatus);
   const packetHref = `/api/models/${modelId}/runs/${modelRunId}/evidence-packet`;
   const runMode = useMemo(() => getManagedRunModeDefinition(engineKey), [engineKey]);
 

@@ -58,6 +58,7 @@ import {
   reconcileModelRunExecutionOutlook,
   type ModelingWorkerHealth,
 } from "@/lib/models/worker-health";
+import { modelRecoveryNeedsReview, modelRecoveryNotice, type ModelRecoveryStatus } from "@/lib/models/recovery-status";
 import { managedRunStatusPresentation } from "@/lib/models/run-status";
 
 const TrafficVolumeMap = dynamic(
@@ -144,6 +145,7 @@ export type ModelRunArtifact = {
 };
 
 type ManagedModelRun = {
+  recovery?: ModelRecoveryStatus;
   id: string;
   status: string;
   run_title: string;
@@ -246,8 +248,8 @@ const NON_TERMINAL_RUN_STATUSES = new Set(["queued", "running"]);
 const RUN_POLL_INTERVAL_MS = 5000;
 const STUCK_RUN_THRESHOLD_MS = 10 * 60 * 1000;
 
-function isNonTerminalRun(run: Pick<ManagedModelRun, "status">): boolean {
-  return NON_TERMINAL_RUN_STATUSES.has(run.status);
+function isNonTerminalRun(run: Pick<ManagedModelRun, "status" | "recovery">): boolean {
+  return !modelRecoveryNeedsReview(run.recovery) && NON_TERMINAL_RUN_STATUSES.has(run.status);
 }
 
 function latestProgressMs(run: ManagedModelRun): number | null {
@@ -1317,6 +1319,7 @@ export function ModelRunManager({
                 const scenarioLabel = findScenarioEntryLabel(scenarioEntries, run.scenario_entry_id);
                 const runMode = getManagedRunModeDefinition(run.engine_key);
                 const runStatus = managedRunStatusPresentation(run);
+                const recoveryNotice = modelRecoveryNotice(run.recovery);
                 // Null for anything that has not terminally failed.
                 const failureSummary = summarizeRunFailure({
                   status: run.status,
@@ -1360,6 +1363,12 @@ export function ModelRunManager({
                           for every non-failed run, so the copy below is
                           untouched for them.
                         */}
+                        {recoveryNotice ? (
+                          <div className="space-y-1 text-sm text-amber-800 dark:text-amber-200" data-testid="run-recovery-notice">
+                            <p>{recoveryNotice}</p>
+                            <p>Saved run status: {run.status}. This is a retained record.</p>
+                          </div>
+                        ) : null}
                         {failureSummary ? (
                           <p
                             className="module-record-summary text-red-700 dark:text-red-300"
@@ -1410,7 +1419,7 @@ export function ModelRunManager({
                           of a failed run as a finished one. Only the
                           forward-looking claim is withheld.
                         */}
-                        {failureSummary ? null : (
+                        {failureSummary || recoveryNotice ? null : (
                           <p
                             className="text-sm text-muted-foreground"
                             data-testid="run-runtime-expectation"
@@ -1870,7 +1879,7 @@ function ModelRunStagingAndArtifacts({
           <p className="mt-2 text-sm text-muted-foreground">The before-output check and diagnosis did not enter immutable custody together. This run cannot support a structural diagnosis claim.</p>
         </section>
       ) : null}
-      {stages?.length > 0 ? <RunProgressBar stages={stages} /> : null}
+      {stages?.length > 0 && !modelRecoveryNeedsReview(run.recovery) ? <RunProgressBar stages={stages} /> : null}
       {(stages?.length > 0 || artifacts?.length > 0) ? (
         <div className="grid min-w-0 grid-cols-1 gap-4 text-sm">
           {stages?.length > 0 && (
@@ -1889,7 +1898,7 @@ function ModelRunStagingAndArtifacts({
                           return Number.isFinite(started) && Number.isFinite(completed) ? Math.max(0, Math.round((completed - started) / 1000)) : null;
                         })()) ?? "Duration unavailable"}</p>
                       </div>
-                      <StatusBadge tone={toneForStageStatus(stage.status)}>{stage.status}</StatusBadge>
+                      <StatusBadge tone={toneForStageStatus(stage.status)}>{modelRecoveryNeedsReview(run.recovery) ? `Saved: ${stage.status}` : stage.status}</StatusBadge>
                     </div>
                     {stage.error_message ? <p className="mt-2 text-xs text-red-600 dark:text-red-300">{stage.error_message}</p> : null}
                     {/*
@@ -1913,7 +1922,7 @@ function ModelRunStagingAndArtifacts({
                               here rather than at the end.
                             </p>
                           ) : null}
-                          <StageLogView log={shown.log} isRunning={stage.status === "running"} />
+                          <StageLogView log={shown.log} isRunning={stage.status === "running" && !modelRecoveryNeedsReview(run.recovery)} />
                         </div>
                       );
                     })()}
@@ -1971,6 +1980,7 @@ function ModelRunStagingAndArtifacts({
 
       {(run.status === "succeeded" || run.engine_key === "aequilibrae") ? (
         <ModelRunEvidencePanel
+          recovery={run.recovery}
           modelId={modelId}
           modelRunId={run.id}
           runTitle={run.run_title}

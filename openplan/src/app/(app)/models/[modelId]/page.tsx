@@ -1,3 +1,5 @@
+import { loadModelRecoveryStatuses } from "@/lib/models/recovery-status-server";
+import { modelRecoveryNeedsReview, type ModelRecoveryStatus } from "@/lib/models/recovery-status";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
@@ -652,6 +654,10 @@ export default async function ModelDetailPage({
 
   const modelRunsUnreadable = modelRunsSchemaPending ? false : reads.check("this model's runs", modelRunsResult);
 
+  const modelRecoveryStatuses = modelRunsSchemaPending || modelRunsUnreadable
+    ? new Map<string, ModelRecoveryStatus>()
+    : await loadModelRecoveryStatuses(model.workspace_id, modelRunsResult.data ?? []);
+
   // Reconcile-on-read: reap runs whose worker crashed or never picked them up
   // so the UI never shows a run stuck "running"/"queued" forever. The client
   // re-triggers this loader every 5s (router.refresh) while a run is active,
@@ -660,7 +666,8 @@ export default async function ModelDetailPage({
   // is the no-viewer backstop.
   const reapedRunMessages = modelRunsSchemaPending
     ? new Map<string, string>()
-    : await reconcileStaleModelRuns((modelRunsResult.data ?? []) as unknown as ReaperRun[]);
+    : await reconcileStaleModelRuns(((modelRunsResult.data ?? []) as unknown as ReaperRun[])
+        .filter((run) => !modelRecoveryNeedsReview(modelRecoveryStatuses.get(run.id))));
 
   // Real claim tier per run (from modeling_claim_decisions), so the evidence
   // panel surfaces a genuinely calibrated_to_counts run as such instead of the
@@ -691,8 +698,9 @@ export default async function ModelDetailPage({
   }>).map((r) => {
     const engine_key = r.engine_key ?? "deterministic_corridor_v1";
     const claimDecision = modelRunClaimStatuses.get(r.id) ?? null;
+    const recovery = modelRecoveryStatuses.get(r.id);
     const reapMessage = reapedRunMessages.get(r.id);
-    if (!reapMessage) return { ...r, engine_key, claimDecision };
+    if (!reapMessage) return { ...r, engine_key, claimDecision, recovery };
     // Reflect the reap in the rendered payload without a re-query. completed_at
     // is set by the DB write and picked up on the next poll — omitting it here
     // keeps the loader pure.
@@ -700,6 +708,7 @@ export default async function ModelDetailPage({
       ...r,
       engine_key,
       claimDecision,
+      recovery,
       status: "failed",
       error_message: reapMessage,
       stages: (r.stages ?? []).map((s) =>
