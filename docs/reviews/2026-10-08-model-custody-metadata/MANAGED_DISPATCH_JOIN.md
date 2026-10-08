@@ -883,3 +883,29 @@ consumer path mapping, concurrent host-write protection or normal managed
 poll/push activation. Acquisition-status interpretation still needs review
 against current retained-file availability. No engine, scientific holdout or
 human acceptance test runs in this proof.
+
+### Acquisition history is distinct from current file availability
+
+The count-source summary previously trusted an `available` acquisition record
+even when the referenced CSV was absent or could not be read. It now retains the
+recorded acquisition status separately from the current file status. Missing or
+unreadable files cannot keep an available source label; eligible rows remain
+unknown rather than zero. Dataset, vintage and source metadata remain original.
+The current error appears in the limitation text consumed by existing evidence
+panels and Markdown exports. Source metadata files are not rewritten.
+
+Explicit unavailable, unsupported-geography, no-eligible-section and no-traffic
+acquisition outcomes remain distinct. A readable file is not a scientific
+validity claim. Invalid encoding is a read failure rather than an uncaught
+summary error. This check does not compare retained bytes with the manifest hash;
+that consumer-verification boundary remains open.
+
+Six new cases cover missing files, missing paths, injected read denial, invalid
+encoding, readable original rows and preserved source outcomes. Baseline,
+harmless and restored controls pass. Trusting stale availability, replacing
+unknown eligible rows with zero or erasing acquisition status each fails the
+targeted test. Results are in `prototype/count-availability-controls.json`.
+All 108 combined tests, 10 existing model-credibility checks and 27 existing
+TypeScript evidence/export tests pass. The SQLite ResourceWarning remains
+unresolved. These checks do not establish a rendered T3 journey, complete
+package/project handoff or scientific acceptance.

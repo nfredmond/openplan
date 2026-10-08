@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Count-source summaries distinguish acquisition history from current file
+availability. Missing or unreadable files cannot retain an available label or
+report zero eligible rows as though those rows were measured.
+
 Assignment now retains the selected count CSV and source metadata before engine
 work. Later stages receive the retained path. Interrupted captures are preserved
 for reconciliation instead of being overwritten or silently reused.
