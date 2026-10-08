@@ -1,7 +1,8 @@
 # Legacy KPI recovery candidate
 
-Normal assignment and ActivitySim KPI writes still use direct inserts. A lost
-response can leave a committed row with no recoverable request. The existing
+Normal assignment and ActivitySim KPI writes previously used direct inserts.
+A lost response could leave a committed row without a recoverable request.
+Both callers now use retained delivery, as documented below. The existing
 managed-attempt command is not a substitute for these unmanaged callers.
 
 The rollback-only SQL candidate retains an explicit KPI identity, workspace,
@@ -170,3 +171,38 @@ Independent dependency installation completed under a 2 GiB cap, and the native
 SQLite import/query probe passed. Early inventory reads used repository-relative
 paths from the nested app directory and changed no files; corrected reads used
 the repository root. The existing parent QA checkout remains frozen.
+
+
+## Normal worker adoption, October 8
+
+Both normal KPI call sites now use `sb_record_retained_kpi`. The helper adds the
+stage binding, preserves explicit nulls, supplies existing defaults only for
+absent optional fields, and prepares the complete request before HTTP delivery.
+Its stable logical identity combines category and KPI name. An unconfirmed
+write raises `WorkerStateWriteUnconfirmed` and stops continuation. Changed
+values require reconciliation; they cannot silently replace a retained request.
+Migration 17 and the installation identity are required before worker startup.
+
+The native recovery proof now enters through this actual worker helper. After
+PostgREST commits, a TCP bridge drops the reply. A fresh CLI process recovers the
+saved request, and the helper then reuses that receipt without another POST.
+Baseline, harmless and restored cases each leave one KPI and one receipt after
+two identical requests. Swallowed-loss and wrong-cached-receipt faults fail.
+Evidence is `legacy-kpi-worker-native-controls/controls.json` under the private
+proof root. This uses synthetic inputs, not a complete scientific dispatch.
+
+`test_model_kpi_worker_delivery.py` executes both actual call expressions through
+the helper and client. Exact retries reuse distinct receipts, changed values
+refuse, and null/default/scope checks pass. Baseline, harmless and restored
+variants pass; changed null defaults, accepted extra stage fields, a bypassed
+caller and swallowed delivery failure each fail. Private evidence is
+`kpi-worker-controls.json`. These call-expression tests do not execute the full
+stage or establish current restart ownership. The initial control invocation
+used an unavailable system `python`; rerunning with `python3` executed all cases.
+
+All 81 worker suites pass with none failed or omitted. Unit
+`openplan-kpi-worker-adoption-20261008.service`, invocation
+`d3f1da369f8b4eb79b366af97bc7c449`, finished at 08:24:27 Pacific with a 200.6 MiB
+peak under a 1 GiB cap. The checkout stayed unchanged during regression.
+Whole-stage replay, retained geometry/comparison computation, scientific
+acceptance and full application QA for this branch remain open.

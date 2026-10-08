@@ -15,7 +15,8 @@ REPO = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO / 'workers/aequilibrae_worker'))
 import model_command_client as client
 import model_command_journal as journal
-import model_legacy_kpi_command as kpi_command
+from unittest.mock import patch
+from worker_import_for_tests import import_worker_main
 from isolated_postgrest import gateway
 
 
@@ -78,12 +79,13 @@ def _check():
             base = 'http://127.0.0.1:' + str(server.server_port)
             workspace = str(uuid.UUID(sql(f"SELECT workspace_id FROM public.model_runs WHERE id='{run}';")))
             payload = dict(run_id=run,stage_id=stage,kpi_name='daily_vmt',kpi_label='Daily VMT',kpi_category='assignment',value=12.5,unit='vehicle-miles/day',geometry_ref=None,breakdown_json={})
-            command = kpi_command.prepare(directory,workspace,payload,name='daily_vmt',base_url=base,deployment_id=meta['database'])
+            worker=import_worker_main()
             def deliver_saved():
-                return client.deliver(directory,command,base_url=base,deployment_id=meta['database'],service_key=token,post=requests.post)
+                with patch.object(worker,'SUPABASE_URL',base),patch.object(worker,'SUPABASE_KEY',token),patch.dict(os.environ,{'OPENPLAN_DEPLOYMENT_ID':meta['database']}):
+                    return worker.sb_record_retained_kpi({key:value for key,value in payload.items() if key!='stage_id'},workspace_id=workspace,stage_id=stage,journal_dir=str(directory))
             try:
                 deliver_saved()
-            except client.DeliveryUnconfirmed:
+            except worker.WorkerStateWriteUnconfirmed:
                 pass
             else:
                 raise AssertionError('Client did not propagate lost committed reply')
@@ -121,7 +123,7 @@ def _check():
             thread.join(timeout=5)
             if thread.is_alive():
                 raise RuntimeError('Owned recovery bridge did not stop')
-    result = {'run_id':run,'request_id':request,'http_posts':2,'lost_tcp_reply_after_commit':True,'fresh_cli_recovered':True,'cached_cli_sent_no_request':True,'client_reused_recovered_receipt':True,'record_counts':counts,'operation':operation,'model_resumed':False,'scope':'Actual retained client with synthetic KPI, real PostgREST, dropped TCP reply after native commit, fresh recovery CLI and client receipt reuse. Candidate objects removed. No normal dispatch, Storage bytes, managed ingestion or scientific acceptance.'}
+    result = {'run_id':run,'request_id':request,'http_posts':2,'lost_tcp_reply_after_commit':True,'fresh_cli_recovered':True,'cached_cli_sent_no_request':True,'client_reused_recovered_receipt':True,'record_counts':counts,'operation':operation,'model_resumed':False,'scope':'Actual normal worker helper with synthetic KPI, real PostgREST, dropped TCP reply after native commit, fresh recovery CLI and client receipt reuse. Candidate objects removed. No normal dispatch, Storage bytes, managed ingestion or scientific acceptance.'}
     (output / 'recovery-cli.json').write_text(json.dumps(result, indent=2) + '\n')
     return result
 

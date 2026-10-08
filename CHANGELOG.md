@@ -22,9 +22,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 Migration `20261016000017_legacy_kpi_command_receipts.sql` adds private KPI
 recovery receipts. It preserves exact requests and rejects old rows whose stage
-cannot be established. The retained KPI client and recovery CLI are prepared;
-normal worker KPI writes are not connected yet. Isolated migration upgrade and
-reapply checks pass; caller adoption remains pending. No application database has been upgraded by
+cannot be established. Both normal worker KPI writers now retain exact requests
+and stop on unconfirmed delivery. Apply this migration before starting the
+updated worker. The recovery CLI retrieves the original receipt after a lost
+reply. Isolated upgrade, reapply and native lost-reply checks pass. Complete
+stage replay remains disabled. No application database has been upgraded by
 this development work.
 
 Migration `20261016000016_legacy_artifact_command_receipts.sql` adds private
@@ -32,7 +34,7 @@ artifact recovery receipts. Apply it before starting the updated AequilibraE
 worker. Primary link-volume registration retains its prepared identity and
 request in the stage journal. The recovery CLI can retrieve a committed receipt
 after a lost reply. Keep the journal with the original source files. Secondary
-artifact and KPI writes still prevent safe replay of the complete stage.
+computation and stage ownership recovery still prevent safe replay of the complete stage.
 
 Migration `20261016000015_legacy_assessment_command_receipts.sql` adds private
 assessment command receipts. Apply it before starting the updated AequilibraE

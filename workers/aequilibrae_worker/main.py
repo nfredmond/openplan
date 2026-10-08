@@ -1133,6 +1133,28 @@ def _confirmed_record_insert(table: str, payload: dict) -> dict:
         raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: no valid receipt") from error
 
 
+def sb_record_retained_kpi(payload: dict, *, workspace_id: str, stage_id: str, journal_dir: str) -> dict:
+    """Keep the complete KPI request pending until its exact receipt is confirmed."""
+    from pathlib import Path
+    import model_legacy_kpi_command
+    import model_command_client
+    try:
+        if not isinstance(payload, dict) or set(payload) - (model_legacy_kpi_command.FIELDS - {"id", "stage_id"}):
+            raise ValueError("Unexpected KPI input fields")
+        normalized = {"kpi_category": "accessibility", "unit": "", "geometry_ref": None, "breakdown_json": {}, **payload, "stage_id": stage_id}
+        deployment = os.environ.get("OPENPLAN_DEPLOYMENT_ID", "")
+        directory = Path(journal_dir)
+        command = model_legacy_kpi_command.prepare(
+            directory, workspace_id, normalized,
+            name=normalized["kpi_category"] + "." + normalized["kpi_name"],
+            base_url=SUPABASE_URL, deployment_id=deployment,
+        )
+        return model_command_client.deliver(directory, command, base_url=SUPABASE_URL,
+            deployment_id=deployment, service_key=SUPABASE_KEY, post=requests.post)
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("KPI delivery unconfirmed; recover the saved request before continuing") from None
+
+
 def sb_post_kpi(payload: dict):
     _confirmed_record_insert("model_run_kpis", payload)
 
@@ -6326,7 +6348,8 @@ def stage_artifacts(
                 "equity_focus": equity_screen.get("equity_focus"),
                 "rest_of_area": equity_screen.get("rest_of_area"),
             }
-        sb_post_kpi(kpi_payload)
+        sb_record_retained_kpi(kpi_payload, workspace_id=_ws_id, stage_id=stage_id,
+            journal_dir=os.path.join(work_dir, "stage-journals", stage_id))
 
     log += publish_volume_geojson(
         run_id, stage_id, work_dir, verified_engine_stamp, baseline_assignment_metadata,
@@ -6674,7 +6697,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                         ),
                     ),
                 ):
-                    sb_post_kpi({
+                    sb_record_retained_kpi({
                         "run_id": run_id,
                         "kpi_category": "assignment",
                         "kpi_name": kpi_name,
@@ -6687,7 +6710,8 @@ def _claim_and_run_stage(stage: dict) -> bool:
                             "assignment_engine": "AequilibraE",
                             "uncalibrated": True,
                         },
-                    })
+                    }, workspace_id=str(run_row.get("workspace_id") or ""), stage_id=stage_id,
+                        journal_dir=os.path.join(work_dir, "stage-journals", stage_id))
                 activitysim_validation = _run_count_validation(
                     os.path.join(work_dir, "aeq_project", "project_database.sqlite"),
                     volume_path,

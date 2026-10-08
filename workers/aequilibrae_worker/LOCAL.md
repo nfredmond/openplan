@@ -129,4 +129,16 @@ database before starting this worker version. Keep
 `<work_dir>/stage-journals/<stage_id>/model-commands.sqlite3` with the prepared
 source files. An unconfirmed primary write stops the stage and retains its exact
 request for `model_command_recovery.py`. Recovering that receipt does not resume
-the stage or authorize replay of the remaining artifact and KPI writes.
+the stage or authorize replay of the complete stage.
+
+
+## Retained KPI writes
+
+Both normal assignment KPI writers require migration
+`20261016000017_legacy_kpi_command_receipts.sql` before this worker starts.
+They retain each complete request in the same stage journal used by artifacts.
+Keep `OPENPLAN_DEPLOYMENT_ID`, the database URL and that journal unchanged for
+recovery. A lost reply stops the stage; use `model_command_recovery.py` to
+recover its original receipt. Changed values under the same KPI identity are
+refused. Explicit null values remain null. Receipt recovery does not authorize
+whole-stage replay or establish model accuracy.
