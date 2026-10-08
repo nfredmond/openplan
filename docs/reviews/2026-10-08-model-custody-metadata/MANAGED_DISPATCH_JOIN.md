@@ -1636,3 +1636,34 @@ removed. No production code changes in this checkpoint. Stage package-path
 enforcement, remaining output/count joins, engine closure and full managed
 execution/publication/terminal handling remain open. These receipt checks do not
 establish scientific accuracy or planner acceptance.
+
+### Managed package-path enforcement
+
+The writer now activates an invocation-local package path only after confirmed
+working-package registration. Resolution checks the owning attempt directory,
+working-directory identity and pending-command boundary. The stage-side helper
+requires the supplied package path to equal that confirmed path. It does not
+silently replace a wrong path with a usable one. Outside a managed binding, the
+recorded legacy path remains unchanged.
+
+Assignment validates its package before creating outputs. Artifact extraction
+validates before count-input writes, and primary-output preparation validates
+before retaining source files. Retained-input paths, missing package metadata,
+foreign attempt directories and replaced working directories refuse and stop
+the writer. Setup's package creation remains separate.
+
+Six new tests enter actual assignment/artifact functions and stop before
+scientific computation, or exercise directory refusal directly. Existing
+project-path tests now prepare the actual combined inputs so their package
+prerequisite is real. Baseline, harmless and restored controls pass. Four faults
+detect skipped assignment and artifact checks, ignored attempt identity and
+ignored directory replacement. Project-path controls pass again; their mutation
+scope now targets the project resolver explicitly because the writer also has a
+package resolver. The warning-enabled broader suite passes 215 tests.
+`prototype/package-execution-controls.json` and
+`prototype/project-execution-controls.json` record source hashes and outcomes.
+
+These are path-selection checks, not full engine execution. Normal managed
+dispatch remains disabled pending the remaining output/count joins, engine
+closure and complete execution/publication/terminal lifecycle. No scientific,
+human or browser acceptance boundary changes.

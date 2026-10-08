@@ -46,6 +46,7 @@ class AttemptWriter:
         self.state = None
         self.files = None
         self._working_project = None
+        self._working_package = None
         if context.destination != client.destination(base_url, deployment_id) or not service_key:
             raise ValueError('Managed writer requires its original installation and credential')
         saved = journal.read_existing(self.directory, context.destination, context.claim_request_id)
@@ -288,6 +289,8 @@ class AttemptWriter:
                                   'execution_ready': False,
                                   'scientific_acceptance': 'unassessed'},
             }, logical_name='package-working-copy')
+            package_path = Path(retained['package_directory'])
+            self._working_package = (package_path, self.files._identity(package_path.stat()))
             return {'package_directory': retained['package_directory'],
                     'initial_manifest_path': retained['manifest_path'],
                     'initial_manifest_sha256': retained['manifest_sha256'],
@@ -306,6 +309,20 @@ class AttemptWriter:
             path, identity = self._working_project
             if path.resolve(strict=True) != path or self.files._identity(path.stat()) != identity:
                 raise ValueError('Managed working project directory changed')
+            return str(path)
+        except BaseException:
+            self.stopped = True
+            raise
+
+    def package_directory(self, work_dir):
+        """Resolve only this invocation's confirmed, independently prepared copy."""
+        self.require_open()
+        try:
+            if self.files is None or Path(work_dir) != self.files.path or self._working_package is None:
+                raise ValueError('Managed package requires a confirmed working copy in this attempt')
+            path, identity = self._working_package
+            if path.resolve(strict=True) != path or self.files._identity(path.stat()) != identity:
+                raise ValueError('Managed working package directory changed')
             return str(path)
         except BaseException:
             self.stopped = True

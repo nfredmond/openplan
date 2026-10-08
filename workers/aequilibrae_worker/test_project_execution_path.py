@@ -15,8 +15,11 @@ class ProjectPathTests(unittest.TestCase):
     consumed = working.ProjectWorkingCopyTests.consumed
 
     def prepared(self):
-        result = self.writer.prepare_project_working_copy(self.consumed())
-        return self.writer.files.path, result['project_directory']
+        from test_managed_execution_inputs import ExecutionInputsTests
+        ExecutionInputsTests.prepare(self)
+        with managed.bind(self.writer):
+            result = aeq.retain_managed_state_and_package(include_project=True)
+        return self.writer.files.path, result['project_working_copy']['project_directory']
 
     def test_legacy_layout_outside_binding(self):
         self.assertEqual(aeq.project_work_directory('/synthetic'), '/synthetic/aeq_project')
@@ -36,14 +39,14 @@ class ProjectPathTests(unittest.TestCase):
             raise StopBeforeComputation()
         with managed.bind(self.writer), patch.object(aeq.os, 'makedirs', new=stop):
             with self.assertRaises(StopBeforeComputation):
-                aeq.stage_assignment(self.writer.context.run_id, self.writer.context.stage_id, str(root), {}, '/unused')
+                aeq.stage_assignment(self.writer.context.run_id, self.writer.context.stage_id, str(root), {}, self.writer.package_directory(root))
         self.assertEqual(seen, [expected])
 
     def test_primary_output_preparation_uses_same_working_database(self):
         import model_stage_preparation
         root, expected = self.prepared()
         with managed.bind(self.writer), patch.object(model_stage_preparation, 'prepare_files', return_value={}) as prepare:
-            aeq.prepare_primary_model_output(self.writer.context.run_id, self.writer.context.stage_id, str(root), {}, {}, None)
+            aeq.prepare_primary_model_output(self.writer.context.run_id, self.writer.context.stage_id, str(root), {}, {}, {'package_dir':self.writer.package_directory(root)})
         self.assertEqual(prepare.call_args.kwargs['source_paths']['network'], Path(expected) / 'project_database.sqlite')
 
     def test_other_attempt_path_refused(self):

@@ -4104,6 +4104,7 @@ def stage_assignment(
     from aequilibrae.paths import TrafficAssignment, TrafficClass, NetworkSkimming
 
     proj_dir = project_work_directory(work_dir)
+    pkg_dir = package_work_directory(work_dir, pkg_dir)
     out_dir = os.path.join(work_dir, output_dir_name)
     os.makedirs(out_dir, exist_ok=True)
 
@@ -5618,6 +5619,7 @@ def prepare_primary_model_output(run_id: str, stage_id: str, work_dir: str, setu
     from pathlib import Path
     import model_stage_preparation
     try:
+        package_work_directory(work_dir, package_meta.get("package_dir") if isinstance(package_meta, dict) else None)
         return model_stage_preparation.prepare_files(
             Path(work_dir) / "stage-journals" / stage_id,
             base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
@@ -5650,6 +5652,7 @@ def stage_artifacts(
     assign_result: dict,
     package_meta: dict | None = None,
 ) -> str:
+    package_work_directory(work_dir, package_meta.get("package_dir") if isinstance(package_meta, dict) else None)
     out_dir = os.path.join(work_dir, "run_output")
     # Preserve the assignment record while deriving a verified consumer-local
     # input set before any validation or evidence publication can occur.
@@ -6858,6 +6861,22 @@ def write_run_state(work_dir: str, state: dict) -> None:
         model_run_state.publish(work_dir, state)
     except Exception:
         raise WorkerStateWriteUnconfirmed("Run state publication unconfirmed; inspect the saved state before continuing") from None
+
+
+def package_work_directory(work_dir: str, package_directory: str | None) -> str | None:
+    """Validate the supplied managed package path without substituting inputs."""
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is None:
+        return package_directory
+    try:
+        expected = writer.package_directory(work_dir)
+        if package_directory != expected:
+            raise ValueError("Managed package path differs from confirmed working copy")
+        return expected
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Managed package path requires reconciliation") from error
 
 
 def project_work_directory(work_dir: str) -> str:
