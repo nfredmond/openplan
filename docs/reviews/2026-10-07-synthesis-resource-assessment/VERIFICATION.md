@@ -19,3 +19,9 @@ The saved-results panel shows the task number, required bytes and saved limit. I
 The progress transport, server, panel and route suites pass all 82 tests. Harmless comments preserve the new tests. Allowing equality as an excess, dropping the server assessment, or hiding the panel each fails the corresponding two tests. All mutations were restored. Changed-file lint and diff checks pass.
 
 The existing real context/thematic continuation suites pass all 65 tests. Inspected cases include full UTF-8 context bytes at the exact limit and one byte below, retained non-ASCII output, first-task refusal, oversized preceding state and final thematic proposal refusal. These support the underlying processor, separately from the mocked history propagation tests. New real-history integration cases for changed/cleared predecessors, exact thematic boundary, production build and identified T3 desktop/390px evidence remain pending. No release is declared.
+
+## Real continuation boundary follow-up
+
+Three additional focused tests pass. Context and thematic history now replay real retained Unicode output large enough to exceed the next task budget, while that task has no selected attempt. Clearing the earlier output selection removes the assessment without deleting original output. The thematic processor accepts the complete UTF-8 task at its exact measured limit and refuses a limit one byte lower.
+
+Harmless comments preserve each new test. Returning a null assessment fails each real-history test; changing the thematic comparison to refuse equality fails the exact-limit test. Mutations were restored. Changed-test lint passes. This targeted invocation selects three tests and skips 136 unrelated tests; it does not replace the earlier full-file runs. Native permissions, changed-predecessor integration, production compilation and actual browser presentation remain distinct checks.

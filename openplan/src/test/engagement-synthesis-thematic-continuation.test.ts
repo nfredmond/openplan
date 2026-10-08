@@ -18,6 +18,21 @@ function finish(f = fixture()) {
 }
 
 describe("versioned thematic content and continuation", () => {
+  it("accepts the complete UTF-8 task at its byte limit and refuses one byte less", () => {
+    function nextAfterUnicode(taskByteLimit: number) {
+      const run = fixture(1, taskByteLimit).create(), first = run.next();
+      if (first.status !== "ready") throw new Error("Expected executable first task");
+      const output = { ...response(first), uncertainties: ["😀".repeat(1000)] };
+      run.accept({ taskSha256: first.task.sha256, outputText: JSON.stringify(output), finishReason: "stop" });
+      return run.next();
+    }
+    const next = nextAfterUnicode(65536);
+    if (next.status !== "ready") throw new Error("Expected executable continuation");
+    expect(next.task.utf8Bytes).toBeGreaterThan(next.task.canonical.length);
+    expect(nextAfterUnicode(next.task.utf8Bytes).status).toBe("ready");
+    expect(nextAfterUnicode(next.task.utf8Bytes - 1)).toMatchObject({ status: "resource_limit", requiredTaskBytes: next.task.utf8Bytes });
+  });
+
   it("frames all 302 mixed contributions and reconstructs every original field without clipping", () => {
     const f = fixture(301), content = createSynthesisThematicContent(f.prepared);
     expect(content.manifest.contributionIds).toEqual(f.targets); expect(content.entities).toHaveLength(605);

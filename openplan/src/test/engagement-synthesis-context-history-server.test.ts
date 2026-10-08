@@ -15,6 +15,23 @@ function remove(f: Fixture, table: string, attemptId: unknown) {
 afterEach(() => vi.restoreAllMocks());
 
 describe("current-staff historical context execution", () => {
+  it("measures retained Unicode output before any next attempt and drops it when its selection is cleared", async () => {
+    const f = fixture(), first = f.history[0];
+    first.output.uncertainties = Array.from({ length: 20 }, () => "😀".repeat(1900));
+    first.recapture();
+    const value = await load(f, 1);
+    expect(value.entries[0].status).toBe("verified");
+    expect(value.entries[1].status).toBe("unselected");
+    expect(value.resourceAssessment?.taskIndex).toBe(1);
+    expect(value.resourceAssessment?.requiredTaskBytes).toBeGreaterThan(value.resourceAssessment?.taskByteLimit ?? Infinity);
+    expect(value.entries[0].capture?.capture.outputText).toBe(JSON.stringify(first.output));
+    Object.assign(first.selection, { attemptId: null, origin: "staff", authorizationId: null, previousSelectionId: randomUUID() });
+    const cleared = await load(f, 1);
+    expect(cleared.entries[0].status).toBe("cleared");
+    expect(cleared.resourceAssessment).toBeNull();
+    expect(f.serviceRpc).not.toHaveBeenCalled();
+  });
+
   it.each([0, 1])("assesses the next oversized task after %i selected outputs without replacing attempt state", async selectedCount => {
     const f = fixture();
     const create = continuation.createSynthesisContextContinuation;
