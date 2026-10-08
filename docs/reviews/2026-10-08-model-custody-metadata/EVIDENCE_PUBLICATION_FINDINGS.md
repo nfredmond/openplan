@@ -170,3 +170,35 @@ The native proof passes again with the extracted builder for synthetic run
 `model-command-client-20261008-proof/native-evidence-prepared/`. It preserves
 the same rejection and reply-loss boundaries, including the still-incomplete
 claim/metric atomicity. No native scientific model or browser claim is added.
+
+## Rollback-only atomic server candidate
+
+`prototype/evidence-publication.sql` adds a candidate legacy model publication
+command, private receipts and transaction context. It compares an exact expected
+snapshot under the model-run lock, retains the prior claim and metric rows,
+replaces them together, and records the result in the same transaction. Exact
+request retries return the retained receipt; changed payloads and stale snapshots
+are refused. After initial command publication, direct projection edits require
+the private transaction context. Existing managed-run protection is unchanged.
+
+The candidate currently accepts only `prototype_only` legacy model claims.
+This is an unfinished ingestion boundary, not a permanent scientific policy or
+a reduction of V1. Higher-tier evidence policy, managed instrument ingestion,
+county source/metric publication and their readers still require implementation.
+No normal worker calls this command, and it is not an application migration.
+
+The native rollback-only suite uses actual installed application tables and
+triggers in the owned proof database. It checks metric-constraint and final
+receipt failures, retained prior evidence, exact retry, changed requests, stale
+snapshots, workspace scope, duplicate metrics, managed-run refusal, direct-write
+refusal and private privileges. New schema objects and synthetic records are
+rolled back, and a separate catalog query confirms removal.
+
+Baseline, harmless and restored cases pass. Seven targeted faults are detected
+for changed-request checks, stale snapshots, lost history, changed retry receipts,
+direct writes, cross-workspace reads and duplicate metrics. The proof runner is
+`prototype/verify_evidence_publication.py`; private results are retained under
+`model-command-client-20261008-proof/atomic-publication/`. These sequential
+owner-session tests do not establish concurrent lock ordering, authenticated
+HTTP behavior, complete field validation, durable client adoption, source-file
+custody, browser behavior or scientific acceptance. Those remain open.
