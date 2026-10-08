@@ -82,3 +82,24 @@ Private evidence is `recovery-status-native/recovery-reader.json` and
 passes. These tests do not establish page-level authorization, real navigation,
 CSS/mobile usability, downloadable artifacts or browser acceptance. The full
 candidate and T3 desktop/390px checks remain open.
+
+## Page-loader integration follow-up
+
+Seven tests now execute the actual server page with its actual recovery reader.
+They confirm that sign-in failure, an absent user-scoped model and a failed model
+read stop before service-role recovery inspection. The authorized path passes
+exact workspace/run IDs, carries the historical or unavailable result into the
+manager props, and excludes those records from reaping. An assessed new record
+retains the ordinary reaper path. The database projection and model filter are
+asserted explicitly because the mock otherwise supplies fields regardless of
+what the query selects.
+
+Baseline, harmless comment and restored baseline pass. Dropping the recovery
+prop, passing historical records to the reaper, skipping the sign-in boundary,
+and omitting the engine field from the run projection each fail assertions.
+Private control results are `recovery-page-controls.json`. Targeted lint passes.
+
+The tests mock user-scoped database responses and inspect the page's React tree.
+They do not establish live RLS, installation migration ordering, actual page
+navigation or rendered CSS. They supersede the untested page-loader join noted
+above while preserving those remaining boundaries.
