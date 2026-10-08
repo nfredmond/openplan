@@ -173,7 +173,17 @@ class AttemptWriter:
             if self.files is None or Path(directory) != self.files.path:
                 raise ValueError('State publication requires the owned attempt directory')
             self.files.publish_state(state)
+            retained = self.files.retain_state(state)
             self.files.verify()
+            self.record_artifact({
+                'run_id': self.context.run_id, 'stage_id': self.context.stage_id,
+                'artifact_type': 'model_predecessor_state',
+                'file_url': 'local://' + retained['path'],
+                'file_size_bytes': retained['size_bytes'], 'content_hash': retained['sha256'],
+                'metadata_json': {'schema': 'openplan.predecessor-state.v1',
+                                  'role': 'execution_state', 'paths_relocated': False,
+                                  'package_inventory_included': False},
+            }, logical_name='predecessor-state')
         except BaseException:
             self.stopped = True
             raise

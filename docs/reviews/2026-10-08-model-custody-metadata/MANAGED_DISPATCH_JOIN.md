@@ -731,3 +731,42 @@ read-authorization evidence. Concurrent revocation fencing, complete package/
 project/state transfer, managed assessment/publication, full poll/push activation,
 scientific acceptance and T3 visual acceptance remain open. No model computation
 or scientific holdout runs in this proof.
+
+### Retained original stage state
+
+Bound AequilibraE `write_run_state` now publishes its local state, retains a
+separate private `predecessor_state.json` through the owned directory descriptor,
+and registers that file through the admitted attempt's artifact command. The
+record carries its full hash, byte size and an explicit execution-state role.
+Original package paths, count paths and frozen nested records remain unchanged.
+The metadata explicitly states that paths are not relocated and no package
+inventory is included. This file does not carry claim journals or execution
+permission into a consumer.
+
+The retained filename cannot be overwritten, including by a repeated state
+publication. A partial or uncertain publication stops the writer and requires
+reconciliation. Changing `state.json` afterward leaves the retained original
+unchanged. Two additional bound tests confirm exact registration bytes and stop
+before a terminal write after a lost registration reply. The workspace tests
+also check retained-file overwrite refusal. All 88 combined worker tests pass.
+The existing SQLite ResourceWarning remains recorded. Workspace baseline,
+harmless and restored controls pass; eight targeted faults fail, including
+retained-state overwrite and a wrong registered state hash.
+
+`prototype/verify_state_http.py` extends the existing native writer HTTP fixture
+with the actual bound AequilibraE state-publication call. The artifact command
+commits, the bridge drops the reply, and the bound handler stops. Native state
+contains one attempt-owned artifact matching the real retained file's path,
+contents, byte size and hash. A fresh CLI recovers its exact receipt without
+changing parent, stage, attempt, start, artifact, KPI or receipt records. Cached
+recovery sends no HTTP, and the original writer remains stopped. Baseline,
+harmless and restored controls each pass one case and six HTTP calls. Replacing
+the registered hash with zeros fails the native byte comparison. Sanitized
+results are in `prototype/state-http.json`; private clones and journals remain
+in the owned `state-http-v1` proof directory. The temporary gateways are removed.
+
+This supplies original-state custody before completion, not a complete stage
+checkpoint. Package/project files, external count inputs, consumer path mapping,
+completed-producer selection for state, managed assessment/publication and full
+normal dispatcher activation remain unfinished. Native scientific accuracy,
+concurrent host-write confinement and human acceptance are not established.

@@ -1,6 +1,7 @@
 """Native local directory ownership; no model engine or predecessor handoff."""
 from dataclasses import asdict, replace
 import json
+import hashlib
 import os
 from pathlib import Path
 import subprocess
@@ -13,6 +14,7 @@ from model_attempt_invocation import AttemptContext
 import model_attempt_workspace as workspace
 import model_attempt_writer as managed
 import test_model_attempt_writer as writer_tests
+import test_model_attempt_outputs as output_tests
 from test_model_command_client import IDS, URL
 from test_model_skip_dispatch import aeq, activity
 
@@ -31,6 +33,11 @@ class WorkspaceTests(unittest.TestCase):
         self.assertEqual(marker.stat().st_mode & 0o777, 0o600)
         self.assertEqual(owned.path.stat().st_mode & 0o777, 0o700)
         owned.publish_state({'stage': 'synthetic'})
+        owned.retain_state({'stage': 'synthetic'})
+        original = (owned.path / 'predecessor_state.json').read_bytes()
+        with self.assertRaises(FileExistsError):
+            owned.retain_state({'stage': 'changed'})
+        self.assertEqual((owned.path / 'predecessor_state.json').read_bytes(), original)
         with self.assertRaisesRegex(ValueError, 'already exists'):
             workspace.AttemptWorkspace(self.root, self.context)
         self.assertEqual(json.loads((owned.path / 'state.json').read_text()), {'stage': 'synthetic'})
@@ -97,7 +104,7 @@ except ValueError as error:
 
 class WorkspaceBindingTests(unittest.TestCase):
     setUp = writer_tests.WriterTests.setUp
-    response = writer_tests.WriterTests.response
+    response = output_tests.OutputTests.response
 
     def test_aequilibrae_uses_attempt_directory_and_pinned_state(self):
         with patch.object(aeq, 'RUN_WORK_ROOT', str(self.directory / 'work')), managed.bind(self.writer):
@@ -110,6 +117,42 @@ class WorkspaceBindingTests(unittest.TestCase):
             with self.assertRaises(aeq.WorkerStateWriteUnconfirmed):
                 aeq.write_run_state(str(self.directory), {'foreign': True})
         self.assertFalse((self.directory / 'state.json').exists())
+
+    def test_bound_state_registers_exact_original_bytes_before_completion(self):
+        state = {'package': {'package_dir': '/original/package'},
+                 'assignment': {'counts_path': '/original/counts.json',
+                                'network_state_record': {'source': '/frozen/reference'}}}
+        with patch.object(aeq, 'RUN_WORK_ROOT', str(self.directory / 'work')), managed.bind(self.writer):
+            path = Path(aeq.run_work_directory(IDS[1]))
+            aeq.write_run_state(str(path), state)
+            retained = (path / 'predecessor_state.json').read_bytes()
+            self.assertTrue(self.post.called, 'Retained state was not registered')
+            payload = self.post.call_args.kwargs['json']['p_payload']
+            self.assertEqual(payload['artifact_type'], 'model_predecessor_state')
+            self.assertEqual(payload['file_url'], 'local://' + str(path / 'predecessor_state.json'))
+            self.assertEqual(payload['content_hash'], hashlib.sha256(retained).hexdigest())
+            self.assertEqual(payload['file_size_bytes'], len(retained))
+            self.assertEqual(json.loads(retained), state)
+            (path / 'state.json').write_text('{}')
+            self.assertEqual((path / 'predecessor_state.json').read_bytes(), retained)
+            self.assertFalse(self.writer.stopped)
+        self.post.assert_called_once()
+
+    def test_lost_state_registration_stops_before_terminal_update(self):
+        import model_command_journal as journal
+        self.post.side_effect = TimeoutError('Synthetic state registration lost reply')
+        with patch.object(aeq, 'RUN_WORK_ROOT', str(self.directory / 'work')), managed.bind(self.writer):
+            path = Path(aeq.run_work_directory(IDS[1]))
+            with self.assertRaises(aeq.WorkerStateWriteUnconfirmed):
+                aeq.write_run_state(str(path), {'setup': {'synthetic': True}})
+            self.assertTrue((path / 'predecessor_state.json').is_file())
+            self.assertTrue(self.writer.stopped)
+            pending = journal.pending(self.directory, self.writer.context.destination)
+            self.assertEqual(len(pending), 1)
+            self.assertEqual(pending[0]['command']['operation'], 'write_model_attempt_artifact')
+            with self.assertRaises(aeq.WorkerStateWriteUnconfirmed):
+                aeq.sb_patch_stage(IDS[2], {'status': 'succeeded'})
+        self.post.assert_called_once()
 
     def test_activitysim_uses_attempt_directory_and_refuses_other_run(self):
         with patch.object(activity, 'ACTIVITYSIM_WORK_DIR', str(self.directory / 'work')), managed.bind(self.writer):

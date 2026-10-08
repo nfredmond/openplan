@@ -1,6 +1,6 @@
 {
-  "workspace_sha256": "637bf861a618351ebe55a4c07b3ff8d9499fda447eaf37cef1d0dbde3624de26",
-  "writer_sha256": "6bf218253c64c4b544b775664461898fe3b71b72211f96ef638d81955f6d98a2",
+  "workspace_sha256": "a8b3bcaec05d6c6c298a7454d45eed110183284557c117fbd2e7dbc54daee479",
+  "writer_sha256": "cdb667e37e31edd70f808a03ca7d0d14e9ba00b322169dd926e1d97461da3e4d",
   "controls": [
     {
       "control": "baseline",
@@ -41,6 +41,16 @@
       "control": "skip-owner-recheck",
       "exit_code": 1,
       "targeted_test": "WorkspaceBindingTests.test_changed_owner_stops_later_database_write"
+    },
+    {
+      "control": "overwrite-predecessor-state",
+      "exit_code": 1,
+      "targeted_test": "WorkspaceTests.test_exclusive_identity_and_private_owner_record"
+    },
+    {
+      "control": "wrong-state-hash",
+      "exit_code": 1,
+      "targeted_test": "WorkspaceBindingTests.test_bound_state_registers_exact_original_bytes_before_completion"
     },
     {
       "control": "restored",

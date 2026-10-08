@@ -25,7 +25,8 @@ import model_command_journal as journal
 from worker_import_for_tests import import_worker_main
 
 
-def verify(output, writer_module, outputs=False):
+def verify(output, writer_module, outputs=False, state_output=False):
+    outputs = outputs or state_output
     source = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
     if source['container'] != 'supabase_db_openplan-restore-target-2026091050' or not re.fullmatch(r'openplan_retention_upgrade_[0-9a-f]{32}', source['database']):
         raise ValueError('Select owned retention source')
@@ -98,8 +99,10 @@ def verify(output, writer_module, outputs=False):
         thread.start()
         base = f'http://127.0.0.1:{server.server_port}'
         try:
-            for worker in (aeq, supabase_poll):
+            for worker in ((aeq,) if state_output else (aeq, supabase_poll)):
                 modes = (('artifact', 'kpi', 'retained_artifact', 'retained_kpi') if worker is aeq else ('artifact', 'kpi')) if outputs else ('claim', 'running', 'succeeded', 'failed')
+                if state_output:
+                    modes = ('state_artifact',)
                 for status in modes:
                     run, stage = [str(uuid.uuid4()) for _ in range(2)]
                     workspace = str(uuid.UUID(sql(database, f"""
@@ -134,7 +137,12 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                 else:
                                     payload = {'run_id': run, 'kpi_name': 'synthetic', 'kpi_label': 'Unassessed',
                                         'value': None, 'breakdown_json': {'status': 'unassessed'}}
-                                if status == 'retained_artifact':
+                                if status == 'state_artifact':
+                                    with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
+                                        path = worker.run_work_directory(run)
+                                        worker.write_run_state(path, {'setup': {'synthetic': True},
+                                            'package': {'package_dir': '/original/synthetic/package'}})
+                                elif status == 'retained_artifact':
                                     worker.sb_record_retained_artifact(payload, workspace_id=workspace,
                                         journal_dir=str(directory), logical_name='synthetic-output')
                                 elif status == 'retained_kpi':
@@ -195,7 +203,16 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         records = observed['artifacts'] if status.endswith('artifact') else observed['kpis']
                         if len(records) != 1 or records[0]['attempt_id'] != observed['attempts'][0]['id']:
                             raise AssertionError('Output is absent, duplicated or belongs to another attempt')
-                        if status.endswith('artifact'):
+                        if status == 'state_artifact':
+                            retained_path = writers[0].files.path / 'predecessor_state.json'
+                            content = retained_path.read_bytes()
+                            expected_state = {'setup': {'synthetic': True}, 'package': {'package_dir': '/original/synthetic/package'}}
+                            if (json.loads(content) != expected_state or records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
+                                    or records[0]['file_size_bytes'] != len(content)
+                                    or records[0]['file_url'] != 'local://' + str(retained_path)
+                                    or records[0]['artifact_type'] != 'model_predecessor_state'):
+                                raise AssertionError('Native predecessor state differs from retained bytes')
+                        elif status.endswith('artifact'):
                             if records[0]['id'] != artifact_id or records[0]['content_hash'] != 'a' * 64 or records[0]['metadata_json'] != {'claim_tier': 'prototype'}:
                                 raise AssertionError('Native artifact lost prepared identity or evidence')
                         elif records[0]['value'] is not None or records[0]['breakdown_json'] != {'status': 'unassessed'}:

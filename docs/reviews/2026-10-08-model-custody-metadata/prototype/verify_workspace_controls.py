@@ -39,6 +39,13 @@ def main():
         ('skip-owner-recheck', 'model_attempt_writer', change(writer,
             'if self.files is not None:', 'if False:'),
             'WorkspaceBindingTests.test_changed_owner_stops_later_database_write'),
+        ('overwrite-predecessor-state', 'model_attempt_workspace', change(workspace,
+            "os.link(name, 'predecessor_state.json', src_dir_fd=descriptor,\n                        dst_dir_fd=descriptor, follow_symlinks=False)",
+            "os.replace(name, 'predecessor_state.json', src_dir_fd=descriptor, dst_dir_fd=descriptor)\n                temporary = False\n                return {'path': str(self.path / 'predecessor_state.json'), 'sha256': hashlib.sha256(content).hexdigest(), 'size_bytes': len(content)}"),
+            'WorkspaceTests.test_exclusive_identity_and_private_owner_record'),
+        ('wrong-state-hash', 'model_attempt_writer', change(writer,
+            "'content_hash': retained['sha256']", "'content_hash': '0' * 64"),
+            'WorkspaceBindingTests.test_bound_state_registers_exact_original_bytes_before_completion'),
         ('restored', 'model_attempt_workspace', workspace, None),
     ]
     records = []

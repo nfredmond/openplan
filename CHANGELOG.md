@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Bound model state publication now retains and registers a separate original-state
+file before completion. Lost registration replies require receipt recovery; they
+do not resume computation. Package transfer and consumer path mapping remain open.
+
 Candidate migration `20261016000021_model_attempt_prepared_artifact_identity.sql`
 allows the managed artifact command to retain an explicitly prepared artifact ID.
 Existing callers can still request a generated ID. ID collisions refuse the new
