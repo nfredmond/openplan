@@ -2198,6 +2198,16 @@ body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdr
     gap: 3px;
     border-radius: 10px;
   }
+  /* Desktop focus rules restore group-heading margins on short screens.
+     Keep them collapsed on phones so links do not move during a tap. */
+  body .op-cart-shell.op-cart-shell .op-cart-rail__group-title {
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    opacity: 0;
+  }
   body .op-cart-shell.op-cart-shell .op-cart-rail__more {
     display: flex;
   }

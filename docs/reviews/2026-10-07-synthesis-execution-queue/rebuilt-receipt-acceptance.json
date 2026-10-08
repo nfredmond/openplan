@@ -1,0 +1,55 @@
+{
+  "build": "0270e9cb",
+  "fault": {
+    "body": "{\"schemaVersion\":1,\"workspaceId\":\"6674ea52-e439-4e82-9c4e-15b11cdf9ca7\",\"campaignId\":\"71e5671b-d3df-43aa-ba1c-75dfce09e0d7\",\"requestId\":\"9e39538a-42ef-4ae3-961c-991388b73bd3\",\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"requestIntentSha256\":\"15299665947437ff0f59bd58bf46e0cb54e347cd736dbd14a176fff86539ba14\",\"stage\":\"thematic\",\"authorizationId\":\"caff40ff-7d71-4d94-8002-372382b6e09f\",\"authorizationIntentSha256\":\"f6a62a1e37f86b2f71cc162cfa9e1b8cb89e91f8961505a4ae8d4d68a8c0e0d8\",\"queueId\":\"62a1d379-81e7-48bf-bb01-677cb1520c3a\"}",
+    "receipt": {
+      "commandSha256": "51c35b253fdad0a2181cf474a045a4c13054153fe6a03ec36e3479f741cb7efd",
+      "commandText": "{\"schemaVersion\":1,\"workspaceId\":\"6674ea52-e439-4e82-9c4e-15b11cdf9ca7\",\"campaignId\":\"71e5671b-d3df-43aa-ba1c-75dfce09e0d7\",\"requestId\":\"9e39538a-42ef-4ae3-961c-991388b73bd3\",\"actorId\":\"3d24e1c0-71cb-4ca6-8c7b-ce2d5d2e7705\",\"sourceId\":\"cc77a4d3-1ed3-431c-b5fb-fb352560e26d\",\"sourceSha256\":\"910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526\",\"requestIntentSha256\":\"15299665947437ff0f59bd58bf46e0cb54e347cd736dbd14a176fff86539ba14\",\"stage\":\"thematic\",\"authorizationId\":\"caff40ff-7d71-4d94-8002-372382b6e09f\",\"authorizationIntentSha256\":\"f6a62a1e37f86b2f71cc162cfa9e1b8cb89e91f8961505a4ae8d4d68a8c0e0d8\",\"queueId\":\"62a1d379-81e7-48bf-bb01-677cb1520c3a\"}",
+      "createdAt": "2026-10-08T00:22:58.564229+00:00",
+      "queueId": "62a1d379-81e7-48bf-bb01-677cb1520c3a",
+      "schemaVersion": 1
+    },
+    "text": "Permission caff40ff-7d71-4d94-8002-372382b6e09f\n\n2 attempts; 2048 output tokens and 65536 response bytes per call.\n\nExpires 10/7/2026, 7:21:00 PM. Workers still check current access and request state.\n\nOriginal allowance bytes\nReview scheduling\n\nA configured execution worker can process an explicitly queued allowance. Queue custody does not prove that a call ran or that outputs are complete.\n\nSYNTHETIC lost scheduling reply after save\n\nScheduling receipt is unconfirmed. Keep the original command and review scheduling or retry that command.\n\nOriginal scheduling command\nRetry original execution request"
+  },
+  "recovered": {
+    "originalPreserved": true,
+    "queueId": "62a1d379-81e7-48bf-bb01-677cb1520c3a",
+    "text": "Permission caff40ff-7d71-4d94-8002-372382b6e09f\n\n2 attempts; 2048 output tokens and 65536 response bytes per call.\n\nExpires 10/7/2026, 7:21:00 PM. Workers still check current access and request state.\n\nOriginal allowance bytes\nReview scheduling\n\nA configured execution worker can process an explicitly queued allowance. Queue custody does not prove that a call ran or that outputs are complete.\n\nOriginal execution request is queued. Inspect saved results for provider-call and output status.\n\nOriginal scheduling command"
+  },
+  "nativeQueueCount": 1,
+  "console": {
+    "since": "2026-10-08T00:21:12Z",
+    "recent": [],
+    "entryCount": 12,
+    "omitted": [
+      "accessibilityTree (use interactiveElements locators or preview_evaluate)",
+      "console entries text after 500 characters",
+      "160 older network entries",
+      "160 older action timeline entries",
+      "40 of 40 actionTimeline",
+      "30 of 40 networkEntries"
+    ]
+  },
+  "captures": {
+    "save-notice": {
+      "privatePath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-openplan-history-localhost-muysk6su-8fd8073e.png",
+      "sha256": "5adb61c2e79341185616e4a73091b5e20df458cd24a4283c504157067446003d",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "visuallyInspected": true
+    },
+    "uncertain-receipt": {
+      "privatePath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-openplan-history-localhost-muysm1ns-8ec38445.png",
+      "sha256": "a0b9eaa6424340b26687a735deebbe2dd9b9851b5f2d567eb400afbfdeb8e6f6",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "visuallyInspected": true
+    }
+  },
+  "newStaffReviewShortId": "a7a262c7",
+  "saveNotice": "Save confirmed for revision 1. The selected revision is shown below."
+}

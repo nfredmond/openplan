@@ -1,0 +1,15 @@
+[
+  {
+    "control": "harmless-comment",
+    "exitCode": 0,
+    "result": "22 tests pass"
+  },
+  {
+    "control": "old-ambiguous-notice",
+    "exitCode": 1,
+    "result": "Two notice assertions fail, including editor test line 211; old wording does not match expected explicit save-confirmation text"
+  },
+  {
+    "blindCategory": "Mocked component tests establish receipt wording and existing recovery behavior, not native database custody, rendered layout or human comprehension."
+  }
+]

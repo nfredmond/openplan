@@ -1,0 +1,45 @@
+{
+  "initialControlLimit": "The initial UPDATE read the existing column and still failed for missing SELECT after granting UPDATE. Changed it to assign a literal, isolating UPDATE permission.",
+  "results": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "stderr": "NOTICE:  verified stage context request 34ca0f3f-0547-4282-8108-f5fe51e4f51e\nNOTICE:  verified stage segment request 3ebc394b-35de-48c2-b65d-65dce0d7c0cb\nNOTICE:  verified stage thematic request 3620e480-3d20-4934-9d3d-e14fc640e22d\nNOTICE:  authenticated role and cancellation verified for context\nNOTICE:  authenticated role and cancellation verified for segment\nNOTICE:  authenticated role and cancellation verified for thematic\n"
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "stderr": "NOTICE:  verified stage context request 34ca0f3f-0547-4282-8108-f5fe51e4f51e\nNOTICE:  verified stage segment request 3ebc394b-35de-48c2-b65d-65dce0d7c0cb\nNOTICE:  verified stage thematic request 3620e480-3d20-4934-9d3d-e14fc640e22d\nNOTICE:  authenticated role and cancellation verified for context\nNOTICE:  authenticated role and cancellation verified for segment\nNOTICE:  authenticated role and cancellation verified for thematic\n"
+    },
+    {
+      "name": "anonymous_execute",
+      "exitCode": 3,
+      "stderr": "NOTICE:  verified stage context request 34ca0f3f-0547-4282-8108-f5fe51e4f51e\nNOTICE:  verified stage segment request 3ebc394b-35de-48c2-b65d-65dce0d7c0cb\nNOTICE:  verified stage thematic request 3620e480-3d20-4934-9d3d-e14fc640e22d\nERROR:  Nonstaff execute allowed for anon\nCONTEXT:  PL/pgSQL function inline_code_block line 34 at RAISE\n"
+    },
+    {
+      "name": "service_execute",
+      "exitCode": 3,
+      "stderr": "NOTICE:  verified stage context request 34ca0f3f-0547-4282-8108-f5fe51e4f51e\nNOTICE:  verified stage segment request 3ebc394b-35de-48c2-b65d-65dce0d7c0cb\nNOTICE:  verified stage thematic request 3620e480-3d20-4934-9d3d-e14fc640e22d\nERROR:  Nonstaff execute allowed for service_role\nCONTEXT:  PL/pgSQL function inline_code_block line 34 at RAISE\n"
+    },
+    {
+      "name": "staff_direct_read",
+      "exitCode": 3,
+      "stderr": "NOTICE:  verified stage context request 34ca0f3f-0547-4282-8108-f5fe51e4f51e\nNOTICE:  verified stage segment request 3ebc394b-35de-48c2-b65d-65dce0d7c0cb\nNOTICE:  verified stage thematic request 3620e480-3d20-4934-9d3d-e14fc640e22d\nERROR:  Authenticated direct read allowed\nCONTEXT:  PL/pgSQL function inline_code_block line 17 at RAISE\n"
+    },
+    {
+      "name": "staff_direct_update",
+      "exitCode": 3,
+      "stderr": "NOTICE:  verified stage context request 34ca0f3f-0547-4282-8108-f5fe51e4f51e\nNOTICE:  verified stage segment request 3ebc394b-35de-48c2-b65d-65dce0d7c0cb\nNOTICE:  verified stage thematic request 3620e480-3d20-4934-9d3d-e14fc640e22d\nERROR:  Authenticated direct update allowed\nCONTEXT:  PL/pgSQL function inline_code_block line 21 at RAISE\n"
+    },
+    {
+      "name": "omit_current_authority",
+      "exitCode": 3,
+      "stderr": "NOTICE:  verified stage context request 34ca0f3f-0547-4282-8108-f5fe51e4f51e\nNOTICE:  verified stage segment request 3ebc394b-35de-48c2-b65d-65dce0d7c0cb\nNOTICE:  verified stage thematic request 3620e480-3d20-4934-9d3d-e14fc640e22d\nERROR:  Cancelled new queue accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 87 at RAISE\n"
+    },
+    {
+      "name": "omit_expiry",
+      "exitCode": 3,
+      "stderr": "NOTICE:  verified stage context request 34ca0f3f-0547-4282-8108-f5fe51e4f51e\nNOTICE:  verified stage segment request 3ebc394b-35de-48c2-b65d-65dce0d7c0cb\nNOTICE:  verified stage thematic request 3620e480-3d20-4934-9d3d-e14fc640e22d\nERROR:  Expired new queue accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 70 at RAISE\n"
+    }
+  ]
+}

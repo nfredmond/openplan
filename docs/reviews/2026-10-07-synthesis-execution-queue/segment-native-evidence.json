@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-07T23:55:20.663Z",
+  "requestId": "8ef00aba-f68d-472b-a142-80d16e5f7b84",
+  "queue": [
+    {
+      "id": "df7ba3b6-4cc9-4a80-b9f6-8b1ba2d23c12",
+      "authorization_id": "c843181c-7985-4e35-868a-e86ee003364b",
+      "command_sha256": "e4dc19dd213784521e4107074e4b59a0123bf6e5f5149c4805efc06cd58f8ae3"
+    }
+  ],
+  "attempts": [
+    {
+      "id": "ab534900-5a5c-4244-b239-165a10d8e93a",
+      "task_index": 0,
+      "authorization_id": "c843181c-7985-4e35-868a-e86ee003364b"
+    },
+    {
+      "id": "41e1559d-9d1a-4b4f-8d1b-1e6398df4d88",
+      "task_index": 1,
+      "authorization_id": "c843181c-7985-4e35-868a-e86ee003364b"
+    },
+    {
+      "id": "551f8720-004e-4b3e-b210-44187b1cd5a4",
+      "task_index": 2,
+      "authorization_id": "c843181c-7985-4e35-868a-e86ee003364b"
+    },
+    {
+      "id": "2ab37e25-cecf-41e8-b1ce-f009d136ee62",
+      "task_index": 3,
+      "authorization_id": "c843181c-7985-4e35-868a-e86ee003364b"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "exitCode": 0,
+  "stderr": "NOTICE:  verified stage context request 34ca0f3f-0547-4282-8108-f5fe51e4f51e\nNOTICE:  verified stage segment request 3ebc394b-35de-48c2-b65d-65dce0d7c0cb\nNOTICE:  verified stage thematic request 3620e480-3d20-4934-9d3d-e14fc640e22d\nNOTICE:  authenticated role and cancellation verified for context\nNOTICE:  authenticated role and cancellation verified for segment\nNOTICE:  authenticated role and cancellation verified for thematic\n"
+}

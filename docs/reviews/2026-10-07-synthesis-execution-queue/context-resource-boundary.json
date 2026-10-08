@@ -1,0 +1,10 @@
+{
+  "requestId": "ec8dbd11-1473-4465-a072-496c4da12fd8",
+  "next": {
+    "status": "resource_limit",
+    "frameIndex": 0,
+    "requiredTaskBytes": 68699,
+    "taskByteLimit": 65536,
+    "previousResultSha256": null
+  }
+}

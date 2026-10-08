@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-08T00:32:15.770Z",
+  "authorizationId": "dabd6700-bfdd-4de9-9025-e6239e399278",
+  "independentJournalPhase": "prepared",
+  "claimError": {
+    "code": "PT409",
+    "message": "Synthesis attempt allowance exhausted"
+  },
+  "providerCalls": 1,
+  "totalProviderRequests": 1,
+  "build": "0270e9cb",
+  "cliExit": 1,
+  "nativeAttempts": 1,
+  "nativeDispatches": 1,
+  "nativeOutputs": 0,
+  "boundary": "Sequential separate journal root after an in-flight crash. The native allowance fence refuses another claim. This is not simultaneous multi-host stress or recovery after receipt persistence."
+}

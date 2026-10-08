@@ -1,0 +1,22 @@
+{
+  "build": "0e826600",
+  "requestId": "9e39538a-42ef-4ae3-961c-991388b73bd3",
+  "method": "T3 clicks invoke native download buttons. Temporary object URL observer retains the same Blob while native download proceeds; observer restored afterward. Blob text exactly matches rendered original evidence text. Private copies parsed outside browser.",
+  "proposal": {
+    "bytes": 2164,
+    "sha256": "e26e7aa73d55cc32615eea8dd6002186531cc9c6a6420117a206b03e5a1527f3",
+    "status": "machine_unreviewed",
+    "contextEvidenceCount": 2,
+    "unassignedSourceCount": 2
+  },
+  "history": {
+    "bytes": 1615,
+    "sha256": "63cfb445fe2e07c221c96163b05b9c15c0854962adc90dc570ec9fd445933b6a",
+    "status": "proposal_complete",
+    "verifiedTaskCount": 2
+  },
+  "limitations": [
+    "Native browser download destination was not inspected; observed and parsed the exact generated blobs instead.",
+    "No semantic or practitioner acceptance."
+  ]
+}

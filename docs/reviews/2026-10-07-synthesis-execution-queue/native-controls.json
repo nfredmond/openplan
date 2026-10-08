@@ -1,0 +1,42 @@
+[
+  {
+    "name": "baseline",
+    "exitCode": 0,
+    "stderr": "NOTICE:  verified stage context request 34ca0f3f-0547-4282-8108-f5fe51e4f51e\nNOTICE:  verified stage segment request 3ebc394b-35de-48c2-b65d-65dce0d7c0cb\nNOTICE:  verified stage thematic request 3620e480-3d20-4934-9d3d-e14fc640e22d\n"
+  },
+  {
+    "name": "harmless",
+    "exitCode": 0,
+    "stderr": "NOTICE:  verified stage context request 34ca0f3f-0547-4282-8108-f5fe51e4f51e\nNOTICE:  verified stage segment request 3ebc394b-35de-48c2-b65d-65dce0d7c0cb\nNOTICE:  verified stage thematic request 3620e480-3d20-4934-9d3d-e14fc640e22d\n"
+  },
+  {
+    "name": "stage",
+    "exitCode": 3,
+    "stderr": "ERROR:  Changed stage accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 37 at RAISE\n"
+  },
+  {
+    "name": "source_hash",
+    "exitCode": 3,
+    "stderr": "ERROR:  Changed hash accepted: sourceSha256\nCONTEXT:  PL/pgSQL function inline_code_block line 32 at RAISE\n"
+  },
+  {
+    "name": "request_hash",
+    "exitCode": 3,
+    "stderr": "ERROR:  Changed hash accepted: requestIntentSha256\nCONTEXT:  PL/pgSQL function inline_code_block line 32 at RAISE\n"
+  },
+  {
+    "name": "permission_hash",
+    "exitCode": 3,
+    "stderr": "ERROR:  Changed hash accepted: authorizationIntentSha256\nCONTEXT:  PL/pgSQL function inline_code_block line 32 at RAISE\n"
+  },
+  {
+    "name": "actor",
+    "exitCode": 3,
+    "stderr": "ERROR:  Changed actor accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 41 at RAISE\n"
+  },
+  {
+    "name": "original_bytes",
+    "exitCode": 3,
+    "stderr": "ERROR:  Changed original bytes accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 55 at RAISE\n"
+  }
+]

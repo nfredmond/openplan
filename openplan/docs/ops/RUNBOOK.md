@@ -268,7 +268,9 @@ The internal synthesis worker accepts an existing native resource authorization.
 Run it from `openplan/` with the configured `.env.local`, service credential and
 integration-key secret. Apply migrations through
 `20261014000039_engagement_synthesis_context_execution.sql` before using context
-execution. The staff generation interface and proposal import remain unfinished.
+execution. Staff generation and proposal import have candidate browser evidence;
+see the [execution queue acceptance record](../../../docs/reviews/2026-10-07-synthesis-execution-queue/DESIGN.md)
+for the identified builds and remaining release boundaries.
 
 For an independent segment grant:
 
@@ -306,6 +308,56 @@ custody. Exit 2 reports an unobserved dispatch or a partial grant. Exit 1 report
 an error, interruption or refusal. The summary names scheduled tasks that were
 not processed after an unresolved predecessor. These outcomes do not establish a
 valid interpretation, representative participation, staff approval or publication.
+
+### Explicit synthesis execution queue
+
+Apply additive migrations through `20261016000013_synthesis_execution_queue.sql`.
+From `openplan/`, use the configured private `.env.local`, Supabase service
+credential and integration encryption configuration:
+
+```bash
+npm run worker:synthesis-execution -- --help
+npm run worker:synthesis-execution -- --once
+npm run worker:synthesis-execution
+```
+
+Staff first saves execution permission, opens Review scheduling and explicitly
+requests execution under that allowance. Saving permission alone does not enqueue
+it. This worker discovers explicit queue entries, not every historical allowance.
+It supports segment, context and thematic requests through their existing task
+schedulers. It does not approve or publish their outputs.
+
+Use the same absolute `OPENPLAN_SYNTHESIS_GENERATION_WORK_DIR` as the single-grant
+CLI, on private durable storage. Preserve its database-target, authorization and
+task directories across restarts. One `--once` invocation visits at most 32 queue
+entries. An empty page wraps the cursor for a later pass; it does not prove that
+the queue has no work. Continuous mode polls until SIGINT or SIGTERM. These
+commands do not install a supervisor or start the worker at boot.
+
+A queue receipt proves retention of the exact scheduling command. Current staff
+access, request state, provider revision, credentials, expiry and task history
+still govern fresh dispatch. Inspect saved analysis results for retained outputs
+and unobserved attempts. Do not delete journals or create replacement requests to
+bypass an uncertain call. If a scheduling reply is lost, retain and retry the same
+command in the staff interface to recover its receipt.
+
+For an intentionally local provider, configure its exact loopback endpoint in
+the worker process `OPENPLAN_AI_LOCAL_ENDPOINTS` JSON array. The app process
+setting is not inherited by a separately launched worker. A transport refusal
+may occur after dispatch retention. Preserve each task's history and determine
+its state before retrying; an endpoint-policy message does not prove no task ran.
+
+A task-byte diagnostic reports the complete task size and saved limit. Preserve
+the original request and journals. Review saved results before creating a separate
+request with an explicit larger budget and separate execution permission. Do not
+truncate source text or treat a larger budget as permission to repeat an uncertain
+call. This detailed diagnostic is currently in worker output, not the staff page.
+
+Exit 0 means the bounded pass returned without a schedule exception, not that all
+outputs exist. Exit 2 means at least one schedule was unconfirmed. Exit 1 means the
+pass failed or a one-pass invocation was interrupted. Keep the journal directory
+and database target unchanged when recovering. Host-loss, boot supervision and
+capacity acceptance remain separate from the recorded process-restart checks.
 
 ## Separate inspection from changes
 

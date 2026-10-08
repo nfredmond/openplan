@@ -140,7 +140,7 @@ describe("retained staff review editor", () => {
     const request = transport.mock.calls.find(([, options]) => options?.method === "POST");
     expect(String(request?.[0])).toMatch(/\/synthesis\/reviews$/);
     expect(JSON.parse(String(request?.[1]?.body))).toMatchObject({ operation: "create", actorId: scope.userId, workspaceId: scope.workspaceId, sourceId: scope.sourceId, sourceSha256: scope.sourceSha256 });
-    expect(screen.getByText(/Review saved, revision 1/)).toBeTruthy();
+    expect(screen.getByText(/Save confirmed for revision 1\. The selected revision is shown below\./)).toBeTruthy();
   });
   it("restores complete unfinished notes after remount and preserves the original after correction", async () => {
     let view = await openSeeded(); const originalText = records.get(reviewId)!.revision.contentText;
@@ -208,7 +208,7 @@ describe("retained staff review editor", () => {
     let persisted = false;
     transport.mockImplementation(async (url, options) => { if (persisted && String(url).includes("mode=read")) return json({}, 503); const result = await server(url, options); if (options?.method === "POST") persisted = true; return result; });
     render(<SynthesisReviewEditor {...props} />); fireEvent.click(await screen.findByRole("button", { name: "Create staff review" }));
-    expect(await screen.findByText("Review saved, revision 1.")).toBeTruthy();
+    expect(await screen.findByText("Save confirmed for revision 1. The selected revision is shown below.")).toBeTruthy();
     await screen.findByText(/Any earlier confirmed save remains retained/);
     expect(readReviewWorkingCopy(localStorage, scope).pending).toBeNull();
   });

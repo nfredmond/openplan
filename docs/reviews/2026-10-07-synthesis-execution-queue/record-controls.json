@@ -1,0 +1,30 @@
+[
+  {
+    "name": "harmless",
+    "exitCode": 0,
+    "expected": 0,
+    "assertionFailure": false,
+    "tail": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/synthesis-execution-queue-20261007/openplan\n\n\n Test Files  1 passed (1)\n      Tests  20 passed (20)\n   Start at  16:00:57\n   Duration  573ms (transform 40ms, setup 57ms, import 55ms, tests 12ms, environment 351ms)\n\n"
+  },
+  {
+    "name": "ignore_exact_command",
+    "exitCode": 1,
+    "expected": 1,
+    "assertionFailure": true,
+    "tail": "a256\": \"05829dfdf144e68064fae9235a6efb59a1750fb3453dc9b3fb3496990eaaf3e3\",\n+     \"commandText\": \"{\n+   \\\"schemaVersion\\\": 1,\n+   \\\"queueId\\\": \\\"00000000-0000-4000-8000-000000000001\\\",\n+   \\\"authorizationId\\\": \\\"00000000-0000-4000-8000-000000000002\\\",\n+   \\\"authorizationIntentSha256\\\": \\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\",\n+   \\\"campaignId\\\": \\\"00000000-0000-4000-8000-000000000003\\\",\n+   \\\"workspaceId\\\": \\\"00000000-0000-4000-8000-000000000004\\\",\n+   \\\"requestId\\\": \\\"00000000-0000-4000-8000-000000000005\\\",\n+   \\\"actorId\\\": \\\"00000000-0000-4000-8000-000000000006\\\",\n+   \\\"sourceId\\\": \\\"00000000-0000-4000-8000-000000000007\\\",\n+   \\\"sourceSha256\\\": \\\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\\",\n+   \\\"requestIntentSha256\\\": \\\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\\\",\n+   \\\"stage\\\": \\\"segment\\\"\n+ }\",\n+     \"createdAt\": \"2026-10-07T23:00:00Z\",\n+     \"queueId\": \"00000000-0000-4000-8000-000000000001\",\n+     \"schemaVersion\": 1,\n+   },\n  }\n\n \u276f src/test/synthesis-execution-queue-records.test.ts:41:107\n     39|   });\n     40|   it(\"does not accept normalized bytes in place of the saved command\",\u2026\n     41|     await expect(verifySynthesisExecutionQueueReceipt(receipt(JSON.str\u2026\n       |                                                                                                           ^\n     42|   });\n     43|   it(\"rejects a byte-oversized original before parsing\", () => {\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[12/12]\u23af\n\n"
+  },
+  {
+    "name": "ignore_queue_identity",
+    "exitCode": 1,
+    "expected": 1,
+    "assertionFailure": true,
+    "tail": "  \"workspaceId\": \"00000000-0000-4000-8000-000000000004\",\n+   },\n+   \"receipt\": {\n+     \"commandSha256\": \"2a4927ab5b0bf7e368131fcc8c911292fbeabab9ebbdf34ca3f0b05e6f0a28fa\",\n+     \"commandText\": \"{\\\"schemaVersion\\\":1,\\\"queueId\\\":\\\"00000000-0000-4000-8000-000000000001\\\",\\\"authorizationId\\\":\\\"00000000-0000-4000-8000-000000000002\\\",\\\"authorizationIntentSha256\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\",\\\"campaignId\\\":\\\"00000000-0000-4000-8000-000000000003\\\",\\\"workspaceId\\\":\\\"00000000-0000-4000-8000-000000000004\\\",\\\"requestId\\\":\\\"00000000-0000-4000-8000-000000000005\\\",\\\"actorId\\\":\\\"00000000-0000-4000-8000-000000000006\\\",\\\"sourceId\\\":\\\"00000000-0000-4000-8000-000000000007\\\",\\\"sourceSha256\\\":\\\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\\",\\\"requestIntentSha256\\\":\\\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\\\",\\\"stage\\\":\\\"segment\\\"}\",\n+     \"createdAt\": \"2026-10-07T23:00:00Z\",\n+     \"queueId\": \"00000000-0000-4000-8000-000000000099\",\n+     \"schemaVersion\": 1,\n+   },\n  }\n\n \u276f src/test/synthesis-execution-queue-records.test.ts:35:99\n     33|   });\n     34|   it(\"rejects a separately changed queue receipt identity\", async () =\u2026\n     35|     await expect(verifySynthesisExecutionQueueReceipt({ ...receipt(), \u2026\n       |                                                                                                   ^\n     36|   });\n     37|   it(\"rejects checksum substitution\", async () => {\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  },
+  {
+    "name": "ignore_checksum",
+    "exitCode": 1,
+    "expected": 1,
+    "assertionFailure": true,
+    "tail": ": \"00000000-0000-4000-8000-000000000004\",\n+   },\n+   \"receipt\": {\n+     \"commandSha256\": \"0000000000000000000000000000000000000000000000000000000000000000\",\n+     \"commandText\": \"{\\\"schemaVersion\\\":1,\\\"queueId\\\":\\\"00000000-0000-4000-8000-000000000001\\\",\\\"authorizationId\\\":\\\"00000000-0000-4000-8000-000000000002\\\",\\\"authorizationIntentSha256\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\",\\\"campaignId\\\":\\\"00000000-0000-4000-8000-000000000003\\\",\\\"workspaceId\\\":\\\"00000000-0000-4000-8000-000000000004\\\",\\\"requestId\\\":\\\"00000000-0000-4000-8000-000000000005\\\",\\\"actorId\\\":\\\"00000000-0000-4000-8000-000000000006\\\",\\\"sourceId\\\":\\\"00000000-0000-4000-8000-000000000007\\\",\\\"sourceSha256\\\":\\\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\\",\\\"requestIntentSha256\\\":\\\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\\\",\\\"stage\\\":\\\"segment\\\"}\",\n+     \"createdAt\": \"2026-10-07T23:00:00Z\",\n+     \"queueId\": \"00000000-0000-4000-8000-000000000001\",\n+     \"schemaVersion\": 1,\n+   },\n  }\n\n \u276f src/test/synthesis-execution-queue-records.test.ts:38:113\n     36|   });\n     37|   it(\"rejects checksum substitution\", async () => {\n     38|     await expect(verifySynthesisExecutionQueueReceipt({ ...receipt(), \u2026\n       |                                                                                                                 ^\n     39|   });\n     40|   it(\"does not accept normalized bytes in place of the saved command\",\u2026\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  }
+]

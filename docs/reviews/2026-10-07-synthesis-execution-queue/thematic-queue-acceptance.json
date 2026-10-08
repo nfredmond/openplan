@@ -1,0 +1,51 @@
+{
+  "recordedAt": "2026-10-08T00:10:31.725540+00:00",
+  "build": "0e826600",
+  "requestId": "9e39538a-42ef-4ae3-961c-991388b73bd3",
+  "authorizationId": "940ac12c-56b2-4d0f-95d8-667d791a0f56",
+  "contextRequests": [
+    "faf4121a-bd8c-46c5-878a-4a3ba550d974",
+    "fab67c76-0f21-455e-960e-3d75d22320a7"
+  ],
+  "frameCount": 1,
+  "taskCount": 2,
+  "savedBytes": 47985,
+  "taskByteLimit": 131072,
+  "providerCallsAfterExecution": 2,
+  "providerCallsAfterReplay": 2,
+  "journals": [
+    {
+      "phase": "delivered",
+      "taskIndex": 0,
+      "attemptId": "5e964014-719d-4e13-80e3-dfe73509609a"
+    },
+    {
+      "phase": "delivered",
+      "taskIndex": 1,
+      "attemptId": "69326bbc-83fc-4c02-9f7e-713e725d3270"
+    }
+  ],
+  "retainedProposal": {
+    "status": "complete",
+    "title": "SYNTHETIC machine proposal for browser inspection",
+    "notes": "SYNTHETIC retained worker output. Staff have not reviewed this interpretation.",
+    "groups": [],
+    "unassigned": [
+      {
+        "sourceId": "item:26e3f37d-ef2c-4080-834f-a3351692a484",
+        "reason": "SYNTHETIC retained contribution awaiting staff interpretation",
+        "citations": []
+      },
+      {
+        "sourceId": "item:99fa474c-7e7f-4ec5-8f80-8be07c2dd4d2",
+        "reason": "SYNTHETIC retained contribution awaiting staff interpretation",
+        "citations": []
+      }
+    ],
+    "uncertainties": [
+      "SYNTHETIC structural browser exercise; no semantic inference"
+    ]
+  },
+  "browserResult": "A machine draft is ready for staff review; 2 complete output checks",
+  "boundary": "Synthetic structural execution only. No staff approval, publication, semantic validity or practitioner acceptance. Earlier low-budget context remains unconfirmed."
+}

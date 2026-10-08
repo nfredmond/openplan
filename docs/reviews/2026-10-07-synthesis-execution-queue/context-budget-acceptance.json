@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-08T00:03:08.599891+00:00",
+  "build": "0e826600",
+  "requestId": "faf4121a-bd8c-46c5-878a-4a3ba550d974",
+  "authorizationId": "022f500a-a319-45ae-92a5-62aaca0a919f",
+  "taskByteLimit": 131072,
+  "frameCount": 4,
+  "acceptedProviderCalls": 4,
+  "journals": [
+    {
+      "phase": "delivered",
+      "taskIndex": 0,
+      "attemptId": "86edd947-63e4-4a4c-8088-cb42ee9613a6"
+    },
+    {
+      "phase": "delivered",
+      "taskIndex": 1,
+      "attemptId": "33819639-ed3a-43f8-8760-f7202e0b84aa"
+    },
+    {
+      "phase": "delivered",
+      "taskIndex": 2,
+      "attemptId": "9445a814-cd7d-4f06-a48e-1a08423d58de"
+    },
+    {
+      "phase": "delivered",
+      "taskIndex": 3,
+      "attemptId": "7e56813f-9769-409b-8679-22b966234bd9"
+    }
+  ],
+  "scope": "Same long contribution and parent segment selection as failed 65536-byte request; no original request changed",
+  "replay": "Queue traversal again; accepted provider calls remain four",
+  "limitation": "Synthetic structural outputs; no meaning, staff or public acceptance.",
+  "replayPass": {
+    "visited": 4,
+    "unconfirmed": 1,
+    "exitCode": 2,
+    "boundary": "Earlier 65536-byte context request remains queued and fails before claim. This new request retains four delivered journals."
+  }
+}
