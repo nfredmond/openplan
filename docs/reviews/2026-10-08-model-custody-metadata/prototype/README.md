@@ -282,3 +282,33 @@ normal worker restart recovery. The journal is a prototype and has no dispatch
 caller. Credentials must not be stored as deployment identity or request data.
 The next integration boundary is an actual command committed by the server,
 followed by lost acknowledgement and retry using the retained request identity.
+
+## Committed command with unrecorded acknowledgement
+
+`verify_journal_recovery.py` joins the journal to the actual prototype artifact
+command in private PostgreSQL table copies. The first child prepares the request,
+executes the service-role command with returned bytes discarded, waits for the
+SQL client to finish and calls `os._exit(77)` without recording a receipt. A
+separate connection confirms the artifact and server receipt committed. A fresh
+child loads the pending request, retries it, records the returned receipt and
+calls `os._exit(78)`. Independent reads confirm one artifact, one server receipt,
+the unchanged original receipt in SQLite and no pending request.
+
+Baseline, harmless and restored cases pass. Three adverse controls fail for
+the intended reasons: omitted preparation loses the recovery request, a new
+request ID duplicates server records, and omitted resolution leaves the journal
+pending. Each case creates and removes its own schema, then verifies removal.
+
+```bash
+OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER=supabase_db_openplan-restore-target-2026091050 \
+python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_journal_recovery.py
+```
+
+The probe uses committed SQL in private copies, not an application migration.
+`LIKE INCLUDING ALL` retains columns, checks and indexes but not original
+application foreign keys, triggers or RLS. Prototype triggers are installed in
+the private schema. The earlier native rollback suite covers the original-table
+sequential boundary separately. Discarding SQL output tests an unrecorded
+acknowledgement; it does not inject a network failure or prove PostgREST behavior.
+The probe does not launch a normal worker, validate scientific outputs, test
+power loss or install automatic recovery dispatch. Those boundaries remain open.
