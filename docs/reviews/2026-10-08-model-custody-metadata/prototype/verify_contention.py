@@ -16,7 +16,7 @@ container = os.environ.get('OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER', '')
 if not re.fullmatch(r'supabase_db_openplan-restore-target-[1-9][0-9]*', container):
     raise SystemExit('Select a named disposable restore-target container explicitly')
 root = Path(__file__).resolve().parent
-source = '\n'.join((root / name).read_text() for name in ('claim.sql', 'write.sql', 'reap.sql', 'relaunch.sql'))
+source = '\n'.join((root / name).read_text() for name in ('claim.sql', 'write.sql', 'reap.sql', 'relaunch.sql', 'artifact.sql'))
 command = ['docker', 'exec', '-i', container, 'psql', '-X', '-qAt', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1']
 
 
@@ -63,6 +63,15 @@ VALUES('{stage}','{run}','Synthetic claim','queued',1);
             write_call = f"{schema}.write_model_stage_attempt('{request_b}','{attempt}','succeeded','finished',NULL)"
             reap_call = f"to_json({schema}.reap_model_run_if_stale('{run}',clock_timestamp(),'Synthetic race'))"
             owner_call, contender_call = (reap_call, write_call) if mode == 'reaper-first' else (write_call, reap_call)
+            if mode.startswith('artifact-'):
+                payload = json.dumps({'artifact_type': 'synthetic_metadata', 'file_url': 'local://synthetic.json', 'file_size_bytes': 0, 'content_hash': 'a' * 64})
+                artifact_call = f"{schema}.write_model_attempt_artifact('{request_b}','{attempt}','{payload}'::jsonb)"
+                if mode == 'artifact-retry':
+                    owner_call = contender_call = artifact_call
+                elif mode == 'artifact-reaper-first':
+                    owner_call, contender_call = reap_call, artifact_call
+                else:
+                    owner_call, contender_call = artifact_call, reap_call
             if mode.startswith('relaunch-'):
                 sql(f"SET ROLE service_role; SELECT {schema}.write_model_stage_attempt('{uuid.uuid4()}','{attempt}','failed','initial failure','Synthetic failure');")
                 retained_run = json.loads(sql(f"SELECT json_build_object('workspace',workspace_id,'updated',updated_at) FROM {schema}.model_runs WHERE id='{run}';"))
@@ -105,6 +114,27 @@ VALUES('{stage}','{run}','Synthetic claim','queued',1);
         if owner.returncode:
             raise RuntimeError(owner_error)
         output, error = contender.communicate(timeout=15)
+        if mode.startswith('artifact-'):
+            if mode == 'artifact-reaper-first':
+                if contender.returncode == 0:
+                    raise AssertionError('revoked artifact writer succeeded')
+                if 'Model artifact attempt no longer owns work' not in error:
+                    raise RuntimeError(error)
+            else:
+                if contender.returncode:
+                    if mode == 'artifact-retry' and 'duplicate key value' in error:
+                        raise AssertionError('concurrent artifact retry rejected')
+                    raise RuntimeError(error)
+                second = json.loads(output.strip())
+                if mode == 'artifact-retry' and second != first:
+                    raise AssertionError('concurrent artifact retry changed')
+                if mode == 'artifact-writer-first' and second is not True:
+                    raise AssertionError('artifact write prevented reaping')
+            retained = json.loads(sql(f"SELECT json_build_object('run',(SELECT status FROM {schema}.model_runs WHERE id='{run}'),'active',(SELECT active_attempt_id FROM {schema}.model_run_stages WHERE id='{stage}'),'artifacts',(SELECT count(*) FROM {schema}.model_run_artifacts),'receipts',(SELECT count(*) FROM {schema}.model_artifact_write_receipts),'bound',(SELECT count(*) FROM {schema}.model_run_artifacts WHERE attempt_id='{attempt}' AND run_id='{run}' AND stage_id='{stage}'),'revoked',(SELECT revoked_at IS NOT NULL FROM {schema}.model_stage_attempts WHERE id='{attempt}'));"))
+            count = 0 if mode == 'artifact-reaper-first' else 1
+            if retained != {'run': 'running' if mode == 'artifact-retry' else 'failed', 'active': attempt if mode == 'artifact-retry' else None, 'artifacts': count, 'receipts': count, 'bound': count, 'revoked': mode != 'artifact-retry'}:
+                raise AssertionError('concurrent artifact retained state differs')
+            return {'blocked_observed': True, 'retained_artifacts': count, 'exact_attempt_binding': True}
         if mode.startswith('relaunch-'):
             if mode == 'relaunch-old-writer':
                 if contender.returncode == 0:
@@ -184,6 +214,19 @@ for name, candidate, expected, mode in (
     ('relaunch-retry-restored', source, None, 'relaunch-retry'),
     ('allow-old-relaunch-writer', source.replace('v_stage.active_attempt_id IS DISTINCT FROM p_attempt_id', 'false').replace("v_stage.status <> 'running'", 'false').replace('AND c.attempt_id IS NOT DISTINCT FROM NEW.active_attempt_id', ''), 'old writer survived concurrent relaunch', 'relaunch-old-writer'),
     ('relaunch-old-writer-restored', source, None, 'relaunch-old-writer'),
+    ('artifact-retry', source, None, 'artifact-retry'),
+    ('artifact-retry-harmless', source + '\n-- Harmless artifact control.\n', None, 'artifact-retry'),
+    ('artifact-ignore-receipt', source.replace('FROM public.model_artifact_write_receipts WHERE request_id=p_request_id;', 'FROM public.model_artifact_write_receipts WHERE false;'), 'concurrent artifact retry rejected', 'artifact-retry'),
+    ('artifact-retry-restored', source, None, 'artifact-retry'),
+    ('artifact-reaper-first', source, None, 'artifact-reaper-first'),
+    ('artifact-reaper-first-harmless', source + '\n-- Harmless artifact control.\n', None, 'artifact-reaper-first'),
+    ('artifact-revoked-write', source.replace("IF v_stage.active_attempt_id IS DISTINCT FROM p_attempt_id OR v_stage.status<>'running'\n     OR v_run.status NOT IN ('queued','running') OR v_attempt.revoked_at IS NOT NULL THEN\n  RAISE EXCEPTION 'Model artifact", "IF false THEN\n  RAISE EXCEPTION 'Model artifact"), 'revoked artifact writer succeeded', 'artifact-reaper-first'),
+    ('artifact-reaper-first-restored', source, None, 'artifact-reaper-first'),
+    ('artifact-writer-first', source, None, 'artifact-writer-first'),
+    ('artifact-writer-first-harmless', source + '\n-- Harmless artifact control.\n', None, 'artifact-writer-first'),
+    ('artifact-blocks-reaper', source.replace("IF NOT FOUND OR v_run.status NOT IN ('queued','running') OR v_run.updated_at>p_stale_before THEN", "IF NOT FOUND OR EXISTS(SELECT 1 FROM public.model_run_artifacts WHERE run_id=p_run_id) OR v_run.status NOT IN ('queued','running') OR v_run.updated_at>p_stale_before THEN"), 'artifact write prevented reaping', 'artifact-writer-first'),
+    ('artifact-writer-first-restored', source, None, 'artifact-writer-first'),
+
 
 ):
     try:
