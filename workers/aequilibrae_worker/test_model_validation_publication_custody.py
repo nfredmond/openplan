@@ -35,7 +35,7 @@ class PublicationCustodyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             with patch.object(main, 'upload_immutable_validation_json', side_effect=lambda run, identity, path: 'storage://synthetic/' + Path(path).name), \
-                 patch.object(main, 'sb_record_modeling_validation_assessment', side_effect=main.WorkerStateWriteUnconfirmed('synthetic uncertainty') if uncertain else ValueError('synthetic preparation failure') if failed else None, return_value=receipt):
+                 patch.object(main, 'sb_record_retained_modeling_validation_assessment', side_effect=main.WorkerStateWriteUnconfirmed('synthetic uncertainty') if uncertain else ValueError('synthetic preparation failure') if failed else None, return_value=receipt):
                 if caller == 'behavioral_demand':
                     invoke = lambda: main.persist_rules_v4_validation_records(
                         run_id='synthetic-run', stage_id='synthetic-stage', workspace_id='synthetic-workspace',
@@ -49,7 +49,7 @@ class PublicationCustodyTests(unittest.TestCase):
                     blocks = [node for node in ast.walk(function) if isinstance(node, ast.Try)
                               and any(isinstance(statement, ast.Assign) and isinstance(statement.value, ast.Call)
                                       and isinstance(statement.value.func, ast.Name)
-                                      and statement.value.func.id == 'sb_record_modeling_validation_assessment'
+                                      and statement.value.func.id == 'sb_record_retained_modeling_validation_assessment'
                                       for statement in node.body)]
                     self.assertEqual(len(blocks), 1)
                     paths = {}

@@ -309,3 +309,27 @@ PR #162 merges to main as `73c4a34ae5658488192c6582826d6babf9cebbe1` after
 all seven checks pass at `67be2aff9e2f8adf42cc4168d65505f4cb711103`.
 PR #163's local QA remains live on its unchanged `9385deba` checkout, so that
 checkout has not been updated or retargeted during acceptance.
+
+## Normal caller delivery connection
+
+Both normal rules-v4 assessment callers now invoke the retained helper with
+their existing assessment UUID and an assessment-local `command-journal`.
+The helper requires explicit `OPENPLAN_DEPLOYMENT_ID`, prepares the stable
+request, sends the retained command and returns its checked assessment row.
+All delivery or preparation uncertainty becomes `WorkerStateWriteUnconfirmed`.
+There is no old-RPC fallback. Local and deployment instructions now require
+migration 15, the stable installation identity and durable working storage.
+
+Three helper tests pass for exact prepared transport and cached receipt,
+lost-response pending state, and missing configuration before transport.
+The existing three caller tests also pass after targeting the new helper.
+Harmless and restored controls pass; wrong receipt shape, swallowed uncertainty
+and an implicit deployment fallback fail. The implicit-fallback mutation first
+survived because an invalid test URL masked the boundary. A valid URL and key
+fixture now isolates the deployment check, and that mutation is detected.
+Evidence is `model-command-client-20261008-proof/assessment-worker-helper-controls.json`.
+
+This connects normal write calls, not complete restart reconciliation. The
+worker does not yet reload and continue the original assessment after receipt
+recovery. Normal-entry-point native HTTP proof and full worker regression for
+this checkpoint remain pending. No running application worker was upgraded.
