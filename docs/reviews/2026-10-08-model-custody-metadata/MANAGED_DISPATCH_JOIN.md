@@ -698,3 +698,36 @@ from changing the consumer directory later. Native PostgREST producer projection
 transactional revocation fencing, complete package/project/state handoff and
 managed assessment/publication remain open. The normal dispatcher still does
 not activate the managed binding, and no scientific acceptance claim changes.
+
+### Installed native agreement input read
+
+`prototype/verify_agreement_input_http.py` now exercises the actual normal worker
+artifact query and retention function through a bounded loopback PostgREST
+container. It clones the owned installed migration-21 proof database, creates
+synthetic producers using native claim/output/terminal commands, and retains
+small real CSV files under full run identities. A separate explicitly unmanaged
+completed producer checks the legacy branch. No application database is changed.
+
+Baseline, harmless and restored controls each accept completed managed and
+legacy producers and refuse running and failed producers. The completion-check
+mutation admits the real running producer, demonstrating that the boundary can
+fail. The failed producer remains refused through its independent attempt check.
+The actual query completes 17 HTTP reads with status 200, including an empty
+result for a different run. Accepted inputs are separate files with matching
+bytes and distinct inodes.
+
+Anonymous reads return an empty array. A real member of the fixture workspace
+receives the expected artifact and joined producer; an authenticated synthetic
+identity with no memberships receives no rows. These are focused read cases,
+not an exhaustive role or cross-workspace matrix. Before/after content checksums
+match across model runs, stages, attempts, artifacts and all three relevant
+claim/stage/artifact receipt tables. The read exercise changes no native model
+record. `prototype/agreement-input-http.json` retains the sanitized outcomes and
+worker source hash. Private v1 and expanded v2 proof directories retain their
+clone identities; each temporary gateway is removed by the existing cleanup.
+
+This supplies the previously missing installed PostgREST projection and focused
+read-authorization evidence. Concurrent revocation fencing, complete package/
+project/state transfer, managed assessment/publication, full poll/push activation,
+scientific acceptance and T3 visual acceptance remain open. No model computation
+or scientific holdout runs in this proof.
