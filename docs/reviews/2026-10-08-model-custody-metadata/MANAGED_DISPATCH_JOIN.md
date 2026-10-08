@@ -207,3 +207,29 @@ Results are in `prototype/skip-client-controls.json`.
 This is client support for the prototype, not activation of normal dispatch.
 Native HTTP lost-reply recovery, an installed additive migration, receipt
 retention integration and the complete two-worker join remain unproved.
+
+### Native HTTP recovery after a committed lost reply
+
+`prototype/verify_skip_http_recovery.py` clones the owned retention database and
+installs the prototype there. A bounded PostgREST container and loopback fault
+bridge carry the real worker client's RPC. The bridge waits for a successful
+database response, then closes the connection before returning that response to
+the client. The original command remains pending locally while its receipt is
+confirmed independently in PostgreSQL.
+
+For both `skipped` and `not_skipped`, a fresh recovery CLI process retrieves the
+same retained outcome. Parent, stage, attempt, execution-start and receipt rows
+remain unchanged by that retry. Another fresh process uses the cached receipt
+without HTTP or a credential. Recovery still reports no model resumption.
+
+Baseline, harmless-comment and restored runs pass. Each uses four HTTP calls
+across the two cases. Removing receipt insertion causes the expected
+`Committed skip receipt missing` failure after the deliberately dropped reply.
+The bounded gateway is removed after every variant, including the failed
+control. Synthetic clone records and journals remain in the private proof
+directory. Results are in `prototype/skip-http-recovery.json`.
+
+This closes the native lost-reply boundary for the proposed skip operation.
+It does not install a migration, connect either normal dispatcher or establish
+whole-run recovery, browser acceptance or scientific accuracy. Receipt retention
+must join the installed lifecycle before deployment.
