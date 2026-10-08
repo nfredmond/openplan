@@ -247,3 +247,31 @@ candidate. Proof objects are removed after both suites. Results are retained
 under `model-command-client-20261008-proof/atomic-publication-fields/` and
 `publication-contention-fields/`. This does not close the candidate's remaining
 installation, HTTP/client, county, managed-ingestion or scientific boundaries.
+
+## Retained publication client preparation
+
+The existing retained-command client now recognizes the uninstalled
+`publish_legacy_model_evidence` candidate. It validates the complete prepared
+body, saves the exact command before transport, maps its RPC arguments, and
+checks receipt identity, claim fields, metric contents and row identities.
+Metric order may differ, but missing or duplicated rows are refused. Boolean
+and numeric values remain distinct. A replacement keeps the prior claim ID.
+
+The recovery command can list and recover publication requests using run and
+track identity, without inventing a stage. Failed or mismatched replies stay
+pending; the original checked receipt avoids a second POST. Normal workers do
+not call this candidate, and no migration has installed it.
+
+Five publication tests and 20 existing client/journal/recovery tests pass. The
+new cases include 13 malformed receipts and eight invalid command variants.
+Baseline, harmless and restored controls pass; ten targeted faults in receipt
+identity/values, JSON kinds, metric counts/identities, previous claim identity,
+command scope/tier and duplicate metrics are detected. Private controls are in
+`model-command-client-20261008-proof/publication-client-controls.json`. An initial
+command used an incorrect relative output path and failed to create the new
+test file; the corrected worker-directory command produced these results.
+
+These tests use injected transport and private SQLite journals. Native command
+delivery, socket interruption and process recovery for this new operation remain
+unverified. The earlier native legacy-writer proof does not establish those
+new-operation boundaries. County and managed publication remain incomplete.

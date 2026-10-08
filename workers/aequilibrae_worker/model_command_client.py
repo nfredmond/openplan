@@ -10,6 +10,7 @@ import re
 from urllib.parse import urlsplit
 from uuid import UUID
 import model_command_journal as journal
+import model_publication_values as publication
 from datetime import datetime
 
 
@@ -172,6 +173,9 @@ def validate_command(command: dict):
     _uuid(command['request_id'])
     args = command['arguments']
     operation = command['operation']
+    if operation == 'publish_legacy_model_evidence':
+        publication.validate(command)
+        return
     if operation == 'write_model_attempt_artifact':
         _validate_artifact(command)
         return
@@ -214,6 +218,11 @@ def _timestamp(value):
 
 
 def checked_receipt(command: dict, receipt: object) -> dict:
+    if command['operation'] == 'publish_legacy_model_evidence':
+        try:
+            return publication.check_receipt(command, receipt)
+        except (ValueError, TypeError, KeyError, AttributeError):
+            raise DeliveryUnconfirmed('Publication receipt does not match the prepared evidence') from None
     if command['operation'] == 'write_model_attempt_artifact':
         return _artifact_receipt(command, receipt)
     if command['operation'] == 'write_model_attempt_kpi':
@@ -261,6 +270,9 @@ def checked_receipt(command: dict, receipt: object) -> dict:
 
 def rpc_arguments(command: dict) -> dict:
     args = command['arguments']
+    if command['operation'] == 'publish_legacy_model_evidence':
+        return {'p_request': command['request_id'], 'p_workspace': args['workspace_id'], 'p_run': args['run_id'],
+                'p_track': args['track'], 'p_expected': args['expected'], 'p_payload': args['payload']}
     result = {'p_request_id': command['request_id']}
     keys = {
         'claim_model_stage_attempt': ('stage_id', 'worker_id'),
