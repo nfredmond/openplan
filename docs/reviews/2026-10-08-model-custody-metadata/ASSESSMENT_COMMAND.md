@@ -45,7 +45,7 @@ termination and managed-parent refusal. Candidate objects are absent afterward.
 Private results are retained in
 `model-command-client-20261008-proof/assessment-command/assessment-command.json`.
 
-No application migration installs this candidate. Separate-session concurrency,
+No application migration installs this candidate.
 HTTP lost-reply and fresh-process recovery, command-journal/client integration,
 normal dispatcher adoption, actual Storage integrity, managed ingestion and
 independent scientific acceptance remain unfinished. These are required next
@@ -53,3 +53,25 @@ boundaries, not implied by the transaction tests.
 
 This work uses `work/model-assessment-command-20261008`. The parent publication
 checkout remains frozen for its already-running QA gate on `9385deba`.
+
+## Separate-session ordering proof
+
+`prototype/verify_assessment_contention.py` now exercises four orderings using
+independent PostgreSQL service-role sessions. Each contender demonstrably waits
+on a database lock before the owner commits. Simultaneous exact retries retain
+one receipt, one assessment and four artifacts, including the original output.
+A changed payload with the same request ID waits and then fails. A reaper that
+commits first prevents new assessment records. An assessment that commits first
+retains its receipt after the reaper stops the run, and its exact retry returns
+that historical receipt.
+
+Baseline, harmless-comment and restored variants pass all four orderings.
+Bypassing payload comparison, returning a wrong retry receipt and bypassing the
+stopped-run guard each fail for the expected reason. All 15 cases complete.
+Candidate function and table cleanup is confirmed after the owned sessions exit.
+Synthetic fixture records remain in the named proof database. Private evidence
+is `model-command-client-20261008-proof/assessment-contention/assessment-contention.json`.
+
+This proves legacy assessment transaction ordering against the actual stale-run
+reaper. It does not exercise HTTP loss, journal recovery, normal workers,
+managed ingestion, Storage bytes or scientific acceptance.
