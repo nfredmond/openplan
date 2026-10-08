@@ -786,3 +786,20 @@ are in `inflight-interruption-acceptance.json`. This closes the exercised
 in-flight crash boundary for a segment call. Competing journal roots and crashes
 after receipt persistence remain distinct checks. Synthetic interruption
 evidence does not establish provider interpretation quality or human acceptance.
+
+
+## Independent journal root and operator guidance
+
+A separate private journal root runs the single-task CLI against the interrupted
+segment allowance. It exits 1 and retains a prepared journal. A native claim
+with that exact journal identity returns PT409, Synthesis attempt allowance
+exhausted. The original request still has one attempt, one dispatch and no
+output; the provider still records one HTTP request. The refusal is a database
+allowance fence, not just a same-directory lock. This is a sequential
+independent-root recovery check, not simultaneous multi-host stress.
+`independent-root-acceptance.json` records its boundary.
+
+The operator runbook now describes explicit queue scheduling, bounded pages,
+shared durable journals, lost-reply recovery, worker-local endpoint policy,
+task-byte diagnostics and exit meanings. It retains the distinction between
+process restart evidence and host-loss, capacity or boot-supervision acceptance.
