@@ -25,14 +25,14 @@ class PackagePathTests(unittest.TestCase):
         def stop(*args, **kwargs):
             seen.append(inspect.currentframe().f_back.f_locals['pkg_dir'])
             raise StopBeforeComputation()
-        with managed.bind(self.writer), patch.object(aeq.os,'makedirs',new=stop):
+        with managed.bind(self.writer), patch.object(aeq,'create_assignment_output_directory',new=stop):
             with self.assertRaises(StopBeforeComputation):
                 aeq.stage_assignment(self.writer.context.run_id,self.writer.context.stage_id,str(root),{},expected)
         self.assertEqual(seen,[expected])
 
     def test_retained_input_cannot_be_used_for_assignment(self):
         root, _ = self.prepared()
-        with managed.bind(self.writer), patch.object(aeq.os,'makedirs',side_effect=AssertionError('Stage continued')):
+        with managed.bind(self.writer), patch.object(aeq,'create_assignment_output_directory',side_effect=AssertionError('Stage continued')):
             with self.assertRaises(aeq.WorkerStateWriteUnconfirmed) as error:
                 aeq.stage_assignment(self.writer.context.run_id,self.writer.context.stage_id,str(root),{},str(root/'predecessor_package/files'))
         self.assertIn('differs from confirmed',str(error.exception.__cause__))

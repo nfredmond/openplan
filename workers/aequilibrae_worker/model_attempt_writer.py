@@ -192,6 +192,27 @@ class AttemptWriter:
             self.stopped = True
             raise
 
+    def create_assignment_outputs(self, work_dir, name):
+        """Create a new assignment destination through the pinned attempt directory.
+
+        This reserves local files only. Completion and engine closure remain separate.
+        """
+        import os
+        self.require_open()
+        try:
+            if self.files is None or Path(work_dir) != self.files.path:
+                raise ValueError('Assignment outputs require the owned attempt directory')
+            if name not in ('run_output', 'activitysim_assignment_output'):
+                raise ValueError('Unsupported assignment output directory name')
+            with self.files.pinned() as descriptor:
+                os.mkdir(name, mode=0o700, dir_fd=descriptor)
+                os.fsync(descriptor)
+            self.files.verify()
+            return str(self.files.path / name)
+        except BaseException:
+            self.stopped = True
+            raise
+
     def retain_assignment_outputs(self, directory):
         """Retain this attempt's completed assignment outputs before a successor can copy it."""
         import model_package_inputs

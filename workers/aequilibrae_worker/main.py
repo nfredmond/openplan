@@ -4164,8 +4164,7 @@ def stage_assignment(
 
     proj_dir = project_work_directory(work_dir)
     pkg_dir = package_work_directory(work_dir, pkg_dir)
-    out_dir = os.path.join(work_dir, output_dir_name)
-    os.makedirs(out_dir, exist_ok=True)
+    out_dir = create_assignment_output_directory(work_dir, output_dir_name)
 
     centroid_map = setup_result["centroid_map"]
     # Keys might be strings after JSON round-trip
@@ -6948,6 +6947,20 @@ def project_work_directory(work_dir: str) -> str:
         return writer.project_directory(work_dir)
     except Exception as error:
         raise WorkerStateWriteUnconfirmed("Managed project path requires reconciliation") from error
+
+
+def create_assignment_output_directory(work_dir: str, name: str) -> str:
+    """Reserve fresh managed outputs without adopting previous assignment files."""
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is None:
+        path = os.path.join(work_dir, name)
+        os.makedirs(path, exist_ok=True)
+        return path
+    try:
+        return writer.create_assignment_outputs(work_dir, name)
+    except Exception as error:
+        raise WorkerStateWriteUnconfirmed("Assignment output creation requires reconciliation") from error
 
 
 def output_work_directory(work_dir: str) -> str:

@@ -37,7 +37,7 @@ class ProjectPathTests(unittest.TestCase):
         def stop(*args, **kwargs):
             seen.append(inspect.currentframe().f_back.f_locals['proj_dir'])
             raise StopBeforeComputation()
-        with managed.bind(self.writer), patch.object(aeq.os, 'makedirs', new=stop):
+        with managed.bind(self.writer), patch.object(aeq, 'create_assignment_output_directory', new=stop):
             with self.assertRaises(StopBeforeComputation):
                 aeq.stage_assignment(self.writer.context.run_id, self.writer.context.stage_id, str(root), {}, self.writer.package_directory(root))
         self.assertEqual(seen, [expected])

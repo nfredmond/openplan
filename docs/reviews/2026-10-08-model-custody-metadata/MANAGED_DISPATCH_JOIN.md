@@ -1878,3 +1878,26 @@ files. It does not establish native engine computation, engine closure, normal
 dispatch, complete publication/terminal handling or scientific acceptance.
 Normal managed dispatch remains disabled, and browser/human acceptance stays
 open.
+
+### Fresh managed assignment output directories
+
+Assignment now creates managed outputs through the pinned attempt directory.
+Only the primary and ActivitySim assignment directory names are accepted. The
+exclusive mkdir refuses existing outputs, uses mode 0700 and fsyncs the parent;
+ownership is rechecked before returning the path. Foreign attempt paths and
+traversal names stop the writer. Unbound execution retains its existing layout.
+This reserves local files, not a completed output or an execution authorization.
+
+Six tests cover both names, privacy, no adoption, foreign paths, traversal,
+legacy reuse and actual assignment refusal before run reads. Existing package
+and project path tests intercept the new output-creation boundary before engine
+work. Baseline, harmless and restored controls pass; deliberate adoption,
+omitted attempt identity and allowed traversal fail. The warning-enabled broader
+suite passes 249 tests. `prototype/assignment-output-creation-controls.json`
+records the writer hash and control outcomes.
+
+Inspection confirms assignment currently calls Project.close only on its normal
+path. Exception-safe cleanup and verified engine quiescence remain required;
+this directory change does not claim either. Completed output retention, managed
+dispatch integration and full publication/terminal handling remain unfinished.
+No scientific, browser or human acceptance boundary changes.
