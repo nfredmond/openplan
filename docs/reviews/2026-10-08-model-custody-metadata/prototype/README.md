@@ -121,3 +121,13 @@ A temporary trigger now refuses the final relaunch receipt insertion, after the 
 Baseline, harmless and restored cases pass. Twenty-one adverse controls detect their intended defects; omitting receipt insertion fails at `relaunch receipt boundary omitted`. The fixture starts from a failed run whose attempts were already revoked, so this check does not demonstrate rollback of a newly applied active-attempt revocation. The full-record comparison proves preservation of the retained attempt records in this fixture.
 
 This supersedes the earlier missing forced-failure boundary. Relaunch concurrency, output retention, active-worker interruption and actual route/worker integration remain open. All temporary fault-injection objects and data roll back with the native test transaction.
+
+## Concurrent relaunch checkpoint
+
+The separate-session runner now includes relaunch receipts and private copies of the four output metadata tables. A failed run is relaunched in one open transaction. A second session either repeats the identical relaunch request or submits success from the old attempt. Both cases observe an actual PostgreSQL lock wait before the relaunch transaction commits.
+
+The identical retry returns the first receipt. Independent SQL confirms one relaunch receipt, one failure-history increment, queued run/stage status, no active attempt and only the original failure write receipt. The old worker receives the ownership refusal and leaves that same queued state intact.
+
+Baseline, harmless and restored cases pass. Ignoring the relaunch receipt causes the concurrent retry to fail with changed state, which the control detects. Removing the overlapping attempt/status checks lets the old worker overwrite the relaunched state, which fails at `old writer survived concurrent relaunch`. The previous claim and reaper races continue to pass. Each case removes its private schema.
+
+These are controlled PostgreSQL interleavings on copied tables, not application RLS or original-trigger evidence. The old attempt in this fixture was already revoked by failure. Active process shutdown, all lock schedules, output-write races, provider dispatch and populated restart recovery remain outside this proof.

@@ -16,7 +16,7 @@ container = os.environ.get('OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER', '')
 if not re.fullmatch(r'supabase_db_openplan-restore-target-[1-9][0-9]*', container):
     raise SystemExit('Select a named disposable restore-target container explicitly')
 root = Path(__file__).resolve().parent
-source = '\n'.join((root / name).read_text() for name in ('claim.sql', 'write.sql', 'reap.sql'))
+source = '\n'.join((root / name).read_text() for name in ('claim.sql', 'write.sql', 'reap.sql', 'relaunch.sql'))
 command = ['docker', 'exec', '-i', container, 'psql', '-X', '-qAt', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1']
 
 
@@ -43,6 +43,10 @@ def check(candidate, mode="claim"):
         sql(f'''CREATE SCHEMA {schema};
 CREATE TABLE {schema}.model_runs (LIKE public.model_runs INCLUDING ALL);
 CREATE TABLE {schema}.model_run_stages (LIKE public.model_run_stages INCLUDING ALL);
+CREATE TABLE {schema}.model_run_artifacts (LIKE public.model_run_artifacts INCLUDING ALL);
+CREATE TABLE {schema}.model_run_kpis (LIKE public.model_run_kpis INCLUDING ALL);
+CREATE TABLE {schema}.modeling_claim_decisions (LIKE public.modeling_claim_decisions INCLUDING ALL);
+CREATE TABLE {schema}.modeling_validation_results (LIKE public.modeling_validation_results INCLUDING ALL);
 GRANT USAGE ON SCHEMA {schema} TO service_role;
 GRANT ALL ON {schema}.model_runs,{schema}.model_run_stages TO service_role;
 ''' + candidate.replace('public.', schema + '.') + f'''
@@ -59,6 +63,12 @@ VALUES('{stage}','{run}','Synthetic claim','queued',1);
             write_call = f"{schema}.write_model_stage_attempt('{request_b}','{attempt}','succeeded','finished',NULL)"
             reap_call = f"to_json({schema}.reap_model_run_if_stale('{run}',clock_timestamp(),'Synthetic race'))"
             owner_call, contender_call = (reap_call, write_call) if mode == 'reaper-first' else (write_call, reap_call)
+            if mode.startswith('relaunch-'):
+                sql(f"SET ROLE service_role; SELECT {schema}.write_model_stage_attempt('{uuid.uuid4()}','{attempt}','failed','initial failure','Synthetic failure');")
+                retained_run = json.loads(sql(f"SELECT json_build_object('workspace',workspace_id,'updated',updated_at) FROM {schema}.model_runs WHERE id='{run}';"))
+                owner_call = f"{schema}.relaunch_model_run_attempts('{uuid.uuid4()}','{run}','{retained_run['workspace']}','{retained_run['updated']}','{{}}'::jsonb)"
+                contender_call = owner_call if mode == 'relaunch-retry' else write_call
+
         owner = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
         owner.stdin.write(f"SET statement_timeout=10000; SET idle_in_transaction_session_timeout=15000; BEGIN; SET LOCAL ROLE service_role; SELECT {owner_call};\n")
         owner.stdin.flush()
@@ -69,6 +79,8 @@ VALUES('{stage}','{run}','Synthetic claim','queued',1);
             raise AssertionError('reaper did not revoke owner')
         if mode == 'writer-first' and first['run_status'] != 'succeeded':
             raise AssertionError('writer did not complete run')
+        if mode.startswith('relaunch-') and first['status'] != 'queued':
+            raise AssertionError('relaunch did not queue run')
         # The first response is observed before commit. The second session must
         # actually block on its owner, not merely happen to run afterward.
         contender = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -93,6 +105,23 @@ VALUES('{stage}','{run}','Synthetic claim','queued',1);
         if owner.returncode:
             raise RuntimeError(owner_error)
         output, error = contender.communicate(timeout=15)
+        if mode.startswith('relaunch-'):
+            if mode == 'relaunch-old-writer':
+                if contender.returncode == 0:
+                    raise AssertionError('old writer survived concurrent relaunch')
+                if 'Model stage attempt no longer owns work' not in error:
+                    raise RuntimeError(error)
+            else:
+                if contender.returncode:
+                    if 'Model relaunch state changed' in error:
+                        raise AssertionError('concurrent relaunch retry rejected')
+                    raise RuntimeError(error)
+                if json.loads(output.strip()) != first:
+                    raise AssertionError('concurrent relaunch retry changed')
+            retained = json.loads(sql(f"SELECT json_build_object('run',(SELECT status FROM {schema}.model_runs WHERE id='{run}'),'stage',(SELECT status FROM {schema}.model_run_stages WHERE id='{stage}'),'active',(SELECT active_attempt_id FROM {schema}.model_run_stages WHERE id='{stage}'),'failures',(SELECT failure_count FROM {schema}.model_runs WHERE id='{run}'),'relaunches',(SELECT count(*) FROM {schema}.model_run_relaunch_receipts),'writes',(SELECT count(*) FROM {schema}.model_stage_write_receipts));"))
+            if retained != {'run': 'queued', 'stage': 'queued', 'active': None, 'failures': 1, 'relaunches': 1, 'writes': 1}:
+                raise AssertionError('concurrent relaunch changed retained state')
+            return {'blocked_observed': True, 'single_relaunch_retained': True}
         if mode == 'reaper-first':
             if contender.returncode == 0:
                 raise AssertionError('revoked writer succeeded')
@@ -147,6 +176,15 @@ for name, candidate, expected, mode in (
     ('writer-first-restored', source, None, 'writer-first'),
     ('revive-reaped-run', source.replace('v_stage.active_attempt_id IS DISTINCT FROM p_attempt_id', 'false').replace("v_stage.status <> 'running'", 'false').replace("v_run.status NOT IN ('queued','running')", 'false').replace('AND c.attempt_id IS NOT DISTINCT FROM NEW.active_attempt_id', ''), 'revoked writer succeeded', 'reaper-first'),
     ('reaper-first-restored', source, None, 'reaper-first'),
+    ('relaunch-retry', source, None, 'relaunch-retry'),
+    ('relaunch-retry-harmless', source + '\n-- Harmless relaunch control.\n', None, 'relaunch-retry'),
+    ('relaunch-old-writer', source, None, 'relaunch-old-writer'),
+    ('relaunch-old-writer-harmless', source + '\n-- Harmless relaunch control.\n', None, 'relaunch-old-writer'),
+    ('ignore-relaunch-receipt', source.replace('FROM public.model_run_relaunch_receipts WHERE request_id=p_request_id;', 'FROM public.model_run_relaunch_receipts WHERE false;'), 'concurrent relaunch retry rejected', 'relaunch-retry'),
+    ('relaunch-retry-restored', source, None, 'relaunch-retry'),
+    ('allow-old-relaunch-writer', source.replace('v_stage.active_attempt_id IS DISTINCT FROM p_attempt_id', 'false').replace("v_stage.status <> 'running'", 'false').replace('AND c.attempt_id IS NOT DISTINCT FROM NEW.active_attempt_id', ''), 'old writer survived concurrent relaunch', 'relaunch-old-writer'),
+    ('relaunch-old-writer-restored', source, None, 'relaunch-old-writer'),
+
 ):
     try:
         evidence = check(candidate, mode)
