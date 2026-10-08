@@ -286,7 +286,7 @@ function FundingAwardCloseoutRow({
   const [isReopening, setIsReopening] = useState(false);
   const [reopenReason, setReopenReason] = useState("");
   const [reopenStatus, setReopenStatus] =
-    useState<(typeof FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS)[number]["value"]>("active");
+    useState<(typeof FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS)[number]["value"] | "">("");
 
   // Through the catalog constant rather than the literal: this one comparison
   // decides whether the panel offers a close-out or a re-open, and a spelling
@@ -385,6 +385,14 @@ function FundingAwardCloseoutRow({
       return;
     }
 
+    if (!reopenStatus) {
+      setOutcome({
+        kind: "refused",
+        message: "Choose the status this award returns to before re-opening it.",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     setOutcome(null);
 
@@ -467,6 +475,7 @@ function FundingAwardCloseoutRow({
               disabled={isSubmitting}
               onClick={() => {
                 setOutcome(null);
+                setReopenStatus("");
                 setIsReopening(true);
               }}
             >
@@ -515,6 +524,7 @@ function FundingAwardCloseoutRow({
                   )
                 }
               >
+                <option value="" disabled>Choose a status</option>
                 {FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
