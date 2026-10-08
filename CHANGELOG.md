@@ -20,6 +20,16 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Candidate migration `20261016000019_model_recovery_status.sql` adds a private,
+workspace-scoped recovery reader. Historical worker runs display a reconciliation
+notice beside their saved status. Unavailable recovery records have a separate
+warning. These states withhold relaunch and live progress claims while preserving
+saved outputs. The page does not automatically reap these records. Unfinished
+ActivitySim runs now reach the same recovery panel as AequilibraE runs.
+This is an inspection step, not a completed reconciliation or stage-resume
+workflow. Apply the migration before deploying its reader. Combined release
+checks and browser acceptance remain pending.
+
 Candidate migration `20261016000018_model_execution_retention.sql` protects
 retained model outputs and records stage starts before local computation. The
 launch route refuses retained or unreconciled work before changing its inputs
