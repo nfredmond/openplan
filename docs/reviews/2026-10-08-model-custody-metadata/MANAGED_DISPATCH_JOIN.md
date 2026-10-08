@@ -2303,3 +2303,27 @@ to run responses too: oversized configuration refuses instead of being truncated
 Bulk input transfer, path/count operations, production engine adapter, native
 read/RLS evidence, descendant containment and supervisor recovery remain open.
 Normal managed dispatch remains disabled.
+
+### Verified working paths over the channel
+
+The child now has an argument-free read_paths operation. The parent derives the
+attempt root from its owned workspace and invokes the existing project/package
+resolvers. The response contains only the working root, verified mutable project
+copy and verified mutable package copy. Extra path arguments refuse. Missing
+activation or a replaced working directory closes the channel and stops the
+writer instead of returning a legacy or retained-input fallback.
+
+Four tests use actual prepared working-copy fixtures and include a reserved child
+reading the returned project database and package CSV. Registration remains mocked.
+Three mutations detect accepted path overrides, skipped project identity checks
+and skipped package activation. Baseline, harmless and restored cases pass; the
+warning-enabled broader suite passes 312 tests. See
+prototype/engine-path-channel-controls.json. Returned path strings are a checked
+read-time view, not pinned subsequent engine opens or a same-user sandbox.
+
+The integration recheck confirms PR 170's exact head 03ba477f has passing GitHub
+checks. T3 tab_10 remains automation-capable but hidden, and snapshot capture still
+fails on client preview-f07599c0933f53222dd8b3633c13d8cf. Its visual-acceptance hold
+therefore remains. PR 171 run 37858832956 was live at its observed head; no check
+was cancelled or inferred successful. Count preparation, production child entry,
+provisional result handling, containment and supervisor recovery remain open.

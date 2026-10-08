@@ -103,6 +103,9 @@ class ProgressClient(Channel):
     def read_run(self):
         return self._request('read_run', {}, result=True)
 
+    def read_paths(self):
+        return self._request('read_paths', {}, result=True)
+
 
 class ProgressParent(Channel):
     def __init__(self, connection, writer):
@@ -119,7 +122,7 @@ class ProgressParent(Channel):
             if (set(request) != fields
                     or type(request['version']) is not int or request['version'] != VERSION
                     or type(request['sequence']) is not int or request['sequence'] != self.sequence
-                    or operation not in ('progress', 'read_run')):
+                    or operation not in ('progress', 'read_run', 'read_paths')):
                 raise ChannelStopped('Engine request is outside the allowed protocol')
             if operation == 'progress':
                 if not isinstance(request['log_tail'], str) or len(request['log_tail']) > 20000:
@@ -129,8 +132,17 @@ class ProgressParent(Channel):
             response = {'version': VERSION, 'sequence': sequence, 'confirmed': True}
             if operation == 'progress':
                 self.writer.patch_stage(self.writer.context.stage_id, {'log_tail': request['log_tail']})
-            else:
+            elif operation == 'read_run':
                 response['result'] = self.writer.read_run(self.writer.context.run_id)
+            else:
+                if self.writer.files is None:
+                    raise ChannelStopped('Engine paths require an owned workspace')
+                root = self.writer.files.path
+                response['result'] = {
+                    'work_directory': str(root),
+                    'project_directory': self.writer.project_directory(root),
+                    'package_directory': self.writer.package_directory(root),
+                }
             self.send(response)
         except BaseException:
             self.writer.stopped = True
