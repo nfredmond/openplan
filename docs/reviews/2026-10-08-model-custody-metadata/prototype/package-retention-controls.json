@@ -1,5 +1,5 @@
 {
-  "package_sha256": "59651f171d49ca929fc9c092737f234bb60b9112ed3f3ef59f6844b2c2f8b14d",
+  "package_sha256": "74d4acbc5121a0b8196a51a5d60db36b7607fd0cb41709c84beea99ed3f21376",
   "writer_sha256": "38e4a903943b8302d1f02faa53373b42bf68c368ab40f14809069957282c5044",
   "controls": [
     {
@@ -36,6 +36,21 @@
       "control": "foreign-package",
       "exit_code": 1,
       "targeted_test": "BoundPackageTests.test_foreign_package_refused_without_registration"
+    },
+    {
+      "control": "ignore-consumer-hash",
+      "exit_code": 1,
+      "targeted_test": "PackageConsumerTests.test_manifest_hash_is_checked_before_copy"
+    },
+    {
+      "control": "ignore-consumer-inventory",
+      "exit_code": 1,
+      "targeted_test": "PackageConsumerTests.test_changed_missing_extra_inputs_are_refused"
+    },
+    {
+      "control": "ignore-consumer-race",
+      "exit_code": 1,
+      "targeted_test": "PackageConsumerTests.test_change_at_copy_boundary_is_refused"
     },
     {
       "control": "restored",

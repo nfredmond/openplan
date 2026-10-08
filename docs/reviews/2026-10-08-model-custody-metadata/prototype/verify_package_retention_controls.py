@@ -22,6 +22,9 @@ def main():
         ('accept-hardlinks', change(source, 'if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:', 'if not stat.S_ISREG(before.st_mode):'), writer, 'PackageTests.test_links_and_special_files_refused'),
         ('wrong-manifest-hash', change(source, "'manifest_sha256': hashlib.sha256(content).hexdigest()", "'manifest_sha256': '0' * 64"), writer, 'BoundPackageTests.test_owned_package_registers_exact_manifest'),
         ('foreign-package', source, change(writer, 'if self.files is None or not Path(directory).resolve(strict=True).is_relative_to(self.files.path):', 'if False:'), 'BoundPackageTests.test_foreign_package_refused_without_registration'),
+        ('ignore-consumer-hash', change(source, 'hashlib.sha256(content).hexdigest() != digest', 'False'), writer, 'PackageConsumerTests.test_manifest_hash_is_checked_before_copy'),
+        ('ignore-consumer-inventory', change(source, "if actual['entries'] != manifest['entries']:", 'if False:'), writer, 'PackageConsumerTests.test_changed_missing_extra_inputs_are_refused'),
+        ('ignore-consumer-race', change(source, "if actual['entries'] != manifest['entries']:", 'if False:'), writer, 'PackageConsumerTests.test_change_at_copy_boundary_is_refused'),
         ('restored', source, writer, None)]
     records = []
     runner = """

@@ -25,9 +25,9 @@ import model_command_journal as journal
 from worker_import_for_tests import import_worker_main
 
 
-def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False):
+def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False):
     count_output = count_output or count_consumer
-    outputs = outputs or state_output or count_output
+    outputs = outputs or state_output or count_output or package_output
     source = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
     if source['container'] != 'supabase_db_openplan-restore-target-2026091050' or not re.fullmatch(r'openplan_retention_upgrade_[0-9a-f]{32}', source['database']):
         raise ValueError('Select owned retention source')
@@ -100,10 +100,10 @@ def verify(output, writer_module, outputs=False, state_output=False, count_outpu
         thread.start()
         base = f'http://127.0.0.1:{server.server_port}'
         try:
-            for worker in ((aeq,) if state_output or count_output else (aeq, supabase_poll)):
+            for worker in ((aeq,) if state_output or count_output or package_output else (aeq, supabase_poll)):
                 modes = (('artifact', 'kpi', 'retained_artifact', 'retained_kpi') if worker is aeq else ('artifact', 'kpi')) if outputs else ('claim', 'running', 'succeeded', 'failed')
-                if state_output or count_output:
-                    modes = ('count_artifact' if count_output else 'state_artifact',)
+                if state_output or count_output or package_output:
+                    modes = ('package_artifact' if package_output else 'count_artifact' if count_output else 'state_artifact',)
                 for status in modes:
                     run, stage = [str(uuid.uuid4()) for _ in range(2)]
                     workspace = str(uuid.UUID(sql(database, f"""
@@ -138,7 +138,15 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                 else:
                                     payload = {'run_id': run, 'kpi_name': 'synthetic', 'kpi_label': 'Unassessed',
                                         'value': None, 'breakdown_json': {'status': 'unassessed'}}
-                                if status == 'count_artifact':
+                                if status == 'package_artifact':
+                                    with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
+                                        source_package = Path(worker.run_work_directory(run)) / 'package'
+                                        source_package.mkdir()
+                                        (source_package / 'manifest.json').write_bytes(b'{"files":{}}')
+                                        (source_package / 'generated.csv').write_bytes(b'zone,trips\n1,17\n')
+                                        (source_package / 'empty').mkdir()
+                                        writer.retain_package(source_package)
+                                elif status == 'count_artifact':
                                     external = output / 'selected_counts.csv'
                                     external.write_bytes(b'station_id,count_year,aadt\nA,2020,123\n')
                                     Path(str(external) + '.count-source.json').write_text('{"source":{"vintage":"2020"}}')
@@ -219,7 +227,29 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         records = observed['artifacts'] if status.endswith('artifact') else observed['kpis']
                         if len(records) != 1 or records[0]['attempt_id'] != observed['attempts'][0]['id']:
                             raise AssertionError('Output is absent, duplicated or belongs to another attempt')
-                        if status == 'count_artifact':
+                        if status == 'package_artifact':
+                            retained_dir = writers[0].files.path / 'package_inputs'
+                            manifest = retained_dir / 'manifest.json'
+                            content = manifest.read_bytes()
+                            inventory = json.loads(content)
+                            if (records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
+                                    or records[0]['file_size_bytes'] != len(content)
+                                    or records[0]['file_url'] != 'local://' + str(manifest)
+                                    or records[0]['artifact_type'] != 'model_package_inputs'):
+                                raise AssertionError('Native package manifest differs from retained bytes')
+                            expected_files = {'manifest.json': b'{"files":{}}', 'generated.csv': b'zone,trips\n1,17\n'}
+                            if set(inventory['entries']) != {'manifest.json', 'generated.csv', 'empty'}:
+                                raise AssertionError('Native package inventory is incomplete')
+                            if not (retained_dir / 'files/empty').is_dir():
+                                raise AssertionError('Native package lost empty directory')
+                            for name, expected in expected_files.items():
+                                copied = retained_dir / 'files' / name
+                                item = inventory['entries'][name]
+                                if (copied.read_bytes() != expected or item['sha256'] != hashlib.sha256(expected).hexdigest()
+                                        or item['size_bytes'] != len(expected)
+                                        or copied.stat().st_ino == (writers[0].files.path / 'package' / name).stat().st_ino):
+                                    raise AssertionError('Native package file differs from retained inventory')
+                        elif status == 'count_artifact':
                             retained_dir = writers[0].files.path / 'run_output' / ('artifact_count_inputs' if count_consumer else 'count_inputs')
                             manifest = retained_dir / 'manifest.json'
                             content = manifest.read_bytes()

@@ -150,3 +150,69 @@ class BoundPackageTests(unittest.TestCase):
         pending = journal.pending(self.directory, self.writer.context.destination)
         self.assertEqual(len(pending), 1)
         self.assertEqual(pending[0]['command']['arguments']['payload']['artifact_type'], 'model_package_inputs')
+
+
+class PackageConsumerTests(unittest.TestCase):
+    setUp = PackageTests.setUp
+
+    def record(self):
+        return package.retain(self.source, self.target)
+
+    def test_complete_independent_copy_preserves_original(self):
+        record = self.record()
+        original_manifest = Path(record['manifest_path']).read_bytes()
+        copied = package.consume(record, self.root / 'consumer')
+        original = Path(record['package_directory']) / 'nested/source.json'
+        retained = Path(copied['package_directory']) / 'nested/source.json'
+        self.assertEqual(original.read_bytes(), retained.read_bytes())
+        self.assertNotEqual(original.stat().st_ino, retained.stat().st_ino)
+        self.assertEqual(Path(record['manifest_path']).read_bytes(), original_manifest)
+        self.assertTrue((Path(copied['package_directory']) / 'nested/empty').is_dir())
+        with self.assertRaises(FileExistsError):
+            package.consume(record, self.root / 'consumer')
+
+    def test_manifest_hash_is_checked_before_copy(self):
+        record = self.record()
+        path = Path(record['manifest_path'])
+        path.write_bytes(path.read_bytes().replace(b'unassessed', b'XXXXXXXXXX'))
+        with self.assertRaisesRegex(ValueError, 'bytes differ'):
+            package.consume(record, self.root / 'consumer')
+        self.assertFalse((self.root / 'consumer').exists())
+
+    def test_changed_missing_extra_inputs_are_refused(self):
+        record = self.record()
+        root = Path(record['package_directory'])
+        original = (root / 'zones.csv').read_bytes()
+        for variant in ('changed', 'missing', 'extra'):
+            with self.subTest(variant=variant):
+                (root / 'zones.csv').write_bytes(original)
+                if variant == 'changed':
+                    (root / 'zones.csv').write_bytes(b'changed')
+                elif variant == 'missing':
+                    (root / 'zones.csv').unlink()
+                else:
+                    (root / 'extra.csv').write_bytes(b'new')
+                with self.assertRaisesRegex(ValueError, 'differs from recorded inventory'):
+                    package.consume(record, self.root / variant)
+
+    def test_change_at_copy_boundary_is_refused(self):
+        record = self.record()
+        retain = package.retain
+        def mutate(*args):
+            (Path(record['package_directory']) / 'zones.csv').write_bytes(b'changed after manifest check')
+            return retain(*args)
+        with patch.object(package, 'retain', side_effect=mutate):
+            with self.assertRaisesRegex(ValueError, 'differs from recorded inventory'):
+                package.consume(record, self.root / 'consumer')
+
+    def test_duplicate_keys_and_path_substitution_are_refused(self):
+        record = self.record()
+        wrong = {**record, 'package_directory': str(self.source)}
+        with self.assertRaisesRegex(ValueError, 'paths disagree'):
+            package.consume(wrong, self.root / 'wrong')
+        path = Path(record['manifest_path'])
+        content = path.read_bytes().replace(b'{', b'{"schema":"duplicate",', 1)
+        path.write_bytes(content)
+        record.update(manifest_size_bytes=len(content), manifest_sha256=hashlib.sha256(content).hexdigest())
+        with self.assertRaisesRegex(ValueError, 'Duplicate'):
+            package.consume(record, self.root / 'duplicate')

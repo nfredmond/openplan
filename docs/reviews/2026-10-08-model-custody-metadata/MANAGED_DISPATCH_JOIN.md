@@ -1026,3 +1026,31 @@ passes. The combined suite passes 144 tests. Docker source-copy declarations
 include the new module; no container build is claimed. The existing SQLite
 ResourceWarning remains unresolved. Results and source hashes are retained in
 `prototype/package-retention-controls.json`.
+
+### Package consumer verification and native registration recovery
+
+The package consumer verifies the recorded manifest hash, size, regular-file
+identity, unique JSON keys and inventory schema. It captures an independent copy
+and compares the complete copied inventory before returning that package. Changed,
+missing or additional files refuse consumption, including a change after manifest
+verification but before copying. Empty directories and original manifests remain
+part of the inventory. Existing consumer destinations are not adopted. The caller
+must separately establish producer, run and attempt authority; local byte checks
+are not execution authorization.
+
+Five consumer cases extend the package suite to 14. Eight local fault controls
+pass their expected failure checks; baseline, harmless and restored controls pass.
+The combined suite passes 149 tests. The existing SQLite ResourceWarning remains.
+The native package-registration proof uses the actual owned-package writer method,
+independent files and installed artifact command. After a committed reply is lost,
+a fresh CLI process recovers the exact receipt without native record changes or
+reopening the stopped writer. Cached recovery sends no HTTP. Baseline, harmless
+and restored cases each use six HTTP calls. An incorrect manifest hash fails the
+native file comparison. `prototype/package-manifest-http.json` retains the result;
+private `package-manifest-http-v1` records preserve isolated clones and journals.
+Temporary gateways are removed.
+
+The native proof concerns producer registration, not consumer selection or full
+stage execution. Explicit predecessor authority, execution-state mapping, coherent
+project-database transfer and normal managed dispatch remain unfinished. No engine
+or scientific holdout is run, and no acceptance grade changes.
