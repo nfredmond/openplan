@@ -34,8 +34,10 @@ not proof that the attempt still owns work when recovery starts.
 prototype into the worker source directory. The original prototype remains
 unchanged as historical evidence. Worker adoption should use the worker module;
 it must not import application code from review documents. The existing
-AequilibraE Dockerfile copies these sibling Python files. ActivitySim still needs
-an explicit shared-client import and packaging decision before adoption.
+AequilibraE Dockerfile copies these sibling Python files. The ActivitySim poll worker now includes the sibling AequilibraE directory for
+a shared stdlib receipt comparator. That source path is present in both declared
+ActivitySim Docker build contexts. Command-client adoption remains separate;
+neither dispatcher calls it yet.
 
 ## Verification
 
@@ -137,6 +139,28 @@ the heartbeat class with a local recorder and restores the prior global instance
 The rerun completes all 37 checks without those calls. Harmless source changes
 pass; a changed default mode and an omitted heartbeat start fail their respective
 assertions. This covers startup wiring, not live heartbeat delivery.
+
+## JSON value kinds in normal receipt checks
+
+Both normal workers now use `model_receipt_values.same_json_value` for retained
+artifact and KPI fields. Python's ordinary equality treats false as zero and true
+as one, including inside nested dictionaries and lists. Those substitutions now
+leave the write unconfirmed. Null remains distinct from zero. Equal finite JSON
+numbers, including 1 and 1.0, remain equivalent. This checks logical receipt
+values; artifact byte hashes still carry exact file identity.
+
+The AequilibraE image's existing Python glob includes the shared module. Both
+ActivitySim Dockerfiles copy the repository, and the poll worker adds the sibling
+AequilibraE directory without placing it ahead of its own modules. No comparator
+copy is maintained in ActivitySim. These source and import checks are not rebuilt
+container-image evidence.
+
+Two comparator tests pass with a harmless control, three targeted faults and a
+restored run. The normal AequilibraE push suite now passes 38 checks, including
+receipt substitutions through its actual insert helper. All 35 ActivitySim worker
+tests pass, including seven state/receipt tests and the shared module import.
+These checks inject transport replies; they do not establish native database
+acceptance for this comparator or execute a scientific model.
 
 ## Remaining connection work
 

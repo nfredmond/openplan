@@ -966,6 +966,26 @@ def test_kpi_insert_requires_exact_receipt_and_preserves_null():
         assert post.call_args.kwargs["json"] == payload
 
 
+def test_insert_receipts_preserve_json_value_kinds():
+    from unittest import mock
+    cases = [(0, False, False), (False, 0, False), (None, 0, False),
+             ({"method": {"accepted": False}}, {"method": {"accepted": 0}}, False),
+             ({"values": [False, 1]}, {"values": [0, 1]}, False),
+             (1, 1.0, True), ({"values": [0, None, False]}, {"values": [0.0, None, False]}, True)]
+    for writer in (main.sb_post_kpi, main.sb_post_artifact):
+        for expected, actual, accepted in cases:
+            payload = {"run_id": RUN_ID, "metadata_json": expected}
+            response = mock.Mock(status_code=201, json=lambda: [{"id": "synthetic-record", **payload, "metadata_json": actual}])
+            with mock.patch.object(main.requests, 'post', return_value=response) as post:
+                try:
+                    writer(payload)
+                except main.WorkerStateWriteUnconfirmed:
+                    assert not accepted, 'equivalent JSON number was refused'
+                else:
+                    assert accepted, 'receipt conflated JSON value kinds'
+                assert post.call_count == 1
+
+
 def test_kpi_insert_transport_or_json_uncertainty_does_not_retry():
     from unittest import mock
     for problem in (main.requests.Timeout("private transport"), ValueError("private JSON")):

@@ -50,6 +50,22 @@ class StateReceipts(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "unconfirmed") as caught: writer(payload)
                 self.assertNotIn("private transport", str(caught.exception))
 
+    def test_insert_receipts_preserve_json_value_kinds(self):
+        cases = [(0, False, False), (False, 0, False), (None, 0, False),
+                 ({"nested": [False, None]}, {"nested": [0, None]}, False),
+                 (1, 1.0, True), ({"value": 0}, {"value": 0.0}, True)]
+        for writer in (worker.sb_post_kpi, worker.sb_post_artifact):
+            for expected, actual, accepted in cases:
+                payload = {"run_id": "synthetic", "breakdown_json": expected}
+                response = mock.Mock(status_code=201, json=lambda: [{"id": "synthetic-record", **payload, "breakdown_json": actual}])
+                with self.subTest(writer=writer.__name__, expected=expected, actual=actual), mock.patch.object(worker.requests, 'post', return_value=response) as post:
+                    if accepted:
+                        writer(payload)
+                    else:
+                        with self.assertRaises(worker.WorkerStateWriteUnconfirmed, msg='receipt conflated JSON value kinds'):
+                            writer(payload)
+                    self.assertEqual(post.call_count, 1)
+
     def test_uncertain_insert_does_not_report_stage_success(self):
         for writer in (worker.sb_post_kpi, worker.sb_post_artifact):
             def handler(*args):

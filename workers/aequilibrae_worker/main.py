@@ -110,6 +110,7 @@ import emissions
 import equity
 import model_credibility
 from worker_heartbeat import WorkerHeartbeat
+from model_receipt_values import same_json_value
 
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
@@ -1061,7 +1062,7 @@ def _confirmed_record_insert(table: str, payload: dict) -> dict:
         if (not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict)
                 or not isinstance(rows[0].get("id"), str) or not rows[0]["id"]):
             raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: missing retained record")
-        if any(field not in rows[0] or rows[0][field] != value for field, value in payload.items()):
+        if any(field not in rows[0] or not same_json_value(rows[0][field], value) for field, value in payload.items()):
             raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: returned values differ")
         return rows[0]
     except WorkerStateWriteUnconfirmed:

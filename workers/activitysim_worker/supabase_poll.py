@@ -40,6 +40,13 @@ from worker_heartbeat import WorkerHeartbeat
 _WORKER_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _WORKER_DIR.parents[1]
 
+# The AequilibraE image ships sibling Python files; both ActivitySim images ship
+# the repository tree. Share this stdlib-only receipt check without copying it.
+_SHARED_WORKER_DIR = str(_WORKER_DIR.parent / "aequilibrae_worker")
+if _SHARED_WORKER_DIR not in sys.path:
+    sys.path.append(_SHARED_WORKER_DIR)
+from model_receipt_values import same_json_value
+
 # Locally load .env (worker dir) then the app's .env.local; in a container these
 # come from the environment. override=False so real env vars always win.
 load_dotenv()
@@ -270,7 +277,7 @@ def _confirmed_record_insert(table: str, payload: dict) -> None:
         if (not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict)
                 or not isinstance(rows[0].get("id"), str) or not rows[0]["id"]):
             raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: missing retained record")
-        if any(field not in rows[0] or rows[0][field] != value for field, value in payload.items()):
+        if any(field not in rows[0] or not same_json_value(rows[0][field], value) for field, value in payload.items()):
             raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: returned values differ")
     except WorkerStateWriteUnconfirmed:
         raise
