@@ -1,9 +1,12 @@
 """Exercise actual agreement input guards without changing checkout sources."""
 import hashlib
 import inspect
+import io
+import unittest
 import json
 from pathlib import Path
 import sys
+from types import FunctionType
 
 ROOT = Path(__file__).resolve().parent
 WORKER = ROOT.parents[3] / "workers/aequilibrae_worker"
@@ -64,9 +67,48 @@ def main():
     finally:
         module.require_completed_artifact_producer = original
         module.sb_get_run_artifacts = query
+    reader = module.verified_latest_local_artifact
+    reader_source = inspect.getsource(reader)
+    candidate = reader_source.replace('        return retained', '        return path')
+    if candidate == reader_source:
+        raise AssertionError("Missing retained-input mutation anchor")
+    namespace = dict(module.__dict__)
+    exec(compile(candidate, "<retained-input-control>", "exec"), namespace)
+    try:
+        module.verified_latest_local_artifact = FunctionType(namespace[reader.__name__].__code__, module.__dict__)
+        try:
+            tests.test_latest_local_artifact_requires_full_hash_and_all_identity_metadata()
+        except AssertionError:
+            records.append({"control": "return-mutable-source", "targeted_failure": True})
+        else:
+            raise AssertionError("Mutable-source fault escaped")
+    finally:
+        module.verified_latest_local_artifact = reader
+    tests.test_latest_local_artifact_requires_full_hash_and_all_identity_metadata()
+    tests.test_agreement_artifact_query_projects_producer_identity()
+    import test_model_handoff_files as files
+    candidate = reader_source.replace(' or directory != writer.files.path', '')
+    if candidate == reader_source:
+        raise AssertionError("Missing owned-destination mutation anchor")
+    namespace = dict(module.__dict__)
+    exec(compile(candidate, "<owned-destination-control>", "exec"), namespace)
+    try:
+        module.verified_latest_local_artifact = FunctionType(namespace[reader.__name__].__code__, module.__dict__)
+        result = unittest.TextTestRunner(stream=io.StringIO()).run(unittest.TestSuite([
+            files.BoundHandoffTests('test_bound_agreement_refuses_another_directory_and_stops')]))
+        if len(result.failures) != 1 or result.errors:
+            raise AssertionError("Owned-destination fault did not fail its assertion")
+        records.append({"control": "ignore-owned-destination", "targeted_failure": True})
+    finally:
+        module.verified_latest_local_artifact = reader
+    restored = unittest.TextTestRunner(stream=io.StringIO()).run(unittest.TestSuite([
+        files.BoundHandoffTests('test_bound_agreement_refuses_another_directory_and_stops'),
+        files.BoundHandoffTests('test_actual_bound_agreement_retains_owned_independent_bytes')]))
+    if not restored.wasSuccessful():
+        raise AssertionError("Restored bound agreement tests failed")
     report = {"source_sha256": hashlib.sha256((WORKER / "main.py").read_bytes()).hexdigest(),
               "controls": records,
-              "limits": "Actual agreement guard and mocked HTTP projection. No native database authorization, file immutability, engine execution or scientific acceptance."}
+              "limits": "Actual agreement guard, native retained copies, bound destination tests and mocked HTTP projection. No native database authorization, arbitrary host-write isolation or scientific acceptance."}
     (ROOT / "agreement-producer-controls.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
 

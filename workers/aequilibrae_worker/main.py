@@ -825,7 +825,7 @@ def upload_immutable_structural_demand_json(
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
-        "&select=id,run_id,stage_id,attempt_id,artifact_type,file_url,content_hash,metadata_json,created_at"
+        "&select=id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,created_at"
         ",model_run_stages(id,run_id,status,attempt_managed,active_attempt_id)"
         "&order=created_at.desc"
     )
@@ -871,6 +871,7 @@ def verified_latest_local_artifact(
     run_id: str,
     artifact_type: str,
     *,
+    retained_directory: str,
     expected_assignment_profile: dict,
     expected_assignment_profile_payload_json: str,
     expected_assignment_profile_digest: str,
@@ -939,12 +940,31 @@ def verified_latest_local_artifact(
         raise RuntimeError(f"{artifact_type} assignment network-state metadata does not match")
     if actual_state[0].get("network_settings_digest") != actual_settings[2]:
         raise RuntimeError(f"{artifact_type} network state names different settings")
-    expected_hash = str(selected.get("content_hash") or "")
-    with open(path, "rb") as handle:
-        actual_hash = hashlib.sha256(handle.read()).hexdigest()
-    if not _is_sha256(expected_hash) or actual_hash != expected_hash:
-        raise RuntimeError(f"{artifact_type} failed its content-hash check")
-    return path
+    from pathlib import Path
+    import model_handoff_files
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    try:
+        if artifact_type not in {"link_volumes", "link_volumes_calibrated", "activitysim_link_volumes"}:
+            raise ValueError("Unsupported agreement input type")
+        directory = Path(retained_directory)
+        run_root = Path(RUN_WORK_ROOT).resolve(strict=True) / "runs" / run_id
+        if not directory.is_absolute() or not directory.resolve(strict=True).is_relative_to(run_root):
+            raise ValueError("Agreement input destination is outside its run")
+        if writer is not None:
+            writer.require_open()
+            if writer.files is None or directory != writer.files.path or writer.context.run_id != run_id:
+                raise ValueError("Agreement input destination is not the owned attempt")
+        retained = model_handoff_files.copy_registered(
+            RUN_WORK_ROOT, run_id, path, directory / ("agreement-input-" + artifact_type + ".csv"),
+            sha256=selected.get("content_hash"), size_bytes=selected.get("file_size_bytes"))
+        if writer is not None:
+            writer.files.verify()
+        return retained
+    except (OSError, ValueError) as error:
+        if writer is not None:
+            writer.stopped = True
+        raise RuntimeError(f"{artifact_type} content-hash or file retention check failed: {error}") from error
 
 
 def register_agreement_artifact(
@@ -6985,6 +7005,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 first_volumes = verified_latest_local_artifact(
                     run_id,
                     "link_volumes_calibrated" if calibrated_comparison else "link_volumes",
+                    retained_directory=work_dir,
                     expected_assignment_profile=shared_assignment_profile,
                     expected_assignment_profile_payload_json=shared_assignment_profile_payload,
                     expected_assignment_profile_digest=shared_assignment_profile_digest,
@@ -6997,6 +7018,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 second_volumes = verified_latest_local_artifact(
                     run_id,
                     "activitysim_link_volumes",
+                    retained_directory=work_dir,
                     expected_assignment_profile=shared_assignment_profile,
                     expected_assignment_profile_payload_json=shared_assignment_profile_payload,
                     expected_assignment_profile_digest=shared_assignment_profile_digest,

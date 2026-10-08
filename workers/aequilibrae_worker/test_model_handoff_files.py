@@ -178,5 +178,45 @@ class BoundHandoffTests(unittest.TestCase):
         self.post.assert_not_called()
 
 
+    def agreement_fixture(self):
+        import test_activitysim_assignment_handoff as agreement
+        root, source, row = self.source()
+        row['artifact_type'] = 'link_volumes'
+        metadata = agreement.main.assignment_artifact_metadata(agreement.identity_record(0.0004), 'link_volumes.csv')
+        row['metadata_json'] = metadata
+        keys = ('assignment_profile', 'assignment_profile_payload_json', 'assignment_profile_digest',
+                'network_settings', 'network_settings_payload_json', 'network_settings_digest',
+                'network_state_record', 'network_state_digest')
+        return agreement.main, root, source, row, {'expected_' + key: metadata[key] for key in keys}
+
+    def test_actual_bound_agreement_retains_owned_independent_bytes(self):
+        worker, root, source, row, kwargs = self.agreement_fixture()
+        with patch.object(worker, 'RUN_WORK_ROOT', str(root)), patch.object(
+            worker, 'sb_get_run_artifacts', return_value=[row]), managed.bind(self.writer):
+            destination = self.writer.workspace(root / 'runs', IDS[1])
+            result = Path(worker.verified_latest_local_artifact(IDS[1], 'link_volumes',
+                retained_directory=str(destination), **kwargs))
+            self.assertEqual(result.parent, self.writer.files.path)
+            expected = source.read_bytes()
+            source.write_bytes(b'changed predecessor')
+            self.assertEqual(result.read_bytes(), expected)
+            self.assertFalse(self.writer.stopped)
+        self.post.assert_not_called()
+
+    def test_bound_agreement_refuses_another_directory_and_stops(self):
+        worker, root, source, row, kwargs = self.agreement_fixture()
+        with patch.object(worker, 'RUN_WORK_ROOT', str(root)), patch.object(
+            worker, 'sb_get_run_artifacts', return_value=[row]), managed.bind(self.writer):
+            self.writer.workspace(root / 'runs', IDS[1])
+            other = root / 'runs' / IDS[1] / 'other'
+            other.mkdir()
+            with self.assertRaisesRegex(RuntimeError, 'not the owned attempt'):
+                worker.verified_latest_local_artifact(IDS[1], 'link_volumes',
+                    retained_directory=str(other), **kwargs)
+            self.assertTrue(self.writer.stopped)
+            self.assertEqual(list(other.iterdir()), [])
+        self.post.assert_not_called()
+
+
 if __name__ == '__main__':
     unittest.main()

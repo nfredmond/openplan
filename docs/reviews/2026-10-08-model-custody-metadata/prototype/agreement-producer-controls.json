@@ -1,5 +1,5 @@
 {
-  "source_sha256": "c61d97b13ce3794780f0f6119413bd361f7c66cc731b36f5632477a78696c1d9",
+  "source_sha256": "96d175c5306239c7fb9b469bb27c23cf400dad969ee9c0bc85bc580ef0901a75",
   "controls": [
     {
       "control": "baseline",
@@ -28,7 +28,15 @@
     {
       "control": "omit-producer-projection",
       "targeted_failure": true
+    },
+    {
+      "control": "return-mutable-source",
+      "targeted_failure": true
+    },
+    {
+      "control": "ignore-owned-destination",
+      "targeted_failure": true
     }
   ],
-  "limits": "Actual agreement guard and mocked HTTP projection. No native database authorization, file immutability, engine execution or scientific acceptance."
+  "limits": "Actual agreement guard, native retained copies, bound destination tests and mocked HTTP projection. No native database authorization, arbitrary host-write isolation or scientific acceptance."
 }

@@ -663,3 +663,38 @@ Frozen network records, original source references and their hashes must remain
 unchanged. Stage journals and admission records must never be copied as new
 execution authority. Full managed claim activation remains off while these
 handoff and assessment/publication boundaries are unfinished.
+
+### Agreement consumes retained volume inputs
+
+Both normal agreement-reader calls now pass the current execution directory.
+After confirming producer and scientific identity, the reader copies each volume
+file through the existing pinned-descriptor helper. The query includes the
+registered byte size as well as its full hash. The returned path names a private
+independent copy in the current run, not the producer file. Each side retains its
+own filename. Existing copies are refused rather than overwritten or silently
+adopted after an interruption. Such a refusal requires reconciliation.
+
+A bound invocation additionally requires its exact owned attempt directory and
+rechecks that ownership after retention. A retention failure stops the writer.
+Two actual bound-reader tests cover independent copied bytes and refusal of a
+different directory within the same run. The existing scientific-identity test
+now verifies copied content, a distinct inode, independence after source mutation
+and no overwrite. All 30 assignment-handoff tests and 86 combined worker tests
+pass. The existing SQLite ResourceWarning remains unresolved.
+
+The agreement controls retain the four previous faults and add returning the
+mutable producer path and ignoring the owned destination. All six targeted
+faults fail; baseline, harmless and restored checks pass. The file-copy controls
+also pass again with their five targeted faults. The first new reader-mutation
+runner copied module globals, bypassing the test's HTTP mock and attempting the
+reserved `worker-import-only.invalid` host. It failed on name resolution rather
+than the intended assertion. The corrected runner binds the mutated function to
+live module globals; the intended retained-path assertion then fails. That
+initial harness failure is not counted as a successful fault check.
+
+This supersedes the prior note that normal agreement readers return original
+source paths. The copies do not prevent a host administrator or arbitrary engine
+from changing the consumer directory later. Native PostgREST producer projection,
+transactional revocation fencing, complete package/project/state handoff and
+managed assessment/publication remain open. The normal dispatcher still does
+not activate the managed binding, and no scientific acceptance claim changes.

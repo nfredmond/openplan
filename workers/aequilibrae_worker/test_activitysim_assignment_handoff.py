@@ -1151,6 +1151,7 @@ def test_agreement_artifact_query_projects_producer_identity():
     url = get.call_args.args[0]
     assert "run_id=eq." + PRODUCER_RUN in url
     assert "select=id,run_id,stage_id,attempt_id," in url
+    assert "file_url,file_size_bytes,content_hash" in url
     assert "model_run_stages(id,run_id,status,attempt_managed,active_attempt_id)" in url
 
 
@@ -1167,7 +1168,7 @@ def test_agreement_refuses_unconfirmed_producer_before_file_access():
     for row in cases:
         with mock.patch.object(main, "sb_get_run_artifacts", return_value=[{**row, "artifact_type": "link_volumes"}]), mock.patch.object(main.os.path, "isfile") as access:
             try:
-                main.verified_latest_local_artifact(PRODUCER_RUN, "link_volumes",
+                main.verified_latest_local_artifact(PRODUCER_RUN, "link_volumes", retained_directory="/unread",
                     expected_assignment_profile={}, expected_assignment_profile_payload_json="",
                     expected_assignment_profile_digest="", expected_network_settings={},
                     expected_network_settings_payload_json="", expected_network_settings_digest="",
@@ -1187,8 +1188,13 @@ def test_agreement_accepts_explicit_completed_legacy_producer():
 
 
 def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / "link_volumes.csv"
+    with tempfile.TemporaryDirectory() as tmp, mock.patch.object(main, "RUN_WORK_ROOT", "unused"):
+        main.RUN_WORK_ROOT = tmp
+        run_dir = Path(tmp) / "runs" / PRODUCER_RUN
+        run_dir.mkdir(parents=True)
+        consumer = run_dir / "consumer"
+        consumer.mkdir()
+        path = run_dir / "link_volumes.csv"
         path.write_text("link_id,PCE_tot\n1,10\n")
         identity = identity_record(0.0004)
         metadata = main.assignment_artifact_metadata(identity, "link_volumes.csv")
@@ -1198,8 +1204,10 @@ def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
             "file_url": f"local://{path}",
             "content_hash": hashlib.sha256(path.read_bytes()).hexdigest(),
             "metadata_json": metadata,
+            "file_size_bytes": path.stat().st_size,
         }
         kwargs = {
+            "retained_directory": str(consumer),
             "expected_assignment_profile": metadata["assignment_profile"],
             "expected_assignment_profile_payload_json": metadata[
                 "assignment_profile_payload_json"
@@ -1214,9 +1222,22 @@ def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
             "expected_network_state_digest": metadata["network_state_digest"],
         }
         with mock.patch.object(main, "sb_get_run_artifacts", return_value=[row]):
-            assert main.verified_latest_local_artifact(
+            retained = Path(main.verified_latest_local_artifact(
                 PRODUCER_RUN, "link_volumes", **kwargs
-            ) == str(path)
+            ))
+            assert retained == consumer / "agreement-input-link_volumes.csv"
+            original = path.read_bytes()
+            assert retained.read_bytes() == original
+            assert retained.stat().st_ino != path.stat().st_ino
+            path.write_bytes(b"changed producer")
+            assert retained.read_bytes() == original
+            path.write_bytes(original)
+            try:
+                main.verified_latest_local_artifact(PRODUCER_RUN, "link_volumes", **kwargs)
+            except RuntimeError as error:
+                assert "file retention" in str(error)
+            else:
+                raise AssertionError("Existing agreement input was overwritten")
 
         truncated = {**row, "content_hash": row["content_hash"][:16]}
         with mock.patch.object(main, "sb_get_run_artifacts", return_value=[truncated]):
