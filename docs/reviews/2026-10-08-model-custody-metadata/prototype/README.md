@@ -332,3 +332,35 @@ The journal suite now has six passing tests and eight adverse controls, with
 baseline, harmless and restored copies passing. The committed SQL recovery probe
 also passes after the correction, including its three adverse controls. Normal
 worker transport, HTTP acknowledgement loss and power-loss behavior remain open.
+
+## Journaled artifact RPC client prototype
+
+`artifact_rpc.py` delivers one prepared artifact command to its bound deployment
+and URL. It freezes the supplied command, validates canonical UUIDs and artifact
+payload fields, prepares the journal before dispatch and disables redirects.
+The service credential remains in memory. A resolved command returns its checked
+receipt without another POST. Transport exceptions, non-200 status, malformed
+JSON and mismatched receipts leave the command pending for an explicit retry.
+
+A successful receipt must identify the expected run, stage and attempt, contain
+a canonical artifact UUID, and match every submitted field plus default empty
+metadata. JSON comparison distinguishes boolean values from integer byte counts.
+The client sets connect/read timeouts; it does not implement a total wall-clock
+deadline or a response-body size limit. It does not schedule retries itself.
+
+Five fixture tests and four adverse controls pass, with baseline, harmless and
+restored copies passing. Controls detect acceptance of mismatched receipts,
+ignored HTTP status, ignored deployment identity and reposting a resolved
+command. An initial broad receipt mutation failed at the lower journal's object
+check, so it was narrowed to the intended receipt-field comparison. The repeated
+POST control was also isolated from the first-dispatch pending assertion.
+
+```bash
+python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_artifact_rpc_controls.py
+```
+
+These tests inject transport responses. They do not establish live HTTP,
+PostgREST, normal worker recovery, Storage byte verification or scientific
+acceptance. No production worker calls this prototype. The next boundary is
+actual HTTP response loss after a committed command, followed by a fresh client
+using the retained identity.
