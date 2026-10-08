@@ -93,3 +93,13 @@ One PostgreSQL session claims a stage and holds its transaction open. A separate
 Baseline, harmless and restored runs pass. A control removes both queued-status and active-owner eligibility checks; the second worker then wins and the test fails at `second claimant won`. Each run removes its own private schema and verifies its absence. Statement and idle-transaction timeouts bound owned sessions.
 
 This proves one controlled claim interleaving, not arbitrary scheduling, application RLS, reaper-versus-writer races, legacy-write deadlock recovery, worker interruption or scientific accuracy. Those checks remain required before installing the protocol.
+
+## Completion and reaper contention checkpoint
+
+The contention runner now exercises both orders of completion and reaping after a committed claim. In each case it observes the second session blocked on a PostgreSQL lock before committing the first session.
+
+When the reaper commits first, the waiting completion command fails with the specific ownership refusal. An independent query confirms failed run and stage statuses, no active attempt, a retained revocation and no write receipt. When completion commits first, the waiting reaper returns false. Independent reads confirm succeeded run and stage statuses and one write receipt.
+
+Baseline, harmless and restored cases pass for both orders. Removing the reaper terminal-state check permits reaping the completed run and fails at `terminal run reaped`. Removing the overlapping ownership and terminal-state checks permits the revoked worker to succeed and fails at `revoked writer succeeded`. The original competing-claim cases also pass. Every case removes its private schema and verifies its absence.
+
+This extends the prior single-interleaving evidence. It still uses copied tables without original application foreign keys, triggers or RLS. In particular, it does not prove application timestamp freshness, all possible schedules, legacy-write deadlock handling, worker adapters, durable journal recovery, artifact upload fencing or scientific acceptance.

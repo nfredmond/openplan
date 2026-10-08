@@ -35,7 +35,7 @@ def line(process):
     return result
 
 
-def check(candidate):
+def check(candidate, mode="claim"):
     schema = 'attempt_contention_' + uuid.uuid4().hex
     run, stage, request_a, request_b = [str(uuid.uuid4()) for _ in range(4)]
     owner = contender = None
@@ -51,16 +51,28 @@ VALUES('{run}',gen_random_uuid(),gen_random_uuid(),'aequilibrae','queued','Synth
 INSERT INTO {schema}.model_run_stages(id,run_id,stage_name,status,sort_order)
 VALUES('{stage}','{run}','Synthetic claim','queued',1);
 ''')
+        owner_call = f"{schema}.claim_model_stage_attempt('{request_a}','{stage}','worker-a')"
+        contender_call = f"{schema}.claim_model_stage_attempt('{request_b}','{stage}','worker-b')"
+        if mode != 'claim':
+            claimed = json.loads(sql(f"SET ROLE service_role; SELECT {owner_call};"))
+            attempt = claimed['attempt_id']
+            write_call = f"{schema}.write_model_stage_attempt('{request_b}','{attempt}','succeeded','finished',NULL)"
+            reap_call = f"to_json({schema}.reap_model_run_if_stale('{run}',clock_timestamp(),'Synthetic race'))"
+            owner_call, contender_call = (reap_call, write_call) if mode == 'reaper-first' else (write_call, reap_call)
         owner = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
-        owner.stdin.write(f"SET statement_timeout=10000; SET idle_in_transaction_session_timeout=15000; BEGIN; SET LOCAL ROLE service_role; SELECT {schema}.claim_model_stage_attempt('{request_a}','{stage}','worker-a');\n")
+        owner.stdin.write(f"SET statement_timeout=10000; SET idle_in_transaction_session_timeout=15000; BEGIN; SET LOCAL ROLE service_role; SELECT {owner_call};\n")
         owner.stdin.flush()
         first = json.loads(line(owner))
-        if first['outcome'] != 'claimed':
+        if mode == 'claim' and first['outcome'] != 'claimed':
             raise AssertionError('first claimant did not win')
+        if mode == 'reaper-first' and first is not True:
+            raise AssertionError('reaper did not revoke owner')
+        if mode == 'writer-first' and first['run_status'] != 'succeeded':
+            raise AssertionError('writer did not complete run')
         # The first response is observed before commit. The second session must
         # actually block on its owner, not merely happen to run afterward.
         contender = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        contender.stdin.write(f"SET application_name='{schema}'; SET statement_timeout=10000; SET ROLE service_role; SELECT {schema}.claim_model_stage_attempt('{request_b}','{stage}','worker-b');")
+        contender.stdin.write(f"SET application_name='{schema}'; SET statement_timeout=10000; SET ROLE service_role; SELECT {contender_call};")
         contender.stdin.close()
         contender.stdin = None
         blocked = False
@@ -72,7 +84,7 @@ VALUES('{stage}','{run}','Synthetic claim','queued',1);
                 break
             time.sleep(0.05)
         if not blocked:
-            raise AssertionError('competing claim never observed waiting on a lock')
+            raise AssertionError('competing command never observed waiting on a lock')
         owner.stdin.write('COMMIT;\n\\q\n')
         owner.stdin.flush()
         owner.stdin.close()
@@ -81,9 +93,25 @@ VALUES('{stage}','{run}','Synthetic claim','queued',1);
         if owner.returncode:
             raise RuntimeError(owner_error)
         output, error = contender.communicate(timeout=15)
+        if mode == 'reaper-first':
+            if contender.returncode == 0:
+                raise AssertionError('revoked writer succeeded')
+            if 'Model stage attempt no longer owns work' not in error:
+                raise RuntimeError(error)
+            retained = json.loads(sql(f"SELECT json_build_object('run',(SELECT status FROM {schema}.model_runs WHERE id='{run}'),'stage',(SELECT status FROM {schema}.model_run_stages WHERE id='{stage}'),'active',(SELECT active_attempt_id FROM {schema}.model_run_stages WHERE id='{stage}'),'revoked',(SELECT revoked_at IS NOT NULL FROM {schema}.model_stage_attempts WHERE id='{attempt}'),'writes',(SELECT count(*) FROM {schema}.model_stage_write_receipts));"))
+            if retained != {'run': 'failed', 'stage': 'failed', 'active': None, 'revoked': True, 'writes': 0}:
+                raise AssertionError('revoked state changed after late writer')
+            return {'blocked_observed': True, 'late_writer_refused': True}
         if contender.returncode:
             raise RuntimeError(error)
         second = json.loads(output.strip())
+        if mode == 'writer-first':
+            if second is not False:
+                raise AssertionError('terminal run reaped')
+            retained = json.loads(sql(f"SELECT json_build_object('run',(SELECT status FROM {schema}.model_runs WHERE id='{run}'),'stage',(SELECT status FROM {schema}.model_run_stages WHERE id='{stage}'),'writes',(SELECT count(*) FROM {schema}.model_stage_write_receipts));"))
+            if retained != {'run': 'succeeded', 'stage': 'succeeded', 'writes': 1}:
+                raise AssertionError('completed state changed after reaper')
+            return {'blocked_observed': True, 'completed_run_preserved': True}
         if second['outcome'] != 'not_claimed':
             raise AssertionError('second claimant won')
         retained = json.loads(sql(f"SELECT json_build_object('attempts',(SELECT count(*) FROM {schema}.model_stage_attempts),'receipts',(SELECT count(*) FROM {schema}.model_stage_claim_receipts),'active',(SELECT active_attempt_id FROM {schema}.model_run_stages WHERE id='{stage}'));"))
@@ -106,14 +134,22 @@ VALUES('{stage}','{run}','Synthetic claim','queued',1);
 
 
 results = []
-for name, candidate, expected in (
-    ('baseline', source, None),
-    ('harmless', source + '\n-- Harmless contention control.\n', None),
-    ('allow-second-owner', source.replace("OR v_stage.status <> 'queued'", '').replace('OR v_stage.active_attempt_id IS NOT NULL', ''), 'second claimant won'),
-    ('restored', source, None),
+for name, candidate, expected, mode in (
+    ('baseline', source, None, 'claim'),
+    ('harmless', source + '\n-- Harmless contention control.\n', None, 'claim'),
+    ('allow-second-owner', source.replace("OR v_stage.status <> 'queued'", '').replace('OR v_stage.active_attempt_id IS NOT NULL', ''), 'second claimant won', 'claim'),
+    ('restored', source, None, 'claim'),
+    ('reaper-first', source, None, 'reaper-first'),
+    ('reaper-first-harmless', source + '\n-- Harmless race control.\n', None, 'reaper-first'),
+    ('writer-first', source, None, 'writer-first'),
+    ('writer-first-harmless', source + '\n-- Harmless race control.\n', None, 'writer-first'),
+    ('reap-completed-run', source.replace("v_run.status NOT IN ('queued','running') OR", ''), 'terminal run reaped', 'writer-first'),
+    ('writer-first-restored', source, None, 'writer-first'),
+    ('revive-reaped-run', source.replace('v_stage.active_attempt_id IS DISTINCT FROM p_attempt_id', 'false').replace("v_stage.status <> 'running'", 'false').replace("v_run.status NOT IN ('queued','running')", 'false').replace('AND c.attempt_id IS NOT DISTINCT FROM NEW.active_attempt_id', ''), 'revoked writer succeeded', 'reaper-first'),
+    ('reaper-first-restored', source, None, 'reaper-first'),
 ):
     try:
-        evidence = check(candidate)
+        evidence = check(candidate, mode)
     except AssertionError as error:
         if str(error) != expected:
             raise
