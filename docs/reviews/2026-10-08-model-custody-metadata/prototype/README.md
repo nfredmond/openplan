@@ -2,6 +2,16 @@
 
 This executable database prototype starts the attempt-ownership design in the parent directory. It is deliberately outside application migrations and has no worker caller. Do not deploy it as a completed ownership fence.
 
+## Current scope and evidence
+
+The sections below preserve the order of development. Later checkpoints supersede earlier missing-feature statements only where they say so. Current coverage includes attempt claims, stage and parent write guards, fixed stage sets, atomic success/failure, reaping, retained relaunch, and attempt-bound KPI/artifact metadata commands.
+
+The native rollback runner passes baseline, harmless and restored cases plus 29 adverse controls. The separate-session runner passes 32 cases across claim, completion, relaunch and artifact schedules. The native runner uses original application tables inside rolled-back transactions. The concurrency runner uses private table copies without original foreign keys, triggers or RLS. Neither runner starts a scientific model.
+
+No application migration, launch route, packaged worker or artifact reader uses this protocol. Remaining integration work includes retained-attempt readers, claim/validation custody, populated-output relaunch, worker request journals and adapters, restart recovery, production timestamp/deadlock behavior, and authorized retention. Existing-output relaunch refuses until that retention boundary is implemented. SQL metadata checks do not verify Storage bytes. These gaps prevent describing the prototype as a deployed recovery fix or completed M3.
+
+## Initial claim checkpoint
+
 The claim transaction retains request and response identities, takes request then parent-run then stage locks, records an attempt only for an eligible queued stage, and binds the active attempt to its actual stage with a composite foreign key. A repeated request returns its original response, including a lost claim. Different contents under an existing request identity fail. An unfinished predecessor prevents claiming a later stage. New attempts and request receipts are unavailable for direct public or service-role table writes; only the service-role command is exposed.
 
 Run against an explicitly named disposable database:
