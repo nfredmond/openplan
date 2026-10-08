@@ -1,0 +1,41 @@
+{
+  "source_sha256": "a20e45d7fefefa2089d8ac1f1f79915fd4c7de4279b876e0f046b457665f90fd",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-nonzero",
+      "exit_code": 1,
+      "targeted_test": "test_nonzero_exit_is_retained_and_stops_writer"
+    },
+    {
+      "control": "ignore-group",
+      "exit_code": 1,
+      "targeted_test": "test_group_members_prevent_completion"
+    },
+    {
+      "control": "erase-attempt",
+      "exit_code": 1,
+      "targeted_test": "test_completed_child_records_original_identity"
+    },
+    {
+      "control": "adopt-reservation-directory",
+      "exit_code": 1,
+      "targeted_test": "test_existing_reservation_never_launches_again"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real disposable subprocesses, mocked group-member probe and managed registration fixtures. No restored supervisor, escaped descendants, native engine child protocol, output-capture authorization or normal dispatch."
+}

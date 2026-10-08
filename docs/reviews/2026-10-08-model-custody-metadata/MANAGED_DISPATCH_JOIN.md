@@ -2008,3 +2008,26 @@ child exits before the separate reader opens OMX. This is evidence for requiring
 resource-release or process-exit custody before completed capture, not a claim
 that production already provides that boundary. Engine-created result matrices,
 threads, full dispatch and scientific/browser/human acceptance remain open.
+
+### Engine subprocess reservation and observed exit
+
+The new EngineProcess helper reserves an exclusive launch directory and fsyncs
+its identity record before starting a child in a new process session. It observes
+the original Popen object, refuses a live child or surviving original process
+group, and retains the observed exit code. A nonzero exit stops the writer.
+Existing launch reservations refuse another launch, including after a supervisor
+interruption. Saved exit records provide no restart or capture authority.
+
+Five focused tests use disposable subprocesses. The warning-enabled broader
+suite passes 265 tests. Baseline, harmless and restored controls pass; four
+intentional defects fail their targeted assertions: ignored nonzero exit,
+ignored group members, erased attempt identity and adoption of an existing
+reservation directory. See prototype/engine-process-controls.json for the source
+hash and outcomes. The group-member probe is mocked; the other child exit tests
+observe real processes. Managed registration uses fixtures.
+
+This helper remains disconnected from normal dispatch. It does not contain
+children that escape into a different session, transfer attempt authority into
+an engine child, resume a lost supervisor or authorize completed output capture.
+The native engine protocol and those custody boundaries remain unfinished.
+Independent scientific, browser and human acceptance remain open.
