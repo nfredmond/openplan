@@ -254,3 +254,31 @@ Inside one native PostgreSQL transaction, fresh synthetic workspace/model/run/st
 The prototype DDL and fixture records roll back. Separate queries confirm that attempt/custody tables remain absent and that the installed reaper definition has its original digest. The synthetic Storage objects remain as explicitly unreferenced proof objects in the isolated stack, not as committed scientific custody. Private results retain object references, fixture identities and exact validator/custody/uploader source digests without credentials.
 
 This supersedes the earlier missing native receipt-to-builder proof for this synthetic path. The command calls use SQL inside the rollback transaction, not PostgREST. Neither normal worker entry point, preparation-before-output ordering, model computation, scientific accuracy, process interruption nor durable request-journal recovery is exercised. Production routes/readers and populated relaunch remain unintegrated.
+
+## Durable request journal checkpoint
+
+`request_journal.py` retains the exact request ID, configured deployment identity,
+operation and arguments in a private SQLite journal before transport. It reuses
+the OCR worker journal's WAL and synchronous FULL settings. Requests and resolved
+receipts remain immutable. A reused request ID with changed contents is refused;
+resolution requires the exact prepared request. Pending reads select unresolved
+requests for one deployment and do not dispatch them.
+
+Four tests pass, including separate processes that call `os._exit` after a
+committed preparation and after a committed receipt. Later connections retain
+the original request and receipt. Baseline, harmless and restored source copies
+pass. Five adverse controls detect changed request acceptance, changed receipt
+acceptance, resolution against different request contents, cross-deployment
+selection and replay of resolved requests. Run them with:
+
+```bash
+python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_journal_controls.py
+```
+
+The controls operate on temporary source copies. They do not edit the checkout.
+These process-exit checks do not establish power-loss durability, concurrent
+first-open behavior, server receipt validation, network loss-of-ack recovery or
+normal worker restart recovery. The journal is a prototype and has no dispatch
+caller. Credentials must not be stored as deployment identity or request data.
+The next integration boundary is an actual command committed by the server,
+followed by lost acknowledgement and retry using the retained request identity.
