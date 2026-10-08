@@ -45,6 +45,7 @@ class AttemptWriter:
         self.stopped = False
         self.state = None
         self.files = None
+        self._working_project = None
         if context.destination != client.destination(base_url, deployment_id) or not service_key:
             raise ValueError('Managed writer requires its original installation and credential')
         saved = journal.read_existing(self.directory, context.destination, context.claim_request_id)
@@ -248,11 +249,27 @@ class AttemptWriter:
                                   'engine_closure': 'unassessed', 'execution_ready': False,
                                   'scientific_acceptance': 'unassessed'},
             }, logical_name='project-working-copy')
+            project_path = Path(retained['package_directory'])
+            self._working_project = (project_path, self.files._identity(project_path.stat()))
             return {'project_directory': retained['package_directory'],
                     'initial_manifest_path': retained['manifest_path'],
                     'initial_manifest_sha256': retained['manifest_sha256'],
                     'input_manifest_sha256': record['manifest_sha256'],
                     'producer': record['producer'], 'execution_ready': False}
+        except BaseException:
+            self.stopped = True
+            raise
+
+    def project_directory(self, work_dir):
+        """Resolve only this invocation's confirmed, independently prepared copy."""
+        self.require_open()
+        try:
+            if self.files is None or Path(work_dir) != self.files.path or self._working_project is None:
+                raise ValueError('Managed project requires a confirmed working copy in this attempt')
+            path, identity = self._working_project
+            if path.resolve(strict=True) != path or self.files._identity(path.stat()) != identity:
+                raise ValueError('Managed working project directory changed')
+            return str(path)
         except BaseException:
             self.stopped = True
             raise

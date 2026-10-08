@@ -1449,3 +1449,34 @@ journals; temporary gateways are removed. This combines real local SQLite files
 with native commands, not an AequilibraE engine run. Native engine use of the
 working-copy helper, stage execution-path selection, closure enforcement and
 full managed dispatch remain open.
+
+### Managed stage project-path selection
+
+The writer activates its working-directory reference only after confirmed
+working-copy registration. Resolution requires the same owned attempt path and
+unchanged working-directory identity, and checks that no command remains pending.
+A lost preparation reply leaves the reference unset. Foreign, absent, replaced
+or unconfirmed paths stop the writer. This path reference is invocation-local;
+a saved receipt does not reconstruct an execution session.
+
+Assignment, artifact extraction, primary-output preparation, volume-map
+publication and agreement network reads now use the shared project resolver.
+Outside a managed binding, the existing `work_dir/aeq_project` layout remains.
+Setup still creates its new project directly. Under a binding, downstream stages
+cannot fall back to that path if working-copy preparation is absent. This is path
+selection, not permission to skip remaining lifecycle or closure requirements.
+
+Seven focused tests cover legacy layout, refusal before preparation, actual
+assignment entry stopped before computation, actual primary-output preparation,
+foreign attempt, directory replacement and lost preparation response. Three
+temporary faults detect legacy assignment fallback, ignored attempt identity and
+ignored directory replacement. Baseline, harmless and restored controls pass.
+`prototype/project-execution-controls.json` records exact source hashes. The
+broader suite passes 202 tests; the existing unclosed SQLite ResourceWarning
+still appears. The first assignment-entry test used a mock wrapper that obscured
+the caller frame; replacing that wrapper with a direct function allowed the test
+to inspect the actual stage-local selected path.
+
+No full assignment ran in these checks. Native engine use through the writer's
+working-copy method, state/package/project pairing, closure enforcement and the
+remaining publication/terminal lifecycle still precede normal managed dispatch.

@@ -1276,7 +1276,7 @@ def write_agreement_network_geojson(
     network_state_digest: str,
 ) -> str:
     """Export the complete retained roadway set, never modeling connectors."""
-    db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
+    db_path = os.path.join(project_work_directory(work_dir), "project_database.sqlite")
     if not os.path.isfile(db_path):
         raise RuntimeError("The retained AequilibraE project is missing its network database")
     selected_state, selected_state_digest = validated_network_state(
@@ -4078,7 +4078,7 @@ def stage_assignment(
     from aequilibrae.matrix import AequilibraeMatrix
     from aequilibrae.paths import TrafficAssignment, TrafficClass, NetworkSkimming
 
-    proj_dir = os.path.join(work_dir, "aeq_project")
+    proj_dir = project_work_directory(work_dir)
     out_dir = os.path.join(work_dir, output_dir_name)
     os.makedirs(out_dir, exist_ok=True)
 
@@ -5486,7 +5486,7 @@ def publish_volume_geojson(
     # Generate GeoJSON for the map and upload to Supabase Storage
     try:
         import csv as csv_mod
-        db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
+        db_path = os.path.join(project_work_directory(work_dir), "project_database.sqlite")
         if os.path.exists(db_path):
             conn = sqlite3.connect(db_path)
             conn.enable_load_extension(True)
@@ -5599,7 +5599,7 @@ def prepare_primary_model_output(run_id: str, stage_id: str, work_dir: str, setu
             run_id=run_id, stage_id=stage_id,
             source_paths={
                 "link_volumes": Path(work_dir) / "run_output" / "link_volumes.csv",
-                "network": Path(work_dir) / "aeq_project" / "project_database.sqlite",
+                "network": Path(project_work_directory(work_dir)) / "project_database.sqlite",
             },
             inputs={"setup": setup_result, "assignment": assign_result, "package": package_meta},
         )
@@ -5665,7 +5665,7 @@ def stage_artifacts(
         json.dump(setup_result, setup_summary_file, indent=2)
 
     # ── Daily VMT (Σ link volume × length in miles) and per-capita VMT ──
-    db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
+    db_path = os.path.join(project_work_directory(work_dir), "project_database.sqlite")
     link_volumes_csv = os.path.join(out_dir, "link_volumes.csv")
     prepared_output = prepare_primary_model_output(run_id, stage_id, work_dir, setup_result, assign_result, package_meta)
     model_output_artifact_id = prepared_output["output_artifact_id"]
@@ -6835,6 +6835,18 @@ def write_run_state(work_dir: str, state: dict) -> None:
         raise WorkerStateWriteUnconfirmed("Run state publication unconfirmed; inspect the saved state before continuing") from None
 
 
+def project_work_directory(work_dir: str) -> str:
+    """Use confirmed managed working files, with legacy layout outside a binding."""
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is None:
+        return os.path.join(work_dir, "aeq_project")
+    try:
+        return writer.project_directory(work_dir)
+    except Exception as error:
+        raise WorkerStateWriteUnconfirmed("Managed project path requires reconciliation") from error
+
+
 def run_work_directory(run_id: str) -> str:
     """Use the complete database identity; never adopt ambiguous legacy scratch."""
     if not isinstance(run_id, str) or str(uuid.UUID(run_id)) != run_id:
@@ -7021,7 +7033,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     work_dir, "activitysim_assignment_output", "link_volumes.csv"
                 )
                 activitysim_daily_vmt = compute_daily_vmt(
-                    os.path.join(work_dir, "aeq_project", "project_database.sqlite"),
+                    os.path.join(project_work_directory(work_dir), "project_database.sqlite"),
                     volume_path,
                 )
                 if activitysim_daily_vmt is None:
@@ -7108,7 +7120,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     }, workspace_id=str(run_row.get("workspace_id") or ""), stage_id=stage_id,
                         journal_dir=os.path.join(work_dir, "stage-journals", stage_id))
                 activitysim_validation = _run_count_validation(
-                    os.path.join(work_dir, "aeq_project", "project_database.sqlite"),
+                    os.path.join(project_work_directory(work_dir), "project_database.sqlite"),
                     volume_path,
                     state.get("setup", {}).get("bbox"),
                     counts_path=result.get("counts_path") or first_assignment.get("counts_path"),
