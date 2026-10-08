@@ -20,6 +20,20 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Staff can explicitly queue a saved synthesis execution allowance. A continuous
+local worker discovers these requests and reuses the segment, context and thematic
+schedulers. Saving permission alone does not start execution. Apply additive
+migration `20261016000013_synthesis_execution_queue.sql` and configure the worker
+as described in the [runbook](openplan/docs/ops/RUNBOOK.md#explicit-synthesis-execution-queue).
+Retain its private journals across restarts. A scheduling receipt does not mean
+that outputs are complete, approved or published.
+
+Context and thematic request forms now expose the task-byte budget. The worker
+reports intact tasks that exceed their saved limit without shortening source
+text. Detailed resource refusals currently appear in worker output, not the
+staff page. Synthetic-provider checks cover retained outputs, staff import and
+interrupted recovery; they do not establish interpretation quality.
+
 Engagement review filters and exported summaries now call reviewed contributions
 Approved. Approval does not establish public release.
 
