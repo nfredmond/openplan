@@ -6,7 +6,7 @@ This executable database prototype starts the attempt-ownership design in the pa
 
 The sections below preserve the order of development. Later checkpoints supersede earlier missing-feature statements only where they say so. Current coverage includes attempt claims, stage and parent write guards, fixed stage sets, atomic success/failure, reaping, retained relaunch, and attempt-bound KPI/artifact metadata commands.
 
-The native rollback runner passes baseline, harmless and restored cases plus 37 adverse controls. The separate-session runner passes 32 cases across claim, completion, relaunch and artifact schedules. The native runner uses original application tables inside rolled-back transactions. The concurrency runner uses private table copies without original foreign keys, triggers or RLS. Neither runner starts a scientific model.
+The native rollback runner passes baseline, harmless and restored cases plus 40 adverse controls. The separate-session runner passes 32 cases across claim, completion, relaunch and artifact schedules. The native runner uses original application tables inside rolled-back transactions. The concurrency runner uses private table copies without original foreign keys, triggers or RLS. Neither runner starts a scientific model.
 
 No application migration, launch route, packaged worker or artifact reader uses this protocol. Remaining integration work includes retained-attempt readers, claim/validation custody, populated-output relaunch, worker request journals and adapters, restart recovery, production timestamp/deadlock behavior, and authorized retention. Existing-output relaunch refuses until that retention boundary is implemented. SQL metadata checks do not verify Storage bytes. These gaps prevent describing the prototype as a deployed recovery fix or completed M3.
 
@@ -196,3 +196,15 @@ OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER=supabase_db_openplan-restore-target-202609
 ```
 
 This controlled read/reaper schedule uses private table copies without original application foreign keys, triggers or RLS. The advisory pause is test instrumentation only. It does not prove concurrent read/relaunch, HTTP caching behavior, application authorization or any worker recovery path. A returned snapshot can become stale after it is read; a caller must not treat it as a new write authorization.
+
+## Scientific projection refusal checkpoint
+
+The direction check passes on the October 8 reader checkout, with reminders for older capability/jurisdiction reviews and intervening release changes. The full M3 outcome remains installation, teammate use, maps, scheduled jobs, both demand workers, restart/cancel, separate-host backup/restore and upgrade. These prototype checks do not close that outcome.
+
+The production AequilibraE evidence-spine helper still upserts claim decisions, deletes validation rows and posts replacements through separate requests. The launch route also clears all four output/projection tables through separate requests. Current reader queries therefore cannot safely authorize populated recovery merely because artifact/KPI attempt records exist.
+
+A prototype trigger now refuses legacy writes to claim-decision and validation-result rows when either their original or destination model run is attempt-managed. It locks both parents in identifier order. Native fixtures preserve original prototype-only/warn rows and reject insert, update, delete and reassignment for both tables. An unmanaged claim insert/delete remains available. No scientific tier, formula or acceptance tolerance changes.
+
+Baseline, harmless and restored cases plus 40 adverse controls pass. New controls permit insert, delete or reassignment and fail at their named assertion. The first reassignment mutation also permitted deletion and was caught earlier; it was narrowed to preserve deletion protection and reach the intended reassignment failure. The runner verifies the guard function is absent after rollback.
+
+This is an explicit refusal until an attempt-bound scientific-ingestion command exists. It is not that command, does not make legacy county projections attempt-aware, and does not prove concurrent projection writes or access through a user route. Do not install the prototype while packaged workers still depend on these legacy writes. Populated-output recovery remains refused.
