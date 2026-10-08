@@ -79,20 +79,29 @@ class Channel:
 
 
 class ProgressClient(Channel):
-    def progress(self, log_tail):
+    def _request(self, operation, arguments, *, result=False):
         try:
             sequence = self.sequence
-            self.send({'version': VERSION, 'sequence': sequence, 'operation': 'progress', 'log_tail': log_tail})
+            self.send({'version': VERSION, 'sequence': sequence, 'operation': operation, **arguments})
             response = self.receive()
-            if (set(response) != {'version', 'sequence', 'confirmed'}
+            expected = {'version', 'sequence', 'confirmed'} | ({'result'} if result else set())
+            if (set(response) != expected
                     or type(response['version']) is not int or response['version'] != VERSION
                     or type(response['sequence']) is not int or response['sequence'] != sequence
-                    or response['confirmed'] is not True):
-                raise ChannelStopped('Engine progress acknowledgement differs')
+                    or response['confirmed'] is not True
+                    or (result and not isinstance(response['result'], dict))):
+                raise ChannelStopped('Engine acknowledgement differs')
             self.sequence += 1
+            return response.get('result')
         except BaseException:
             self.stop()
             raise
+
+    def progress(self, log_tail):
+        self._request('progress', {'log_tail': log_tail})
+
+    def read_run(self):
+        return self._request('read_run', {}, result=True)
 
 
 class ProgressParent(Channel):
@@ -105,16 +114,24 @@ class ProgressParent(Channel):
         try:
             self.writer.require_open()
             request = self.receive()
-            if (set(request) != {'version', 'sequence', 'operation', 'log_tail'}
+            operation = request.get('operation')
+            fields = {'version', 'sequence', 'operation'} | ({'log_tail'} if operation == 'progress' else set())
+            if (set(request) != fields
                     or type(request['version']) is not int or request['version'] != VERSION
                     or type(request['sequence']) is not int or request['sequence'] != self.sequence
-                    or request['operation'] != 'progress'
-                    or not isinstance(request['log_tail'], str) or len(request['log_tail']) > 20000):
-                raise ChannelStopped('Engine request is outside the progress protocol')
+                    or operation not in ('progress', 'read_run')):
+                raise ChannelStopped('Engine request is outside the allowed protocol')
+            if operation == 'progress':
+                if not isinstance(request['log_tail'], str) or len(request['log_tail']) > 20000:
+                    raise ChannelStopped('Engine progress exceeds its text bound')
             sequence = self.sequence
             self.sequence += 1
-            self.writer.patch_stage(self.writer.context.stage_id, {'log_tail': request['log_tail']})
-            self.send({'version': VERSION, 'sequence': sequence, 'confirmed': True})
+            response = {'version': VERSION, 'sequence': sequence, 'confirmed': True}
+            if operation == 'progress':
+                self.writer.patch_stage(self.writer.context.stage_id, {'log_tail': request['log_tail']})
+            else:
+                response['result'] = self.writer.read_run(self.writer.context.run_id)
+            self.send(response)
         except BaseException:
             self.writer.stopped = True
             self.stop()

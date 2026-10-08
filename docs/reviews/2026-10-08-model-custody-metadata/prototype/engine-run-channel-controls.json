@@ -1,0 +1,36 @@
+{
+  "channel_sha256": "baf4191d07ae1fad81eed0ee696b5b2b2b404c82610622c9ba9da174c3b0b59b",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "allow-extra-identity",
+      "exit_code": 1,
+      "targeted_test": "test_extra_run_identity_refused_before_read"
+    },
+    {
+      "control": "replace-parent-identity",
+      "exit_code": 1,
+      "targeted_test": "test_parent_supplies_run_identity_to_writer"
+    },
+    {
+      "control": "skip-owned-read",
+      "exit_code": 1,
+      "targeted_test": "test_revoked_run_read_closes_channel_without_response"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Reserved real child and socket, real journal, mocked HTTP and ownership. No native database, full solver entrypoint, bulk configuration transfer or supervisor recovery."
+}

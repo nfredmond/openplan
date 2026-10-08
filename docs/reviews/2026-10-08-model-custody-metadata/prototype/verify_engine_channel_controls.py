@@ -9,7 +9,7 @@ def change(old,new):
  return source.replace(old,new)
 cases=[('baseline',source,None),('harmless',source+'\n# Harmless comment.\n',None),
  ('ignore-sequence',change("or request['sequence'] != self.sequence","or False"),'test_duplicate_sequence_stops_without_second_write'),
- ('ignore-operation',change("or request['operation'] != 'progress'","or False"),'test_child_identity_and_terminal_requests_refused'),
+ ('ignore-operation',source.replace("operation = request.get('operation')","operation = 'progress'"),'test_child_identity_and_terminal_requests_refused'),
  ('ignore-log-bound',change("or len(request['log_tail']) > 20000","or False"),'test_log_bound_refuses_before_write'),
  ('ignore-ack-sequence',change("or response['sequence'] != sequence","or False"),'test_client_refuses_wrong_acknowledgement'),
  ('ignore-response-loss-stop',change('self.writer.stopped = True','pass'),'test_lost_response_stops_after_one_confirmed_write'),

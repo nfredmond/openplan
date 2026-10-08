@@ -2278,3 +2278,28 @@ This is a read-time ownership snapshot, not a distributed lease or concurrent
 revocation fence. Native RLS and the child run-read channel remain unverified.
 The new operation establishes the parent API needed by that channel; it does not
 yet provide the full child input protocol or activate normal managed dispatch.
+
+### Run configuration over the inherited channel
+
+The live channel now supports an exact read_run request with no arguments. The
+parent derives the run ID from its managed context and calls the checked run
+reader. Progress and run reads share one ordered request/response sequence.
+The child checks the acknowledgement envelope and requires an object result;
+extra child identifiers refuse before any read. Parent read failure closes the
+channel and stops the writer without sending configuration.
+
+Four tests include a reserved real child reading run configuration, preserving
+the input snapshot and then sending a confirmed progress update. They also cover
+extra identifiers, revoked ownership and the exact parent-derived reader argument.
+Three targeted mutations detect extra-field acceptance, changed parent identity
+and bypassed ownership reads. Earlier progress controls still pass after the
+shared client exchange refactor. The warning-enabled broader suite passes 308
+tests. Native solver/channel cases also pass again as private
+native-engine-channel-v3, including both loss cases and the skipped-write control.
+See prototype/engine-run-channel-controls.json and the refreshed native report.
+
+HTTP and ownership remain mocked in these tests. The 64 KiB frame bound applies
+to run responses too: oversized configuration refuses instead of being truncated.
+Bulk input transfer, path/count operations, production engine adapter, native
+read/RLS evidence, descendant containment and supervisor recovery remain open.
+Normal managed dispatch remains disabled.
