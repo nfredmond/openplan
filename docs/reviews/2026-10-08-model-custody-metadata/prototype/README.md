@@ -364,3 +364,32 @@ PostgREST, normal worker recovery, Storage byte verification or scientific
 acceptance. No production worker calls this prototype. The next boundary is
 actual HTTP response loss after a committed command, followed by a fresh client
 using the retained identity.
+
+## Actual HTTP disconnect after SQL commit
+
+`verify_http_recovery.py` runs the RPC client with its default `requests.post`
+transport against an owned loopback HTTP bridge. The bridge validates the fixture
+route, synthetic credentials and payload, executes the real prototype artifact
+SQL command as `service_role`, waits for autocommit, and drops the TCP connection
+before sending the first HTTP status line. The client records uncertainty and
+exits. A fresh process loads the journaled command, retries it and records the
+original receipt. Calling delivery again returns the saved receipt without a
+third POST.
+
+Baseline, harmless and restored cases each retain one artifact and one server
+receipt after two identical HTTP POSTs. Independent reads establish the first
+commit and pending journal before retry. Two adverse controls detect a mismatched
+receipt that remains pending and a regenerated request ID that duplicates server
+records. Each case shuts down its owned HTTP server and removes its private SQL
+schema, then checks schema removal.
+
+```bash
+OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER=supabase_db_openplan-restore-target-2026091050 \
+python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_http_recovery.py
+```
+
+This is actual HTTP and SQL, but the bridge is not PostgREST. The private table
+copies still omit original application foreign keys, triggers and RLS; the
+prototype installs its own guards. The result does not establish gateway/JWT
+configuration, normal worker lifecycle integration, Storage byte validity,
+scientific acceptance or power-loss durability. Those require separate evidence.
