@@ -76,3 +76,20 @@ The October 8 continuation reproduced a managed-run deletion gap before adding t
 The parent trigger now refuses direct deletion of managed runs. A service-role fixture confirms this refusal without relying on an incidental foreign-key violation, while an unmanaged fixture remains deletable. Baseline, harmless and restored cases pass; seventeen adverse controls detect their intended defects, including removal of the managed-run deletion guard. All fixtures and prototype DDL roll back.
 
 This is a preservation guard, not an implemented retention policy. An authorized retention/deletion command and its user workflow remain unimplemented. Concurrent locking, relaunch, artifact binding, both worker adapters and interruption recovery also remain open. The prototype must not be installed as a complete lifecycle replacement.
+
+## Two-session claim contention checkpoint
+
+`verify_contention.py` creates a uniquely named private schema in the explicitly selected disposable stack. It copies the application run and stage columns, checks and indexes, then installs schema-rebound prototype commands on those copies. It does not install the prototype on application tables. Copies omit original foreign keys, application triggers and RLS; the existing rollback suite tests the separate native sequential boundary.
+
+Run:
+
+```bash
+OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER=supabase_db_openplan-restore-target-2026091050 \
+  python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_contention.py
+```
+
+One PostgreSQL session claims a stage and holds its transaction open. A separate session attempts the same stage. The runner observes a real PostgreSQL lock wait with a blocking session before allowing the first transaction to commit. The second command then returns `not_claimed`. An independent query confirms one attempt, two request receipts and the original active owner. Repeating the losing request returns its exact saved response.
+
+Baseline, harmless and restored runs pass. A control removes both queued-status and active-owner eligibility checks; the second worker then wins and the test fails at `second claimant won`. Each run removes its own private schema and verifies its absence. Statement and idle-transaction timeouts bound owned sessions.
+
+This proves one controlled claim interleaving, not arbitrary scheduling, application RLS, reaper-versus-writer races, legacy-write deadlock recovery, worker interruption or scientific accuracy. Those checks remain required before installing the protocol.
