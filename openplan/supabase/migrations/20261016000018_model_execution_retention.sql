@@ -2,6 +2,10 @@
 -- Stop workers before upgrade. Historical worker runs remain read-only pending
 -- reconciliation; this migration does not authorize replay or scientific use.
 
+-- Keep enrollment locking and trigger installation atomic under both CLI reset
+-- and migration-up execution paths.
+BEGIN;
+
 -- retained-output-protection.sql
 -- Preserve receipt-backed legacy records while continuation is implemented.
 -- This does not authorize replay or convert historical receipts into leases.
@@ -209,3 +213,5 @@ CREATE TRIGGER guard_historical_model_execution BEFORE INSERT OR UPDATE OR DELET
  FOR EACH ROW EXECUTE FUNCTION public.guard_historical_model_execution();
 CREATE TRIGGER guard_historical_model_execution BEFORE INSERT OR UPDATE OR DELETE ON public.modeling_validation_results
  FOR EACH ROW EXECUTE FUNCTION public.guard_historical_model_execution();
+
+COMMIT;

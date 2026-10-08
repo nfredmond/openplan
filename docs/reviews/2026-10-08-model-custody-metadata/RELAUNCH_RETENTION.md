@@ -305,3 +305,33 @@ end-to-end dispatcher behavior and T3 acceptance remain unfinished. In
 particular, old run status must not be mistaken for current execution when the
 record is held for reconciliation. Do not merge or deploy based solely on the
 populated upgrade check. PR #168 remains held.
+
+## Fresh-install transaction correction
+
+PR #169's GitHub live-RLS job failed before its tests during `supabase db reset`.
+Migration 18 reached `LOCK TABLE` outside a transaction and PostgreSQL refused
+with SQLSTATE 25P01. The earlier populated `migration up` check did not cover
+this execution path. This contradicts fresh-install readiness for the original
+migration file; it does not establish an RLS-policy failure.
+
+Migration 18 now has an explicit transaction around its entire body, preserving
+enrollment locking and trigger installation as one change. Native clones run the
+file in statement-autocommit mode. Baseline, harmless-comment and restored cases
+install, preserve every existing model-run row, enroll 111 historical runs and
+invent no starts. Removing the transaction reproduces the exact CI failure.
+A deliberate SQL error before commit rolls back both retention tables and the
+retained-command function, with the original model rows unchanged. The partially
+applied negative-control clone stays isolated for diagnosis.
+
+The current Supabase CLI also applies the corrected migration and migration 19
+on a populated predecessor clone, then reapplies without duplicate history.
+Both history versions are present. The original 19 model-table row inventories
+remain unchanged, and the installed retention and recovery-reader cases pass.
+No application database was reset or upgraded. Private evidence is
+`retention-transaction-v1` and `retention-transaction-cli-upgrade-v1` under the
+existing proof root. The corrected migration SHA-256 is
+`bfb526df6d0ec90b6432dec3c7cc6e3deaf3a658a9991d7e9156a235437f8944`.
+
+A new GitHub database-reset run must still confirm its actual fresh-install path.
+Earlier exact-byte migration and full-QA results remain evidence for their
+recorded heads; they do not automatically certify this corrected candidate.
