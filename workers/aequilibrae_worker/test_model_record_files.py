@@ -10,7 +10,7 @@ import model_record_files as records
 class RecordFilesTests(unittest.TestCase):
     def setUp(self):
         temp=tempfile.TemporaryDirectory();self.addCleanup(temp.cleanup);self.root=Path(temp.name)/'records'
-        self.values={'assessment.json':b'{"status":"inconclusive"}','basis.json':b'{}'}
+        self.values={'assessment.json':b'{"status":"inconclusive"}','basis.json':b'{}','volumes.geojson':b'{"type":"FeatureCollection","features":[]}'}
 
     def test_exact_retry_preserves_inodes_and_repairs_only_missing_files(self):
         paths=records.materialize(self.root,self.values)
@@ -52,7 +52,7 @@ class RecordFilesTests(unittest.TestCase):
         self.assertEqual((self.root/'assessment.json').read_bytes(),b'different competing bytes')
 
     def test_invalid_names_do_not_create_directory(self):
-        for name in ('../assessment.json','/absolute.json','nested/file.json',''):
+        for name in ('../assessment.json','/absolute.json','nested/file.json','volumes.geojson.bak','run.sh',''):
             with self.assertRaises(ValueError):records.materialize(self.root,{name:b'{}'})
         self.assertFalse(self.root.exists())
 

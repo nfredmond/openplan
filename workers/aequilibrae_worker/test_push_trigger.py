@@ -1099,10 +1099,20 @@ def test_volume_geojson_retains_registration_uncertainty():
                         raise AssertionError("uncertain GeoJSON registration swallowed")
                     assert "Uploaded volumes GeoJSON (1 features)" in result
                     first_bytes=(root / "run_output/volumes.geojson").read_bytes()
+                    first_inode=(root / "run_output/volumes.geojson").stat().st_ino
                     main.publish_volume_geojson(RUN_ID, "22222222-2222-4222-8222-222222222222", work, "synthetic-engine", {}, workspace_id=RUN_ID)
                     assert (root / "run_output/volumes.geojson").read_bytes()==first_bytes
+                    assert (root / "run_output/volumes.geojson").stat().st_ino==first_inode
+                    (root / "run_output/volumes.geojson").write_bytes(b"changed local map")
+                    try:
+                        main.publish_volume_geojson(RUN_ID, "22222222-2222-4222-8222-222222222222", work, "synthetic-engine", {}, workspace_id=RUN_ID)
+                    except main.WorkerStateWriteUnconfirmed:
+                        pass
+                    else:
+                        raise AssertionError("changed local map was overwritten")
+                    assert (root / "run_output/volumes.geojson").read_bytes()==b"changed local map"
             assert len(calls) == (2 if uncertain else 3), calls
-            assert connection.close.call_count == (1 if uncertain else 2)
+            assert connection.close.call_count == (1 if uncertain else 3)
 
 
 def test_volume_geojson_missing_database_remains_explicit():

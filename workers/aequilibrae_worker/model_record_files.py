@@ -28,8 +28,8 @@ def _verify(path, expected):
 def materialize(directory, records):
     if not isinstance(records, dict) or not records:
         raise ValueError('Retained record mapping required')
-    if any(not isinstance(name, str) or not re.fullmatch(r'[a-z][a-z0-9_]*\.json', name) or not isinstance(value, bytes) for name, value in records.items()):
-        raise ValueError('Safe JSON filenames and retained bytes required')
+    if any(not isinstance(name, str) or not re.fullmatch(r'[a-z][a-z0-9_]*\.(?:json|geojson)', name) or not isinstance(value, bytes) for name, value in records.items()):
+        raise ValueError('Safe JSON or GeoJSON filenames and retained bytes required')
     directory = Path(directory)
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
     if directory.is_symlink() or not directory.is_dir():

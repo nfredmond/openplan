@@ -37,3 +37,23 @@ immutable, prove Storage durability, or authorize whole-stage replay. KPI writes
 comparison and geometry computation recovery, current ownership fencing, and
 scientific, human and browser acceptance remain open. Full application QA and
 GitHub integration checks for this follow-up remain pending.
+
+## Preserve the existing volume-map file
+
+The volume-map publisher now uses atomic, non-replacing file materialization.
+The shared filename guard accepts `.geojson` alongside `.json`, with the same
+basename restriction. Serialization retains the prior JSON formatting and
+rejects non-finite numbers. Existing exact bytes preserve their inode; altered
+bytes stop publication with an unconfirmed-write error before Storage or
+registration. The file helper's missing-file and interruption checks also cover
+GeoJSON. This supersedes the parent note that volume-map publication rewrites its
+local file, but does not retain the spatial computation itself.
+
+Harmless and restored controls pass. Restoring an overwriting write fails the
+actual publisher test; bypassing the safe-name guard fails the file helper test.
+Private evidence is `map-file-controls.json` under the proof root. All 79 worker
+suites pass. Unit `openplan-map-materialization-workers-20261008.service`,
+invocation `7dc6d58546924754a5c2acf709afbe6b`, completed at 07:58:21 Pacific on
+October 8 with a 171.8 MiB peak under a 1 GiB cap. No checkout edits occurred
+during regression. Mocked geometry and HTTP do not establish native spatial
+correctness or Storage durability. Parent application QA remains running.

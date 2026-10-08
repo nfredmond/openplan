@@ -5145,12 +5145,12 @@ def publish_volume_geojson(
                 },
             }
 
-            geojson_path = os.path.join(out_dir, "volumes.geojson")
-            with open(geojson_path, "w") as f:
-                json.dump(fc, f)
-
-            with open(geojson_path, "rb") as geojson_file:
-                geojson_bytes = geojson_file.read()
+            import model_record_files
+            geojson_bytes = json.dumps(fc, allow_nan=False).encode("utf-8")
+            try:
+                model_record_files.materialize(out_dir, {"volumes.geojson": geojson_bytes})
+            except Exception:
+                raise WorkerStateWriteUnconfirmed("Volume map bytes differ or local publication is unconfirmed; reconcile before continuing") from None
             storage_ref = upload_volume_geojson_bytes(run_id, stage_id, geojson_bytes)
             sb_record_retained_artifact({
                 "run_id": run_id,
