@@ -94,3 +94,58 @@ def retain(counts_path, status_directory, destination):
             if file is not None:
                 os.close(file)
         os.close(descriptor)
+
+
+def consume(record, destination):
+    """Verify the recorded manifest and independently copy its exact input set."""
+    root = Path(record['counts_input_directory'])
+    if not root.is_absolute() or record['counts_path'] != str(root / 'counts.csv') or record['manifest_path'] != str(root / 'manifest.json'):
+        raise ValueError('Count input record paths disagree')
+    expected_size = record['manifest_size_bytes']
+    expected_hash = record['manifest_sha256']
+    if type(expected_size) is not int or not 0 < expected_size <= 1024 * 1024:
+        raise ValueError('Invalid count manifest size')
+    if not isinstance(expected_hash, str) or len(expected_hash) != 64 or any(c not in '0123456789abcdef' for c in expected_hash):
+        raise ValueError('Invalid count manifest hash')
+    descriptor = os.open(root / 'manifest.json', FLAGS)
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or before.st_size != expected_size:
+            raise ValueError('Count manifest must match its recorded regular file')
+        with os.fdopen(os.dup(descriptor), 'rb') as reader:
+            content = reader.read(expected_size + 1)
+        if len(content) != expected_size or hashlib.sha256(content).hexdigest() != expected_hash:
+            raise ValueError('Count manifest bytes differ from recorded identity')
+        if identity(before) != identity(os.fstat(descriptor)) or identity(before) != identity(os.stat(root / 'manifest.json', follow_symlinks=False)):
+            raise ValueError('Count manifest changed during verification')
+    finally:
+        os.close(descriptor)
+
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('Duplicate count manifest key')
+            result[key] = value
+        return result
+
+    manifest = json.loads(content, object_pairs_hook=unique_object)
+    names = {'counts.csv', 'counts.csv.count-source.json', 'count_source_status.json'}
+    if manifest.get('schema') != 'openplan.count-inputs.v1' or set(manifest.get('files', {})) != names:
+        raise ValueError('Invalid count manifest schema or file set')
+    for entry in manifest['files'].values():
+        if entry.get('status') not in ('retained', 'unavailable'):
+            raise ValueError('Invalid count input status')
+        if entry['status'] == 'retained':
+            digest, size = entry.get('sha256'), entry.get('size_bytes')
+            if not isinstance(digest, str) or len(digest) != 64 or any(c not in '0123456789abcdef' for c in digest) or type(size) is not int or size < 0:
+                raise ValueError('Invalid retained count identity')
+    if record['counts_status'] != manifest['files']['counts.csv']['status']:
+        raise ValueError('Count input status disagrees with manifest')
+    copied = retain(record['counts_path'], str(root), destination)
+    copied_manifest = json.loads(Path(copied['manifest_path']).read_bytes())
+    for name in names:
+        expected, actual = manifest['files'][name], copied_manifest['files'][name]
+        if any(expected.get(key) != actual.get(key) for key in ('status', 'sha256', 'size_bytes')):
+            raise ValueError('Count input bytes differ from recorded manifest: ' + name)
+    return copied

@@ -909,3 +909,31 @@ All 108 combined tests, 10 existing model-credibility checks and 27 existing
 TypeScript evidence/export tests pass. The SQLite ResourceWarning remains
 unresolved. These checks do not establish a rendered T3 journey, complete
 package/project handoff or scientific acceptance.
+
+### Retained count inputs are verified before a subsequent assignment
+
+The second assignment now passes the first assignment's retained count record.
+The consumer checks the manifest's recorded hash, size, file identity, schema,
+unique JSON keys and fixed input set. It makes an exclusive independent copy,
+then compares each copied file's status, size and hash against the original
+manifest before returning control to assignment. Changed or missing retained
+files and newly appearing sidecars refuse computation. Missing inputs stay
+unavailable. Existing consumer directories are not adopted or overwritten.
+
+Seven real-file cases cover these boundaries and the actual assignment entry
+point before engine construction. Baseline, harmless and restored controls pass;
+five fault controls detect ignored manifest hashes, ignored file identities,
+a copy-time change, duplicate keys and bypassed assignment verification. The
+first bypass control reached a later SQLite error because its mocked engine
+allowed execution to continue. The test now fails explicitly at engine entry,
+and the corrected control detects that exact failure. An initial test-file
+creation used the wrong working directory and was corrected before testing.
+The combined suite passes 115 tests; 30 assignment-handoff checks also pass.
+The existing SQLite ResourceWarning remains unresolved.
+
+This change does not yet verify the manifest at artifact extraction. Legacy
+assignments without a retained record keep their existing capture behavior;
+that is not proof of earlier custody. Source parents remain administrator-owned.
+Failed captures remain for reconciliation, and arbitrary subsequent host writes
+are outside this check. Full package/project transfer, normal managed dispatch,
+rendered T3 acceptance and independent scientific acceptance remain open.

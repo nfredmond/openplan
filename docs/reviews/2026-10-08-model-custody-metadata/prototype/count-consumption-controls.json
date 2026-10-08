@@ -1,0 +1,46 @@
+{
+  "source_sha256": "5b0b5b2af6b09907a8d43ad1e9d9ca0f9e9807ecbf82b55ccc9b977fd894e594",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-manifest-hash",
+      "exit_code": 1,
+      "targeted_test": "test_manifest_tampering"
+    },
+    {
+      "control": "ignore-file-identity",
+      "exit_code": 1,
+      "targeted_test": "test_changed_missing_and_new_files"
+    },
+    {
+      "control": "ignore-copy-race",
+      "exit_code": 1,
+      "targeted_test": "test_change_during_recopy"
+    },
+    {
+      "control": "accept-duplicate-keys",
+      "exit_code": 1,
+      "targeted_test": "test_duplicate_keys"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "bypass-assignment-verification",
+      "exit_code": 1,
+      "targeted_test": "test_assignment_verifies_before_engine_open"
+    }
+  ],
+  "limits": "Synthetic local-file verification and assignment refusal before engine entry. No engine computation, browser journey, arbitrary host confinement or scientific acceptance."
+}

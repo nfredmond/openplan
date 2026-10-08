@@ -3814,7 +3814,7 @@ def apply_persisted_network_settings(graph, proj_dir: str, settings: dict | None
     return changed
 
 
-def retain_assignment_counts(counts_path: str | None, out_dir: str, *, status_directory: str) -> dict:
+def retain_assignment_counts(counts_path: str | None, out_dir: str, *, status_directory: str, retained_record: dict | None = None) -> dict:
     """Capture this assignment's selected inputs without substituting other counts."""
     from pathlib import Path
     import model_count_inputs
@@ -3825,7 +3825,9 @@ def retain_assignment_counts(counts_path: str | None, out_dir: str, *, status_di
             writer.require_open()
             if writer.files is None or not Path(out_dir).resolve(strict=True).is_relative_to(writer.files.path):
                 raise ValueError("Count input retention requires an owned attempt output directory")
-        retained = model_count_inputs.retain(counts_path, status_directory, Path(out_dir) / "count_inputs")
+        retained = (model_count_inputs.consume(retained_record, Path(out_dir) / "count_inputs")
+                    if retained_record is not None else
+                    model_count_inputs.retain(counts_path, status_directory, Path(out_dir) / "count_inputs"))
         if writer is not None:
             writer.files.verify()
             writer.record_artifact({
@@ -3852,6 +3854,7 @@ def stage_assignment(
     output_dir_name: str = "run_output",
     demand_is_vehicle: bool = False,
     counts_path_override: str | None = None,
+    count_inputs_override: dict | None = None,
     persisted_network_settings: dict | None = None,
     persisted_network_settings_payload_json: str | None = None,
     persisted_network_settings_digest: str | None = None,
@@ -3947,6 +3950,7 @@ def stage_assignment(
     count_inputs = retain_assignment_counts(
         counts_path, out_dir,
         status_directory=os.path.dirname(counts_path_override) if counts_path_override else out_dir,
+        retained_record=count_inputs_override,
     )
     counts_path = count_inputs["counts_path"]
     log += ("Selected count inputs retained before assignment.\n" if count_inputs["counts_status"] == "retained"
@@ -6755,6 +6759,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     output_dir_name="activitysim_assignment_output",
                     demand_is_vehicle=True,
                     counts_path_override=first_assignment.get("counts_path"),
+                    count_inputs_override=first_assignment.get("count_inputs"),
                     persisted_network_settings=accepted_settings,
                     persisted_network_settings_payload_json=accepted_settings_payload,
                     persisted_network_settings_digest=expected_settings_digest,
