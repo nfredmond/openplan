@@ -8,6 +8,15 @@ and time. A frozen raw-error rule could therefore pass without observation
 bounds. The synthetic reproduction reports a 10 percent raw error, unknown
 bounds and `scientific_outcome=pass`.
 
+Caller inspection narrows the demonstrated exposure. The screening CLI calls
+`uncontracted_v4_assessment`, which stays inconclusive. The development-study
+runner calls the reusable evaluator but binds an unknown acceptance rule and
+refuses a pass/fail result. Rules v5 also stays inconclusive. This investigation
+does not demonstrate a false pass in a published screening workflow. The
+correction protects the reusable rules-v4 evaluator and future callers that
+supply a frozen rule. Running a new field study or the unchanged screening CLI
+would not exercise that failing synthetic condition.
+
 The [nationwide preregistration](../../modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json)
 requires source-supported observation intervals for decisive observations.
 This correction applies that existing evidence requirement to prospective
