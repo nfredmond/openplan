@@ -2153,3 +2153,15 @@ an ordinary diagnostic failure as fatal. The warning-enabled broader suite passe
 288 tests. See prototype/select-link-custody-controls.json for source hash and
 outcomes. These checks do not execute full assignment or establish scientific
 acceptance. Engine child authority transfer and supervisor recovery remain open.
+
+### Engine child authority decision
+
+[Engine child protocol](ENGINE_CHILD_PROTOCOL.md) records the current assignment
+call boundary and the selected parent-owned writer with a private live request
+channel. The audit identifies direct run reads, parent-confirmed count manifests,
+count-fetch subprocesses and dotenv loading during main import. These prevent
+simply copying the writer or clearing a few environment variables from becoming
+an accepted execution boundary. The document specifies allowed operations,
+provisional results and required crash/replay/descendant evidence. It is a design
+decision, not implementation or acceptance. The current direction check passes
+with its existing review reminders; the roadmap remains the sole queue.
