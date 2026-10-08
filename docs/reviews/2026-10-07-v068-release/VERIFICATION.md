@@ -25,14 +25,20 @@ These checks cover record alignment and migration ordering. They do not prove
 an upgrade, database restoration, permissions, workflow completion or accuracy.
 Private logs are in the local `v068-release-20261007-proof` state directory.
 
-## Checks still required
+## Combined checks and remaining release work
 
-The combined candidate needs its own full QA, shuffled tests, production build,
-applicable live database and worker results. Existing constituent browser
-reports retain their identified builds and limitations. The latest resource
-assessment wording needs review in the combined identified build. GitHub results
-for PRs 140, 141 and 142 must be inspected rather than inferred from a push.
-The tag remains unpublished until the declared development-release checks pass.
+[Combined acceptance](COMBINED_ACCEPTANCE.md) records local full QA, production
+build, GitHub normal and shuffled tests, worker checks, the populated upgrade,
+and T3 desktop/mobile journeys on exact application commit `10c3bc0c`.
+Candidate live RLS run 37719603999 subsequently passes. Full-archive restore
+run 37719725094 is still active. It has no concurrency cancellation rule tied
+to branch updates, so advancing the integration does not restart that job.
+
+The integration adds evidence and current main/calendar merge ancestry without
+changing application files relative to `10c3bc0c`. Final GitHub checks remain
+attributable to the integration head. No tag or release is published. The
+changelog remains explicitly a development candidate until the remaining
+checks and final release disposition are recorded.
 
 Full V1 remains open. This release does not establish independent nationwide
 scientific acceptance, native date entry or every download's native save,
