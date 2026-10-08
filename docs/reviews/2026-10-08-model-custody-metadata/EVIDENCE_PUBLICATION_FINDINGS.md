@@ -275,3 +275,30 @@ These tests use injected transport and private SQLite journals. Native command
 delivery, socket interruption and process recovery for this new operation remain
 unverified. The earlier native legacy-writer proof does not establish those
 new-operation boundaries. County and managed publication remain incomplete.
+
+## Native publication TCP interruption and fresh CLI recovery
+
+The existing worker recovery proof now supports `--publication`. It installs
+only temporary candidate objects in the named owned database and uses the actual
+worker payload builder, retained client and fresh recovery CLI process. A local
+HTTP bridge forwards the command to PostgREST, waits for the database response,
+and closes the TCP connection before returning the first reply to the client.
+
+Synthetic run `085c2dbb-d443-4300-8f91-8cccf8815eb9`, request
+`5b6b4702-7e39-467e-8d27-39b838e4a691`, leaves the exact command pending after
+the committed response is lost. The fresh CLI recovers its original receipt.
+Two HTTP requests carry identical bodies; a subsequent cached recovery sends
+no third request. The database retains one publication receipt, a matching
+claim and both prepared metrics. No model is resumed.
+
+Harmless and restored publication cases pass. Replacing the server's retry
+receipt with an empty object makes recovery fail and is detected. The original
+claim-recovery mode also passes after the shared proof changes. Temporary
+publication objects and the HTTP bridge are removed; synthetic run/projection
+rows and private journal evidence remain. Results are retained under
+`model-command-client-20261008-proof/publication-native-cli/` and
+`publication-native-cli-controls.json`.
+
+This establishes the new command's tested HTTP/client recovery boundary. It
+does not install an application migration, activate normal stage dispatch,
+reconcile model files, publish county evidence or establish scientific validity.
