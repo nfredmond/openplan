@@ -463,3 +463,16 @@ These are separate verified stages, not a claim that one uninterrupted QA gate
 passed. Exact-head GitHub integration, normal managed dispatcher adoption,
 complete consumer recovery, scientific acceptance and practitioner acceptance
 remain open. This checkpoint adds only this evidence note after the tested head.
+
+## Full worker runner exposed an outdated handoff test
+
+The downstream publication branch's full worker run found that
+`test_screening_handoff.py` still called the materializer without its required
+source-artifact and consumer-stage arguments. This test failed before checking
+the copied network summary. The fixture now supplies synthetic source identities
+and file hashes, preserves the original summary assertion, and checks the retained
+manifest's source and consumer identities. The focused test passes. Harmless and
+restored controls pass; removing the summary copy and substituting the wrong
+consumer identity both fail. Controls are retained in
+`model-command-client-20261008-proof/screening-handoff-controls.json`.
+This file-copy test does not establish live artifact authorization or model accuracy.
