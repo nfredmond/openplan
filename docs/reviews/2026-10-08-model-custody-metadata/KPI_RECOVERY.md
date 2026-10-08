@@ -47,10 +47,37 @@ The fixture is synthetic and no application database is the target.
 
 ## Required next work
 
-This is not an installed migration or connected worker path. Independent-session
-contention, native HTTP permissions and lost-response recovery, retained client
+This is not an installed migration or connected worker path. Native HTTP lost-response recovery, retained client
 validation, additive migration/upgrade evidence, schema accounting, and actual
 caller adoption remain open. The next implementation must bind stable identities
 to destination, run, stage and KPI slot, never to mutable numeric values. Existing
 rows need reconciliation instead of silent adoption or deletion. Current stage
 ownership, computation recovery and scientific acceptance remain separate gates.
+
+
+## Independent sessions and HTTP permissions
+
+The contention proof uses independent PostgreSQL service-role sessions and
+observes their actual lock waits. Fifteen cases pass: baseline, harmless and
+restored exact retries, changed requests, cleanup-first and write-first orderings,
+plus three targeted fault controls. Exact retries leave one KPI and one receipt;
+cleanup-first leaves neither. Write-first preserves the historical receipt after
+the real stale-run reaper marks the run failed. Mutants that bypass request
+comparison, return the wrong receipt or allow a write after cleanup are caught.
+
+The temporary PostgREST proof passes baseline, harmless and restored variants.
+Membership fixtures first establish that a member sees the run and an outsider
+does not. Both receive 403 from the command; anonymous and unsigned calls receive
+401. Service execution and exact retry succeed. Direct receipt-table access is
+refused even to the service role. An adverse authenticated EXECUTE grant exposes
+the synthetic retained receipt, and revocation restores the outsider's 403.
+The first invocation omitted the required disposable-container environment
+variable and stopped before database work; the corrected invocation supplied the
+explicit owned target without weakening the guard.
+
+Each proof removes its candidate function and receipt table; the gateway context
+removes its temporary container. Synthetic fixture rows remain in the owned
+proof database. Private evidence is in `legacy-kpi-contention/` and
+`legacy-kpi-http/{baseline,harmless,restored}/` under the proof root. These results
+supersede the concurrency and HTTP-permission gaps above. They do not establish
+lost-response recovery through a retained client or normal worker adoption.
