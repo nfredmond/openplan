@@ -479,6 +479,7 @@ describe("FundingAwardCloseoutPanel", () => {
     // database refuse it too; this is the layer that can say which box is empty.
     fireEvent.click(screen.getByRole("button", { name: "Confirm re-open" }));
     expect(normalizedTextOf(await screen.findByRole("alert"))).toContain("needs a written reason");
+    expect(normalizedTextOf(screen.getByRole("alert"))).toContain("Award update refused.");
     expect(fetchMock).not.toHaveBeenCalled();
 
     fireEvent.change(screen.getByLabelText("Reason (required)"), {

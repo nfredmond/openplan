@@ -245,14 +245,14 @@ function FundingAwardClosureProvenance({ award }: { award: FundingAwardCloseoutA
   return (
     <div className="mt-2 rounded-[0.5rem] border border-border/50 bg-background/60 px-3 py-2">
       <div className="flex flex-wrap items-center gap-2">
-        <StatusBadge tone={basisWasLoaded ? fundingAwardClosureBasisTone(award.closureBasis) : "neutral"}>
+        <StatusBadge className="max-w-full whitespace-normal" tone={basisWasLoaded ? fundingAwardClosureBasisTone(award.closureBasis) : "neutral"}>
           {basisWasLoaded ? formatFundingAwardClosureBasisLabel(award.closureBasis) : "Closure basis not loaded"}
         </StatusBadge>
         {award.closedAt ? (
           <span className="text-xs text-muted-foreground">Closed {formatDateTime(award.closedAt)}</span>
         ) : null}
         {award.reopenedAt ? (
-          <StatusBadge tone="warning">Re-opened {formatDateTime(award.reopenedAt)}</StatusBadge>
+          <StatusBadge className="max-w-full whitespace-normal" tone="warning">Re-opened {formatDateTime(award.reopenedAt)}</StatusBadge>
         ) : null}
       </div>
       <p className="mt-1.5 text-xs text-muted-foreground">
@@ -716,7 +716,7 @@ function FundingAwardCloseoutRow({
           role="alert"
           className="mt-3 rounded-[0.5rem] border border-destructive/40 bg-destructive/10 px-3 py-3 text-destructive"
         >
-          <p className="text-sm font-semibold">Close-out refused.</p>
+          <p className="text-sm font-semibold">Award update refused.</p>
           <p className="mt-1 text-xs">{outcome.message}</p>
         </div>
       ) : null}
@@ -738,7 +738,7 @@ export function FundingAwardCloseoutPanel({
   }
 
   return (
-    <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-muted/15 px-3 py-3">
+    <div className="mt-4 min-w-0 rounded-[0.5rem] border border-border/60 bg-muted/15 px-3 py-3">
       <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         Award close-out
       </p>
