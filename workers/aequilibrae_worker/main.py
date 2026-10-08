@@ -625,18 +625,7 @@ def sb_patch_run(run_id: str, payload: dict):
 
 
 def sb_post_artifact(payload: dict):
-    url = f"{SUPABASE_URL}/rest/v1/model_run_artifacts"
-    response = requests.post(url, headers=HEADERS, json=payload, timeout=30)
-    if not 200 <= response.status_code < 300:
-        raise RuntimeError(
-            "Failed to register model artifact: "
-            f"{response.status_code} {response.text[:200]}"
-        )
-    try:
-        rows = response.json()
-    except ValueError:
-        rows = []
-    return rows[0] if isinstance(rows, list) and rows else None
+    return _confirmed_record_insert("model_run_artifacts", payload)
 
 
 def sb_record_modeling_validation_assessment(payload: dict) -> dict:
@@ -1073,25 +1062,30 @@ def activitysim_assignment_package(run_id: str) -> str | None:
     return package_dir
 
 
-def sb_post_kpi(payload: dict):
-    """Require the retained KPI receipt without retrying an uncertain insert."""
+def _confirmed_record_insert(table: str, payload: dict) -> dict:
+    """Require the retained output receipt without retrying an uncertain insert."""
     try:
         response = requests.post(
-            f"{SUPABASE_URL}/rest/v1/model_run_kpis",
+            f"{SUPABASE_URL}/rest/v1/{table}",
             headers=HEADERS, json=payload, timeout=30,
         )
         if response.status_code != 201:
-            raise WorkerStateWriteUnconfirmed("Worker KPI insert unconfirmed: HTTP response failed")
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: HTTP {response.status_code}")
         rows = response.json()
         if (not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict)
                 or not isinstance(rows[0].get("id"), str) or not rows[0]["id"]):
-            raise WorkerStateWriteUnconfirmed("Worker KPI insert unconfirmed: missing retained record")
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: missing retained record")
         if any(field not in rows[0] or rows[0][field] != value for field, value in payload.items()):
-            raise WorkerStateWriteUnconfirmed("Worker KPI insert unconfirmed: returned values differ")
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: returned values differ")
+        return rows[0]
     except WorkerStateWriteUnconfirmed:
         raise
     except (requests.RequestException, ValueError, TypeError) as error:
-        raise WorkerStateWriteUnconfirmed("Worker KPI insert unconfirmed: no valid receipt") from error
+        raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: no valid receipt") from error
+
+
+def sb_post_kpi(payload: dict):
+    _confirmed_record_insert("model_run_kpis", payload)
 
 
 def write_model_run_modeling_evidence(

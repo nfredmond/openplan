@@ -1007,7 +1007,8 @@ def test_artifact_registration_refuses_a_non_success_response():
             main.sb_post_artifact({"artifact_type": "link_volumes"})
         except RuntimeError as error:
             assert "400" in str(error)
-            assert "invalid artifact" in str(error)
+            assert isinstance(error, main.WorkerStateWriteUnconfirmed)
+            assert "invalid artifact" not in str(error)
         else:
             raise AssertionError("HTTP 400 was treated as a registered artifact")
 

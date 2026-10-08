@@ -15,3 +15,13 @@ The October 8 continuation calls the changed AequilibraE helper against the name
 A second call reaches the real database and receives HTTP 201, then the transport shim raises a timeout before the helper sees the acknowledgement. The helper raises write uncertainty. The shim records one call, and an independent PostgreSQL query finds exactly one committed row. There is no automatic retry. Synthetic records remain in the isolated test database; this is not a model execution.
 
 Private evidence is retained as `native-aequilibrae-kpi-inserts.py` and `native-aequilibrae-kpi-inserts.json` in the existing local proof directory. The result records the exact helper source digest, fixture identities and one-call/one-row outcome without credentials. This adds native insert evidence to the earlier HTTP tests. It does not establish attempt ownership, artifact bytes, arbitrary handler propagation, process recovery or scientific validity.
+
+## Shared artifact and KPI receipts
+
+The next October 8 continuation traces both KPI calls. The artifact-stage KPI loop has no local exception handler; the same-network ActivitySim assignment KPI loop sits under the existing stage write-uncertainty handler. Neither direct KPI call swallows that exception.
+
+Artifact registration had a related gap: any 2xx response was accepted, and a malformed or empty receipt could return no row. Artifact and KPI helpers now use one checked insert implementation. Artifact registration returns the validated row, preserving the identifier used by downstream evidence writes. Errors retain the HTTP status but omit private response bodies.
+
+All 33 push-trigger and 26 ActivitySim assignment-handoff checks pass. Harmless/restored controls pass; removing the HTTP or field comparison fails at the intended artifact assertion. The native isolated-database probe retains a null KPI and synthetic artifact metadata, then confirms a real committed KPI insert with a lost acknowledgement remains uncertain with one request and one row. Private evidence is `native-aequilibrae-output-inserts.py/json`. Metadata insertion does not prove uploaded artifact bytes.
+
+One call-site gap remains: the GeoJSON upload/registration block in `stage_artifacts` catches broad exceptions and logs a warning. This patch checks its insert receipt but does not yet establish propagation out of that block. Do not describe all artifact errors as stage-stopping. Byte integrity, attempt ownership and process recovery also remain separate work.

@@ -970,6 +970,30 @@ def test_uncertain_kpi_insert_stops_stage_without_terminal_rewrite():
         assert all(call.args[1]["status"] == "running" for call in run_write.call_args_list)
 
 
+def test_artifact_insert_requires_exact_retained_receipt():
+    from unittest import mock
+    payload = {"run_id": RUN_ID, "value": None, "breakdown_json": {"status": "unassessed"}}
+    row = {"id": "synthetic-kpi", **payload}
+    for status, rows, accepted in ((201, [row], True), (503, [row], False), (204, None, False), (201, [], False), (201, [row, row], False), (201, [payload], False), (201, [{**row, "run_id": "other"}], False), (201, [{k: v for k, v in row.items() if k != "value"}], False), (201, [{**row, "value": 0}], False)):
+        response = mock.Mock(status_code=status, text="private response")
+        response.json.return_value = rows
+        with mock.patch.object(main.requests, "post", return_value=response) as post:
+            if accepted:
+                assert main.sb_post_artifact(payload) == row
+            else:
+                try:
+                    main.sb_post_artifact(payload)
+                except main.WorkerStateWriteUnconfirmed as error:
+                    assert "private response" not in str(error)
+                else:
+                    raise AssertionError(f"unconfirmed artifact insert accepted: {status}")
+        assert post.call_count == 1
+        assert post.call_args.kwargs["timeout"] == 30
+        assert post.call_args.kwargs["headers"]["Prefer"] == "return=representation"
+        assert post.call_args.kwargs["json"] == payload
+
+
+
 TESTS = [value for name, value in sorted(globals().items()) if name.startswith("test_")]
 
 if __name__ == "__main__":
