@@ -68,6 +68,28 @@ class EvidenceDeliveryTests(unittest.TestCase):
                 self.assertEqual(kwargs['timeout'], 20)
                 self.assertIs(kwargs['allow_redirects'], False)
 
+    def test_rules_v4_pass_requires_explicit_recorded_evidence(self):
+        import copy
+        for track in ('assignment', 'behavioral_demand'):
+            for state in ('missing', None, '', 'pending', 'validation evidence write failed', True, 1, {}, []):
+                with self.subTest(track=track, state=state):
+                    source = copy.deepcopy(VALIDATION)
+                    assessment = source['model_validation_assessment']
+                    assessment['scientific_outcome'] = 'pass'
+                    if state != 'missing':
+                        assessment['validation_evidence_write'] = state
+                    publication = main.build_model_run_modeling_evidence(
+                        'run-fixture', 'workspace-fixture', source, track=track)
+                    self.assertEqual(publication['claim']['claim_status'], 'prototype_only')
+                    self.assertIn('not confirmed', publication['claim']['status_reason'])
+            source = copy.deepcopy(VALIDATION)
+            source['model_validation_assessment'].update(
+                scientific_outcome='pass', validation_evidence_write='recorded')
+            publication = main.build_model_run_modeling_evidence(
+                'run-fixture', 'workspace-fixture', source, track=track)
+            self.assertEqual(publication['claim']['claim_status'], 'screening_grade')
+            self.assertIn('recorded planning use and partition', publication['claim']['status_reason'])
+
     def test_all_calculation_finishes_before_first_write(self):
         validation = dict(VALIDATION, validation_rules_version=3,
                           zone_resolution={'supports_link_level_validation': True})

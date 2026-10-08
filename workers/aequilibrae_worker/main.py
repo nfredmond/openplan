@@ -1112,10 +1112,10 @@ def build_model_run_modeling_evidence(
     # promote anything — only the reason changes, and only to a truer one.
     zone_block = (validation or {}).get("zone_resolution") or {}
     zone_support = zone_block.get("supports_link_level_validation")
-    if rules_v4 and evidence_write == "validation evidence write failed":
+    if rules_v4 and assessment and evidence_write != "recorded":
         claim_status, reason = "prototype_only", (
-            "Validation evidence write failed. The computation remains available, but its "
-            "exact inputs and output are not in immutable custody, so this run is scientifically unchecked."
+            "Validation evidence storage is not confirmed. The computation remains available, but "
+            "its exact inputs and output do not have a confirmed custody write, so this run is scientifically unchecked."
         )
     elif rules_v4 and not assessment:
         claim_status, reason = "prototype_only", (
