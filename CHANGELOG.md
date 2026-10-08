@@ -20,6 +20,26 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No additional changes beyond the development candidate below.
+
+## 0.68.0 (development candidate)
+
+This candidate collects the land-use, engagement and evidence corrections below.
+It is not tagged or released. Final combined checks remain pending. Version 1.0,
+independent nationwide scientific acceptance and observed practitioner outcomes
+remain unfinished.
+
+Project evidence now distinguishes linked engagement campaigns from retained
+report evidence. My Work preserves conflicting award and milestone deadlines
+and asks staff to review them. Project delivery displays calendar-only dates
+without shifting them to the preceding day in western time zones.
+
+Published distributed model results verify retained hashes, identities, summary
+agreement and required values before display. Missing evidence stays unavailable.
+AequilibraE and ActivitySim remain separate and scientifically inconclusive.
+No frozen study, model default or untouched acceptance set changes.
+
+
 Staff can explicitly queue a saved synthesis execution allowance. A continuous
 local worker discovers these requests and reuses the segment, context and thematic
 schedulers. Saving permission alone does not start execution. Apply additive
@@ -30,8 +50,9 @@ that outputs are complete, approved or published.
 
 Context and thematic request forms now expose the task-byte budget. The worker
 reports intact tasks that exceed their saved limit without shortening source
-text. Detailed resource refusals currently appear in worker output, not the
-staff page. Synthetic-provider checks cover retained outputs, staff import and
+text. The staff page now shows resource assessments based on retained task
+material and verified earlier results. This does not establish whether a provider
+call occurred. Synthetic-provider checks cover retained outputs, staff import and
 interrupted recovery; they do not establish interpretation quality.
 
 Engagement review filters and exported summaries now call reviewed contributions
@@ -53,7 +74,7 @@ Implementation-report creation now saves the report, artifact, frozen action-sta
 snapshot and exact-command receipt in one database transaction. Apply additive
 migration `20261016000012_land_use_plan_implementation_report_commands.sql` before
 using this backend. An explicit retry returns the retained receipt after checking
-current write access. Browser recovery is tracked in the dependent implementation.
+current write access. The [recovery evidence](docs/reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_RECOVERY_2026-10-07.md) records browser retry and retained command checks.
 
 Restored workspace deletion now permits finalized GIS versions and features to
 follow their deleted parent. Direct edits to finalized records remain refused,
@@ -68,7 +89,8 @@ Frozen versions retain their original plan identity, descriptor rules and contex
 Atomic freeze checks the displayed draft revision and current write permission.
 Creation now uses the plan area and assessed bodies instead of office location.
 The form retains incomplete drafts and exact requests, with explicit retry after
-an uncertain reply. Rendered desktop/mobile acceptance remains open.
+an uncertain reply. Bounded desktop and mobile creation, context and stop-recovery checks are recorded
+in the [creation acceptance report](docs/reviews/2026-10-07-land-use-authority/CREATION_CONTEXT_ACCEPTANCE.md).
 
 The staff workbench can open earlier reviewed editions using their retained
 identity, context and checklist. Current creation and editing now select rules
@@ -80,12 +102,13 @@ The workbench preserves earlier content, retains exact requests for explicit ret
 and blocks reconciliation or refresh over unsaved edits. Staff form saves retain
 text entered after submission. Migration
 `20261016000010_land_use_plan_rule_reconciliation.sql` adds its private receipt
-journal. Identified desktop/mobile acceptance and recovery-file review remain open.
+journal. The [checklist recovery report](docs/reviews/2026-10-07-land-use-authority/RULE_RECONCILIATION_ACCEPTANCE.md) records identified desktop/mobile and recovery-file checks with their limits.
 
 Parent deletion now tolerates restored foreign-key cascade order while preserving
 direct frozen-content and receipt protections. Migration
 `20261016000009_land_use_plan_cascade_guards.sql` applies this correction.
-The complete restore drill remains pending on the corrected commit.
+Release verification must retain the separate restore-drill result; migration
+inventory checks alone do not establish restoration.
 
 Apply these additive migrations in order before using these candidate changes:
 
@@ -117,8 +140,8 @@ confirmed stop, staff can restore the draft to a new copy and review current rul
 
 The migrations are installed only on the isolated verification stack. The
 [context editor evidence](docs/reviews/2026-10-07-land-use-authority/CONTEXT_EDITOR.md)
-distinguishes unit/native checks and partial desktop behavior from unresolved
-rendered acceptance. The [creation workflow evidence](docs/reviews/2026-10-07-land-use-authority/CREATION_WORKFLOW.md) records request recovery, stopping and their remaining acceptance limits. These changes are not a released version.
+and subsequent creation acceptance report retain the original partial results
+and later bounded rendered checks. The [creation workflow evidence](docs/reviews/2026-10-07-land-use-authority/CREATION_WORKFLOW.md) records request recovery, stopping and their remaining acceptance limits. These changes are not a released version.
 
 ## 0.67.0 (2026-10-07)
 
