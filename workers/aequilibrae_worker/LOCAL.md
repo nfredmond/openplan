@@ -257,3 +257,18 @@ read. Other hosts refuse local artifact reads; use retained Storage artifacts
 there. A configured root alias is supported, but a run directory cannot redirect
 to a different run. This does not make mutable local files immutable or establish
 worker write ownership. Keep the worker root under operator control.
+
+## Retained blocked-stage decisions
+
+Apply `20261016000020_model_blocked_stage_receipts.sql` before updating either
+model worker. Set `OPENPLAN_DEPLOYMENT_ID` to the installation's stable identity.
+The skip path preserves its request beneath
+`<AEQ_WORK_DIR>/runs/<run-uuid>/skip-commands/<stage-uuid>/`.
+The existing recovery CLI accepts this directory through `--journal` and the
+original request through `--request-id`. Retain these journals with the database.
+
+The same observed stage and predecessor versions reuse one request. A changed
+version receives a new decision; a no-op result is not reported as a skip.
+Missing versions or uncertain delivery stop that operation without a direct
+PATCH fallback. This connects blocked-stage decisions only. It does not enable
+managed claims, restart a stage or establish safe model continuation.

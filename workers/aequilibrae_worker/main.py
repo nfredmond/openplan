@@ -7107,7 +7107,7 @@ def get_prior_stage_statuses(run_id: str, sort_order: int) -> list[dict]:
         return []
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_stages"
-        f"?run_id=eq.{run_id}&sort_order=lt.{sort_order}&select=id,stage_name,sort_order,status,error_message&order=sort_order.asc"
+        f"?run_id=eq.{run_id}&sort_order=lt.{sort_order}&select=id,stage_name,sort_order,status,error_message,updated_at&order=sort_order.asc"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
@@ -7132,12 +7132,23 @@ def classify_stage_readiness(stage: dict) -> tuple[str, str | None]:
 
 
 def mark_stage_skipped(stage: dict, reason: str):
-    sb_patch_stage(stage["id"], {
-        "status": "skipped",
-        "error_message": reason[:2000],
-        "completed_at": datetime.now(timezone.utc).isoformat(),
-        "log_tail": reason,
-    })
+    """Retain the exact blocked decision; the database derives its current reason."""
+    import model_skip_command
+    try:
+        prior = get_prior_stage_statuses(stage["run_id"], int(stage.get("sort_order") or 0))
+        blockers = [row for row in prior if row["status"] in {"failed", "cancelled", "skipped"}]
+        if not blockers:
+            return False
+        run = sb_get_run(stage["run_id"])
+        receipt = model_skip_command.deliver(
+            os.path.join(run_work_directory(stage["run_id"]), "skip-commands", stage["id"]),
+            stage=stage, blocker=blockers[-1], workspace_id=run["workspace_id"],
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+        return receipt["outcome"] == "skipped"
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Blocked stage decision unconfirmed; recover the saved request before continuing") from None
 
 
 # This worker owns exactly these stage names. Other workers (e.g. the
@@ -7171,7 +7182,7 @@ def fetch_queued_stages(run_id: str | None = None, limit: int = 25) -> list[dict
     if run_id:
         url += f"&run_id=eq.{urllib.parse.quote(run_id, safe='')}"
     url += (
-        "&select=id,run_id,stage_name,status,sort_order,created_at"
+        "&select=id,run_id,stage_name,status,sort_order,created_at,updated_at"
         f"&order=created_at.asc,sort_order.asc&limit={int(limit)}"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
@@ -7198,9 +7209,8 @@ def process_first_actionable_stage(stages: list[dict]) -> str:
         if readiness == "ready":
             return "processed" if process_stage(stage) else "lost"
         if readiness == "blocked_terminal":
-            print(f"[{time.strftime('%X')}] ⏭️ Skipping {stage['stage_name']} (run={stage['run_id'][:8]}…): {reason}")
-            mark_stage_skipped(stage, reason or "Skipped due to failed prior stage")
-            return "skipped"
+            print(f"[{time.strftime('%X')}] Checking blocked stage {stage['stage_name']} (run={stage['run_id'][:8]}…): {reason}")
+            return "skipped" if mark_stage_skipped(stage, reason or "Skipped due to failed prior stage") else "lost"
     return "idle"
 
 

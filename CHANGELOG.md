@@ -25,8 +25,10 @@ service-only blocked-stage command with immutable retry receipts. It checks the
 current predecessor under lifecycle locks before skipping unclaimed queued work.
 A successful skip protects that stage history; a no-op receipt alone does not
 count as execution or prevent a first claim. Apply the migration before using
-the new command. Both normal worker dispatchers still use their existing paths;
-this candidate does not activate complete managed execution or recovery.
+the updated workers. Both normal workers now retain blocked-stage decisions and
+stop on uncertain delivery. Set `OPENPLAN_DEPLOYMENT_ID` and preserve their
+skip-command journals. Stage claims and the remaining writes still need the
+complete managed execution and recovery integration.
 
 Candidate migration `20261016000019_model_recovery_status.sql` adds a private,
 workspace-scoped recovery reader. Historical worker runs display a reconciliation

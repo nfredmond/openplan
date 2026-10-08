@@ -280,3 +280,35 @@ Installation in the proof clone does not establish whole-installation restore,
 normal-worker recovery, browser acceptance or scientific acceptance. The next
 join still includes every normal worker write and explicit continuation
 reconciliation; the new migration alone does not authorize replay.
+
+### Normal blocked-stage paths connected
+
+Both workers' `mark_stage_skipped` paths now reread the earlier stages, select a
+current terminal predecessor and deliver the retained command. The database
+still verifies its scope, order and status under locks. The shared
+`model_skip_command.py` derives a stable request from the installation, scope and
+observed stage/predecessor `updated_at` values. Repeating an observation recovers
+the same request; either changed row version produces a new decision. Missing
+timestamps stop delivery instead of silently choosing a new identity.
+
+Both poll projections and prior-stage reads include `updated_at`. No-op receipts
+return false; the AequilibraE shared push/poll dispatcher reports a lost decision,
+and ActivitySim does not claim it processed a skip. Uncertain writes leave the
+original journal request pending and raise the existing uncertainty exception.
+Neither path falls back to direct PATCH. Journals live beneath each worker's
+full run directory in `skip-commands/<stage-uuid>/`; deployment guidance records
+the required migration and installation identity.
+
+The 12 focused skip tests pass, including six new dispatcher tests with actual
+journals and injected HTTP. The tests verify pending recovery, no repeated send,
+distinct no-op outcomes, row-version identity changes, missing-version refusal,
+no direct PATCH and query projections. All 44 ActivitySim tests and 38
+AequilibraE push-trigger checks pass. Harmless/restored controls pass. Six
+targeted faults fail on false skip outcomes, stale stage/predecessor identities
+and omitted observation projections. Results are in `skip-dispatch-controls.json`
+beside the other prototype evidence.
+
+These worker-path checks inject the transport. The earlier native SQL/HTTP
+checks remain separate evidence; this entry does not claim a combined native
+worker journey yet. Normal claims, progress, outputs, terminal outcomes and
+filesystem/continuation reconciliation still need the full managed-attempt join.

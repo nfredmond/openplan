@@ -15,11 +15,10 @@ Stage pipeline (L1 preflight — two stages this worker owns):
   2. "Runtime Staging & Readiness"   — report runtime capability (preflight_only on
                                         this infra) + write the evidence packet
 
-This mirrors workers/aequilibrae_worker/main.py's REST poll/claim contract exactly:
-there are NO Postgres RPCs; the atomic stage claim is a conditional PATCH
-(`?id=eq.<id>&status=eq.queued` with Prefer: return=representation — a lost race
-matches zero rows). Both workers poll the same table, so each scopes its poll query
-by the stage names it owns.
+Stage claims still use the conditional REST PATCH shared with AequilibraE.
+Blocked-stage decisions use a retained database command. Both workers scope
+their poll query by the stage names they own. Full managed execution and
+continuation reconciliation remain separate integration work.
 """
 from __future__ import annotations
 
@@ -359,7 +358,7 @@ def get_prior_stage_statuses(run_id: str, sort_order: int) -> list[dict]:
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_stages"
         f"?run_id=eq.{run_id}&sort_order=lt.{sort_order}"
-        "&select=id,stage_name,sort_order,status,error_message&order=sort_order.asc"
+        "&select=id,stage_name,sort_order,status,error_message,updated_at&order=sort_order.asc"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
@@ -380,16 +379,25 @@ def classify_stage_readiness(stage: dict) -> tuple[str, str | None]:
     return "ready", None
 
 
-def mark_stage_skipped(stage: dict, reason: str) -> None:
-    sb_patch_stage(
-        stage["id"],
-        {
-            "status": "skipped",
-            "error_message": reason[:2000],
-            "completed_at": _utc_now(),
-            "log_tail": reason,
-        },
-    )
+def mark_stage_skipped(stage: dict, reason: str) -> bool:
+    """Retain the exact blocked decision; the database derives its current reason."""
+    import model_skip_command
+    try:
+        validate_run_identity(stage["run_id"])
+        prior = get_prior_stage_statuses(stage["run_id"], int(stage.get("sort_order") or 0))
+        blockers = [row for row in prior if row["status"] in {"failed", "cancelled", "skipped"}]
+        if not blockers:
+            return False
+        run = sb_get_run(stage["run_id"])
+        receipt = model_skip_command.deliver(
+            os.path.join(ACTIVITYSIM_WORK_DIR, stage["run_id"], "skip-commands", stage["id"]),
+            stage=stage, blocker=blockers[-1], workspace_id=run["workspace_id"],
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+        return receipt["outcome"] == "skipped"
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Blocked stage decision unconfirmed; recover the saved request before continuing") from None
 
 
 class WorkerStateReadUnconfirmed(RuntimeError):
@@ -955,7 +963,7 @@ def poll_for_jobs() -> None:
             url = (
                 f"{SUPABASE_URL}/rest/v1/model_run_stages"
                 f"?status=eq.queued&{_STAGE_FILTER}"
-                "&select=id,run_id,stage_name,status,sort_order,created_at"
+                "&select=id,run_id,stage_name,status,sort_order,created_at,updated_at"
                 "&order=created_at.asc,sort_order.asc&limit=25"
             )
             res = requests.get(url, headers=HEADERS, timeout=30)
@@ -977,9 +985,8 @@ def poll_for_jobs() -> None:
                     processed = True
                     break
                 if readiness == "blocked_terminal":
-                    print(f"[{time.strftime('%X')}] ⏭️ Skipping {stage['stage_name']}: {reason}")
-                    mark_stage_skipped(stage, reason or "Skipped due to failed prior stage")
-                    processed = True
+                    print(f"[{time.strftime('%X')}] Checking blocked stage {stage['stage_name']}: {reason}")
+                    processed = mark_stage_skipped(stage, reason or "Skipped due to failed prior stage")
                     break
 
             if not processed:

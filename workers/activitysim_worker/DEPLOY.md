@@ -275,3 +275,19 @@ The current handoff query also requires migration
 and refuses unfinished stages, inactive attempts and unconfirmed ownership. Apply
 the migration before updating this worker. This read is a snapshot; it does not
 enable attempt-aware execution or replace fenced writes during later recovery.
+
+## Blocked-stage command upgrade
+
+Before updating this worker, apply
+`20261016000020_model_blocked_stage_receipts.sql` and set the installation's
+stable `OPENPLAN_DEPLOYMENT_ID`. Retain
+`<ACTIVITYSIM_WORK_DIR>/<run-uuid>/skip-commands/<stage-uuid>/` with the database.
+The shared `workers/aequilibrae_worker/model_command_recovery.py` CLI reads that
+directory with `--journal` and recovers an original `--request-id`.
+
+Blocked stages now use the scoped retained command instead of a direct PATCH.
+The database derives the reason from its current predecessor record. Missing
+observation versions and uncertain delivery stop the operation; no-op receipts
+remain no-ops. This does not switch normal stage claims to managed attempts or
+authorize model restart. Both existing ActivitySim image builds include the
+repository tree containing the shared command modules.
