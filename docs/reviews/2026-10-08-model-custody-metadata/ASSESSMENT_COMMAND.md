@@ -217,3 +217,35 @@ Normal callers must load the original persisted assessment identity after
 interruption. Rebuilding an assessment with a fresh UUID is a new operation and
 is not made safe recovery by this helper. That caller connection, application
 migration and complete restart reconciliation remain unfinished.
+
+## Additive migration candidate
+
+The CLI now generates the migration checkpoint as
+`20261016000015_legacy_assessment_command_receipts.sql`. The generated timestamp
+was moved above the existing `20261016000014` high-water mark. The migration
+contains the verified command plus an index on its run foreign key. It creates
+only the private receipt table, index and service-only function. Existing
+assessment and artifact rows are not rewritten. Normal callers remain inactive.
+
+The native rollback verifier accepts an explicit source file. Using the actual
+migration, baseline, harmless and restored checks pass and all seven faults
+produce their expected failures. Rollback cleanup is confirmed. The migration
+inventory passes with 387 files and no duplicate versions, invalid names or
+empty files. The first inventory invocation used the repository root and
+correctly reported a missing directory; the documented package-root invocation
+then passes. Product direction check passes with its existing review reminders.
+
+A temporary committed installation in the named proof database is compared with
+its own advisor baseline. There are no new WARN or ERROR findings. The two new
+INFO findings identify the intentionally policy-free private receipt table and
+its unused index in this small fixture. Function and table cleanup is confirmed.
+Existing whole-database findings remain; this is a scoped comparison, not a
+clean database security assessment. Private evidence is under
+`model-command-client-20261008-proof/assessment-migration-rollback/` and
+`assessment-migration-advisors/`.
+
+The tracked migration has not yet been applied through migration history or to
+an application database. Populated-record upgrade preservation, installed HTTP
+permissions, release ordering, complete CI and normal worker adoption remain
+open. The original prototype remains a historical source; this checkpoint's
+rollback evidence names the exact migration file.

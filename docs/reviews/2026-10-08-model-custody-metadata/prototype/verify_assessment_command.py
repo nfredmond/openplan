@@ -9,12 +9,13 @@ import uuid
 ROOT = Path(__file__).resolve().parent
 
 
-def check():
+def check(source_path=None):
     meta = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
     if not re.fullmatch('openplan_attempt_cli_[0-9a-f]{32}', meta['database']) or meta['container'] != 'supabase_db_openplan-restore-target-2026091050':
         raise ValueError('Select the named owned proof database')
     fixture = str(uuid.UUID(meta['fixture_run']))
-    source = (ROOT/'assessment-command.sql').read_text()
+    source_file = Path(source_path).resolve() if source_path else ROOT/'assessment-command.sql'
+    source = source_file.read_text()
     cases = (ROOT/'assessment-command-cases.sql').read_text()
     faults = [
         ('changed-request', 'IF saved.request_payload IS DISTINCT FROM p_payload THEN', 'IF false THEN', 'Changed assessment request accepted'),
@@ -45,7 +46,7 @@ def check():
     probe = subprocess.run(command, input="SELECT to_regclass('public.model_assessment_command_receipts') IS NULL AND to_regprocedure('public.record_legacy_model_assessment(uuid,jsonb)') IS NULL;", text=True, capture_output=True, timeout=20)
     if probe.returncode or probe.stdout.strip() != 't':
         raise AssertionError('Assessment command rollback cleanup not confirmed')
-    evidence = {'cases': results, 'rollback_cleanup_confirmed': True, 'scope': 'Actual database RPC and constraints, synthetic artifacts, rollback-only candidate. No installed migration, concurrency, HTTP, Storage bytes, retained client, normal dispatcher recovery or scientific acceptance.'}
+    evidence = {'source_file': str(source_file), 'cases': results, 'rollback_cleanup_confirmed': True, 'scope': 'Actual database RPC and constraints, synthetic artifacts, rollback-only candidate. No installed migration, concurrency, HTTP, Storage bytes, retained client, normal dispatcher recovery or scientific acceptance.'}
     output = Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_OUTPUT']).resolve()
     output.mkdir(mode=0o700, parents=True, exist_ok=True)
     (output/'assessment-command.json').write_text(json.dumps(evidence, indent=2)+'\n')
@@ -53,4 +54,7 @@ def check():
 
 
 if __name__ == '__main__':
-    print(json.dumps(check(), indent=2))
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--source', type=Path)
+    print(json.dumps(check(parser.parse_args().source), indent=2))
