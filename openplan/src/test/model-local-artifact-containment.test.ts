@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { mkdtemp, mkdir, writeFile, symlink, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 vi.mock("@/lib/supabase/server", () => ({ createServiceRoleClient: () => { throw new Error("Unexpected storage access"); } }));
 import { loadArtifactBytes, readContainedLocalArtifact } from "@/lib/models/artifact-source";
@@ -46,4 +47,11 @@ it("permits an explicitly configured root alias", async () => {
 it("refuses a scope outside the configured worker root", async () => {
   vi.stubEnv("OPENPLAN_WORKER_LOCAL_ROOT", allowed);
   await expect(readContainedLocalArtifact(path.join(foreign, "foreign.json"), foreign)).rejects.toThrow("escapes the worker-local root");
+});
+
+it.each(["directory", "pipe"])("refuses a %s as artifact bytes", async (kind) => {
+  const target = path.join(allowed, kind);
+  if (kind === "directory") await mkdir(target);
+  else execFileSync("mkfifo", [target], { timeout: 5000 });
+  await expect(readContainedLocalArtifact(target, allowed)).rejects.toThrow("not a regular file");
 });

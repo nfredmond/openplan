@@ -90,3 +90,15 @@ The production handle-walk tree passes standalone TypeScript under unit
 `openplan-pinned-artifact-types-20261008.service`, invocation
 `4f40b34f712645959dc639cd61094ba8`. It exits 0 in 56.596 seconds, with a
 5.1 GiB peak and no swap under the 7 GiB cap.
+
+## Non-regular artifact refusal
+
+Two additional native filesystem cases exercise directories and named pipes.
+Both are refused as non-regular files. The pipe opens without blocking, and no
+empty artifact is returned. The eight-test containment suite passes with a
+harmless comment and restored source. Removing only the regular-file check
+makes the pipe read resolve to an empty byte array; its refusal test fails. The
+directory case also fails its expected refusal message. These controls are in
+`filetype-controls.json`. The race suite passed alongside the initial combined
+non-regular case; the final separated cases pass in the containment suite.
+Targeted lint passes. No production source changes accompany this evidence.
