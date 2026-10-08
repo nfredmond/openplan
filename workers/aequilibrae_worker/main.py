@@ -6435,9 +6435,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     )
                 with open(volume_path, "rb") as volume_handle:
                     volume_bytes = volume_handle.read()
-                activitysim_artifact_id = str(uuid.uuid4())
-                sb_post_artifact({
-                    "id": activitysim_artifact_id,
+                activitysim_artifact = sb_post_artifact({
                     "run_id": run_id,
                     "stage_id": stage_id,
                     "artifact_type": "activitysim_link_volumes",
@@ -6464,6 +6462,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                         },
                     },
                 })
+                activitysim_artifact_id = activitysim_artifact["id"]
                 for kpi_name, kpi_label, value, unit, provenance in (
                     (
                         "activitysim_assigned_vehicle_trips",

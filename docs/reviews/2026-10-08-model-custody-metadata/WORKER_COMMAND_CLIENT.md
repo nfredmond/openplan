@@ -92,14 +92,36 @@ recovery evidence does not establish those properties for this new caller.
 Local evidence is retained at
 `~/.local/state/openplan/model-command-client-20261008-proof/instrument/native.json`.
 
+## Normal assignment artifact identity
+
+The normal ActivitySim network-assignment dispatcher now obtains its output ID
+from the confirmed artifact registration receipt. It no longer supplies a locally
+generated ID. Both rules-v4 assessment construction and persistence receive that
+returned ID. This removes the caller-generated-ID conflict with the candidate
+attempt artifact RPC; it does not switch dispatchers to that RPC.
+
+The handoff suite passes 27 checks, including a real dispatcher call through the
+existing receipt-checking helper with an injected HTTP response. Harmless source
+changes pass. Injecting a different output ID before assessment or only before
+custody persistence fails the corresponding assertion. The uncalibrated fixture
+now supplies its required run and evidence responses and asserts completion; it
+previously could pass after the stage failed to read its run. The adjacent
+push-trigger suite passes 36 checks.
+
+These checks use synthetic assignment output and mocked scientific evaluators and
+persistence. They do not execute ActivitySim or establish native assessment
+custody. The existing push suite emitted two rejected background heartbeat calls
+to its default local test URL with its test credential; it is not network-isolated
+proof. The returned HTTP status was 401. No successful heartbeat write was shown.
+
 ## Remaining connection work
 
 Normal dispatchers still use their current receipt-checked legacy writes. Before
 adoption, connect all stage claims, logs, artifacts, KPIs, assessment records and
 terminal outcomes. Reconcile retained requests and current ownership before
 reusing run files or executing a recovered stage. Resolve the existing rules-v4
-assessment writer's artifact creation, and use server-confirmed artifact IDs
-where the ActivitySim assignment currently creates its own ID. Preserve method
+assessment writer's artifact creation and preserve the confirmed output identity
+through the remaining attempt-aware paths. Preserve method
 separation and unassessed outcomes when prepared evidence is absent.
 
 The client has per-request connection and read timeouts, but no total wall-clock
