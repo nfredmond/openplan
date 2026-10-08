@@ -546,10 +546,12 @@ const EXPECTED = {
   // Isolated upgrade catalog confirms 301 application tables with RLS and 14 views.
   // 20261016000017 adds one private KPI receipt table. Rollback catalog: 302 RLS tables and 14 views.
   // Two private execution-retention tables; neither grants direct client policies.
-  relations: 318,
-  tables: 304,
+  // 20261016000020 adds private immutable skip receipts with no client policies.
+  // Installed clone confirms 305 application RLS tables and 14 application views.
+  relations: 319,
+  tables: 305,
   views: 14,
-  rlsEnabledTables: 304,
+  rlsEnabledTables: 305,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

@@ -233,3 +233,50 @@ This closes the native lost-reply boundary for the proposed skip operation.
 It does not install a migration, connect either normal dispatcher or establish
 whole-run recovery, browser acceptance or scientific accuracy. Receipt retention
 must join the installed lifecycle before deployment.
+
+### Additive migration and retention
+
+Migration `20261016000020_model_blocked_stage_receipts.sql` now installs the
+command, private receipt table, foreign-key indexes and immutable-receipt guard
+in one transaction. A successful skip joins existing retained-history checks.
+A `not_skipped` receipt alone does not count as execution or stop the first
+legitimate claim. Neither normal worker changes its dispatch path here.
+
+The CLI generated a migration file with the current date. Its version was moved
+after the repository's existing `20261016000019` high-water mark before use.
+`verify_skip_upgrade.py` applies and reapplies the actual migration through the
+CLI on an owned populated clone. Row counts and canonical-content checksums for
+all 32 preexisting model tables remain equal. Installed retention and role cases
+pass and roll back; the receipt table remains empty afterward. Source rows and
+migration history remain unchanged. `prototype/skip-upgrade.json` records the
+actual migration hash and comparison evidence.
+
+The first upgrade invocation stopped before cloning because its old metadata
+suggested migration 18 while the database was already at 19. The verifier now
+reads and records the actual supported predecessor version. The successful
+upgrade starts at 19. An initial JavaScript test invocation also used the wrong
+nested dependency path and did not run; correcting that path allows verification.
+
+The schema inventory initially fails at 318 versus 319 relations. The native
+catalog confirms one added private table: 305 application tables, all with RLS,
+14 application views and no new client policy. Two additional catalog views
+belong to PostGIS. The declared counts now match that evidence. All 39 migration
+tests pass. Harmless and restored inventory controls pass; removing the new
+table's RLS statement fails the intended 305-versus-304 assertion.
+
+`verify_skip_retention.py` passes baseline, harmless and restored native cases.
+Four targeted mutations fail: omitting successful skips from retained history,
+freezing a no-op run, permitting receipt rewrite and permitting receipt deletion.
+The native cases prove a no-op run can still acquire its first managed claim
+without manufacturing an earlier start. Results are retained beside the verifier.
+
+The security advisor reports eight findings, identical in source and candidate:
+four mutable function search paths, three public-schema extensions and the
+PostGIS `spatial_ref_sys` RLS finding. None names the new skip objects. They remain
+recorded findings, not a clean whole-database security result. The existing
+extension schemas and unrelated functions were not changed by this migration.
+
+Installation in the proof clone does not establish whole-installation restore,
+normal-worker recovery, browser acceptance or scientific acceptance. The next
+join still includes every normal worker write and explicit continuation
+reconciliation; the new migration alone does not authorize replay.

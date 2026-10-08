@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Candidate migration `20261016000020_model_blocked_stage_receipts.sql` adds a
+service-only blocked-stage command with immutable retry receipts. It checks the
+current predecessor under lifecycle locks before skipping unclaimed queued work.
+A successful skip protects that stage history; a no-op receipt alone does not
+count as execution or prevent a first claim. Apply the migration before using
+the new command. Both normal worker dispatchers still use their existing paths;
+this candidate does not activate complete managed execution or recovery.
+
 Candidate migration `20261016000019_model_recovery_status.sql` adds a private,
 workspace-scoped recovery reader. Historical worker runs display a reconciliation
 notice beside their saved status. Unavailable recovery records have a separate

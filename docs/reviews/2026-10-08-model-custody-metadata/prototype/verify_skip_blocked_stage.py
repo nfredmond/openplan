@@ -10,7 +10,7 @@ import uuid
 ROOT = Path(__file__).resolve().parent
 
 
-def verify(source):
+def verify(source, extra_cases=''):
     meta = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
     if meta['container'] != 'supabase_db_openplan-restore-target-2026091050' or not re.fullmatch(r'openplan_retention_upgrade_[0-9a-f]{32}', meta['database']):
         raise ValueError('Select the owned retention proof database')
@@ -126,6 +126,7 @@ DO $$ BEGIN
  END IF;
  IF EXISTS(SELECT 1 FROM public.model_stage_write_context) THEN RAISE EXCEPTION 'Skip context leaked'; END IF;
 END $$;
+{extra_cases.replace('__FIXTURE_RUN__', fixture)}
 ROLLBACK;
 """
     result = subprocess.run(command, input=body, text=True, capture_output=True, timeout=30)
