@@ -198,6 +198,7 @@ def validate_command(command: dict):
         _validate_instrument(command)
         return
     fields = {
+        'skip_blocked_model_stage': {'workspace_id', 'run_id', 'stage_id', 'blocker_id', 'blocker_status'},
         'claim_model_stage_attempt': {'run_id', 'stage_id', 'worker_id'},
         'write_model_stage_attempt': {'run_id', 'stage_id', 'attempt_id', 'status', 'log_tail', 'error'},
     }
@@ -205,6 +206,14 @@ def validate_command(command: dict):
         raise ValueError('Unsupported operation or invalid command arguments')
     for key in ('run_id', 'stage_id'):
         _uuid(args[key])
+    if operation == 'skip_blocked_model_stage':
+        for key in ('workspace_id', 'blocker_id'):
+            _uuid(args[key])
+        if args['blocker_status'] not in ('failed', 'cancelled', 'skipped'):
+            raise ValueError('Invalid blocked predecessor status')
+        if args['blocker_id'] == args['stage_id']:
+            raise ValueError('Blocked stage cannot be its own predecessor')
+        return
     if operation == 'claim_model_stage_attempt':
         worker = args['worker_id']
         if not isinstance(worker, str) or not worker.strip() or len(worker) > 200:
@@ -229,7 +238,36 @@ def _timestamp(value):
         raise ValueError('Completion timestamp requires a timezone')
 
 
+def _skip_receipt(command: dict, receipt: object) -> dict:
+    """A skip receipt records a decision, never execution or current authority."""
+    args = command['arguments']
+    try:
+        keys = {'request_id', 'workspace_id', 'run_id', 'stage_id', 'blocker_id',
+                'observed_blocker_status', 'outcome', 'status', 'completed_at'}
+        if not isinstance(receipt, dict) or set(receipt) != keys:
+            raise ValueError('Invalid skip receipt fields')
+        expected = {'request_id': command['request_id'], **{key: args[key] for key in ('workspace_id', 'run_id', 'stage_id', 'blocker_id')}}
+        if any(receipt[key] != value for key, value in expected.items()):
+            raise ValueError('Skip receipt scope differs')
+        statuses = ('queued', 'running', 'succeeded', 'failed', 'cancelled', 'skipped')
+        if receipt['status'] not in statuses or receipt['observed_blocker_status'] not in statuses:
+            raise ValueError('Unknown skip receipt status')
+        if receipt['completed_at'] is not None:
+            _timestamp(receipt['completed_at'])
+        if receipt['outcome'] == 'skipped':
+            if receipt['status'] != 'skipped' or receipt['observed_blocker_status'] != args['blocker_status']:
+                raise ValueError('Skip result disagrees with prepared predecessor')
+            _timestamp(receipt['completed_at'])
+        elif receipt['outcome'] != 'not_skipped':
+            raise ValueError('Unknown skip outcome')
+    except (ValueError, TypeError, KeyError):
+        raise DeliveryUnconfirmed('Blocked stage receipt does not match the prepared command') from None
+    return receipt
+
+
 def checked_receipt(command: dict, receipt: object) -> dict:
+    if command['operation'] == 'skip_blocked_model_stage':
+        return _skip_receipt(command, receipt)
     if command['operation'] == 'record_legacy_model_kpi':
         try:
             return legacy_kpi.check_receipt(command, receipt)
@@ -306,6 +344,7 @@ def rpc_arguments(command: dict) -> dict:
                 'p_track': args['track'], 'p_expected': args['expected'], 'p_payload': args['payload']}
     result = {'p_request_id': command['request_id']}
     keys = {
+        'skip_blocked_model_stage': ('workspace_id', 'run_id', 'stage_id', 'blocker_id', 'blocker_status'),
         'claim_model_stage_attempt': ('stage_id', 'worker_id'),
         'write_model_stage_attempt': ('attempt_id', 'status', 'log_tail', 'error'),
         'write_model_attempt_artifact': ('attempt_id', 'payload'),

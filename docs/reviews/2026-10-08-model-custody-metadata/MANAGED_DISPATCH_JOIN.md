@@ -179,3 +179,31 @@ This establishes the tested database ordering. It does not establish HTTP lost
 acknowledgements, command-journal recovery, installed migration/retention rules,
 normal dispatch or scientific acceptance. Those connections remain next in the
 same M3/S1 work, before either worker changes its claim path.
+
+### Retained worker-client delivery
+
+`model_command_client.py` now accepts `skip_blocked_model_stage` through its
+existing journal and transport. It validates all request identities, rejects
+self-predecessors and nonterminal blocker states, and sends the complete scoped
+RPC payload. Receipt checks bind the workspace, run, stage, predecessor and
+request. A skipped result must match the prepared predecessor status and carry
+a completion time. `not_skipped` remains a distinct retained outcome. Extra
+receipt fields, including an invented attempt identity, are refused.
+
+The six new client tests use the real SQLite journal and injected transport.
+They verify preparation before sending, pending state after a lost reply,
+recovery of the original request, changed-payload refusal, receipt validation and
+cached recovery without another send. A fresh CLI process reads the retained
+receipt and explicitly reports `model_resumed: false`. The 21 focused tests pass,
+followed by all 55 existing command tests. The broader run still emits the
+previously observed unclosed-SQLite ResourceWarning; it does not fail.
+
+Harmless and restored controls pass. Five targeted mutations fail on omitted
+scope validation, inconsistent successful outcomes, extra receipt fields,
+invalid blocker status and an omitted RPC workspace. Invalid cases use separate
+journals, so one accepted bad receipt cannot contaminate subsequent cases.
+Results are in `prototype/skip-client-controls.json`.
+
+This is client support for the prototype, not activation of normal dispatch.
+Native HTTP lost-reply recovery, an installed additive migration, receipt
+retention integration and the complete two-worker join remain unproved.
