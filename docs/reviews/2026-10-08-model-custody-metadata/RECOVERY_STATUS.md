@@ -242,3 +242,23 @@ later worker inventory and documentation/configuration changes have their
 separate targeted tests. GitHub live RLS and full-archive restoration on
 `85a12549` are still running at this checkpoint. The corrected integration head
 has not yet received new GitHub checks or desktop/390px T3 acceptance.
+
+## Model creator planning-link refusal found through T3
+
+On candidate `a10b6907`, the actual T3 model creator says both planning links
+are optional. Leaving both blank reaches the final step and returns `Invalid
+input`. The route requires a project or scenario set. The correction states
+that requirement at the planning-work step and keeps an unlinked model there
+with an actionable message. Either link remains sufficient; the server rule is
+unchanged. Five focused component tests and targeted ESLint pass. A harmless
+comment and restored source pass; removing the check fails the missing-link
+case, and requiring both links fails both single-link cases.
+
+The frozen preview successfully creates a clearly labeled synthetic model after
+selecting its existing synthetic project. Its detail page reports zero runs.
+No computation is launched. This verifies the real creation path on the prior
+candidate, not browser acceptance of the correction. T3 page reads and focused
+form interactions work, but snapshot capture still fails, including a fresh tab
+showing only the health response. Desktop/390px visual and console acceptance
+remain open. The component tests do not prove rendering, live API behavior or
+scientific recovery. The preview checkout remains unchanged.
