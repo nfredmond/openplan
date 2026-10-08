@@ -2,10 +2,10 @@
 """Verify every v0.41 file and hash binding without regenerating the study."""
 from __future__ import annotations
 
+import argparse
 import hashlib
 import gzip
 import json
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -51,11 +51,22 @@ def release(value: dict[str, Any], expected_sha: str, label: str) -> None:
     require(value.get("release") == {"version": "0.41.0", "sha": expected_sha}, f"{label} release binding changed")
 
 
-def main() -> int:
-    expected_sha = sys.argv[1] if len(sys.argv) > 1 else ""
+def verify_matcher_source(audit: dict[str, Any], source: Path, label: str) -> None:
+    """Bind retained audit bytes to the supplied source, without executing it."""
+    require((audit.get("matcher") or {}).get("sha256") == digest(source), f"{label} matcher hash changed")
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("release_source_sha", help="Exact retained release-source Git SHA")
+    parser.add_argument(
+        "--matcher-source", type=Path, default=MATCHER,
+        help="Explicit retained matcher source file; defaults to the current checkout's matcher. Historical custody does not establish current-method validity.",
+    )
+    args = parser.parse_args(argv)
+    expected_sha = args.release_source_sha
     require(len(expected_sha) == 40, "pass the exact release-source Git SHA")
     registry = load(REGISTRY)
-    matcher_sha = digest(MATCHER)
     result = load(STUDY / "study-result.json")
     release(result, expected_sha, "study result")
     require(result.get("diagnosis_count") == 14 and len(result.get("diagnoses") or []) == 14, "study does not contain fourteen diagnoses")
@@ -73,7 +84,7 @@ def main() -> int:
         release(package, expected_sha, f"{geography} package")
         release(audit, expected_sha, f"{geography} audit")
         require(audit.get("model_output_bytes_read") is False and audit.get("frozen_before_model_volume") is True, f"{geography} audit timing changed")
-        require((audit.get("matcher") or {}).get("sha256") == matcher_sha, f"{geography} matcher hash changed")
+        verify_matcher_source(audit, args.matcher_source, geography)
         require(audit.get("observation_package_sha256") == digest(package_path), f"{geography} package/audit binding changed")
         require([item["observation_id"] for item in package["observations"]] == [item["observation_id"] for item in audit["matches"]], f"{geography} retained ids changed")
         for method in METHODS:
@@ -111,7 +122,7 @@ def main() -> int:
             require(manifest_record.get("sha256") == digest(diagnosis_path), f"{geography}/{method} result diagnosis hash changed")
         comparison = json.loads(artifact_bytes(STUDY / "results" / geography / "method-comparison-v2.json"))
         require(isinstance(comparison, list) and all("average" not in item for item in comparison), f"{geography} methods were averaged")
-    print("comparable observation study: all release and custody bindings verified")
+    print("comparable observation study: retained release and custody bindings verified against the supplied matcher source; not current-method validity or scientific acceptance")
     return 0
 
 
