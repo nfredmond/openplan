@@ -1023,7 +1023,7 @@ def retain_managed_predecessor_state() -> dict:
         raise WorkerStateWriteUnconfirmed("State handoff requires reconciliation") from error
 
 
-def retain_managed_state_and_package() -> dict:
+def retain_managed_state_and_package(*, include_project: bool = False) -> dict:
     """Pair verified inputs and map the package without claiming full execution readiness."""
     import model_attempt_writer
     import model_predecessor_inputs
@@ -1038,8 +1038,23 @@ def retain_managed_state_and_package() -> dict:
         mapping = {"schema": "openplan.input-mapping.v1", "state": mapped,
                    "inputs": {"state": state_input["producer"], "package": package_input["producer"]},
                    "mapped_fields": ["package.package_dir"], "execution_ready": False}
+        project_records = {}
+        if include_project:
+            project_input = retain_managed_predecessor_project()
+            if any(project_input["producer"].get(key) != state_input["producer"].get(key)
+                   or not state_input["producer"].get(key) for key in ("stage_id", "attempt_id")):
+                raise ValueError("State and project must belong to the same producer attempt")
+            working_project = writer.prepare_project_working_copy(project_input)
+            mapping["inputs"]["project"] = project_input["producer"]
+            mapping["execution_paths"] = {"project_directory": working_project["project_directory"]}
+            mapping["working_project"] = {
+                "initial_manifest_path": working_project["initial_manifest_path"],
+                "initial_manifest_sha256": working_project["initial_manifest_sha256"],
+                "input_manifest_sha256": working_project["input_manifest_sha256"],
+            }
+            project_records = {"project_input": project_input, "project_working_copy": working_project}
         retained_mapping = writer.retain_input_mapping(mapping)
-        return {"state_input": state_input, "package_input": package_input,
+        return {**project_records, "state_input": state_input, "package_input": package_input,
                 "package_mapped_state": mapped, "mapping_record": retained_mapping,
                 "execution_ready": mapping["execution_ready"]}
     except Exception as error:

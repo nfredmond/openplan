@@ -1,0 +1,36 @@
+{
+  "worker_sha256": "fdad9cc033a7c9ec07e41635f4202525347cb373d88fd5f9ea738e9cf206008d",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-project-attempt",
+      "exit_code": 1,
+      "targeted_test": "test_different_project_attempt_refuses_before_working_copy"
+    },
+    {
+      "control": "map-retained-project-as-working",
+      "exit_code": 1,
+      "targeted_test": "test_three_inputs_and_working_path_are_retained_without_rewriting_state"
+    },
+    {
+      "control": "erase-initial-manifest-hash",
+      "exit_code": 1,
+      "targeted_test": "test_three_inputs_and_working_path_are_retained_without_rewriting_state"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual combined input helper with real files and mocked HTTP. No native combined receipt recovery, full output/count mapping, engine lifecycle or scientific acceptance."
+}

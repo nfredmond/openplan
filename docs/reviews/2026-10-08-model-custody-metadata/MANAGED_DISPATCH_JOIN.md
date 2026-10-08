@@ -1516,3 +1516,34 @@ closure reproduces the warning. Removing the corruption fails its specific test.
 202-test suite passes with ResourceWarning output enabled and no such warning.
 This supersedes the observed fixture-warning boundary in earlier checkpoints;
 it is not evidence that all engine connections close on every exception path.
+
+### Combined state, package and project preparation
+
+The existing paired-input helper now has an explicit project-inclusion mode.
+It retains original state and package, verifies their pairing, retains the
+selected project and requires its producer stage/attempt to match the state.
+Only then does it create the independent working project. The saved mapping
+includes all three producer references, the working project path, its initial
+manifest hash and the consumed project manifest hash. Project execution paths
+remain separate from original state. The only mapped state field remains
+`package.package_dir`; source labels, assignment settings and count paths remain
+unchanged. Execution readiness stays false.
+
+Three focused tests exercise the real helper with real files and mocked reads
+and writes. They verify five ordered artifact registrations, exact saved working
+path/hash provenance, unchanged original state, refusal of a differing producer
+attempt before working-copy preparation and lost final-mapping response. The
+last case retains files and the exact pending mapping command while the stopped
+writer refuses project access. The initial fixture used a nonexistent test-ID
+index; a distinct canonical fixture UUID corrected that setup error.
+
+Baseline, harmless and restored controls pass. Ignoring project-attempt pairing,
+mapping retained project input as the working path, and erasing the initial
+manifest hash each fail their targeted assertion. The broader warning-enabled
+suite passes 205 tests without the prior fixture warning.
+`prototype/execution-input-controls.json` records source identity and outcomes.
+Native combined mapping recovery remains open; the separate input, working-copy
+and earlier two-input mapping proofs do not substitute for it. Mutable package
+preparation, remaining output/count joins, closure enforcement and the full
+execution/publication/terminal lifecycle remain unfinished. Normal managed
+dispatch stays disabled.
