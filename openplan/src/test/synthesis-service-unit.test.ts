@@ -43,6 +43,8 @@ describe("reviewable synthesis supervisor units", () => {
     expect(result.stdout).toContain("Restart=on-failure");
     expect(result.stdout).toContain("KillMode=control-group");
     expect(result.stdout).toContain("UMask=0077");
+    expect(result.stdout).toContain("StandardOutput=journal");
+    expect(result.stdout).toContain("StandardError=journal");
     expect(result.stdout).not.toContain("do-not-copy-this-value");
     expect(result.stdout).not.toContain("--once");
   });

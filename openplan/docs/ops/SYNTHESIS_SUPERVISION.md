@@ -69,6 +69,9 @@ journalctl --user -u openplan-synthesis-execution.service -n 50
 ```
 
 Inspect the saved request and task history in OpenPlan as well as the log.
+The unit explicitly routes stdout and stderr to the system journal. System logs
+follow the host's retention policy; private worker journals remain the recovery
+record and must be preserved separately.
 An execution pass can leave unconfirmed schedules or wrap its cursor without
 draining all work. Do not run an extra worker against a new directory to clear a
 warning. The preparation service uses the same installation sequence with its

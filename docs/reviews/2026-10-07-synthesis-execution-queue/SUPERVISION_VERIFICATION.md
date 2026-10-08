@@ -84,3 +84,19 @@ case fail; restored source passes all twelve tests and targeted lint. No
 generator or worker behavior changes. The private result is
 `strong-path-controls.json`. Full QA at `d2f92dcc` remains attributable to that
 earlier test checkpoint, not this follow-up.
+
+## Explicit system-log destination
+
+Generated units now set both StandardOutput and StandardError to journal, matching
+the operator's documented journalctl command without inheriting a different host
+destination. All twelve focused tests pass. A harmless comment passes; directing
+either stream to null fails the corresponding setting assertion; restored source
+passes. A fresh native probe confirms both streams in the journal for both the
+initial and automatically restarted process IDs. Its paths, restart and explicit
+stop checks also pass. The probe is stopped and unlinked.
+
+Private evidence is `logging-controls.json` and
+`logging-native-a8fbdfa8/supervisor-probe-result.json`. This proves the generated
+configuration and observed streams on the test host, not log retention across
+host loss. Durable worker journals retain their separate recovery role. The
+earlier full QA at `d2f92dcc` does not cover this subsequent generator change.
