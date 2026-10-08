@@ -186,3 +186,42 @@ and reconciliation boundary. Route inspection alone does not stop such claims.
 Do not infer that historical execution is safe from a missing local or database
 record. Projection/scope controls, full installed upgrade/restore checks, HTTP
 worker recovery and T3 evidence remain open. PR #168 stays on hold.
+
+## Historical worker writes and scope transfers
+
+[The historical-execution fence](prototype/historical-execution-fence.sql)
+refuses database mutations for unreconciled historical worker-backed runs. It
+covers polling claims, late stage/run updates, new or replaced artifacts/KPIs,
+and claim/validation projections. It checks both old and new run references so
+moving a row cannot evade the historical boundary. This remains a prototype;
+operators must stop workers before installation. A database trigger cannot stop
+an already-running scientific calculation or revoke its access to local files.
+
+[Combined native cases](prototype/verify_historical_execution_fence.py) challenge
+18 historical mutations and confirm original run/stage/KPI state remains. A
+newly enrolled synthetic run still claims, writes its first KPI and scientific
+projection rows, and completes. Baseline, harmless-comment and restored cases
+pass. Bypassing historical enrollment or dropping either side of the run-scope
+check fails for the expected accepted mutation. These tests exercise SQL
+projections, not a scientific algorithm, normal worker HTTP or scientific
+publication recovery.
+
+The adjacent retained-output guard also now locks and checks both the original
+and destination runs. Previously, a row from an unretained run could be moved
+into a retained run because only its original run was inspected. The expanded
+receipt-family suite checks this transfer for each receipt family, for 33
+prohibited changes. Nine adverse variants are detected, including omission of
+the destination run. Ordinary progress and completion checks remain unchanged.
+
+After the scope correction, atomic-start, contention, inspection and historical
+fence suites all pass with their controls. The respective private evidence is
+`retained-output-protection-v3`, `stage-execution-start-v3`,
+`stage-start-contention`, `relaunch-custody-inspection-v2` and
+`historical-execution-fence-v2` under the proof root. The concurrency clone remains
+available; rollback-only runs make no lasting schema or fixture changes.
+
+An operator-visible historical reconciliation workflow, installed migration and
+populated upgrade/restore verification remain unfinished. The full worker path
+must still establish preserved outputs, uncertainty and claim tiers under these
+combined guards. Do not install this branch or merge PR #168 based solely on
+these bounded native checks. No full continuation or V1 acceptance is claimed.

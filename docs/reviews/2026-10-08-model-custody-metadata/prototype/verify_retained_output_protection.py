@@ -27,7 +27,7 @@ END;
 $$;''']
     count = 0
     for mode in ('none', 'kpi', 'artifact', 'assessment'):
-        run, stage, kpi, artifact, request = [str(uuid.uuid4()) for _ in range(5)]
+        run, stage, kpi, artifact, request, outsider, outsider_kpi = [str(uuid.uuid4()) for _ in range(7)]
         statements.append(f"""INSERT INTO public.model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by)
  SELECT '{run}',workspace_id,model_id,'aequilibrae','running','Synthetic retained output protection',created_by FROM public.model_runs WHERE id='{fixture}';
  INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order) VALUES('{stage}','{run}','Synthetic protection','running',1);
@@ -44,11 +44,15 @@ $$;''']
             statements.append(f"INSERT INTO public.model_legacy_artifact_receipts VALUES('{artifact}','{run}','{{}}','{{}}');")
         elif mode == 'assessment':
             statements.append(f"INSERT INTO public.model_assessment_command_receipts(request_id,run_id,request_payload,response_payload) VALUES('{request}','{run}','{{}}','{{}}');")
+        statements.append(f"""INSERT INTO public.model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by)
+ SELECT '{outsider}',workspace_id,model_id,'aequilibrae','queued','Synthetic unretained source',created_by FROM public.model_runs WHERE id='{fixture}';
+ INSERT INTO public.model_run_kpis(id,run_id,kpi_name,kpi_label,kpi_category,value,unit) VALUES('{outsider_kpi}','{outsider}','outside','Outside','assignment',7,'vehicles');""")
         statements.append('SET LOCAL ROLE service_role;')
         if mode == 'none':
             statements.append(f"UPDATE public.model_runs SET status='queued' WHERE id='{run}'; DELETE FROM public.model_run_kpis WHERE id='{kpi}';")
         else:
             prohibited = [
+                f"UPDATE public.model_run_kpis SET run_id='{run}' WHERE id='{outsider_kpi}'",
                 f"UPDATE public.model_runs SET status='queued' WHERE id='{run}'",
                 f"UPDATE public.model_runs SET input_snapshot_json='{{\"changed\":true}}' WHERE id='{run}'",
                 f"UPDATE public.model_run_stages SET status='queued' WHERE id='{stage}'",
@@ -89,10 +93,11 @@ def main():
     if args.controls:
         variants.extend([
             ('harmless',source+'\n-- Harmless source control.\n',False),
-            ('no-retention-check',source.replace('IF public.model_run_has_retained_commands(run) THEN','IF false THEN'),True),
+            ('no-retention-check',source.replace('IF retained THEN','IF false THEN'),True),
             ('kpi-selector-missing',source.replace('EXISTS(SELECT 1 FROM public.model_legacy_kpi_receipts WHERE run_id=p_run)','false'),True),
             ('artifact-selector-missing',source.replace('EXISTS(SELECT 1 FROM public.model_legacy_artifact_receipts WHERE run_id=p_run)','false'),True),
             ('assessment-selector-missing',source.replace('EXISTS(SELECT 1 FROM public.model_assessment_command_receipts WHERE run_id=p_run)','false'),True),
+            ('target-run-omitted',source.replace('id IN(run,next_run)','id IN(run)'),True),
             ('requeue-allowed',source.replace("NEW.status='queued' AND OLD.status IS DISTINCT FROM NEW.status","false"),True),
             ('snapshot-rewrite-allowed',source.replace('NEW.input_snapshot_json IS DISTINCT FROM OLD.input_snapshot_json','false'),True),
             ('delete-allowed',source.replace("ELSIF TG_OP='DELETE' OR following IS DISTINCT FROM prior THEN","ELSIF TG_OP='UPDATE' AND following IS DISTINCT FROM prior THEN"),True),

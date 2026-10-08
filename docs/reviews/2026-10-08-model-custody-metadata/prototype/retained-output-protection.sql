@@ -10,17 +10,19 @@ REVOKE ALL ON FUNCTION public.model_run_has_retained_commands(uuid) FROM PUBLIC,
 
 CREATE FUNCTION public.guard_retained_model_outputs() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
-DECLARE prior jsonb; following jsonb; run uuid;
+DECLARE prior jsonb; following jsonb; run uuid; next_run uuid; scoped record; retained boolean:=false;
 BEGIN
  prior:=to_jsonb(OLD);
  IF TG_OP='UPDATE' THEN following:=to_jsonb(NEW); END IF;
- IF TG_TABLE_NAME='model_runs' THEN run:=OLD.id;
- ELSIF TG_TABLE_NAME IN('modeling_claim_decisions','modeling_validation_results') THEN run:=(prior->>'model_run_id')::uuid;
- ELSE run:=(prior->>'run_id')::uuid;
+ IF TG_TABLE_NAME='model_runs' THEN run:=OLD.id; next_run:=(following->>'id')::uuid;
+ ELSIF TG_TABLE_NAME IN('modeling_claim_decisions','modeling_validation_results') THEN run:=(prior->>'model_run_id')::uuid; next_run:=(following->>'model_run_id')::uuid;
+ ELSE run:=(prior->>'run_id')::uuid; next_run:=(following->>'run_id')::uuid;
  END IF;
  -- Serialize against the parent lock held by command registration.
- PERFORM id FROM public.model_runs WHERE id=run FOR UPDATE;
- IF public.model_run_has_retained_commands(run) THEN
+ FOR scoped IN SELECT id FROM public.model_runs WHERE id IN(run,next_run) ORDER BY id FOR UPDATE LOOP
+  IF public.model_run_has_retained_commands(scoped.id) THEN retained:=true; END IF;
+ END LOOP;
+ IF retained THEN
   IF TG_TABLE_NAME='model_runs' AND TG_OP='UPDATE' THEN
    IF NEW.status='queued'
       OR NEW.input_snapshot_json IS DISTINCT FROM OLD.input_snapshot_json
