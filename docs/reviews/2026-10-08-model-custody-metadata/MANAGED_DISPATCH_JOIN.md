@@ -391,3 +391,46 @@ No terminal failure is inferred from a transport failure or callback exception.
 The direction check still passes with registry-age and intervening-change
 reminders. This implementation does not change review dates, capability grades,
 scientific claim tiers or the full v1 destination.
+
+### Managed stage-write adapter prepared and connected under explicit binding
+
+`model_attempt_writer.py` binds stage writes to one admitted invocation. It
+checks the retained claim and consumed local admission, keeps its context local
+to the handler, and refuses use from another thread. Both workers' existing
+`sb_patch_stage` functions use this adapter when it is explicitly bound. Their
+unbound paths remain unchanged. Normal claim dispatch does not bind it yet.
+
+Before expanding a partial patch, the adapter reads the actual claimed stage
+with its parent, workspace, active attempt, status, log and error projections.
+Missing logs are unreadable state rather than empty text. Subsequent partial
+patches preserve the last confirmed log. Each complete stage command enters the
+journal before transport. The adapter accepts the database's completion time,
+not a legacy caller's wall clock. Confirmed terminal outcomes close the writer.
+Pending commands, uncertain delivery and failed ownership reads stop later writes.
+Bound parent PATCH calls are refused because the stage transaction owns parent
+completion or failure. No managed refusal falls back to direct PATCH.
+
+Nine adapter tests exercise real journals, both actual worker functions and
+injected HTTP. All 50 focused writer/admission/client/journal/ownership/recovery/
+skip tests pass. The existing SQLite ResourceWarning appears during the combined
+suite; it is not reported as repaired. All 44 ActivitySim tests and 38
+AequilibraE push-trigger checks pass. The first push-check invocation used
+unittest against a script runner and ran zero tests; the direct script command
+then runs all 38 checks. The zero-test invocation is not passing evidence.
+
+Harmless and restored adapter controls pass. Seven targeted mutations fail for
+log erasure, missing query projection, accepting absent logs, ignoring pending
+commands, ignoring terminal closure, cross-stage patches and cross-thread use.
+The verifier loads temporary source copies and leaves the checked-out code
+unchanged. Results and the source hash are in `writer-controls.json`.
+
+The adapter has not yet been exercised against native PostgREST. Output
+registration, attempt-owned working files, explicit continuation and complete
+normal dispatcher journeys remain required before switching claims. The current
+binding checks do not prove any scientific result or whole-run restart.
+
+At integration head `03ba477f7ed1c5c20277150780628d05f7280912`, PR 170 now passes
+all GitHub checks, including live RLS job 113493639537 and full-archive restore
+job 113493639216. Its documented T3 acceptance hold remains: a new snapshot
+attempt still fails on the connected frozen preview. This does not change the
+preview checkout or establish desktop/390px visual acceptance.

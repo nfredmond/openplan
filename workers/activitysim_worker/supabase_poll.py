@@ -246,6 +246,13 @@ def _confirmed_state_patch(table: str, record_id: str, payload: dict, *, queued_
 
 
 def sb_patch_stage(stage_id: str, payload: dict):
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.patch_stage(stage_id, payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed stage write requires reconciliation; no PATCH fallback") from error
     _confirmed_state_patch("model_run_stages", stage_id, payload)
 
 
@@ -261,6 +268,13 @@ def sb_claim_stage(stage_id: str, payload: dict) -> bool:
 
 
 def sb_patch_run(run_id: str, payload: dict):
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.patch_run(run_id, payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed run write requires reconciliation; no PATCH fallback") from error
     _confirmed_state_patch("model_runs", run_id, payload)
 
 
