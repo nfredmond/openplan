@@ -2,6 +2,7 @@
 """Regression checks for the retained-network ActivitySim handoff."""
 
 import csv
+import hashlib
 import json
 import os
 import tempfile
@@ -42,14 +43,33 @@ def test_materialized_handoff_includes_exact_network_setup_summary() -> None:
         setup_payload = {"centroid_map": {"1": 9876}, "network": {"nodes": 10000}}
         setup.write_text(json.dumps(setup_payload))
 
+        run_id = "00000001-1111-4111-8111-111111111111"
+        consumer_stage_id = "00000002-1111-4111-8111-111111111111"
+        sources = [
+            {"id": f"{index:08d}-1111-4111-8111-111111111111",
+             "run_id": run_id, "stage_id": "00000003-1111-4111-8111-111111111111",
+             "attempt_id": None, "artifact_type": kind,
+             "content_hash": hashlib.sha256(path.read_bytes()).hexdigest(),
+             "file_size_bytes": path.stat().st_size,
+             "model_run_stages": {"status": "succeeded", "attempt_managed": False}}
+            for index, (kind, path) in enumerate([
+                ("skim_matrix", skim), ("zone_attributes", zones),
+                ("network_setup_summary", setup),
+            ], start=4)
+        ]
         screening = Path(
             worker._materialize_screening_dir(
-                "test-run", str(skim), str(zones), str(setup), str(root / "materialized")
+                run_id, str(skim), str(zones), str(setup), str(root / "materialized"),
+                source_artifacts=sources, consumer_stage_id=consumer_stage_id
             )
         )
 
         copied = json.loads((screening / "work" / "network_setup_summary.json").read_text())
         assert copied == setup_payload
+        manifest = json.loads((screening / "bundle_manifest.json").read_text())
+        assert manifest["model_run_id"] == run_id
+        assert manifest["consumer_stage_id"] == consumer_stage_id
+        assert manifest["source_artifacts"] == sources
 
 
 if __name__ == "__main__":

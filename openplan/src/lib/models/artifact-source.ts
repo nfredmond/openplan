@@ -146,5 +146,8 @@ export async function loadJsonArtifact(
 }
 
 export function resolveRunWorkDir(localRoot: string, modelRunId: string): string {
-  return path.join(localRoot, "runs", modelRunId.slice(0, 12));
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(modelRunId)) {
+    throw new Error("Model run identity must be a canonical UUID");
+  }
+  return path.join(localRoot, "runs", modelRunId);
 }

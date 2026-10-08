@@ -110,6 +110,7 @@ import emissions
 import equity
 import model_credibility
 from worker_heartbeat import WorkerHeartbeat
+from model_receipt_values import same_json_value
 
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
@@ -1061,7 +1062,7 @@ def _confirmed_record_insert(table: str, payload: dict) -> dict:
         if (not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict)
                 or not isinstance(rows[0].get("id"), str) or not rows[0]["id"]):
             raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: missing retained record")
-        if any(field not in rows[0] or rows[0][field] != value for field, value in payload.items()):
+        if any(field not in rows[0] or not same_json_value(rows[0][field], value) for field, value in payload.items()):
             raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: returned values differ")
         return rows[0]
     except WorkerStateWriteUnconfirmed:
@@ -6247,6 +6248,13 @@ def process_stage(stage: dict) -> bool:
                 _WORKER_HEARTBEAT.set_current_work(None)
 
 
+def run_work_directory(run_id: str) -> str:
+    """Use the complete database identity; never adopt ambiguous legacy scratch."""
+    if not isinstance(run_id, str) or str(uuid.UUID(run_id)) != run_id:
+        raise ValueError("Model run identity must be a canonical UUID")
+    return os.path.join(RUN_WORK_ROOT, "runs", run_id)
+
+
 def _claim_and_run_stage(stage: dict) -> bool:
     """The body of `process_stage`, which owns the serialization above it.
 
@@ -6259,6 +6267,10 @@ def _claim_and_run_stage(stage: dict) -> bool:
 
     print(f"[{time.strftime('%X')}] Processing: {stage_name} (run={run_id[:8]}…)")
 
+    work_dir = run_work_directory(run_id)
+    if stage_name != "AequilibraE Setup" and not os.path.exists(work_dir) and os.path.exists(os.path.join(RUN_WORK_ROOT, "runs", run_id[:12])):
+        raise RuntimeError("Legacy model scratch needs explicit full-run identity reconciliation before this stage can be claimed")
+
     # Atomic claim: only one worker may transition this stage queued -> running.
     claimed = sb_claim_stage(
         stage_id,
@@ -6270,7 +6282,6 @@ def _claim_and_run_stage(stage: dict) -> bool:
     sb_patch_run(run_id, {"status": "running"})
 
     # Each run gets its own working directory
-    work_dir = os.path.join(RUN_WORK_ROOT, "runs", run_id[:12])
     os.makedirs(work_dir, exist_ok=True)
     state_file = os.path.join(work_dir, f"state.json")
 
@@ -6435,9 +6446,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     )
                 with open(volume_path, "rb") as volume_handle:
                     volume_bytes = volume_handle.read()
-                activitysim_artifact_id = str(uuid.uuid4())
-                sb_post_artifact({
-                    "id": activitysim_artifact_id,
+                activitysim_artifact = sb_post_artifact({
                     "run_id": run_id,
                     "stage_id": stage_id,
                     "artifact_type": "activitysim_link_volumes",
@@ -6464,6 +6473,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                         },
                     },
                 })
+                activitysim_artifact_id = activitysim_artifact["id"]
                 for kpi_name, kpi_label, value, unit, provenance in (
                     (
                         "activitysim_assigned_vehicle_trips",

@@ -19,6 +19,7 @@ These checks pin that it did not:
 
 Run: python3 workers/aequilibrae_worker/test_push_trigger.py
 """
+import inspect
 import json
 import os
 import sys
@@ -396,6 +397,18 @@ def test_the_default_start_mode_is_still_polling():
     """An existing deployment upgrading this file must not suddenly open a port
     or stop serving its queue."""
     started = []
+    started_heartbeats = []
+    original_heartbeat_class = main.WorkerHeartbeat
+    original_heartbeat = main._WORKER_HEARTBEAT
+
+    class RecordedHeartbeat:
+        def __init__(self, **kwargs):
+            self.mode = kwargs['runtime_mode']
+
+        def start(self):
+            started_heartbeats.append(self.mode)
+
+    main.WorkerHeartbeat = RecordedHeartbeat
     original_poll, original_serve = main.poll_for_jobs, main.serve_push_trigger
     main.poll_for_jobs = lambda: started.append("poll")
     main.serve_push_trigger = lambda *a, **k: started.append("push")
@@ -407,6 +420,7 @@ def test_the_default_start_mode_is_still_polling():
         started.clear()
         main.run_worker("push")
         assert started == ["push"], started
+        assert started_heartbeats == ["poll", "push"], "startup must start the configured heartbeat"
 
         try:
             main.run_worker("sometimes")
@@ -415,10 +429,40 @@ def test_the_default_start_mode_is_still_polling():
         else:
             raise AssertionError("an unrecognized mode must refuse rather than guess")
     finally:
+        main.WorkerHeartbeat = original_heartbeat_class
+        main._WORKER_HEARTBEAT = original_heartbeat
         main.poll_for_jobs = original_poll
         main.serve_push_trigger = original_serve
         if original_mode is not None:
             os.environ["AEQ_WORKER_MODE"] = original_mode
+
+
+def test_start_mode_fixture_controls():
+    original = main.run_worker
+    source = inspect.getsource(original)
+    anchor = 'resolved = (mode or os.getenv("AEQ_WORKER_MODE") or "poll")'
+    assert source.count(anchor) == 1
+    cases = [
+        (source + '\n# Harmless startup-fixture control.\n', None),
+        (source.replace(anchor, 'resolved = (mode or os.getenv("AEQ_WORKER_MODE") or "push")'), "['push']"),
+        (source.replace('_WORKER_HEARTBEAT.start()', 'pass'), 'startup must start the configured heartbeat'),
+    ]
+    try:
+        for modified, expected in cases:
+            namespace = dict(main.__dict__)
+            exec(compile(modified, main.__file__, 'exec'), namespace)
+            main.run_worker = types.FunctionType(namespace['run_worker'].__code__, main.__dict__, argdefs=original.__defaults__)
+            try:
+                test_the_default_start_mode_is_still_polling()
+            except AssertionError as error:
+                if expected is None or expected not in str(error):
+                    raise
+            else:
+                if expected is not None:
+                    raise AssertionError('Broken startup behavior escaped the fixture')
+    finally:
+        main.run_worker = original
+    test_the_default_start_mode_is_still_polling()
 
 
 def test_the_executor_survives_a_run_that_raises():
@@ -920,6 +964,26 @@ def test_kpi_insert_requires_exact_receipt_and_preserves_null():
         assert post.call_args.kwargs["timeout"] == 30
         assert post.call_args.kwargs["headers"]["Prefer"] == "return=representation"
         assert post.call_args.kwargs["json"] == payload
+
+
+def test_insert_receipts_preserve_json_value_kinds():
+    from unittest import mock
+    cases = [(0, False, False), (False, 0, False), (None, 0, False),
+             ({"method": {"accepted": False}}, {"method": {"accepted": 0}}, False),
+             ({"values": [False, 1]}, {"values": [0, 1]}, False),
+             (1, 1.0, True), ({"values": [0, None, False]}, {"values": [0.0, None, False]}, True)]
+    for writer in (main.sb_post_kpi, main.sb_post_artifact):
+        for expected, actual, accepted in cases:
+            payload = {"run_id": RUN_ID, "metadata_json": expected}
+            response = mock.Mock(status_code=201, json=lambda: [{"id": "synthetic-record", **payload, "metadata_json": actual}])
+            with mock.patch.object(main.requests, 'post', return_value=response) as post:
+                try:
+                    writer(payload)
+                except main.WorkerStateWriteUnconfirmed:
+                    assert not accepted, 'equivalent JSON number was refused'
+                else:
+                    assert accepted, 'receipt conflated JSON value kinds'
+                assert post.call_count == 1
 
 
 def test_kpi_insert_transport_or_json_uncertainty_does_not_retry():

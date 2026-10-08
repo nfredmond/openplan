@@ -28,6 +28,8 @@ import json
 import os
 import sys
 import time
+import tempfile
+import uuid
 import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
@@ -39,6 +41,13 @@ from worker_heartbeat import WorkerHeartbeat
 
 _WORKER_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _WORKER_DIR.parents[1]
+
+# The AequilibraE image ships sibling Python files; both ActivitySim images ship
+# the repository tree. Share this stdlib-only receipt check without copying it.
+_SHARED_WORKER_DIR = str(_WORKER_DIR.parent / "aequilibrae_worker")
+if _SHARED_WORKER_DIR not in sys.path:
+    sys.path.append(_SHARED_WORKER_DIR)
+from model_receipt_values import same_json_value
 
 # Locally load .env (worker dir) then the app's .env.local; in a container these
 # come from the environment. override=False so real env vars always win.
@@ -270,7 +279,7 @@ def _confirmed_record_insert(table: str, payload: dict) -> None:
         if (not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict)
                 or not isinstance(rows[0].get("id"), str) or not rows[0]["id"]):
             raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: missing retained record")
-        if any(field not in rows[0] or rows[0][field] != value for field, value in payload.items()):
+        if any(field not in rows[0] or not same_json_value(rows[0][field], value) for field, value in payload.items()):
             raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: returned values differ")
     except WorkerStateWriteUnconfirmed:
         raise
@@ -303,7 +312,7 @@ def sb_get_run(run_id: str) -> dict:
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
-        "&select=artifact_type,file_url,metadata_json"
+        "&select=id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,model_run_stages!inner(id,run_id,status,attempt_managed,active_attempt_id)"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
@@ -432,13 +441,57 @@ def _local_path(file_url: str | None) -> str | None:
     return None
 
 
-def _find_artifact_path(artifacts: list[dict], artifact_type: str) -> str | None:
-    for art in artifacts:
-        if art.get("artifact_type") == artifact_type:
-            path = _local_path(art.get("file_url"))
-            if path and os.path.exists(path):
-                return path
-    return None
+def _retain_handoff_file(artifacts: list[dict], artifact_type: str, run_id: str, execution_dir: str) -> str:
+    """Copy and verify registered bytes before the preflight pipeline sees them."""
+    validate_run_identity(run_id)
+    if not isinstance(artifacts, list) or any(not isinstance(row, dict) for row in artifacts):
+        raise RuntimeError("Invalid screening handoff inventory")
+    candidates = [row for row in artifacts if row.get("artifact_type") == artifact_type]
+    if len(candidates) != 1:
+        raise RuntimeError("Missing or ambiguous AequilibraE screening handoff: " + artifact_type)
+    artifact = candidates[0]
+    if artifact.get("run_id") != run_id:
+        raise RuntimeError("Screening handoff run identity differs")
+    validate_run_identity(artifact.get("id"))
+    producer = artifact.get("model_run_stages")
+    if not isinstance(producer, dict) or producer.get("id") != artifact.get("stage_id") or producer.get("run_id") != run_id or producer.get("status") != "succeeded":
+        raise RuntimeError("Screening handoff requires a completed producing stage of this run")
+    validate_run_identity(producer.get("id"))
+    managed = producer.get("attempt_managed")
+    if type(managed) is not bool:
+        raise RuntimeError("Screening handoff producer ownership is unconfirmed")
+    if managed:
+        validate_run_identity(artifact.get("attempt_id"))
+        if producer.get("active_attempt_id") != artifact["attempt_id"]:
+            raise RuntimeError("Screening handoff belongs to an inactive attempt")
+    elif artifact.get("attempt_id") is not None or producer.get("active_attempt_id") is not None:
+        raise RuntimeError("Screening handoff legacy ownership is inconsistent")
+    source = _local_path(artifact.get("file_url"))
+    if not source or not os.path.isabs(source):
+        raise RuntimeError("Screening handoff requires an absolute local:// reference")
+    shared_root = Path(os.getenv("AEQ_WORK_DIR", os.path.join(tempfile.gettempdir(), "openplan-model-runs"))).resolve()
+    run_root = shared_root / "runs" / run_id
+    resolved = Path(source).resolve(strict=True)
+    if not resolved.is_relative_to(run_root) or not resolved.is_file():
+        raise RuntimeError("Screening handoff path is outside the complete run identity")
+    expected_hash, expected_size = artifact.get("content_hash"), artifact.get("file_size_bytes")
+    if not isinstance(expected_hash, str) or len(expected_hash) != 64 or any(c not in "0123456789abcdef" for c in expected_hash):
+        raise RuntimeError("Screening handoff hash is unavailable")
+    if type(expected_size) is not int or expected_size < 0:
+        raise RuntimeError("Screening handoff byte size is unavailable")
+    destination = Path(execution_dir) / (artifact_type + ".retained")
+    digest = hashlib.sha256()
+    size = 0
+    with resolved.open("rb") as reader, destination.open("xb") as writer:
+        while chunk := reader.read(1024 * 1024):
+            size += len(chunk)
+            if size > expected_size:
+                raise RuntimeError("Screening handoff byte size differs")
+            digest.update(chunk)
+            writer.write(chunk)
+    if size != expected_size or digest.hexdigest() != expected_hash:
+        raise RuntimeError("Screening handoff bytes differ from the registered artifact")
+    return str(destination)
 
 
 def _adapt_zone_attributes(src_csv: str, dest_csv: str) -> int:
@@ -483,6 +536,7 @@ def _materialize_screening_dir(
     zone_attr_path: str,
     setup_summary_path: str,
     dest_root: str,
+    *, source_artifacts: list[dict], consumer_stage_id: str,
 ) -> str:
     """Lay out the screening-run-dir the bundle builder expects:
     <dir>/bundle_manifest.json, <dir>/package/zone_attributes.csv,
@@ -499,13 +553,35 @@ def _materialize_screening_dir(
     os.makedirs(os.path.join(screening_dir, "work"), exist_ok=True)
     shutil.copy2(setup_summary_path, os.path.join(screening_dir, "work", "network_setup_summary.json"))
 
-    # Minimal source manifest — the builder requires the file but tolerates missing
-    # fields (they only feed a provenance excerpt).
+    # Preserve original registered inputs separately from adapted pipeline files.
+    source_records = []
+    for kind in ("skim_matrix", "zone_attributes", "network_setup_summary"):
+        matches = [row for row in source_artifacts if row.get("artifact_type") == kind]
+        if len(matches) != 1 or matches[0].get("run_id") != run_id:
+            raise RuntimeError("Screening provenance requires one exact run artifact per input")
+        row = matches[0]
+        source_records.append({key: row.get(key) for key in ("id", "run_id", "stage_id", "attempt_id", "artifact_type", "content_hash", "file_size_bytes", "model_run_stages")})
+    materialized = []
+    for relative, transformation in (
+        ("run_output/travel_time_skims.omx", "exact_copy"),
+        ("package/zone_attributes.csv", "zone_attributes_adapter"),
+        ("work/network_setup_summary.json", "exact_copy"),
+    ):
+        file_path = Path(screening_dir) / relative
+        digest = hashlib.sha256()
+        with file_path.open("rb") as handle:
+            while chunk := handle.read(1024 * 1024):
+                digest.update(chunk)
+        materialized.append({"path": relative, "sha256": digest.hexdigest(), "bytes": file_path.stat().st_size, "transformation": transformation})
     manifest = {
         "schema_version": "openplan.screening_handoff.v0",
-        "run_name": f"behavioral-{run_id[:12]}",
+        "run_name": f"behavioral-{run_id}",
         "screening_grade": True,
         "source": "aequilibrae_worker",
+        "model_run_id": run_id,
+        "consumer_stage_id": consumer_stage_id,
+        "source_artifacts": source_records,
+        "materialized_files": materialized,
         "zones": {"count": zones},
         "caveats": ["Screening-grade AequilibraE handoff; not calibrated."],
     }
@@ -514,11 +590,23 @@ def _materialize_screening_dir(
     return screening_dir
 
 
+def validate_run_identity(run_id: str) -> None:
+    if not isinstance(run_id, str) or str(uuid.UUID(run_id)) != run_id:
+        raise ValueError("Model run identity must be a canonical UUID")
+
+
+def create_run_workspace(run_id: str) -> str:
+    """Retain each execution separately without deleting predecessor files."""
+    validate_run_identity(run_id)
+    directory = os.path.join(ACTIVITYSIM_WORK_DIR, run_id)
+    os.makedirs(directory, exist_ok=True)
+    return tempfile.mkdtemp(prefix="execution-", dir=directory)
+
+
 def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dict:
     """Build a REAL ActivitySim input bundle from the AequilibraE screening
     artifacts, then run the preflight pipeline (no execution on $0 infra) and
     write an honest, NON-forecast evidence packet + structural KPIs."""
-    import shutil
     import sys
 
     corridor = _require_study_area(run)
@@ -529,27 +617,16 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     # 1. Locate the screening handoff (skim + zone attributes) the AequilibraE
     #    worker registered as local:// artifacts (same-host consumers only).
     artifacts = sb_get_run_artifacts(run_id)
-    skim_path = _find_artifact_path(artifacts, "skim_matrix")
-    zone_attr_path = _find_artifact_path(artifacts, "zone_attributes")
-    setup_summary_path = _find_artifact_path(artifacts, "network_setup_summary")
-    if not skim_path or not zone_attr_path or not setup_summary_path:
-        raise RuntimeError(
-            "Missing AequilibraE screening handoff (skim_matrix / zone_attributes / "
-            "network_setup_summary local:// "
-            "artifacts). The behavioral lane needs the ActivitySim worker co-located with "
-            "the AequilibraE worker (shared filesystem)."
-        )
-    log += f"- Screening handoff located (skim + zone attributes).\n"
+    run_root = create_run_workspace(run_id)
+    skim_path = _retain_handoff_file(artifacts, "skim_matrix", run_id, run_root)
+    zone_attr_path = _retain_handoff_file(artifacts, "zone_attributes", run_id, run_root)
+    setup_summary_path = _retain_handoff_file(artifacts, "network_setup_summary", run_id, run_root)
+    log += "- Screening handoff copied and verified against registered bytes.\n"
     sb_patch_stage(stage_id, {"log_tail": log})
 
-    # 2. Materialize the screening-run-dir + build the bundle + run the preflight
-    #    pipeline. All stdlib; no ActivitySim needed for the preflight path.
-    run_root = os.path.join(ACTIVITYSIM_WORK_DIR, run_id[:12])
-    if os.path.exists(run_root):
-        shutil.rmtree(run_root)
-    os.makedirs(run_root, exist_ok=True)
     screening_dir = _materialize_screening_dir(
-        run_id, skim_path, zone_attr_path, setup_summary_path, run_root
+        run_id, skim_path, zone_attr_path, setup_summary_path, run_root,
+        source_artifacts=artifacts, consumer_stage_id=stage_id,
     )
 
     scripts_dir = str(_REPO_ROOT / "scripts" / "modeling")
@@ -812,6 +889,7 @@ def process_stage(stage: dict) -> None:
     run_id = stage["run_id"]
     stage_name = stage["stage_name"]
 
+    validate_run_identity(run_id)
     claimed = sb_claim_stage(
         stage_id,
         {"status": "running", "started_at": _utc_now(), "log_tail": f"Starting {stage_name}..."},

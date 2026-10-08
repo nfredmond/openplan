@@ -183,7 +183,7 @@ vi.mock("@/lib/models/api", () => ({
 vi.mock("@/app/api/models/[modelId]/runs/[modelRunId]/volumes/artifact-source", () => ({
   loadArtifactBytes: (...args: unknown[]) => loadArtifactBytesMock(...args),
   workerLocalRoot: () => "/srv/worker",
-  resolveRunWorkDir: (root: string, runId: string) => `${root}/runs/${runId.slice(0, 12)}`,
+  resolveRunWorkDir: (root: string, runId: string) => `${root}/runs/${runId}`,
 }));
 
 import { GET as getAgreement } from "@/app/api/models/[modelId]/runs/[modelRunId]/agreement/route";
@@ -266,7 +266,7 @@ describe("GET authenticated demand agreement artifact", () => {
       {
         bucket: "run-artifacts",
         objectPathPrefix: `model-runs/${MODEL_RUN_ID}/`,
-        localRoot: `/srv/worker/runs/${MODEL_RUN_ID.slice(0, 12)}`,
+        localRoot: `/srv/worker/runs/${MODEL_RUN_ID}`,
       },
     );
   });

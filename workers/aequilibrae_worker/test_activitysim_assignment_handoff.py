@@ -348,7 +348,7 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
     with tempfile.TemporaryDirectory() as tmp:
         work_root = Path(tmp)
         run_id = "11111111-1111-4111-8111-111111111111"
-        run_dir = work_root / "runs" / run_id[:12]
+        run_dir = work_root / "runs" / run_id
         run_dir.mkdir(parents=True)
         first_profile = main.resolve_assignment_profile(
             {
@@ -387,6 +387,13 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
         ]["assignment_profile"]
         profile_digest = main.assignment_profile_digest(first_profile)
         calls = []
+        retained_artifact_id = "22222222-2222-4222-8222-222222222222"
+
+        def retained_artifact_response(url, **kwargs):
+            assert url.endswith("/rest/v1/model_run_artifacts")
+            return mock.Mock(status_code=201, json=mock.Mock(return_value=[{
+                **kwargs["json"], "id": retained_artifact_id,
+            }]))
 
         def assignment(*args, **kwargs):
             calls.append((args, kwargs))
@@ -424,7 +431,9 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
             mock.patch.object(main, "sb_claim_stage", return_value=True),
             mock.patch.object(main, "sb_patch_stage") as patch_stage,
             mock.patch.object(main, "sb_patch_run"),
-            mock.patch.object(main, "sb_post_artifact") as post_artifact,
+            mock.patch.object(main.requests, "post", side_effect=retained_artifact_response) as post_artifact,
+            mock.patch.object(main, "build_rules_v4_validation_records", return_value=({}, {}, {"assessment_id": "synthetic-assessment"})) as build_assessment,
+            mock.patch.object(main, "persist_rules_v4_validation_records", return_value={"scientific_outcome": "inconclusive", "validation_evidence_write": "recorded"}) as persist_assessment,
             mock.patch.object(main, "sb_post_kpi") as post_kpi,
             mock.patch.object(main, "activitysim_assignment_package", return_value="/activitysim/package"),
             mock.patch.object(main, "stage_assignment", side_effect=assignment),
@@ -463,7 +472,10 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
             "network_state_digest"
         ]
         assert kwargs["assignment_profile_override"] == first_profile
-        payload = post_artifact.call_args.args[0]
+        payload = post_artifact.call_args.kwargs["json"]
+        assert "id" not in payload, "assignment must let artifact registration return its retained identity"
+        assert build_assessment.call_args.kwargs["model_output_artifact_id"] == retained_artifact_id, "assessment used an invented artifact identity"
+        assert persist_assessment.call_args.kwargs["model_output_artifact_id"] == retained_artifact_id, "custody used an invented artifact identity"
         assert payload["artifact_type"] == "activitysim_link_volumes"
         assert payload["metadata_json"]["demand_is_vehicle"] is True
         assert payload["metadata_json"]["network_calibration"] == (
@@ -494,11 +506,42 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
         assert patch_stage.call_args.args[1]["status"] == "succeeded"
 
 
+def test_assignment_artifact_receipt_identity_controls():
+    original = main._claim_and_run_stage
+    source = inspect.getsource(original)
+    anchor = 'activitysim_artifact_id = activitysim_artifact["id"]'
+    assert source.count(anchor) == 1
+    cases = [
+        (source + "\n# Harmless receipt identity control.\n", None),
+        (source.replace(anchor, 'activitysim_artifact_id = str(uuid.uuid4())'), 'assessment used an invented artifact identity'),
+        (source.replace('track="behavioral_demand",\n                    model_output_artifact_id=activitysim_artifact_id,', 'track="behavioral_demand",\n                    model_output_artifact_id=str(uuid.uuid4()),', 1), 'custody used an invented artifact identity'),
+    ]
+    try:
+        for modified, expected in cases:
+            namespace = dict(main.__dict__)
+            exec(compile(modified, main.__file__, 'exec'), namespace)
+            with mock.patch.object(main, '_claim_and_run_stage', namespace['_claim_and_run_stage']):
+                # Resolve mocked dependencies in the actual module, not the
+                # construction namespace captured before the fixture patches.
+                main._claim_and_run_stage = types.FunctionType(main._claim_and_run_stage.__code__, main.__dict__)
+                try:
+                    test_assignment_stage_reuses_state_and_bypasses_second_mode_split()
+                except AssertionError as error:
+                    if expected is None or expected not in str(error):
+                        raise
+                else:
+                    if expected is not None:
+                        raise AssertionError('Invented artifact identity escaped the dispatcher check')
+    finally:
+        main._claim_and_run_stage = original
+    test_assignment_stage_reuses_state_and_bypasses_second_mode_split()
+
+
 def test_uncalibrated_assignment_handoff_reuses_the_canonical_baseline_digest():
     with tempfile.TemporaryDirectory() as tmp:
         work_root = Path(tmp)
         run_id = "11111111-1111-4111-8111-111111111111"
-        run_dir = work_root / "runs" / run_id[:12]
+        run_dir = work_root / "runs" / run_id
         run_dir.mkdir(parents=True)
         profile = main.resolve_assignment_profile({})
         baseline_record = identity_record(0.0004, profile=profile)
@@ -541,10 +584,15 @@ def test_uncalibrated_assignment_handoff_reuses_the_canonical_baseline_digest():
         with (
             mock.patch.object(main, "RUN_WORK_ROOT", str(work_root)),
             mock.patch.object(main, "sb_claim_stage", return_value=True),
-            mock.patch.object(main, "sb_patch_stage"),
+            mock.patch.object(main, "sb_patch_stage") as patch_stage,
             mock.patch.object(main, "sb_patch_run"),
-            mock.patch.object(main, "sb_post_artifact") as post_artifact,
+            mock.patch.object(main, "sb_post_artifact", return_value={"id": "22222222-2222-4222-8222-222222222222"}) as post_artifact,
+            mock.patch.object(main, "build_rules_v4_validation_records", return_value=({}, {}, {"assessment_id": "synthetic-assessment"})),
+            mock.patch.object(main, "persist_rules_v4_validation_records", return_value={"scientific_outcome": "inconclusive", "validation_evidence_write": "recorded"}),
             mock.patch.object(main, "sb_post_kpi"),
+            mock.patch.object(main, "sb_get_run", return_value={"workspace_id": "workspace-1"}),
+            mock.patch.object(main, "_run_count_validation", return_value=None),
+            mock.patch.object(main, "write_model_run_modeling_evidence"),
             mock.patch.object(main, "activitysim_assignment_package", return_value="/package"),
             mock.patch.object(main, "stage_assignment", side_effect=assignment),
             mock.patch.object(main, "compute_daily_vmt", return_value=250.0),
@@ -558,6 +606,7 @@ def test_uncalibrated_assignment_handoff_reuses_the_canonical_baseline_digest():
                 }
             )
 
+        assert patch_stage.call_args.args[1]["status"] == "succeeded", "baseline assignment did not complete"
         metadata = post_artifact.call_args.args[0]["metadata_json"]
         assert metadata["network_calibration"] == "baseline_network_settings"
         assert metadata["network_settings_digest"] == baseline_digest
@@ -567,7 +616,7 @@ def test_assignment_handoff_refuses_an_unverified_first_network_digest():
     with tempfile.TemporaryDirectory() as tmp:
         work_root = Path(tmp)
         run_id = "11111111-1111-4111-8111-111111111111"
-        run_dir = work_root / "runs" / run_id[:12]
+        run_dir = work_root / "runs" / run_id
         run_dir.mkdir(parents=True)
         profile = main.resolve_assignment_profile({})
         bad_record = identity_record(0.0004, profile=profile)
@@ -619,7 +668,7 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
     with tempfile.TemporaryDirectory() as tmp:
         work_root = Path(tmp)
         run_id = "11111111-1111-4111-8111-111111111111"
-        run_dir = work_root / "runs" / run_id[:12]
+        run_dir = work_root / "runs" / run_id
         (run_dir / "run_output").mkdir(parents=True)
         profile = main.resolve_assignment_profile({})
         calibrated_record = identity_record(
@@ -733,7 +782,7 @@ def test_uncalibrated_agreement_compares_both_canonical_baseline_digests():
     with tempfile.TemporaryDirectory() as tmp:
         work_root = Path(tmp)
         run_id = "11111111-1111-4111-8111-111111111111"
-        run_dir = work_root / "runs" / run_id[:12]
+        run_dir = work_root / "runs" / run_id
         run_dir.mkdir(parents=True)
         profile = main.resolve_assignment_profile({})
         first_record = identity_record(0.0004, profile=profile)
@@ -825,7 +874,7 @@ def test_uncalibrated_agreement_refuses_a_missing_or_different_baseline_digest()
         with tempfile.TemporaryDirectory() as tmp:
             work_root = Path(tmp)
             run_id = "11111111-1111-4111-8111-111111111111"
-            run_dir = work_root / "runs" / run_id[:12]
+            run_dir = work_root / "runs" / run_id
             run_dir.mkdir(parents=True)
             first_record = identity_record(0.0004, profile=profile)
             second_record = identity_record(0.0003, profile=profile)
@@ -880,7 +929,7 @@ def test_agreement_refuses_mismatched_calibrated_network_settings():
     with tempfile.TemporaryDirectory() as tmp:
         work_root = Path(tmp)
         run_id = "11111111-1111-4111-8111-111111111111"
-        run_dir = work_root / "runs" / run_id[:12]
+        run_dir = work_root / "runs" / run_id
         run_dir.mkdir(parents=True)
         profile = main.resolve_assignment_profile({})
         calibrated_record = identity_record(
@@ -950,7 +999,7 @@ def test_uncalibrated_agreement_refuses_missing_or_mismatched_assignment_profile
         with tempfile.TemporaryDirectory() as tmp:
             work_root = Path(tmp)
             run_id = "11111111-1111-4111-8111-111111111111"
-            run_dir = work_root / "runs" / run_id[:12]
+            run_dir = work_root / "runs" / run_id
             run_dir.mkdir(parents=True)
             first_record = identity_record(0.0003, profile=base_profile)
             second_identity = identity_record(0.0002, profile=base_profile)

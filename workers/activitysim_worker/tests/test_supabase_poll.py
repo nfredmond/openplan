@@ -8,6 +8,7 @@ double-processing on a lost race, a real bundle preflight producing an evidence
 packet + scaffold (non-forecast) KPIs, and honest failures.
 """
 import json
+import hashlib
 import os
 import sys
 import tempfile
@@ -51,6 +52,10 @@ def _write_fixtures(dirpath: str):
     return za, skim, setup
 
 
+def _source_owner(run_id, stage_id="bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"):
+    return {"stage_id": stage_id, "attempt_id": None, "model_run_stages": {"id": stage_id, "run_id": run_id, "status": "succeeded", "attempt_managed": False, "active_attempt_id": None}}
+
+
 class FakeResponse:
     def __init__(self, status_code=200, payload=None, content=b""):
         self.content = content
@@ -78,16 +83,16 @@ class FakeRequests:
             return FakeResponse(200 if key in self.objects else 404, content=self.objects.get(key, b""))
         if "/rest/v1/model_runs?id=eq" in url:
             return FakeResponse(200, [{
-                "id": "run-1", "workspace_id": "ws-1",
+                "id": "12345678-1234-4123-8123-123456789abc", "workspace_id": "ws-1",
                 "corridor_geojson": {"type": "Polygon", "coordinates": [[[0, 0], [0, 1], [1, 1], [0, 0]]]},
                 "query_text": "q", "engine_key": "behavioral_demand",
                 "run_title": "Preflight", "input_snapshot_json": {},
             }])
         if "/rest/v1/model_run_artifacts?run_id=eq" in url:
             return FakeResponse(200, [
-                {"artifact_type": "skim_matrix", "file_url": f"local://{self.skim_path}", "metadata_json": {}},
-                {"artifact_type": "zone_attributes", "file_url": f"local://{self.za_path}", "metadata_json": {}},
-                {"artifact_type": "network_setup_summary", "file_url": f"local://{self.setup_path}", "metadata_json": {}},
+                {**_source_owner("12345678-1234-4123-8123-123456789abc"), "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", "stage_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "skim_matrix", "file_url": f"local://{self.skim_path}", "file_size_bytes": Path(self.skim_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.skim_path).read_bytes()).hexdigest(), "metadata_json": {}},
+                {**_source_owner("12345678-1234-4123-8123-123456789abc"), "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2", "stage_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "zone_attributes", "file_url": f"local://{self.za_path}", "file_size_bytes": Path(self.za_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.za_path).read_bytes()).hexdigest(), "metadata_json": {}},
+                {**_source_owner("12345678-1234-4123-8123-123456789abc"), "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3", "stage_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "network_setup_summary", "file_url": f"local://{self.setup_path}", "file_size_bytes": Path(self.setup_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.setup_path).read_bytes()).hexdigest(), "metadata_json": {}},
             ])
         if "model_run_stages" in url and "status=neq.succeeded" in url:
             return FakeResponse(200, [])
@@ -97,7 +102,7 @@ class FakeRequests:
         self.calls.append(("PATCH", url, json))
         if "status=eq.queued" in url:
             return FakeResponse(200, [{"id": "stage-1", **json}] if self.claim_returns_rows else [])
-        return FakeResponse(200, [{"id": "stage-1" if "model_run_stages" in url else "run-1", **json}])
+        return FakeResponse(200, [{"id": "stage-1" if "model_run_stages" in url else "12345678-1234-4123-8123-123456789abc", **json}])
 
     def post(self, url, headers=None, json=None, data=None, timeout=None):
         self.calls.append(("POST", url, json if json is not None else data))
@@ -112,19 +117,165 @@ class FakeRequests:
 
 
 def make_stage():
-    return {"id": "stage-1", "run_id": "run-1", "stage_name": supabase_poll.STAGE_BUNDLE_PREFLIGHT, "sort_order": 4, "status": "queued"}
+    return {"id": "stage-1", "run_id": "12345678-1234-4123-8123-123456789abc", "stage_name": supabase_poll.STAGE_BUNDLE_PREFLIGHT, "sort_order": 4, "status": "queued"}
+
+
+class RunWorkspaceTests(unittest.TestCase):
+    def test_full_run_identity_and_repeat_execution_preserve_previous_files(self):
+        first = "12345678-1234-4123-8123-123456789abc"
+        second = "12345678-1234-4567-8567-987654321abc"
+        with tempfile.TemporaryDirectory() as root, mock.patch.object(supabase_poll, "ACTIVITYSIM_WORK_DIR", root):
+            legacy = Path(root, first[:12]); legacy.mkdir()
+            (legacy / "original.txt").write_text("legacy")
+            paths = []
+            for run in (first, second, first):
+                directory = Path(supabase_poll.create_run_workspace(run))
+                self.assertEqual(directory.parent, Path(root, run))
+                paths.append(directory)
+                (directory / "owner.txt").write_text(run)
+            self.assertEqual(len(set(paths)), 3)
+            for directory, run in zip(paths, (first, second, first)):
+                self.assertEqual((directory / "owner.txt").read_text(), run)
+            self.assertEqual((legacy / "original.txt").read_text(), "legacy")
+
+    def test_bad_identity_cannot_claim(self):
+        with mock.patch.object(supabase_poll, "sb_claim_stage", return_value=False) as claim:
+            for identity in ("../outside", "12345678-123", "12345678-1234-4123-8123-123456789ABC"):
+                stage = make_stage(); stage["run_id"] = identity
+                with self.assertRaises(ValueError):
+                    supabase_poll.process_stage(stage)
+            claim.assert_not_called()
+
+
+class HandoffCopyTests(unittest.TestCase):
+    def test_registered_bytes_are_retained_independently_of_source_changes(self):
+        run = "12345678-1234-4123-8123-123456789abc"
+        with tempfile.TemporaryDirectory() as root, mock.patch.dict(os.environ, {"AEQ_WORK_DIR": root}):
+            source = Path(root, "runs", run, "input.csv"); source.parent.mkdir(parents=True)
+            source.write_bytes(b"original")
+            destination = Path(root, "execution"); destination.mkdir()
+            row = {**_source_owner(run), "id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": 8, "content_hash": hashlib.sha256(b"original").hexdigest()}
+            retained = Path(supabase_poll._retain_handoff_file([row], "zone_attributes", run, str(destination)))
+            source.write_bytes(b"replaced")
+            self.assertEqual(retained.read_bytes(), b"original")
+
+    def test_producer_must_be_completed_and_current_before_copy(self):
+        run = "12345678-1234-4123-8123-123456789abc"
+        attempt = "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+        with tempfile.TemporaryDirectory() as root, mock.patch.dict(os.environ, {"AEQ_WORK_DIR": root}):
+            source = Path(root, "runs", run, "input"); source.parent.mkdir(parents=True); source.write_bytes(b"ok")
+            original = {**_source_owner(run), "id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": 2, "content_hash": hashlib.sha256(b"ok").hexdigest()}
+            for index, patch in enumerate([{"status": "running"}, {"status": "failed"}, {"run_id": attempt}, {"id": attempt}, {"attempt_managed": None}, {"attempt_managed": True, "active_attempt_id": attempt}, {"active_attempt_id": attempt}]):
+                row = {**original, "model_run_stages": {**original["model_run_stages"], **patch}}
+                directory = Path(root, str(index)); directory.mkdir()
+                with self.subTest(patch=patch), self.assertRaises((RuntimeError, ValueError)):
+                    supabase_poll._retain_handoff_file([row], "zone_attributes", run, str(directory))
+                self.assertEqual(list(directory.iterdir()), [])
+            managed = {**original, "attempt_id": attempt, "model_run_stages": {**original["model_run_stages"], "attempt_managed": True, "active_attempt_id": attempt}}
+            directory = Path(root, "current"); directory.mkdir()
+            self.assertEqual(Path(supabase_poll._retain_handoff_file([managed], "zone_attributes", run, str(directory))).read_bytes(), b"ok")
+            managed["model_run_stages"]["active_attempt_id"] = run
+            directory = Path(root, "revoked"); directory.mkdir()
+            with self.assertRaisesRegex(RuntimeError, "inactive attempt"):
+                supabase_poll._retain_handoff_file([managed], "zone_attributes", run, str(directory))
+            self.assertEqual(list(directory.iterdir()), [])
+
+    def test_boolean_size_cannot_describe_empty_bytes(self):
+        run = "12345678-1234-4123-8123-123456789abc"
+        with tempfile.TemporaryDirectory() as root, mock.patch.dict(os.environ, {"AEQ_WORK_DIR": root}):
+            source = Path(root, "runs", run, "empty"); source.parent.mkdir(parents=True)
+            source.write_bytes(b"")
+            destination = Path(root, "execution"); destination.mkdir()
+            row = {**_source_owner(run), "id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": False, "content_hash": hashlib.sha256(b"").hexdigest()}
+            with self.assertRaisesRegex(RuntimeError, "byte size is unavailable"):
+                supabase_poll._retain_handoff_file([row], "zone_attributes", run, str(destination))
+
+    def test_scope_hash_size_and_inventory_faults_are_refused(self):
+        run = "12345678-1234-4123-8123-123456789abc"
+        with tempfile.TemporaryDirectory() as root, mock.patch.dict(os.environ, {"AEQ_WORK_DIR": root}):
+            source = Path(root, "runs", run, "input.csv"); source.parent.mkdir(parents=True)
+            source.write_bytes(b"original")
+            outside = Path(root, "other.csv"); outside.write_bytes(b"original")
+            linked = source.parent / "linked.csv"; linked.symlink_to(outside)
+            row = {**_source_owner(run), "id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": 8, "content_hash": hashlib.sha256(b"original").hexdigest()}
+            bad_rows = [[{**row, **patch}] for patch in [
+                {"run_id": "12345678-1234-4567-8567-987654321abc"},
+                {"file_url": "local://" + str(outside)}, {"file_url": "local://" + str(linked)},
+                {"content_hash": None}, {"content_hash": "0" * 64},
+                {"file_size_bytes": None}, {"file_size_bytes": True}, {"file_size_bytes": 7}, {"file_size_bytes": 9},
+            ]] + [[row, row], [], [None]]
+            for index, rows in enumerate(bad_rows):
+                with self.subTest(index=index):
+                    destination = Path(root, str(index)); destination.mkdir()
+                    with self.assertRaises((RuntimeError, ValueError)):
+                        supabase_poll._retain_handoff_file(rows, "zone_attributes", run, str(destination))
 
 
 class SupabasePollTests(unittest.TestCase):
     def setUp(self):
         self._fixdir = tempfile.mkdtemp(prefix="astest-fix-")
-        za, skim, setup = _write_fixtures(self._fixdir)
+        self._root_env = mock.patch.dict(os.environ, {"AEQ_WORK_DIR": self._fixdir})
+        self._root_env.start()
+        source_dir = Path(self._fixdir, "runs", "12345678-1234-4123-8123-123456789abc")
+        source_dir.mkdir(parents=True)
+        za, skim, setup = _write_fixtures(str(source_dir))
         self.fake = FakeRequests(za, skim, setup)
         self._patcher = mock.patch.object(supabase_poll, "requests", self.fake)
         self._patcher.start()
 
     def tearDown(self):
         self._patcher.stop()
+        self._root_env.stop()
+
+    def test_normal_preflight_retains_prior_execution_files(self):
+        stage = make_stage()
+        with tempfile.TemporaryDirectory() as root, mock.patch.object(supabase_poll, "ACTIVITYSIM_WORK_DIR", root):
+            legacy = Path(root, stage["run_id"][:12]); legacy.mkdir()
+            (legacy / "legacy.txt").write_text("untouched")
+            supabase_poll.process_stage(stage)
+            executions = list(Path(root, stage["run_id"]).iterdir())
+            self.assertEqual(len(executions), 1)
+            retained = executions[0] / "retained.txt"
+            retained.write_text("first execution")
+            supabase_poll.process_stage(stage)
+            self.assertEqual(len(list(Path(root, stage["run_id"]).iterdir())), 2)
+            self.assertEqual(retained.read_text(), "first execution")
+            self.assertEqual((legacy / "legacy.txt").read_text(), "untouched")
+            for execution in Path(root, stage["run_id"]).iterdir():
+                manifest = json.loads((execution / "screening/bundle_manifest.json").read_text())
+                self.assertEqual(manifest["run_name"], "behavioral-" + stage["run_id"])
+                self.assertEqual(manifest["model_run_id"], stage["run_id"])
+                self.assertEqual(manifest["consumer_stage_id"], stage["id"])
+                records = self.fake.get("/rest/v1/model_run_artifacts?run_id=eq." + stage["run_id"]).json()
+                expected = [{key: row[key] for key in ("id", "run_id", "stage_id", "attempt_id", "artifact_type", "content_hash", "file_size_bytes", "model_run_stages")} for row in records]
+                self.assertEqual(manifest["source_artifacts"], expected)
+                self.assertEqual(len(manifest["materialized_files"]), 3)
+                for item in manifest["materialized_files"]:
+                    data = (execution / "screening" / item["path"]).read_bytes()
+                    self.assertEqual(item["sha256"], hashlib.sha256(data).hexdigest())
+                    self.assertEqual(item["bytes"], len(data))
+                adapted = next(item for item in manifest["materialized_files"] if item["path"].endswith("zone_attributes.csv"))
+                self.assertEqual(adapted["transformation"], "zone_attributes_adapter")
+                original = next(item for item in expected if item["artifact_type"] == "zone_attributes")
+                self.assertNotEqual(adapted["sha256"], original["content_hash"])
+                copied = list(execution.glob("behavioral_demand_prototype/**/source_screening_bundle_manifest.json"))
+                self.assertEqual(len(copied), 1)
+                self.assertEqual(json.loads(copied[0].read_text()), manifest)
+
+    def test_handoff_query_retains_identity_and_byte_fields(self):
+        supabase_poll.sb_get_run_artifacts(make_stage()["run_id"])
+        url = self.fake.calls[-1][1]
+        self.assertIn("run_id=eq." + make_stage()["run_id"], url)
+        self.assertEqual(url.split("&select=")[1], "id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,model_run_stages!inner(id,run_id,status,attempt_managed,active_attempt_id)")
+
+    def test_unverified_handoff_never_reaches_preflight_materialization(self):
+        stage = make_stage()
+        rows = supabase_poll.sb_get_run_artifacts(stage["run_id"])
+        rows[0]["content_hash"] = "0" * 64
+        with mock.patch.object(supabase_poll, "sb_get_run_artifacts", return_value=rows), mock.patch.object(supabase_poll, "_materialize_screening_dir") as materialize:
+            with self.assertRaisesRegex(RuntimeError, "bytes differ"):
+                supabase_poll.run_bundle_and_preflight_stage(stage["run_id"], {"corridor_geojson": {"type": "Polygon"}}, stage["id"])
+            materialize.assert_not_called()
 
     # ---- claim semantics -------------------------------------------------
     def test_claim_returns_true_when_rows_present(self):
@@ -197,7 +348,7 @@ class SupabasePollTests(unittest.TestCase):
         def get_no_artifacts(url, headers=None, timeout=None):
             if "/rest/v1/model_runs?id=eq" in url:
                 return FakeResponse(200, [{
-                    "id": "run-1", "workspace_id": "ws-1",
+                    "id": "12345678-1234-4123-8123-123456789abc", "workspace_id": "ws-1",
                     "corridor_geojson": {"type": "Polygon", "coordinates": []},
                     "query_text": "q", "engine_key": "behavioral_demand",
                     "run_title": "x", "input_snapshot_json": {},
@@ -279,7 +430,7 @@ class SupabasePollTests(unittest.TestCase):
                 "availability_status": "available",
                 "totals": {"households": 100, "persons": 250, "tours": 400, "trips": 900},
             }, f)
-        n = supabase_poll._write_executed_behavioral_kpis("run-1", {"kpi_summary_path": summary_path})
+        n = supabase_poll._write_executed_behavioral_kpis("12345678-1234-4123-8123-123456789abc", {"kpi_summary_path": summary_path})
         self.assertEqual(n, 4)
         kpis = [b for m, url, b in self.fake.calls if m == "POST" and url.endswith("/rest/v1/model_run_kpis")]
         names = {k["kpi_name"] for k in kpis}
@@ -293,7 +444,7 @@ class SupabasePollTests(unittest.TestCase):
         summary_path = os.path.join(self._fixdir, "kpi_summary_empty.json")
         with open(summary_path, "w") as f:
             json.dump({"availability_status": None, "totals": {"households": None, "persons": None, "tours": None, "trips": None}}, f)
-        n = supabase_poll._write_executed_behavioral_kpis("run-1", {"kpi_summary_path": summary_path})
+        n = supabase_poll._write_executed_behavioral_kpis("12345678-1234-4123-8123-123456789abc", {"kpi_summary_path": summary_path})
         self.assertEqual(n, 0)
 
     def test_executed_kpi_provenance_names_the_accepted_component(self):
@@ -305,7 +456,7 @@ class SupabasePollTests(unittest.TestCase):
             }, f)
 
         supabase_poll._write_executed_behavioral_kpis(
-            "run-1",
+            "12345678-1234-4123-8123-123456789abc",
             {"kpi_summary_path": summary_path},
             [{"component": "auto_ownership"}],
         )
@@ -317,7 +468,7 @@ class SupabasePollTests(unittest.TestCase):
         def get_no_corridor(url, headers=None, timeout=None):
             if "/rest/v1/model_runs?id=eq" in url:
                 return FakeResponse(200, [{
-                    "id": "run-1", "workspace_id": "ws-1", "corridor_geojson": None,
+                    "id": "12345678-1234-4123-8123-123456789abc", "workspace_id": "ws-1", "corridor_geojson": None,
                     "query_text": None, "engine_key": "behavioral_demand",
                     "run_title": "x", "input_snapshot_json": {},
                 }])
