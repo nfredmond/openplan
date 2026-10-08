@@ -89,3 +89,17 @@ the system library path; install it via your OS package manager
 - `model_run_artifacts`: a `volumes_geojson` row whose `file_url` is a private
   `storage://run-artifacts/model-runs/<run-id>/volumes.geojson` path (not a
   public URL); the app resolves it with a service-role download.
+
+## Full run IDs in scratch paths
+
+New worker execution uses `AEQ_WORK_DIR/runs/<full-run-uuid>`. Configure the
+application's `OPENPLAN_WORKER_LOCAL_ROOT` to the same root. Shortened 12-character
+directories remain on disk but are not adopted automatically.
+
+Before upgrading an installation with unfinished runs, finish those runs using
+the existing worker checkout. The new worker refuses a later stage before
+claiming it when only shortened legacy scratch exists. Do not rename a prefix
+directory based on its name alone; it does not prove the complete run identity.
+Legacy `local://` references under shortened paths are refused by the updated
+application. Existing private Storage references keep their original identity.
+Automated reconciliation of legacy local files remains unfinished.

@@ -61,7 +61,7 @@ describe("workerLocalRoot", () => {
     expect(workerLocalRoot()).toBeNull();
     process.env.OPENPLAN_WORKER_LOCAL_ROOT = "/srv/runs";
     expect(workerLocalRoot()).toBe("/srv/runs");
-    expect(resolveRunWorkDir("/srv/runs", "abcdef0123456789")).toBe("/srv/runs/runs/abcdef012345");
+    expect(resolveRunWorkDir("/srv/runs", "12345678-1234-4123-8123-123456789abc")).toBe("/srv/runs/runs/12345678-1234-4123-8123-123456789abc");
   });
 });
 

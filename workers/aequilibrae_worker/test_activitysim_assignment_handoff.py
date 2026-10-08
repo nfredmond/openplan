@@ -348,7 +348,7 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
     with tempfile.TemporaryDirectory() as tmp:
         work_root = Path(tmp)
         run_id = "11111111-1111-4111-8111-111111111111"
-        run_dir = work_root / "runs" / run_id[:12]
+        run_dir = work_root / "runs" / run_id
         run_dir.mkdir(parents=True)
         first_profile = main.resolve_assignment_profile(
             {
@@ -541,7 +541,7 @@ def test_uncalibrated_assignment_handoff_reuses_the_canonical_baseline_digest():
     with tempfile.TemporaryDirectory() as tmp:
         work_root = Path(tmp)
         run_id = "11111111-1111-4111-8111-111111111111"
-        run_dir = work_root / "runs" / run_id[:12]
+        run_dir = work_root / "runs" / run_id
         run_dir.mkdir(parents=True)
         profile = main.resolve_assignment_profile({})
         baseline_record = identity_record(0.0004, profile=profile)
@@ -616,7 +616,7 @@ def test_assignment_handoff_refuses_an_unverified_first_network_digest():
     with tempfile.TemporaryDirectory() as tmp:
         work_root = Path(tmp)
         run_id = "11111111-1111-4111-8111-111111111111"
-        run_dir = work_root / "runs" / run_id[:12]
+        run_dir = work_root / "runs" / run_id
         run_dir.mkdir(parents=True)
         profile = main.resolve_assignment_profile({})
         bad_record = identity_record(0.0004, profile=profile)
@@ -668,7 +668,7 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
     with tempfile.TemporaryDirectory() as tmp:
         work_root = Path(tmp)
         run_id = "11111111-1111-4111-8111-111111111111"
-        run_dir = work_root / "runs" / run_id[:12]
+        run_dir = work_root / "runs" / run_id
         (run_dir / "run_output").mkdir(parents=True)
         profile = main.resolve_assignment_profile({})
         calibrated_record = identity_record(
@@ -782,7 +782,7 @@ def test_uncalibrated_agreement_compares_both_canonical_baseline_digests():
     with tempfile.TemporaryDirectory() as tmp:
         work_root = Path(tmp)
         run_id = "11111111-1111-4111-8111-111111111111"
-        run_dir = work_root / "runs" / run_id[:12]
+        run_dir = work_root / "runs" / run_id
         run_dir.mkdir(parents=True)
         profile = main.resolve_assignment_profile({})
         first_record = identity_record(0.0004, profile=profile)
@@ -874,7 +874,7 @@ def test_uncalibrated_agreement_refuses_a_missing_or_different_baseline_digest()
         with tempfile.TemporaryDirectory() as tmp:
             work_root = Path(tmp)
             run_id = "11111111-1111-4111-8111-111111111111"
-            run_dir = work_root / "runs" / run_id[:12]
+            run_dir = work_root / "runs" / run_id
             run_dir.mkdir(parents=True)
             first_record = identity_record(0.0004, profile=profile)
             second_record = identity_record(0.0003, profile=profile)
@@ -929,7 +929,7 @@ def test_agreement_refuses_mismatched_calibrated_network_settings():
     with tempfile.TemporaryDirectory() as tmp:
         work_root = Path(tmp)
         run_id = "11111111-1111-4111-8111-111111111111"
-        run_dir = work_root / "runs" / run_id[:12]
+        run_dir = work_root / "runs" / run_id
         run_dir.mkdir(parents=True)
         profile = main.resolve_assignment_profile({})
         calibrated_record = identity_record(
@@ -999,7 +999,7 @@ def test_uncalibrated_agreement_refuses_missing_or_mismatched_assignment_profile
         with tempfile.TemporaryDirectory() as tmp:
             work_root = Path(tmp)
             run_id = "11111111-1111-4111-8111-111111111111"
-            run_dir = work_root / "runs" / run_id[:12]
+            run_dir = work_root / "runs" / run_id
             run_dir.mkdir(parents=True)
             first_record = identity_record(0.0003, profile=base_profile)
             second_identity = identity_record(0.0002, profile=base_profile)

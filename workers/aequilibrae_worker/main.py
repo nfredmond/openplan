@@ -6248,6 +6248,13 @@ def process_stage(stage: dict) -> bool:
                 _WORKER_HEARTBEAT.set_current_work(None)
 
 
+def run_work_directory(run_id: str) -> str:
+    """Use the complete database identity; never adopt ambiguous legacy scratch."""
+    if not isinstance(run_id, str) or str(uuid.UUID(run_id)) != run_id:
+        raise ValueError("Model run identity must be a canonical UUID")
+    return os.path.join(RUN_WORK_ROOT, "runs", run_id)
+
+
 def _claim_and_run_stage(stage: dict) -> bool:
     """The body of `process_stage`, which owns the serialization above it.
 
@@ -6260,6 +6267,10 @@ def _claim_and_run_stage(stage: dict) -> bool:
 
     print(f"[{time.strftime('%X')}] Processing: {stage_name} (run={run_id[:8]}…)")
 
+    work_dir = run_work_directory(run_id)
+    if stage_name != "AequilibraE Setup" and not os.path.exists(work_dir) and os.path.exists(os.path.join(RUN_WORK_ROOT, "runs", run_id[:12])):
+        raise RuntimeError("Legacy model scratch needs explicit full-run identity reconciliation before this stage can be claimed")
+
     # Atomic claim: only one worker may transition this stage queued -> running.
     claimed = sb_claim_stage(
         stage_id,
@@ -6271,7 +6282,6 @@ def _claim_and_run_stage(stage: dict) -> bool:
     sb_patch_run(run_id, {"status": "running"})
 
     # Each run gets its own working directory
-    work_dir = os.path.join(RUN_WORK_ROOT, "runs", run_id[:12])
     os.makedirs(work_dir, exist_ok=True)
     state_file = os.path.join(work_dir, f"state.json")
 

@@ -226,7 +226,7 @@ describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/downloa
   });
 
   it("404s local:// references when OPENPLAN_WORKER_LOCAL_ROOT is unset", async () => {
-    setArtifact(`local:///srv/worker/runs/${MODEL_RUN_ID.slice(0, 12)}/link_volumes.csv`);
+    setArtifact(`local:///srv/worker/runs/${MODEL_RUN_ID}/link_volumes.csv`);
     const res = await downloadArtifact(request(), routeContext());
     expect(res.status).toBe(404);
     expect(readFileMock).not.toHaveBeenCalled();
@@ -234,7 +234,7 @@ describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/downloa
 
   it("streams run-local files as attachments in dev", async () => {
     vi.stubEnv("OPENPLAN_WORKER_LOCAL_ROOT", "/srv/worker");
-    const runDirPath = `/srv/worker/runs/${MODEL_RUN_ID.slice(0, 12)}/run_output/link_volumes.csv`;
+    const runDirPath = `/srv/worker/runs/${MODEL_RUN_ID}/run_output/link_volumes.csv`;
     setArtifact(`local://${runDirPath}`);
     readFileMock.mockResolvedValue(Buffer.from("link_id,volume\n1,42\n"));
 
@@ -246,12 +246,23 @@ describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/downloa
     expect(res.headers.get("content-disposition")).toContain('filename="link_volumes.csv"');
   });
 
+  it("refuses another run with the same shortened prefix and legacy prefix paths", async () => {
+    vi.stubEnv("OPENPLAN_WORKER_LOCAL_ROOT", "/srv/worker");
+    const otherRun = MODEL_RUN_ID.slice(0, -1) + (MODEL_RUN_ID.endsWith("1") ? "2" : "1");
+    for (const directory of [otherRun, MODEL_RUN_ID.slice(0, 12)]) {
+      setArtifact(`local:///srv/worker/runs/${directory}/run_output/link_volumes.csv`);
+      const res = await downloadArtifact(request(), routeContext());
+      expect(res.status).toBe(404);
+    }
+    expect(readFileMock).not.toHaveBeenCalled();
+  });
+
   it("refuses local paths outside this run's work dir", async () => {
     vi.stubEnv("OPENPLAN_WORKER_LOCAL_ROOT", "/srv/worker");
     for (const fileUrl of [
       "local:///app/.env",
       "local:///srv/worker/runs/999999999999/link_volumes.csv",
-      `local:///srv/worker/runs/${MODEL_RUN_ID.slice(0, 12)}/../escape.csv`,
+      `local:///srv/worker/runs/${MODEL_RUN_ID}/../escape.csv`,
     ]) {
       setArtifact(fileUrl);
       const res = await downloadArtifact(request(), routeContext());

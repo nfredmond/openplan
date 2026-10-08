@@ -233,6 +233,40 @@ predecessor-stage files. Exercise actual filesystem reads and both normal worker
 entry points. The command recovery CLI must not resume model execution until
 this file-ownership boundary and all attempt-aware writes are connected.
 
+## Full run scratch identities
+
+The worker and application now use complete canonical run UUIDs for local
+scratch directories. The normal worker validates identity before claiming a
+stage. Application local reads, downloads, KPI readers, agreement readers and
+exports share the updated directory resolver. The change does not rename or
+delete existing files and does not fall back to shortened directories.
+
+An unfinished stage whose full directory is missing while legacy scratch exists
+is refused before the claim. This leaves the database state and old files
+unchanged. Existing shortened local artifact references are now refused by the
+application. Immutable Storage references are unchanged. Finish in-flight legacy
+runs with their existing worker before upgrading; do not rename a prefix directory
+or rewrite a registered artifact reference without independently establishing
+its complete run ownership. Automated legacy reconciliation remains unfinished.
+This is a compatibility boundary, not a completed self-service recovery feature.
+
+Three scratch tests exercise the actual normal dispatcher with synthetic setup,
+real temporary files, two full run IDs sharing a prefix, malformed IDs and an
+in-flight legacy directory. Four app suites pass 52 tests, including actual
+filesystem byte reads and HTTP download-route refusal before file access. Two
+adjacent KPI suites pass six tests. The 27 assignment-handoff checks and 38 push
+checks also pass. Focused ESLint passes. Harmless changes preserve the result;
+five adverse controls restore worker/app truncation, bypass their UUID checks
+or bypass the pre-claim legacy refusal. Each fails its targeted assertion.
+
+These checks do not execute a scientific model or exercise a rebuilt worker
+container. Full IDs remove prefix collisions; they do not prove filesystem
+symlink safety, deployment separation, attempt-specific file ownership, concurrent
+process reconciliation or automatic model restart. Those boundaries remain open.
+The first app-test invocation lacked installed dependencies and failed before
+running tests. The passing run uses this checkout's pinned Vitest 4.1.11 after
+`npm ci --ignore-scripts`; it is not a production build result.
+
 ## Remaining connection work
 
 Normal dispatchers still use their current receipt-checked legacy writes. Before
