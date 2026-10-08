@@ -47,6 +47,7 @@ for name, sql, expected_failure in [
     ("ignore-relaunch-scope", source.replace('v_run.workspace_id IS DISTINCT FROM p_workspace_id', 'false'), 'cross workspace relaunch accepted'),
     ("ignore-relaunch-snapshot", source.replace('v_run.updated_at IS DISTINCT FROM p_expected_updated_at', 'false'), 'stale relaunch accepted'),
     ("ignore-retained-kpi", source.replace('EXISTS(SELECT 1 FROM public.model_run_kpis WHERE run_id=p_run_id)', 'false'), 'output-bearing relaunch accepted'),
+    ("omit-relaunch-receipt", source.replace('INSERT INTO public.model_run_relaunch_receipts VALUES(p_request_id,v_request,v_response,v_prior_run,v_prior_stages,clock_timestamp());', 'NULL;'), 'relaunch receipt boundary omitted'),
     ("restored", source, None),
 ]:
     result = subprocess.run(command, input="BEGIN; SET LOCAL statement_timeout=10000; SET LOCAL lock_timeout=1000;\n" + sql + "\n" + cases + "\nROLLBACK;\n", text=True, capture_output=True, timeout=40)

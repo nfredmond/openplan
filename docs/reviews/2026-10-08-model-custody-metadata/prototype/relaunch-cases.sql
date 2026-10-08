@@ -1,3 +1,44 @@
+-- Capture complete retained records before a forced failure at receipt insertion.
+CREATE TEMP TABLE relaunch_before_state AS
+SELECT
+ (SELECT to_jsonb(r) FROM model_runs r WHERE id='7c2f1f61-997e-4421-b46b-0083d7b1a762') AS run,
+ (SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM model_run_stages s WHERE run_id='7c2f1f61-997e-4421-b46b-0083d7b1a762') AS stages,
+ (SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM model_stage_attempts a WHERE run_id='7c2f1f61-997e-4421-b46b-0083d7b1a762') AS attempts;
+CREATE FUNCTION public.prototype_reject_relaunch_receipt() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ RAISE EXCEPTION 'synthetic relaunch receipt refusal';
+END;
+$$;
+CREATE TRIGGER prototype_reject_relaunch_receipt BEFORE INSERT ON model_run_relaunch_receipts
+ FOR EACH ROW EXECUTE FUNCTION public.prototype_reject_relaunch_receipt();
+SET LOCAL ROLE service_role;
+DO $test$
+DECLARE run_row public.model_runs%ROWTYPE;
+BEGIN
+ SELECT * INTO run_row FROM model_runs WHERE id='7c2f1f61-997e-4421-b46b-0083d7b1a762';
+ BEGIN
+  PERFORM public.relaunch_model_run_attempts('20edb693-8e2a-4a85-8616-d3e7dc65e24c',run_row.id,run_row.workspace_id,run_row.updated_at,'{"synthetic":"refreshed"}');
+  RAISE EXCEPTION 'relaunch receipt boundary omitted';
+ EXCEPTION WHEN OTHERS THEN
+  IF SQLERRM <> 'synthetic relaunch receipt refusal' THEN RAISE; END IF;
+ END;
+END;
+$test$;
+RESET ROLE;
+DO $test$
+DECLARE saved relaunch_before_state%ROWTYPE;
+BEGIN
+ SELECT * INTO saved FROM relaunch_before_state;
+ IF saved.run IS DISTINCT FROM (SELECT to_jsonb(r) FROM model_runs r WHERE id='7c2f1f61-997e-4421-b46b-0083d7b1a762') THEN RAISE EXCEPTION 'relaunch parent escaped rollback'; END IF;
+ IF saved.stages IS DISTINCT FROM (SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM model_run_stages s WHERE run_id='7c2f1f61-997e-4421-b46b-0083d7b1a762') THEN RAISE EXCEPTION 'relaunch stages escaped rollback'; END IF;
+ IF saved.attempts IS DISTINCT FROM (SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM model_stage_attempts a WHERE run_id='7c2f1f61-997e-4421-b46b-0083d7b1a762') THEN RAISE EXCEPTION 'relaunch attempts escaped rollback'; END IF;
+ IF EXISTS(SELECT 1 FROM model_run_relaunch_receipts) THEN RAISE EXCEPTION 'relaunch receipt escaped rollback'; END IF;
+ IF EXISTS(SELECT 1 FROM model_run_write_context) OR EXISTS(SELECT 1 FROM model_stage_write_context) THEN RAISE EXCEPTION 'relaunch rollback context leaked'; END IF;
+END;
+$test$;
+DROP TRIGGER prototype_reject_relaunch_receipt ON model_run_relaunch_receipts;
+DROP FUNCTION public.prototype_reject_relaunch_receipt();
+DROP TABLE relaunch_before_state;
 SET LOCAL ROLE service_role;
 DO $test$
 DECLARE run_row public.model_runs%ROWTYPE; result jsonb; old_attempt uuid; new_attempt uuid;

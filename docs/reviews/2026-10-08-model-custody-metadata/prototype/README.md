@@ -113,3 +113,11 @@ Native checks prove scope and stale-state refusal, changed-payload refusal, reta
 Relaunch currently refuses any run with artifact, KPI, claim-decision or validation-result records. A native null-valued KPI fixture proves refusal without deleting or changing that record or its failed run. This is an explicit incomplete boundary, not the final recovery design. Attempt-aware output storage and readers must retain and distinguish previous results before this refusal can be removed. Legacy output insertion can still race this check until output writes join the protocol.
 
 The command is not connected to the application launch route, access-control/action approval, worker dispatch or either worker package. Relaunch concurrency, a forced mid-transaction relaunch failure, populated output retention and installed recovery remain unproved. The rollback-only runner leaves no relaunch receipt table installed. Do not deploy this prototype as the completed lifecycle.
+
+## Relaunch rollback checkpoint
+
+A temporary trigger now refuses the final relaunch receipt insertion, after the command has attempted its parent and stage updates. Independent SQL compares complete run, ordered stage and ordered attempt JSON records against pre-call snapshots. All remain identical after the refusal. No relaunch receipt or temporary authorization remains. Removing the trigger allows the same request and payload to succeed through the existing retry tests.
+
+Baseline, harmless and restored cases pass. Twenty-one adverse controls detect their intended defects; omitting receipt insertion fails at `relaunch receipt boundary omitted`. The fixture starts from a failed run whose attempts were already revoked, so this check does not demonstrate rollback of a newly applied active-attempt revocation. The full-record comparison proves preservation of the retained attempt records in this fixture.
+
+This supersedes the earlier missing forced-failure boundary. Relaunch concurrency, output retention, active-worker interruption and actual route/worker integration remain open. All temporary fault-injection objects and data roll back with the native test transaction.
