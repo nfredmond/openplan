@@ -1,0 +1,75 @@
+{
+  "source_sha256": "5aa38d6b409f15326813cc1edfc8c33fee0f5e2644f163588e52c26e8e64e18f",
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "queued_blocked_skipped": true,
+        "stale_blocker_refused": true,
+        "running_and_terminal_targets_preserved": true,
+        "exact_retry": true,
+        "changed_request_scope_and_order_refused": true,
+        "no_new_attempt_or_execution_start": true,
+        "parent_unchanged": true,
+        "permissions_checked": true,
+        "receipt_failure_atomic_and_retryable": true,
+        "rolled_back": true
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "queued_blocked_skipped": true,
+        "stale_blocker_refused": true,
+        "running_and_terminal_targets_preserved": true,
+        "exact_retry": true,
+        "changed_request_scope_and_order_refused": true,
+        "no_new_attempt_or_execution_start": true,
+        "parent_unchanged": true,
+        "permissions_checked": true,
+        "receipt_failure_atomic_and_retryable": true,
+        "rolled_back": true
+      }
+    },
+    {
+      "control": "overwrite-running",
+      "expected_failure": "Skip outcome differs"
+    },
+    {
+      "control": "ignore-blocker-change",
+      "expected_failure": "Skip outcome differs"
+    },
+    {
+      "control": "ignore-request-identity",
+      "expected_failure": "Changed request accepted"
+    },
+    {
+      "control": "ignore-workspace",
+      "expected_failure": "Wrong workspace accepted"
+    },
+    {
+      "control": "ignore-order",
+      "expected_failure": "Later predecessor accepted"
+    },
+    {
+      "control": "omit-receipt",
+      "expected_failure": "Exact retry changed"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "queued_blocked_skipped": true,
+        "stale_blocker_refused": true,
+        "running_and_terminal_targets_preserved": true,
+        "exact_retry": true,
+        "changed_request_scope_and_order_refused": true,
+        "no_new_attempt_or_execution_start": true,
+        "parent_unchanged": true,
+        "permissions_checked": true,
+        "receipt_failure_atomic_and_retryable": true,
+        "rolled_back": true
+      }
+    }
+  ],
+  "limits": "Rollback-only native SQL. No concurrent processes, worker dispatch, HTTP recovery, migration installation, browser or scientific acceptance."
+}

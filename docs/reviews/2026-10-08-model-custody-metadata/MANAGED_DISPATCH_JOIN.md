@@ -97,3 +97,36 @@ checkout. Do not describe its future implementation as part of PR #170 or as
 already released. The earlier attempt-ownership, worker-command and recovery
 records remain applicable; this inventory narrows the next code inspection,
 not the v1 destination.
+
+## Blocked-stage transaction prototype
+
+`prototype/skip-blocked-stage.sql` defines a separate operation for unclaimed
+queued work. It locks the parent and its stages, verifies the named earlier
+predecessor and its expected terminal status, and derives the reason from that
+record. A stale observation returns a retained `not_skipped` receipt. A changed
+payload under an existing request identity is refused. The operation creates
+no execution attempt or start record and leaves the parent unchanged.
+
+This operation does not replace the existing managed failure transaction,
+which already stops outstanding stages. It addresses the legacy dispatcher's
+separate blocked-predecessor path without treating unexecuted work as an attempt.
+The complete managed transition table must still reconcile cancellation and
+dependent failure semantics before normal dispatch switches over.
+
+`prototype/verify_skip_blocked_stage.py` exercises the actual SQL against the
+owned retention fixture database in rollback-only transactions. Baseline,
+harmless-comment and restored cases pass. Six broken variants fail their
+intended assertions: overwriting running work, ignoring a changed predecessor,
+ignoring request identity, ignoring workspace, accepting a later predecessor
+and omitting the retained receipt. A synthetic receipt-insert failure rolls back
+the stage change; the same request succeeds after that failure is removed.
+The verifier confirms the prototype table and function are absent both before
+and after every variant. Results are in `prototype/skip-blocked-stage-controls.json`.
+
+Permissions follow the existing service-only command pattern and the
+[Supabase function guidance](https://supabase.com/docs/guides/database/functions).
+The test checks role grants; it does not invoke the function under each role.
+The cases use new unmanaged synthetic rows. Managed-parent cases, simultaneous
+processes, HTTP uncertainty, worker packaging, journal delivery, migration and
+retention integration remain open. No application database or running worker
+was changed. This prototype is not an installed feature or scientific evidence.
