@@ -3,6 +3,9 @@
 October 8, 2026. This continues roadmap M3/S1 after the assessment delivery
 checkpoint. The V1 contract and scientific acceptance requirements remain intact.
 
+The sections below record successive checkpoints. Later sections supersede
+earlier descriptions of what is connected; they preserve the original evidence.
+
 ## Remaining restart problem
 
 `stage_artifacts` currently generates a new model-output UUID and performs
@@ -303,3 +306,34 @@ Evidence is in `legacy-artifact-worker-native-cli/`,
 under the private proof root. These tests use synthetic output metadata. They do
 not execute a scientific assignment or prove all normal-stage side effects safe
 to replay. Full worker regression for this connection remains pending.
+
+
+## Worker regression and remaining side effects
+
+The first full regression at `80c6e134` passed 74 suites and failed the command
+mutation suite. Its temporary source inventory omitted the newly imported
+`model_legacy_artifact_command.py`, so subprocesses failed before exercising
+their intended assertions. The inventory now includes that dependency and the
+artifact client tests. Four artifact mutation controls also run in this maintained
+suite. All eight mutation tests pass, including harmless source controls.
+
+The corrected full regression passes all 75 worker suites, with none failed or
+not run. `openplan-primary-delivery-workers-fixed-20261008.service` completed
+on October 8 at 07:09:42 Pacific, invocation
+`3dda63ee19f84b28b25b9a4d50ef5344`, at a 172.1 MiB peak under the 1 GiB limit.
+The checkout stayed unchanged throughout that run.
+
+A read-through of the current `stage_artifacts` confirms the remaining M3/S1
+recovery obligations. The stage constructs a new assessment directory and writes
+its computed records before registration. Reentry must load the original
+assessment identity and frozen payloads instead of computing another assessment.
+Five optional nonprimary outputs in the registration loop still use direct
+inserts. The evidence packet and optional zone attributes also use direct
+inserts, followed by a variable set of KPI writes and GeoJSON publication.
+These operations need retained identities and checked delivery or explicit
+reconciliation before restart is enabled. The evidence packet includes a
+creation timestamp, so recomputing it is not an exact retry.
+
+This is an implementation dependency within roadmap M3/S1, not a replacement
+queue or reduced v1 contract. Recovering the primary receipt alone neither
+reexecutes scientific assessment nor establishes current stage ownership.
