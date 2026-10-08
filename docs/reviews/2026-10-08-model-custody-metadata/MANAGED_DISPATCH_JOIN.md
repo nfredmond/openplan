@@ -2533,3 +2533,28 @@ budgets, mode choice and other assignment settings still need their full boundar
 review. The settings have not yet been wired through retained archive custody or
 the complete engine child. Scientific acceptance and dispatch activation remain
 open. GitHub run 37860789460 remained in progress at the latest live poll.
+
+### Retained transit archive and assumptions
+
+`model_transit_inputs` reuses the existing package inventory for an exclusive
+bundle containing `feed.zip` and `transit.json`. The payload records the original
+feed metadata and exact numerical settings. Retention checks the archive against
+the metadata checksum before creating the bundle. Consumption verifies a separate
+package copy, requires the two expected files, and rereads both against their
+recorded sizes/hashes and private-file identities before returning in-memory bytes.
+The caller still establishes producer/run/attempt authority; this local manifest
+is not an execution or registration receipt.
+
+Six new tests cover independent copies and original metadata, checksum mismatch,
+archive/metadata tampering, extra inventory entries, changes after package copying
+and same-size metadata changes. The accepted copy parses and skims the synthetic
+feed using the retained fare. Four targeted faults fail for ignored feed checksum,
+ignored inventory, ignored final read hash and substituted process-default settings;
+baseline, harmless and restored controls pass. See
+`prototype/transit-input-controls.json`. The combined warning-enabled package,
+project and transit suite is recorded in the local execution log.
+
+No live feed is fetched and no database is changed by these checks. Parent artifact
+registration, lost-reply recovery for that registration, the exact selected-feed
+loading adapter, parser-setting custody and the engine channel remain unfinished.
+This bundle does not establish operating-system containment or scientific validity.
