@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parent
-FILES = ('model_legacy_kpi_command.py', 'test_model_legacy_kpi_client.py', 'model_legacy_artifact_command.py', 'test_model_legacy_artifact_client.py', 'model_assessment_values.py', 'model_validation_receipts.py', 'model_receipt_values.py', 'model_publication_values.py', 'test_model_publication_client.py', 'model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py', 'test_model_command_ownership.py', 'model_command_recovery.py', 'test_model_command_recovery.py')
+FILES = ('model_legacy_kpi_command.py', 'test_model_legacy_kpi_client.py', 'model_legacy_artifact_command.py', 'test_model_legacy_artifact_client.py', 'model_assessment_values.py', 'model_validation_receipts.py', 'model_receipt_values.py', 'model_publication_values.py', 'test_model_publication_client.py', 'model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py', 'test_model_command_ownership.py', 'model_command_recovery.py', 'test_model_command_recovery.py', 'test_model_command_inventory.py')
 
 
 class MutationTests(unittest.TestCase):
@@ -114,6 +114,22 @@ class MutationTests(unittest.TestCase):
                 self.assertNotIn('SyntaxError', result.stderr)
                 self.assertNotIn('ModuleNotFoundError', result.stderr)
 
+
+    def test_inventory_faults_cannot_hide_or_promote_local_records(self):
+        cases = [
+            ('model_command_recovery.py', 'deployment_id, include_resolved=True', 'deployment_id, include_resolved=False', 'test_local_inventory'),
+            ('model_command_recovery.py', '            client.checked_receipt(command, response)', '            pass', 'test_corrupt_receipt'),
+            ('model_command_journal.py', "if saved['command']['request_id'] != key or saved['command']['destination'] != stored_destination:", 'if False:', 'test_request_key_mismatch'),
+            ('model_command_recovery.py', "'delivery': 'receipt_retained' if saved['resolved'] else 'unconfirmed'", "'delivery': 'receipt_retained'", 'test_local_inventory'),
+            ('model_command_recovery.py', "'server_state_checked': False", "'server_state_checked': True", 'test_cli_without_credentials'),
+        ]
+        for filename, old, new, boundary in cases:
+            with self.subTest(boundary=boundary, mutation=old):
+                result = self.run_case(filename, old, new, test='test_model_command_inventory.py')
+                self.assertNotEqual(result.returncode, 0, 'Inventory fault escaped checks')
+                self.assertIn('FAIL: ' + boundary, result.stderr)
+                self.assertNotIn('SyntaxError', result.stderr)
+                self.assertNotIn('ModuleNotFoundError', result.stderr)
 
     def test_publication_faults_fail_at_command_or_receipt_boundary(self):
         cases = [

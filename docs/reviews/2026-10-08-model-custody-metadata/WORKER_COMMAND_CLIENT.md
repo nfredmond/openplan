@@ -476,3 +476,38 @@ restored controls pass; removing the summary copy and substituting the wrong
 consumer identity both fail. Controls are retained in
 `model-command-client-20261008-proof/screening-handoff-controls.json`.
 This file-copy test does not establish live artifact authorization or model accuracy.
+
+## Read-only delivery inventory, October 8
+
+`model_command_recovery.py --list-commands` now lists unresolved requests and
+validated retained receipts for one original journal and installation. It uses
+the read-only SQLite path, does not require credentials, sends no request and
+returns no scientific payload. Exact request/receipt hashes support comparison
+with a separately captured recovery inventory. Explicit false flags preserve
+that server state, current ownership and model continuation were not checked.
+Missing journals and invalid records fail the operation. A different installation
+returns no matching records, not proof that another installation has no work.
+
+The journal reader now checks request and destination columns against the saved
+command identity. The existing recovery check remains independent. The initial
+regression run exposed a mutation-test overlap: the new lower check caught the
+corruption before the mutated recovery check ran. A separate reader-result
+fixture now tests that recovery boundary without removing the native journal
+corruption test or weakening either production check.
+
+The 51 command tests pass, including the existing mutation suite and seven new
+inventory tests. Harmless source comments pass. Omitting resolved records,
+skipping receipt validation, skipping journal identity validation, relabeling a
+pending request as confirmed and claiming a server-state check each fail their
+intended assertions. The committed controls and native CLI result are under
+`prototype/command-inventory-controls.json` and
+`prototype/command-inventory-native.json`.
+
+A fresh credential-free CLI process also inspects the KPI receipt produced by
+the native dispatcher proof. It finds one retained receipt and leaves every
+journal row unchanged after the HTTP gateway has been removed. This proves
+local receipt inspection, not current PostgreSQL output existence, whole-run
+inventory completeness, filesystem adversary resistance, current attempt
+ownership or safe model resumption. The first targeted test invocation used an
+incorrect relative file path and did not create or run the new test; the
+corrected invocation and regression results above supersede it.

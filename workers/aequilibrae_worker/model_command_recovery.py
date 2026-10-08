@@ -5,6 +5,7 @@ Selected normal worker writes and calculations retain journals. Listing or
 recovering these records does not establish current ownership or resume a stage.
 """
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -13,9 +14,9 @@ import model_command_client as client
 import model_command_journal as journal
 
 
-def _checked_records(directory, base_url, deployment_id, request_id=None):
+def _checked_records(directory, base_url, deployment_id, request_id=None, *, include_resolved=False):
     bound = client.destination(base_url, deployment_id)
-    records = journal.read_existing(directory, bound, request_id)
+    records = journal.read_existing(directory, bound, request_id, include_resolved=include_resolved)
     for saved in records:
         command = saved['command']
         client.validate_command(command)
@@ -44,6 +45,24 @@ def recover_request(directory, request_id, *, base_url, deployment_id, service_k
                           service_key=service_key, post=post)
 
 
+def command_summaries(directory, *, base_url, deployment_id):
+    """Inventory local requests and checked receipts without transport or payloads."""
+    summaries = []
+    for saved in _checked_records(directory, base_url, deployment_id, include_resolved=True):
+        command = saved['command']
+        response = saved['response']
+        if saved['resolved']:
+            client.checked_receipt(command, response)
+        summaries.append({
+            'request_id': command['request_id'], 'operation': command['operation'],
+            'run_id': command['arguments']['run_id'], 'stage_id': command['arguments'].get('stage_id'),
+            'delivery': 'receipt_retained' if saved['resolved'] else 'unconfirmed',
+            'request_sha256': hashlib.sha256(journal.canonical(command).encode('utf-8')).hexdigest(),
+            'receipt_sha256': hashlib.sha256(journal.canonical(response).encode('utf-8')).hexdigest() if saved['resolved'] else None,
+        })
+    return summaries
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--journal', required=True, type=Path)
@@ -51,11 +70,16 @@ def main(argv=None):
     parser.add_argument('--deployment-id', required=True)
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument('--list-pending', action='store_true')
+    action.add_argument('--list-commands', action='store_true')
     action.add_argument('--list-computations', action='store_true')
     action.add_argument('--request-id')
     args = parser.parse_args(argv)
     try:
-        if args.list_computations:
+        if args.list_commands:
+            print(json.dumps({'commands': command_summaries(
+                args.journal, base_url=args.base_url, deployment_id=args.deployment_id),
+                'server_state_checked': False, 'ownership_checked': False, 'model_resumed': False}))
+        elif args.list_computations:
             import model_stage_computation
             print(json.dumps({'computations': model_stage_computation.summaries(
                 args.journal, base_url=args.base_url, deployment_id=args.deployment_id)}))

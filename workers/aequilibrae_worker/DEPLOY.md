@@ -288,3 +288,23 @@ and [backup and restore](../../openplan/docs/ops/BACKUP_AND_RESTORE.md#model-wor
 Historical reconciliation decisions and full stage continuation remain
 unfinished. Do not change enrollment rows, clear journals or generate replacement
 request IDs to get past that boundary.
+
+## Inventory retained delivery records
+
+Use `--list-commands` with the original journal, base URL and installation
+identity to list both pending requests and saved receipts. This action needs no
+service credential and sends no request. It validates each saved command and
+receipt, returns their hashes and identities, and omits scientific payloads.
+
+```bash
+python3 model_command_recovery.py --journal /path/to/original/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --list-commands
+```
+
+`unconfirmed` means delivery has no retained reply. `receipt_retained` means the
+local receipt matches its saved request. Neither state establishes what the
+server contains now or which worker owns the stage. The output states those
+limits explicitly. Missing journals and invalid records fail inspection; they
+are not reported as an empty successful inventory. A different installation
+returns no matching records. Keep that scope in mind when checking completeness.

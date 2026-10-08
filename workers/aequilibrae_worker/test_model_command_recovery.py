@@ -8,7 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import model_command_recovery as recovery
 import model_command_client as client
 import model_command_journal as journal
@@ -67,6 +67,16 @@ class RecoveryTests(unittest.TestCase):
         post = Mock()
         with self.assertRaisesRegex(ValueError, 'does not match'):
             self.recover(post)
+        post.assert_not_called()
+
+    def test_corrupted_request_identity_from_reader_cannot_dispatch(self):
+        # The recovery boundary must also reject a mismatched reader result.
+        changed = copy.deepcopy(self.cmd)
+        changed['request_id'] = IDS[4]
+        post = Mock()
+        with patch.object(journal, 'read_existing', return_value=[{'command': changed, 'resolved': False, 'response': None}]):
+            with self.assertRaisesRegex(ValueError, 'does not match'):
+                self.recover(post)
         post.assert_not_called()
 
     def test_listing_and_cached_cli_do_not_print_payloads_or_need_credentials(self):
