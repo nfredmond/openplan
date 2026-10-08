@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "variant": "baseline",
+      "completed_run": "1eac93f4-7614-424b-8377-cf465ba02fd1",
+      "lost_claim_run": "d0fcaa9d-191d-440c-b769-87002f8b5da9",
+      "failed_run": "04abafef-4a61-44e4-805e-dcd57bcf7788",
+      "uncertain_state_run": "c3c18277-075c-44d4-8fa4-044aa8f78998",
+      "passed": true
+    },
+    {
+      "variant": "harmless",
+      "completed_run": "99ec0a01-0e82-4503-a558-bf039e5944ab",
+      "lost_claim_run": "5b2b772d-68ce-45a4-8253-ada8a875dfdb",
+      "failed_run": "8f8eac13-5179-4286-8940-98942e9e178f",
+      "uncertain_state_run": "ef1abbdc-5e84-4b15-8785-5e9afd8ad414",
+      "passed": true
+    },
+    {
+      "variant": "lost-reply-swallowed",
+      "caught": "Dispatcher hid committed claim uncertainty"
+    },
+    {
+      "variant": "state-error-swallowed",
+      "caught": "Dispatcher hid local publication uncertainty"
+    },
+    {
+      "variant": "restored",
+      "completed_run": "80194fbd-8c45-449f-b692-496ae8d89c02",
+      "lost_claim_run": "3663e127-b033-42bd-87b9-dfe13ce8118a",
+      "failed_run": "0db56685-dda8-4ccd-8d37-74c58e3266ee",
+      "uncertain_state_run": "2eb655d8-84b8-42a2-8dff-d275fa0f4bc0",
+      "passed": true
+    }
+  ],
+  "http_requests": 220,
+  "gateway_removed": true,
+  "scope": "Actual fetch, readiness, dispatcher, stage runner, HTTP writes, atomic state publication and retained KPI. Synthetic computation suppliers. No real model execution, restart continuation, managed-attempt ownership, Storage, browser, human or scientific acceptance.",
+  "worker_sha256": "1854e3371817919c33c85aa87724c1005d5b37dc8ca1c3306143c4764c739c2e",
+  "proof_sha256": "d335251cc3f02ac1760ec8bba9397413e33dc0af2ed97faee0b09866f5ef4d80"
+}

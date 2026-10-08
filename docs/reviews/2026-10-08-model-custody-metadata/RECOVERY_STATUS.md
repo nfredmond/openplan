@@ -139,3 +139,40 @@ a 5.8 GiB memory peak. These checks precede the recovery-status changes and do
 not establish combined-head acceptance. The completed transient unit was removed
 by systemd. Its journal and exact-head runner remain available in the private
 proof records.
+
+## Native dispatcher follow-up
+
+The normal worker dispatcher now has a native HTTP proof with synthetic domain
+computations. It calls the actual queue reader, prerequisite classifier,
+`process_first_actionable_stage`, serialized stage runner, conditional claim,
+run/stage writes, atomic `state.json` publication and retained KPI delivery.
+Only package preparation and the three domain computation functions are
+substituted. The proof does not execute AequilibraE or ActivitySim.
+
+The owned database clone includes installed migrations 18 and 19. Setup,
+assignment and extraction finish in order, with three observed starts, one KPI,
+saved setup/assignment handoff state and a succeeded parent. A later stage waits
+for its queued prerequisite. A reply dropped after the claim commits raises
+uncertainty before computation; the original stage cannot be claimed again, and
+later stages remain waiting. An ordinary synthetic domain failure marks its
+stage and parent failed and skips dependent stages. A failed local atomic
+replacement preserves the running stage and parent instead of recording a
+false terminal failure.
+
+Baseline, a harmless claim-payload copy and restored baseline pass. Deliberately
+swallowing the lost-claim error fails the claim-uncertainty assertion. Swallowing
+the local publication error fails the local-uncertainty assertion. The final
+proof performs 220 HTTP requests and removes its private PostgREST gateway.
+The committed [result](prototype/retention-dispatcher-result.json) records source
+hashes and synthetic run identities; the executable proof is
+[verify_retention_dispatcher.py](prototype/verify_retention_dispatcher.py).
+Private clone metadata and logs remain in `retention-dispatcher-v2` under the
+existing proof root. An earlier run tested only the claim-error adverse control;
+the final run adds the independent local-write adverse control.
+
+This supersedes the lack of normal dispatcher integration evidence for these
+synthetic cases. It does not prove real engine execution, interrupted process
+continuation, managed-attempt ownership, operator reconciliation, Storage,
+whole-installation restore, browser usability, human acceptance or scientific
+accuracy. Those boundaries remain open. The integration checkout and its active
+QA process were not changed by this proof.
