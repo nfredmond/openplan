@@ -176,3 +176,21 @@ continuation, managed-attempt ownership, operator reconciliation, Storage,
 whole-installation restore, browser usability, human acceptance or scientific
 accuracy. Those boundaries remain open. The integration checkout and its active
 QA process were not changed by this proof.
+
+## GitHub candidate failure and configuration correction
+
+The GitHub QA job for `85a12549` fails one documentation test after 20,138
+passing and 1,587 skipped tests. `BACKUP_AND_RESTORE.md` names the worker's
+`OPENPLAN_DEPLOYMENT_ID`, but the shared environment example did not document it.
+The environment example now explains that identity, its worker scope and its
+same-installation restore boundary. No test exception or assertion was removed.
+The eight mechanical documentation and operator-setting tests pass locally on
+the corrected tree. The first invocation used the repository root rather than
+the nested app root; it did not run tests. The corrected invocation passed.
+
+The separate shuffled Vitest job also exits 1. Its retrieved log does not show
+a final failing assertion or summary, so the documentation defect is not yet
+established as its cause. The actual live RLS and full-archive restore jobs
+remain in progress at this checkpoint. Local QA continues on the frozen
+`989128da` checkout and does not cover the later operator documentation or CLI
+inventory changes. No new full-suite or release success is claimed.
