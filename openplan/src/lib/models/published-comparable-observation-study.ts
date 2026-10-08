@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
+import { isDeepStrictEqual, promisify } from "node:util";
 import { gunzip } from "node:zlib";
 
 export const COMPARABLE_STUDY_SCHEMA = "openplan.comparable-observation-study-result.v1";
@@ -37,13 +37,26 @@ function isObject(value: unknown): value is Record<string, unknown> {
 }
 
 function numericRecord(value: unknown): Record<string, number> {
-  if (!isObject(value)) return {};
-  return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, number] => typeof entry[1] === "number"));
+  if (!isObject(value) || !["matched", "ambiguous", "excluded"].every(key => key in value)) {
+    throw new Error("Published comparable-observation study has invalid coverage.");
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, count]) => {
+    if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
+      throw new Error("Published comparable-observation study has invalid coverage.");
+    }
+    return [key, count];
+  }));
 }
 
 function stringRecord(value: unknown): Record<string, string> {
-  if (!isObject(value)) return {};
-  return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string"));
+  const required = ["input_bundle", "match_audit", "comparison_basis", "assessment", "observation_package", "network", "model_output", "matcher", "registry"];
+  if (!isObject(value) || !required.every(key => typeof value[`${key}_sha256`] === "string" && /^[0-9a-f]{64}$/.test(value[`${key}_sha256`] as string))) {
+    throw new Error("Published comparable-observation study has invalid bindings.");
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, hash]) => {
+    if (typeof hash !== "string") throw new Error("Published comparable-observation study has invalid bindings.");
+    return [key, hash];
+  }));
 }
 
 function digest(bytes: Buffer): string {
@@ -51,7 +64,10 @@ function digest(bytes: Buffer): string {
 }
 
 async function readPublishedArtifact(relativePath: string): Promise<Buffer> {
-  const absolutePath = path.join(root(), relativePath);
+  const absolutePath = path.resolve(root(), relativePath);
+  if (!absolutePath.startsWith(path.join(root(), STUDY_DIRECTORY) + path.sep)) {
+    throw new Error("Published comparable-observation artifact is outside its study.");
+  }
   try {
     return await readFile(absolutePath);
   } catch (error) {
@@ -90,9 +106,25 @@ export async function loadPublishedComparableObservationStudy(): Promise<Publish
   ) {
     throw new Error("Published comparable-observation study has an invalid contract.");
   }
-  const diagnoses = result.diagnoses.map((value) => {
-    if (!isObject(value) || typeof value.geography_id !== "string" || !METHODS.includes(value.method as ComparableMethod) || typeof value.path !== "string" || typeof value.sha256 !== "string") {
+  const identities = new Set<string>();
+  const diagnoses = await Promise.all(result.diagnoses.map(async (value) => {
+    if (!isObject(value) || typeof value.geography_id !== "string" || !METHODS.includes(value.method as ComparableMethod) || typeof value.path !== "string" || typeof value.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(value.sha256)) {
       throw new Error("Published comparable-observation study has an invalid diagnosis record.");
+    }
+    const identity = `${value.geography_id}/${value.method}`;
+    if (identities.has(identity)) throw new Error("Published comparable-observation study repeats a method and geography.");
+    identities.add(identity);
+    const bytes = await readPublishedArtifact(value.path);
+    verifyPublishedComparableObservationHash(bytes, value.sha256, true);
+    const diagnosis: unknown = JSON.parse(bytes.toString("utf8"));
+    if (!isObject(diagnosis) || diagnosis.schema !== "openplan.model-validation-structural-diagnosis.v2" || diagnosis.scientific_outcome !== "inconclusive") {
+      throw new Error("Published comparable-observation diagnosis has an invalid claim boundary.");
+    }
+    if (diagnosis.geography_id !== value.geography_id || diagnosis.method !== value.method) {
+      throw new Error("Published comparable-observation diagnosis has a different method or geography.");
+    }
+    if (!isDeepStrictEqual(diagnosis.coverage, value.coverage) || !isDeepStrictEqual(diagnosis.bindings, value.bindings)) {
+      throw new Error("Published comparable-observation summaries disagree with verified diagnosis evidence.");
     }
     return {
       geographyId: value.geography_id,
@@ -102,7 +134,10 @@ export async function loadPublishedComparableObservationStudy(): Promise<Publish
       coverage: numericRecord(value.coverage),
       bindings: stringRecord(value.bindings),
     };
-  });
+  }));
+  if (diagnoses.some(record => METHODS.some(method => !identities.has(`${record.geographyId}/${method}`)))) {
+    throw new Error("Published comparable-observation study omitted a separate method.");
+  }
   const release = isObject(result.release) ? result.release : {};
   return {
     version: String(release.version ?? "unknown"),
