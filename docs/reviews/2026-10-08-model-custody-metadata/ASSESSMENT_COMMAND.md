@@ -277,3 +277,35 @@ This proves migration-history application and preservation for the captured
 synthetic records. It does not prove installed HTTP permissions, operational
 backup restoration, Storage contents, normal worker restart or scientific
 acceptance. Those remain separate requirements.
+
+## Installed HTTP permission checkpoint
+
+`prototype/verify_assessment_http_permissions.py` tests the installed command in
+the baseline upgrade clone through a temporary loopback PostgREST gateway.
+The fixture first proves that the member can read the synthetic run and the
+outsider cannot. Member and outsider command calls then return 403; anonymous
+and unsigned calls return 401. No assessment is created by these refusals.
+The service-role command succeeds, its complete receipt validates, and an exact
+retry returns the same receipt. Direct receipt-table reads return 403 for the
+member, outsider and service role, and 401 for anonymous and unsigned callers.
+
+Temporarily granting function execution to authenticated users exposes the
+already-retained synthetic receipt to the outsider. Revoking that grant restores
+403. This adverse control establishes that the refusal is enforced by function
+privileges, rather than a broken token or missing endpoint. Only one receipt is
+retained. The owned gateway is removed afterward; fixture rows remain.
+Results are in `model-command-client-20261008-proof/assessment-installed-http/`.
+
+The gateway's database guard now accepts the exact assessment-upgrade clone
+prefix with 32 lowercase hexadecimal characters. Four scope tests pass.
+Harmless and restored controls pass; bypassing the database guard or rejecting
+the valid new clone name fails its targeted case. Results are retained in
+`model-command-client-20261008-proof/assessment-gateway-controls.json`.
+These checks do not establish application activation or scientific acceptance.
+
+## Parent integration
+
+PR #162 merges to main as `73c4a34ae5658488192c6582826d6babf9cebbe1` after
+all seven checks pass at `67be2aff9e2f8adf42cc4168d65505f4cb711103`.
+PR #163's local QA remains live on its unchanged `9385deba` checkout, so that
+checkout has not been updated or retargeted during acceptance.
