@@ -182,3 +182,9 @@ controls in total. Results are retained in
 This closes the swallowed-uncertainty behavior. It does not yet give normal
 callers a retained command identity or automatic reconciliation. Full worker
 regression for this changed caller checkpoint is pending.
+
+The full worker regression at `7526c304` passes all 69 suites, with zero failures
+and zero suites not run. Unit `openplan-assessment-stop-workers-20261008.service`,
+invocation `022628d2696e4d4dbc481566b37c91f7`, finishes at 06:21 Pacific under
+the same 1 GiB, zero-swap, one-CPU limits. Wall time is 33.843 seconds and peak
+memory is 169.8 MB. This includes both corrected assessment callers.
