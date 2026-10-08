@@ -2476,3 +2476,31 @@ in `main.py`; importing it still loads operator configuration. The prepared feed
 object has not yet crossed a retained archive handoff or the engine channel.
 Explicit transit settings, immutable archive/metadata custody, acquisition
 supervision, child-only imports and full assignment execution remain open.
+
+### Transit numerical module import boundary
+
+The prepared-feed skim, shared feed summary, expiry note and ingest-authoritative
+field names now live in `model_transit_skim.py`. The three function ASTs match
+the preceding implementation exactly. `main.py` imports those same functions;
+selected-feed loading and source transport remain in the parent-facing worker.
+No duplicate numerical implementation or changed feed method is introduced.
+
+A fresh process loads the numerical module from its actual path with imports of
+`main`, `dotenv` and `requests` refused and a socket-connect audit hook. It parses
+a synthetic GTFS archive, produces an available served pair and retains version
+and checksum metadata. The environment contains only process path, module path
+and single-thread numerical settings. This checks this exercised import/compute
+path, not an operating-system sandbox or every optional library behavior.
+
+Both new module checks, the four prepared-feed checks and all 51 existing
+transit-handoff checks pass. The expiry call-site guard now inspects the imported
+prepared function as well as the worker's ordinary feed path. Six fault controls
+fail for input mutation, overwritten ingest facts, skipped coverage, an injected
+dotenv import, omitted selected-feed expiry call and a wrong worker export.
+Baseline, harmless and restored controls pass. See
+`prototype/transit-skim-module-controls.json`.
+
+`gtfs_skim` still reads numerical operator defaults at import. Explicit setting
+transfer, retained archive and metadata custody, acquisition supervision and the
+full assignment child entrypoint remain unfinished. Normal managed dispatch is
+not enabled by this extraction.
