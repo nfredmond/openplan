@@ -226,9 +226,9 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(f.deliveries).toHaveLength(1);
     const outputs = await f.outputs();
     expect(outputs).toHaveLength(1);
-    expect(outputs[0].attempt_id).toBe(retained.attemptId);
-    expect(outputs[0].capture_sha256).toBe(delivered.captureSha256);
-    expect(hash(outputs[0].capture_text)).toBe(delivered.captureSha256);
+    expect(outputs![0].attempt_id).toBe(retained.attemptId);
+    expect(outputs![0].capture_sha256).toBe(delivered.captureSha256);
+    expect(hash(outputs![0].capture_text)).toBe(delivered.captureSha256);
     expect(f.proxyErrors).toEqual([]);
   });
 
