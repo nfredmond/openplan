@@ -229,7 +229,9 @@ Only explicitly enqueued requests are eligible. Preparation reconstructs retaine
 segment, context and thematic inputs, stages their deterministic plans and records
 completion receipts. Provider execution still requires its separate native
 resource authorization. Preparation neither calls a model nor approves or
-publishes a result. Staff generation controls remain under development.
+publishes a result. Staff generation controls have bounded synthetic workflow
+evidence in the [queue acceptance record](../../../docs/reviews/2026-10-07-synthesis-execution-queue/DESIGN.md);
+observed interpretation quality and human usefulness remain unproved.
 
 `--once` retries up to 64 pending attempts and reads one candidate page of up to
 64 requests. It is not a queue drain. No arguments keeps polling, with a
@@ -351,7 +353,11 @@ A task-byte diagnostic reports the complete task size and saved limit. Preserve
 the original request and journals. Review saved results before creating a separate
 request with an explicit larger budget and separate execution permission. Do not
 truncate source text or treat a larger budget as permission to repeat an uncertain
-call. This detailed diagnostic is currently in worker output, not the staff page.
+call. Worker output reports the task-byte refusal. The staff results page also
+assesses required bytes from saved source material and verified earlier results,
+and compares them with the saved limit. That assessment does not establish whether
+a provider call occurred. The [combined candidate acceptance](../../../docs/reviews/2026-10-07-v068-release/COMBINED_ACCEPTANCE.md)
+records desktop and 390px inspection of that distinction.
 
 Exit 0 means the bounded pass returned without a schedule exception, not that all
 outputs exist. Exit 2 means at least one schedule was unconfirmed. Exit 1 means the
