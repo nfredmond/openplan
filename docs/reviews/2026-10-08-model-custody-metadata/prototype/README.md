@@ -393,3 +393,32 @@ copies still omit original application foreign keys, triggers and RLS; the
 prototype installs its own guards. The result does not establish gateway/JWT
 configuration, normal worker lifecycle integration, Storage byte validity,
 scientific acceptance or power-loss durability. Those require separate evidence.
+
+## Isolated PostgREST recovery checkpoint
+
+The HTTP recovery probe also runs through an owned PostgREST container using the
+installed `public.ecr.aws/supabase/postgrest:v14.15` image. It exposes only each
+private proof schema, disables database configuration overrides, uses one database
+connection, binds a random loopback port and limits the container to 128 MiB and
+half a CPU. A temporary signing secret and short-lived JWTs remain in process
+and container environments. No existing REST container or application migration
+changes. Configuration follows the [PostgREST 14 reference](https://docs.postgrest.org/en/v14/references/configuration.html).
+
+The bridge now forwards the exact RPC body to PostgREST with the service-role
+JWT. After PostgREST returns the committed receipt, the bridge drops the first
+client connection. A fresh client retries the identical body. Baseline, harmless
+and restored cases retain one artifact and one receipt; both adverse controls
+still detect changed identities and mismatched responses. Unsigned requests and
+signed anonymous-role requests receive 401 or 403 before any artifact is created.
+Container removal and schema removal are checked after every case.
+
+```bash
+OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER=supabase_db_openplan-restore-target-2026091050 \
+OPENPLAN_PROBE_POSTGREST=1 \
+python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_http_recovery.py
+```
+
+This closes the isolated PostgREST transport boundary for the artifact prototype.
+It does not prove the existing Supabase gateway configuration, original-table
+RLS/foreign keys, the other command types, normal worker recovery or scientific
+acceptance. Production integration and end-to-end worker journeys remain open.
