@@ -130,3 +130,43 @@ Private output is in `legacy-kpi-native-cli/` and
 This closes the retained-client lost-response boundary only. Normal worker
 helper/caller adoption, installed migration and upgrade evidence, current stage
 ownership and complete computation recovery remain required.
+
+## Additive migration and isolated upgrade
+
+Migration `20261016000017_legacy_kpi_command_receipts.sql` now carries the native
+candidate. Supabase CLI 2.111.0 generated the file before it was moved above the
+repository's existing migration-16 high-water mark. Its SHA-256 is
+`d8b5da758d40ec4b8d7b9f94cb12838e825155095517f7b2228a1bd135a06da0`.
+The exact migration passes all native rollback cases and eleven faults. A
+rollback catalog query against the migration-16 synthetic clone confirms 302
+application tables with RLS and 14 views, excluding PostGIS relations. The schema
+inventory and SQL-read column ledger now match. All 41 targeted inventory,
+column and release-ordering tests pass. Harmless/restored controls pass;
+missing-RLS and undocumented-column faults fail their stated checks.
+
+The upgrade proof clones the migration-16 synthetic database and applies the
+migration through CLI history, then reapplies without a duplicate history row.
+It compares every captured field across ten existing tables, including 111 runs,
+52 stages, 243 artifacts, 20 KPIs, both historical assessment formats and parent
+receipts. Installed rollback cases pass and leave these records unchanged.
+Baseline, harmless-comment and restored upgrades pass. A rewrite of unmanaged
+run titles is detected by the snapshot comparison. Earlier adverse attempts hit
+artifact-custody and managed-run triggers before comparison; their logs remain
+in the first two control directories. The final control narrows the rewrite to
+unmanaged fixtures and does not disable either trigger. An initial copied table
+list duplicated KPIs and omitted artifacts; review corrected it before the final
+baseline and controls. Earlier reduced-coverage results are superseded.
+
+Advisor comparisons for all three final passing variants add no WARN or ERROR
+findings. The two new INFO findings name the intentional private RLS table with
+no policies and its unused run index. Final evidence lives in
+`legacy-kpi-upgrade-controls-v3/`, including `advisor-comparison.json` and
+`restored/candidate.json`, under the proof root. The final retained database is
+`openplan_kpi_upgrade_48c72fd82c244baf8c2fd7c2dd8c38ea`. Source history stays at
+migration 16. No application database is upgraded. Normal helper/caller adoption,
+full application QA and complete stage recovery remain open.
+
+Independent dependency installation completed under a 2 GiB cap, and the native
+SQLite import/query probe passed. Early inventory reads used repository-relative
+paths from the nested app directory and changed no files; corrected reads used
+the repository root. The existing parent QA checkout remains frozen.

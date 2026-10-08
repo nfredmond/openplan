@@ -544,10 +544,11 @@ const EXPECTED = {
   // Isolated upgrade catalog confirms 300 application tables with RLS and 14 views.
   // 20261016000016 adds one private artifact receipt table.
   // Isolated upgrade catalog confirms 301 application tables with RLS and 14 views.
-  relations: 315,
-  tables: 301,
+  // 20261016000017 adds one private KPI receipt table. Rollback catalog: 302 RLS tables and 14 views.
+  relations: 316,
+  tables: 302,
   views: 14,
-  rlsEnabledTables: 301,
+  rlsEnabledTables: 302,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Migration `20261016000017_legacy_kpi_command_receipts.sql` adds private KPI
+recovery receipts. It preserves exact requests and rejects old rows whose stage
+cannot be established. The retained KPI client and recovery CLI are prepared;
+normal worker KPI writes are not connected yet. Isolated migration upgrade and
+reapply checks pass; caller adoption remains pending. No application database has been upgraded by
+this development work.
+
 Migration `20261016000016_legacy_artifact_command_receipts.sql` adds private
 artifact recovery receipts. Apply it before starting the updated AequilibraE
 worker. Primary link-volume registration retains its prepared identity and
