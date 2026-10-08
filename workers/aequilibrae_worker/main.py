@@ -895,6 +895,8 @@ def register_agreement_artifact(
     path: str,
     content_type: str,
     *,
+    workspace_id: str,
+    journal_dir: str,
     first_assignment_convergence: dict,
     second_assignment_convergence: dict,
     assignment_profile: dict,
@@ -953,7 +955,7 @@ def register_agreement_artifact(
     )
     if state.get("network_settings_digest") != settings_digest:
         raise RuntimeError("Agreement artifact network state names different settings")
-    sb_post_artifact({
+    sb_record_retained_artifact({
         "run_id": run_id,
         "stage_id": stage_id,
         "artifact_type": artifact_type,
@@ -975,7 +977,7 @@ def register_agreement_artifact(
             "network_state_digest": state_digest,
             "upload_status": "stored" if file_url.startswith("storage://") else "local_fallback",
         },
-    })
+    }, workspace_id=workspace_id, journal_dir=journal_dir, logical_name=artifact_type)
 
 
 def write_agreement_network_geojson(
@@ -6910,6 +6912,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     second_network_state_record=shared_network_state,
                     second_network_state_digest=shared_network_state_digest,
                 )
+                agreement_workspace = str(sb_get_run(run_id).get("workspace_id") or "")
                 for artifact_type, path, content_type in (
                     ("demand_model_agreement", result["json_path"], "application/json"),
                     ("demand_model_agreement_report", result["markdown_path"], "text/markdown"),
@@ -6921,6 +6924,8 @@ def _claim_and_run_stage(stage: dict) -> bool:
                         artifact_type,
                         path,
                         content_type,
+                        workspace_id=agreement_workspace,
+                        journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
                         first_assignment_convergence=first_convergence_record,
                         second_assignment_convergence=second_convergence_record,
                         assignment_profile=shared_assignment_profile,

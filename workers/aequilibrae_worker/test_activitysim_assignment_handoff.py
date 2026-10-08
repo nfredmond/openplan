@@ -734,6 +734,7 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
                 "verified_latest_local_artifact",
                 side_effect=["/trip-based.csv", "/activity-based.csv"],
             ) as verified_artifact,
+            mock.patch.object(main, "sb_get_run", return_value={"workspace_id":"synthetic-workspace"}),
             mock.patch.object(main, "register_agreement_artifact") as register,
             mock.patch.object(
                 main,
@@ -769,6 +770,8 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
         assert "retained_network.geojson" in call["loaded_links_geojson"]
         assert write_geometry.call_count == 1
         assert register.call_count == 3
+        assert all(call.kwargs["workspace_id"] == "synthetic-workspace" for call in register.call_args_list), "agreement workspace scope lost"
+        assert all(call.kwargs["journal_dir"] == str(run_dir / "stage-journals" / "stage-6") for call in register.call_args_list), "agreement journal scope lost"
         assert all(
             call.kwargs["network_settings_digest"] == settings_digest
             for call in register.call_args_list
@@ -843,6 +846,7 @@ def test_uncalibrated_agreement_compares_both_canonical_baseline_digests():
                 "verified_latest_local_artifact",
                 side_effect=["/trip.csv", "/activitysim.csv"],
             ),
+            mock.patch.object(main, "sb_get_run", return_value={"workspace_id":"synthetic-workspace"}),
             mock.patch.object(main, "register_agreement_artifact"),
             mock.patch.object(
                 main,
@@ -1077,7 +1081,7 @@ def test_agreement_artifact_registration_carries_both_full_convergence_records()
             with (
                 mock.patch.object(main.requests, "post", return_value=response) as upload,
                 mock.patch.object(main.requests, "get", return_value=mock.Mock(status_code=404 if mode == "missing" else 200, content=b"changed" if mode == "changed" else path.read_bytes())),
-                mock.patch.object(main, "sb_post_artifact") as register,
+                mock.patch.object(main, "sb_record_retained_artifact") as register,
             ):
                 main.register_agreement_artifact(
                     "run",
@@ -1085,6 +1089,7 @@ def test_agreement_artifact_registration_carries_both_full_convergence_records()
                     "demand_model_agreement",
                     str(path),
                     "application/json",
+                    workspace_id="synthetic-workspace", journal_dir=str(Path(tmp)/"journal"),
                     first_assignment_convergence=first["convergence"],
                     second_assignment_convergence=second["convergence"],
                     assignment_profile=first["convergence"]["assignment_profile"],
@@ -1100,6 +1105,7 @@ def test_agreement_artifact_registration_carries_both_full_convergence_records()
                     network_state_record=first["network_state_record"],
                     network_state_digest=first["network_state_digest"],
                 )
+            assert register.call_args.kwargs == {"workspace_id":"synthetic-workspace","journal_dir":str(Path(tmp)/"journal"),"logical_name":"demand_model_agreement"}
             row = register.call_args.args[0]
             metadata = row["metadata_json"]
             assert row["content_hash"] == hashlib.sha256(path.read_bytes()).hexdigest()
