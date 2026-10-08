@@ -1150,3 +1150,36 @@ This closes the selected-package registration/recovery proof boundary. It does
 not provide execution-state mapping, coherent SQLite project transfer, complete
 normal dispatcher execution or scientific acceptance. Original state and project
 handoffs remain required before managed dispatch can be enabled.
+
+### Selected original-state transfer and native recovery
+
+`retain_managed_predecessor_state` selects the declared completed producer and
+requires its exact owned state path and supported schema. It copies registered
+bytes through the existing pinned handoff helper, checks the copied hash/size
+again before decoding, and refuses duplicate keys, nonfinite JSON or a non-object
+root. The original bytes and all recorded paths remain unchanged. A separate
+`model_state_consumption` artifact records the consumer copy and original producer
+artifact/stage/attempt/hash. It does not replace the producer's state output or
+claim that the original paths are valid in the consumer attempt.
+
+Seven local cases pass. Baseline, harmless and restored controls pass; five faults
+detect ignored foreign references, a changed copy before decoding, duplicate keys,
+nonfinite values and erased provenance. The combined suite passes 167 tests. The
+existing SQLite ResourceWarning persists.
+
+The native joined proof passes baseline, harmless and restored cases with eight
+HTTP calls each. It checks independent file identity, original bytes and paths,
+native consumption type, hash, size and exact producer provenance. Fresh CLI
+recovery of a committed-but-lost reply returns the retained receipt without native
+record changes; cached recovery sends no HTTP and the writer remains stopped.
+A wrong consumer hash fails the native comparison. The shared harness labels this
+artifact-write mode `package_artifact`; its state-consumer branch explicitly checks
+`model_state_consumption` and the state bytes. The first harness edit used an
+ambiguous text anchor and stopped before applying the change; its subsequent
+unsupported-argument failure created no clone. The corrected proof is retained
+under private `managed-state-http-v2`, with results in `prototype/managed-state-http.json`.
+Temporary gateways are removed.
+
+This preserves original state custody. It does not implement consumer execution
+mapping, state/package pairing, coherent project transfer or normal managed
+dispatch. Those joins remain required, alongside scientific and human acceptance.

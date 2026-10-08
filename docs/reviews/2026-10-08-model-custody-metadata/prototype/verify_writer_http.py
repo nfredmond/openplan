@@ -25,7 +25,8 @@ import model_command_journal as journal
 from worker_import_for_tests import import_worker_main
 
 
-def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False, package_consumer=False):
+def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False, package_consumer=False, state_consumer=False):
+    package_consumer = package_consumer or state_consumer
     package_output = package_output or package_consumer
     count_output = count_output or count_consumer
     outputs = outputs or state_output or count_output or package_output
@@ -132,6 +133,13 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         payload = json.dumps({'id':producer_artifact,'artifact_type':'model_package_inputs',
                             'file_url':'local://'+producer_record['manifest_path'],'content_hash':producer_record['manifest_sha256'],
                             'file_size_bytes':producer_record['manifest_size_bytes'],'metadata_json':{'schema':'openplan.package-inputs.v1'}}).replace("'", "''")
+                        if state_consumer:
+                            producer_state_content = b'{"package":{"package_dir":"/original/package"},"setup":{"synthetic":true}}\n'
+                            producer_state_path = producer_directory / 'predecessor_state.json'
+                            producer_state_path.write_bytes(producer_state_content)
+                            payload = json.dumps({'id':producer_artifact,'artifact_type':'model_predecessor_state',
+                                'file_url':'local://'+str(producer_state_path),'content_hash':hashlib.sha256(producer_state_content).hexdigest(),
+                                'file_size_bytes':len(producer_state_content),'metadata_json':{'schema':'openplan.predecessor-state.v1'}}).replace("'", "''")
                         sql(database,f"SET ROLE service_role; SELECT public.write_model_attempt_artifact('{uuid.uuid4()}','{producer_attempt}','{payload}'::jsonb); SELECT public.write_model_stage_attempt('{uuid.uuid4()}','{producer_attempt}','succeeded','Synthetic package complete',NULL);")
                     directory = output / worker.__name__ / status
                     artifact_id = str(uuid.uuid4())
@@ -161,7 +169,10 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
                                         if package_consumer:
                                             worker.run_work_directory(run)
-                                            worker.retain_managed_predecessor_package()
+                                            if state_consumer:
+                                                worker.retain_managed_predecessor_state()
+                                            else:
+                                                worker.retain_managed_predecessor_package()
                                             raise AssertionError('Lost consumer reply did not stop handler')
                                         source_package = Path(worker.run_work_directory(run)) / 'package'
                                         source_package.mkdir()
@@ -253,7 +264,20 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         consumer_attempts = [attempt for attempt in observed['attempts'] if attempt['stage_id'] == stage]
                         if len(records) != 1 or len(consumer_attempts) != 1 or records[0]['attempt_id'] != consumer_attempts[0]['id']:
                             raise AssertionError('Output is absent, duplicated or belongs to another attempt')
-                        if status == 'package_artifact':
+                        if state_consumer:
+                            retained_path = writers[0].files.path / 'predecessor_state_input.json'
+                            content = retained_path.read_bytes()
+                            expected_provenance = {'artifact_id':producer_artifact,'stage_id':producer_stage,
+                                'attempt_id':producer_attempt,'content_hash':hashlib.sha256(producer_state_content).hexdigest()}
+                            if (content != producer_state_content or records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
+                                    or records[0]['file_size_bytes'] != len(content)
+                                    or records[0]['file_url'] != 'local://' + str(retained_path)
+                                    or records[0]['artifact_type'] != 'model_state_consumption'
+                                    or records[0]['metadata_json'].get('producer') != expected_provenance
+                                    or records[0]['metadata_json'].get('paths_relocated') is not False
+                                    or retained_path.stat().st_ino == producer_state_path.stat().st_ino):
+                                raise AssertionError('Native state consumption differs from original bytes or provenance')
+                        elif status == 'package_artifact':
                             retained_dir = writers[0].files.path / ('predecessor_package' if package_consumer else 'package_inputs')
                             manifest = retained_dir / 'manifest.json'
                             content = manifest.read_bytes()

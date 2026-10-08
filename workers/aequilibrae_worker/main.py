@@ -916,6 +916,62 @@ def retain_managed_predecessor_package() -> dict:
         raise WorkerStateWriteUnconfirmed("Package handoff requires reconciliation") from error
 
 
+def retain_managed_predecessor_state() -> dict:
+    """Retain original predecessor JSON without relocating any recorded path."""
+    from pathlib import Path
+    import model_attempt_writer
+    import model_handoff_files
+    writer = model_attempt_writer.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("State handoff requires a managed invocation")
+    try:
+        writer.require_open()
+        if writer.files is None:
+            raise ValueError("State handoff requires an owned consumer directory")
+        selected = select_managed_predecessor_input("model_predecessor_state")
+        installation = hashlib.sha256(writer.context.destination.encode()).hexdigest()
+        expected = (writer.files.root / writer.context.run_id / "attempts" / installation
+                    / selected["stage_id"] / selected["attempt_id"] / "predecessor_state.json")
+        if selected.get("file_url") != "local://" + str(expected) or expected.resolve(strict=True) != expected:
+            raise ValueError("State reference differs from selected producer directory")
+        if (selected.get("metadata_json") or {}).get("schema") != "openplan.predecessor-state.v1":
+            raise ValueError("Selected state has no supported schema")
+        retained_path = model_handoff_files.copy_registered(
+            writer.files.root.parent, writer.context.run_id, expected,
+            writer.files.path / "predecessor_state_input.json",
+            sha256=selected.get("content_hash"), size_bytes=selected.get("file_size_bytes"),
+        )
+        content = Path(retained_path).read_bytes()
+        if hashlib.sha256(content).hexdigest() != selected["content_hash"] or len(content) != selected["file_size_bytes"]:
+            raise ValueError("Retained state changed before decoding")
+        def unique_object(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result:
+                    raise ValueError("Duplicate predecessor state key")
+                result[key] = value
+            return result
+        def invalid_constant(value):
+            raise ValueError("Nonfinite predecessor state value")
+        state = json.loads(content, object_pairs_hook=unique_object, parse_constant=invalid_constant)
+        if not isinstance(state, dict):
+            raise ValueError("Predecessor state must be an object")
+        writer.files.verify()
+        provenance = {"artifact_id": selected["id"], "stage_id": selected["stage_id"],
+                      "attempt_id": selected["attempt_id"], "content_hash": selected["content_hash"]}
+        writer.record_artifact({
+            "run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+            "artifact_type": "model_state_consumption", "file_url": "local://" + retained_path,
+            "content_hash": selected["content_hash"], "file_size_bytes": selected["file_size_bytes"],
+            "metadata_json": {"schema": "openplan.state-consumption.v1", "producer": provenance,
+                              "paths_relocated": False, "scientific_acceptance": "unassessed"},
+        }, logical_name="predecessor-state-input")
+        return {"state": state, "retained_path": retained_path, "producer": provenance}
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("State handoff requires reconciliation") from error
+
+
 def require_completed_artifact_producer(artifact: dict, run_id: str) -> None:
     """Refuse incomplete or superseded inputs before checking scientific identity.
 
