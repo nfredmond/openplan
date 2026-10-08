@@ -248,6 +248,7 @@
       "outcome": {
         "delivery_unconfirmed": true,
         "writer_stopped": true,
+        "lost_artifact_type": "model_input_mapping",
         "fresh_cli_recovered": true,
         "cached_no_http": true,
         "native_tables_unchanged": 7
@@ -296,6 +297,72 @@
         },
         {
           "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "lost-package-working-reply",
+      "outcome": {
+        "delivery_unconfirmed": true,
+        "writer_stopped": true,
+        "lost_artifact_type": "model_package_working_copy",
+        "fresh_cli_recovered": true,
+        "cached_no_http": true,
+        "native_tables_unchanged": 7
+      },
+      "consumer_artifacts": 5,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
           "status": 200
         },
         {
@@ -381,5 +448,5 @@
     }
   ],
   "gateway_removed": true,
-  "limits": "Actual combined state/package/project and working-copy helper with native commands through a direct-PostgREST route-prefix adapter. Producer fixture registration uses native SQL commands. Final mapping lost-reply recovery uses a fresh CLI with the same adapter; cached recovery forbids HTTP. No complete output/count mapping, closure enforcement, full dispatcher or scientific acceptance."
+  "limits": "Actual combined state/package/project and working-copy helper with native commands through a direct-PostgREST route-prefix adapter. Producer fixture registration uses native SQL commands. Final mapping and package-working lost-reply recovery use a fresh CLI with the same adapter; cached recovery forbids HTTP. No complete output/count mapping, closure enforcement, full dispatcher or scientific acceptance."
 }

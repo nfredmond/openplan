@@ -46,24 +46,28 @@ def main(*, include_project=False):
     with gateway('public',database=database) as connection:
         base,key=connection['url'],connection['service_token']
         calls=[]
-        dropped={'mapping':False}
+        dropped={'reply':False}
+        loss_types={'lost-mapping-reply':'model_input_mapping', 'lost-package-working-reply':'model_package_working_copy'}
         def transport(method,url,**kwargs):
             # The isolated gateway exposes PostgREST directly, without /rest/v1.
             if not url.startswith(base+'/rest/v1/'):
                 raise AssertionError('Unexpected native proof destination')
             response=requests.request(method,base+'/'+url.removeprefix(base+'/rest/v1/'),**kwargs)
             calls.append({'method':method,'status':response.status_code})
-            if (control=='lost-mapping-reply' and method=='POST' and response.status_code==200
-                    and kwargs.get('json',{}).get('p_payload',{}).get('artifact_type')=='model_input_mapping'
-                    and not dropped['mapping']):
-                dropped['mapping']=True
+            if (control in loss_types and method=='POST' and response.status_code==200
+                    and kwargs.get('json',{}).get('p_payload',{}).get('artifact_type')==loss_types[control]
+                    and not dropped['reply']):
+                dropped['reply']=True
                 response.close()
-                raise requests.Timeout('Synthetic committed mapping reply loss')
+                raise requests.Timeout('Synthetic committed input preparation reply loss')
             return response
         def get(url,**kwargs):return transport('GET',url,**kwargs)
         def post(url,**kwargs):return transport('POST',url,**kwargs)
         try:
-            for control in ('baseline','harmless','omit-package-mapping','source-mismatch','lost-mapping-reply','restored'):
+            controls=['baseline','harmless','omit-package-mapping','source-mismatch','lost-mapping-reply']
+            if include_project:controls.append('lost-package-working-reply')
+            for control in [*controls,'restored']:
+                dropped['reply']=False
                 start=len(calls)
                 run,producer_stage,consumer_stage,state_id,package_id=[str(uuid.uuid4()) for _ in range(5)]
                 workspace=sql(database,f"""
@@ -128,9 +132,9 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         try:
                             result=worker.retain_managed_state_and_package(include_project=include_project)
                         except worker.WorkerStateWriteUnconfirmed as error:
-                            if control=='lost-mapping-reply':
-                                if not dropped['mapping'] or not writer.stopped:raise
-                                return {'delivery_unconfirmed':True,'writer_stopped':True}
+                            if control in loss_types:
+                                if not dropped['reply'] or not writer.stopped:raise
+                                return {'delivery_unconfirmed':True,'writer_stopped':True,'lost_artifact_type':loss_types[control]}
                             if control!='source-mismatch' or 'source directory disagree' not in str(error.__cause__) or not writer.stopped:raise
                             return {'refused':True,'writer_stopped':True}
                     mapped=result['package_mapped_state']
@@ -151,6 +155,10 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                 if control!='source-mismatch':
                     expected_types.insert(0,'model_input_mapping')
                     if include_project:expected_types=sorted(expected_types+['model_project_consumption','model_project_working_copy','model_package_working_copy'])
+                if control=='lost-package-working-reply':
+                    expected_types.remove('model_input_mapping')
+                    if (writers[0].files.path/'input_mapping.json').exists():
+                        raise AssertionError('Unconfirmed package preparation continued to mapping')
                 if [row['artifact_type'] for row in records]!=expected_types:
                     raise AssertionError('Native paired input/mapping records differ')
                 for row in records:
@@ -224,10 +232,10 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         raise AssertionError('Native paired provenance differs')
                 if sql(database,f"SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_run_artifacts a WHERE stage_id='{producer_stage}';")!=before:
                     raise AssertionError('Native pair rewrote producer artifacts')
-                if control=='lost-mapping-reply':
+                if control in loss_types:
                     pending=journal.pending(directory,client.destination(base,database))
-                    if len(pending)!=1 or pending[0]['command']['arguments']['payload']['artifact_type']!='model_input_mapping':
-                        raise AssertionError('Exact pending mapping command missing')
+                    if len(pending)!=1 or pending[0]['command']['arguments']['payload']['artifact_type']!=loss_types[control]:
+                        raise AssertionError('Exact pending input preparation command missing')
                     request=pending[0]['command']['request_id']
                     def snapshot():
                         tables=('model_runs','model_run_stages','model_stage_attempts','model_run_artifacts','model_stage_claim_receipts','model_stage_write_receipts','model_artifact_write_receipts')
@@ -261,7 +269,7 @@ raise SystemExit(recovery.main())
     report={'selector_sha256':hashlib.sha256(original.encode()).hexdigest(),'worker_sha256':hashlib.sha256(Path(worker.__file__).read_bytes()).hexdigest(),
             'controls':results,'gateway_removed':True,'limits':'Actual paired helper and native commands through a route-prefix transport adapter. Producer fixture registration uses native SQL commands. Durable partial mapping is verified. Fresh CLI mapping recovery uses the same route-prefix adapter; cached recovery forbids HTTP. No project/output/count mapping, full dispatcher or scientific acceptance.'}
     if include_project:
-        report['limits']='Actual combined state/package/project and working-copy helper with native commands through a direct-PostgREST route-prefix adapter. Producer fixture registration uses native SQL commands. Final mapping lost-reply recovery uses a fresh CLI with the same adapter; cached recovery forbids HTTP. No complete output/count mapping, closure enforcement, full dispatcher or scientific acceptance.'
+        report['limits']='Actual combined state/package/project and working-copy helper with native commands through a direct-PostgREST route-prefix adapter. Producer fixture registration uses native SQL commands. Final mapping and package-working lost-reply recovery use a fresh CLI with the same adapter; cached recovery forbids HTTP. No complete output/count mapping, closure enforcement, full dispatcher or scientific acceptance.'
     content=json.dumps(report,indent=2)+'\n'
     name='execution-input-http.json' if include_project else 'paired-input-http.json'
     (output/name).write_text(content);(ROOT/name).write_text(content)

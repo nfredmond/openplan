@@ -1614,3 +1614,25 @@ Native loss of the package-working registration response itself remains separate
 from final-mapping recovery and is currently covered only by injected transport.
 Remaining output/count joins, stage-side package-path enforcement, engine closure
 and full managed execution/publication/terminal handling remain open.
+
+### Native package-working receipt loss
+
+The combined proof now drops the `model_package_working_copy` reply after its
+native artifact command commits. The handler stops with exactly that command
+pending. Five consumer artifacts remain and no final mapping file or mapping
+artifact is published. This verifies the earlier interruption boundary rather
+than inferring it from final-mapping recovery.
+
+A fresh CLI recovers the exact package-working receipt through the disclosed
+route-prefix adapter. Cached recovery forbids HTTP, checksums of seven native
+tables remain unchanged and the writer stays stopped. The existing final-mapping
+loss case still passes with six records. Baseline, harmless and restored cases
+pass; omitted package mapping remains detected and contradictory source paths
+still refuse. The report now names the lost artifact type explicitly.
+
+Private `execution-input-http-v4` and `prototype/execution-input-http.json`
+retain the seven control outcomes and source identity. The temporary gateway is
+removed. No production code changes in this checkpoint. Stage package-path
+enforcement, remaining output/count joins, engine closure and full managed
+execution/publication/terminal handling remain open. These receipt checks do not
+establish scientific accuracy or planner acceptance.
