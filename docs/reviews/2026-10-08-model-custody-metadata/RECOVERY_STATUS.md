@@ -103,3 +103,39 @@ The tests mock user-scoped database responses and inspect the page's React tree.
 They do not establish live RLS, installation migration ordering, actual page
 navigation or rendered CSS. They supersede the untested page-loader join noted
 above while preserving those remaining boundaries.
+
+## Installed reader and regression checks
+
+Migration 19 installs through the Supabase CLI on a fresh populated clone of the
+owned migration-18 fixture. A second migration-up call leaves one history entry.
+Exact rows across 21 model tables remain unchanged, including all 111 enrollment
+records. The installed function passes the native enrollment, observed start,
+workspace and actual role-permission cases. The source remains at migration 18.
+
+The harmless-comment and restored migration controls pass. Granting execution
+to authenticated users installs successfully but fails the native permission
+assertion, demonstrating that a successful CLI exit alone cannot clear this
+check. The widened-permission clone remains isolated for diagnosis. No
+application database was upgraded. Private records are `recovery-reader-upgrade-v1`
+and `recovery-reader-upgrade-controls` under the proof root.
+
+All 66 tests in six related existing model-control suites pass. These cover run
+status, failure copy, calibration controls, CEQA mounting, relaunch offers and
+worker declaration. Combined candidate QA and T3 acceptance remain outstanding.
+
+## Parent retention QA
+
+The full `npm run qa:gate` completed on the unchanged parent
+`5fec2787204ddfac6e00458f38e9bb58d4f7ff1f`. It ran 20,105 passing tests with 1,587
+skips across 1,513 passing and 95 skipped files. Lint, provider-connector tests,
+dependency audit and production build completed. The build compiled, passed
+TypeScript and generated all 137 static pages. The configured deadcode command
+completed but reported 538 unused exports; it is not evidence of no dead code.
+Live RLS was explicitly skipped and is not covered by this result.
+
+The unit `openplan-retention-qa-5fec2787.service`, invocation
+`acf1a2b1204f428a8237a89a68d8360b`, completed on October 8 at 10:28 Pacific with
+a 5.8 GiB memory peak. These checks precede the recovery-status changes and do
+not establish combined-head acceptance. The completed transient unit was removed
+by systemd. Its journal and exact-head runner remain available in the private
+proof records.
