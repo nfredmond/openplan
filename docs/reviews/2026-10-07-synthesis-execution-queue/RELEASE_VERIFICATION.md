@@ -81,3 +81,22 @@ evidence, not a passing exact-commit suite. The dependent validation service sto
 on that nonzero result and does not run its remaining stages. Build 9dfbeaa4 and
 its desktop/390px layout checks subsequently pass as recorded in the staff-response
 acceptance note. A fresh suite must verify the corrected source.
+
+## Corrected checkpoint and main integration
+
+The later exact checkpoint `db48f48da592e82305806320b48046cb97599c94` passes
+1,506 local test files and 19,978 tests; 94 files and 1,565 tests are skipped.
+Shuffled seed 375429 passes the same counts. Provider-connector and dependency
+audit stages exit 0; the audit reports zero vulnerabilities.
+
+Exact-head GitHub CI 37712814612, worker run 37712814551, populated upgrade
+37712926690, live RLS 37712814521 and restore 37712814609 all pass.
+PR 139 merges as `4e00daaafcabf234235e6eb9350cc05a2402f3da`. Its main CI,
+RLS, upgrade and worker checks are running and are not yet passing evidence.
+Earlier pending and failed results above remain historical records.
+
+PR 140 separately carries the detailed browser resource assessment, project
+evidence distinction and published-model reader correction. Its identified
+build and relevant browser evidence do not establish independent scientific
+accuracy, human acceptance or completion of the full V1 contract. No release
+tag is declared by this integration.

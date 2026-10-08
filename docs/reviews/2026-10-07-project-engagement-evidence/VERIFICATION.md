@@ -28,3 +28,15 @@ The tests use mocked database reads. They do not prove live row-level security, 
 The first production build of `4e72fb85` compiled but failed TypeScript because the packet-geography and crosslink-board test fixtures omitted the required `campaignCount`. The combined follow-up branch supplies explicit zero counts for those empty fixtures. Its component suite also caught a changed caveat fragment. The wording now preserves the adopted-outreach/public-response warning while distinguishing representative participation.
 
 All four related suites pass 115 tests on the corrected combined branch. The prior failed build is retained; this result does not relabel that checkpoint as passing. The next production build targets the combined follow-up head, which includes the project, resource assessment and published model changes. Browser acceptance remains pending.
+
+## Combined build browser check
+
+The identified `7cf4fe14` production build passes. T3 project navigation at
+1440 by 900 and 390 by 844 shows two linked campaigns and zero retained report
+contributions as Report evidence not retained, with Needs review status.
+Participation and adoption caveats remain visible. The mobile page width is
+390 CSS pixels. The card link opens the project-filtered campaign list with
+two campaigns and continues to the retained analysis campaign. This synthetic
+journey does not establish representative participation or planner acceptance.
+Private screenshots and runtime identity are retained under the local
+scientific-custody-audit-20261007 state directory.

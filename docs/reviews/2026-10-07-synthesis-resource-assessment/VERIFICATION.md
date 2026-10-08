@@ -31,3 +31,21 @@ Harmless comments preserve each new test. Returning a null assessment fails each
 Two real-history cases pass for context and thematic work. A retained second output first produces an oversized third task. Changing its predecessor selection reference then leaves the output retained as `predecessor_changed` and removes the later resource assessment. Harmless comments preserve both cases. Removing the predecessor-selection comparison fails the corresponding case in each reader. Mutations were restored and changed-test lint passes.
 
 Production compilation and T3 desktop/390px acceptance remain pending. All history tests use mocked storage transport; they do not establish native permission enforcement.
+
+## Combined build browser check
+
+Production build `7cf4fe14`, build ID `8AL0xqGMFLMnKvCzJuxta`, passes.
+Real T3 navigation from the project's linked campaign list through Analysis,
+saved source, saved request, preparation and saved analysis results shows the
+resource refusal at desktop 1440 by 900 and mobile 390 by 844. Task 1 requires
+68,699 bytes against the retained 65,536-byte limit. The notice preserves the
+source and request and does not infer that a provider call occurred.
+
+Opening Original selection reference shows sequence 0 and history hash
+`86a4dac68319da39ce845f7fb03e9da9f861ab9af31bb47f914f0cd0c98c5301`.
+After a full page navigation, the authenticated read still returns four
+unselected tasks, the same hash, the same byte assessment and incomplete status.
+No new permission, execution request, cancellation or output is written.
+A manual probe missing expected-account headers receives 403; its corrected
+request receives 200. Screenshots and private console records are retained in
+the scientific-custody-audit-20261007 state directory.
