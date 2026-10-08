@@ -73,6 +73,8 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "model_assessment_command_receipts.request_payload", category: "READ_IN_SQL", reason: "record_legacy_model_assessment compares the retained request on retry and refuses changed assessment payloads." },
+  { column: "model_assessment_command_receipts.response_payload", category: "READ_IN_SQL", reason: "record_legacy_model_assessment returns the original assessment and artifact rows on an exact retry." },
   { column: "model_stage_claim_receipts.request_payload", category: "READ_IN_SQL", reason: "The native command compares the original payload on retry and refuses request identity reuse with different arguments." },
   { column: "model_stage_claim_receipts.response_payload", category: "READ_IN_SQL", reason: "The native command returns the retained response on an exact retry without repeating the original state change." },
   { column: "model_stage_write_receipts.request_payload", category: "READ_IN_SQL", reason: "The native command compares the original payload on retry and refuses request identity reuse with different arguments." },
