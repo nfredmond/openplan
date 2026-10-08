@@ -633,6 +633,27 @@ def sb_post_artifact(payload: dict):
     return _confirmed_record_insert("model_run_artifacts", payload)
 
 
+def sb_record_retained_primary_artifact(payload: dict, *, workspace_id: str, journal_dir: str) -> dict:
+    """Retain the prepared primary artifact request and stop on unconfirmed delivery."""
+    from pathlib import Path
+    import model_legacy_artifact_command
+    import model_command_client
+    try:
+        deployment = os.environ.get("OPENPLAN_DEPLOYMENT_ID", "")
+        if not deployment.strip():
+            raise ValueError("Artifact recovery deployment identity is missing")
+        directory = Path(journal_dir)
+        command = model_legacy_artifact_command.prepare(
+            directory, workspace_id, payload, base_url=SUPABASE_URL, deployment_id=deployment,
+        )
+        return model_command_client.deliver(
+            directory, command, base_url=SUPABASE_URL, deployment_id=deployment,
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Primary artifact delivery unconfirmed; recover the saved request before continuing") from None
+
+
 def sb_record_retained_modeling_validation_assessment(payload: dict, *, assessment_id: str, journal_dir: str) -> dict:
     """Retain this assessment request before transport; never fall back on uncertainty."""
     from pathlib import Path
@@ -5830,7 +5851,12 @@ def stage_artifacts(
             }
             if atype == "link_volumes":
                 bind_prepared_primary_output(prepared_output, artifact_payload)
-            registered = sb_post_artifact(artifact_payload)
+                registered = sb_record_retained_primary_artifact(
+                    artifact_payload, workspace_id=_ws_id,
+                    journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
+                )
+            else:
+                registered = sb_post_artifact(artifact_payload)
             if registered:
                 registered_artifacts[atype] = registered
 

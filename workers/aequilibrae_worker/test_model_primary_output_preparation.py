@@ -4,7 +4,7 @@ import copy
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from worker_import_for_tests import import_worker_main
 main=import_worker_main()
 RUN='11111111-1111-4111-8111-111111111111'
@@ -54,10 +54,17 @@ class PrimaryOutputPreparation(unittest.TestCase):
         branch=next(n for n in ast.walk(function) if isinstance(n,ast.If) and ast.unparse(n.test)=="atype == 'link_volumes'")
         prepared=self.prefix()['prepared_output'];facts=prepared['source_files']['link_volumes']
         payload=dict(run_id=RUN,stage_id=STAGE,artifact_type='link_volumes',content_hash=facts['sha256'],file_size_bytes=facts['size_bytes'])
-        scope=dict(vars(main),atype='link_volumes',prepared_output=prepared,artifact_payload=payload,model_output_artifact_id=prepared['output_artifact_id'])
+        writer=Mock(return_value={'id':prepared['output_artifact_id']})
+        scope=dict(vars(main),atype='link_volumes',prepared_output=prepared,artifact_payload=payload,model_output_artifact_id=prepared['output_artifact_id'],_ws_id=RUN,work_dir=str(self.root),stage_id=STAGE,sb_record_retained_primary_artifact=writer)
         exec(compile(ast.Module(body=[branch],type_ignores=[]),main.__file__,'exec'),scope)
         self.assertEqual(payload['id'],prepared['output_artifact_id'])
+        writer.assert_called_once_with(payload,workspace_id=RUN,journal_dir=str(self.root/'stage-journals'/STAGE))
+        writer.reset_mock()
         payload['content_hash']='0'*64
+        with self.assertRaises(main.WorkerStateWriteUnconfirmed):exec(compile(ast.Module(body=[branch],type_ignores=[]),main.__file__,'exec'),scope)
+        writer.assert_not_called()
+        payload['content_hash']=facts['sha256']
+        writer.side_effect=main.WorkerStateWriteUnconfirmed('Synthetic lost reply')
         with self.assertRaises(main.WorkerStateWriteUnconfirmed):exec(compile(ast.Module(body=[branch],type_ignores=[]),main.__file__,'exec'),scope)
 
 

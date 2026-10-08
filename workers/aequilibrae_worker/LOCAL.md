@@ -121,3 +121,12 @@ Use `model_command_recovery.py --help` to list or recover the original request,
 with the same deployment identity, URL and journal directory. Recovery confirms
 custody only. Automatic continuation of the original stage remains unfinished;
 do not regenerate an assessment with a new UUID as a substitute for recovery.
+
+
+Primary link-volume registration also requires migration
+`20261016000016_legacy_artifact_command_receipts.sql`. Apply it to the intended
+database before starting this worker version. Keep
+`<work_dir>/stage-journals/<stage_id>/model-commands.sqlite3` with the prepared
+source files. An unconfirmed primary write stops the stage and retains its exact
+request for `model_command_recovery.py`. Recovering that receipt does not resume
+the stage or authorize replay of the remaining artifact and KPI writes.

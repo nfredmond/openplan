@@ -15,7 +15,8 @@ REPO = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO / 'workers/aequilibrae_worker'))
 import model_command_client as client
 import model_command_journal as journal
-import model_legacy_artifact_command as artifact_command
+from unittest.mock import patch
+from worker_import_for_tests import import_worker_main
 from isolated_postgrest import gateway
 
 
@@ -79,12 +80,13 @@ def _check():
             workspace = str(uuid.UUID(sql(f"SELECT workspace_id FROM public.model_runs WHERE id='{run}';")))
             artifact = str(uuid.uuid4())
             payload = dict(id=artifact,run_id=run,stage_id=stage,artifact_type='link_volumes',file_url='local://synthetic',file_size_bytes=2,content_hash='a'*64,metadata_json={})
-            prepared=artifact_command.prepare(directory,workspace,payload,base_url=base,deployment_id=meta['database'])
+            worker=import_worker_main()
             def deliver_saved():
-                return client.deliver(directory,prepared,base_url=base,deployment_id=meta['database'],service_key=token)
+                with patch.object(worker,'SUPABASE_URL',base), patch.object(worker,'SUPABASE_KEY',token), patch.dict(os.environ,{'OPENPLAN_DEPLOYMENT_ID':meta['database']}):
+                    return worker.sb_record_retained_primary_artifact(payload,workspace_id=workspace,journal_dir=str(directory))
             try:
                 deliver_saved()
-            except client.DeliveryUnconfirmed:
+            except worker.WorkerStateWriteUnconfirmed:
                 pass
             else:
                 raise AssertionError('Client did not propagate lost committed reply')
@@ -121,7 +123,7 @@ def _check():
             thread.join(timeout=5)
             if thread.is_alive():
                 raise RuntimeError('Owned recovery bridge did not stop')
-    result = {'run_id':run,'request_id':request,'http_posts':2,'lost_tcp_reply_after_commit':True,'fresh_cli_recovered':True,'cached_cli_sent_no_request':True,'client_reused_recovered_receipt':True,'record_counts':counts,'operation':operation,'model_resumed':False,'scope':'Actual retained client with synthetic artifact, real PostgREST, dropped TCP reply after native commit, fresh recovery CLI and client receipt reuse. Candidate objects removed. No normal dispatch, Storage bytes, managed ingestion or scientific acceptance.'}
+    result = {'run_id':run,'request_id':request,'http_posts':2,'lost_tcp_reply_after_commit':True,'fresh_cli_recovered':True,'cached_cli_sent_no_request':True,'client_reused_recovered_receipt':True,'record_counts':counts,'operation':operation,'model_resumed':False,'scope':'Actual normal worker helper with synthetic artifact, real PostgREST, dropped TCP reply after native commit, fresh recovery CLI and client receipt reuse. Candidate objects removed. No normal dispatch, Storage bytes, managed ingestion or scientific acceptance.'}
     (output / 'recovery-cli.json').write_text(json.dumps(result, indent=2) + '\n')
     return result
 

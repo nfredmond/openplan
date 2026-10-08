@@ -278,3 +278,28 @@ Evidence is retained under the proof root in `legacy-artifact-cli-upgrade/`,
 `legacy-artifact-migration-advisors/`. The migration SHA-256 is
 `8cb6a78d9f66cf6573ad3f28d34865e40649c4d4b5a451364ed6f368e176bb9b`.
 Normal worker adoption and its regression checks remain next.
+
+
+## Normal primary artifact delivery
+
+The normal link-volume registration branch now calls
+`sb_record_retained_primary_artifact` after checking the prepared byte identity.
+The helper retains the exact request in the existing stage journal, uses the
+service-only recovery command and propagates `WorkerStateWriteUnconfirmed` on
+unconfirmed delivery. It does not fall back to a direct insert. Local and
+deployment instructions now require migration 16 before starting this version.
+Other artifact types keep their existing writer.
+
+The actual registration-branch test verifies the retained helper call and that
+changed source bytes prevent delivery. An unconfirmed helper result propagates.
+Harmless and restored source variants pass; bypassing the normal retained call
+fails the writer assertion. The native TCP-loss proof now enters the actual
+worker helper. Baseline, harmless and restored runs pass with one artifact and
+one receipt after two identical POSTs. Swallowing transport uncertainty and
+returning an incorrect cached receipt still fail their intended assertions.
+
+Evidence is in `legacy-artifact-worker-native-cli/`,
+`legacy-artifact-native-controls.json` and `primary-delivery-branch-controls.json`
+under the private proof root. These tests use synthetic output metadata. They do
+not execute a scientific assignment or prove all normal-stage side effects safe
+to replay. Full worker regression for this connection remains pending.

@@ -224,3 +224,12 @@ for `AEQ_WORK_DIR`. Keep the deployment identity stable for the same database
 installation. Retain each assessment's `command-journal` with its source files.
 See [local assessment recovery](LOCAL.md#retained-assessment-writes) before
 operating this revision. Receipt recovery does not automatically resume a stage.
+
+
+Primary link-volume registration also requires migration
+`20261016000016_legacy_artifact_command_receipts.sql`. Apply it to the intended
+database before starting this worker version. Keep
+`<work_dir>/stage-journals/<stage_id>/model-commands.sqlite3` with the prepared
+source files. An unconfirmed primary write stops the stage and retains its exact
+request for `model_command_recovery.py`. Recovering that receipt does not resume
+the stage or authorize replay of the remaining artifact and KPI writes.
