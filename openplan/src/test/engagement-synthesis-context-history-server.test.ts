@@ -15,6 +15,28 @@ function remove(f: Fixture, table: string, attemptId: unknown) {
 afterEach(() => vi.restoreAllMocks());
 
 describe("current-staff historical context execution", () => {
+  it.each([0, 1])("assesses the next oversized task after %i selected outputs without replacing attempt state", async selectedCount => {
+    const f = fixture();
+    const create = continuation.createSynthesisContextContinuation;
+    vi.spyOn(continuation, "createSynthesisContextContinuation").mockImplementation((...args) => {
+      const processor = create(...args);
+      return { ...processor, next: () => {
+        const next = processor.next();
+        return next.status === "ready" && next.frameIndex === selectedCount
+          ? { status: "resource_limit" as const, frameIndex: selectedCount, requiredTaskBytes: 68699,
+            taskByteLimit: 65536, previousResultSha256: next.previousResultSha256 }
+          : next;
+      } };
+    });
+    const value = await load(f, selectedCount);
+    expect(value.resourceAssessment).toEqual({ taskIndex: selectedCount, requiredTaskBytes: 68699, taskByteLimit: 65536 });
+    expect(value.entries[selectedCount].status).toBe("unselected");
+    expect(value.entries[selectedCount].attemptId).toBeNull();
+    expect(value.manifest.entries[selectedCount]).not.toHaveProperty("resourceAssessment");
+    expect(value.sha256).toBe(hash(value.canonical));
+    expect(f.serviceRpc).not.toHaveBeenCalled();
+  });
+
   it("retains selection reasons at the native Unicode character limit", async () => {
     const f = fixture(); f.history[0].selection.reason = "😀".repeat(4000);
     expect((await load(f)).entries[0].selection?.receipt.reason).toBe(f.history[0].selection.reason);

@@ -180,6 +180,12 @@ export async function replaySynthesisContextHistory(service: Pick<SupabaseClient
     entry.status = "verified"; entry.resultSha256 = entry.result.sha256; replayed++;
     predecessor = { attemptId: attempt.id, selectionId: selected!.receipt.id, captureSha256: output.capture_sha256, resultSha256: entry.result.sha256 };
   }
+  // Assess only the next task after the verified replay prefix. This is a
+  // resource measurement, separate from selections, attempts and worker liveness.
+  const nextResourceTask = inputs.preparationStatus === "sealed" ? processor.next() : null;
+  const resourceAssessment = nextResourceTask?.status === "resource_limit"
+    ? { taskIndex: nextResourceTask.frameIndex, requiredTaskBytes: nextResourceTask.requiredTaskBytes,
+      taskByteLimit: nextResourceTask.taskByteLimit } : null;
   const current = await recheck();
   const status = inputs.preparationStatus !== "sealed" ? inputs.preparationStatus : replayed === plan.entries.length ? "frames_complete" : "incomplete";
   const manifest = { schemaVersion: 1, purpose: "private_synthesis_context_history", ...scope, contextRequestSha256: request.state.context.contextSha256,
@@ -187,6 +193,6 @@ export async function replaySynthesisContextHistory(service: Pick<SupabaseClient
     entries: entries.map(({ frameIndex, selection, status, attemptId, authorizationId, taskSha256, dispatchSha256, captureSha256, resultSha256 }) => ({
       frameIndex, selectionSha256: selection?.receiptSha256 ?? null, status, attemptId, authorizationId, taskSha256, dispatchSha256, captureSha256, resultSha256 })) };
   const canonical = JSON.stringify(manifest);
-  return { request: current, plan, entries, manifest, canonical, sha256: digest(canonical),
+  return { request: current, plan, entries, manifest, canonical, sha256: digest(canonical), resourceAssessment,
     interpretation: "machine_unreviewed" as const, finalOutputText: status === "frames_complete" ? entries.at(-1)!.capture!.capture.outputText : null };
 }

@@ -1,10 +1,35 @@
 // @vitest-environment node
+import * as continuation from "@/lib/engagement/synthesis-thematic-continuation";
 import { randomUUID } from "node:crypto";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { synthesisThematicHistoryFixture as fixture } from "./fixtures/engagement/synthesis-thematic-history";
 import { sourceHash as hash } from "./fixtures/engagement/synthesis-source";
 
+afterEach(() => vi.restoreAllMocks());
+
 describe("current-staff thematic original proposal history", () => {
+  it.each([0, 1])("assesses the next oversized task after %i selected outputs without replacing attempt state", async selectedCount => {
+    const f = await fixture();
+    const create = continuation.replaySynthesisThematicContinuation;
+    vi.spyOn(continuation, "replaySynthesisThematicContinuation").mockImplementation((...args) => {
+      const processor = create(...args);
+      return { ...processor, next: () => {
+        const next = processor.next();
+        return next.status === "ready" && next.taskIndex === selectedCount
+          ? { status: "resource_limit" as const, taskIndex: selectedCount, requiredTaskBytes: 68699,
+            taskByteLimit: 65536, previousResultSha256: next.previousResultSha256, stage: next.stage }
+          : next;
+      } };
+    });
+    const value = await f.load(selectedCount);
+    expect(value.resourceAssessment).toEqual({ taskIndex: selectedCount, requiredTaskBytes: 68699, taskByteLimit: 65536 });
+    expect(value.entries[selectedCount].status).toBe("unselected");
+    expect(value.entries[selectedCount].attemptId).toBeNull();
+    expect(value.manifest.entries[selectedCount]).not.toHaveProperty("resourceAssessment");
+    expect(value.sha256).toBe(hash(value.canonical));
+    expect(f.serviceRpc).not.toHaveBeenCalled();
+  });
+
   it("replays every original frame and final proposal without current execution scope", async () => {
     const f = await fixture(), pending = f.load(); await expect(pending).resolves.toMatchObject({manifest:{status:"proposal_complete"}}); const result = await pending;
     expect(result.manifest.status).toBe("proposal_complete"); expect(result.manifest.verifiedTaskCount).toBe(f.plan.header.taskCount);
