@@ -483,3 +483,36 @@ references are synthetic and no Storage bytes are uploaded. This proves the
 helper's native response shape and tested refusal behavior, not file integrity,
 normal-dispatch recovery, idempotent assessment requests or scientific validity.
 The previously documented omitted stage and artifact-field checks remain open.
+
+## Verify the retained assessment artifact records
+
+The legacy assessment helper now reads the three returned artifact identities
+before acknowledging storage. It requests the exact ID, run, stage, type, file
+reference, byte size, hash and metadata projection, then compares each registered
+field with the submitted payload. Missing, duplicate, extra or mismatched records
+and rejected or lost reads leave the write unconfirmed. This adds verification
+after a possible commit; it does not assume that a failed read rolled back the RPC.
+
+The unit suite checks every artifact field, record completeness, read failures
+and the exact query projection. Ten targeted faults are detected with harmless
+and restored controls passing. Initially, the artifact-reuse receipt mutation
+survived because the later artifact check refused the result. The test now also
+checks receipt validation independently, so both checks are exercised rather
+than crediting one for the other. Results are retained in
+`model-command-client-20261008-proof/assessment-artifact-controls.json`.
+
+The native proof now uses the actual artifact read. Run
+`6f919c3d-fac2-48d9-b84c-94fcffb1ee49` acknowledges the stored assessment and
+artifacts. A returned artifact with an altered stage is refused after a committed
+RPC. Native harmless and restored controls pass; removing the stage binding is
+detected at that failure. Evidence is retained under
+`model-command-client-20261008-proof/assessment-native-artifacts/` and
+`assessment-native-artifacts-controls.json`.
+
+All 67 worker suites pass at `7aaa894d`, with none skipped. Unit
+`openplan-assessment-artifacts-workers-20261008.service`, invocation
+`131f1a3f48644677bf496dcffac85cff`, completes October 8 at 05:52:34 Pacific in
+31.180 seconds with a 172.3 MiB peak. The checkout stays unchanged during testing.
+These checks cover registered fields, not downloaded Storage bytes. The original
+model-output artifact's byte identity, automatic/idempotent recovery, managed
+worker adoption and scientific acceptance remain separate unfinished requirements.
