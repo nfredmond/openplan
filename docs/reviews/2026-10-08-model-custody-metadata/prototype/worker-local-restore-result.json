@@ -1,0 +1,35 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "pending_command_exact": true,
+      "local_bytes_exact": true,
+      "computation_replay_refused": true
+    },
+    {
+      "case": "harmless",
+      "pending_command_exact": true,
+      "local_bytes_exact": true,
+      "computation_replay_refused": true
+    },
+    {
+      "case": "naive-main-file",
+      "detected": "Pending command was not restored"
+    },
+    {
+      "case": "missing-output",
+      "detected": "Local file bytes were not restored"
+    },
+    {
+      "case": "missing-start",
+      "detected": "Interrupted computation start was not restored"
+    },
+    {
+      "case": "restored",
+      "pending_command_exact": true,
+      "local_bytes_exact": true,
+      "computation_replay_refused": true
+    }
+  ],
+  "scope": "Synthetic local SQLite backup with committed WAL, exact pending command and file bytes, interrupted-start preservation. No PostgreSQL restore, server receipt reconciliation, live-worker quiescence, Storage, real model or scientific acceptance."
+}
