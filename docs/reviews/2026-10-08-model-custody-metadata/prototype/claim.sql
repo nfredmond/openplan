@@ -75,6 +75,38 @@ REVOKE ALL ON FUNCTION public.guard_model_run_attempt_write() FROM PUBLIC, anon,
 CREATE TRIGGER guard_model_run_attempt_write BEFORE UPDATE ON public.model_runs
   FOR EACH ROW EXECUTE FUNCTION public.guard_model_run_attempt_write();
 
+-- Serialize changes to the required stage set with lifecycle commands.
+CREATE FUNCTION public.guard_model_stage_set() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+DECLARE
+  v_old_run uuid;
+  v_new_run uuid;
+BEGIN
+  IF TG_OP <> 'INSERT' THEN v_old_run := OLD.run_id; END IF;
+  IF TG_OP <> 'DELETE' THEN v_new_run := NEW.run_id; END IF;
+  PERFORM id FROM public.model_runs WHERE id IN (v_old_run,v_new_run) ORDER BY id FOR UPDATE;
+  IF EXISTS (SELECT 1 FROM public.model_runs WHERE id IN (v_old_run,v_new_run) AND attempt_managed) THEN
+    IF TG_OP IN ('INSERT','DELETE') THEN
+      RAISE EXCEPTION 'Managed model stage set is fixed';
+    END IF;
+    IF NEW.id IS DISTINCT FROM OLD.id OR NEW.run_id IS DISTINCT FROM OLD.run_id
+        OR NEW.sort_order IS DISTINCT FROM OLD.sort_order OR NEW.stage_name IS DISTINCT FROM OLD.stage_name THEN
+      RAISE EXCEPTION 'Managed model stage set is fixed';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM public.model_stage_write_context c
+        WHERE c.transaction_id=txid_current() AND c.stage_id=OLD.id
+          AND c.attempt_id IS NOT DISTINCT FROM NEW.active_attempt_id) THEN
+      RAISE EXCEPTION 'Managed model stage set requires an attempt command';
+    END IF;
+  END IF;
+  IF TG_OP='DELETE' THEN RETURN OLD; END IF;
+  RETURN NEW;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.guard_model_stage_set() FROM PUBLIC,anon,authenticated,service_role;
+CREATE TRIGGER guard_model_stage_set BEFORE INSERT OR UPDATE OR DELETE ON public.model_run_stages
+  FOR EACH ROW EXECUTE FUNCTION public.guard_model_stage_set();
+
 CREATE FUNCTION public.claim_model_stage_attempt(p_request_id uuid, p_stage_id uuid, p_worker_id text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE

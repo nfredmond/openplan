@@ -52,3 +52,11 @@ Native checks retain an unfinished second stage and prove that the parent stays 
 Baseline, harmless and restored cases pass. Eleven adverse controls detect their intended failures, including early completion despite an unfinished stage and omission of the parent update. Independent SQL reads confirm persisted parent status and rollback behavior.
 
 This supersedes the earlier note that successful parent completion is absent. Failed-stage closure, stage-set insertion/deletion protection, relaunch, artifact binding, both worker adapters, concurrent-process contention and interruption recovery remain unfinished. The complete protocol must control changes to the required stage set before this can become a production migration. No scientific or human acceptance claim changes.
+
+## Required stage-set checkpoint
+
+The next October 8 checkpoint locks affected parent runs before inspecting changes to the stage set. Once either parent is managed, direct stage insertion and deletion fail. Stage identity, parent, name and order cannot change. Progress or terminal updates to an unclaimed sibling also require private command authorization. Claim, progress, completion and reaper commands continue to pass.
+
+Native service-role cases reject insertion, deletion, reordering and direct success on an unclaimed required stage. Baseline, harmless and restored cases pass, and fourteen adverse controls detect their stated defects. New controls independently permit insertion, deletion or an unclaimed sibling update and hit the corresponding assertions. Two existing overwrite controls now remove the overlapping stage-set authorization check as well. Their first combined run failed at an earlier sibling assertion; the controls were narrowed and rerun to reach the intended overwrite assertions.
+
+This proves sequential stage-set protection only. Row-level legacy updates can acquire a stage lock before this trigger requests its parent lock. Concurrent command and legacy-write deadlock behavior, retry handling, whole-run deletion, failed-stage closure and relaunch still need explicit coverage. Artifact binding, both worker adapters and interruption recovery remain open. The prototype is not an application migration and does not establish the full M3 or scientific acceptance requirements.
