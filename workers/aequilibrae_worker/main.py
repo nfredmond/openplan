@@ -2518,7 +2518,19 @@ def skim_selected_feed_version(
     dispatch and everything that could be WRONG is on this side of it.
     """
     los, meta = load_selected_feed_version(feed_version_id, run_workspace_id)
-    meta = dict(meta)
+    return skim_prepared_feed_version(los, meta, lons, lats,
+                                      deadline=deadline, feed_origin=feed_origin)
+
+
+def skim_prepared_feed_version(los, prepared_meta: dict, lons, lats, *,
+                               deadline: float | None = None,
+                               feed_origin: str = "workspace_feed_version") -> tuple:
+    """Compute the skim from an already loaded feed and its original metadata.
+
+    Loading, source selection and credentialed reads belong to the caller.
+    Preserve ingest facts while adding the parser's numerical summary.
+    """
+    meta = dict(prepared_meta)
     meta["source_url"] = los.source_url
     meta["source_name"] = los.source_name
 

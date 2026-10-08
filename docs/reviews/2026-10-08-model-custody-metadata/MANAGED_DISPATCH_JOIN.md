@@ -2452,3 +2452,27 @@ calls and local imports without importing the worker. It is an extraction aid,
 not a security or scientific gate. Existing application behavior and test guards
 are unchanged. GitHub run 37860237074 remains in progress on live polling. Browser
 acceptance and normal managed dispatch activation remain unfinished.
+
+### Separate selected-feed preparation from numerical skimming
+
+`skim_selected_feed_version` now loads the selected version once and delegates
+to `skim_prepared_feed_version`. The latter accepts the loaded feed and original
+metadata, copies the metadata before adding the numerical summary, and preserves
+the existing ingest-authoritative fields, source identity, coverage refusal,
+expiry disclosure and deadline. The assignment caller and feed precedence remain
+unchanged. No scientific method, observation or acceptance tolerance changes.
+
+Four new tests drive real synthetic GTFS parsing/skimming with mocked metadata and
+storage reads. They check that prepared skimming makes no new load/HTTP request,
+leaves input metadata unchanged, retains selected-feed coverage refusal and
+honors the deadline. The wrapper test checks exact loaded-object and option
+forwarding. All 51 existing transit-feed-handoff checks pass. Baseline, harmless
+and restored controls pass; four targeted faults are detected for input mutation,
+overwritten ingest facts, skipped coverage and dropped deadline. See
+`prototype/prepared-feed-skim-controls.json`.
+
+This is a callable separation, not process isolation. Both functions still live
+in `main.py`; importing it still loads operator configuration. The prepared feed
+object has not yet crossed a retained archive handoff or the engine channel.
+Explicit transit settings, immutable archive/metadata custody, acquisition
+supervision, child-only imports and full assignment execution remain open.
