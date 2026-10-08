@@ -2377,3 +2377,33 @@ prototype/count-preparation-controls.json.
 The parent channel still needs to invoke this preparation with its own declared
 inputs and output destination. Live provider acquisition, native registration,
 full child entry, containment and interruption recovery remain open.
+
+### Parent count preparation over the engine channel
+
+The reserved child now has an argument-free `prepare_counts` request. The parent
+accepts a trusted preparation callback at launch, requires its own preceding
+output creation, records that directory's device/inode, checks it before and
+after preparation, and consumes a one-time preparation flag before invoking the
+callback. The callback runs under this invocation's bound writer. A different
+bound writer, stopped writer, uncertain registration, repeated request or changed
+output directory stops the channel. The child cannot select a source, calibration
+choice, output path or invocation identity in this request.
+
+The callback is trusted parent code, not a sandboxed plugin. The integration test
+uses the actual `prepare_assignment_count_inputs` helper with parent-declared
+inputs, real retained bytes and manifest, and mocked HTTP registration. A reserved
+real child receives those bytes only after the helper returns. Lost registration
+leaves one pending journal command and no response. Other tests cover requests
+before output creation, child-supplied source fields, repeats and replacement of
+the output directory. The broader warning-enabled suite passes 326 tests. Baseline,
+harmless and restored controls pass; four injected faults fail the intended tests
+for source fields, repetition, output identity and omitted writer binding. See
+`prototype/engine-count-channel-controls.json`.
+
+This confirms the tested helper-backed callback boundary, not every possible
+parent callback. Path identity checks do not establish containment against a
+concurrent filesystem attacker. No normal dispatcher entry is enabled. The full
+child stage adapter, parent acquisition subprocess custody, native database
+registration/recovery, supervisor restart, escaped descendants and scientific
+acceptance remain open. Existing GitHub run 37859472244 was still in progress
+when polled after the local suite; it was not restarted.

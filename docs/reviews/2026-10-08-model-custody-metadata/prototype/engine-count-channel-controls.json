@@ -1,0 +1,41 @@
+{
+  "channel_sha256": "492b7f35fdcdd0e07e1130ed8754af19e9696cd464ab70cdc83182a67df7c578",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "allow-child-source",
+      "exit_code": 1,
+      "targeted_test": "test_child_source_override_refused"
+    },
+    {
+      "control": "allow-repeat",
+      "exit_code": 1,
+      "targeted_test": "test_repeated_preparation_refused_before_callback"
+    },
+    {
+      "control": "ignore-output-identity",
+      "exit_code": 1,
+      "targeted_test": "test_replaced_output_refused_before_callback"
+    },
+    {
+      "control": "omit-writer-binding",
+      "exit_code": 1,
+      "targeted_test": "test_reserved_child_receives_registered_counts"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real child and retained count bytes, actual assignment helper, mocked HTTP. Callback is trusted parent code. No native database, live acquisition, concurrent filesystem attack containment, full stage integration or scientific acceptance."
+}

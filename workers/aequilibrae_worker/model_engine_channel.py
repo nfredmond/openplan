@@ -5,6 +5,9 @@ same-user processes and does not authorize child startup or output capture.
 """
 import json
 import os
+import stat
+from contextlib import nullcontext
+import model_attempt_writer as managed
 import socket
 import struct
 
@@ -106,15 +109,22 @@ class ProgressClient(Channel):
     def read_paths(self):
         return self._request('read_paths', {}, result=True)
 
+    def prepare_counts(self):
+        return self._request('prepare_counts', {}, result=True)
+
     def create_outputs(self):
         return self._request('create_outputs', {}, result=True)
 
 
 class ProgressParent(Channel):
-    def __init__(self, connection, writer, *, output_name=None):
+    def __init__(self, connection, writer, *, output_name=None, count_preparer=None):
         super().__init__(connection)
         self.writer = writer
         self.output_name = output_name
+        self.count_preparer = count_preparer
+        self.output_directory = None
+        self.output_identity = None
+        self.count_preparation_started = False
 
     def serve_one(self):
         """Run on the writer's owning thread; never accept a child-supplied identity."""
@@ -126,7 +136,7 @@ class ProgressParent(Channel):
             if (set(request) != fields
                     or type(request['version']) is not int or request['version'] != VERSION
                     or type(request['sequence']) is not int or request['sequence'] != self.sequence
-                    or operation not in ('progress', 'read_run', 'read_paths', 'create_outputs')):
+                    or operation not in ('progress', 'read_run', 'read_paths', 'create_outputs', 'prepare_counts')):
                 raise ChannelStopped('Engine request is outside the allowed protocol')
             if operation == 'progress':
                 if not isinstance(request['log_tail'], str) or len(request['log_tail']) > 20000:
@@ -143,6 +153,28 @@ class ProgressParent(Channel):
                     raise ChannelStopped('Engine output destination was not configured by the parent')
                 response['result'] = {'output_directory': self.writer.create_assignment_outputs(
                     self.writer.files.path, self.output_name)}
+                self.output_directory = response['result']['output_directory']
+                info = os.stat(self.output_directory, follow_symlinks=False)
+                self.output_identity = (info.st_dev, info.st_ino)
+            elif operation == 'prepare_counts':
+                if self.count_preparer is None or self.output_directory is None:
+                    raise ChannelStopped('Count preparation requires parent configuration and outputs')
+                if self.count_preparation_started:
+                    raise ChannelStopped('Count preparation was already requested')
+                self.count_preparation_started = True
+                self._verify_output_directory()
+                owner = managed.current()
+                if owner is not None and owner is not self.writer:
+                    raise ChannelStopped('Count preparation has a different bound writer')
+                # The trusted parent callback uses the assignment preparation
+                # helper, including confirmed registration of its retained input.
+                with managed.bind(self.writer) if owner is None else nullcontext():
+                    result = self.count_preparer(self.output_directory)
+                self.writer.require_open()
+                self._verify_output_directory()
+                if not isinstance(result, dict):
+                    raise ChannelStopped('Count preparation returned no record')
+                response['result'] = result
             else:
                 if self.writer.files is None:
                     raise ChannelStopped('Engine paths require an owned workspace')
@@ -157,6 +189,13 @@ class ProgressParent(Channel):
             self.writer.stopped = True
             self.stop()
             raise
+
+
+    def _verify_output_directory(self):
+        self.writer.files.verify()
+        info = os.stat(self.output_directory, follow_symlinks=False)
+        if not stat.S_ISDIR(info.st_mode) or (info.st_dev, info.st_ino) != self.output_identity:
+            raise ChannelStopped('Engine output directory identity changed')
 
 
 def inherited_progress_client():
