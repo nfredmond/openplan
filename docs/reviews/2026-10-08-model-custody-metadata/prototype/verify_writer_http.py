@@ -25,7 +25,8 @@ import model_command_journal as journal
 from worker_import_for_tests import import_worker_main
 
 
-def verify(output, writer_module, outputs=False, state_output=False, count_output=False):
+def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False):
+    count_output = count_output or count_consumer
     outputs = outputs or state_output or count_output
     source = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
     if source['container'] != 'supabase_db_openplan-restore-target-2026091050' or not re.fullmatch(r'openplan_retention_upgrade_[0-9a-f]{32}', source['database']):
@@ -145,7 +146,13 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
                                         path = Path(worker.run_work_directory(run)) / 'run_output'
                                         path.mkdir()
-                                        worker.retain_assignment_counts(str(external), str(path), status_directory=str(output))
+                                        if count_consumer:
+                                            import model_count_inputs
+                                            predecessor = model_count_inputs.retain(str(external), str(output), output / 'predecessor-counts')
+                                            worker.stage_artifacts(run, stage, str(path.parent), {},
+                                                {'count_inputs': predecessor, 'counts_path': predecessor['counts_path']})
+                                        else:
+                                            worker.retain_assignment_counts(str(external), str(path), status_directory=str(output))
                                 elif status == 'state_artifact':
                                     with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
                                         path = worker.run_work_directory(run)
@@ -213,7 +220,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         if len(records) != 1 or records[0]['attempt_id'] != observed['attempts'][0]['id']:
                             raise AssertionError('Output is absent, duplicated or belongs to another attempt')
                         if status == 'count_artifact':
-                            retained_dir = writers[0].files.path / 'run_output' / 'count_inputs'
+                            retained_dir = writers[0].files.path / 'run_output' / ('artifact_count_inputs' if count_consumer else 'count_inputs')
                             manifest = retained_dir / 'manifest.json'
                             content = manifest.read_bytes()
                             inventory = json.loads(content)
@@ -228,6 +235,8 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     or records[0]['artifact_type'] != 'model_count_inputs'):
                                 raise AssertionError('Native count manifest differs from retained bytes')
                             for name, expected in expected_files.items():
+                                if count_consumer and (retained_dir / name).stat().st_ino == (output / 'predecessor-counts' / name).stat().st_ino:
+                                    raise AssertionError('Consumer reused predecessor count inode')
                                 item = inventory['files'][name]
                                 if ((retained_dir / name).read_bytes() != expected or item['status'] != 'retained'
                                         or item['sha256'] != hashlib.sha256(expected).hexdigest() or item['size_bytes'] != len(expected)):

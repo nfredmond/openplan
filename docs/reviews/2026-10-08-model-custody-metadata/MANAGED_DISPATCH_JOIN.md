@@ -962,3 +962,25 @@ They do not close native consumer-manifest recovery, complete package/project
 transfer, normal managed dispatch, scientific acceptance or rendered browser
 acceptance. Previously recorded native producer-manifest recovery remains
 separate evidence. No scientific observation, acceptance grade or holdout changes.
+
+### Native artifact-consumer manifest recovery
+
+The actual artifact-stage entry now has native command evidence for its initial
+verified count-input handoff. The proof retains a predecessor count set, enters
+the stage under a fresh managed invocation, and drops the reply after the native
+artifact command commits. The consumer's CSV and both metadata files have
+independent inodes and the expected bytes, hashes and sizes. The registered
+manifest URL, hash, size, artifact type and attempt match the retained output.
+
+Baseline, harmless and restored controls each pass one case with six HTTP calls.
+A fresh CLI process recovers the exact receipt without changing native records;
+its cached retry sends no HTTP. Recovery does not reopen the stopped writer.
+A deliberately incorrect consumer manifest hash fails the native file comparison.
+Results and exact source hashes are in `prototype/count-consumer-http.json`.
+Private `count-consumer-http-v1` records preserve the isolated clones and journals.
+The temporary HTTP gateways are removed. No application database is changed.
+
+This proof stops at the first artifact-stage registration. It does not establish
+complete evidence generation, full package/project transfer, normal managed
+poll/push dispatch, scientific accuracy or practitioner acceptance. Those remain
+separate requirements. Disk had 81 GiB available before these small fixture clones.
