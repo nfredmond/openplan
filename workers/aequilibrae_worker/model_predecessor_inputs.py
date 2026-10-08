@@ -69,3 +69,32 @@ def map_package(state_input, package_input):
     mapped = copy.deepcopy(original)
     mapped['package']['package_dir'] = package_input['package_directory']
     return mapped
+
+
+def map_assignment_counts(state_input, output_input):
+    """Relocate count record paths within a verified output copy, preserving sources."""
+    import copy
+    from pathlib import Path
+    producer = state_input['producer']
+    if any(not producer.get(key) or producer.get(key) != output_input['producer'].get(key)
+           for key in ('stage_id', 'attempt_id')):
+        raise ValueError('State and outputs must belong to the same producer attempt')
+    original = state_input['state']
+    assignment = original.get('assignment') if isinstance(original, dict) else None
+    counts = assignment.get('count_inputs') if isinstance(assignment, dict) else None
+    if not isinstance(counts, dict):
+        raise ValueError('Assignment has no retained count input record')
+    source = Path(output_input['source_package_directory']) / 'count_inputs'
+    target = Path(output_input['outputs_directory']) / 'count_inputs'
+    if not source.is_absolute() or not target.is_absolute():
+        raise ValueError('Output count directories must be absolute')
+    expected = {'counts_input_directory': str(source), 'counts_path': str(source/'counts.csv'),
+                'manifest_path': str(source/'manifest.json')}
+    if any(counts.get(key) != value for key, value in expected.items()) or assignment.get('counts_path') != expected['counts_path']:
+        raise ValueError('Assignment count paths differ from the retained output source')
+    mapped = copy.deepcopy(original)
+    mapped_counts = mapped['assignment']['count_inputs']
+    mapped_counts.update(counts_input_directory=str(target), counts_path=str(target/'counts.csv'),
+                         manifest_path=str(target/'manifest.json'))
+    mapped['assignment']['counts_path'] = mapped_counts['counts_path']
+    return mapped

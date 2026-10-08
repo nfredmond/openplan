@@ -1794,3 +1794,29 @@ extraction or publication. Combined state/count mapping, assignment output
 creation under managed dispatch, engine closure and the full lifecycle remain
 unfinished. Normal managed dispatch remains disabled, with scientific, browser
 and human acceptance still open.
+
+### Assignment count-path mapping
+
+A new mapping helper pairs original assignment state with the selected output
+producer. It requires matching nonempty stage and attempt identities, a retained
+count record, and exact original count paths beneath the inventoried output
+source. It deep-copies state and changes only the count directory, manifest path,
+CSV path and top-level assignment count path to the retained consumer output.
+Manifest hashes, statuses, original source labels and manifest bytes remain
+unchanged. The count consumer still verifies the recorded manifest and file
+identities before creating its own input copy.
+
+Six tests use real retained synthetic count and output files, including an
+actual subsequent count consumption. They refuse differing attempts, foreign
+paths, inconsistent top-level paths, missing count records and changed copied
+manifest bytes. Baseline, harmless and restored controls pass; four deliberate
+faults detect omitted producer/path checks, original-state mutation and failure
+to relocate paths. The warning-enabled broader suite passes 239 tests.
+`prototype/assignment-count-mapping-controls.json` records source identity and
+control outcomes.
+
+This helper is not yet connected to combined managed-input preparation. Its
+caller must supply the already verified state/output records; the helper alone
+does not establish native producer authority. Native joined recovery, managed
+assignment creation, engine closure and full dispatch remain unfinished.
+Scientific, browser and human acceptance remain open.
