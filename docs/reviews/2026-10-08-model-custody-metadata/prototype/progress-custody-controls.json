@@ -1,6 +1,6 @@
 {
   "progress_sha256": "467a9cb727465aa9e7a22038ffa8c0f4547ec0158bb257ae0dc589894c5dc958",
-  "worker_sha256": "68fdf87e4d3b692452d34cfffda9e3dbabb49b0b0aad7dab57b1b6e42114d44c",
+  "worker_sha256": "07120c33ab53b167dd2f4ba816a3aae348aea627b639b75e331dd9aee9debb7b",
   "controls": [
     {
       "control": "baseline",
@@ -24,6 +24,11 @@
     },
     {
       "control": "omit-worker-fatal-policy",
+      "exit_code": 1,
+      "targeted_test": "test_actual_assignment_context_propagates_unconfirmed_write"
+    },
+    {
+      "control": "wrong-worker-logger",
       "exit_code": 1,
       "targeted_test": "test_actual_assignment_context_propagates_unconfirmed_write"
     },

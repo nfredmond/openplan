@@ -4843,6 +4843,7 @@ def stage_assignment(
         with stream_assignment_progress(
             _emit_progress,
             fatal_exceptions=(WorkerStateWriteUnconfirmed,),
+            logger_name=project.logger.name,
             target_gap=assig.rgap_target,
             max_iterations=assig.max_iter,
         ):

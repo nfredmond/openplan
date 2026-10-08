@@ -10,6 +10,7 @@ cases=[('baseline',source,main_source,None),
        ('swallow-custody-error',source.replace('except self._fatal_exceptions:', 'except ():'),main_source,'test_fatal_callback_error_propagates'),
        ('omit-level-restoration',source.replace('logger.setLevel(previous_level)','pass'),main_source,'test_fatal_flush_restores_logger_and_detaches'),
        ('omit-worker-fatal-policy',source,main_source.replace('fatal_exceptions=(WorkerStateWriteUnconfirmed,),','fatal_exceptions=(),'),'test_actual_assignment_context_propagates_unconfirmed_write'),
+       ('wrong-worker-logger',source,main_source.replace('logger_name=project.logger.name,',"logger_name='aequilibrae',"),'test_actual_assignment_context_propagates_unconfirmed_write'),
        ('restored',source,main_source,None)]
 runner='''
 import importlib.util,sys,unittest

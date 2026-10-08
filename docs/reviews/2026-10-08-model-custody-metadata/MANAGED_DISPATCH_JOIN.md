@@ -2109,3 +2109,29 @@ run reads, path resolution, count retention and stage progress. Importing main
 also loads operator environment files, so removing credentials from only the
 child environment would not establish credential isolation. The engine child
 protocol, descendant containment and supervisor-loss reconciliation remain open.
+
+### Native assignment progress logger and interruption
+
+The first native assignment check failed because no callback reached the handler.
+Installed AequilibraE 1.6.2 uses a project-specific logger with propagation disabled;
+the worker watched its parent logger. The actual assignment context now attaches
+to project.logger.name. The unit context check also uses a nonpropagating project
+logger. Four progress fault controls now pass, including restoration of the wrong
+logger, and the warning-enabled broader suite still passes 285 tests.
+
+The native proof creates two centroid nodes, one bidirectional link and synthetic
+demand, then executes the configured TrafficAssignment. It evaluates the progress
+context expression extracted from the actual worker stage. Version 2 first proved
+interruption on an engine setup warning. Version 3 deliberately waits for an
+iteration update and advances the progress clock by six seconds per read so the
+tiny network exercises an unthrottled update. The original synthetic callback
+failure propagates before execute returns, on the invocation thread. Scope cleanup
+deactivates the project and leaves no open project file descriptors. Baseline,
+harmless and restored cases pass; swallowing the error or selecting the wrong
+logger lets execution continue and fails the targeted assertion.
+
+Private native-progress-failure-v1 retains the original failed experiment; v2
+retains the warning case; v3 retains the iteration case and controls. The current
+report is prototype/native-progress-failure.json. These are synthetic engine
+interruption checks, not database transport evidence, a full stage run, assurance
+about larger-network threads, supervisor recovery or scientific acceptance.
