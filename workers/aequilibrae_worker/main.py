@@ -6466,6 +6466,15 @@ def process_stage(stage: dict) -> bool:
                 _WORKER_HEARTBEAT.set_current_work(None)
 
 
+def write_run_state(work_dir: str, state: dict) -> None:
+    """Stop the stage when publication of its local handoff state is uncertain."""
+    import model_run_state
+    try:
+        model_run_state.publish(work_dir, state)
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Run state publication unconfirmed; inspect the saved state before continuing") from None
+
+
 def run_work_directory(run_id: str) -> str:
     """Use the complete database identity; never adopt ambiguous legacy scratch."""
     if not isinstance(run_id, str) or str(uuid.UUID(run_id)) != run_id:
@@ -6512,8 +6521,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
 
             result = stage_setup(run_id, stage_id, work_dir, bbox, pkg_dir)
             os.makedirs(os.path.join(work_dir, "run_output"), exist_ok=True)
-            with open(state_file, "w") as f:
-                json.dump({"setup": result, "package": package_meta}, f)
+            write_run_state(work_dir, {"setup": result, "package": package_meta})
             sb_patch_stage(stage_id, {
                 "status": "succeeded",
                 "completed_at": datetime.now(timezone.utc).isoformat(),
@@ -6526,8 +6534,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
             pkg_dir = state["package"]["package_dir"]
             result = stage_assignment(run_id, stage_id, work_dir, state["setup"], pkg_dir)
             state["assignment"] = result
-            with open(state_file, "w") as f:
-                json.dump(state, f)
+            write_run_state(work_dir, state)
             sb_patch_stage(stage_id, {
                 "status": "succeeded",
                 "completed_at": datetime.now(timezone.utc).isoformat(),
@@ -6641,8 +6648,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     "ActivitySim assignment handoff",
                 )
                 state["activitysim_assignment"] = result
-                with open(state_file, "w") as f:
-                    json.dump(state, f)
+                write_run_state(work_dir, state)
                 volume_path = os.path.join(
                     work_dir, "activitysim_assignment_output", "link_volumes.csv"
                 )

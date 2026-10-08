@@ -12,6 +12,8 @@ The [October 6 integration audit](reviews/2026-10-06-integration/INTEGRATION.md)
 
 ## Current authorities
 
+The [atomic model run-state correction](reviews/2026-10-08-model-custody-metadata/RUN_STATE_PUBLICATION.md) protects local stage handoffs from truncated writes. Attempt ownership and whole-stage replay remain unfinished.
+
 The October 8 model recovery checkpoints cover [stage preparation and artifact delivery](reviews/2026-10-08-model-custody-metadata/STAGE_RECOVERY.md), [KPI receipt recovery](reviews/2026-10-08-model-custody-metadata/KPI_RECOVERY.md) and [retained agreement computation](reviews/2026-10-08-model-custody-metadata/AGREEMENT_COMPUTATION.md). They preserve interrupted-work boundaries and do not establish full stage replay or scientific acceptance.
 
 The [manual engagement case](reviews/2026-10-07-engagement-manual-case/VERIFICATION.md) records source-to-response-to-decision custody and downloaded review files. The [approval-label follow-up](reviews/2026-10-07-engagement-manual-case/STATUS_LABELS.md) distinguishes review approval from public release. The [source-label follow-up](reviews/2026-10-07-engagement-manual-case/SOURCE_LABELS.md) verifies source authorship in newly downloaded PDF and workbook files. Its [handoff target follow-up](reviews/2026-10-07-engagement-manual-case/TARGET_BROWSER.md) verifies the project-link refresh correction in T3.
