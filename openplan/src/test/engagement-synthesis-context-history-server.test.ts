@@ -15,6 +15,19 @@ function remove(f: Fixture, table: string, attemptId: unknown) {
 afterEach(() => vi.restoreAllMocks());
 
 describe("current-staff historical context execution", () => {
+  it("does not use output with a changed predecessor to assess later task bytes", async () => {
+    const f = fixture(), second = f.history[1];
+    second.output.uncertainties.push(...Array.from({ length: 18 }, () => "😀".repeat(1900)));
+    second.recapture();
+    const valid = await load(f, 2);
+    expect(valid.resourceAssessment?.taskIndex).toBe(2);
+    second.input.predecessor_selection_id = randomUUID();
+    const changed = await load(f, 2);
+    expect(changed.entries[1].status).toBe("predecessor_changed");
+    expect(changed.resourceAssessment).toBeNull();
+    expect(changed.entries[1].captureSha256).toBe(second.outputRow.capture_sha256);
+  });
+
   it("measures retained Unicode output before any next attempt and drops it when its selection is cleared", async () => {
     const f = fixture(), first = f.history[0];
     first.output.uncertainties = Array.from({ length: 20 }, () => "😀".repeat(1900));

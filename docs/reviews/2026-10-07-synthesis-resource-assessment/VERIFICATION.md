@@ -25,3 +25,9 @@ The existing real context/thematic continuation suites pass all 65 tests. Inspec
 Three additional focused tests pass. Context and thematic history now replay real retained Unicode output large enough to exceed the next task budget, while that task has no selected attempt. Clearing the earlier output selection removes the assessment without deleting original output. The thematic processor accepts the complete UTF-8 task at its exact measured limit and refuses a limit one byte lower.
 
 Harmless comments preserve each new test. Returning a null assessment fails each real-history test; changing the thematic comparison to refuse equality fails the exact-limit test. Mutations were restored. Changed-test lint passes. This targeted invocation selects three tests and skips 136 unrelated tests; it does not replace the earlier full-file runs. Native permissions, changed-predecessor integration, production compilation and actual browser presentation remain distinct checks.
+
+## Changed predecessor integration
+
+Two real-history cases pass for context and thematic work. A retained second output first produces an oversized third task. Changing its predecessor selection reference then leaves the output retained as `predecessor_changed` and removes the later resource assessment. Harmless comments preserve both cases. Removing the predecessor-selection comparison fails the corresponding case in each reader. Mutations were restored and changed-test lint passes.
+
+Production compilation and T3 desktop/390px acceptance remain pending. All history tests use mocked storage transport; they do not establish native permission enforcement.
