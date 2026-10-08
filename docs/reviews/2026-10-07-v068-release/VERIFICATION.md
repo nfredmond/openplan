@@ -45,3 +45,30 @@ Full V1 remains open. This release does not establish independent nationwide
 scientific acceptance, native date entry or every download's native save,
 complete geography and authority coverage, or observed practitioner outcomes.
 Both modeling methods retain their separate evidence and inconclusive limits.
+
+## Follow-up integration checkpoint
+
+PR #143 lands as `565cd983c7e101910eba3da091334a3e5c7bd350`.
+Its main CI 37727484828, live isolation 37727484869 and worker checks
+37727484871 pass. Isolation reports 1,462 passing tests in 101 files,
+with 125 skipped. The full-archive restore completion and its local scope are
+recorded in [combined acceptance](COMBINED_ACCEPTANCE.md#restore-completion-and-main-ci-follow-up).
+The earlier pending statements remain dated checkpoints, not current failures.
+
+The award follow-up and historical matcher verifier in PR #147 at `8e39667b`
+pass full QA, shuffled tests, modeling/operations Python and worker checks.
+QA reports 20,053 passing tests in 1,509 files, with 1,565 tests in 94 files
+skipped. Live isolation run 37729778533 remains active at this checkpoint.
+
+PR #148 includes that complete ancestry, the
+[observation-bounds correction](../2026-10-07-observation-bounds/VERIFICATION.md)
+and PR #149's workflow-evidence mapping. It now targets main for combined checks;
+the preceding head's results do not substitute for its own final verification.
+No migration changes in these follow-ups. No tag is published.
+
+The [award browser record](../2026-10-07-award-reopen-mobile/VERIFICATION.md)
+retains identified desktop/390px form evidence and native reopen/readback checks.
+T3 later reconnects through a fresh preview tab, but screenshot capture still
+fails, including on a new blank page. Its desktop log reports a capture timeout.
+Post-submit captures and final console review remain incomplete. No alternate
+browser is used, and no completed visual acceptance claim replaces this gap.
