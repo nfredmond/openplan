@@ -202,3 +202,26 @@ direct writes, cross-workspace reads and duplicate metrics. The proof runner is
 owner-session tests do not establish concurrent lock ordering, authenticated
 HTTP behavior, complete field validation, durable client adoption, source-file
 custody, browser behavior or scientific acceptance. Those remain open.
+
+## Native concurrent publication
+
+`prototype/verify_publication_contention.py` temporarily installs the candidate
+objects only in the named owned proof database. Two real PostgreSQL sessions
+call the command as `service_role`. The first holds its transaction open after
+receiving a result. The proof observes the second waiting on a database lock
+before allowing the first to commit.
+
+With the same request, the waiting session returns the exact original receipt.
+With different requests sharing one expected snapshot, the waiting replacement
+is refused as stale. Each successful case retains one receipt and the first
+committed projection. Baseline, harmless and restored cases pass for both modes.
+Disabling the stale-snapshot check allows both publishers to commit and is
+detected. Returning an empty retry receipt is also detected.
+
+All eight cases finish, and the candidate functions, triggers and private tables
+are removed. Synthetic run/projection rows remain in the owned proof database.
+Evidence is retained under
+`model-command-client-20261008-proof/publication-contention/`. This proves these
+two concurrency orders on actual application constraints; it does not prove
+publication/reaper ordering, HTTP delivery, worker adoption, county refresh,
+higher-tier policy, complete field validation or scientific acceptance.
