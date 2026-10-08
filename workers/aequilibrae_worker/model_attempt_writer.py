@@ -11,6 +11,8 @@ import model_command_client as client
 import model_command_journal as journal
 from model_attempt_invocation import AttemptContext, ReconciliationRequired
 
+RUN_CONFIGURATION_FIELDS = ('scenario_entry_id', 'corridor_geojson', 'query_text', 'engine_key', 'run_title', 'input_snapshot_json')
+
 _CURRENT: ContextVar['AttemptWriter | None'] = ContextVar('model_attempt_writer', default=None)
 
 
@@ -81,19 +83,22 @@ class AttemptWriter:
                 self.stopped = True
                 raise
 
-    def _read_state(self):
+    def _read_state(self, *, include_run=False):
         """Read the claimed stage's actual log before expanding partial patches."""
         get = self.get
         if get is None:
             import requests
             get = requests.get
         ctx = self.context
+        run_projection = 'id,workspace_id,status,attempt_managed'
+        if include_run:
+            run_projection += ',' + ','.join(RUN_CONFIGURATION_FIELDS)
         try:
             response = get(self.base_url.rstrip('/') + '/rest/v1/model_run_stages',
                 headers={'apikey': self.service_key, 'Authorization': 'Bearer ' + self.service_key},
                 params={'id': 'eq.' + ctx.stage_id, 'run_id': 'eq.' + ctx.run_id,
                         'model_runs.workspace_id': 'eq.' + ctx.workspace_id,
-                        'select': 'id,run_id,status,attempt_managed,active_attempt_id,log_tail,error_message,model_runs!inner(id,workspace_id,status,attempt_managed)'},
+                        'select': 'id,run_id,status,attempt_managed,active_attempt_id,log_tail,error_message,model_runs!inner(' + run_projection + ')'},
                 timeout=(5, 30), allow_redirects=False)
         except Exception:
             raise client.OwnershipUnconfirmed('Managed stage read did not confirm current state') from None
@@ -112,11 +117,26 @@ class AttemptWriter:
             log = stage['log_tail']
             if log is not None and (not isinstance(log, str) or len(log) > 20000):
                 raise ValueError('Invalid existing stage log')
+            if include_run:
+                if not set(RUN_CONFIGURATION_FIELDS).issubset(run):
+                    raise ValueError('Incomplete run configuration')
+                return {key: run[key] for key in ('id', 'workspace_id', *RUN_CONFIGURATION_FIELDS)}
             return {'status': 'running', 'log_tail': log, 'error': None}
         except (ValueError, KeyError, TypeError, AttributeError):
             raise client.OwnershipUnconfirmed('Managed stage read is incomplete or no longer owned') from None
         finally:
             response.close()
+
+    def read_run(self, run_id):
+        """Read only the claimed run in the same query that checks stage ownership."""
+        self.require_open()
+        try:
+            if run_id != self.context.run_id:
+                raise ValueError('Managed run read crosses invocation scope')
+            return self._read_state(include_run=True)
+        except BaseException:
+            self.stopped = True
+            raise
 
     def patch_stage(self, stage_id: str, payload: dict) -> dict:
         self.require_open()

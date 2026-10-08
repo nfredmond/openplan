@@ -2253,3 +2253,28 @@ commit; installed lost-commit recovery requires a separate native database check
 This proof does not supply the run/path/count protocol, result publication,
 detached-descendant containment, restored supervisor or scientific acceptance.
 Normal managed dispatch remains disabled.
+
+### Parent-owned run configuration read
+
+AttemptWriter.read_run now reads only its claimed run. The existing stage read
+can explicitly project the run's scenario, geography, query, engine, title and
+input snapshot in the same joined response that checks run/workspace, active
+attempt, managed status and running state. Missing projected fields refuse;
+explicit null values remain present. The main worker's bound sb_get_run adapter
+uses this method and has no legacy-read fallback after failure. Unbound legacy
+behavior is unchanged. No database write occurs for a successful read.
+
+Four tests use the real invocation journal and actual worker adapter with mocked
+HTTP. They assert the exact query projection and filters, response closure,
+foreign-run refusal before transport, revoked-attempt refusal and missing-field
+refusal. Baseline, harmless and restored controls pass; four targeted faults
+remove requested-run checks, configuration projection, field completeness or
+attempt validation and fail their intended tests. The warning-enabled broader
+suite passes 304 tests. See prototype/managed-run-read-controls.json. The first
+control-run anchor was ambiguous with the workspace guard; it now targets the
+run-read guard specifically.
+
+This is a read-time ownership snapshot, not a distributed lease or concurrent
+revocation fence. Native RLS and the child run-read channel remain unverified.
+The new operation establishes the parent API needed by that channel; it does not
+yet provide the full child input protocol or activate normal managed dispatch.
