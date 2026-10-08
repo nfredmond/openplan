@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Candidate migration `20261016000021_model_attempt_prepared_artifact_identity.sql`
+allows the managed artifact command to retain an explicitly prepared artifact ID.
+Existing callers can still request a generated ID. ID collisions refuse the new
+registration, and receipt failure rolls back the artifact insert. Apply this
+migration before using prepared IDs with managed output commands. Both workers
+now route artifact and KPI registration through the admitted attempt when a
+managed writer is explicitly bound. Normal claim dispatch remains unchanged;
+filesystem ownership and complete managed continuation are still unfinished.
+
 Candidate migration `20261016000020_model_blocked_stage_receipts.sql` adds a
 service-only blocked-stage command with immutable retry receipts. It checks the
 current predecessor under lifecycle locks before skipping unclaimed queued work.

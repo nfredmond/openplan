@@ -644,11 +644,25 @@ def sb_patch_run(run_id: str, payload: dict):
 
 
 def sb_post_artifact(payload: dict):
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_artifact(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed artifact registration requires reconciliation; no insert fallback") from error
     return _confirmed_record_insert("model_run_artifacts", payload)
 
 
 def sb_record_retained_artifact(payload: dict, *, workspace_id: str, journal_dir: str, logical_name: str | None = None) -> dict:
     """Retain an explicit or named artifact request and stop on unconfirmed delivery."""
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_artifact(payload, workspace_id=workspace_id, logical_name=logical_name)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed artifact registration requires reconciliation; no legacy fallback") from error
     from pathlib import Path
     import model_legacy_artifact_command
     import model_command_client
@@ -1170,6 +1184,13 @@ def _confirmed_record_insert(table: str, payload: dict) -> dict:
 
 def sb_record_retained_kpi(payload: dict, *, workspace_id: str, stage_id: str, journal_dir: str) -> dict:
     """Keep the complete KPI request pending until its exact receipt is confirmed."""
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_kpi(payload, workspace_id=workspace_id, stage_id=stage_id)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed kpi registration requires reconciliation; no legacy fallback") from error
     from pathlib import Path
     import model_legacy_kpi_command
     import model_command_client
@@ -1191,6 +1212,13 @@ def sb_record_retained_kpi(payload: dict, *, workspace_id: str, stage_id: str, j
 
 
 def sb_post_kpi(payload: dict):
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_kpi(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed kpi registration requires reconciliation; no insert fallback") from error
     _confirmed_record_insert("model_run_kpis", payload)
 
 

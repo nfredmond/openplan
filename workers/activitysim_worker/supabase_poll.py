@@ -301,10 +301,24 @@ def _confirmed_record_insert(table: str, payload: dict) -> None:
 
 
 def sb_post_kpi(payload: dict) -> None:
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_kpi(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed kpi registration requires reconciliation; no insert fallback") from error
     _confirmed_record_insert("model_run_kpis", payload)
 
 
 def sb_post_artifact(payload: dict) -> None:
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_artifact(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed artifact registration requires reconciliation; no insert fallback") from error
     _confirmed_record_insert("model_run_artifacts", payload)
 
 

@@ -464,3 +464,48 @@ managed dispatch, attempt-owned output registration and files, cancellation
 while computing, cross-process execution competition and explicit continuation
 still require integration evidence. No engine, browser, practitioner or
 scientific acceptance is inferred from these synthetic cases.
+
+### Prepared artifact identity and bound output adapters
+
+The primary-output preparation path fixes an artifact ID before registration.
+The prior managed RPC generated a new ID, so switching that call unchanged would
+break the prepared reference. Migration
+`20261016000021_model_attempt_prepared_artifact_identity.sql` allows an optional
+canonical prepared ID while preserving generated IDs for existing callers.
+Collisions refuse registration; they do not replace an existing artifact. The
+client validates the optional ID and checks it against the returned receipt.
+
+The actual migration CLI applies and reapplies the migration on an owned clone
+of installed migration 20. Counts and content checksums for all 33 preexisting
+model tables remain unchanged. Native installed cases check service-role use,
+client-role refusal, exact retry, changed-request refusal, collision preservation,
+malformed IDs, generated-ID compatibility, receipt-insert rollback and refusal
+after completion. The source database and its migration history stay unchanged.
+The security-advisor exit code is recorded; it is not a clean-database claim.
+
+Both workers' direct artifact/KPI helpers and AequilibraE's retained helpers now
+use the admitted attempt when the managed writer is explicitly bound. Output
+scope must match the invocation. Request identity depends on installation,
+attempt, operation and stable output name, not mutable bytes or metric values.
+Exact repeated payloads reuse receipts. Changed contents for the same slot stop
+instead of creating a replacement request. Prepared artifact IDs, byte hashes,
+metadata and null KPI values remain intact. Pending or uncertain output delivery
+stops later terminal writes. No managed error falls back to an unowned insert.
+
+Seven new output tests and the adjacent suites pass 62 focused checks. All 44
+ActivitySim tests pass. The previously observed SQLite ResourceWarning remains.
+Three targeted output mutations fail on mutable artifact identity, null-to-zero
+replacement and ignored workspace scope. Native harmless/restored controls pass;
+discarding the prepared artifact ID fails the expected native assertion. Client
+controls fail when malformed IDs are accepted. Results are retained in
+`output-controls.json`, `prepared-artifact-controls.json` and
+`prepared-artifact-upgrade.json`.
+
+The migration suite initially reports the missing operator changelog entry.
+After adding the migration and deployment note, all 39 migration tests pass.
+The migration changes no relation or RLS policy inventory. The installed SQL
+cases and injected output-adapter checks remain separate evidence: combined
+native output HTTP recovery is still required, followed by filesystem ownership,
+managed assessment/publication and the complete normal dispatcher switch.
+
+The final direct AequilibraE push-trigger script also passes all 38 checks.

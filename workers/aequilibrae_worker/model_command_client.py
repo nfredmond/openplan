@@ -41,8 +41,10 @@ def _validate_artifact(command: dict):
             raise ValueError('Artifact command identities must be canonical UUIDs')
     payload = args['payload']
     required = {'artifact_type', 'file_url', 'file_size_bytes', 'content_hash'}
-    if not isinstance(payload, dict) or not required <= set(payload) or set(payload) - required - {'metadata_json'}:
+    if not isinstance(payload, dict) or not required <= set(payload) or set(payload) - required - {'metadata_json', 'id'}:
         raise ValueError('Invalid artifact payload fields')
+    if 'id' in payload:
+        _uuid(payload['id'])
     if any(not isinstance(payload[key], str) or not payload[key] for key in ('artifact_type', 'file_url')):
         raise ValueError('Artifact type and reference required')
     if type(payload['file_size_bytes']) is not int or payload['file_size_bytes'] < 0 or not isinstance(payload['content_hash'], str) or not re.fullmatch('[0-9a-f]{64}', payload['content_hash']):

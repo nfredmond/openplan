@@ -2,6 +2,7 @@
 from contextlib import closing, contextmanager
 from contextvars import ContextVar
 from pathlib import Path
+import json
 import sqlite3
 import threading
 import uuid
@@ -142,3 +143,46 @@ class AttemptWriter:
 
     def patch_run(self, run_id: str, payload: dict):
         raise ReconciliationRequired('Managed parent transitions belong to the stage command transaction')
+
+    def record_artifact(self, payload: dict, *, workspace_id=None, logical_name=None):
+        return self._record_output('write_model_attempt_artifact', payload,
+                                   workspace_id=workspace_id, logical_name=logical_name)
+
+    def record_kpi(self, payload: dict, *, workspace_id=None, stage_id=None):
+        return self._record_output('write_model_attempt_kpi', payload,
+                                   workspace_id=workspace_id, stage_id=stage_id)
+
+    def _record_output(self, operation, payload, *, workspace_id=None, stage_id=None, logical_name=None):
+        """Bind an immutable output slot to this attempt, never to its contents."""
+        self.require_open()
+        ctx = self.context
+        try:
+            payload = json.loads(journal.canonical(payload))
+            if payload.get('run_id') != ctx.run_id or payload.get('stage_id', ctx.stage_id) != ctx.stage_id:
+                raise ValueError('Managed output crosses invocation scope')
+            if workspace_id is not None and workspace_id != ctx.workspace_id:
+                raise ValueError('Managed output crosses workspace scope')
+            if stage_id is not None and stage_id != ctx.stage_id:
+                raise ValueError('Managed output crosses stage scope')
+            payload.pop('run_id')
+            payload.pop('stage_id', None)
+            if operation == 'write_model_attempt_artifact':
+                name = logical_name if logical_name is not None else payload.get('id')
+                if name is None:
+                    name = journal.canonical({'type': payload.get('artifact_type'), 'reference': payload.get('file_url')})
+            else:
+                payload = {'kpi_category': 'accessibility', 'unit': '', 'geometry_ref': None,
+                           'breakdown_json': {}, **payload}
+                name = journal.canonical({'category': payload['kpi_category'], 'name': payload.get('kpi_name')})
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError('Managed output requires a stable name')
+            identity = journal.canonical({'destination': ctx.destination, 'operation': operation, 'name': name})
+            command = {'request_id': str(uuid.uuid5(uuid.UUID(ctx.attempt_id), identity)),
+                       'destination': ctx.destination, 'operation': operation,
+                       'arguments': {'run_id': ctx.run_id, 'stage_id': ctx.stage_id,
+                                     'attempt_id': ctx.attempt_id, 'payload': payload}}
+            return client.deliver(self.directory, command, base_url=self.base_url,
+                deployment_id=self.deployment_id, service_key=self.service_key, post=self.post)
+        except BaseException:
+            self.stopped = True
+            raise
