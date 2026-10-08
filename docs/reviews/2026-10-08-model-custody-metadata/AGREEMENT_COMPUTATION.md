@@ -68,3 +68,33 @@ separate obligations. Whole-stage replay stays disabled.
 Full application QA and GitHub checks are pending for this branch. T3 screenshot
 acceptance remains unavailable. No scientific accuracy, independent nationwide
 validation, practitioner acceptance or v1 completion is claimed.
+
+## Verified private source copies
+
+The earlier before/after-only source boundary is superseded. The helper now
+copies each source into its private temporary directory and verifies the copied
+SHA-256 and size against the recorded facts before comparison. The comparator
+reads these copies. Transient changes to an original cannot alter its input.
+Original source paths remain explicit labels in the output; labels alone do not
+establish byte custody. After-comparison checks still refuse persistent changes
+to originals. Copies are temporary, and an interrupted computation still needs
+reconciliation rather than automatic restart.
+
+Eleven focused tests pass, including a transient original-file change during
+comparison, a deliberately corrupted copy and incomplete source-label refusal.
+The real comparator preserves its original source labels and output bytes.
+All 21 comparison-script tests pass. Baseline, harmless and restored controls
+pass; twelve adverse variants now fail, adding copy-digest omission, snapshot
+bypass and source-label guard removal. Results are in
+`model-command-client-20261008-proof/agreement-source-snapshot-controls.json`.
+The first snapshot-bypass control exposed an assertion inside the callback that
+was intentionally converted to the helper's generic error. The corrected test
+collects observed input facts and asserts them outside the callback, so the
+adverse result identifies the actual input boundary.
+
+All 82 worker suites pass again with none failed or omitted. Unit
+`openplan-agreement-source-workers-20261008.service`, invocation
+`da140dd84025402d866e44458e22ff60`, finished at 08:38:01 Pacific with a 169.9 MiB
+peak under a 1 GiB cap. Worker source files stayed unchanged during regression.
+Stage ownership, interrupted-computation reconciliation and scientific acceptance
+remain separate obligations. Whole-stage replay remains disabled.

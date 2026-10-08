@@ -79,7 +79,7 @@ class AgreementComputation(unittest.TestCase):
     def test_changed_source_during_compute_is_not_retained(self):
         def change(**arguments):
             result = self.compare(**arguments)
-            Path(arguments['second_csv']).write_text('changed during computation')
+            Path(self.arguments['second_csv']).write_text('changed during computation')
             return result
         with self.assertRaises(main.WorkerStateWriteUnconfirmed): self.run_retained(change)
         Path(self.arguments['second_csv']).write_text('second_csv')
@@ -120,6 +120,42 @@ class AgreementComputation(unittest.TestCase):
         self.assertIn('never averaged', ' '.join(payload['what_this_is_not']))
         self.assertEqual(payload['sources']['first'], self.arguments['first_csv'])
         self.assertIn('generated_at_utc', payload)
+
+    def test_transient_original_change_cannot_change_private_comparison_input(self):
+        observed = {}
+        def transient(**arguments):
+            original = Path(self.arguments['first_csv'])
+            original.write_text('transient changed values')
+            try:
+                observed.update(path=arguments['first_csv'],
+                    content=Path(arguments['first_csv']).read_text(),
+                    label=arguments['source_path_labels']['first'])
+                return self.compare(**arguments)
+            finally:
+                original.write_text('first_csv')
+        self.run_retained(transient)
+        self.assertEqual(self.calls, 1)
+        self.assertNotEqual(observed['path'], self.arguments['first_csv'])
+        self.assertEqual(observed['content'], 'first_csv')
+        self.assertEqual(observed['label'], self.arguments['first_csv'])
+
+    def test_mismatched_private_copy_refuses_before_comparison(self):
+        def corrupt(source, destination):
+            Path(destination).write_text('corrupted copy')
+        with patch.object(subject.shutil, 'copyfile', side_effect=corrupt):
+            with self.assertRaises(main.WorkerStateWriteUnconfirmed): self.run_retained()
+        self.assertEqual(self.calls, 0)
+        self.assertFalse(Path(self.arguments['output_dir']).exists())
+
+    def test_comparator_rejects_incomplete_source_labels(self):
+        import sys
+        scripts = Path(__file__).resolve().parents[2] / 'scripts' / 'modeling'
+        sys.path.insert(0, str(scripts))
+        from compare_behavioral_demand_outputs import compare_link_volume_runs
+        for labels in ({'first': 'only one'}, {'first': '', 'second': 'valid'}):
+            with self.assertRaisesRegex(ValueError, 'Both original source path labels'):
+                compare_link_volume_runs(**self.arguments, source_path_labels=labels)
+        self.assertFalse(Path(self.arguments['output_dir']).exists())
 
     def test_forced_replacement_and_missing_geometry_refuse(self):
         self.arguments['force'] = True

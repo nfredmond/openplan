@@ -4,6 +4,7 @@ This checkpoint does not grant restart ownership or scientific acceptance.
 """
 from pathlib import Path
 import tempfile
+import shutil
 import model_record_files as files
 import model_stage_computation as computation
 from model_stage_preparation import file_facts
@@ -29,7 +30,20 @@ def retain(directory, *, base_url, deployment_id, run_id, stage_id, compare, arg
     def compute():
         # The comparator may write freely only into a new private scratch directory.
         with tempfile.TemporaryDirectory(prefix='openplan-agreement-') as temporary:
-            result = compare(**{**arguments, 'output_dir': temporary})
+            snapshots = {}
+            source_directory = Path(temporary) / 'sources'
+            source_directory.mkdir(mode=0o700)
+            for key, path in source_paths.items():
+                snapshot = source_directory / key
+                shutil.copyfile(path, snapshot)
+                expected = {field: facts[key][field] for field in ('sha256', 'size_bytes')}
+                if file_facts(snapshot) != expected:
+                    raise ValueError('Agreement snapshot differs from prepared source')
+                snapshot.chmod(0o400)
+                snapshots[key] = str(snapshot)
+            result = compare(**{**arguments, **snapshots, 'output_dir': temporary,
+                'source_path_labels': {'first': str(source_paths['first_csv']),
+                                       'second': str(source_paths['second_csv'])}})
             records = {}
             for key, name in OUTPUTS.items():
                 path = Path(result[key])
