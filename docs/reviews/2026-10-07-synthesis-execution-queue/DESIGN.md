@@ -652,3 +652,26 @@ console review, populated interruption and concurrency checks, precise resource
 diagnosis and release checks remain open. Synthetic outputs establish neither
 semantic validity nor practitioner or public acceptance. The active private
 provider is now thematic-queue-run/provider.mjs, port 34667, session 34637.
+
+
+## Staff inspection and mobile import of queued proposal
+
+T3 created staff review 32058354 from the saved source and inspected the queued
+proposal through proposal history. The original machine view retains both
+unassigned contributions, thematic uncertainty and the contrasting contribution's
+original wording and context uncertainty. Desktop 1440 by 1000 and mobile
+390 by 844 captures were visually inspected. Document width equals viewport width
+at both sizes. Private capture paths and hashes are in
+`thematic-staff-browser-acceptance.json`; raw captures remain outside Git.
+
+At 390 pixels, explicit selection, a synthetic import reason and replacement
+create revision 2. It remains unapproved with no approval events. Reopening
+revision 1 preserves its original SHA256 and historical wording. Runtime health
+still identifies build 0e826600 and the process cwd matches this isolated checkout.
+No source edits were made during these browser checks.
+
+T3 omitted all 12 console entries from its bounded snapshot, so this pass does
+not establish clean-console acceptance. Export downloads remain unchecked here.
+The creation notice still says revision 1 after the import, while the current
+revision heading and history correctly show revision 2. Record that stale notice
+for correction rather than treating the whole visible workflow as finished.

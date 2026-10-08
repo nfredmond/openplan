@@ -1,0 +1,53 @@
+{
+  "recordedAt": "2026-10-08T00:12:50.666388+00:00",
+  "build": "0e826600",
+  "sourceHead": "91d447ca",
+  "runtimeCwd": "/home/nathaniel/.local/state/openplan/synthesis-execution-queue-20261007/openplan",
+  "requestId": "9e39538a-42ef-4ae3-961c-991388b73bd3",
+  "reviewShortId": "32058354",
+  "revision1Sha256": "79a0155646504d6bffa4b46ee6a1fc5f011e389984eaeec60c4999e733f8bb55",
+  "revision2Sha256": "adf02f623363a606010f240cdc4d82d1baad1d2b8650d1858c856762961f61b6",
+  "steps": [
+    "Create private staff review from saved source",
+    "Inspect machine proposals for this review",
+    "Inspect proposal 9e39538a",
+    "Inspect contrasting contribution and retained context uncertainty",
+    "Select proposal, enter explicit synthetic import reason, replace draft at 390px",
+    "Observe revision 2 unapproved with no approval events",
+    "Reopen revision 1 and verify original hash and historical wording"
+  ],
+  "desktop": {
+    "width": 1440,
+    "height": 1000,
+    "documentScrollWidth": 1440
+  },
+  "mobile": {
+    "width": 390,
+    "height": 844,
+    "documentScrollWidth": 390
+  },
+  "captures": {
+    "desktop-proposal": {
+      "privatePath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-openplan-history-localhost-muys6vmx-8a7e93e6.png",
+      "sha256": "8beb67102ba0417cfb2391926132d303db008318aefd41d7778c1dc58830f449",
+      "visuallyInspected": true
+    },
+    "mobile-proposal": {
+      "privatePath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-openplan-history-localhost-muys71y9-d089975b.png",
+      "sha256": "fba84a1ba5fb14ff0130adc2326ec231026105adc1fcedb43bf9b2262581e814",
+      "visuallyInspected": true
+    },
+    "mobile-unapproved": {
+      "privatePath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-openplan-history-localhost-muys81a3-9eac4fa1.png",
+      "sha256": "44c4916ab201b61e5d1200129a340ac778f947f27a21a2159afdaff8b9ae4cf2",
+      "visuallyInspected": true
+    }
+  },
+  "limitations": [
+    "T3 snapshot omitted all 12 console entries; no clean-console claim",
+    "No export download acceptance in this pass",
+    "No semantic, practitioner or public acceptance",
+    "Desktop image is downsampled by capture; mobile capture remains legible",
+    "Creation notice still says Review saved, revision 1 after import; current revision heading and history correctly say revision 2"
+  ]
+}
