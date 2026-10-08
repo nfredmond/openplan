@@ -1349,3 +1349,32 @@ This proof uses a synthetic SQLite project and installed artifact commands, not
 an engine assignment. Native AequilibraE reopen remains the separate evidence
 above. Consumer selection, closure enforcement and full input/state joins remain
 unfinished; no release or scientific claim changes.
+
+### Selected project consumption
+
+The explicit predecessor selector now accepts project inputs under the same
+completed-stage, run and active-attempt checks as state and package inputs.
+`retain_managed_predecessor_project()` requires the selected producer's exact
+installation/run/stage/attempt path and supported project metadata. It verifies
+the registered inventory while copying, repeats SQLite integrity checks on the
+consumer copy and compares those results with the producer's recorded checks.
+An independent `model_project_consumption` artifact retains the producer
+artifact/stage/attempt/hash references and the consumer manifest identity.
+
+The helper preserves explicit incomplete statuses and refuses an unsupported
+readiness claim instead of treating copied files as permission to compute.
+Contradiction or uncertain registration stops the writer. It does not relocate
+state paths or run an engine. Cross-database consistency and closure enforcement
+remain unfinished.
+
+Six focused tests use real files and the actual selection/copy/registration
+helper with mocked HTTP. They cover independent copies and metadata, exact
+project-type query, foreign paths, changed producer bytes, pending consumer
+registration after response loss, contradictory database checks and promoted
+readiness. The combined relevant suite passes 72 tests. Baseline, harmless and
+restored controls pass. Five targeted faults detect ignored foreign paths,
+ignored database checks, ignored readiness, erased producer attempt and use of
+the wrong artifact type. `prototype/managed-project-handoff-controls.json`
+records exact source hashes and outcomes. Native joined recovery remains open;
+producer registration recovery and native project reopen above are separate
+checks and do not close it.
