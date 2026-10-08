@@ -1,8 +1,11 @@
 
--- A managed run without attempts exercises deletion without an incidental FK refusal.
+-- Administrative fixture only: isolate the deletion guard from incidental FKs.
+-- This state cannot be created through a normal client insert.
+ALTER TABLE public.model_runs DISABLE TRIGGER guard_model_attempt_enrollment;
 INSERT INTO model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by,attempt_managed)
  SELECT 'aebd87a9-a8ad-4c2e-b0c4-e04e8ab6e485',workspace_id,model_id,engine_key,'queued','Synthetic empty run',created_by,true
  FROM model_runs WHERE id='57afae71-f16e-4152-b7f3-f32670040de9';
+ALTER TABLE public.model_runs ENABLE TRIGGER guard_model_attempt_enrollment;
 INSERT INTO model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by)
  SELECT '0ed3d090-a7e6-40a5-bf58-52ae68c350fd',workspace_id,model_id,engine_key,'queued','Synthetic unmanaged run',created_by
  FROM model_runs WHERE id='57afae71-f16e-4152-b7f3-f32670040de9';
