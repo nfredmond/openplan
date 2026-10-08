@@ -9,6 +9,13 @@ vi.mock("next/link", () => ({
 import { PublishedComparableObservationCard } from "@/components/models/published-comparable-observation-card";
 
 describe("PublishedComparableObservationCard", () => {
+  it("keeps failed study loading visible without presenting results or downloads", () => {
+    render(<PublishedComparableObservationCard study={null} />);
+    expect(screen.getByRole("heading", { name: "Comparable observation evidence unavailable" })).toBeInTheDocument();
+    expect(screen.getByText(/unavailable, not zero/)).toHaveTextContent("Reload this page to retry");
+    expect(screen.getByText(/No model accuracy conclusion follows/)).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
   it("states the repaired-instrument boundary and exposes exact downloads", () => {
     render(<PublishedComparableObservationCard study={{
       version: "0.41.0",

@@ -252,6 +252,16 @@ replacement or completed OWP administration claim.
 - **Verification:** clean-machine commissioning; healthy computation beyond 45 minutes; process/database/network failure; duplicate/late workers; exact storage and local model-byte recovery; nonempty migrations; denied external traffic; correct final deployed identity. Run every worker family, not import-only substitutes.
 - **Risks/questions/cost:** storage grows with models/imagery, tiles have license and update obligations, physical-disk failure defeats same-disk backups, authentication/email and public exposure need operational ownership. Measure resources and recovery objectives. Spending on hardware or a service requires Nathaniel; free software alone does not promise zero operating effort.
 
+**October 8 synthesis operations checkpoint.** The
+[supervision verification](reviews/2026-10-07-synthesis-execution-queue/SUPERVISION_VERIFICATION.md)
+records generated Linux user units, actual service restart in a disposable guest
+with unchanged empty-coordinator journals, and a separate native process crash
+after result persistence but before the database output write. Restart retains
+that original output without a second provider call. These development records
+await main integration. They do not complete clean agency commissioning, populated
+guest-loss recovery, external-worker backup/restore, either demand worker or
+capacity acceptance. Continue M3 from those remaining boundaries.
+
 ### M3a. Dependable desktop control and demo recovery
 
 - **Outcome:** Nathaniel starts from the existing desktop icon and understands which site is running, whether the demonstration target is accepted and ready, what work is underway and how to recover without shell commands. CORE-OPS-CONTROL-01 covers this early operational requirement.
@@ -649,6 +659,8 @@ Stage the outcome as follows:
 
 ## S1. Scientific custody and comparable measurement
 
+- **October 8 bounded evidence:** [native metadata probes](reviews/2026-10-08-model-custody-metadata/VERIFICATION.md) reject omitted, null and wrong schema metadata in each of five v2 artifact positions. Five null-unsafe mutations fail; a harmless mutation passes. This is synthetic SQL integrity coverage pending main integration, not ingestion/display completeness or scientific acceptance.
+- **October 8 display correction:** [published diagnosis checks](reviews/2026-10-08-model-custody-metadata/DISPLAY_VERIFICATION.md) bind comparable-study displayed coverage and hashes to verified diagnosis files and expose failed loading. Focused checks pass; identified-build browser acceptance, full QA and main integration remain pending. Production ingestion and independent scientific acceptance stay open.
 - **Planning outcome:** a modeler can determine exactly what was compared, what is unsupported, and why no accuracy claim follows yet.
 - **Gap/evidence:** v0.39-v0.44 reports, frozen nationwide preregistration and science appendix. v0.44 did not advance overall; base-period/use acceptance and ingestion/display integrity remain incomplete.
 - **Dependencies/scope:** M3 for durable execution. Preserve every existing frozen byte, consumed partition and negative result. Verify production custody ingestion, SQL omitted/NULL-field behavior, displayed-versus-downloaded hash/summary consistency and explicit loader errors. Align year/day/direction/lane/vehicle units, model quantities and source-supported observation intervals.

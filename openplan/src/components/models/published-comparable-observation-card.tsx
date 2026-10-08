@@ -17,7 +17,12 @@ export function PublishedComparableObservationCard({
 }: {
   study: PublishedComparableObservationStudy | null;
 }) {
-  if (!study) return null;
+  if (!study) return (
+    <section aria-label="Comparable observation instrument" className="module-section-surface mb-6" data-testid="published-comparable-observation-study">
+      <h2 className="module-section-title">Comparable observation evidence unavailable</h2>
+      <p className="module-section-description mt-3">The published observation study could not be read and verified. Its results are unavailable, not zero. Reload this page to retry. If the problem continues, ask your administrator to check the installed study files. No model accuracy conclusion follows.</p>
+    </section>
+  );
   const geographyIds = [...new Set(study.diagnoses.map((record) => record.geographyId))];
   const coverage = study.diagnoses[0]?.coverage ?? {};
   return (

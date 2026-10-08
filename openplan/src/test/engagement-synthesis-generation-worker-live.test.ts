@@ -63,7 +63,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       input: statement, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], timeout: 30000,
     }).trim().split("\n").at(-1)!;
   }
-  async function fixture(options: { mode?: "api_key" | "none"; bytes?: number; loss?: "output" | "dispatch"; cancel?: boolean; allTasks?: boolean; validOutputs?: boolean } = {}) {
+  async function fixture(options: { mode?: "api_key" | "none"; bytes?: number; loss?: "output" | "dispatch"; cancel?: boolean; allTasks?: boolean; validOutputs?: boolean; crashBeforeOutput?: boolean } = {}) {
     const owner = randomUUID(), custodian = randomUUID(), workspace = randomUUID(), campaign = randomUUID(), sourceId = randomUUID();
     const connection = randomUUID(), revision = randomUUID(), requestId = randomUUID(), authorizationId = randomUUID();
     const root = await mkdtemp(join(tmpdir(), "openplan-synthesis-native-"));
@@ -134,11 +134,18 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     asOwner(`SELECT authorize_engagement_synthesis_generation('${requestId}','${authorizationId}',${literal(JSON.stringify(grant))})`);
     const proxyErrors: string[] = [];
     const deliveries: Array<{ bytes: number; body: Record<string, string>; status: number }> = [];
-    let dropped = false, cancelled = false;
+    let dropped = false, cancelled = false, crashedBeforeOutput = false;
+    let runningWorker: ReturnType<typeof spawn> | undefined;
     const target = await listen(createServer(async (req, res) => {
       try {
         const chunks: Buffer[] = []; for await (const chunk of req) chunks.push(Buffer.from(chunk));
         const body = Buffer.concat(chunks), isOutput = req.url?.endsWith("/retain_engagement_synthesis_generation_output");
+        // The real worker has synced its observation before sending this request.
+        // Kill it before forwarding so PostgreSQL has no output to acknowledge.
+        if (isOutput && options.crashBeforeOutput && !crashedBeforeOutput) {
+          if (!runningWorker || !runningWorker.kill("SIGKILL")) throw new Error("Synthetic worker interruption failed");
+          crashedBeforeOutput = true; res.destroy(); return;
+        }
         if (isOutput && options.cancel && !cancelled) {
           cancelled = true;
           asOwner(`SELECT cancel_engagement_synthesis_generation_request('${campaign}','${requestId}','${randomUUID()}','SYNTHETIC late original')`);
@@ -165,9 +172,10 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
           SUPABASE_SERVICE_ROLE_KEY: environment.SERVICE_ROLE_KEY, OPENPLAN_SYNTHESIS_GENERATION_WORK_DIR: root,
           OPENPLAN_INTEGRATION_KEY_SECRET: secret, OPENPLAN_AI_LOCAL_ENDPOINTS: JSON.stringify([endpoint]), NODE_DEBUG: "" },
       });
+      runningWorker = child;
       let stderr = ""; child.stderr.on("data", chunk => { stderr += String(chunk); }); child.stdout.resume();
-      const ended = new Promise<{ code: number | null; stderr: string }>((resolve, reject) => {
-        child.once("error", reject); child.once("close", code => resolve({ code, stderr }));
+      const ended = new Promise<{ code: number | null; signal: NodeJS.Signals | null; stderr: string }>((resolve, reject) => {
+        child.once("error", reject); child.once("close", (code, signal) => resolve({ code, signal, stderr }));
       });
       cleanup.push(async () => { if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL"); await ended; });
       return ended;
@@ -196,6 +204,33 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       contextArgs: { campaignId: campaign, workspaceId: workspace, parentRequestId: requestId, intentText: request.intentText as string },
       cancelParent: () => asOwner(`SELECT cancel_engagement_synthesis_generation_request('${campaign}','${requestId}','${randomUUID()}','SYNTHETIC context continuation')`) };
   }
+
+  it("delivers a synced original after process loss before the native output write", async () => {
+    const f = await fixture({ crashBeforeOutput: true });
+    const first = await f.run();
+    expect(first.signal, first.stderr).toBe("SIGKILL");
+    const retained = await f.journal();
+    expect(retained.phase).toBe("observed");
+    expect(f.calls).toHaveLength(1);
+    expect(f.deliveries).toHaveLength(0);
+    expect(await f.outputs()).toEqual([]);
+
+    const resumed = await f.run();
+    expect(resumed.code, resumed.stderr).toBe(0);
+    const delivered = await f.journal();
+    expect(delivered.phase).toBe("delivered");
+    expect(delivered.attemptId).toBe(retained.attemptId);
+    expect(delivered.workerId).toBe(retained.workerId);
+    expect(delivered.observation).toEqual(retained.observation);
+    expect(f.calls).toHaveLength(1);
+    expect(f.deliveries).toHaveLength(1);
+    const outputs = await f.outputs();
+    expect(outputs).toHaveLength(1);
+    expect(outputs![0].attempt_id).toBe(retained.attemptId);
+    expect(outputs![0].capture_sha256).toBe(delivered.captureSha256);
+    expect(hash(outputs![0].capture_text)).toBe(delivered.captureSha256);
+    expect(f.proxyErrors).toEqual([]);
+  });
 
   it.each(["output", "dispatch"] as const)("recovers native context CLI custody after %s acknowledgement loss", async loss => {
     const f = await fixture({ allTasks: true, validOutputs: true }), staff = await f.staffHistoryClient(), signal = new AbortController().signal;
