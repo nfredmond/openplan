@@ -744,6 +744,83 @@ def test_the_run_work_directory_is_not_named_for_one_place():
     assert "pilot" not in main.RUN_WORK_ROOT.lower(), main.RUN_WORK_ROOT
 
 
+def test_stage_and_run_writes_require_the_exact_returned_record():
+    from unittest import mock
+
+    for writer, table in ((main.sb_patch_stage, "model_run_stages"), (main.sb_patch_run, "model_runs")):
+        payload = {"status": "succeeded", "completed_at": "2026-10-08T07:00:00+00:00"}
+        response = mock.Mock(status_code=200)
+        response.json.return_value = [{"id": RUN_ID, "status": "succeeded", "completed_at": "2026-10-08T07:00:00Z", "extra": "allowed"}]
+        with mock.patch.object(main.requests, "patch", return_value=response) as patch:
+            writer(RUN_ID, payload)
+        assert patch.call_args.kwargs.get("timeout") == 30, "state writes need a bounded transport"
+        assert patch.call_args.kwargs["headers"]["Prefer"] == "return=representation"
+        assert patch.call_args.args[0].endswith(f"/{table}?id=eq.{RUN_ID}")
+
+
+def test_stage_and_run_writes_refuse_failed_empty_or_different_receipts():
+    from unittest import mock
+
+    correct = {"id": RUN_ID, "status": "succeeded", "log_tail": "original"}
+    receipts = [
+        (503, [correct]), (403, [correct]), (204, None), (200, []),
+        (200, correct), (200, [{**correct, "id": "other"}]),
+        (200, [{**correct, "status": "running"}]),
+        (200, [correct] * 2),
+        (200, [{"id": RUN_ID, "status": "succeeded", "log_tail": "different"}]),
+    ]
+    for writer in (main.sb_patch_stage, main.sb_patch_run):
+        for status, rows in receipts:
+            response = mock.Mock(status_code=status, text="private response must not appear")
+            response.json.return_value = rows
+            with mock.patch.object(main.requests, "patch", return_value=response):
+                try:
+                    writer(RUN_ID, {"status": "succeeded", "log_tail": "original"})
+                except RuntimeError as error:
+                    assert "unconfirmed" in str(error)
+                    assert "private response" not in str(error)
+                else:
+                    raise AssertionError(f"unconfirmed state write accepted: {status}, {rows}")
+
+
+def test_stage_write_lost_ack_does_not_overwrite_possible_success_with_failure():
+    import contextlib
+    import io
+    import tempfile
+    from unittest import mock
+
+    for lost_table in ("model_run_stages", "model_runs"):
+        stage_patches = []
+        def patch(url, *, headers, json, timeout=None):
+            if "model_run_stages" in url:
+                stage_patches.append(dict(json))
+            if f"/{lost_table}?" in url and json.get("status") == "succeeded":
+                raise main.requests.Timeout("synthetic write committed, acknowledgement lost")
+            response = mock.Mock(status_code=200)
+            response.json.return_value = [{"id": RUN_ID, **json}]
+            return response
+
+        output = io.StringIO()
+        with tempfile.TemporaryDirectory() as work, contextlib.redirect_stdout(output), \
+             mock.patch.object(main, "RUN_WORK_ROOT", work), \
+             mock.patch.object(main, "sb_claim_stage", return_value=True), \
+             mock.patch.object(main, "sb_get_run", return_value={}), \
+             mock.patch.object(main, "ensure_dynamic_package", return_value={"package_dir": work, "bbox": [0, 0, 1, 1]}), \
+             mock.patch.object(main, "stage_setup", return_value={"log": "synthetic completed computation"}), \
+             mock.patch.object(main.requests, "patch", side_effect=patch), \
+             mock.patch.object(main.requests, "get", return_value=mock.Mock(status_code=200, json=lambda: [])):
+            try:
+                main.process_stage({"id": RUN_ID, "run_id": RUN_ID, "stage_name": "AequilibraE Setup"})
+            except RuntimeError as error:
+                assert "unconfirmed" in str(error)
+            else:
+                raise AssertionError("worker continued after an uncertain state write")
+        assert [item["status"] for item in stage_patches] == ["succeeded"], stage_patches
+        if lost_table == "model_run_stages":
+            assert "Setup succeeded" not in output.getvalue(), output.getvalue()
+        assert "complete!" not in output.getvalue(), output.getvalue()
+
+
 TESTS = [value for name, value in sorted(globals().items()) if name.startswith("test_")]
 
 if __name__ == "__main__":

@@ -566,9 +566,44 @@ def _parse_speed(val):
 
 
 # ─── Supabase helpers ───────────────────────────────────────────────────
+class WorkerStateWriteUnconfirmed(RuntimeError):
+    """A state update has no matching receipt; it may already be committed."""
+
+
+def _confirmed_state_patch(table: str, record_id: str, payload: dict):
+    """Require a returned row without exposing provider response bodies.
+
+    An absent acknowledgement is not proof of rollback. Callers must not turn
+    this exception into a contradictory failed-stage update.
+    """
+    try:
+        response = requests.patch(
+            f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{record_id}",
+            headers=HEADERS, json=payload, timeout=30,
+        )
+        if response.status_code != 200:
+            raise WorkerStateWriteUnconfirmed(
+                f"Worker state write unconfirmed for {table} (HTTP {response.status_code})"
+            )
+        rows = response.json()
+        if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict) or rows[0].get("id") != record_id:
+            raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: missing matching row")
+        for field, expected in payload.items():
+            actual = rows[0].get(field)
+            if field.endswith("_at") and isinstance(expected, str) and isinstance(actual, str):
+                matches = datetime.fromisoformat(expected.replace("Z", "+00:00")) == datetime.fromisoformat(actual.replace("Z", "+00:00"))
+            else:
+                matches = field in rows[0] and actual == expected
+            if not matches:
+                raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: returned values differ")
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except (requests.RequestException, ValueError, TypeError) as error:
+        raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: no valid receipt") from error
+
+
 def sb_patch_stage(stage_id: str, payload: dict):
-    url = f"{SUPABASE_URL}/rest/v1/model_run_stages?id=eq.{stage_id}"
-    requests.patch(url, headers=HEADERS, json=payload)
+    _confirmed_state_patch("model_run_stages", stage_id, payload)
 
 
 def sb_claim_stage(stage_id: str, payload: dict) -> bool:
@@ -592,8 +627,7 @@ def sb_claim_stage(stage_id: str, payload: dict) -> bool:
 
 
 def sb_patch_run(run_id: str, payload: dict):
-    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}"
-    requests.patch(url, headers=HEADERS, json=payload)
+    _confirmed_state_patch("model_runs", run_id, payload)
 
 
 def sb_post_artifact(payload: dict):
@@ -6729,6 +6763,10 @@ def _claim_and_run_stage(stage: dict) -> bool:
 
         print(f"[{time.strftime('%X')}] ✅ {stage_name} succeeded")
 
+    except WorkerStateWriteUnconfirmed:
+        # A lost acknowledgement can follow a committed success. Stop this
+        # attempt and leave the persisted state for reconciliation.
+        raise
     except Exception as e:
         error_msg = f"{type(e).__name__}: {e}"
         print(f"[{time.strftime('%X')}] ❌ {stage_name} failed: {error_msg}")
@@ -6762,8 +6800,8 @@ def _claim_and_run_stage(stage: dict) -> bool:
         headers=HEADERS,
     )
     if res.status_code == 200 and not res.json():
-        print(f"[{time.strftime('%X')}] 🎉 Run {run_id[:8]}… complete!")
         sb_patch_run(run_id, {"status": "succeeded", "completed_at": datetime.now(timezone.utc).isoformat()})
+        print(f"[{time.strftime('%X')}] 🎉 Run {run_id[:8]}… complete!")
 
     return True
 
@@ -7170,14 +7208,12 @@ class RunTriggerExecutor:
                 # "looks fine, does nothing" failure this whole lane exists to
                 # remove. The run id is printed IN FULL and the consequence is
                 # spelled out, because this line is the only trace that a pushed
-                # run stopped here — process_stage records its own failures, so
-                # what lands here is a failure above it (a stage read, a network
-                # blip) that left the run queued rather than failed.
+                # run stopped here. A lost state-write acknowledgement may
+                # follow a committed change, so do not infer its database state.
                 print(
                     f"[{time.strftime('%X')}] Pushed run {run_id} errored before reaching a stage "
-                    f"outcome: {type(e).__name__}: {e}. Its stages are unchanged, so a polling "
-                    "worker can still take it and OpenPlan's staleness sweep will fail it if "
-                    "nothing does."
+                    f"outcome: {type(e).__name__}: {e}. Inspect persisted stage state before retrying; "
+                    "an acknowledgement can be lost after a write commits."
                 )
             finally:
                 with self._lock:

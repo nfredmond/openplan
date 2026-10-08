@@ -60,6 +60,13 @@ idempotency key.
 
 ## Worker connection
 
+The inspected generic stage path claims with a conditional queued-status PATCH
+and later updates by stage ID. It does not supply the per-attempt identity
+required above. The [state-receipt correction](WORKER_STATE_VERIFICATION.md)
+stops after unconfirmed updates, but does not provide fencing or restart
+reconciliation. Extend the existing M3 lifecycle rather than invent a parallel
+custody-only attempt system or silently omit that requirement.
+
 Use the existing stage execution and artifact upload paths. Require an explicit
 prepared instrument for the selected run. The worker must verify its source,
 geography, network, assignment, population and observation boundaries before
