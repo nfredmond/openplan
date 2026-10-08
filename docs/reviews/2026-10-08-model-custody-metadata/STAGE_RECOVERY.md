@@ -423,3 +423,30 @@ recovery must verify and materialize original bytes without creating replacement
 records. ActivitySim output registration and remaining stage writes also need
 reconciliation. No whole-stage replay, independent acceptance, current ownership
 or scientific claim promotion is established by this checkpoint.
+
+
+## Local retained-record materialization component
+
+`model_record_files.materialize` accepts named retained JSON byte strings. It
+writes each missing file through a private temporary file, flushes its bytes,
+and links it into place without replacing an existing target. Existing targets
+must be regular nonsymlink files with exactly matching bytes and stable identity
+during verification. Exact retries preserve existing inodes. A missing member
+of the record set can be created without replacing its matching peers. The
+directory is flushed after successful materialization.
+
+Six focused tests pass: exact retry, missing-file repair, changed/partial target
+refusal, symlink/FIFO refusal, interruption before target publication, competing
+changed target refusal and invalid filename handling. Baseline, harmless and
+restored controls pass. Ignoring existing-byte verification and replacing
+existing files each fail a targeted assertion. Private results are
+`model-command-client-20261008-proof/record-file-controls.json`.
+
+This component is not yet connected to record persistence. The shared rules-v4
+persistence helper and assignment-stage failure handler still rewrite local
+assessment JSON after generic failures. Integration must preserve the original
+bytes and keep failure status outside those records, with tests at both actual
+callers. A call can leave a subset of complete files if a later file fails; this
+is not a multi-file transaction. Tests do not prove power-loss durability or
+protection against an actor who can replace the caller-owned parent directory.
+A crash can leave an unreferenced temporary file; no partial target is published.
