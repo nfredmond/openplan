@@ -312,3 +312,74 @@ def deliver(directory, command: dict, *, base_url: str, deployment_id: str, serv
     finally:
         response.close()
     return journal.resolve(directory, command, receipt)['response']
+
+
+class OwnershipUnconfirmed(RuntimeError):
+    """Current ownership could not be read; no terminal write follows from this."""
+
+
+def inspect_ownership(claim_command: dict, claim_receipt: dict, *, workspace_id: str,
+                      base_url: str, deployment_id: str, service_key: str, get=None) -> dict:
+    """Read stage and parent together before attempting recovery.
+
+    This is a point-in-time snapshot, not a lease or permission to publish later.
+    Every subsequent mutation still needs the database's attempt fence. A false
+    result stops this attempt; it does not authorize a failure write or relaunch.
+    """
+    claim_command = json.loads(journal.canonical(claim_command))
+    claim_receipt = json.loads(journal.canonical(claim_receipt))
+    validate_command(claim_command)
+    if claim_command['operation'] != 'claim_model_stage_attempt':
+        raise ValueError('Ownership recovery requires the original claim command')
+    if claim_command['destination'] != destination(base_url, deployment_id):
+        raise ValueError('Claim belongs to another deployment')
+    checked_receipt(claim_command, claim_receipt)
+    if claim_receipt['outcome'] != 'claimed':
+        raise ValueError('A lost claim owns no attempt to recover')
+    _uuid(workspace_id)
+    if not service_key:
+        raise ValueError('Service credential required')
+    args = claim_command['arguments']
+    if get is None:
+        import requests
+        get = requests.get
+    try:
+        response = get(base_url.rstrip('/') + '/rest/v1/model_run_stages',
+                       headers={'apikey': service_key, 'Authorization': 'Bearer ' + service_key},
+                       params={'id': 'eq.' + args['stage_id'], 'run_id': 'eq.' + args['run_id'],
+                               'model_runs.workspace_id': 'eq.' + workspace_id,
+                               'select': 'id,run_id,status,attempt_managed,active_attempt_id,model_runs!inner(id,workspace_id,status,attempt_managed)'},
+                       timeout=(5, 30), allow_redirects=False)
+    except Exception:
+        raise OwnershipUnconfirmed('Model ownership transport did not confirm a snapshot') from None
+    try:
+        if response.status_code != 200:
+            raise OwnershipUnconfirmed('Model ownership read returned an unconfirmed status')
+        try:
+            rows = response.json()
+            if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict):
+                raise ValueError('Missing unique stage snapshot')
+            stage = rows[0]
+            run = stage['model_runs']
+            if not isinstance(run, dict):
+                raise ValueError('Missing parent snapshot')
+            if stage.get('id') != args['stage_id'] or stage.get('run_id') != args['run_id'] or run.get('id') != args['run_id'] or run.get('workspace_id') != workspace_id:
+                raise ValueError('Snapshot identity differs')
+            if type(stage.get('attempt_managed')) is not bool or type(run.get('attempt_managed')) is not bool:
+                raise ValueError('Snapshot ownership mode missing')
+            statuses = ('queued', 'running', 'succeeded', 'failed', 'cancelled')
+            if stage.get('status') not in (*statuses, 'skipped') or run.get('status') not in statuses:
+                raise ValueError('Snapshot status missing or invalid')
+            active = stage['active_attempt_id']
+            if active is not None:
+                _uuid(active)
+        except (ValueError, KeyError, TypeError, AttributeError):
+            raise OwnershipUnconfirmed('Model ownership snapshot is incomplete or mismatched') from None
+        owns = (stage['attempt_managed'] and run['attempt_managed']
+                and stage['status'] == 'running' and run['status'] == 'running'
+                and active == claim_receipt['attempt_id'])
+        return {'owns_stage': owns, 'active_attempt_id': active,
+                'stage_status': stage['status'], 'run_status': run['status'],
+                'stage_managed': stage['attempt_managed'], 'run_managed': run['attempt_managed']}
+    finally:
+        response.close()

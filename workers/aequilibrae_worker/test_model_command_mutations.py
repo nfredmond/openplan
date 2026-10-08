@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parent
-FILES = ('model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py')
+FILES = ('model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py', 'test_model_command_ownership.py')
 
 
 class MutationTests(unittest.TestCase):
@@ -79,6 +79,23 @@ class MutationTests(unittest.TestCase):
             with self.subTest(boundary=boundary, old=old):
                 result = self.run_case('model_command_client.py', old, new, test='test_model_command_instrument.py')
                 self.assertNotEqual(result.returncode, 0, 'Instrument fault escaped checks')
+                self.assertIn(boundary, result.stderr)
+                self.assertNotIn('SyntaxError', result.stderr)
+                self.assertNotIn('ModuleNotFoundError', result.stderr)
+
+    def test_ownership_faults_cannot_reuse_historical_claims(self):
+        cases = [
+            ("and active == claim_receipt['attempt_id'])", 'and True)', 'retained_receipt_does_not_authorize'),
+            ("owns = (stage['attempt_managed'] and run['attempt_managed']", "owns = (stage['attempt_managed']", 'retained_receipt_does_not_authorize'),
+            ("and stage['status'] == 'running' and run['status'] == 'running'", "and stage['status'] == 'running'", 'retained_receipt_does_not_authorize'),
+            (" or run.get('workspace_id') != workspace_id", '', 'missing_or_mismatched_snapshot'),
+            ("'select': 'id,run_id,status,attempt_managed,active_attempt_id,model_runs!inner(id,workspace_id,status,attempt_managed)'", "'select': 'id'", 'required_projection'),
+            ("            rows = response.json()", "            rows = response.json()\n            if rows == []: return {'owns_stage': False}", 'missing_or_mismatched_snapshot'),
+        ]
+        for old, new, boundary in cases:
+            with self.subTest(boundary=boundary, old=old):
+                result = self.run_case('model_command_client.py', old, new, test='test_model_command_ownership.py')
+                self.assertNotEqual(result.returncode, 0, 'Ownership fault escaped checks')
                 self.assertIn(boundary, result.stderr)
                 self.assertNotIn('SyntaxError', result.stderr)
                 self.assertNotIn('ModuleNotFoundError', result.stderr)

@@ -46,14 +46,15 @@ python3 -B workers/aequilibrae_worker/test_model_command_client.py
 python3 -B workers/aequilibrae_worker/test_model_command_journal.py
 python3 -B workers/aequilibrae_worker/test_model_command_kpi.py
 python3 -B workers/aequilibrae_worker/test_model_command_instrument.py
+python3 -B workers/aequilibrae_worker/test_model_command_ownership.py
 python3 -B workers/aequilibrae_worker/test_model_command_mutations.py
 ```
 
-Nine general delivery tests, five KPI tests, three instrument tests and six
-journal tests pass. Journal tests include separate
+Nine general delivery tests, five KPI tests, three instrument tests, five
+ownership tests and six journal tests pass. Journal tests include separate
 process exit after preparation and resolution, concurrent first-open requests,
-private permissions, immutable responses and deployment filtering. Four mutation
-runner tests retain harmless controls and detect twenty targeted broken behaviors.
+private permissions, immutable responses and deployment filtering. Five mutation
+runner tests retain harmless controls and detect twenty-six targeted broken behaviors.
 They modify temporary copies, never the checkout under validation.
 
 The parent-outcome fault initially survived because the fixture's timestamp also
@@ -77,6 +78,9 @@ Each command sent two POSTs; subsequent delivery reused the local receipt. An
 independent SQL count found one attempt and completion receipt per run, 13
 artifact records, three KPI records retaining null, zero and 1.25 separately, and
 two instrument custody records preserving AequilibraE and ActivitySim identities.
+An ownership read confirms each active stage before output writes, refuses the
+wrong workspace as unconfirmed, and identifies the retained claim as inactive
+after either terminal outcome.
 The temporary PostgREST gateway was removed. Synthetic database rows remain in
 the owned proof database.
 
@@ -90,7 +94,23 @@ server's missing `/rest/v1` prefix and to discard the reply. It does not simulat
 a TCP disconnect or a worker process crash. The prior prototype's separate TCP
 recovery evidence does not establish those properties for this new caller.
 Local evidence is retained at
-`~/.local/state/openplan/model-command-client-20261008-proof/instrument/native.json`.
+`~/.local/state/openplan/model-command-client-20261008-proof/ownership/native.json`.
+
+## Current ownership during recovery
+
+`inspect_ownership` checks the original claim command and returned receipt before
+requesting a current stage snapshot. The PostgREST query includes its parent run
+in the same response and filters by stage, run and workspace. Both records must
+be attempt-managed and running, and the stage must retain the claimed attempt.
+A valid inactive snapshot returns false. Missing fields, absent records, wrong
+identities, failed transport and denied reads raise `OwnershipUnconfirmed`.
+Neither result authorizes a new claim, terminal failure or relaunch.
+
+This read is a point-in-time observation, not a lease. Attempt fencing still
+applies to every subsequent write. Tests assert the complete query projection
+because a mocked response alone could hide an omitted parent or ownership field.
+The native check uses the actual joined PostgREST read before and after terminal
+writes. Restart orchestration and file ownership reconciliation remain open.
 
 ## Normal assignment artifact identity
 

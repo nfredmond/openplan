@@ -28,8 +28,10 @@ with gateway('public',database=meta['database']) as connection:
   workspace=sql(f"SELECT workspace_id FROM public.model_runs WHERE id='{run}';")
   destination=client.destination(base,meta['database'])
   directory=root/run
+  commands=[]
   def execute(operation,args):
    command={'request_id':str(uuid.uuid4()),'destination':destination,'operation':operation,'arguments':args}
+   commands.append(command)
    seen=[]
    def post(url,**kwargs):
     assert url==base+'/rest/v1/rpc/'+operation
@@ -53,6 +55,16 @@ with gateway('public',database=meta['database']) as connection:
    return result
   claim=execute('claim_model_stage_attempt',{'run_id':run,'stage_id':stage,'worker_id':'synthetic-command-client'})
   attempt=claim['attempt_id']
+  claim_command=commands[0]
+  def read_ownership(workspace_id=workspace):
+   def get(url,**kwargs):
+    assert url==base+'/rest/v1/model_run_stages'
+    return requests.get(base+'/model_run_stages',**kwargs)
+   return client.inspect_ownership(claim_command,claim,workspace_id=workspace_id,base_url=base,deployment_id=meta['database'],service_key=key,get=get)
+  assert read_ownership()['owns_stage'] is True
+  try: read_ownership(str(uuid.uuid4()))
+  except client.OwnershipUnconfirmed: pass
+  else: raise AssertionError('Unrelated workspace supplied an ownership snapshot')
   artifact=execute('write_model_attempt_artifact',{'run_id':run,'stage_id':stage,'attempt_id':attempt,'payload':{'artifact_type':'synthetic','file_url':'local://synthetic','content_hash':'a'*64,'file_size_bytes':7}})
   kpis=[]
   for value in (None,0,1.25):
@@ -82,9 +94,10 @@ with gateway('public',database=meta['database']) as connection:
   assert sql(f"SELECT count(*) FROM public.model_attempt_instrument_custody WHERE model_run_id='{run}';")=='2'
   write=execute('write_model_stage_attempt',{'run_id':run,'stage_id':stage,'attempt_id':attempt,'status':terminal,'log_tail':'Synthetic command-client proof','error':'Synthetic failure' if terminal=='failed' else None})
   assert write['run_status']==terminal
+  assert read_ownership()['owns_stage'] is False
   for table,where in [('model_stage_attempts',f"run_id='{run}'"),('model_stage_write_receipts',f"response_payload->>'stage_id'='{stage}'")]:
    assert sql(f'SELECT count(*) FROM public.{table} WHERE {where};')=='1'
   assert sql(f"SELECT count(*) FROM public.model_run_artifacts WHERE run_id='{run}';")=='13'
-  results.append({'run':run,'terminal':terminal,'attempt':attempt,'artifact':artifact['id'],'twenty_commands_with_lost_ack':True,'instrument_methods':[r['demand_method'] for r in instruments],'artifact_count':13,'kpi_values':[row['value'] for row in kpis],'post_per_command':2,'exact_retry_preserved':True,'single_attempt_and_completion':True})
+  results.append({'run':run,'terminal':terminal,'attempt':attempt,'artifact':artifact['id'],'twenty_commands_with_lost_ack':True,'ownership_before':True,'ownership_after':False,'wrong_workspace_unconfirmed':True,'instrument_methods':[r['demand_method'] for r in instruments],'artifact_count':13,'kpi_values':[row['value'] for row in kpis],'post_per_command':2,'exact_retry_preserved':True,'single_attempt_and_completion':True})
 (root/'native.json').write_text(json.dumps({'database':meta['database'],'boundary':'Actual installed migration and authenticated PostgREST; injected transport loses reply after committed HTTP response. Not process crash, TCP disconnect, normal dispatcher, Storage byte verification, model accuracy or preparation ordering. Instrument references are unuploaded synthetic fixtures. Synthetic rows retained in owned proof database.','cases':results},indent=2)+'\n')
 print(json.dumps(results,indent=2))
