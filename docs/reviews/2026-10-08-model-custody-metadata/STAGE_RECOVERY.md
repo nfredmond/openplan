@@ -361,3 +361,33 @@ completed successfully, and a native in-memory SQLite query passed afterward.
 The assessment checkout stays unchanged while its second full QA runs. Full
 application QA for the artifact branch remains pending and will run serially
 after that job. No release or scientific acceptance follows from these checks.
+
+
+## Computed-record checkpoint component
+
+`model_stage_computation.compute_once` retains a named computation against its
+deployment, run, stage and canonical inputs in the existing private SQLite
+journal. It commits a start marker before invoking the caller's computation. A
+completed exact retry returns the original detached JSON object after checking
+its digest. Changed inputs are refused. A prior start without a saved result
+requires reconciliation and never calls the computation again automatically.
+Result retention also checks that the original input record remains unchanged
+and unresolved.
+
+Six focused tests pass. They cover detached results, saved-result reuse in a
+fresh process, changed inputs, separate deployments, abrupt process exit inside
+the computation, changed saved bytes, changed checkpoint state before saving and
+invalid inputs/results. Baseline, harmless and restored controls pass. Five faults
+fail their intended assertions: accepting changed inputs, recomputing after an
+interrupted start, ignoring the saved digest, recomputing an already saved result
+and bypassing the final checkpoint comparison. Private evidence is
+`model-command-client-20261008-proof/stage-computation-controls.json`.
+
+The component is not yet connected to model assessment. The caller must bind
+complete input identities, establish current ownership and enforce scientific
+access gates before computation. The component does not validate scientific
+meaning or make a live filesystem snapshot. Its digest detects changed saved
+bytes, not an actor who can rewrite both bytes and digest. SQLite process-loss
+behavior here does not prove host power-loss recovery. A computation that started
+but never saved remains unresolved; no automatic reset or rerun is provided.
+Full worker regression after adding this component remains pending.
