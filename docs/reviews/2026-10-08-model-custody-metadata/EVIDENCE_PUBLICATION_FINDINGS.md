@@ -117,3 +117,33 @@ make multiple HTTP writes atomic, validate a receipt body, undo a committed
 delete, retain the previous publication, or provide automatic recovery. The
 county path is unchanged. Native transaction/retry and reader evidence described
 above remains required before declaring publication recovery complete.
+
+## Native failure and committed-reply evidence
+
+`prototype/verify_evidence_delivery.py` runs the actual worker helper against
+the named isolated CLI-upgrade database through a temporary PostgREST gateway.
+It creates only a synthetic legacy run. Run
+`8cd7ae72-1861-44e7-8df5-d15ec3450aea` recorded a native 201 claim insertion,
+204 metric deletion and 201 metric insertion. The stored claim remained
+`prototype_only`, with two distinct behavioral-demand metric rows.
+
+A claim using a nonexistent workspace then received native HTTP 409. The helper
+stopped after that request, and exact claim and metric snapshots remained
+unchanged. A separate replacement claim committed with HTTP 200 before the
+transport adapter injected a lost reply. The helper raised uncertainty and
+issued no deletion; the original metric rows survived. This is an injected
+reply loss after actual HTTP completion, not a socket-level interruption.
+
+The changed claim and original metrics deliberately remain together in that
+synthetic fixture. This directly demonstrates why stopping further writes is
+not atomic publication or a complete recovery result. No scientific model or
+normal stage dispatcher ran. The gateway changes only the Kong URL mount and
+is removed after each case; no application or preview database was changed.
+
+The native harmless and restored cases pass. Disabling the claim response guard
+causes subsequent requests after rejection and fails the native check. Swallowing
+the post-commit transport error reports success and fails the separate check.
+All source mutations were restored. Native evidence and controls are retained
+under `model-command-client-20261008-proof/native-evidence-delivery/` and
+`native-evidence-controls.json`. Atomic publication, retained history, receipt
+reconciliation, county replacement and reader integration remain open.
