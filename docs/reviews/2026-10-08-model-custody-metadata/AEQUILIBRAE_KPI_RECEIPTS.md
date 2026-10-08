@@ -33,3 +33,11 @@ The October 8 continuation extracts the existing GeoJSON publication block into 
 All 35 push-trigger checks pass. The new test reads a synthetic CSV, uses a mocked SQLite geometry result and generates an actual GeoJSON file. A mocked successful metadata response verifies the file hash and feature count. A simulated lost registration acknowledgement escapes as uncertainty, with one upload request and one registration request. The missing-database case makes no requests. Harmless/restored controls pass; removing the dedicated uncertainty handler fails at `uncertain GeoJSON registration swallowed`.
 
 This closes the identified registration-exception gap. It does not prove live Storage upload bytes, arbitrary generation failures, immutable Storage keys, scientific geometry validity or process restart. Ordinary generation/upload warnings retain their prior behavior; only checked metadata-registration uncertainty now propagates.
+
+## Native GeoJSON byte verification
+
+The October 8 continuation exercises the extracted publisher with an actual synthetic SQLite database and SpatiaLite geometry. A one-link CSV feeds the existing GeoJSON generation code. The configured isolated Supabase Storage service accepts the upload, and the checked artifact insert retains its metadata.
+
+The runner uses a fresh synthetic run and stage, then independently reads the artifact row through PostgreSQL and downloads the object through the authenticated Storage endpoint. Downloaded bytes equal the locally generated file. The retained hash and size match those bytes, and the GeoJSON contains the expected synthetic feature and volume. The stack database port is checked against the named restore-target container before writes.
+
+Private script and results are `native-aequilibrae-geojson.py`, `native-aequilibrae-geojson.json` and the generated `.geojson` file in the local proof directory. This extends the mocked transport tests to an actual upload/registration/download path. No scientific computation or real geography is represented. The run-scoped key still permits upsert, so later overwrite protection, attempt ownership, restart recovery and scientific validity remain open.
