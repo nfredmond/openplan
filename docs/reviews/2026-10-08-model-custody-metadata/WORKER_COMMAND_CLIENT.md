@@ -201,6 +201,38 @@ claim receipt after two HTTP posts. The retained run is
 `fc9ac22d-c43e-4e31-b824-44dfdf0eb994`. This proves command receipt recovery after
 a lost reply, not model restart, file reuse, Storage bytes or scientific validity.
 
+## Scratch-file identity blocks automatic restart
+
+Source inspection after the recovery CLI checkpoint found a separate ownership
+boundary. `main.py::_claim_and_run_stage` stores state and model files under
+`RUN_WORK_ROOT/runs/run_id[:12]`. The application helper
+`src/lib/models/artifact-source.ts::resolveRunWorkDir` constructs the same
+shortened directory for local artifact scope. These are execution and read
+boundaries, not display abbreviations.
+
+For example, distinct canonical IDs
+`12345678-1234-4123-8123-123456789abc` and
+`12345678-1234-4567-8567-987654321abc` both map to `runs/12345678-123`.
+The worker's process-wide lock serializes execution within one process but does
+not distinguish those directories. Its `state.json` is not checked against a
+retained full run identity before subsequent stages read it. This finding is
+source evidence, not a claim that existing runs have collided or user files
+have been disclosed.
+
+Changing only the worker directory would break the application's local reads
+and historical local references. Falling back to an unmarked shortened directory
+would preserve the ambiguity. The next connection must bind full deployment,
+run and attempt identities to scratch state, coordinate application local
+resolution, and provide explicit reconciliation for retained legacy artifacts.
+Do not infer old directory ownership from its prefix or silently relocate files.
+Keep immutable Storage references and historical artifact identities intact.
+
+Acceptance must include two runs with the same shortened prefix, concurrent
+processes, lost command acknowledgements, revoked ownership and retained
+predecessor-stage files. Exercise actual filesystem reads and both normal worker
+entry points. The command recovery CLI must not resume model execution until
+this file-ownership boundary and all attempt-aware writes are connected.
+
 ## Remaining connection work
 
 Normal dispatchers still use their current receipt-checked legacy writes. Before
