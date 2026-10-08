@@ -152,3 +152,30 @@ checks. It does not establish concurrent-process ordering, an eligible managed
 queued skip, HTTP uncertainty, worker integration, installed migration custody
 or scientific acceptance. The updated controls file records eight targeted
 broken variants. All synthetic records and prototype objects roll back.
+
+### Concurrent database sessions
+
+`prototype/verify_skip_contention.py` creates a separate owned clone of the
+retention fixture database. It does not install anything in the source or the
+application database. Separate service-role sessions exercise committed and
+rolled-back receipt writes, plus committed and rolled-back predecessor changes.
+The verifier observes the contender waiting on the identified owner's database
+lock before releasing that owner. It does not infer contention from a sleep.
+
+Baseline, harmless and restored variants pass all four cases. Exact concurrent
+retries return the same receipt. An owner rollback allows one later receipt and
+one skipped stage. A committed predecessor change leaves the dependent queued
+with `not_skipped`; a rolled-back change permits the original skip. Every case
+checks that no attempt or execution start was invented.
+
+Removing both prerequisite locks makes the contender use the old predecessor
+state after the owner commits. The intended assertion fails. Restoring the
+original function makes that same case pass. `prototype/skip-contention.json`
+records 13 successful cases and the targeted negative control. The clone retains
+synthetic records for inspection; its function is restored to the original
+prototype. Source rows and running workers are not changed.
+
+This establishes the tested database ordering. It does not establish HTTP lost
+acknowledgements, command-journal recovery, installed migration/retention rules,
+normal dispatch or scientific acceptance. Those connections remain next in the
+same M3/S1 work, before either worker changes its claim path.

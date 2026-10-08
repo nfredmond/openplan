@@ -1,0 +1,166 @@
+{
+  "source_sha256": "5aa38d6b409f15326813cc1edfc8c33fee0f5e2644f163588e52c26e8e64e18f",
+  "cases": [
+    {
+      "control": "baseline",
+      "mode": "receipt-commit",
+      "owner_lock_observed": true,
+      "outcome": "skipped",
+      "facts": {
+        "starts": 0,
+        "status": "skipped",
+        "attempts": 0,
+        "receipts": 1
+      }
+    },
+    {
+      "control": "baseline",
+      "mode": "receipt-rollback",
+      "owner_lock_observed": true,
+      "outcome": "skipped",
+      "facts": {
+        "starts": 0,
+        "status": "skipped",
+        "attempts": 0,
+        "receipts": 1
+      }
+    },
+    {
+      "control": "baseline",
+      "mode": "predecessor-commit",
+      "owner_lock_observed": true,
+      "outcome": "not_skipped",
+      "facts": {
+        "starts": 0,
+        "status": "queued",
+        "attempts": 0,
+        "receipts": 1
+      }
+    },
+    {
+      "control": "baseline",
+      "mode": "predecessor-rollback",
+      "owner_lock_observed": true,
+      "outcome": "skipped",
+      "facts": {
+        "starts": 0,
+        "status": "skipped",
+        "attempts": 0,
+        "receipts": 1
+      }
+    },
+    {
+      "control": "harmless",
+      "mode": "receipt-commit",
+      "owner_lock_observed": true,
+      "outcome": "skipped",
+      "facts": {
+        "starts": 0,
+        "status": "skipped",
+        "attempts": 0,
+        "receipts": 1
+      }
+    },
+    {
+      "control": "harmless",
+      "mode": "receipt-rollback",
+      "owner_lock_observed": true,
+      "outcome": "skipped",
+      "facts": {
+        "starts": 0,
+        "status": "skipped",
+        "attempts": 0,
+        "receipts": 1
+      }
+    },
+    {
+      "control": "harmless",
+      "mode": "predecessor-commit",
+      "owner_lock_observed": true,
+      "outcome": "not_skipped",
+      "facts": {
+        "starts": 0,
+        "status": "queued",
+        "attempts": 0,
+        "receipts": 1
+      }
+    },
+    {
+      "control": "harmless",
+      "mode": "predecessor-rollback",
+      "owner_lock_observed": true,
+      "outcome": "skipped",
+      "facts": {
+        "starts": 0,
+        "status": "skipped",
+        "attempts": 0,
+        "receipts": 1
+      }
+    },
+    {
+      "control": "restored",
+      "mode": "receipt-commit",
+      "owner_lock_observed": true,
+      "outcome": "skipped",
+      "facts": {
+        "starts": 0,
+        "status": "skipped",
+        "attempts": 0,
+        "receipts": 1
+      }
+    },
+    {
+      "control": "restored",
+      "mode": "receipt-rollback",
+      "owner_lock_observed": true,
+      "outcome": "skipped",
+      "facts": {
+        "starts": 0,
+        "status": "skipped",
+        "attempts": 0,
+        "receipts": 1
+      }
+    },
+    {
+      "control": "restored",
+      "mode": "predecessor-commit",
+      "owner_lock_observed": true,
+      "outcome": "not_skipped",
+      "facts": {
+        "starts": 0,
+        "status": "queued",
+        "attempts": 0,
+        "receipts": 1
+      }
+    },
+    {
+      "control": "restored",
+      "mode": "predecessor-rollback",
+      "owner_lock_observed": true,
+      "outcome": "skipped",
+      "facts": {
+        "starts": 0,
+        "status": "skipped",
+        "attempts": 0,
+        "receipts": 1
+      }
+    },
+    {
+      "control": "remove-prerequisite-locks",
+      "expected_failure": "Contender used stale predecessor state"
+    },
+    {
+      "control": "final-restored",
+      "mode": "predecessor-commit",
+      "owner_lock_observed": true,
+      "outcome": "not_skipped",
+      "facts": {
+        "starts": 0,
+        "status": "queued",
+        "attempts": 0,
+        "receipts": 1
+      }
+    }
+  ],
+  "limits": "Native service-role sessions in an owned retained clone. No HTTP delivery, normal dispatcher, scientific model, browser or installation migration."
+}
