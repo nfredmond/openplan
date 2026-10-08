@@ -4714,15 +4714,14 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
                           intrazonal_share_pct: float | None = None,
                           zone_count: int | None = None) -> dict | None:
     """Match assigned link volumes to observed traffic counts → screening-grade
-    fit summary. Returns None when disabled or inputs are missing (never fails
-    the run).
+    fit summary. Missing recorded counts return an unavailable summary. Disabled
+    validation or missing model outputs return None.
 
-    `counts_path` is THIS RUN's count set, recorded by its assignment stage.
-    Falling back to the configured default when it is absent (or no longer on
-    disk, e.g. an artifact stage running on a different machine) is safe rather
-    than merely convenient: the coverage check below compares the count set's own
-    station extent against the study area first, so a default that does not cover
-    this area reports a coverage gap instead of a fit.
+    `counts_path` is the assignment stage's recorded count set. A missing file
+    remains unavailable. Never substitute a configured default during artifact
+    extraction: overlapping geography does not establish the same source, year
+    or observation set. The assignment stage may explicitly select the default
+    and record its path before this function is called.
 
     COVERAGE FIRST. When the available count set does not cover the study area —
     the case for any state with no registered count source, which falls back to
@@ -4738,9 +4737,14 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
     the worker measures this share as a FRACTION everywhere else, and the
     conversion happens at the one call site below."""
     import csv as _csv
-    resolved_counts = counts_path if (counts_path and os.path.exists(counts_path)) else VALIDATION_COUNTS_PATH
-    if not (COUNT_VALIDATION_ENABLED and os.path.exists(resolved_counts)
-            and os.path.exists(db_path) and os.path.exists(link_volumes_csv)):
+    if not COUNT_VALIDATION_ENABLED:
+        return None
+    if not counts_path or not os.path.isfile(counts_path):
+        reason = ("The assignment count file is unavailable. No substitute count set was used."
+                  if counts_path else "No assignment count file was recorded. No substitute count set was used.")
+        return count_validation.unavailable_validation_summary(reason)
+    resolved_counts = counts_path
+    if not (os.path.exists(db_path) and os.path.exists(link_volumes_csv)):
         return None
     with open(resolved_counts) as f:
         stations = list(_csv.DictReader(f))
@@ -6316,7 +6320,7 @@ def stage_artifacts(
     # Observed-count validation KPIs (screening-grade diagnostic). Emitted only
     # when >=1 station matched — a 0-match run is not a validation. The gate
     # label + per-station detail live in evidence.validation.
-    if validation and validation.get("stations_matched", 0) > 0:
+    if validation and (validation.get("stations_matched") or 0) > 0:
         kpis.append(("general", "validation_stations_matched", "Validation Stations Matched", validation["stations_matched"], "count"))
         if validation.get("median_ape") is not None:
             kpis.append(("assignment", "validation_median_ape", "Validation Median APE", validation["median_ape"], "percent"))

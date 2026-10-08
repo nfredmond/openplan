@@ -20,6 +20,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Count validation no longer substitutes a default when the assignment's recorded
+count file is missing. It reports unavailable observations with no measured
+station count, error metric or validation gate. Explicitly recorded defaults
+remain usable.
+
 Bound model state publication now retains and registers a separate original-state
 file before completion. Lost registration replies require receipt recovery; they
 do not resume computation. Package transfer and consumer path mapping remain open.

@@ -146,6 +146,27 @@ def describe_count_coverage(
     }
 
 
+def unavailable_validation_summary(reason: str) -> dict[str, Any]:
+    """Keep missing retained observations distinct from zero matched stations."""
+    return {
+        "status": "unavailable",
+        "stations_total": None,
+        "stations_matched": None,
+        "median_ape": None,
+        "mean_ape": None,
+        "max_ape": None,
+        "percent_rmse": None,
+        "geh": None,
+        "peak_hour_geh": None,
+        "spearman_rho": None,
+        "screening_gate": None,
+        "gate_reasons": [],
+        "results": [],
+        "coverage": {"covered": None, "status": "unavailable", "reason": reason},
+        "method": "Observed-count validation was not run. " + reason,
+    }
+
+
 def uncovered_validation_summary(coverage: dict[str, Any]) -> dict[str, Any]:
     """A validation summary for a run that had nothing to validate against.
 

@@ -1,0 +1,32 @@
+{
+  "worker_sha256": "8bdacd4b5d3fc9b17bdf7a9e9d903da0ae32a53929b1c15ea95f6636e0f2ddc8",
+  "count_validation_sha256": "738516da8ad20c03e236a7e7b8fe579aea1fc14bf0348e47f121019d98be0605",
+  "controls": [
+    {
+      "control": "baseline",
+      "tests": 5,
+      "expected_failures": 0
+    },
+    {
+      "control": "harmless",
+      "tests": 5,
+      "expected_failures": 0
+    },
+    {
+      "control": "substitute-default",
+      "tests": 1,
+      "expected_failures": 1
+    },
+    {
+      "control": "missing-means-zero",
+      "tests": 1,
+      "expected_failures": 1
+    },
+    {
+      "control": "restored",
+      "tests": 5,
+      "expected_failures": 0
+    }
+  ],
+  "limits": "Real CSV inputs, actual validation entry point and claim summary; coverage is injected. No native network matching, scientific holdout or file-retention proof."
+}

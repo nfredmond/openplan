@@ -770,3 +770,38 @@ checkpoint. Package/project files, external count inputs, consumer path mapping,
 completed-producer selection for state, managed assessment/publication and full
 normal dispatcher activation remain unfinished. Native scientific accuracy,
 concurrent host-write confinement and human acceptance are not established.
+
+### Missing recorded counts never select a replacement
+
+Tracing external count paths found a separate source-substitution defect in
+`_run_count_validation`: a missing assignment count file selected the process's
+configured default. Its old comment treated geographic overlap as sufficient
+justification. Overlap cannot establish the same observation source or year, so
+that fallback is removed. Assignment may still explicitly select and record the
+default file; artifact validation uses only its recorded path.
+
+A missing or absent recorded path now produces an explicit unavailable summary.
+Station counts, error metrics, geographic coverage and the screening gate remain
+null. No coverage matcher runs and no alternative file is opened. This is not
+zero matched stations, an out-of-area finding or a measured model failure. The
+existing artifact log reports the unavailable reason; KPI collection tolerates
+the null count and emits no measured-match KPI. Disabled validation remains
+unassessed under its existing behavior. No observation, tolerance, scientific
+holdout or historical study result changes.
+
+Five new tests use real synthetic count files and the actual validation entry
+point. They check unavailable recorded paths despite an available default,
+missing path metadata, original source/year selection, an explicitly recorded
+default and disabled validation. The claim-summary check retains unknown matched
+stations and refuses a claim upgrade. Baseline, harmless and restored controls
+pass. Restoring the default substitution or turning missing station counts into
+zero fails the targeted test. Results are retained in
+`prototype/count-input-controls.json`.
+
+All 93 combined worker/count-input tests pass, along with 36 count-validation,
+10 count-coverage, 10 model-credibility and 30 assignment-handoff checks. Coverage
+is injected in the new entry-point tests; they do not prove native network
+matching, scientific accuracy or retained count-file transport. The existing
+SQLite ResourceWarning remains unresolved. Exact count-byte and source-sidecar
+retention before assignment, package/project snapshots and consumer state
+mapping remain unfinished. T3 visual acceptance remains open.
