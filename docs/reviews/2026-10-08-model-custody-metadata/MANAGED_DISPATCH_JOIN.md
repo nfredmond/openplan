@@ -622,3 +622,44 @@ scratch/state/package handoff, managed assessment/publication and normal managed
 claim activation remain unfinished. No model executes and no scientific claim
 advances. T3 still loads the existing acceptance page but fails snapshots in both
 the existing and a fresh tab; visual acceptance remains open.
+
+### Agreement predecessor ownership and remaining scratch handoff
+
+Tracing `main.py::_claim_and_run_stage` found that the agreement reader checked
+scientific identity and byte hashes but accepted the newest artifact without
+checking producer completion or active attempt ownership. The shared artifact
+query now projects artifact/run/stage/attempt IDs and the producing stage's run,
+status, enrollment and active attempt. `verified_latest_local_artifact` requires
+a completed producer in the same run before accessing its file. Managed records
+must name the active attempt. Explicitly unmanaged legacy producers remain
+usable only with no artifact or stage attempt identity. A failed newest record
+is refused; the reader does not silently substitute an older record.
+
+All 30 assignment-handoff tests pass, including the existing scientific-identity
+checks and new read-projection, refusal and legacy cases. Baseline, harmless and
+restored controls pass. Removing completion, active-attempt or artifact-run
+checks fails the actual reader test; omitting the producer projection fails the
+HTTP-query assertion. `prototype/agreement-producer-controls.json` records the
+source hash and controls. The projection check uses mocked HTTP, not native
+PostgREST relationship/authorization evidence. This read-time check is not a
+transactional lock against later ownership changes or file mutation. The normal
+agreement reader still returns a source pathname after hashing it; descriptor-
+based retention remains necessary before claiming immutable consumption.
+
+The same trace establishes the following concrete handoff requirements:
+
+| Consumer | Existing inputs | Required separation |
+| --- | --- | --- |
+| Network Assignment | Setup state, `package.package_dir`, `aeq_project` | Copy confirmed setup/package/project files into the new attempt; never reopen the producer project for mutation. |
+| Artifact Extraction | Setup and assignment state, `run_output`, project database, package CSVs, `assignment.counts_path` | Retain exact assigned outputs and their count source. Counts may be outside scratch; a generic path-prefix rewrite is insufficient. |
+| ActivitySim Network Assignment | First assignment state, registered ActivitySim demand package, solver network/settings/profile | Preserve the first assignment and copy its accepted network before a second assignment writes. |
+| Demand Model Agreement | Both assignment states and registered volume outputs | Retain both input byte sets independently and preserve matching network/settings/profile checks. Agreement remains sensitivity evidence. |
+
+Setup closes its project and SQLite connection on its successful return path;
+assignment closes its project before returning its result. Those calls are not
+proof that a snapshot is durable, immutable or free of live SQLite sidecars.
+`package.package_dir` and count paths require explicit local-copy mappings.
+Frozen network records, original source references and their hashes must remain
+unchanged. Stage journals and admission records must never be copied as new
+execution authority. Full managed claim activation remains off while these
+handoff and assessment/publication boundaries are unfinished.

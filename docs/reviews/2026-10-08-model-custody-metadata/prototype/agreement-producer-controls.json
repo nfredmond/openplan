@@ -1,0 +1,34 @@
+{
+  "source_sha256": "c61d97b13ce3794780f0f6119413bd361f7c66cc731b36f5632477a78696c1d9",
+  "controls": [
+    {
+      "control": "baseline",
+      "targeted_failure": false
+    },
+    {
+      "control": "harmless",
+      "targeted_failure": false
+    },
+    {
+      "control": "ignore-completion",
+      "targeted_failure": true
+    },
+    {
+      "control": "ignore-active-attempt",
+      "targeted_failure": true
+    },
+    {
+      "control": "ignore-artifact-run",
+      "targeted_failure": true
+    },
+    {
+      "control": "restored",
+      "targeted_failure": false
+    },
+    {
+      "control": "omit-producer-projection",
+      "targeted_failure": true
+    }
+  ],
+  "limits": "Actual agreement guard and mocked HTTP projection. No native database authorization, file immutability, engine execution or scientific acceptance."
+}

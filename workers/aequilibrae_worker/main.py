@@ -825,7 +825,8 @@ def upload_immutable_structural_demand_json(
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
-        "&select=artifact_type,file_url,content_hash,metadata_json,created_at"
+        "&select=id,run_id,stage_id,attempt_id,artifact_type,file_url,content_hash,metadata_json,created_at"
+        ",model_run_stages(id,run_id,status,attempt_managed,active_attempt_id)"
         "&order=created_at.desc"
     )
     response = requests.get(url, headers=HEADERS, timeout=30)
@@ -835,6 +836,35 @@ def sb_get_run_artifacts(run_id: str) -> list[dict]:
             f"{response.status_code} {response.text[:200]}"
         )
     return response.json()
+
+
+def require_completed_artifact_producer(artifact: dict, run_id: str) -> None:
+    """Refuse incomplete or superseded inputs before checking scientific identity.
+
+    This read-time check does not fence later stage writes or make a local file
+    immutable. Legacy producers remain explicitly unmanaged.
+    """
+    try:
+        for value in (run_id, artifact["id"], artifact["stage_id"]):
+            if not isinstance(value, str) or str(uuid.UUID(value)) != value:
+                raise ValueError("Noncanonical identity")
+        producer = artifact["model_run_stages"]
+        if (artifact["run_id"] != run_id or not isinstance(producer, dict)
+                or producer.get("id") != artifact["stage_id"] or producer.get("run_id") != run_id
+                or producer.get("status") != "succeeded"):
+            raise ValueError("Producing stage is not completed in this run")
+        managed = producer.get("attempt_managed")
+        if type(managed) is not bool:
+            raise ValueError("Producer enrollment is missing")
+        if managed:
+            attempt = artifact["attempt_id"]
+            if (not isinstance(attempt, str) or str(uuid.UUID(attempt)) != attempt
+                    or producer.get("active_attempt_id") != attempt):
+                raise ValueError("Artifact belongs to an inactive attempt")
+        elif artifact.get("attempt_id") is not None or producer.get("active_attempt_id") is not None:
+            raise ValueError("Legacy producer has inconsistent attempt ownership")
+    except (KeyError, TypeError, ValueError, AttributeError) as error:
+        raise RuntimeError("Artifact requires a confirmed completed producer: " + str(error)) from error
 
 
 def verified_latest_local_artifact(
@@ -857,6 +887,7 @@ def verified_latest_local_artifact(
     if not matches:
         raise RuntimeError(f"No {artifact_type} artifact was registered for this run")
     selected = matches[0]
+    require_completed_artifact_producer(selected, run_id)
     file_url = str(selected.get("file_url") or "")
     if not file_url.startswith("local://"):
         raise RuntimeError(f"{artifact_type} is not available on the shared worker volume")

@@ -1130,6 +1130,62 @@ def test_agreement_artifact_registration_carries_both_full_convergence_records()
             assert metadata["is_average"] is False
 
 
+PRODUCER_RUN = "00000001-1111-4111-8111-111111111111"
+PRODUCER_STAGE = "00000002-1111-4111-8111-111111111111"
+PRODUCER_ATTEMPT = "00000003-1111-4111-8111-111111111111"
+
+
+def completed_producer_fields():
+    return {"id": "00000004-1111-4111-8111-111111111111", "run_id": PRODUCER_RUN,
+            "stage_id": PRODUCER_STAGE, "attempt_id": PRODUCER_ATTEMPT,
+            "model_run_stages": {"id": PRODUCER_STAGE, "run_id": PRODUCER_RUN,
+                "status": "succeeded", "attempt_managed": True,
+                "active_attempt_id": PRODUCER_ATTEMPT}}
+
+
+def test_agreement_artifact_query_projects_producer_identity():
+    response = mock.Mock(status_code=200)
+    response.json.return_value = []
+    with mock.patch.object(main.requests, "get", return_value=response) as get:
+        assert main.sb_get_run_artifacts(PRODUCER_RUN) == []
+    url = get.call_args.args[0]
+    assert "run_id=eq." + PRODUCER_RUN in url
+    assert "select=id,run_id,stage_id,attempt_id," in url
+    assert "model_run_stages(id,run_id,status,attempt_managed,active_attempt_id)" in url
+
+
+def test_agreement_refuses_unconfirmed_producer_before_file_access():
+    base = completed_producer_fields()
+    cases = []
+    for field, value in (("status", "running"), ("status", "failed"),
+                         ("active_attempt_id", PRODUCER_STAGE), ("attempt_managed", None),
+                         ("run_id", PRODUCER_STAGE), ("id", PRODUCER_RUN)):
+        cases.append({**base, "model_run_stages": {**base["model_run_stages"], field: value}})
+    cases.extend([{**base, "run_id": PRODUCER_STAGE}, {**base, "attempt_id": None},
+                  {**base, "model_run_stages": None},
+                  {**base, "model_run_stages": {**base["model_run_stages"], "attempt_managed": False}}])
+    for row in cases:
+        with mock.patch.object(main, "sb_get_run_artifacts", return_value=[{**row, "artifact_type": "link_volumes"}]), mock.patch.object(main.os.path, "isfile") as access:
+            try:
+                main.verified_latest_local_artifact(PRODUCER_RUN, "link_volumes",
+                    expected_assignment_profile={}, expected_assignment_profile_payload_json="",
+                    expected_assignment_profile_digest="", expected_network_settings={},
+                    expected_network_settings_payload_json="", expected_network_settings_digest="",
+                    expected_network_state_record={}, expected_network_state_digest="")
+            except RuntimeError as error:
+                assert "confirmed completed producer" in str(error), str(error)
+            else:
+                raise AssertionError("Unconfirmed artifact producer accepted")
+            access.assert_not_called()
+
+
+def test_agreement_accepts_explicit_completed_legacy_producer():
+    row = completed_producer_fields()
+    row["attempt_id"] = None
+    row["model_run_stages"].update(attempt_managed=False, active_attempt_id=None)
+    main.require_completed_artifact_producer(row, PRODUCER_RUN)
+
+
 def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "link_volumes.csv"
@@ -1137,6 +1193,7 @@ def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
         identity = identity_record(0.0004)
         metadata = main.assignment_artifact_metadata(identity, "link_volumes.csv")
         row = {
+            **completed_producer_fields(),
             "artifact_type": "link_volumes",
             "file_url": f"local://{path}",
             "content_hash": hashlib.sha256(path.read_bytes()).hexdigest(),
@@ -1158,13 +1215,13 @@ def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
         }
         with mock.patch.object(main, "sb_get_run_artifacts", return_value=[row]):
             assert main.verified_latest_local_artifact(
-                "run", "link_volumes", **kwargs
+                PRODUCER_RUN, "link_volumes", **kwargs
             ) == str(path)
 
         truncated = {**row, "content_hash": row["content_hash"][:16]}
         with mock.patch.object(main, "sb_get_run_artifacts", return_value=[truncated]):
             try:
-                main.verified_latest_local_artifact("run", "link_volumes", **kwargs)
+                main.verified_latest_local_artifact(PRODUCER_RUN, "link_volumes", **kwargs)
             except RuntimeError as error:
                 assert "content-hash" in str(error)
             else:
@@ -1180,7 +1237,7 @@ def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
             return_value=[{**row, "metadata_json": tampered_metadata}],
         ):
             try:
-                main.verified_latest_local_artifact("run", "link_volumes", **kwargs)
+                main.verified_latest_local_artifact(PRODUCER_RUN, "link_volumes", **kwargs)
             except main.AssignmentSettingsError:
                 pass
             else:
