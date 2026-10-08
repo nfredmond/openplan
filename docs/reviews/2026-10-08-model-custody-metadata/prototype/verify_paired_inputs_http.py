@@ -22,7 +22,7 @@ import model_predecessor_inputs as predecessor
 from worker_import_for_tests import import_worker_main
 
 
-def main():
+def main(*, include_project=False):
     output=Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_OUTPUT'])
     output.mkdir(mode=0o700,parents=True,exist_ok=False)
     source=json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
@@ -89,6 +89,23 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                            'content_hash':hashlib.sha256(state_content).hexdigest(),'file_size_bytes':len(state_content),'metadata_json':{'schema':'openplan.predecessor-state.v1'}},
                           {'id':package_id,'artifact_type':'model_package_inputs','file_url':'local://'+package_record['manifest_path'],
                            'content_hash':package_record['manifest_sha256'],'file_size_bytes':package_record['manifest_size_bytes'],'metadata_json':{'schema':'openplan.package-inputs.v1'}}]
+                if include_project:
+                    import sqlite3
+                    import model_project_inputs
+                    project_id=str(uuid.uuid4())
+                    source_project=producer/'aeq_project';source_project.mkdir()
+                    db=sqlite3.connect(source_project/'project_database.sqlite')
+                    db.execute('CREATE TABLE evidence (id INTEGER)');db.execute('INSERT INTO evidence VALUES (7)')
+                    db.commit();db.close()
+                    project_bytes=(source_project/'project_database.sqlite').read_bytes()
+                    project_record=model_project_inputs.retain(source_project,producer/'project_inputs')
+                    payloads.append({'id':project_id,'artifact_type':'model_project_inputs',
+                        'file_url':'local://'+project_record['manifest_path'],'content_hash':project_record['manifest_sha256'],
+                        'file_size_bytes':project_record['manifest_size_bytes'],
+                        'metadata_json':{'schema':'openplan.project-inputs.v1','inventory_schema':'openplan.package-inputs.v1',
+                            'database_checks':project_record['database_checks'],'database_consistency':project_record['database_consistency'],
+                            'engine_closure':'unassessed','cross_database_consistency':'unassessed',
+                            'scientific_acceptance':'unassessed','execution_ready':False}})
                 for payload in payloads:
                     encoded=json.dumps(payload).replace("'","''")
                     sql(database,f"SET ROLE service_role; SELECT public.write_model_attempt_artifact('{uuid.uuid4()}','{attempt}','{encoded}'::jsonb);")
@@ -109,7 +126,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                     writer.workspace(output/'files/runs',run)
                     with managed.bind(writer):
                         try:
-                            result=worker.retain_managed_state_and_package()
+                            result=worker.retain_managed_state_and_package(include_project=include_project)
                         except worker.WorkerStateWriteUnconfirmed as error:
                             if control=='lost-mapping-reply':
                                 if not dropped['mapping'] or not writer.stopped:raise
@@ -131,7 +148,9 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                     base_url=base,deployment_id=database,service_key=key,handler=handler,post=post,get=get)
                 records=json.loads(sql(database,f"SELECT jsonb_agg(to_jsonb(a) ORDER BY artifact_type) FROM public.model_run_artifacts a WHERE stage_id='{consumer_stage}';"))
                 expected_types=['model_package_consumption','model_state_consumption']
-                if control!='source-mismatch':expected_types.insert(0,'model_input_mapping')
+                if control!='source-mismatch':
+                    expected_types.insert(0,'model_input_mapping')
+                    if include_project:expected_types=sorted(expected_types+['model_project_consumption','model_project_working_copy'])
                 if [row['artifact_type'] for row in records]!=expected_types:
                     raise AssertionError('Native paired input/mapping records differ')
                 for row in records:
@@ -149,9 +168,38 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                 or mapping['inputs']['package']['artifact_id']!=package_id
                                 or row['metadata_json']['inputs']!=mapping['inputs']):
                             raise AssertionError('Native durable mapping identity differs')
+                        if include_project:
+                            working_dir=mapping_path.parent/'project_working/files'
+                            working_manifest=mapping_path.parent/'project_working/manifest.json'
+                            consumed_manifest=mapping_path.parent/'predecessor_project/manifest.json'
+                            if (mapping['inputs']['project']['artifact_id']!=project_id
+                                    or mapping['execution_paths']!={'project_directory':str(working_dir)}
+                                    or mapping['working_project']['initial_manifest_path']!=str(working_manifest)
+                                    or mapping['working_project']['initial_manifest_sha256']!=hashlib.sha256(working_manifest.read_bytes()).hexdigest()
+                                    or mapping['working_project']['input_manifest_sha256']!=hashlib.sha256(consumed_manifest.read_bytes()).hexdigest()):
+                                raise AssertionError('Native combined mapping lost project working identity')
                         continue
+                    if include_project and row['artifact_type'] in ('model_project_consumption','model_project_working_copy'):
+                        manifest_path=Path(row['file_url'].removeprefix('local://'))
+                        manifest_bytes=manifest_path.read_bytes()
+                        copied=manifest_path.parent/'files/project_database.sqlite'
+                        retained_project=producer/'project_inputs/files/project_database.sqlite'
+                        if (row['content_hash']!=hashlib.sha256(manifest_bytes).hexdigest()
+                                or row['file_size_bytes']!=len(manifest_bytes)
+                                or copied.read_bytes()!=project_bytes or retained_project.read_bytes()!=project_bytes
+                                or copied.stat().st_ino==retained_project.stat().st_ino
+                                or row['metadata_json']['database_checks']!=project_record['database_checks']
+                                or row['metadata_json']['execution_ready'] is not False):
+                            raise AssertionError('Native combined project bytes or checks differ')
+                        if row['artifact_type']=='model_project_working_copy':
+                            consumed=manifest_path.parent.parent/'predecessor_project'
+                            if (row['metadata_json']['role']!='initial_working_inventory'
+                                    or row['metadata_json']['files_mutable'] is not True
+                                    or row['metadata_json']['input_manifest_sha256']!=hashlib.sha256((consumed/'manifest.json').read_bytes()).hexdigest()
+                                    or copied.stat().st_ino==(consumed/'files/project_database.sqlite').stat().st_ino):
+                                raise AssertionError('Native combined working boundary differs')
                     provenance=row['metadata_json']['producer']
-                    expected_id=package_id if row['artifact_type']=='model_package_consumption' else state_id
+                    expected_id=(project_id if include_project and row['artifact_type'] in ('model_project_consumption','model_project_working_copy') else package_id if row['artifact_type']=='model_package_consumption' else state_id)
                     if provenance['artifact_id']!=expected_id or provenance['stage_id']!=producer_stage or provenance['attempt_id']!=attempt:
                         raise AssertionError('Native paired provenance differs')
                 if sql(database,f"SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_run_artifacts a WHERE stage_id='{producer_stage}';")!=before:
@@ -192,8 +240,11 @@ raise SystemExit(recovery.main())
             sys.modules['model_predecessor_inputs']=predecessor
     report={'selector_sha256':hashlib.sha256(original.encode()).hexdigest(),'worker_sha256':hashlib.sha256(Path(worker.__file__).read_bytes()).hexdigest(),
             'controls':results,'gateway_removed':True,'limits':'Actual paired helper and native commands through a route-prefix transport adapter. Producer fixture registration uses native SQL commands. Durable partial mapping is verified. Fresh CLI mapping recovery uses the same route-prefix adapter; cached recovery forbids HTTP. No project/output/count mapping, full dispatcher or scientific acceptance.'}
+    if include_project:
+        report['limits']='Actual combined state/package/project and working-copy helper with native commands through a direct-PostgREST route-prefix adapter. Producer fixture registration uses native SQL commands. Final mapping lost-reply recovery uses a fresh CLI with the same adapter; cached recovery forbids HTTP. No complete output/count mapping, closure enforcement, full dispatcher or scientific acceptance.'
     content=json.dumps(report,indent=2)+'\n'
-    (output/'paired-input-http.json').write_text(content);(ROOT/'paired-input-http.json').write_text(content)
+    name='execution-input-http.json' if include_project else 'paired-input-http.json'
+    (output/name).write_text(content);(ROOT/name).write_text(content)
     print(content)
 
 

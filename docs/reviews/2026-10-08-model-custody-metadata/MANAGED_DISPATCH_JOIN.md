@@ -1547,3 +1547,29 @@ and earlier two-input mapping proofs do not substitute for it. Mutable package
 preparation, remaining output/count joins, closure enforcement and the full
 execution/publication/terminal lifecycle remain unfinished. Normal managed
 dispatch stays disabled.
+
+### Native combined input mapping recovery
+
+The combined helper now runs through native selection and artifact commands with
+real state, package and SQLite project files. Valid preparation retains five
+consumer records: original state consumption, package consumption, project
+consumption, initial working-project inventory and the final input mapping.
+The proof checks exact project database bytes and independent file identities,
+producer references, database checks, incomplete statuses, working-inventory
+role and the saved mapping's working path and manifest hashes. Producer records
+and original state bytes stay unchanged.
+
+Baseline, harmless and restored cases pass. Deliberately omitting the package
+mapping is detected; a contradictory package source still stops before project
+preparation and leaves only its two separately retained inputs. Losing the final
+mapping reply after native commit preserves all five records and exactly one
+pending mapping command. A fresh CLI recovers its receipt through the disclosed
+direct-PostgREST route-prefix adapter. Cached recovery forbids HTTP, checksums of
+seven native tables stay unchanged and the writer stays stopped.
+
+`prototype/execution-input-http.json` records source identity and all six control
+outcomes; private `execution-input-http-v1` retains the clone and journals. The
+temporary gateway is removed. These controls use synthetic native SQLite files,
+not a network assignment. Mutable package preparation, remaining output/count
+mapping, closure enforcement and full dispatch/publication/terminal handling
+remain open. Execution readiness remains false and no scientific claim changes.

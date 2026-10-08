@@ -1,0 +1,365 @@
+{
+  "selector_sha256": "f7cd8abdb4afdda487bdb3a2ad6f7438a420a591f481aba0d90934ae703cf087",
+  "worker_sha256": "fdad9cc033a7c9ec07e41635f4202525347cb373d88fd5f9ea738e9cf206008d",
+  "controls": [
+    {
+      "control": "baseline",
+      "outcome": {
+        "paired": true,
+        "original_preserved": true,
+        "execution_ready": false
+      },
+      "consumer_artifacts": 5,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "harmless",
+      "outcome": {
+        "paired": true,
+        "original_preserved": true,
+        "execution_ready": false
+      },
+      "consumer_artifacts": 5,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "omit-package-mapping",
+      "outcome": {
+        "mapping_fault_detected": true
+      },
+      "consumer_artifacts": 5,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "source-mismatch",
+      "outcome": {
+        "refused": true,
+        "writer_stopped": true
+      },
+      "consumer_artifacts": 2,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "lost-mapping-reply",
+      "outcome": {
+        "delivery_unconfirmed": true,
+        "writer_stopped": true,
+        "fresh_cli_recovered": true,
+        "cached_no_http": true,
+        "native_tables_unchanged": 7
+      },
+      "consumer_artifacts": 5,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "restored",
+      "outcome": {
+        "paired": true,
+        "original_preserved": true,
+        "execution_ready": false
+      },
+      "consumer_artifacts": 5,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    }
+  ],
+  "gateway_removed": true,
+  "limits": "Actual combined state/package/project and working-copy helper with native commands through a direct-PostgREST route-prefix adapter. Producer fixture registration uses native SQL commands. Final mapping lost-reply recovery uses a fresh CLI with the same adapter; cached recovery forbids HTTP. No complete output/count mapping, closure enforcement, full dispatcher or scientific acceptance."
+}
