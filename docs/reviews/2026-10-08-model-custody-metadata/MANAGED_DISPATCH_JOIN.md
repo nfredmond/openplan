@@ -1102,3 +1102,27 @@ package/state files, exercise complete normal dispatch, establish an exhaustive
 RLS matrix, fence concurrent revocation or prove scientific acceptance. The next
 join must bind these selected identities to verified local copies and explicit
 consumer-state mappings, with separate coherent project-database transfer.
+
+### Selected package joins to an owned consumer copy
+
+`retain_managed_predecessor_package` joins explicit predecessor selection to the
+verified package consumer. It requires the registered local manifest at the exact
+selected producer's installation/run/stage/attempt path, refuses a resolved path
+that differs, and checks the inventory schema. It copies into the current owned
+attempt and registers the resulting manifest as `model_package_consumption`,
+with original artifact, stage, attempt and manifest-hash provenance. This distinct
+artifact type avoids confusing an input receipt with the stage's own completed
+package output during later predecessor selection.
+
+Four joined cases pass with real package files and mocked transport. Foreign paths
+refuse before consumer file access. Modified producer bytes refuse before
+registration. A lost registration reply preserves the complete snapshot and
+pending consumer command while stopping the writer. Baseline, harmless and
+restored controls pass; four faults detect ignored paths, ignored source changes,
+erased producer attempt and registration as a producer output. The combined suite
+passes 160 tests. The existing SQLite ResourceWarning persists.
+
+The joined native recovery proof remains open. Earlier native predecessor reads
+and producer-manifest registration remain separate evidence. This helper is not
+yet called by normal dispatch. Retained original state, execution-state mapping,
+coherent project transfer and full scientific acceptance remain unfinished.
