@@ -1056,9 +1056,30 @@ def write_agreement_network_geojson(
         },
         "features": features,
     }
-    with open(output_path, "w") as handle:
-        json.dump(feature_collection, handle, allow_nan=False)
+    from pathlib import Path
+    import model_record_files
+    target = Path(output_path)
+    try:
+        model_record_files.materialize(target.parent, {
+            target.name: json.dumps(feature_collection, allow_nan=False).encode("utf-8"),
+        })
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Agreement geometry bytes differ; reconcile before continuing") from None
     return output_path
+
+
+def retain_agreement_comparison(run_id: str, stage_id: str, work_dir: str, *, compare, **arguments) -> dict:
+    """Retain comparison results and output bytes without replaying interrupted work."""
+    from pathlib import Path
+    import model_agreement_computation
+    try:
+        return model_agreement_computation.retain(
+            Path(work_dir) / "stage-journals" / stage_id,
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            run_id=run_id, stage_id=stage_id, compare=compare, arguments=arguments,
+        )
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Agreement computation or files unconfirmed; reconcile original records before continuing") from None
 
 
 def activitysim_assignment_package(run_id: str) -> str | None:
@@ -6909,7 +6930,8 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     sys.path.insert(0, scripts_dir)
                 from compare_behavioral_demand_outputs import compare_link_volume_runs
 
-                result = compare_link_volume_runs(
+                result = retain_agreement_comparison(
+                    run_id, stage_id, work_dir, compare=compare_link_volume_runs,
                     first_csv=first_volumes,
                     second_csv=second_volumes,
                     first_label=(

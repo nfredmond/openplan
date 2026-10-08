@@ -742,6 +742,7 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
                 side_effect=lambda _work, path, **_kwargs: path,
             ) as write_geometry,
             mock.patch.object(main.requests, "get", return_value=completion),
+            mock.patch.object(main, "retain_agreement_comparison", side_effect=lambda _run, _stage, _work, *, compare, **kwargs: compare(**kwargs)) as retained_comparison,
             mock.patch.dict("sys.modules", {"compare_behavioral_demand_outputs": fake_module}),
         ):
             assert main.process_stage(
@@ -752,6 +753,7 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
                 }
             )
 
+        assert retained_comparison.call_count == 1
         call = comparator_calls[0]
         assert call["first_csv"] == "/trip-based.csv"
         assert call["second_csv"] == "/activity-based.csv"
@@ -854,6 +856,7 @@ def test_uncalibrated_agreement_compares_both_canonical_baseline_digests():
                 side_effect=lambda _work, path, **_kwargs: path,
             ),
             mock.patch.object(main.requests, "get", return_value=completion),
+            mock.patch.object(main, "retain_agreement_comparison", side_effect=lambda _run, _stage, _work, *, compare, **kwargs: compare(**kwargs)) as retained_comparison,
             mock.patch.dict("sys.modules", {"compare_behavioral_demand_outputs": fake_module}),
         ):
             assert main.process_stage(
@@ -864,6 +867,7 @@ def test_uncalibrated_agreement_compares_both_canonical_baseline_digests():
                 }
             )
 
+        assert retained_comparison.call_count == 1
         call = comparator_calls[0]
         assert call["first_network_settings_digest"] == baseline_digest
         assert call["second_network_settings_digest"] == baseline_digest
@@ -1264,7 +1268,25 @@ def test_agreement_geometry_excludes_connectors_and_binds_exact_roadway_count():
                 network_state_record=state,
                 network_state_digest=state_digest,
             )
-        payload = json.loads(output.read_text())
+        original_bytes = output.read_bytes()
+        original_inode = output.stat().st_ino
+        with (
+            mock.patch.object(main, "retained_network_manifest", return_value=manifest),
+            mock.patch.object(main.sqlite3, "connect", return_value=GeometryConnection()),
+        ):
+            main.write_agreement_network_geojson(str(work_dir), str(output),
+                network_state_record=state, network_state_digest=state_digest)
+            assert output.stat().st_ino == original_inode
+            output.write_bytes(b"altered retained geometry")
+            try:
+                main.write_agreement_network_geojson(str(work_dir), str(output),
+                    network_state_record=state, network_state_digest=state_digest)
+            except main.WorkerStateWriteUnconfirmed:
+                pass
+            else:
+                raise AssertionError("altered agreement geometry was overwritten")
+            assert output.read_bytes() == b"altered retained geometry"
+        payload = json.loads(original_bytes)
         assert [feature["properties"]["link_id"] for feature in payload["features"]] == roadway_ids
         assert payload["metadata"]["source_feature_count"] == 2
         assert payload["metadata"]["retained_network_manifest"] == manifest
