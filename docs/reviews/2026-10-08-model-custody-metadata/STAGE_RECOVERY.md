@@ -69,3 +69,30 @@ produce a simultaneous snapshot of several files or establish that caller
 scientific gates authorize reading output bytes. Those gates must precede this
 helper. A later consumer must recheck the saved byte identity or use an immutable
 copy. The normal stage still does not call this preparation component.
+
+## Primary output connection
+
+The normal artifact stage now prepares its primary output identity from measured
+link-volume and network database files, plus the supplied setup, assignment and
+package inputs. It retains this preparation under
+`<work_dir>/stage-journals/<stage_id>/model-commands.sqlite3` before computing
+stage outputs. Repeating exact preparation reuses the primary output UUID.
+Changed preparation inputs propagate `WorkerStateWriteUnconfirmed`.
+
+Before registering the primary link-volume row, the stage checks its actual
+registration hash and size against the saved facts and checks run, stage and
+artifact type. It then uses the prepared UUID. Other artifact identities and
+KPI writes are unchanged and do not become safe to replay through this change.
+The local source reference is not converted into immutable Storage custody.
+
+Three tests pass. They execute the actual `stage_artifacts` preparation prefix
+and its registration branch with temporary source files. Engine/profile helpers
+are mocked, and the network fixture is synthetic bytes, not a runnable model.
+The tests prove stable identity, refusal of changed sources and binding at the
+actual primary registration branch. Harmless and restored controls pass. New
+UUID generation, missing byte binding, missing scope binding and bypassing the
+registration helper each fail a targeted assertion. Results are retained in
+`model-command-client-20261008-proof/primary-output-controls.json`.
+
+Full worker regression is pending at this checkpoint. The complete stage,
+server write recovery, restart ownership and scientific acceptance remain open.

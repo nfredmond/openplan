@@ -5124,6 +5124,35 @@ def publish_volume_geojson(
     return log
 
 
+def prepare_primary_model_output(run_id: str, stage_id: str, work_dir: str, setup_result: dict, assign_result: dict, package_meta: dict | None) -> dict:
+    """Keep the primary artifact identity bound to measured bytes and saved inputs."""
+    from pathlib import Path
+    import model_stage_preparation
+    try:
+        return model_stage_preparation.prepare_files(
+            Path(work_dir) / "stage-journals" / stage_id,
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            run_id=run_id, stage_id=stage_id,
+            source_paths={
+                "link_volumes": Path(work_dir) / "run_output" / "link_volumes.csv",
+                "network": Path(work_dir) / "aeq_project" / "project_database.sqlite",
+            },
+            inputs={"setup": setup_result, "assignment": assign_result, "package": package_meta},
+        )
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Primary model output preparation unconfirmed; reconcile saved inputs before continuing") from None
+
+
+def bind_prepared_primary_output(prepared: dict, artifact_payload: dict) -> None:
+    """Refuse changed primary bytes before registering the prepared artifact ID."""
+    facts = prepared["source_files"]["link_volumes"]
+    if artifact_payload["content_hash"] != facts["sha256"] or artifact_payload["file_size_bytes"] != facts["size_bytes"]:
+        raise WorkerStateWriteUnconfirmed("Primary model output bytes changed after preparation")
+    if artifact_payload["run_id"] != prepared["run_id"] or artifact_payload["stage_id"] != prepared["stage_id"] or artifact_payload["artifact_type"] != "link_volumes":
+        raise WorkerStateWriteUnconfirmed("Primary model output scope differs from preparation")
+    artifact_payload["id"] = prepared["output_artifact_id"]
+
+
 def stage_artifacts(
     run_id: str,
     stage_id: str,
@@ -5164,7 +5193,8 @@ def stage_artifacts(
     # ── Daily VMT (Σ link volume × length in miles) and per-capita VMT ──
     db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
     link_volumes_csv = os.path.join(out_dir, "link_volumes.csv")
-    model_output_artifact_id = str(uuid.uuid4())
+    prepared_output = prepare_primary_model_output(run_id, stage_id, work_dir, setup_result, assign_result, package_meta)
+    model_output_artifact_id = prepared_output["output_artifact_id"]
     calibration_result = assign_result.get("calibration")
     daily_vmt = None
     vmt_per_capita = None
@@ -5799,7 +5829,7 @@ def stage_artifacts(
                 "metadata_json": metadata,
             }
             if atype == "link_volumes":
-                artifact_payload["id"] = model_output_artifact_id
+                bind_prepared_primary_output(prepared_output, artifact_payload)
             registered = sb_post_artifact(artifact_payload)
             if registered:
                 registered_artifacts[atype] = registered
