@@ -74,8 +74,29 @@ records the evidence and remaining disagreements.
 This sequence selects the next bounded outcome. The milestone definitions below
 remain binding and the capability registry retains its current evidence grades.
 
-The next staff-generation increment starts from a retained source and saves a
-staff-authored request with its original intent. Reuse the existing request and
+### October 7 implementation evidence update
+
+The sequence above records the October 6 review. The subsequent
+[queued synthesis case](reviews/2026-10-07-synthesis-execution-queue/DESIGN.md)
+and [staff-response case](reviews/2026-10-07-synthesis-execution-queue/STAFF_RESPONSE_ACCEPTANCE.md)
+now exercise synthetic contribution/context/thematic execution, explicit import,
+staff correction and approval, response/decision links and usable internal/public
+review files. The [requirements ledger](product/CORE_REQUIREMENTS_LEDGER.md#october-7-queued-synthesis-and-staff-follow-through)
+maps that bounded evidence. Continue from these existing controls rather than
+implementing another generator, importer or decision record.
+
+M9b remains open for observed interpretation and human usefulness, the remaining
+operational recovery/capacity evidence and reproducible workflow defects. The
+synthetic proposal leaves its two contributions unassigned until staff groups
+them; this does not establish useful machine interpretation. Transient read-lock
+failures and native spreadsheet operation retain their documented boundaries.
+M1/G1, M3 and S1 continue alongside this work. This update changes neither the
+October 6 review date nor any capability grade, milestone or V1 requirement.
+
+The staff-generation outcome defined on October 6 starts from a retained source
+and saves a staff-authored request with its original intent. Its acceptance
+requirements remain below; use the October 7 records to distinguish exercised
+cases from unverified boundaries. Reuse the existing request and
 preparation recovery modules. A page reload or lost reply must recover that same
 request. Show preparation progress and cancellation separately from provider
 authorization. A stopped worker must leave a recoverable job; an uncertain reply

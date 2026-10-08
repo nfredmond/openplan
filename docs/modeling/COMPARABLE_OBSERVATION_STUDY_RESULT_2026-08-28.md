@@ -49,3 +49,12 @@ owned by the v3 study registry, not by the country-neutral matcher.
 - no opened holdout;
 - no AADT claim for expanded assignment output;
 - California and nationwide modeling capability remain `partial`.
+
+## October 7 historical-source verification
+
+The October directional-refusal correction changes the current matcher source.
+Verifying the retained study against that newer file correctly refuses its hash.
+The [historical-source verification record](../reviews/2026-10-07-historical-matcher/VERIFICATION.md)
+provides an explicit original-source command and its passing custody result.
+This does not correct or regrade the historical study or establish current-method
+validity. Its scientific outcome remains inconclusive.

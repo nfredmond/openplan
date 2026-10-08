@@ -304,3 +304,32 @@ September 30 unreleased generation execution: [worker evidence](../reviews/2026-
 The [release verification](../reviews/2026-09-30-synthesis-generation/RELEASE_VERIFICATION.md) advances the execution foundation for CORE-ENG-03/04. Complete selected-source preparation, immutable plans, explicit resource grants, retained original responses and interrupted local task scheduling preserve incomplete and uncertain work. [Publication](../reviews/2026-09-30-synthesis-generation/PUBLICATION.md) records passing exact-commit checks and the release tag. Record/context consolidation, machine-draft import, complete staff generation and measured usefulness remain open. No capability rating or national scientific claim changes.
 
 September 30 context execution follow-through: the [v0.66.0 context CLI release](../reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_PUBLICATION.md) extends the CORE-ENG-01/03 source and synthesis custody evidence with dependent task scheduling and recoverable original responses. Final exact-commit QA, shuffle, isolation and populated upgrade checks pass. Staff generation, explicit proposal import, complete CORE-ENG-04 reporting and the wider M9b outcome remain unfinished. Synthetic-provider custody checks do not establish interpretation quality or representative participation.
+
+## October 7 queued synthesis and staff follow-through
+
+CORE-ENG-03/04 now have a retained synthetic case through queued contribution,
+context and thematic execution, explicit proposal import, staff revision and
+approval, response links, decision-context history and internal/public review
+files. The [queue record](../reviews/2026-10-07-synthesis-execution-queue/DESIGN.md)
+identifies the native task, interruption and recovery checks. The
+[staff-response record](../reviews/2026-10-07-synthesis-execution-queue/STAFF_RESPONSE_ACCEPTANCE.md)
+records exact imported revisions and downloaded PDF/XLSX/ZIP files, including
+private-history exclusion from the public review copy. This advances the
+September 30 implementation boundary; do not rebuild those controls from the
+earlier pending-work statements.
+
+The machine proposal has zero groups and two unassigned contributions. Staff
+creates the groups and retains the original proposal. The response remains a
+draft and the decision remains proposed. Synthetic execution and staff actions
+do not prove model interpretation quality, agency approval, representative
+participation or observed human usefulness. Native spreadsheet operation,
+host-loss recovery, boot supervision and capacity evidence remain open.
+Transient database-lock contention produces console-visible read failures;
+later successful retries do not establish an uninterrupted workflow.
+
+The [release-check record](../reviews/2026-10-07-synthesis-execution-queue/RELEASE_VERIFICATION.md)
+separates failed and corrected checkpoints and records PR #139's integration.
+Later candidate integration and release status belong to the
+[v0.68 record](../reviews/2026-10-07-v068-release/VERIFICATION.md).
+This mapping does not declare a release or complete CORE-ENG-01 through 04,
+M9b, any nationwide capability or the V1 contract.

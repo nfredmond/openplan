@@ -456,7 +456,7 @@ describe("FundingAwardCloseoutPanel", () => {
     expect(screen.queryByText(/Paid invoices covered the full awarded amount/)).toBeNull();
   });
 
-  it("re-opens a closed award only with a written reason, and keeps the milestone disclosure", async () => {
+  it.each(["not_started", "active", "delayed"])("re-opens only with a written reason and the chosen %s status", async (spendingStatus) => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -479,11 +479,22 @@ describe("FundingAwardCloseoutPanel", () => {
     // database refuse it too; this is the layer that can say which box is empty.
     fireEvent.click(screen.getByRole("button", { name: "Confirm re-open" }));
     expect(normalizedTextOf(await screen.findByRole("alert"))).toContain("needs a written reason");
+    expect(normalizedTextOf(screen.getByRole("alert"))).toContain("Award update refused.");
     expect(fetchMock).not.toHaveBeenCalled();
 
     fireEvent.change(screen.getByLabelText("Reason (required)"), {
       target: { value: "Funder de-obligated the final $200k." },
     });
+    expect((screen.getByLabelText("Status it returns to") as HTMLSelectElement).value).toBe("");
+    fireEvent.click(screen.getByRole("button", { name: "Confirm re-open" }));
+    expect(normalizedTextOf(await screen.findByRole("alert"))).toContain("Choose the status");
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText("Status it returns to"), { target: { value: spendingStatus } });
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    fireEvent.click(screen.getByRole("button", { name: "Re-open award" }));
+    expect((screen.getByLabelText("Status it returns to") as HTMLSelectElement).value).toBe("");
+    fireEvent.change(screen.getByLabelText("Status it returns to"), { target: { value: spendingStatus } });
     fireEvent.click(screen.getByRole("button", { name: "Confirm re-open" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -491,7 +502,7 @@ describe("FundingAwardCloseoutPanel", () => {
     expect(url).toBe("/api/funding-awards/award-1");
     expect(init.method).toBe("PATCH");
     expect(JSON.parse(String(init.body))).toEqual({
-      reopen: { reason: "Funder de-obligated the final $200k.", spendingStatus: "active" },
+      reopen: { reason: "Funder de-obligated the final $200k.", spendingStatus },
     });
 
     const outcome = normalizedTextOf(await screen.findByRole("status"));

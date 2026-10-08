@@ -1,3 +1,4 @@
+import { fundingAwardObligationReview } from "@/lib/programs/catalog";
 /**
  * MY WORK's source descriptors — one entry per table that can put something on
  * a planner's week, each declaring exactly how it is read and how its rows
@@ -50,9 +51,6 @@ import type { MyWorkBlockId, MyWorkItem, MyWorkSourceId } from "./types";
 
 /** A project issue that has been dealt with (20260313000013 status CHECK). */
 const CLOSED_ISSUE_STATUS = "resolved";
-
-/** An award whose money is fully spent has met its obligation deadline by definition. */
-const SPENT_AWARD_STATUS = "fully_spent";
 
 /** A model run the engine gave up on (20260317000025 status CHECK). */
 const FAILED_RUN_STATUS = "failed";
@@ -953,16 +951,13 @@ const awardObligationsSource: MyWorkSource = {
   block: "workspace_deadlines",
   table: "funding_awards",
   select:
-    "id, project_id, title, obligation_due_at, spending_status, risk_flag, projects!inner(id, name)",
+    "id, project_id, title, obligation_due_at, spending_status, closure_basis, risk_flag, projects!inner(id, name)",
   workspaceFilterColumn: "workspace_id",
   assigneeColumn: null,
   orderColumn: "obligation_due_at",
   orderAscending: true,
   staticFilters: [
     { kind: "notNull", column: "obligation_due_at" },
-    // Money already fully spent has met its obligation deadline; listing it
-    // would be a deadline nobody can act on.
-    { kind: "neq", column: "spending_status", value: SPENT_AWARD_STATUS },
   ],
   toItems: (rows, { now }) =>
     rows.map((row) => {
@@ -970,6 +965,7 @@ const awardObligationsSource: MyWorkSource = {
       const dueOn = asString(row.obligation_due_at);
       const overdue = isDeadlinePast(dueOn, now);
       const risk = asString(row.risk_flag);
+      const review = fundingAwardObligationReview(asString(row.spending_status), asString(row.closure_basis));
       return {
         sourceId: "award_obligations",
         block: "workspace_deadlines",
@@ -980,15 +976,16 @@ const awardObligationsSource: MyWorkSource = {
         dueOn,
         isOverdue: overdue,
         ownerLabel: null,
-        badge: deadlineBadge("Obligation", overdue),
+        badge: review ? { label: "Review obligation", tone: "warning" } : deadlineBadge("Obligation", overdue),
         detail: [
-          `Funds must be obligated by ${formatWorkDeadlineDate(dueOn)}`,
+          review ? `Recorded obligation deadline ${formatWorkDeadlineDate(dueOn)}. ${review}` : `Funds must be obligated by ${formatWorkDeadlineDate(dueOn)}`,
           risk && risk !== "none" ? `risk flag: ${risk}` : null,
         ]
           .filter(Boolean)
           .join(" · "),
         href: projectHref(asString(row.project_id), "project-funding-opportunities"),
-        dedupKey: `award:${String(row.id)}`,
+        // A milestone cannot replace the closure evidence warning.
+        dedupKey: review ? null : `award:${String(row.id)}`,
       } satisfies MyWorkItem;
     }),
 };
