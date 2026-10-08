@@ -4777,7 +4777,7 @@ def persist_rules_v4_validation_records(
         assessment_size, assessment_hash = facts("model_validation_assessment")
         if basis_hash != model_validation_core.sha256_payload(comparison_basis):
             raise RuntimeError("comparison-basis byte hash drifted")
-        sb_record_modeling_validation_assessment({
+        custody_receipt = sb_record_modeling_validation_assessment({
             "p_workspace_id": workspace_id,
             "p_model_run_id": run_id,
             "p_stage_id": stage_id,
@@ -4816,8 +4816,10 @@ def persist_rules_v4_validation_records(
             "p_scientific_outcome": assessment["scientific_outcome"],
             "p_reasons": assessment["reasons"],
         })
+        assessment["validation_custody_receipt"] = json.loads(json.dumps(custody_receipt, allow_nan=False))
         assessment["validation_evidence_write"] = "recorded"
     except Exception as exc:
+        assessment.pop("validation_custody_receipt", None)
         assessment["validation_evidence_write"] = "validation evidence write failed"
         assessment["reasons"].append(
             "Validation evidence write failed. The computation is scientifically unchecked until custody succeeds."
@@ -5800,7 +5802,7 @@ def stage_artifacts(
         expected_basis_hash = model_validation_core.sha256_payload(comparison_basis)
         if basis_hash != expected_basis_hash:
             raise RuntimeError("validation evidence write failed: comparison-basis byte hash drifted")
-        sb_record_modeling_validation_assessment({
+        custody_receipt = sb_record_modeling_validation_assessment({
             "p_workspace_id": _ws_id,
             "p_model_run_id": run_id,
             "p_stage_id": stage_id,
@@ -5842,10 +5844,12 @@ def stage_artifacts(
             "p_reasons": validation_assessment["reasons"],
         })
         validation["validation_evidence_write"] = "recorded"
+        validation_assessment["validation_custody_receipt"] = json.loads(json.dumps(custody_receipt, allow_nan=False))
         validation_assessment["validation_evidence_write"] = "recorded"
         log += "Rules-v4 validation assessment recorded in immutable custody.\n"
     except Exception as exc:
         validation["validation_evidence_write"] = "validation evidence write failed"
+        validation_assessment.pop("validation_custody_receipt", None)
         validation_assessment["validation_evidence_write"] = "validation evidence write failed"
         validation_assessment["reasons"].append(
             "Validation evidence write failed. The computation is scientifically unchecked until custody succeeds."
