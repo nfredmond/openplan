@@ -72,6 +72,7 @@ DECLARE
  request jsonb; receipt public.model_evidence_publication_receipts%ROWTYPE;
  parent public.model_runs%ROWTYPE; previous jsonb; current_evidence jsonb;
  claim jsonb; metric jsonb; result jsonb; text_key text;
+ assessment jsonb; bound_assessment jsonb; assessment_metadata jsonb;
 BEGIN
  IF p_request IS NULL OR p_workspace IS NULL OR p_run IS NULL OR p_track IS NULL
   OR p_track NOT IN('assignment','behavioral_demand') OR p_expected IS NULL
@@ -121,6 +122,30 @@ BEGIN
  IF NOT FOUND OR parent.workspace_id IS DISTINCT FROM p_workspace THEN RAISE EXCEPTION 'Publication workspace mismatch'; END IF;
  IF parent.attempt_managed THEN RAISE EXCEPTION 'Managed publication requires instrument ingestion'; END IF;
  IF parent.status IN ('failed','cancelled') THEN RAISE EXCEPTION 'Stopped run cannot publish new model evidence'; END IF;
+ -- A caller-provided receipt is a reference to verify, not scientific authority.
+ assessment:=claim->'validation_summary_json'->'model_validation_assessment';
+ IF assessment ? 'validation_custody_receipt' OR assessment->>'validation_evidence_write'='recorded' THEN
+  IF assessment->>'validation_evidence_write' IS DISTINCT FROM 'recorded'
+   OR jsonb_typeof(assessment->'validation_custody_receipt') IS DISTINCT FROM 'object' THEN
+   RAISE EXCEPTION 'Publication assessment acknowledgement missing';
+  END IF;
+  SELECT to_jsonb(a) INTO bound_assessment FROM public.modeling_validation_assessments a
+   WHERE a.id::text=assessment->'validation_custody_receipt'->>'id';
+  IF bound_assessment IS NULL OR bound_assessment IS DISTINCT FROM assessment->'validation_custody_receipt'
+   OR bound_assessment->>'workspace_id' IS DISTINCT FROM p_workspace::text
+   OR bound_assessment->>'model_run_id' IS DISTINCT FROM p_run::text
+   OR bound_assessment->>'track' IS DISTINCT FROM p_track THEN
+   RAISE EXCEPTION 'Publication assessment receipt or scope mismatch';
+  END IF;
+  SELECT a.metadata_json INTO assessment_metadata FROM public.model_run_artifacts a
+   WHERE a.id::text=bound_assessment->>'model_validation_assessment_artifact_id';
+  FOREACH text_key IN ARRAY ARRAY['schema','rules_version','scientific_outcome','planning_use','partition','reasons','coverage','metrics','comparability_findings','exact_inputs','legacy_point_count_diagnostic'] LOOP
+   IF NOT(assessment ? text_key) OR NOT(assessment_metadata ? text_key)
+    OR assessment->text_key IS DISTINCT FROM assessment_metadata->text_key THEN
+    RAISE EXCEPTION 'Publication assessment metadata mismatch';
+   END IF;
+  END LOOP;
+ END IF;
  previous:=public.read_legacy_model_evidence(p_workspace,p_run,p_track);
  IF previous IS DISTINCT FROM p_expected THEN RAISE EXCEPTION 'Publication evidence changed'; END IF;
  INSERT INTO public.model_evidence_publication_context VALUES(txid_current(),p_run,p_track);

@@ -15,8 +15,12 @@ def verify():
         raise ValueError('Select only the named owned proof database')
     fixture=str(uuid.UUID(meta['fixture_run']))
     source=(ROOT/'evidence-publication.sql').read_text()
-    cases=(ROOT/'evidence-publication-cases.sql').read_text()
+    cases=(ROOT/'evidence-publication-cases.sql').read_text()+'\n'+(ROOT/'evidence-publication-assessment-cases.sql').read_text()
     mutations=[
+      ('assessment-track-bypass',"OR bound_assessment->>'track' IS DISTINCT FROM p_track",'OR false','Other-track assessment publication accepted'),
+      ('assessment-acknowledgement-bypass',"IF assessment->>'validation_evidence_write' IS DISTINCT FROM 'recorded'\n   OR jsonb_typeof(assessment->'validation_custody_receipt') IS DISTINCT FROM 'object' THEN",'IF false THEN','Unconfirmed assessment publication accepted'),
+      ('assessment-reference-bypass',"IF bound_assessment IS NULL OR bound_assessment IS DISTINCT FROM assessment->'validation_custody_receipt'", "IF false AND (bound_assessment IS NULL OR bound_assessment IS DISTINCT FROM assessment->'validation_custody_receipt')", 'Unbound publication receipt accepted'),
+      ('assessment-metadata-bypass',"IF NOT(assessment ? text_key) OR NOT(assessment_metadata ? text_key)\n    OR assessment->text_key IS DISTINCT FROM assessment_metadata->text_key THEN", 'IF false THEN', 'Unbound publication metadata accepted'),
       ('stopped-run-bypass',"IF parent.status IN ('failed','cancelled') THEN",'IF false THEN','Stopped run publication accepted'),
       ('prior-modeling_claim_decisions-workspace_id','c.workspace_id IS DISTINCT FROM p_workspace','false','Ambiguous evidence read accepted: modeling_claim_decisions workspace_id'),
       ('prior-modeling_claim_decisions-county_run_id','c.county_run_id IS NOT NULL','false','Ambiguous evidence read accepted: modeling_claim_decisions county_run_id'),

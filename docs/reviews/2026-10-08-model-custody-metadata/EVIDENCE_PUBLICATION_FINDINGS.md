@@ -542,3 +542,34 @@ All 68 worker suites pass at `8d17fcea`, with none skipped. Unit
 This preserves the available receipt identity. It does not activate atomic
 higher-tier publication, prove Storage bytes, add idempotent assessment recovery,
 or complete either model's independent scientific acceptance.
+
+## Resolve attached assessment receipts on the server
+
+The uninstalled publication candidate now resolves an attached rules-v4 custody
+receipt against `modeling_validation_assessments`. It requires the stored row to
+match the attached receipt and the publication workspace, run and method track.
+It then compares the assessment fields available in the retained assessment
+artifact's metadata. A `recorded` acknowledgement without a receipt is refused;
+a receipt paired with a pending acknowledgement is also refused. These checks
+run before projection changes under the parent-run lock.
+
+The new rollback-only native cases create a synthetic assessment through the
+actual custody RPC. They exercise altered receipt fields, missing receipt,
+pending acknowledgement, all eleven checked assessment metadata fields, and
+an intact receipt presented for the other method track. Refusal leaves prior
+projection rows and publication receipts unchanged. The valid prototype-only
+publication retains the exact database assessment receipt.
+
+Baseline, harmless and restored suites pass; nineteen targeted faults are
+detected, including new receipt-reference, metadata, acknowledgement and track
+bypasses. All fifteen existing separate-session retry, competing-publication and
+reaper-order cases retain their expected outcomes. Temporary candidate objects
+are removed. Evidence is retained under
+`model-command-client-20261008-proof/publication-assessment-reference/` and
+`publication-contention-assessment/`.
+
+The server still accepts only prototype-tier publication. This verifies the
+attached reference and stored metadata; it does not independently evaluate the
+assessment, verify every document field or Storage byte, install the candidate,
+activate normal dispatch, or establish higher-tier or nationwide scientific
+acceptance. Those requirements remain open.
