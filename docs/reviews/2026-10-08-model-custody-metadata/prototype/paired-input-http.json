@@ -1,0 +1,220 @@
+{
+  "selector_sha256": "9d0b3a59a1bbc2e88bc4d63a484a588bf6850ecbe94ab27f8c6f0d12453d3eea",
+  "worker_sha256": "44e2c4937a74cea87b7396409bd5a206c30ea84559143ab28c79300c2fcdc599",
+  "controls": [
+    {
+      "control": "baseline",
+      "outcome": {
+        "paired": true,
+        "original_preserved": true,
+        "execution_ready": false
+      },
+      "consumer_artifacts": 2,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "harmless",
+      "outcome": {
+        "paired": true,
+        "original_preserved": true,
+        "execution_ready": false
+      },
+      "consumer_artifacts": 2,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "omit-package-mapping",
+      "outcome": {
+        "mapping_fault_detected": true
+      },
+      "consumer_artifacts": 2,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "source-mismatch",
+      "outcome": {
+        "refused": true,
+        "writer_stopped": true
+      },
+      "consumer_artifacts": 2,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "restored",
+      "outcome": {
+        "paired": true,
+        "original_preserved": true,
+        "execution_ready": false
+      },
+      "consumer_artifacts": 2,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    }
+  ],
+  "gateway_removed": true,
+  "limits": "Actual paired helper and native commands through a route-prefix transport adapter. Producer fixture registration uses native SQL commands. No durable mapped-state publication, project/output/count mapping, full dispatcher or scientific acceptance."
+}

@@ -1206,3 +1206,29 @@ false execution-ready flag. The combined suite passes 170 tests. The SQLite
 ResourceWarning remains unresolved. Results are in `prototype/paired-input-controls.json`.
 Native paired evidence, durable derived-state publication, project/output/count
 mapping and coherent project transfer remain open. No scientific claim changes.
+
+### Native paired inputs and returned mapping
+
+The actual paired helper now runs against native stage/artifact commands and real
+producer files in an isolated clone. Baseline, harmless and restored controls
+return the paired package mapping, preserve original state bytes and records, and
+keep execution readiness false. Each consumer registers exactly one
+`model_state_consumption` and one `model_package_consumption` record with the
+expected producer artifact, stage and attempt identities. Producer artifact
+records remain unchanged.
+
+A state naming a contradictory package directory refuses the pairing and stops
+the writer. Its two individually retained input records remain available for
+reconciliation; they do not imply that the pair is valid. Deliberately removing
+the package-path mapping is detected against the expected returned state. All
+five controls make eight HTTP calls each, with native HTTP 200 responses. The
+proof uses a transport adapter only to remove the hosted `/rest/v1` prefix from
+the isolated direct PostgREST URL. Producer fixtures use the installed native
+claim, artifact and terminal commands.
+
+`prototype/paired-input-http.json` records source hashes and outcomes; private
+`paired-input-http-v1` retains the clone and journals. The temporary gateway is
+removed. No application database changes. Durable mapped-state publication,
+project/output/count relocation, coherent project transfer, normal dispatch and
+scientific acceptance remain open. These successful pair controls do not replace
+the separately recorded lost-reply recovery evidence for each consumption write.
