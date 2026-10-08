@@ -2047,3 +2047,20 @@ helper source hash; `prototype/verify_native_engine_process.py` reproduces them.
 Registration remains mocked in this check. It does not run full assignment,
 contain escaped descendants, recover a lost supervisor, authorize capture or
 establish scientific acceptance. Normal managed dispatch remains disabled.
+
+### Pin engine process record directories
+
+Review found that verifying the attempt root did not verify its engine_process
+subdirectory before exit-record publication. The helper now records the original
+subdirectory device and inode, opens it without following symlinks through the
+pinned attempt descriptor, and writes reservation, log and exit files relative
+to that descriptor. Log creation uses mode 0600 directly. A replaced directory
+or symlink stops the writer instead of receiving an exit record.
+
+Seven process tests pass within the 267-test warning-enabled suite. Baseline,
+harmless and restored controls pass; six faults fail their intended tests,
+including removed directory-identity checks and symlink following. The native
+borrowed-view child check also passes again with the updated helper source hash.
+This constrains record publication, not arbitrary same-user engine code or host
+administrators. It does not solve descendant containment, child working-directory
+races, supervisor loss or capture authorization. Normal dispatch remains disabled.

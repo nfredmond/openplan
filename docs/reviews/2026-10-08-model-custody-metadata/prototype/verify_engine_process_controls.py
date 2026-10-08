@@ -15,6 +15,8 @@ def main():
       ('ignore-group',change("raise EngineStillRunning('Engine process group still has members')",'pass'),'test_group_members_prevent_completion'),
       ('erase-attempt',change("'attempt_id':writer.context.attempt_id","'attempt_id':None"),'test_completed_child_records_original_identity'),
       ('adopt-reservation-directory',change("os.mkdir('engine_process',mode=0o700,dir_fd=descriptor)","os.makedirs(self.directory,mode=0o700,exist_ok=True)"),'test_existing_reservation_never_launches_again'),
+      ('ignore-directory-identity',change('if (info.st_dev,info.st_ino)!=self.directory_identity:', 'if False:'),'test_replaced_record_directory_refuses_exit'),
+      ('follow-record-symlink',change("descriptor=os.open('engine_process',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=parent)","descriptor=os.open('engine_process',os.O_RDONLY|os.O_DIRECTORY,dir_fd=parent)"),'test_symlink_record_directory_refuses_exit'),
       ('restored',source,None)]
     runner='''
 import importlib.util,sys,unittest

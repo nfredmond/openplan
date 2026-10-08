@@ -3,6 +3,7 @@
 This is not connected to normal dispatch. It does not contain children that
 create another session or replace cross-process attempt authorization.
 """
+from contextlib import contextmanager
 import hashlib
 import json
 import os
@@ -14,15 +15,12 @@ class EngineStillRunning(RuntimeError):
     pass
 
 
-def _record(directory, name, payload):
+def _record(descriptor, name, payload):
     content=(json.dumps(payload,sort_keys=True,allow_nan=False)+'\n').encode()
-    descriptor=os.open(directory,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
-    try:
-        file=os.open(name,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600,dir_fd=descriptor)
-        with os.fdopen(file,'wb') as stream:
-            stream.write(content);stream.flush();os.fsync(stream.fileno())
-        os.fsync(descriptor)
-    finally:os.close(descriptor)
+    file=os.open(name,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600,dir_fd=descriptor)
+    with os.fdopen(file,'wb') as stream:
+        stream.write(content);stream.flush();os.fsync(stream.fileno())
+    os.fsync(descriptor)
 
 
 class EngineProcess:
@@ -40,21 +38,38 @@ class EngineProcess:
             with writer.files.pinned() as descriptor:
                 os.mkdir('engine_process',mode=0o700,dir_fd=descriptor)
                 os.fsync(descriptor)
+                child=os.open('engine_process',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=descriptor)
+                try:
+                    info=os.fstat(child)
+                    self.directory_identity=(info.st_dev,info.st_ino)
+                finally:os.close(child)
             writer.files.verify()
             self.identity={'schema':'openplan.engine-process.v1','run_id':writer.context.run_id,
                            'stage_id':writer.context.stage_id,'attempt_id':writer.context.attempt_id,
                            'command_sha256':hashlib.sha256(json.dumps(argv,separators=(',',':')).encode()).hexdigest()}
-            _record(self.directory,'launch-reserved.json',self.identity)
-            # The reservation survives even if Popen fails or this supervisor dies.
-            # Environment and raw arguments are not written to the local receipt.
-            with (self.directory/'engine.log').open('xb') as log:
-                os.chmod(self.directory/'engine.log',0o600)
-                self.process=subprocess.Popen(argv,cwd=writer.files.path,env=env,
-                    stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,
-                    start_new_session=True,close_fds=True)
+            with self._pinned() as descriptor:
+                _record(descriptor,'launch-reserved.json',self.identity)
+                # Reservation survives spawn failure. Raw arguments and environment
+                # are not written to the receipt; child output belongs in a private log.
+                file=os.open('engine.log',os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600,dir_fd=descriptor)
+                with os.fdopen(file,'wb') as log:
+                    self.process=subprocess.Popen(argv,cwd=writer.files.path,env=env,
+                        stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,
+                        start_new_session=True,close_fds=True)
         except BaseException:
             writer.stopped=True
             raise
+
+    @contextmanager
+    def _pinned(self):
+        with self.writer.files.pinned() as parent:
+            descriptor=os.open('engine_process',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=parent)
+            try:
+                info=os.fstat(descriptor)
+                if (info.st_dev,info.st_ino)!=self.directory_identity:
+                    raise ValueError('Engine process directory identity changed')
+                yield descriptor
+            finally:os.close(descriptor)
 
     def confirm_exit(self):
         """Refuse live work; retain observed exit without authorizing model capture."""
@@ -75,7 +90,8 @@ class EngineProcess:
             receipt={**self.identity,'pid':self.process.pid,'returncode':code,
                      'observed_original_process_group_empty':True,'execution_ready':False,
                      'scientific_acceptance':'unassessed'}
-            _record(self.directory,'observed-exit.json',receipt)
+            with self._pinned() as descriptor:
+                _record(descriptor,'observed-exit.json',receipt)
             self.receipt=receipt
         except BaseException:
             self.writer.stopped=True

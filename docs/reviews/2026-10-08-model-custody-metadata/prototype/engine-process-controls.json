@@ -1,5 +1,5 @@
 {
-  "source_sha256": "a20e45d7fefefa2089d8ac1f1f79915fd4c7de4279b876e0f046b457665f90fd",
+  "source_sha256": "1e18e92b2160e77e3d1bd67706fd02569036a0cc2197fb0b99bed1e658597cee",
   "controls": [
     {
       "control": "baseline",
@@ -30,6 +30,16 @@
       "control": "adopt-reservation-directory",
       "exit_code": 1,
       "targeted_test": "test_existing_reservation_never_launches_again"
+    },
+    {
+      "control": "ignore-directory-identity",
+      "exit_code": 1,
+      "targeted_test": "test_replaced_record_directory_refuses_exit"
+    },
+    {
+      "control": "follow-record-symlink",
+      "exit_code": 1,
+      "targeted_test": "test_symlink_record_directory_refuses_exit"
     },
     {
       "control": "restored",

@@ -45,6 +45,26 @@ class EngineProcessTests(unittest.TestCase):
         self.assertEqual(Path(error.exception.filename).name,'engine_process')
         launch.assert_not_called();self.assertTrue(self.writer.stopped)
 
+    def test_replaced_record_directory_refuses_exit(self):
+        handle=self.start('pass');handle.process.wait(timeout=10)
+        original=handle.directory.with_name('original_engine_process')
+        handle.directory.rename(original)
+        handle.directory.mkdir()
+        with self.assertRaisesRegex(ValueError,'directory identity changed'):
+            handle.confirm_exit()
+        self.assertFalse((handle.directory/'observed-exit.json').exists())
+        self.assertFalse((original/'observed-exit.json').exists())
+        self.assertTrue(self.writer.stopped)
+
+    def test_symlink_record_directory_refuses_exit(self):
+        handle=self.start('pass');handle.process.wait(timeout=10)
+        original=handle.directory.with_name('original_engine_process')
+        handle.directory.rename(original)
+        handle.directory.symlink_to(original,target_is_directory=True)
+        with self.assertRaises(OSError):handle.confirm_exit()
+        self.assertFalse((original/'observed-exit.json').exists())
+        self.assertTrue(self.writer.stopped)
+
     def test_nonzero_exit_is_retained_and_stops_writer(self):
         handle=self.start('raise SystemExit(7)');handle.process.wait(timeout=10)
         with self.assertRaisesRegex(RuntimeError,'unsuccessfully'):handle.confirm_exit()
