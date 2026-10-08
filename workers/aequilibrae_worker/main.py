@@ -46,6 +46,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Tuple
 
 import requests
+from model_validation_receipts import assessment_receipt
 import numpy as np
 import pandas as pd
 from network_ids import renumber_nodes
@@ -630,24 +631,19 @@ def sb_post_artifact(payload: dict):
 
 
 def sb_record_modeling_validation_assessment(payload: dict) -> dict:
-    response = requests.post(
-        f"{SUPABASE_URL}/rest/v1/rpc/record_modeling_validation_assessment",
-        headers=HEADERS,
-        json=payload,
-        timeout=30,
-    )
-    if not 200 <= response.status_code < 300:
-        raise RuntimeError(
-            "validation evidence write failed: "
-            f"{response.status_code} {response.text[:200]}"
-        )
+    """Confirm the returned assessment before callers acknowledge its custody."""
     try:
-        result = response.json()
-    except ValueError as exc:
-        raise RuntimeError("validation evidence write failed: custody RPC returned no JSON") from exc
-    if not result:
-        raise RuntimeError("validation evidence write failed: custody RPC returned no row")
-    return result[0] if isinstance(result, list) else result
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/rpc/record_modeling_validation_assessment",
+            headers=HEADERS, json=payload, timeout=30, allow_redirects=False,
+        )
+        if response.status_code not in (200, 201):
+            raise WorkerStateWriteUnconfirmed("Validation assessment write unconfirmed")
+        return assessment_receipt(payload, response.json())
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except (requests.RequestException, ValueError, TypeError, KeyError):
+        raise WorkerStateWriteUnconfirmed("Validation assessment receipt unconfirmed") from None
 
 
 def sb_record_modeling_structural_demand_diagnosis(payload: dict) -> dict:
