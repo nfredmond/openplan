@@ -1745,3 +1745,26 @@ registration, stage output-path enforcement, combined state/count mapping,
 engine closure and full managed dispatch remain unfinished. Earlier native
 producer/consumer receipt evidence remains separate. No scientific, browser or
 human acceptance claim changes.
+
+### Native working-output registration recovery
+
+The native proof now confirms output consumption, then drops the reply after
+working-copy registration commits. Both consumer records remain present with
+the exact producer identity and input manifest link. The initial working
+inventory has the mutable role and execution readiness false. The writer has
+not activated its output path because registration was unconfirmed.
+
+A fresh CLI recovers the exact receipt, cached recovery sends no HTTP and native
+model/receipt observations stay unchanged. The writer remains stopped. A real
+write to the proof-owned working CSV leaves its retained input unchanged; the
+proof restores only that mutable CSV before comparing its initial inventory.
+Baseline, harmless and restored cases pass with nine HTTP calls each. Changing
+the working inventory role to retained input fails the intended assertion.
+`prototype/output-working-http.json` records results; private
+`output-working-http-v1` retains isolated databases and journals. Temporary
+PostgREST gateways are removed.
+
+This proof uses synthetic output and skim bytes. It does not establish native
+format validity, engine closure, stage output-path enforcement, combined
+state/count mapping or full managed execution. Normal managed dispatch remains
+disabled. No scientific, browser or human acceptance boundary changes.

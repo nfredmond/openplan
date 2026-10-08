@@ -25,7 +25,8 @@ import model_command_journal as journal
 from worker_import_for_tests import import_worker_main
 
 
-def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False, package_consumer=False, state_consumer=False, project_output=False, project_consumer=False, project_working=False, assignment_outputs=False, assignment_consumer=False):
+def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False, package_consumer=False, state_consumer=False, project_output=False, project_consumer=False, project_working=False, assignment_outputs=False, assignment_consumer=False, output_working=False):
+    assignment_consumer = assignment_consumer or output_working
     assignment_outputs = assignment_outputs or assignment_consumer
     project_consumer = project_consumer or project_working
     project_output = project_output or project_consumer
@@ -209,7 +210,13 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                             elif project_consumer:
                                                 worker.retain_managed_predecessor_project()
                                             elif assignment_consumer:
-                                                worker.retain_managed_predecessor_outputs()
+                                                if output_working:
+                                                    fault['operation'] = None
+                                                    consumed_outputs = worker.retain_managed_predecessor_outputs()
+                                                    fault['operation'] = 'write_model_attempt_artifact'
+                                                    writer.prepare_output_working_copy(consumed_outputs)
+                                                else:
+                                                    worker.retain_managed_predecessor_outputs()
                                             elif state_consumer:
                                                 worker.retain_managed_predecessor_state()
                                             else:
@@ -317,6 +324,11 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         if package_consumer:
                             records = [record for record in records if record['stage_id'] == stage]
                         consumer_attempts = [attempt for attempt in observed['attempts'] if attempt['stage_id'] == stage]
+                        if output_working:
+                            if len(records) != 2 or {r['artifact_type'] for r in records} != {'model_output_consumption', 'model_output_working_copy'}:
+                                raise AssertionError('Output working copy lost its retained input record')
+                            consumed_record = next(r for r in records if r['artifact_type'] == 'model_output_consumption')
+                            records = [r for r in records if r['artifact_type'] == 'model_output_working_copy']
                         if project_working:
                             if len(records) != 2 or {r['artifact_type'] for r in records} != {'model_project_consumption', 'model_project_working_copy'}:
                                 raise AssertionError('Project working copy lost its retained input record')
@@ -338,14 +350,14 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     or retained_path.stat().st_ino == producer_state_path.stat().st_ino):
                                 raise AssertionError('Native state consumption differs from original bytes or provenance')
                         elif status == 'package_artifact':
-                            retained_dir = writers[0].files.path / ('predecessor_outputs' if assignment_consumer else 'assignment_outputs' if assignment_outputs else 'project_working' if project_working else 'predecessor_project' if project_consumer else 'project_inputs' if project_output else 'predecessor_package' if package_consumer else 'package_inputs')
+                            retained_dir = writers[0].files.path / ('output_working' if output_working else 'predecessor_outputs' if assignment_consumer else 'assignment_outputs' if assignment_outputs else 'project_working' if project_working else 'predecessor_project' if project_consumer else 'project_inputs' if project_output else 'predecessor_package' if package_consumer else 'package_inputs')
                             manifest = retained_dir / 'manifest.json'
                             content = manifest.read_bytes()
                             inventory = json.loads(content)
                             if (records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
                                     or records[0]['file_size_bytes'] != len(content)
                                     or records[0]['file_url'] != 'local://' + str(manifest)
-                                    or records[0]['artifact_type'] != ('model_output_consumption' if assignment_consumer else 'model_assignment_outputs' if assignment_outputs else 'model_project_working_copy' if project_working else 'model_project_consumption' if project_consumer else 'model_project_inputs' if project_output else 'model_package_consumption' if package_consumer else 'model_package_inputs')):
+                                    or records[0]['artifact_type'] != ('model_output_working_copy' if output_working else 'model_output_consumption' if assignment_consumer else 'model_assignment_outputs' if assignment_outputs else 'model_project_working_copy' if project_working else 'model_project_consumption' if project_consumer else 'model_project_inputs' if project_output else 'model_package_consumption' if package_consumer else 'model_package_inputs')):
                                 raise AssertionError('Native package manifest differs from retained bytes')
                             if package_consumer:
                                 expected_provenance = {'artifact_id':producer_artifact,'stage_id':producer_stage,
@@ -357,11 +369,28 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                 expected_files['count_inputs/manifest.json'] = b'{"source_reference":"/original/counts.csv","scientific_acceptance":"unassessed"}'
                                 expected_files['travel_time_skims.omx'] = b'synthetic skim bytes'
                                 metadata = records[0]['metadata_json']
-                                if (metadata.get('schema') != ('openplan.output-consumption.v1' if assignment_consumer else 'openplan.assignment-outputs.v1')
-                                        or metadata.get('inventory_schema') != 'openplan.package-inputs.v1'
+                                if (metadata.get('schema') != ('openplan.output-working-copy.v1' if output_working else 'openplan.output-consumption.v1' if assignment_consumer else 'openplan.assignment-outputs.v1')
+                                        or (not output_working and metadata.get('inventory_schema') != 'openplan.package-inputs.v1')
                                         or metadata.get('scientific_acceptance') != 'unassessed'
-                                        or metadata.get('database_consistency') != 'unassessed'):
+                                        or (not output_working and metadata.get('database_consistency') != 'unassessed')):
                                     raise AssertionError('Native assignment output metadata differs')
+                                if output_working:
+                                    retained_input = writers[0].files.path / 'predecessor_outputs/files/generated.csv'
+                                    working_file = retained_dir / 'files/generated.csv'
+                                    if (metadata.get('role') != 'initial_working_inventory'
+                                            or metadata.get('files_mutable') is not True
+                                            or metadata.get('execution_ready') is not False
+                                            or metadata.get('input_manifest_sha256') != consumed_record['content_hash']
+                                            or working_file.stat().st_ino == retained_input.stat().st_ino
+                                            or writers[0]._working_outputs is not None):
+                                        raise AssertionError('Native output working copy lost its retained input boundary')
+                                    original = retained_input.read_bytes()
+                                    working_file.write_bytes(b'synthetic changed output')
+                                    if retained_input.read_bytes() != original:
+                                        raise AssertionError('Working output write changed retained input')
+                                    # Restore only this proof-owned mutable file for inventory comparison.
+                                    working_file.write_bytes(original)
+
                             if project_output:
                                 expected_db = ((producer_directory / 'project_inputs/files' if project_consumer else writers[0].files.path / 'package') / 'project_database.sqlite').read_bytes()
                                 expected_files['project_database.sqlite'] = expected_db
