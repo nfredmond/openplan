@@ -5088,7 +5088,7 @@ def upload_volume_geojson_bytes(run_id: str, stage_id: str, data: bytes) -> str:
 
 def publish_volume_geojson(
     run_id: str, stage_id: str, work_dir: str,
-    verified_engine_stamp: str, baseline_assignment_metadata: dict,
+    verified_engine_stamp: str, baseline_assignment_metadata: dict, *, workspace_id: str,
 ) -> str:
     """Publish the map artifact while preserving uncertain registration writes."""
     out_dir = os.path.join(work_dir, "run_output")
@@ -5150,7 +5150,7 @@ def publish_volume_geojson(
             with open(geojson_path, "rb") as geojson_file:
                 geojson_bytes = geojson_file.read()
             storage_ref = upload_volume_geojson_bytes(run_id, stage_id, geojson_bytes)
-            sb_post_artifact({
+            sb_record_retained_artifact({
                 "run_id": run_id,
                 "stage_id": stage_id,
                 "artifact_type": "volumes_geojson",
@@ -5163,7 +5163,9 @@ def publish_volume_geojson(
                     "features": len(features),
                     "maxVolume": max_vol,
                 },
-            })
+            }, workspace_id=workspace_id,
+                journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
+                logical_name="volumes.geojson")
             log += f"Uploaded volumes GeoJSON ({len(features)} features) to private Storage as {storage_ref}.\n"
         else:
             log += f"Skipped GeoJSON generation because project database was missing at {db_path}.\n"
@@ -6326,6 +6328,7 @@ def stage_artifacts(
 
     log += publish_volume_geojson(
         run_id, stage_id, work_dir, verified_engine_stamp, baseline_assignment_metadata,
+        workspace_id=_ws_id,
     )
 
     log += "Artifact extraction complete.\n"

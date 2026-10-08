@@ -1083,29 +1083,33 @@ def test_volume_geojson_retains_registration_uncertainty():
                     return mock.Mock(status_code=201)
                 if uncertain:
                     raise main.requests.Timeout("synthetic registration acknowledgement lost")
-                payload = kwargs["json"]
+                payload = kwargs["json"]["p_payload"]
                 retained_bytes = (root / "run_output/volumes.geojson").read_bytes()
                 assert payload["content_hash"] == hashlib.sha256(retained_bytes).hexdigest()
                 assert payload["metadata_json"]["features"] == 1
-                return mock.Mock(status_code=201, json=lambda: [{"id": "retained-artifact", **payload}])
-            with mock.patch.object(main.sqlite3, "connect", return_value=connection), mock.patch.object(main.requests, "post", side_effect=post), mock.patch.object(main.requests, "get", side_effect=lambda *a, **k: mock.Mock(status_code=200, content=(root / "run_output/volumes.geojson").read_bytes())):
+                return mock.Mock(status_code=200, json=lambda: {**payload, "attempt_id": None})
+            original_connect = main.sqlite3.connect
+            with mock.patch.dict(main.os.environ, {"OPENPLAN_DEPLOYMENT_ID": "synthetic"}), mock.patch.object(main.sqlite3, "connect", side_effect=lambda path,*a,**k: connection if str(path).endswith("project_database.sqlite") else original_connect(path,*a,**k)), mock.patch.object(main.requests, "post", side_effect=post), mock.patch.object(main.requests, "get", side_effect=lambda *a, **k: mock.Mock(status_code=200, content=(root / "run_output/volumes.geojson").read_bytes())):
                 try:
-                    result = main.publish_volume_geojson(RUN_ID, "stage", work, "synthetic-engine", {})
+                    result = main.publish_volume_geojson(RUN_ID, "22222222-2222-4222-8222-222222222222", work, "synthetic-engine", {}, workspace_id=RUN_ID)
                 except main.WorkerStateWriteUnconfirmed:
                     assert uncertain
                 else:
                     if uncertain:
                         raise AssertionError("uncertain GeoJSON registration swallowed")
                     assert "Uploaded volumes GeoJSON (1 features)" in result
-            assert len(calls) == 2, calls
-            connection.close.assert_called_once()
+                    first_bytes=(root / "run_output/volumes.geojson").read_bytes()
+                    main.publish_volume_geojson(RUN_ID, "22222222-2222-4222-8222-222222222222", work, "synthetic-engine", {}, workspace_id=RUN_ID)
+                    assert (root / "run_output/volumes.geojson").read_bytes()==first_bytes
+            assert len(calls) == (2 if uncertain else 3), calls
+            assert connection.close.call_count == (1 if uncertain else 2)
 
 
 def test_volume_geojson_missing_database_remains_explicit():
     import tempfile
     from unittest import mock
     with tempfile.TemporaryDirectory() as work, mock.patch.object(main.requests, "post") as post:
-        result = main.publish_volume_geojson(RUN_ID, "stage", work, "synthetic-engine", {})
+        result = main.publish_volume_geojson(RUN_ID, "22222222-2222-4222-8222-222222222222", work, "synthetic-engine", {}, workspace_id=RUN_ID)
     assert "Skipped GeoJSON generation because project database was missing" in result
     post.assert_not_called()
 
