@@ -1693,3 +1693,30 @@ mutable output paths, engine closure or scientific accuracy. The helper is not
 connected to normal dispatch. Output/state/count pairing and the complete
 execution, publication and terminal lifecycle remain open. No browser or human
 acceptance is claimed, and normal managed dispatch remains disabled.
+
+### Native assignment-output receipt recovery
+
+Producer capture and selected consumer transfer now pass installed-command
+checks against separate owned database clones. Each proof drops the HTTP reply
+after the native artifact command commits. A fresh CLI recovers the exact
+receipt; cached recovery sends no HTTP. Parent, stage, attempt, start, artifact,
+KPI and receipt observations stay unchanged, and the original writer stays
+stopped. The consumer selects the completed producer and retains its exact
+artifact, stage, attempt and manifest hash.
+
+Both proofs compare manifest hash, size, local path, artifact type, schema,
+unassessed statuses and every copied file. Nested count metadata retains its
+original source label. Independent inodes confirm separate copies. Baseline,
+harmless and restored cases pass; an incorrect manifest hash fails the intended
+native-byte comparison. Producer cases make six HTTP calls and consumer cases
+make eight. The shared runner retains its historical `package_artifact` mode
+label, but explicit assertions require `model_assignment_outputs` or
+`model_output_consumption` for these cases.
+
+`prototype/output-manifest-http.json` and `prototype/managed-output-http.json`
+retain results. Private proof directories `output-manifest-http-v1` and
+`managed-output-http-v1` retain their isolated databases and journals. Temporary
+PostgREST gateways are removed. These are synthetic output fixtures, including
+synthetic skim bytes, not scientific runs. Native file-format validation,
+engine closure, mutable output paths, state/count pairing and normal managed
+dispatch remain open. Receipt recovery does not authorize resumed computation.
