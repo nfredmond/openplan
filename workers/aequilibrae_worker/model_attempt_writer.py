@@ -167,6 +167,28 @@ class AttemptWriter:
             self.stopped = True
             raise
 
+    def retain_package(self, directory):
+        """Retain this attempt's completed package before a successor can copy it."""
+        import model_package_inputs
+        self.require_open()
+        try:
+            if self.files is None or not Path(directory).resolve(strict=True).is_relative_to(self.files.path):
+                raise ValueError('Package retention requires an owned attempt source')
+            retained = model_package_inputs.retain(directory, self.files.path / 'package_inputs')
+            self.files.verify()
+            self.record_artifact({
+                'run_id': self.context.run_id, 'stage_id': self.context.stage_id,
+                'artifact_type': 'model_package_inputs',
+                'file_url': 'local://' + retained['manifest_path'],
+                'file_size_bytes': retained['manifest_size_bytes'], 'content_hash': retained['manifest_sha256'],
+                'metadata_json': {'schema': 'openplan.package-inputs.v1',
+                                  'scientific_acceptance': 'unassessed', 'database_consistency': 'unassessed'},
+            }, logical_name='package-inputs')
+            return retained
+        except BaseException:
+            self.stopped = True
+            raise
+
     def publish_state(self, directory, state):
         self.require_open()
         try:

@@ -997,3 +997,32 @@ file is missing. Legacy records without a package directory retain their fallbac
 Four real-file registration-block tests pass, including a harmless control and a
 wrong-directory fault. The focused suite passes 25 tests. Registration is mocked;
 full package/project custody and native project reopening remain unproved.
+
+### Completed-package snapshot foundation
+
+`model_package_inputs.retain` captures the entire package tree into an exclusive
+private directory. Its inventory includes original manifests, later generated
+matrices, nested metadata and empty directories. It copies through no-follow
+file descriptors, records size/hash for each regular file, refuses hardlinks and
+special files, and rechecks all source entries before publishing its manifest.
+Previously copied files that change during a later copy cannot silently pass.
+Source-contained destinations and existing destinations are refused. Partial
+captures remain for reconciliation. Parent directories are administrator-owned;
+this is not confinement against arbitrary same-user host changes.
+
+The managed writer can retain an owned package and register its inventory as
+`model_package_inputs`. Ownership or capture failures stop the writer. Lost
+transport replies preserve a pending command and the complete local snapshot.
+This method is preparatory and is not yet called by normal stage dispatch.
+Consumer verification/mapping and native package-manifest recovery remain open.
+The manifest explicitly leaves database consistency and scientific acceptance
+unassessed. It must not be used as proof of a coherent SQLite project snapshot.
+
+Nine package cases pass. Baseline, harmless and restored controls pass; five
+faults detect omitted generated input, ignored late changes, accepted hardlinks,
+incorrect manifest hashes and foreign package sources. The initial bound tests
+failed because their fixture omitted its response callback; the corrected fixture
+passes. The combined suite passes 144 tests. Docker source-copy declarations
+include the new module; no container build is claimed. The existing SQLite
+ResourceWarning remains unresolved. Results and source hashes are retained in
+`prototype/package-retention-controls.json`.

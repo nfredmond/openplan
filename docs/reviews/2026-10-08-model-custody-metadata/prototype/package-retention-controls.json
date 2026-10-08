@@ -1,0 +1,47 @@
+{
+  "package_sha256": "59651f171d49ca929fc9c092737f234bb60b9112ed3f3ef59f6844b2c2f8b14d",
+  "writer_sha256": "38e4a903943b8302d1f02faa53373b42bf68c368ab40f14809069957282c5044",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "omit-generated-input",
+      "exit_code": 1,
+      "targeted_test": "PackageTests.test_all_generated_files_and_empty_directories_retained"
+    },
+    {
+      "control": "ignore-late-file-change",
+      "exit_code": 1,
+      "targeted_test": "PackageTests.test_changed_earlier_file_refuses_manifest"
+    },
+    {
+      "control": "accept-hardlinks",
+      "exit_code": 1,
+      "targeted_test": "PackageTests.test_links_and_special_files_refused"
+    },
+    {
+      "control": "wrong-manifest-hash",
+      "exit_code": 1,
+      "targeted_test": "BoundPackageTests.test_owned_package_registers_exact_manifest"
+    },
+    {
+      "control": "foreign-package",
+      "exit_code": 1,
+      "targeted_test": "BoundPackageTests.test_foreign_package_refused_without_registration"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real local trees; mocked command transport. No native manifest recovery, consumer mapping, database consistency, normal dispatch or scientific acceptance."
+}
