@@ -21,7 +21,10 @@
           }
         ],
         "http_calls": 4,
-        "gateway_removed": true
+        "rpc_calls": 4,
+        "worker_read_calls": 0,
+        "gateway_removed": true,
+        "worker": null
       }
     },
     {
@@ -44,7 +47,10 @@
           }
         ],
         "http_calls": 4,
-        "gateway_removed": true
+        "rpc_calls": 4,
+        "worker_read_calls": 0,
+        "gateway_removed": true,
+        "worker": null
       }
     },
     {
@@ -71,7 +77,10 @@
           }
         ],
         "http_calls": 4,
-        "gateway_removed": true
+        "rpc_calls": 4,
+        "worker_read_calls": 0,
+        "gateway_removed": true,
+        "worker": null
       }
     }
   ],

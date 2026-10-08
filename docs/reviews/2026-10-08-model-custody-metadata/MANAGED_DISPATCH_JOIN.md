@@ -312,3 +312,36 @@ These worker-path checks inject the transport. The earlier native SQL/HTTP
 checks remain separate evidence; this entry does not claim a combined native
 worker journey yet. Normal claims, progress, outputs, terminal outcomes and
 filesystem/continuation reconciliation still need the full managed-attempt join.
+
+### Native HTTP check of both connected skip functions
+
+The combined check now invokes each actual `mark_stage_skipped` function against
+an owned clone with migration 20 installed. Predecessor and parent reads use
+native PostgREST. The target stage input comes from native SQL, so this check
+does not establish the complete poll or push loop.
+
+Both workers pass baseline, harmless and restored cases for `skipped` and
+`not_skipped`. The latter changes the predecessor after the worker reads it and
+before the database evaluates the command. In every case the database commits,
+the bridge drops the reply, and the worker preserves its pending request. A
+fresh recovery CLI retrieves the exact receipt without changing parent, stage,
+receipt, attempt or execution-start records. Cached recovery sends no HTTP.
+Each successful control records four worker reads and four RPC calls across
+the two outcomes. Removing the predecessor timestamp projection prevents
+journal creation and fails the intended assertion for each worker. Temporary
+function replacements are restored and bounded gateways are removed.
+
+The first baseline-only run passed. A second run adding controls failed because
+the test compiled readers with copied module globals. Those copies did not
+receive the owned endpoint overrides. No application write occurred. The
+corrected verifier binds the compiled function to the worker's live globals;
+all controls then pass. `skip-worker-http.json` retains the corrected results.
+The existing direct-client native HTTP checks also pass again after the shared
+helper changes, including harmless, missing-receipt and restored controls.
+Their refreshed results remain in `skip-http-recovery.json`.
+
+This closes the combined native skip-function check left open above. Normal
+managed claims, progress, output publication, terminal outcomes, filesystem
+ownership and continuation reconciliation remain unfinished. These synthetic
+checks do not establish engine execution, whole-run restart, browser acceptance
+or independent scientific acceptance.

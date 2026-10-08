@@ -1,5 +1,6 @@
 """Drop a real committed RPC reply, then recover through a fresh worker CLI."""
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from contextlib import ExitStack
 from pathlib import Path
 import hashlib
 import json
@@ -10,6 +11,7 @@ import subprocess
 import sys
 import threading
 import uuid
+from unittest.mock import patch
 import requests
 from isolated_postgrest import gateway
 
@@ -20,7 +22,7 @@ import model_command_client as client
 import model_command_journal as journal
 
 
-def verify(sql_source, output):
+def verify(sql_source, output, worker=None):
     source = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
     if source['container'] != 'supabase_db_openplan-restore-target-2026091050' or not re.fullmatch(r'openplan_retention_upgrade_[0-9a-f]{32}', source['database']):
         raise ValueError('Select owned retention source')
@@ -37,10 +39,13 @@ def verify(sql_source, output):
         raise RuntimeError('Source has active sessions')
     sql('postgres', f'CREATE DATABASE {database} TEMPLATE {source["database"]};')
     (output / 'candidate.json').write_text(json.dumps({'container': source['container'], 'database': database, 'source_database': source['database']}, indent=2) + '\n')
-    sql(database, 'BEGIN;\n' + sql_source + '\nCOMMIT;')
+    if sql_source is not None:
+        sql(database, 'BEGIN;\n' + sql_source + '\nCOMMIT;')
+    elif sql(database, "SELECT count(*) FROM supabase_migrations.schema_migrations WHERE version='20261016000020';") != '1':
+        raise AssertionError('Installed skip migration required')
     fixture = str(uuid.UUID(source['fixture_run']))
     calls, cases = [], []
-    fault = {'armed': False}
+    fault = {'armed': False, 'change_blocker': None}
     with gateway('public', database=database) as connection:
         key = connection['service_token']
 
@@ -53,11 +58,15 @@ def verify(sql_source, output):
                     self.send_error(403)
                     return
                 body = self.rfile.read(int(self.headers.get('Content-Length', '0')))
+                if fault['change_blocker'] is not None:
+                    blocker_id = str(uuid.UUID(fault['change_blocker']))
+                    sql(database, f"UPDATE public.model_run_stages SET status='succeeded' WHERE id='{blocker_id}';")
+                    fault['change_blocker'] = None
                 with requests.post(connection['url'] + '/rpc/skip_blocked_model_stage', data=body,
                     headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'},
                     timeout=15, allow_redirects=False) as response:
                     status, content = response.status_code, response.content
-                calls.append({'status': status, 'request_id': json.loads(body)['p_request_id']})
+                calls.append({'method': 'POST', 'status': status, 'request_id': json.loads(body)['p_request_id']})
                 if status == 200 and fault['armed']:
                     fault['armed'] = False
                     self.close_connection = True
@@ -70,12 +79,28 @@ def verify(sql_source, output):
                 self.end_headers()
                 self.wfile.write(content)
 
+            def do_GET(self):
+                if not self.path.startswith(('/rest/v1/model_runs?', '/rest/v1/model_run_stages?')) or self.headers.get('Authorization') != 'Bearer ' + key:
+                    self.send_error(403)
+                    return
+                with requests.get(connection['url'] + self.path[len('/rest/v1'):],
+                    headers={'Authorization': 'Bearer ' + key}, timeout=15, allow_redirects=False) as response:
+                    status, content = response.status_code, response.content
+                calls.append({'method': 'GET', 'status': status})
+                self.send_response(status)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+
         server = HTTPServer(('127.0.0.1', 0), Bridge)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
         base = f'http://127.0.0.1:{server.server_port}'
         try:
             for blocker_status, expected in [('failed', 'skipped'), ('succeeded', 'not_skipped')]:
+                if worker is not None:
+                    blocker_status = 'failed'
                 run, stage, prior, request = [str(uuid.uuid4()) for _ in range(4)]
                 workspace = sql(database, f"""
 INSERT INTO public.model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by)
@@ -91,12 +116,38 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                     'run_id': run, 'stage_id': stage, 'blocker_id': prior, 'blocker_status': 'failed'}}
                 directory = output / expected
                 fault['armed'] = True
-                try:
-                    client.deliver(directory, command, base_url=base, deployment_id=database, service_key=key)
-                except client.DeliveryUnconfirmed:
-                    pass
+                if worker is None:
+                    try:
+                        client.deliver(directory, command, base_url=base, deployment_id=database, service_key=key)
+                    except client.DeliveryUnconfirmed:
+                        pass
+                    else:
+                        raise AssertionError('Dropped reply reported confirmed')
                 else:
-                    raise AssertionError('Dropped reply reported confirmed')
+                    observed = json.loads(sql(database, f"SELECT to_jsonb(s) FROM public.model_run_stages s WHERE id='{stage}';"))
+                    fault['change_blocker'] = prior if expected == 'not_skipped' else None
+                    root_setting = 'RUN_WORK_ROOT' if worker.__name__ == 'main' else 'ACTIVITYSIM_WORK_DIR'
+                    with ExitStack() as stack:
+                        stack.enter_context(patch.dict(os.environ, {'OPENPLAN_DEPLOYMENT_ID': database}))
+                        stack.enter_context(patch.object(worker, 'SUPABASE_URL', base))
+                        stack.enter_context(patch.object(worker, 'SUPABASE_KEY', key))
+                        stack.enter_context(patch.object(worker, 'HEADERS', {'Authorization': 'Bearer ' + key, 'apikey': key, 'Content-Type': 'application/json', 'Prefer': 'return=representation'}))
+                        stack.enter_context(patch.object(worker, root_setting, str(directory)))
+                        try:
+                            worker.mark_stage_skipped(observed, 'Synthetic prior observation')
+                        except worker.WorkerStateWriteUnconfirmed:
+                            pass
+                        else:
+                            raise AssertionError('Worker did not stop after dropped reply')
+                    journals = list(directory.rglob('model-commands.sqlite3'))
+                    if len(journals) != 1:
+                        raise AssertionError('Worker did not retain one command journal')
+                    directory = journals[0].parent
+                    pending = journal.pending(directory, client.destination(base, database))
+                    if len(pending) != 1:
+                        raise AssertionError('Worker did not preserve one unresolved decision')
+                    command = pending[0]['command']
+                    request = command['request_id']
                 if fault['armed'] or journal.pending(directory, command['destination'])[0]['command'] != command:
                     raise AssertionError('Dropped native receipt did not leave original pending')
                 if sql(database, f"SELECT count(*) FROM public.model_stage_skip_receipts WHERE request_id='{request}';") != '1':
@@ -136,7 +187,9 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
             server.shutdown()
             thread.join(timeout=5)
             server.server_close()
-    return {'cases': cases, 'http_calls': len(calls), 'gateway_removed': True}
+    return {'cases': cases, 'http_calls': len(calls), 'rpc_calls': sum(call['method'] == 'POST' for call in calls),
+            'worker_read_calls': sum(call['method'] == 'GET' for call in calls), 'gateway_removed': True,
+            'worker': None if worker is None else worker.__name__}
 
 
 def main():
