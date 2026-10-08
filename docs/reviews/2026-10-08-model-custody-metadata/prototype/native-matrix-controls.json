@@ -1,0 +1,121 @@
+{
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "worker_sha256": "0081e7a7816c3fe8d2f0b175146b0938e578a783ab725e5622c2f51edf4c03fe",
+        "scope_sha256": "faeda72e06e00f80c961fc93c5caad26e4874b214f1326a835365bc41d5d2599",
+        "observed": {
+          "aequilibrae_version": "1.6.2",
+          "file_descriptors_before_close": 2,
+          "file_descriptors_after_scope": 1,
+          "file_descriptors_after_owner_release": 1,
+          "file_descriptors_after_view_release": 0,
+          "retained_view_values": [
+            [
+              0.0,
+              17.0
+            ],
+            [
+              23.0,
+              0.0
+            ]
+          ]
+        },
+        "child_exit_code": 0,
+        "separate_process_reopen_values": [
+          [
+            0.0,
+            17.0
+          ],
+          [
+            23.0,
+            0.0
+          ]
+        ],
+        "limits": "Actual assignment demand-matrix factory with synthetic 2x2 disk-backed matrix and live borrowed computational view. Measures descriptors, not all mappings or engine threads. Child exit is observed; no production subprocess boundary, assignment, crash recovery or scientific acceptance is established."
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "worker_sha256": "0081e7a7816c3fe8d2f0b175146b0938e578a783ab725e5622c2f51edf4c03fe",
+        "scope_sha256": "faeda72e06e00f80c961fc93c5caad26e4874b214f1326a835365bc41d5d2599",
+        "observed": {
+          "aequilibrae_version": "1.6.2",
+          "file_descriptors_before_close": 2,
+          "file_descriptors_after_scope": 1,
+          "file_descriptors_after_owner_release": 1,
+          "file_descriptors_after_view_release": 0,
+          "retained_view_values": [
+            [
+              0.0,
+              17.0
+            ],
+            [
+              23.0,
+              0.0
+            ]
+          ]
+        },
+        "child_exit_code": 0,
+        "separate_process_reopen_values": [
+          [
+            0.0,
+            17.0
+          ],
+          [
+            23.0,
+            0.0
+          ]
+        ],
+        "limits": "Actual assignment demand-matrix factory with synthetic 2x2 disk-backed matrix and live borrowed computational view. Measures descriptors, not all mappings or engine threads. Child exit is observed; no production subprocess boundary, assignment, crash recovery or scientific acceptance is established."
+      }
+    },
+    {
+      "control": "replace-index",
+      "expected_failure": "'numpy.ndarray' object has no attribute 'flush'"
+    },
+    {
+      "control": "false-omx",
+      "expected_failure": "file signature not found"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "worker_sha256": "0081e7a7816c3fe8d2f0b175146b0938e578a783ab725e5622c2f51edf4c03fe",
+        "scope_sha256": "faeda72e06e00f80c961fc93c5caad26e4874b214f1326a835365bc41d5d2599",
+        "observed": {
+          "aequilibrae_version": "1.6.2",
+          "file_descriptors_before_close": 2,
+          "file_descriptors_after_scope": 1,
+          "file_descriptors_after_owner_release": 1,
+          "file_descriptors_after_view_release": 0,
+          "retained_view_values": [
+            [
+              0.0,
+              17.0
+            ],
+            [
+              23.0,
+              0.0
+            ]
+          ]
+        },
+        "child_exit_code": 0,
+        "separate_process_reopen_values": [
+          [
+            0.0,
+            17.0
+          ],
+          [
+            23.0,
+            0.0
+          ]
+        ],
+        "limits": "Actual assignment demand-matrix factory with synthetic 2x2 disk-backed matrix and live borrowed computational view. Measures descriptors, not all mappings or engine threads. Child exit is observed; no production subprocess boundary, assignment, crash recovery or scientific acceptance is established."
+      }
+    }
+  ],
+  "limits": "Actual assignment demand factory, native matrix close and exported OMX reopen with synthetic 2x2 values. Confirms two regressions and records outstanding view handles, not assignment completion or scientific acceptance."
+}

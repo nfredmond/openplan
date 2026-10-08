@@ -1979,3 +1979,32 @@ worker threads still require inspection and native evidence. Calling matrix.clos
 is not proof all mapped views are released. Normal managed dispatch and completed
 capture remain disabled pending the remaining lifecycle work. Scientific,
 browser and human acceptance remain open.
+
+### Native demand-matrix cleanup and file-format corrections
+
+The native matrix check found two defects. First, the demand factory replaced
+the disk-backed index with a NumPy array; AequilibraE.close then raised because
+that array has no flush method. The factory now assigns index values in place.
+Second, create_empty wrote AequilibraE binary bytes to a filename ending in OMX;
+loading it as OMX failed the HDF5 signature check. Working matrices now use AEM
+filenames, and the factory explicitly exports valid OMX files under the existing
+public filenames. Numeric demand values and zone ordering are preserved.
+
+The proof extracts the actual nested demand factory from stage_assignment,
+runs it against AequilibraE 1.6.2 and reopens exported OMX in a separate process.
+The two-by-two synthetic values and indices match exactly. Baseline, harmless and
+restored cases pass; restoring index replacement fails native close, and
+restoring mislabeled binary output fails native OMX reopen. The warning-enabled
+broader suite still passes 260 tests. `prototype/native-matrix-scope.json` and
+`prototype/native-matrix-controls.json` retain source hashes and observations.
+Private matrix-scope v1/v2 preserve the original failures; v3 passes. The first
+control-driver run had a quoted-newline syntax defect; controls v2 corrects it
+and retains all five outcomes.
+
+Closure alone does not establish released views: the native measurement reports
+two descriptors before close, one after scope exit, one after releasing the
+matrix owner and zero after releasing its borrowed computational view. The
+child exits before the separate reader opens OMX. This is evidence for requiring
+resource-release or process-exit custody before completed capture, not a claim
+that production already provides that boundary. Engine-created result matrices,
+threads, full dispatch and scientific/browser/human acceptance remain open.

@@ -4739,12 +4739,13 @@ def stage_assignment(
         def _demand_matrix(file_stem: str, core_name: str, demand_array: np.ndarray) -> AequilibraeMatrix:
             mat = own_matrix(AequilibraeMatrix())
             mat.create_empty(
-                file_name=os.path.join(out_dir, f"{file_stem}.omx"),
+                file_name=os.path.join(out_dir, f"{file_stem}.aem"),
                 zones=n_assign, matrix_names=[core_name], memory_only=False,
             )
-            mat.index = np.array(assignment_centroids)
+            mat.index[:] = np.array(assignment_centroids)
             mat.matrix[core_name][:, :] = demand_array
             mat.computational_view([core_name])
+            mat.export(os.path.join(out_dir, f"{file_stem}.omx"))
             return mat
 
         # demand.omx keeps its historical meaning (the full assigned demand) for
