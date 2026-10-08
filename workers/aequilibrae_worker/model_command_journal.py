@@ -90,3 +90,14 @@ def pending(directory: Path, destination: str) -> list[dict]:
     with closing(connect(directory)) as connection:
         rows = connection.execute('SELECT request_json,response_json FROM commands WHERE destination=? AND response_json IS NULL ORDER BY rowid', (destination,)).fetchall()
         return [record(row) for row in rows]
+
+
+def read_existing(directory: Path, destination: str, request_id: str | None = None) -> list[dict]:
+    """Read saved commands without creating a journal or changing its records."""
+    path = (directory / 'model-commands.sqlite3').resolve()
+    with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=30)) as connection:
+        if request_id is None:
+            rows = connection.execute('SELECT request_json,response_json FROM commands WHERE destination=? AND response_json IS NULL ORDER BY rowid', (destination,)).fetchall()
+        else:
+            rows = connection.execute('SELECT request_json,response_json FROM commands WHERE destination=? AND request_id=?', (destination, request_id)).fetchall()
+        return [record(row) for row in rows]

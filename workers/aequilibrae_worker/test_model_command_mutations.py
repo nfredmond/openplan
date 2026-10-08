@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parent
-FILES = ('model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py', 'test_model_command_ownership.py')
+FILES = ('model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py', 'test_model_command_ownership.py', 'model_command_recovery.py', 'test_model_command_recovery.py')
 
 
 class MutationTests(unittest.TestCase):
@@ -25,7 +25,7 @@ class MutationTests(unittest.TestCase):
             return result
 
     def test_harmless_changes_preserve_both_suites(self):
-        for test in FILES[2:]:
+        for test in (name for name in FILES if name.startswith('test_')):
             result = self.run_case(test=test, harmless=True)
             self.assertEqual(result.returncode, 0, result.stderr)
 
@@ -96,6 +96,20 @@ class MutationTests(unittest.TestCase):
             with self.subTest(boundary=boundary, old=old):
                 result = self.run_case('model_command_client.py', old, new, test='test_model_command_ownership.py')
                 self.assertNotEqual(result.returncode, 0, 'Ownership fault escaped checks')
+                self.assertIn(boundary, result.stderr)
+                self.assertNotIn('SyntaxError', result.stderr)
+                self.assertNotIn('ModuleNotFoundError', result.stderr)
+
+    def test_recovery_selects_existing_exact_requests(self):
+        cases = [
+            ('model_command_recovery.py', "if command['destination'] != bound or (request_id is not None and command['request_id'] != request_id):", 'if False:', 'corrupted_request_identity'),
+            ('model_command_recovery.py', "command = records[0]['command']", "command = {**records[0]['command'], 'request_id': '00000099-1111-4111-8111-111111111111'}", 'saved_request_recovers'),
+            ('model_command_journal.py', "path.as_uri() + '?mode=ro'", "path.as_uri() + '?mode=rwc'", 'read created a journal'),
+        ]
+        for filename, old, new, boundary in cases:
+            with self.subTest(boundary=boundary):
+                result = self.run_case(filename, old, new, test='test_model_command_recovery.py')
+                self.assertNotEqual(result.returncode, 0, 'Recovery fault escaped checks')
                 self.assertIn(boundary, result.stderr)
                 self.assertNotIn('SyntaxError', result.stderr)
                 self.assertNotIn('ModuleNotFoundError', result.stderr)

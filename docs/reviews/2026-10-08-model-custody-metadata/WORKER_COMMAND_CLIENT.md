@@ -162,6 +162,45 @@ tests pass, including seven state/receipt tests and the shared module import.
 These checks inject transport replies; they do not establish native database
 acceptance for this comparator or execute a scientific model.
 
+## Operator recovery of an uncertain command
+
+`workers/aequilibrae_worker/model_command_recovery.py` lists unresolved commands
+from an existing journal or recovers one exact saved request. The journal opens
+read-only for selection. Missing journals, wrong destinations and changed request
+identities are refused before delivery. Recovery sends the original request ID
+and payload. A retained, checked receipt returns without another HTTP request.
+
+Run from the worker directory, substituting the owned deployment and journal:
+
+```bash
+python3 model_command_recovery.py --journal /path/to/journal \
+  --base-url http://127.0.0.1:54321 --deployment-id DEPLOYMENT_ID --list-pending
+python3 model_command_recovery.py --journal /path/to/journal \
+  --base-url http://127.0.0.1:54321 --deployment-id DEPLOYMENT_ID \
+  --request-id SAVED_REQUEST_UUID
+```
+
+Network recovery reads `SUPABASE_SERVICE_ROLE_KEY` from the environment. Listing
+and cached receipt recovery need no credential. Output contains command identity
+and outcome, not scientific payloads or credentials. Exit status 2 means delivery
+remains unconfirmed; 3 means the request was refused. Neither outcome authorizes
+another claim, a terminal write, or model execution.
+
+Five recovery tests pass. The six mutation-runner tests cover harmless controls
+and 29 targeted client, journal, ownership and recovery faults. The three recovery
+faults substitute a new request ID, bypass saved identity checks, or allow a
+missing journal to be created. These checks use injected transport responses.
+
+`prototype/verify_worker_recovery_cli.py` additionally exercises the installed
+candidate migration through actual PostgREST and a loopback TCP proxy. It drops
+the first reply after the database commits a synthetic claim. A fresh CLI process
+lists and recovers the original request; another fresh process reads the cached
+receipt without posting again. SQL independently confirms one attempt and one
+claim receipt after two HTTP posts. The retained run is
+`d8d0a759-eb54-47b6-8175-00f75ad195fd`, with request
+`fc9ac22d-c43e-4e31-b824-44dfdf0eb994`. This proves command receipt recovery after
+a lost reply, not model restart, file reuse, Storage bytes or scientific validity.
+
 ## Remaining connection work
 
 Normal dispatchers still use their current receipt-checked legacy writes. Before
