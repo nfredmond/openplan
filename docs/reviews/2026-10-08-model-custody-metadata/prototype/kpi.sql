@@ -11,14 +11,16 @@ ALTER TABLE public.model_kpi_write_receipts ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.model_kpi_write_context,public.model_kpi_write_receipts FROM PUBLIC,anon,authenticated,service_role;
 CREATE FUNCTION public.guard_model_attempt_kpi() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
-DECLARE v_run uuid;
+DECLARE v_run uuid; v_old_run uuid;
 BEGIN
- IF TG_OP <> 'INSERT' AND OLD.attempt_id IS NOT NULL THEN
+ IF TG_OP <> 'INSERT' THEN v_old_run := OLD.run_id; END IF;
+ IF TG_OP <> 'DELETE' THEN v_run := NEW.run_id; END IF;
+ PERFORM id FROM public.model_runs WHERE id IN (v_run,v_old_run) ORDER BY id FOR UPDATE;
+ IF TG_OP <> 'INSERT' AND (OLD.attempt_id IS NOT NULL OR
+     EXISTS(SELECT 1 FROM public.model_runs WHERE id=v_old_run AND attempt_managed)) THEN
   RAISE EXCEPTION 'Attempt KPI records are immutable';
  END IF;
  IF TG_OP='DELETE' THEN RETURN OLD; END IF;
- v_run := NEW.run_id;
- PERFORM id FROM public.model_runs WHERE id=v_run FOR UPDATE;
  IF NEW.attempt_id IS NOT NULL OR EXISTS(SELECT 1 FROM public.model_runs WHERE id=v_run AND attempt_managed) THEN
   IF TG_OP <> 'INSERT' OR NOT EXISTS(SELECT 1 FROM public.model_kpi_write_context c
       WHERE c.transaction_id=txid_current() AND c.kpi_id=NEW.id AND c.attempt_id=NEW.attempt_id) THEN

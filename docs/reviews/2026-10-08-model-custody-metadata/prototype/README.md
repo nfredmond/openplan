@@ -6,7 +6,7 @@ This executable database prototype starts the attempt-ownership design in the pa
 
 The sections below preserve the order of development. Later checkpoints supersede earlier missing-feature statements only where they say so. Current coverage includes attempt claims, stage and parent write guards, fixed stage sets, atomic success/failure, reaping, retained relaunch, and attempt-bound KPI/artifact metadata commands.
 
-The native rollback runner passes baseline, harmless and restored cases plus 29 adverse controls. The separate-session runner passes 32 cases across claim, completion, relaunch and artifact schedules. The native runner uses original application tables inside rolled-back transactions. The concurrency runner uses private table copies without original foreign keys, triggers or RLS. Neither runner starts a scientific model.
+The native rollback runner passes baseline, harmless and restored cases plus 33 adverse controls. The separate-session runner passes 32 cases across claim, completion, relaunch and artifact schedules. The native runner uses original application tables inside rolled-back transactions. The concurrency runner uses private table copies without original foreign keys, triggers or RLS. Neither runner starts a scientific model.
 
 No application migration, launch route, packaged worker or artifact reader uses this protocol. Remaining integration work includes retained-attempt readers, claim/validation custody, populated-output relaunch, worker request journals and adapters, restart recovery, production timestamp/deadlock behavior, and authorized retention. Existing-output relaunch refuses until that retention boundary is implemented. SQL metadata checks do not verify Storage bytes. These gaps prevent describing the prototype as a deployed recovery fix or completed M3.
 
@@ -165,3 +165,11 @@ The separate-session runner now loads the artifact command into its private tabl
 Baseline, harmless and restored cases pass for all three schedules. Ignoring the receipt rejects an identical retry and is detected. Removing ownership checks permits the revoked registration and is detected. A false reaper rule that exempts runs with artifacts is also detected. The runner passes all 32 cases across claim, completion, relaunch and artifact schedules, then verifies removal of every private schema.
 
 These copies retain columns, checks and indexes, not original application foreign keys, triggers or RLS. The test proves these controlled transaction orders, not arbitrary schedules, original timestamp freshness, worker interruption, Storage byte fencing or installed recovery. Native sequential artifact checks cover a different boundary. The protocol remains a prototype outside application migrations.
+
+## Historical output retention correction
+
+A new native fixture reproduced a gap before the correction: a KPI created before its parent became managed could be deleted. Both output guards checked the new parent on updates and returned early for legacy deletion, so a record without an attempt reference could also move to an unmanaged parent.
+
+KPI and artifact guards now lock both original and destination parents in identifier order. An existing record is immutable when it has an attempt reference or its original parent is managed. Historical rows retain null attempt references; no execution provenance is invented. Unmanaged KPI editing and deletion remain available.
+
+Native cases reject deletion and reassignment of both historical output types, then independently confirm the original identities and null attempt references. Four targeted mutations permit those deletion/move paths and fail at their intended assertions. Baseline, harmless and restored cases plus all 33 adverse controls pass. All 32 separate-session contention cases pass again after the guard change. The latter still uses private table copies and does not prove legacy row-lock versus command parent-lock deadlock handling. This remains a prototype correction, not an installed production fix.
