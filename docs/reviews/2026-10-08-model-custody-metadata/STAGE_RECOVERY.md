@@ -245,3 +245,36 @@ This is committed-write response-loss evidence for the retained artifact client.
 The normal stage does not call this operation yet. Application migration, normal
 registration adoption, remaining artifact/KPI side effects, complete restart
 ownership, Storage byte custody and scientific acceptance remain open.
+
+
+## Artifact migration and upgrade
+
+The candidate is now additive migration
+`20261016000016_legacy_artifact_command_receipts.sql`. The CLI generated the
+initial migration file; its timestamp was moved above the repository's existing
+future-dated migration 15 so upgrade ordering stays explicit. No application
+database or running worker was upgraded. The migration inventory passes with
+388 files. Rollback checks against the actual migration pass with baseline,
+harmless, restored and ten fault variants.
+
+`prototype/verify_legacy_artifact_upgrade.py` clones the isolated assessment
+upgrade database at migration 15 and applies the new migration through the CLI
+twice. It confirms one history entry, no fabricated artifact receipts and exact
+preservation of nine tables, including the prior assessment receipt table. The
+baseline contains 111 runs, 52 stages, 243 artifacts, 20 KPIs, 59 claim decisions,
+19 validation results, one v2 instrument, 45 assessments and one assessment
+receipt. Installed rollback cases pass and leave those rows unchanged. Harmless
+and restored upgrade controls pass. An injected existing-run rewrite fails the
+row-preservation assertion. All proof clones remain available for inspection.
+
+The advisor comparison adds no WARN or ERROR findings. Its two new INFO findings
+are the deliberately policy-free private receipt table and its unused new
+foreign-key index. RLS and revoked direct table privileges remain intentional;
+the service-only command owns the transaction. This is a scoped comparison, not
+a clean bill for the database's 1,502 preexisting findings.
+
+Evidence is retained under the proof root in `legacy-artifact-cli-upgrade/`,
+`legacy-artifact-upgrade-controls/`, `legacy-artifact-migration-controls/` and
+`legacy-artifact-migration-advisors/`. The migration SHA-256 is
+`8cb6a78d9f66cf6573ad3f28d34865e40649c4d4b5a451364ed6f368e176bb9b`.
+Normal worker adoption and its regression checks remain next.
