@@ -342,6 +342,30 @@ management, prove stage-completion custody or establish scientific acceptance.
 The private result is `native-activity-handoff/native-activity-handoff.json`
 under the worker-client proof directory.
 
+## Preserve source identity through input adaptation
+
+The screening manifest now carries the full model run and consuming stage IDs,
+plus each source artifact's ID, producing stage, registered hash and byte size.
+Separate materialized-file records identify relative paths, actual hashes, sizes
+and whether the file is an exact copy or the zone-attribute adapter's output.
+The original CSV and adapted CSV keep distinct identities. The input-bundle
+builder preserves the complete source manifest in its metadata directory.
+
+All 43 worker tests pass. The normal preflight test checks the original native
+record shape, actual materialized file bytes, the CSV transformation distinction
+and the copied bundle metadata. Harmless controls pass. Five targeted faults
+remove source identities, change the consuming stage, replace file hashes, hide
+the adaptation or omit the source-stage query projection; each fails its intended
+assertion. The restored suite passes.
+
+The native query/copy proof also passes with the expanded source-stage projection
+for run `19341d96-0c80-4c33-bc11-108a0c5a4fb0`, retaining three source identities
+and copies and rejecting same-size corruption. Its private result is under
+`native-activity-provenance/`. This native proof covers returned stage identity,
+not whether that producing stage completed or still owns an active attempt.
+These provenance additions do not establish scientific suitability, restart
+reconciliation or independent model acceptance.
+
 ## Remaining connection work
 
 Normal dispatchers still use their current receipt-checked legacy writes. Before

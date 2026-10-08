@@ -59,7 +59,7 @@ def check():
             return requests.get(connection['url']+'/'+url[len(prefix):],**kwargs)
         worker.requests = types.SimpleNamespace(get=get)
         rows = worker.sb_get_run_artifacts(run)
-        if len(rows) != 3 or any(row['run_id'] != run for row in rows):
+        if len(rows) != 3 or any(row['run_id'] != run or row['stage_id'] != stage for row in rows):
             raise AssertionError('Native inventory lost run identity')
         for kind,data in payloads.items():
             path = worker._retain_handoff_file(rows,kind,run,str(execution))

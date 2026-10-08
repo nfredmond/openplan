@@ -312,7 +312,7 @@ def sb_get_run(run_id: str) -> dict:
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
-        "&select=id,run_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json"
+        "&select=id,run_id,stage_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
@@ -523,6 +523,7 @@ def _materialize_screening_dir(
     zone_attr_path: str,
     setup_summary_path: str,
     dest_root: str,
+    *, source_artifacts: list[dict], consumer_stage_id: str,
 ) -> str:
     """Lay out the screening-run-dir the bundle builder expects:
     <dir>/bundle_manifest.json, <dir>/package/zone_attributes.csv,
@@ -539,13 +540,35 @@ def _materialize_screening_dir(
     os.makedirs(os.path.join(screening_dir, "work"), exist_ok=True)
     shutil.copy2(setup_summary_path, os.path.join(screening_dir, "work", "network_setup_summary.json"))
 
-    # Minimal source manifest — the builder requires the file but tolerates missing
-    # fields (they only feed a provenance excerpt).
+    # Preserve original registered inputs separately from adapted pipeline files.
+    source_records = []
+    for kind in ("skim_matrix", "zone_attributes", "network_setup_summary"):
+        matches = [row for row in source_artifacts if row.get("artifact_type") == kind]
+        if len(matches) != 1 or matches[0].get("run_id") != run_id:
+            raise RuntimeError("Screening provenance requires one exact run artifact per input")
+        row = matches[0]
+        source_records.append({key: row.get(key) for key in ("id", "run_id", "stage_id", "artifact_type", "content_hash", "file_size_bytes")})
+    materialized = []
+    for relative, transformation in (
+        ("run_output/travel_time_skims.omx", "exact_copy"),
+        ("package/zone_attributes.csv", "zone_attributes_adapter"),
+        ("work/network_setup_summary.json", "exact_copy"),
+    ):
+        file_path = Path(screening_dir) / relative
+        digest = hashlib.sha256()
+        with file_path.open("rb") as handle:
+            while chunk := handle.read(1024 * 1024):
+                digest.update(chunk)
+        materialized.append({"path": relative, "sha256": digest.hexdigest(), "bytes": file_path.stat().st_size, "transformation": transformation})
     manifest = {
         "schema_version": "openplan.screening_handoff.v0",
         "run_name": f"behavioral-{run_id}",
         "screening_grade": True,
         "source": "aequilibrae_worker",
+        "model_run_id": run_id,
+        "consumer_stage_id": consumer_stage_id,
+        "source_artifacts": source_records,
+        "materialized_files": materialized,
         "zones": {"count": zones},
         "caveats": ["Screening-grade AequilibraE handoff; not calibrated."],
     }
@@ -589,7 +612,8 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     sb_patch_stage(stage_id, {"log_tail": log})
 
     screening_dir = _materialize_screening_dir(
-        run_id, skim_path, zone_attr_path, setup_summary_path, run_root
+        run_id, skim_path, zone_attr_path, setup_summary_path, run_root,
+        source_artifacts=artifacts, consumer_stage_id=stage_id,
     )
 
     scripts_dir = str(_REPO_ROOT / "scripts" / "modeling")

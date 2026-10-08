@@ -86,9 +86,9 @@ class FakeRequests:
             }])
         if "/rest/v1/model_run_artifacts?run_id=eq" in url:
             return FakeResponse(200, [
-                {"id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "skim_matrix", "file_url": f"local://{self.skim_path}", "file_size_bytes": Path(self.skim_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.skim_path).read_bytes()).hexdigest(), "metadata_json": {}},
-                {"id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "zone_attributes", "file_url": f"local://{self.za_path}", "file_size_bytes": Path(self.za_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.za_path).read_bytes()).hexdigest(), "metadata_json": {}},
-                {"id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "network_setup_summary", "file_url": f"local://{self.setup_path}", "file_size_bytes": Path(self.setup_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.setup_path).read_bytes()).hexdigest(), "metadata_json": {}},
+                {"id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", "stage_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "skim_matrix", "file_url": f"local://{self.skim_path}", "file_size_bytes": Path(self.skim_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.skim_path).read_bytes()).hexdigest(), "metadata_json": {}},
+                {"id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2", "stage_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "zone_attributes", "file_url": f"local://{self.za_path}", "file_size_bytes": Path(self.za_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.za_path).read_bytes()).hexdigest(), "metadata_json": {}},
+                {"id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3", "stage_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "network_setup_summary", "file_url": f"local://{self.setup_path}", "file_size_bytes": Path(self.setup_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.setup_path).read_bytes()).hexdigest(), "metadata_json": {}},
             ])
         if "model_run_stages" in url and "status=neq.succeeded" in url:
             return FakeResponse(200, [])
@@ -219,12 +219,29 @@ class SupabasePollTests(unittest.TestCase):
             for execution in Path(root, stage["run_id"]).iterdir():
                 manifest = json.loads((execution / "screening/bundle_manifest.json").read_text())
                 self.assertEqual(manifest["run_name"], "behavioral-" + stage["run_id"])
+                self.assertEqual(manifest["model_run_id"], stage["run_id"])
+                self.assertEqual(manifest["consumer_stage_id"], stage["id"])
+                records = self.fake.get("/rest/v1/model_run_artifacts?run_id=eq." + stage["run_id"]).json()
+                expected = [{key: row[key] for key in ("id", "run_id", "stage_id", "artifact_type", "content_hash", "file_size_bytes")} for row in records]
+                self.assertEqual(manifest["source_artifacts"], expected)
+                self.assertEqual(len(manifest["materialized_files"]), 3)
+                for item in manifest["materialized_files"]:
+                    data = (execution / "screening" / item["path"]).read_bytes()
+                    self.assertEqual(item["sha256"], hashlib.sha256(data).hexdigest())
+                    self.assertEqual(item["bytes"], len(data))
+                adapted = next(item for item in manifest["materialized_files"] if item["path"].endswith("zone_attributes.csv"))
+                self.assertEqual(adapted["transformation"], "zone_attributes_adapter")
+                original = next(item for item in expected if item["artifact_type"] == "zone_attributes")
+                self.assertNotEqual(adapted["sha256"], original["content_hash"])
+                copied = list(execution.glob("behavioral_demand_prototype/**/source_screening_bundle_manifest.json"))
+                self.assertEqual(len(copied), 1)
+                self.assertEqual(json.loads(copied[0].read_text()), manifest)
 
     def test_handoff_query_retains_identity_and_byte_fields(self):
         supabase_poll.sb_get_run_artifacts(make_stage()["run_id"])
         url = self.fake.calls[-1][1]
         self.assertIn("run_id=eq." + make_stage()["run_id"], url)
-        self.assertEqual(url.split("&select=")[1], "id,run_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json")
+        self.assertEqual(url.split("&select=")[1], "id,run_id,stage_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json")
 
     def test_unverified_handoff_never_reaches_preflight_materialization(self):
         stage = make_stage()
