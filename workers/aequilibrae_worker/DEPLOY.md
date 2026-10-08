@@ -220,8 +220,10 @@ another worker can still take.
 
 This revision requires `OPENPLAN_DEPLOYMENT_ID`, migration
 `20261016000015_legacy_assessment_command_receipts.sql`, and persistent storage
-for `AEQ_WORK_DIR`. Keep the deployment identity stable for the same database
-installation. Retain each assessment's `command-journal` with its source files.
+for `AEQ_WORK_DIR`. Keep the deployment identity stable across restarts and
+coordinated restoration of the same installation. A different or newly
+initialized installation needs its own identity; do not retarget an old journal
+to it. Retain each assessment's `command-journal` with its source files.
 See [local assessment recovery](LOCAL.md#retained-assessment-writes) before
 operating this revision. Receipt recovery does not automatically resume a stage.
 
@@ -264,3 +266,25 @@ no calculation records returns an empty list. This does not contact the server,
 claim the stage or resume work. Preserve an interrupted start and its source
 files for reconciliation. Do not delete it to make the calculation run again.
 Use `--list-pending` separately to inspect delivery requests.
+
+
+## Execution-retention upgrade and recovery
+
+Stop new dispatch and let active work reach a known, retained stopping point
+before applying `20261016000018_model_execution_retention.sql`. Confirm that all
+model worker processes using this installation have stopped before the upgrade.
+The migration blocks historical database writes; it cannot stop a calculation
+that is already reading local evidence. A terminated process and a saved
+`running` status do not establish what computation completed.
+
+Apply `20261016000019_model_recovery_status.sql` before deploying the recovery
+status reader. Historical worker runs display a reconciliation notice, and an
+unavailable read has its own warning. Neither state permits relaunch from that
+control. Preserved outputs remain readable. The migration does not invent past
+stage starts or convert historical enrollment into new work.
+
+Follow [local recovery inspection](LOCAL.md#execution-retention-and-recovery)
+and [backup and restore](../../openplan/docs/ops/BACKUP_AND_RESTORE.md#model-worker-recovery-records).
+Historical reconciliation decisions and full stage continuation remain
+unfinished. Do not change enrollment rows, clear journals or generate replacement
+request IDs to get past that boundary.

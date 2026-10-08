@@ -35,6 +35,43 @@ Record the chosen method and interval. Resume writers only after capture and
 inventory completion. A backup taken while those writers continue is not yet a
 proved consistent recovery point.
 
+## Model worker recovery records
+
+Include the complete durable worker root in the recovery inventory. This
+includes original inputs and outputs, `run-state.json`, assessment
+`command-journal` directories and `stage-journals/<stage_id>/model-commands.sqlite3`.
+The journal can hold unresolved delivery requests, resolved receipts and
+interrupted computation starts. None of these records is a disposable cache.
+
+SQLite may retain committed records in its WAL sidecar. Copying only the main
+`.sqlite3` file can lose those records. Use SQLite's backup API or a completed,
+verified checkpoint before archiving a journal. Establish write quiescence for
+the database, worker journals and files before coordinating those copies. A
+SQLite-consistent copy by itself does not establish a consistent installation
+backup. Verify both the journal records and inventoried file bytes after restore.
+
+Preserve `OPENPLAN_DEPLOYMENT_ID` and the original logical base URL when restoring
+that same installation from a coordinated backup. A different or newly
+initialized installation needs a distinct identity; do not edit an old journal
+to send its commands there. Retain private configuration through the same
+protected process as other installation secrets.
+
+A local cached receipt does not contact the restored database. Compare the
+current output, receipt and execution-start rows independently before calling a
+restore complete. Keep uncertain delivery requests pending until the original
+request recovers its matching server receipt. A saved computation start without
+a saved result remains unresolved and must not be deleted to permit another run.
+Historical reconciliation and full stage continuation remain unfinished.
+
+The [October 8 proof](../../../docs/reviews/2026-10-08-model-custody-metadata/WORKER_LOCAL_RESTORE.md)
+restores a full native PostgreSQL dump and synthetic local worker files inside
+one owned cluster. It compares eight model tables, recovers a lost reply through
+a fresh process, and refuses repeated computation. This is additional evidence,
+not a whole-host recovery claim. Cluster roles, database properties, all-table
+inventories, Storage, real-worker quiescence and a different physical host still
+require their own verification. The default-local archive commands below do not
+capture the worker roots automatically.
+
 ## Capture the default local stack
 
 From the nested `openplan/` app directory, confirm the selected project and its

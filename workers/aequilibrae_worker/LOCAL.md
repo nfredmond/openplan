@@ -110,8 +110,9 @@ Automated reconciliation of legacy local files remains unfinished.
 Before running this worker revision, apply migration
 `20261016000015_legacy_assessment_command_receipts.sql` to the intended database.
 Set `OPENPLAN_DEPLOYMENT_ID` to a stable installation identity. Keep it unchanged
-when restarting that installation; use a different identity for a replacement
-database. Missing identity stops assessment delivery. There is no fallback to
+when restarting or restoring the same installation from coordinated backups.
+A different or newly initialized installation needs its own identity; do not
+retarget an old journal to it. Missing identity stops assessment delivery. There is no fallback to
 the old non-idempotent assessment RPC.
 
 Use a durable `AEQ_WORK_DIR`. Each assessment directory retains its exact command
@@ -161,3 +162,44 @@ no calculation records returns an empty list. This does not contact the server,
 claim the stage or resume work. Preserve an interrupted start and its source
 files for reconciliation. Do not delete it to make the calculation run again.
 Use `--list-pending` separately to inspect delivery requests.
+
+
+## Execution retention and recovery
+
+Migrations 18 and 19 add retained-start protection and a scoped recovery reader.
+Before migration 18, stop new dispatch, bring active work to a known retained
+stopping point, and confirm every model worker using the installation has
+stopped. These database guards do not stop an already-running local calculation.
+Existing worker runs retain their saved status and results, but historical
+writes remain blocked pending reconciliation. The recovery notice is an
+inspection result, not a permission to resume.
+
+Inspect the original journal from the worker's configured Python environment:
+
+```bash
+python3 model_command_recovery.py --journal /path/to/original/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --list-pending
+python3 model_command_recovery.py --journal /path/to/original/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --list-computations
+```
+
+A pending command means its reply remains unconfirmed. It does not mean the
+server rolled back. Recover only the original request ID against the same
+logical installation, using the retained journal and configured credential.
+An interrupted computation start does not authorize another calculation.
+
+A cached receipt can be returned without contacting PostgreSQL. After a restore,
+compare current database rows and server receipts with the restored journal and
+file inventory separately. A receipt message alone cannot prove that the
+restored database contains its output. An older database backup paired with a
+newer resolved journal is not a verified recovery point.
+
+Keep the same installation identity and base URL for a coordinated restoration
+of that installation. A new or unrelated database must not receive old commands
+by changing the journal or rebinding its identity. The synthetic coordinated
+restore proof preserves the logical endpoint while replacing the owned physical
+database; it does not prove arbitrary host migration or Storage restoration.
+See [backup and restore](../../openplan/docs/ops/BACKUP_AND_RESTORE.md#model-worker-recovery-records)
+for the required inventory and current verification limits.
