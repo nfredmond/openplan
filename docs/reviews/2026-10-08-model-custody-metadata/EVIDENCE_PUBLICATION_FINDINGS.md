@@ -360,3 +360,32 @@ proof database. Evidence is retained under
 versus stale-reaper ordering boundary only. Cancellation is tested sequentially;
 managed ingestion, normal worker adoption, installed migration, county evidence,
 reader presentation and scientific acceptance remain open.
+
+## Complete local worker suite
+
+At `38bf5eefad1afceb74ecd4b173c0f8abe5ae464d`, the repository's
+`npm run test:workers` runner completed with 64 suites passing, two failing and
+none skipped. The ActivitySim screening-handoff test omitted newly required
+source-artifact and consumer-stage arguments. The command mutation suite copied
+the client into a temporary directory without its new publication dependency.
+Adding that helper alone exposed its additional `model_receipt_values` dependency;
+both are now included. No production check or assertion was removed.
+
+The handoff fixture repair lives in parent PR #162 at `b2b9d1dc` and is merged
+here. The mutation suite now also retains the ten publication command/receipt
+fault controls previously run from a private script. Its harmless controls and
+seven test groups pass, with faults checked for their named failures and import
+or syntax errors explicitly excluded.
+
+The full runner at `fa4301e7` passes all 66 suites, with zero failures and zero
+not run. Each worker uses its existing worker-specific interpreter through an
+ignored local symlink; no shared dependency environment was modified. The
+checkout stayed unchanged during each run. Both runs use a 4 GiB memory limit,
+zero swap and two CPUs, with one numerical-library thread. The passing unit is
+`openplan-publication-workers-repaired-20261008.service`, invocation
+`d14f0447be7e4e2baa8974390e61fbf6`, completed October 8 at 05:39:11 Pacific in
+30.264 seconds with a 172.4 MiB peak. The original failed unit remains
+`openplan-publication-workers-38bf5eef.service`.
+
+This is worker regression evidence. It does not replace live tenant isolation,
+restore checks, identified browser workflows or independent scientific acceptance.
