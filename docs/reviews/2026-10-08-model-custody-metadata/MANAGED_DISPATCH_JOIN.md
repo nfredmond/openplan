@@ -2165,3 +2165,34 @@ an accepted execution boundary. The document specifies allowed operations,
 provisional results and required crash/replay/descendant evidence. It is a design
 decision, not implementation or acceptance. The current direction check passes
 with its existing review reminders; the roadmap remains the sole queue.
+
+### Live parent-owned progress channel
+
+The first channel implementation handles only progress updates. It uses bounded
+length-prefixed JSON frames, rejects duplicate fields, requires exact version and
+sequence, and accepts no child-provided run/stage/attempt identity or terminal
+operation. The parent calls its managed writer on the owning thread and responds
+only after the retained command confirms. Any protocol, transport or writer
+failure closes the channel and stops the parent writer. No error response exposes
+provider text or credentials.
+
+Nine focused tests include a real inherited socket and child client performing
+two sequential writes through the parent. HTTP is mocked; the command journal is
+real. Replayed sequence, extra identity, terminal requests, oversized frame/log,
+duplicate JSON and wrong acknowledgement refuse. Lost database response leaves
+one pending command. Lost child response after a confirmed command stops the
+writer with no pending command and no second write. Five targeted faults detect
+sequence, operation, log limit, acknowledgement and stop-policy regressions;
+baseline, harmless and restored controls pass. The warning-enabled broader suite
+passes 297 tests. See prototype/engine-channel-controls.json.
+
+Initial fixture corrections restored timeout settings on the child's inherited
+socket and asserted the actual attempt-id RPC parameter, not a nonexistent stage
+parameter. The log-limit control now isolates the channel boundary from the
+separate command validator, which also rejects oversized stage text.
+
+This channel remains disconnected from EngineProcess and normal dispatch. The
+real-child test launches its own disposable process. Run reads, count preparation,
+path resolution, solver integration, launch admission, descendant containment and
+supervisor-loss recovery are not established. Frame size bounds memory use, not
+wall-clock liveness; the eventual supervisor must own deadlines and interruption.

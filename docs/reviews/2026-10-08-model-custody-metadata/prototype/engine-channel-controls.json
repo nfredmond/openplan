@@ -1,0 +1,46 @@
+{
+  "source_sha256": "012f01945e160742d821c6850fd6c4c65ed07c31c29e41b8c099f0bef8e5230e",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-sequence",
+      "exit_code": 1,
+      "targeted_test": "test_duplicate_sequence_stops_without_second_write"
+    },
+    {
+      "control": "ignore-operation",
+      "exit_code": 1,
+      "targeted_test": "test_child_identity_and_terminal_requests_refused"
+    },
+    {
+      "control": "ignore-log-bound",
+      "exit_code": 1,
+      "targeted_test": "test_log_bound_refuses_before_write"
+    },
+    {
+      "control": "ignore-ack-sequence",
+      "exit_code": 1,
+      "targeted_test": "test_client_refuses_wrong_acknowledgement"
+    },
+    {
+      "control": "ignore-response-loss-stop",
+      "exit_code": 1,
+      "targeted_test": "test_lost_response_stops_after_one_confirmed_write"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real sockets and child progress client; real command journal with mocked HTTP. No normal dispatcher, engine launch admission, native database, solver channel integration or containment."
+}

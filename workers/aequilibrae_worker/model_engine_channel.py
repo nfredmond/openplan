@@ -1,0 +1,119 @@
+"""Ordered live progress channel; no saved-message execution or dispatcher caller.
+
+The parent retains database authority. This channel is not a sandbox against
+same-user processes and does not authorize child startup or output capture.
+"""
+import json
+import socket
+import struct
+
+MAX_FRAME = 65536
+VERSION = 1
+
+
+class ChannelStopped(RuntimeError):
+    pass
+
+
+def _unique(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError('Duplicate channel field')
+        result[key] = value
+    return result
+
+
+class Channel:
+    def __init__(self, connection):
+        self.connection = connection
+        self.stopped = False
+        self.sequence = 1
+
+    def stop(self):
+        self.stopped = True
+        try:
+            self.connection.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass
+        self.connection.close()
+
+    def _exact(self, size):
+        chunks = bytearray()
+        while len(chunks) < size:
+            block = self.connection.recv(size - len(chunks))
+            if not block:
+                raise ChannelStopped('Engine channel closed before acknowledgement')
+            chunks.extend(block)
+        return bytes(chunks)
+
+    def receive(self):
+        if self.stopped:
+            raise ChannelStopped('Engine channel is stopped')
+        try:
+            size = struct.unpack('!I', self._exact(4))[0]
+            if not 0 < size <= MAX_FRAME:
+                raise ValueError('Engine channel frame exceeds its bound')
+            body = json.loads(self._exact(size), object_pairs_hook=_unique,
+                              parse_constant=lambda value: (_ for _ in ()).throw(ValueError('Nonfinite channel value')))
+            if not isinstance(body, dict):
+                raise ValueError('Engine channel frame must be an object')
+            return body
+        except BaseException:
+            self.stop()
+            raise
+
+    def send(self, body):
+        if self.stopped:
+            raise ChannelStopped('Engine channel is stopped')
+        try:
+            content = json.dumps(body, separators=(',', ':'), allow_nan=False).encode()
+            if not 0 < len(content) <= MAX_FRAME:
+                raise ValueError('Engine channel frame exceeds its bound')
+            self.connection.sendall(struct.pack('!I', len(content)) + content)
+        except BaseException:
+            self.stop()
+            raise
+
+
+class ProgressClient(Channel):
+    def progress(self, log_tail):
+        try:
+            sequence = self.sequence
+            self.send({'version': VERSION, 'sequence': sequence, 'operation': 'progress', 'log_tail': log_tail})
+            response = self.receive()
+            if (set(response) != {'version', 'sequence', 'confirmed'}
+                    or type(response['version']) is not int or response['version'] != VERSION
+                    or type(response['sequence']) is not int or response['sequence'] != sequence
+                    or response['confirmed'] is not True):
+                raise ChannelStopped('Engine progress acknowledgement differs')
+            self.sequence += 1
+        except BaseException:
+            self.stop()
+            raise
+
+
+class ProgressParent(Channel):
+    def __init__(self, connection, writer):
+        super().__init__(connection)
+        self.writer = writer
+
+    def serve_one(self):
+        """Run on the writer's owning thread; never accept a child-supplied identity."""
+        try:
+            self.writer.require_open()
+            request = self.receive()
+            if (set(request) != {'version', 'sequence', 'operation', 'log_tail'}
+                    or type(request['version']) is not int or request['version'] != VERSION
+                    or type(request['sequence']) is not int or request['sequence'] != self.sequence
+                    or request['operation'] != 'progress'
+                    or not isinstance(request['log_tail'], str) or len(request['log_tail']) > 20000):
+                raise ChannelStopped('Engine request is outside the progress protocol')
+            sequence = self.sequence
+            self.sequence += 1
+            self.writer.patch_stage(self.writer.context.stage_id, {'log_tail': request['log_tail']})
+            self.send({'version': VERSION, 'sequence': sequence, 'confirmed': True})
+        except BaseException:
+            self.writer.stopped = True
+            self.stop()
+            raise
