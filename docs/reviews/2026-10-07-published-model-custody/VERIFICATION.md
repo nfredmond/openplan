@@ -56,3 +56,33 @@ Private screenshots, runtime identity, console history and measurements are in
 `t3-console-network-reviewed.json` under the local OpenPlan state directory.
 These are synthetic-agent and published-development checks, not observed planner
 acceptance or independent accuracy evidence.
+
+## Full-suite CI correction
+
+PR #140 QA job 113118646210 fails on October 8 UTC. The copy guard finds one
+additional use of "input" in the resource assessment explanation. The corrected
+sentence uses "saved source material and verified earlier results" without
+raising the jargon baseline.
+
+The 42-download test exceeds its 20-second test deadline under the full CI load.
+The test now has fourteen fixed geography/method cases, each checking the same
+three files. Each case retains the existing deadline. No record or assertion is
+removed. Each download also receives an independent SHA-256 calculation over
+its returned bytes, compared with the retained record's expected hash.
+
+A harmless reader comment passes all fourteen cases. Returning corrupt bytes
+while preserving the reported hash fails all fourteen cases on the independently
+computed checksum. The reader is restored after both controls. An initial
+mutation selector matched no tests and is excluded from evidence. The corrected
+selector explicitly runs fourteen cases; private logs record both outcomes.
+
+These checks protect the published development-file download contract. They do
+not establish scientific accuracy, untouched geographic acceptance, browser
+file-save completion or practitioner acceptance. The wording correction needs
+inclusion in the next identified browser build. Full GitHub QA remains pending
+for the corrected commit. No release is declared by this correction.
+
+Restored-source verification passes 20 tests across the copy and published-file
+suites. Targeted ESLint and `git diff --check` pass. Private CI failure, mutation
+and focused verification records are retained under
+`/home/nathaniel/.local/state/openplan/evidence-ci-20261007-proof/`.

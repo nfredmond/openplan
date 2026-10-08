@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -25,23 +26,31 @@ describe("published distributed work loading", () => {
     expect(await readPublishedDistributedWorkLoadingDownload(["..", "package.json"])).toBeNull();
   });
 
-  it("independently verifies every published method artifact", async () => {
+  // Each geography and method retains its own deadline and all three file checks.
+  // The fixed inventory also fails if a published record disappears.
+  it.each(
+    ["06007", "06039", "06047", "06053", "06057", "06069", "06107"].flatMap(
+      (geographyId) => ["aequilibrae", "activitysim"].map((method) => ({ geographyId, method })),
+    ),
+  )("independently verifies $geographyId $method files", async ({ geographyId, method }) => {
     const study = await loadPublishedDistributedWorkLoadingStudy();
-    for (const record of study.records) {
-      const artifacts = [
-        ["distributed-work-loading-input-v1.json", record.inputSha256],
-        ["pre-output-audit-v1.json", record.auditSha256],
-        ["development-comparison-v1.json", record.comparisonSha256],
-      ] as const;
-      for (const [name, expectedSha256] of artifacts) {
-        const download = await readPublishedDistributedWorkLoadingDownload([
-          record.geographyId,
-          record.method,
-          name,
-        ]);
-        expect(download?.filename).toBe(`${record.geographyId}-${record.method}-${name}`);
-        expect(download?.sha256).toBe(expectedSha256);
-      }
+    const record = study.records.find((candidate) => candidate.geographyId === geographyId && candidate.method === method);
+    expect(record).toBeDefined();
+    if (!record) throw new Error(`Missing published record: ${geographyId} ${method}`);
+    const artifacts = [
+      ["distributed-work-loading-input-v1.json", record.inputSha256],
+      ["pre-output-audit-v1.json", record.auditSha256],
+      ["development-comparison-v1.json", record.comparisonSha256],
+    ] as const;
+    for (const [name, expectedSha256] of artifacts) {
+      const download = await readPublishedDistributedWorkLoadingDownload([
+        record.geographyId,
+        record.method,
+        name,
+      ]);
+      expect(download?.filename).toBe(`${record.geographyId}-${record.method}-${name}`);
+      expect(download?.sha256).toBe(expectedSha256);
+      expect(createHash("sha256").update(download?.bytes ?? Buffer.alloc(0)).digest("hex")).toBe(expectedSha256);
     }
   });
 });
