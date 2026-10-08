@@ -8,10 +8,24 @@ import json
 import os
 from pathlib import Path
 import sqlite3
+import time
 
 
 def canonical(value: dict) -> str:
     return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False)
+
+
+def enable_wal(connection, timeout: float = 30):
+    """Retry first-open WAL negotiation, which can return BUSY immediately."""
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            connection.execute('PRAGMA journal_mode=WAL')
+            return
+        except sqlite3.OperationalError as error:
+            if getattr(error, 'sqlite_errorcode', None) != sqlite3.SQLITE_BUSY or time.monotonic() >= deadline:
+                raise
+            time.sleep(0.05)
 
 
 def connect(directory: Path):
@@ -19,11 +33,15 @@ def connect(directory: Path):
     os.chmod(directory, 0o700)
     path = directory / 'model-commands.sqlite3'
     connection = sqlite3.connect(path, timeout=30)
-    os.chmod(path, 0o600)
-    connection.execute('PRAGMA journal_mode=WAL')
-    connection.execute('PRAGMA synchronous=FULL')
-    connection.execute('CREATE TABLE IF NOT EXISTS commands (request_id TEXT PRIMARY KEY, destination TEXT NOT NULL, request_json TEXT NOT NULL, response_json TEXT)')
-    return connection
+    try:
+        os.chmod(path, 0o600)
+        enable_wal(connection)
+        connection.execute('PRAGMA synchronous=FULL')
+        connection.execute('CREATE TABLE IF NOT EXISTS commands (request_id TEXT PRIMARY KEY, destination TEXT NOT NULL, request_json TEXT NOT NULL, response_json TEXT)')
+        return connection
+    except BaseException:
+        connection.close()
+        raise
 
 
 def validate(command: dict) -> str:

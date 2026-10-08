@@ -312,3 +312,23 @@ sequential boundary separately. Discarding SQL output tests an unrecorded
 acknowledgement; it does not inject a network failure or prove PostgREST behavior.
 The probe does not launch a normal worker, validate scientific outputs, test
 power loss or install automatic recovery dispatch. Those boundaries remain open.
+
+## Concurrent journal initialization defect and correction
+
+A native four-process first-open test exposed `sqlite3.OperationalError: database
+is locked` at `PRAGMA journal_mode=WAL`. The journal now retries that negotiation
+for `SQLITE_BUSY`, subject to a deadline, and closes the connection if setup
+fails. Other operational errors still propagate. SQLite documents the exclusive
+lock needed to enter WAL mode in its [WAL file format](https://www.sqlite.org/walformat.html).
+
+The four children wait for a parent release before opening the same new journal.
+Two submit each of two conflicting commands under one request ID. The corrected
+run accepts two identical requests, refuses the other two and retains one
+unchanged request. This verifies concurrent outcomes, not an observed database
+lock wait or every possible schedule. Deterministic busy injection separately
+checks retry, non-busy refusal and deadline refusal.
+
+The journal suite now has six passing tests and eight adverse controls, with
+baseline, harmless and restored copies passing. The committed SQL recovery probe
+also passes after the correction, including its three adverse controls. Normal
+worker transport, HTTP acknowledgement loss and power-loss behavior remain open.

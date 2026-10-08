@@ -14,6 +14,9 @@ controls = [
     ('unbound-resolution', original.replace('if row is None or row[0] != request:', 'if row is None:'), 'ValueError not raised'),
     ('wrong-deployment', original.replace('WHERE destination=? AND response_json IS NULL', 'WHERE ? IS NOT NULL AND response_json IS NULL'), 'test_exact_prepare_and_destination_filter'),
     ('resolved-replayed', original.replace('WHERE destination=? AND response_json IS NULL', 'WHERE destination=?'), 'test_receipt_is_immutable_and_requires_preparation'),
+    ('swallow-busy', original.replace('time.sleep(0.05)', 'return'), '1 != 2'),
+    ('retry-other-errors', original.replace("getattr(error, 'sqlite_errorcode', None) != sqlite3.SQLITE_BUSY or ", ''), 'OperationalError not raised'),
+    ('ignore-deadline', original.replace(' or time.monotonic() >= deadline', ''), 'OperationalError not raised'),
     ('restored', original, None),
 ]
 for name, candidate, expected_failure in controls:
