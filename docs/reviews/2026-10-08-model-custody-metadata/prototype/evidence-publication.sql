@@ -26,6 +26,13 @@ BEGIN
  IF NOT EXISTS(SELECT 1 FROM public.model_runs WHERE id=p_run AND workspace_id=p_workspace) THEN
   RAISE EXCEPTION 'Model evidence scope mismatch';
  END IF;
+ -- Refuse ambiguous legacy rows instead of silently adopting or deleting them.
+ IF EXISTS(SELECT 1 FROM public.modeling_claim_decisions c WHERE c.model_run_id=p_run AND c.track=p_track
+   AND (c.workspace_id IS DISTINCT FROM p_workspace OR c.county_run_id IS NOT NULL))
+  OR EXISTS(SELECT 1 FROM public.modeling_validation_results m WHERE m.model_run_id=p_run AND m.track=p_track
+   AND (m.workspace_id IS DISTINCT FROM p_workspace OR m.county_run_id IS NOT NULL)) THEN
+  RAISE EXCEPTION 'Existing model evidence scope mismatch';
+ END IF;
  SELECT jsonb_build_object(
   'claims',coalesce((SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) FROM public.modeling_claim_decisions c WHERE model_run_id=p_run AND track=p_track),'[]'::jsonb),
   'metrics',coalesce((SELECT jsonb_agg(to_jsonb(m) ORDER BY m.id) FROM public.modeling_validation_results m WHERE model_run_id=p_run AND track=p_track),'[]'::jsonb)

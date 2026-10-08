@@ -17,6 +17,10 @@ def verify():
     source=(ROOT/'evidence-publication.sql').read_text()
     cases=(ROOT/'evidence-publication-cases.sql').read_text()
     mutations=[
+      ('prior-modeling_claim_decisions-workspace_id','c.workspace_id IS DISTINCT FROM p_workspace','false','Ambiguous evidence read accepted: modeling_claim_decisions workspace_id'),
+      ('prior-modeling_claim_decisions-county_run_id','c.county_run_id IS NOT NULL','false','Ambiguous evidence read accepted: modeling_claim_decisions county_run_id'),
+      ('prior-modeling_validation_results-workspace_id','m.workspace_id IS DISTINCT FROM p_workspace','false','Ambiguous evidence read accepted: modeling_validation_results workspace_id'),
+      ('prior-modeling_validation_results-county_run_id','m.county_run_id IS NOT NULL','false','Ambiguous evidence read accepted: modeling_validation_results county_run_id'),
       ('request-payload-bypass',"IF receipt.request_payload IS DISTINCT FROM request THEN","IF false THEN",'Changed request accepted'),
       ('stale-snapshot-bypass',"IF previous IS DISTINCT FROM p_expected THEN","IF false THEN",'Stale evidence accepted'),
       ('history-discarded','VALUES(p_request,p_run,p_track,request,previous,result);',"VALUES(p_request,p_run,p_track,request,'{}'::jsonb,result);",'Prior evidence not retained'),

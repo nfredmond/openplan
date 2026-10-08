@@ -9,7 +9,7 @@ CREATE TRIGGER synthetic_publication_receipt_failure BEFORE INSERT ON public.mod
 DO $$
 DECLARE
  run uuid:=gen_random_uuid(); ws uuid; req uuid:=gen_random_uuid(); fail_req uuid:=gen_random_uuid();
- wrong_ws uuid:=gen_random_uuid(); stage uuid:=gen_random_uuid(); text_key text; bad_value jsonb;
+ wrong_ws uuid:=gen_random_uuid(); stage uuid:=gen_random_uuid(); text_key text; bad_value jsonb; evidence_table text; scope_field text; county uuid:=gen_random_uuid(); corrupt_state jsonb;
  before_state jsonb; after_state jsonb; payload jsonb; changed jsonb; response jsonb; rejected boolean;
 BEGIN
  INSERT INTO public.model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by)
@@ -17,6 +17,11 @@ BEGIN
  FROM public.model_runs WHERE id=current_setting('openplan.proof_fixture')::uuid;
  SELECT workspace_id INTO ws FROM public.model_runs WHERE id=run;
  IF ws IS NULL THEN RAISE EXCEPTION 'Fixture unavailable'; END IF;
+ -- An empty run still needs its parent scope checked.
+ rejected:=false;
+ BEGIN PERFORM public.read_legacy_model_evidence(wrong_ws,run,'assignment');
+ EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'Model evidence scope mismatch' THEN RAISE; END IF; rejected:=true; END;
+ IF NOT rejected THEN RAISE EXCEPTION 'Wrong read workspace accepted'; END IF;
  INSERT INTO public.modeling_claim_decisions(workspace_id,model_run_id,track,claim_status,status_reason,reasons_json)
  VALUES(ws,run,'assignment','prototype_only','Prior synthetic claim','["Prior synthetic reason"]');
  INSERT INTO public.modeling_validation_results(workspace_id,model_run_id,track,metric_key,metric_label,status,detail)
@@ -27,6 +32,39 @@ BEGIN
   'metrics',jsonb_build_array(jsonb_build_object('workspace_id',ws,'model_run_id',run,'track','assignment',
    'metric_key','replacement','metric_label','Synthetic replacement','threshold_comparator','manual','status','warn',
    'blocks_claim_grade',true,'detail','Synthetic unresolved metric','metadata_json','{}'::jsonb)));
+ -- Legacy service writes can leave rows whose scope differs from their parent.
+ INSERT INTO public.workspaces(id,name,slug) VALUES(wrong_ws,'Synthetic scope proof',wrong_ws::text);
+ INSERT INTO public.county_runs(id,workspace_id,geography_id,run_name)
+ VALUES(county,ws,'06061','Synthetic scope proof '||county::text);
+ FOREACH evidence_table IN ARRAY ARRAY['modeling_claim_decisions','modeling_validation_results'] LOOP
+  FOREACH scope_field IN ARRAY ARRAY['workspace_id','county_run_id'] LOOP
+   EXECUTE format('UPDATE public.%I SET %I=$1 WHERE model_run_id=$2',evidence_table,scope_field)
+    USING CASE WHEN scope_field='workspace_id' THEN wrong_ws ELSE county END,run;
+   SELECT jsonb_build_object(
+    'claims',(SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) FROM public.modeling_claim_decisions c WHERE model_run_id=run),
+    'metrics',(SELECT jsonb_agg(to_jsonb(m) ORDER BY m.id) FROM public.modeling_validation_results m WHERE model_run_id=run)
+   ) INTO corrupt_state;
+   rejected:=false;
+   BEGIN PERFORM public.read_legacy_model_evidence(ws,run,'assignment');
+   EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'Existing model evidence scope mismatch' THEN RAISE; END IF; rejected:=true; END;
+   IF NOT rejected THEN RAISE EXCEPTION 'Ambiguous evidence read accepted: % %',evidence_table,scope_field; END IF;
+   rejected:=false;
+   BEGIN PERFORM public.publish_legacy_model_evidence(fail_req,ws,run,'assignment',corrupt_state,payload);
+   EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'Existing model evidence scope mismatch' THEN RAISE; END IF; rejected:=true; END;
+   IF NOT rejected THEN RAISE EXCEPTION 'Ambiguous evidence publication accepted'; END IF;
+   SELECT jsonb_build_object(
+    'claims',(SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) FROM public.modeling_claim_decisions c WHERE model_run_id=run),
+    'metrics',(SELECT jsonb_agg(to_jsonb(m) ORDER BY m.id) FROM public.modeling_validation_results m WHERE model_run_id=run)
+   ) INTO after_state;
+   IF after_state IS DISTINCT FROM corrupt_state
+    OR EXISTS(SELECT 1 FROM public.model_evidence_publication_receipts WHERE request_id=fail_req)
+    OR EXISTS(SELECT 1 FROM public.model_evidence_publication_context WHERE run_id=run) THEN
+    RAISE EXCEPTION 'Scope refusal changed prior evidence';
+   END IF;
+   EXECUTE format('UPDATE public.%I SET %I=$1 WHERE model_run_id=$2',evidence_table,scope_field)
+    USING CASE WHEN scope_field='workspace_id' THEN ws ELSE NULL::uuid END,run;
+  END LOOP;
+ END LOOP;
  -- A late metric constraint failure must roll back the preceding deletion/upsert.
  changed:=jsonb_set(payload,'{metrics,0,status}','"invalid"'); rejected:=false;
  BEGIN PERFORM public.publish_legacy_model_evidence(fail_req,ws,run,'assignment',before_state,changed);

@@ -302,3 +302,31 @@ rows and private journal evidence remain. Results are retained under
 This establishes the new command's tested HTTP/client recovery boundary. It
 does not install an application migration, activate normal stage dispatch,
 reconcile model files, publish county evidence or establish scientific validity.
+
+## Existing evidence scope refusal
+
+The native rollback test reproduces a missing prior-row scope check. The
+candidate reader checked the parent run's workspace, but accepted a claim whose
+own workspace differed. That could let publication carry forward the wrong
+claim workspace or replace metrics with ambiguous ownership.
+
+The reader now refuses existing claims or metrics with a workspace different
+from the parent or a non-null county-run identity. Publication calls that reader
+before changing evidence. Four native cases cover both tables and both scope
+fields, verify read and publication refusal, and confirm unchanged prior rows
+with no receipt or transaction context left behind. These synthetic cases use
+real tables and constraints in the owned proof database, then roll back.
+
+Baseline, harmless and restored variants pass; fourteen targeted faults fail
+for their expected reasons, including the four new scope-check bypasses. The
+existing parent-scope mutation initially failed at the newly added row check.
+An empty-run case now isolates the parent check and detects its bypass directly.
+The eight separate-session concurrency cases also pass after this change, and
+all temporary proof objects are removed. Records are retained under
+`model-command-client-20261008-proof/atomic-publication-scope/` and
+`publication-contention-scope/`.
+
+This is refusal of ambiguous legacy model evidence, not county publication or
+a migration of prior records. Installation, normal dispatcher adoption, managed
+scientific ingestion, lifecycle/reaper ordering and scientific acceptance remain
+open. The candidate remains uninstalled in application databases.
