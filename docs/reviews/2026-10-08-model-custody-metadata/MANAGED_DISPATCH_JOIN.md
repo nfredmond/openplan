@@ -2504,3 +2504,32 @@ Baseline, harmless and restored controls pass. See
 transfer, retained archive and metadata custody, acquisition supervision and the
 full assignment child entrypoint remain unfinished. Normal managed dispatch is
 not enabled by this extraction.
+
+### Explicit transit numerical settings
+
+`TransitSkimSettings` carries walk-access miles, transfer penalty minutes, flat
+fare and walking speed as an immutable value with an exact serializable record.
+It rejects missing/extra fields, booleans, nonfinite or negative values and zero
+walking speed. Callers that omit it still capture the current operator defaults.
+The prepared-feed path uses one settings value for coverage, stop access, skim
+costs and reported assumptions. Its summary includes the complete settings record.
+No global mutation is used to transfer values between processes.
+
+Five settings tests use a real synthetic feed and a small constructed transfer
+network. A separate process with different access, fare, transfer and walking
+defaults reproduces every skim matrix from the explicit parent record. Separate
+cases exercise access-driven availability and transfer-driven route choice, exact
+record validation and coverage. The existing 16 GTFS skim checks, 51 transit
+handoff checks, four prepared-feed checks and two module import checks pass. The
+handoff deadline recorder initially rejected the new settings keyword; it now
+forwards that keyword while retaining its two-distinct-budget assertions.
+
+Baseline, harmless and restored controls pass. Eight injected faults fail for
+boolean acceptance, ignored access, transfer, fare or walk values, missing settings
+metadata, ignored coverage settings and a dropped skim deadline. See
+`prototype/transit-settings-controls.json`. This does not prove all numerical
+parameters across assignment are explicit: parser assumptions, parent acquisition
+budgets, mode choice and other assignment settings still need their full boundary
+review. The settings have not yet been wired through retained archive custody or
+the complete engine child. Scientific acceptance and dispatch activation remain
+open. GitHub run 37860789460 remained in progress at the latest live poll.

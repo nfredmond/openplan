@@ -946,9 +946,9 @@ def test_the_budget_reaches_the_skim_itself_and_not_only_the_check_before_it():
     seen = []
     original = gs.transit_skim
 
-    def recording(los, lons, lats, deadline=None):
+    def recording(los, lons, lats, deadline=None, *, settings=None):
         seen.append(deadline)
-        return original(los, lons, lats, deadline=deadline)
+        return original(los, lons, lats, deadline=deadline, settings=settings)
 
     gs.transit_skim = recording
     try:

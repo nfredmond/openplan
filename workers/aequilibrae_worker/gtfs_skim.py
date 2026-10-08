@@ -52,6 +52,7 @@ budget then aborts at the next checkpoint rather than at the moment it expires.
 from __future__ import annotations
 
 import csv
+from dataclasses import dataclass, asdict
 import datetime
 import hashlib
 import io
@@ -1170,19 +1171,53 @@ def feed_covers(los: TransitLos, lons, lats, buffer_miles: float | None = None) 
     return False
 
 
-def _access_stops(lon: float, lat: float, los: TransitLos) -> list[tuple[str, float]]:
+@dataclass(frozen=True)
+class TransitSkimSettings:
+    """Explicit numerical assumptions, transferable without process defaults."""
+    access_miles: float
+    transfer_penalty_min: float
+    flat_fare_usd: float
+    walk_mph: float
+
+    def __post_init__(self):
+        for name, value in asdict(self).items():
+            if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
+                raise ValueError("Transit skim settings require finite nonnegative numbers")
+        if self.walk_mph == 0:
+            raise ValueError("Transit walk speed must be positive")
+
+    def to_record(self):
+        return asdict(self)
+
+    @classmethod
+    def from_record(cls, record):
+        if not isinstance(record, dict) or set(record) != set(cls.__dataclass_fields__):
+            raise ValueError("Transit skim settings fields differ")
+        return cls(**record)
+
+
+def skim_settings() -> TransitSkimSettings:
+    """Capture this process's defaults once before computing a skim."""
+    return TransitSkimSettings(GTFS_ACCESS_MILES, GTFS_TRANSFER_PENALTY_MIN,
+                               GTFS_FLAT_FARE, WALK_MPH)
+
+
+def _access_stops(lon: float, lat: float, los: TransitLos,
+                  settings: TransitSkimSettings | None = None) -> list[tuple[str, float]]:
     """Served stops within the walk-access buffer, as (stop_id, walk_minutes)."""
+    settings = skim_settings() if settings is None else settings
     out = []
     for sid in los.stop_lines:
         slon, slat = los.stops[sid]
         d = haversine_miles(lon, lat, slon, slat)
-        if d <= GTFS_ACCESS_MILES:
-            out.append((sid, d / WALK_MPH * 60.0))
+        if d <= settings.access_miles:
+            out.append((sid, d / settings.walk_mph * 60.0))
     return out
 
 
 def transit_skim(
-    los: TransitLos, lons: np.ndarray, lats: np.ndarray, deadline: float | None = None
+    los: TransitLos, lons: np.ndarray, lats: np.ndarray, deadline: float | None = None,
+    *, settings: TransitSkimSettings | None = None
 ) -> dict[str, np.ndarray]:
     """Per-OD transit LOS matrices from the reduced feed.
 
@@ -1198,6 +1233,7 @@ def transit_skim(
     zero out transit for whichever zones came last, which is a wrong number rather
     than a missing one.
     """
+    settings = skim_settings() if settings is None else settings
     n = len(lons)
     ivtt = np.zeros((n, n))
     wait = np.zeros((n, n))
@@ -1211,7 +1247,7 @@ def transit_skim(
     access = []
     for i in range(n):
         check_deadline(deadline, "matching zone centroids to walk-accessible stops")
-        access.append(_access_stops(float(lons[i]), float(lats[i]), los))
+        access.append(_access_stops(float(lons[i]), float(lats[i]), los, settings))
     lines = los.lines
 
     for i in range(n):
@@ -1251,7 +1287,7 @@ def transit_skim(
                                     continue
                                 iv = (cum_a[t_sid] - cum_a[a_sid]) / 60.0 + (cum_b[b_sid] - cum_b[t_sid]) / 60.0
                                 wt = lines[la]["headway_min"] / 2.0 + lines[lb]["headway_min"] / 2.0
-                                cost = a_walk + wt + iv + GTFS_TRANSFER_PENALTY_MIN + b_walk
+                                cost = a_walk + wt + iv + settings.transfer_penalty_min + b_walk
                                 if best is None or cost < best[0]:
                                     best = (cost, iv, wt, a_walk + b_walk)
             if best is not None:
@@ -1259,5 +1295,5 @@ def transit_skim(
                 ivtt[i, j] = best[1]
                 wait[i, j] = best[2]
                 walk[i, j] = best[3]
-                fare[i, j] = GTFS_FLAT_FARE
+                fare[i, j] = settings.flat_fare_usd
     return {"ivtt": ivtt, "wait": wait, "walk": walk, "fare": fare, "available": available}

@@ -1,12 +1,12 @@
 """Numerical skimming of a prepared feed, without worker startup or source reads.
 
-This module still uses gtfs_skim operator defaults. Import isolation does not
+Callers may pass explicit numerical settings or use local defaults. This does not
 establish explicit setting transfer, retained byte custody or OS containment.
 """
 from datetime import datetime, timezone
 import gtfs_skim
 
-def _transit_feed_summary(los) -> dict:
+def _transit_feed_summary(los, *, settings=None) -> dict:
     """What a successfully skimmed feed reports about ITSELF, for the evidence panel.
 
     Extracted so the two skim paths — a run's chosen workspace feed and the
@@ -21,6 +21,7 @@ def _transit_feed_summary(los) -> dict:
     the window its ingest recorded legitimately disagree, and collapsing them
     would destroy the evidence that they did.
     """
+    settings = gtfs_skim.skim_settings() if settings is None else settings
     return {
         "service_day": los.service_day,
         "service_start": los.service_start,
@@ -36,8 +37,9 @@ def _transit_feed_summary(los) -> dict:
         "n_routes": los.n_routes,
         "n_served_stops": los.n_stops,
         "n_lines": len(los.lines),
-        "access_buffer_miles": gtfs_skim.GTFS_ACCESS_MILES,
-        "flat_fare_usd": gtfs_skim.GTFS_FLAT_FARE,
+        "skim_settings": settings.to_record(),
+        "access_buffer_miles": settings.access_miles,
+        "flat_fare_usd": settings.flat_fare_usd,
         # Trips published as a headway band rather than departure times. Excluded
         # from the skim and counted, so a transit share built from part of a feed
         # never presents itself as one built from all of it.
@@ -96,12 +98,14 @@ def _feed_expiry_log_note(meta: dict) -> str:
 
 def skim_prepared_feed_version(los, prepared_meta: dict, lons, lats, *,
                                deadline: float | None = None,
-                               feed_origin: str = "workspace_feed_version") -> tuple:
+                               feed_origin: str = "workspace_feed_version",
+                               settings: gtfs_skim.TransitSkimSettings | None = None) -> tuple:
     """Compute the skim from an already loaded feed and its original metadata.
 
     Loading, source selection and credentialed reads belong to the caller.
     Preserve ingest facts while adding the parser's numerical summary.
     """
+    settings = gtfs_skim.skim_settings() if settings is None else settings
     meta = dict(prepared_meta)
     meta["source_url"] = los.source_url
     meta["source_name"] = los.source_name
@@ -121,7 +125,7 @@ def skim_prepared_feed_version(los, prepared_meta: dict, lons, lats, *,
         )
 
     gtfs_skim.check_deadline(deadline, "reading and parsing the chosen feed")
-    if not gtfs_skim.feed_covers(los, lons, lats):
+    if not gtfs_skim.feed_covers(los, lons, lats, buffer_miles=settings.access_miles):
         # A chosen feed with no stops in the study area is a fact about THAT FEED.
         # It must not be reported as `no_local_feed`, which asserts that a feed was
         # looked for and none covers the area — nobody checked that here, and the
@@ -133,7 +137,7 @@ def skim_prepared_feed_version(los, prepared_meta: dict, lons, lats, *,
             "let the worker look for a covering feed.",
         )
 
-    skim = gtfs_skim.transit_skim(los, lons, lats, deadline=deadline)
+    skim = gtfs_skim.transit_skim(los, lons, lats, deadline=deadline, settings=settings)
     # THE INGEST'S OWN SERVICE WINDOW WINS ON THIS PATH. `_transit_feed_summary`
     # derives an expiry from the parser's calendar for the origins that have no
     # database row behind them; here there IS one, and migration 20260805000006
@@ -141,7 +145,7 @@ def skim_prepared_feed_version(los, prepared_meta: dict, lons, lats, *,
     # the summary overwrite them would destroy the evidence that they did — and
     # would silently change what the expiry statement above was computed from.
     _from_ingest = {k: meta[k] for k in _INGEST_AUTHORITATIVE_FEED_KEYS if k in meta}
-    meta.update(_transit_feed_summary(los))
+    meta.update(_transit_feed_summary(los, settings=settings))
     meta.update(_from_ingest)
     log += (
         f"Transit LOS from {los.source_url or los.source_name} "
