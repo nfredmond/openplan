@@ -20,15 +20,15 @@ BEGIN
     SELECT txid_current(),id,NULL FROM public.model_run_stages WHERE run_id=p_run_id;
   UPDATE public.model_stage_attempts a SET revoked_at=clock_timestamp(),revocation_reason=p_message
     FROM public.model_run_stages s WHERE s.run_id=p_run_id AND s.active_attempt_id=a.id;
-  UPDATE public.model_run_stages SET attempt_managed=true,active_attempt_id=NULL,
+  UPDATE public.model_run_stages SET attempt_managed=(attempt_managed OR v_run.attempt_managed),active_attempt_id=NULL,
     status=CASE WHEN status IN ('queued','running') THEN 'failed' ELSE status END,
     error_message=CASE WHEN status IN ('queued','running') THEN p_message ELSE error_message END,
     completed_at=CASE WHEN status IN ('queued','running') THEN clock_timestamp() ELSE completed_at END
-    WHERE run_id=p_run_id;
+    WHERE run_id=p_run_id AND (v_run.attempt_managed OR status IN ('queued','running'));
   DELETE FROM public.model_stage_write_context WHERE transaction_id=txid_current()
     AND stage_id IN (SELECT id FROM public.model_run_stages WHERE run_id=p_run_id);
   INSERT INTO public.model_run_write_context VALUES (txid_current(), p_run_id);
-  UPDATE public.model_runs SET attempt_managed=true,status='failed',error_message=p_message,completed_at=clock_timestamp() WHERE id=p_run_id;
+  UPDATE public.model_runs SET attempt_managed=v_run.attempt_managed,status='failed',error_message=p_message,completed_at=clock_timestamp() WHERE id=p_run_id;
   DELETE FROM public.model_run_write_context WHERE transaction_id=txid_current() AND run_id=p_run_id;
   RETURN true;
 END;

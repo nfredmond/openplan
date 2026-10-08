@@ -6,7 +6,7 @@ This executable database prototype starts the attempt-ownership design in the pa
 
 The sections below preserve the order of development. Later checkpoints supersede earlier missing-feature statements only where they say so. Current coverage includes attempt claims, stage and parent write guards, fixed stage sets, atomic success/failure, reaping, retained relaunch, and attempt-bound KPI/artifact metadata commands.
 
-The native rollback runner passes baseline, harmless and restored cases plus 33 adverse controls. The separate-session runner passes 32 cases across claim, completion, relaunch and artifact schedules. The native runner uses original application tables inside rolled-back transactions. The concurrency runner uses private table copies without original foreign keys, triggers or RLS. Neither runner starts a scientific model.
+The native rollback runner passes baseline, harmless and restored cases plus 46 adverse controls. The separate-session runner passes 44 cases across claim, completion, relaunch, artifact and instrument schedules. The native runner uses original application tables inside rolled-back transactions. The concurrency runner uses private table copies without original foreign keys, triggers or RLS. Neither runner starts a scientific model.
 
 No application migration, launch route, packaged worker or artifact reader uses this protocol. Remaining integration work includes retained-attempt readers, claim/validation custody, populated-output relaunch, worker request journals and adapters, restart recovery, production timestamp/deadlock behavior, and authorized retention. Existing-output relaunch refuses until that retention boundary is implemented. SQL metadata checks do not verify Storage bytes. These gaps prevent describing the prototype as a deployed recovery fix or completed M3.
 
@@ -173,3 +173,276 @@ A new native fixture reproduced a gap before the correction: a KPI created befor
 KPI and artifact guards now lock both original and destination parents in identifier order. An existing record is immutable when it has an attempt reference or its original parent is managed. Historical rows retain null attempt references; no execution provenance is invented. Unmanaged KPI editing and deletion remain available.
 
 Native cases reject deletion and reassignment of both historical output types, then independently confirm the original identities and null attempt references. Four targeted mutations permit those deletion/move paths and fail at their intended assertions. Baseline, harmless and restored cases plus all 33 adverse controls pass. All 32 separate-session contention cases pass again after the guard change. The latter still uses private table copies and does not prove legacy row-lock versus command parent-lock deadlock handling. This remains a prototype correction, not an installed production fix.
+
+## Output reader prototype checkpoint
+
+Production KPI and evidence-packet routes currently read output rows by run ID. Retaining prior outputs without changing those readers would mix attempts. A new service-only prototype function returns raw artifact/KPI records with explicit ownership states: current in progress, current completed, retained inactive, unknown legacy provenance, or invalid binding. It checks the requested workspace and uses a stable database snapshot. The caller must still authorize that workspace. Completion here means lifecycle completion, not scientific acceptance.
+
+Native cases cover empty results, wrong-workspace refusal, null KPI preservation, unknown legacy rows, active production, completed-stage outputs and retained records after reaping. A malformed artifact-stage fixture uses a temporary administrator trigger bypass within the rollback transaction and is classified invalid. The trigger is reenabled, and all fixture changes roll back. The reader grants no execution to anonymous or ordinary authenticated roles.
+
+Baseline, harmless and restored cases plus 37 adverse controls pass. Four new controls detect removed workspace scope, fabricated legacy provenance, revoked output promoted to current, and ignored artifact-stage binding. The runner also verifies that the reader function is absent after rollback. This does not install an API, change production readers, establish user authorization, verify Storage bytes, or prove concurrent read/relaunch snapshots. Populated-output relaunch remains refused until the full reader and writer integration is complete.
+
+## Concurrent output snapshot checkpoint
+
+`verify_output_snapshot.py` pauses the reader between its parent query and output query using an injected advisory lock. It observes the actual lock wait, commits reaping from another database session, releases the reader, and performs a fresh read. The paused stable function returns the earlier running state and its current output together. The fresh read returns failed state and the same raw record labeled inactive. Neither read nor reaping changes the retained KPI.
+
+Baseline, harmless and restored cases pass. Changing the function from STABLE to VOLATILE makes its output query observe the later revocation while its parent record still reflects the earlier state. The test rejects that mixed snapshot. Every case removes its private schema and verifies absence.
+
+Run against the named disposable stack:
+
+```bash
+OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER=supabase_db_openplan-restore-target-2026091050 \
+  python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_output_snapshot.py
+```
+
+This controlled read/reaper schedule uses private table copies without original application foreign keys, triggers or RLS. The advisory pause is test instrumentation only. It does not prove concurrent read/relaunch, HTTP caching behavior, application authorization or any worker recovery path. A returned snapshot can become stale after it is read; a caller must not treat it as a new write authorization.
+
+## Scientific projection refusal checkpoint
+
+The direction check passes on the October 8 reader checkout, with reminders for older capability/jurisdiction reviews and intervening release changes. The full M3 outcome remains installation, teammate use, maps, scheduled jobs, both demand workers, restart/cancel, separate-host backup/restore and upgrade. These prototype checks do not close that outcome.
+
+The production AequilibraE evidence-spine helper still upserts claim decisions, deletes validation rows and posts replacements through separate requests. The launch route also clears all four output/projection tables through separate requests. Current reader queries therefore cannot safely authorize populated recovery merely because artifact/KPI attempt records exist.
+
+A prototype trigger now refuses legacy writes to claim-decision and validation-result rows when either their original or destination model run is attempt-managed. It locks both parents in identifier order. Native fixtures preserve original prototype-only/warn rows and reject insert, update, delete and reassignment for both tables. An unmanaged claim insert/delete remains available. No scientific tier, formula or acceptance tolerance changes.
+
+Baseline, harmless and restored cases plus 40 adverse controls pass. New controls permit insert, delete or reassignment and fail at their named assertion. The first reassignment mutation also permitted deletion and was caught earlier; it was narrowed to preserve deletion protection and reach the intended reassignment failure. The runner verifies the guard function is absent after rollback.
+
+This is an explicit refusal until an attempt-bound scientific-ingestion command exists. It is not that command, does not make legacy county projections attempt-aware, and does not prove concurrent projection writes or access through a user route. Do not install the prototype while packaged workers still depend on these legacy writes. Populated-output recovery remains refused.
+
+## Attempt-bound instrument successor prototype
+
+The existing v4 assessment command creates its own legacy artifact rows and constrains the rules version to 4. The v2 instrument table has no method/output identity and permits one row per run. Neither can receive the required two-method attempt records unchanged. The prototype therefore adds a separate custody table and exact request receipts, preserving both historical contracts.
+
+The command derives workspace, run and stage from the active attempt. It binds an explicit demand method, model output, five instrument artifacts and their hashes. All six artifact records must belong to that attempt. Output and assessment metadata must identify the same demand method. The successor reuses the installed v2 artifact/schema validation trigger and append-only mutation guard. Direct table insertion is unavailable to the service role; only the command can insert. The frozen diagnostic instrument remains inconclusive and cannot promote a passing claim.
+
+Native synthetic fixtures retain both methods under one run, return exact receipts on retry and refuse changed request contents, wrong method/output hash, swapped artifact, attempted passing outcome and new custody after reaping. The revoked case uses a fresh, previously unregistered bundle so a uniqueness violation cannot mask a failed ownership check. Baseline, harmless and restored cases plus 46 adverse controls pass, including six instrument controls. Tables and functions roll back; historical v4/v2 records are unchanged.
+
+This checkpoint binds synthetic metadata only. It does not read Storage bytes, prove preparation before output access, implement all inter-artifact semantic references, execute either model, connect normal workers or produce claim-decision/validation projections. The same-attempt artifact requirement matches the tested registration path; cross-stage prepared artifacts need an explicit identity contract before supporting that path. Concurrent instrument retries, actual packet ingestion, v4 upgrade behavior and downstream readers remain open. Populated-output relaunch remains refused. Do not install the prototype as a completed scientific or recovery connection.
+
+## Concurrent instrument custody checkpoint
+
+The contention runner now includes the successor instrument command and schema-rebound copies of the existing v2 validation/mutation helpers. An identical request waits for the first transaction and returns its exact receipt, with one custody record. If reaping commits first, the waiting instrument command refuses the revoked attempt and retains no custody record. If registration commits first, reaping preserves its custody record and attempt binding. Six pre-registered artifact records remain separate from successful custody.
+
+All 44 cases pass, including baseline, harmless and restored cases for three instrument schedules. Removing receipt lookup rejects an exact concurrent retry and is detected. Removing ownership checks permits the revoked registration and is detected. An invented reaper exemption for instrument-bearing runs also fails. Each case observes a real database lock wait and verifies private-schema removal.
+
+The first setup attempt failed because the private schema lacked the workspace table required by the successor foreign key. The copy runner now explicitly omits that workspace foreign key, consistent with its existing omission of application foreign keys/triggers/RLS. The native sequential runner retains the real workspace constraint. This is controlled transaction evidence, not full-schema concurrency, native worker interruption, persisted request-journal recovery, preparation-order proof or scientific acceptance.
+
+## Logical packet byte integrity checkpoint
+
+The instrument producer uses two different comparison-basis identities. The assessment's `exact_inputs.comparison_basis_sha256` comes from the shared evaluator's canonical JSON representation. The diagnosis's `bindings.comparison_basis_sha256` comes from the saved file bytes. The prototype packet validator now checks both explicitly rather than treating those hashes as interchangeable. It reuses `model_validation_core_v5.validate_basis` and `sha256_payload`.
+
+The validator accepts supplied logical bytes for the output, observation package and five instrument documents. It checks schemas, run/method, the diagnostic outcome/rules version, output binding, bundle/audit/package links, assessment exact inputs and diagnosis file hashes. It returns exact byte sizes and SHA-256 values. Six synthetic tests cover both methods, changed output/input, wrong run/method, attempted promotion and the distinct canonical/file identities. Reformatting a basis preserves its canonical identity but requires rebinding the diagnosis to the new file bytes.
+
+`verify_packet_controls.py` runs baseline, harmless and restored suites, then removes diagnosis, method and assessment-input checks separately. Each mutation permits an invalid packet and fails at an expected refusal assertion. The exact validator source is restored in a finally block. No frozen study is opened or changed.
+
+This is post-computation packet-reference verification, not proof that preparation preceded output access. It does not load all external readiness sources, validate every observation or inter-artifact semantic relationship, download Storage objects, prove the model-output method from computation, or persist custody. Observation-package contents are hash-bound here, not scientifically assessed. Database metadata and logical bytes still need a single verified worker ingestion path.
+
+## Packet-to-receipt binding checkpoint
+
+The packet helper now prepares the successor custody payload from verified logical file identities and six artifact registration receipts. It requires distinct identified records, the exact run/stage/attempt, expected artifact types, matching hashes and integer byte sizes, matching document metadata, and the caller's expected Storage references. Output metadata preserves an explicit demand method; assessment metadata includes that method alongside the original document. The builder does not perform a network write or generate a new request identity.
+
+Nine synthetic tests pass for both methods and for mismatched ownership, bytes, type, metadata, Storage reference, missing receipt and duplicate identity. The existing canonical/file-hash checks continue to pass. Baseline, harmless and restored runs pass; six removed-check mutations admit invalid data and are detected, including three new receipt ownership/byte/Storage controls.
+
+The provided Storage references must come from the separately verified upload path. Comparing a receipt with such a reference does not itself download or authenticate the object. The helper is still outside packaged workers; no native database receipt is passed through it in this checkpoint. Request journaling, unknown-acknowledgement recovery, complete preparation custody and final ingestion remain open.
+
+## Native packet, Storage and custody checkpoint
+
+The private `native-packet-custody.py/json` probe connects the existing content-addressed uploader from the output-receipts branch with the packet builder and native prototype commands. It checks the named disposable stack's database port before writing. Each method supplies seven synthetic logical-byte files, including its observation package. Fourteen objects are uploaded through the production helper and independently downloaded through authenticated Storage; every byte sequence matches.
+
+Inside one native PostgreSQL transaction, fresh synthetic workspace/model/run/stage records support an actual claimed attempt. Six artifact registrations per method return real retained rows. Those receipts and verified Storage references pass through `build_custody_payload`, then the service-role successor command records each method separately. Repeating each exact request returns its original result. Independent SQL counts two custody rows, two methods and two request receipts.
+
+The prototype DDL and fixture records roll back. Separate queries confirm that attempt/custody tables remain absent and that the installed reaper definition has its original digest. The synthetic Storage objects remain as explicitly unreferenced proof objects in the isolated stack, not as committed scientific custody. Private results retain object references, fixture identities and exact validator/custody/uploader source digests without credentials.
+
+This supersedes the earlier missing native receipt-to-builder proof for this synthetic path. The command calls use SQL inside the rollback transaction, not PostgREST. Neither normal worker entry point, preparation-before-output ordering, model computation, scientific accuracy, process interruption nor durable request-journal recovery is exercised. Production routes/readers and populated relaunch remain unintegrated.
+
+## Durable request journal checkpoint
+
+`request_journal.py` retains the exact request ID, configured deployment identity,
+operation and arguments in a private SQLite journal before transport. It reuses
+the OCR worker journal's WAL and synchronous FULL settings. Requests and resolved
+receipts remain immutable. A reused request ID with changed contents is refused;
+resolution requires the exact prepared request. Pending reads select unresolved
+requests for one deployment and do not dispatch them.
+
+Four tests pass, including separate processes that call `os._exit` after a
+committed preparation and after a committed receipt. Later connections retain
+the original request and receipt. Baseline, harmless and restored source copies
+pass. Five adverse controls detect changed request acceptance, changed receipt
+acceptance, resolution against different request contents, cross-deployment
+selection and replay of resolved requests. Run them with:
+
+```bash
+python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_journal_controls.py
+```
+
+The controls operate on temporary source copies. They do not edit the checkout.
+These process-exit checks do not establish power-loss durability, concurrent
+first-open behavior, server receipt validation, network loss-of-ack recovery or
+normal worker restart recovery. The journal is a prototype and has no dispatch
+caller. Credentials must not be stored as deployment identity or request data.
+The next integration boundary is an actual command committed by the server,
+followed by lost acknowledgement and retry using the retained request identity.
+
+## Committed command with unrecorded acknowledgement
+
+`verify_journal_recovery.py` joins the journal to the actual prototype artifact
+command in private PostgreSQL table copies. The first child prepares the request,
+executes the service-role command with returned bytes discarded, waits for the
+SQL client to finish and calls `os._exit(77)` without recording a receipt. A
+separate connection confirms the artifact and server receipt committed. A fresh
+child loads the pending request, retries it, records the returned receipt and
+calls `os._exit(78)`. Independent reads confirm one artifact, one server receipt,
+the unchanged original receipt in SQLite and no pending request.
+
+Baseline, harmless and restored cases pass. Three adverse controls fail for
+the intended reasons: omitted preparation loses the recovery request, a new
+request ID duplicates server records, and omitted resolution leaves the journal
+pending. Each case creates and removes its own schema, then verifies removal.
+
+```bash
+OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER=supabase_db_openplan-restore-target-2026091050 \
+python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_journal_recovery.py
+```
+
+The probe uses committed SQL in private copies, not an application migration.
+`LIKE INCLUDING ALL` retains columns, checks and indexes but not original
+application foreign keys, triggers or RLS. Prototype triggers are installed in
+the private schema. The earlier native rollback suite covers the original-table
+sequential boundary separately. Discarding SQL output tests an unrecorded
+acknowledgement; it does not inject a network failure or prove PostgREST behavior.
+The probe does not launch a normal worker, validate scientific outputs, test
+power loss or install automatic recovery dispatch. Those boundaries remain open.
+
+## Concurrent journal initialization defect and correction
+
+A native four-process first-open test exposed `sqlite3.OperationalError: database
+is locked` at `PRAGMA journal_mode=WAL`. The journal now retries that negotiation
+for `SQLITE_BUSY`, subject to a deadline, and closes the connection if setup
+fails. Other operational errors still propagate. SQLite documents the exclusive
+lock needed to enter WAL mode in its [WAL file format](https://www.sqlite.org/walformat.html).
+
+The four children wait for a parent release before opening the same new journal.
+Two submit each of two conflicting commands under one request ID. The corrected
+run accepts two identical requests, refuses the other two and retains one
+unchanged request. This verifies concurrent outcomes, not an observed database
+lock wait or every possible schedule. Deterministic busy injection separately
+checks retry, non-busy refusal and deadline refusal.
+
+The journal suite now has six passing tests and eight adverse controls, with
+baseline, harmless and restored copies passing. The committed SQL recovery probe
+also passes after the correction, including its three adverse controls. Normal
+worker transport, HTTP acknowledgement loss and power-loss behavior remain open.
+
+## Journaled artifact RPC client prototype
+
+`artifact_rpc.py` delivers one prepared artifact command to its bound deployment
+and URL. It freezes the supplied command, validates canonical UUIDs and artifact
+payload fields, prepares the journal before dispatch and disables redirects.
+The service credential remains in memory. A resolved command returns its checked
+receipt without another POST. Transport exceptions, non-200 status, malformed
+JSON and mismatched receipts leave the command pending for an explicit retry.
+
+A successful receipt must identify the expected run, stage and attempt, contain
+a canonical artifact UUID, and match every submitted field plus default empty
+metadata. JSON comparison distinguishes boolean values from integer byte counts.
+The client sets connect/read timeouts; it does not implement a total wall-clock
+deadline or a response-body size limit. It does not schedule retries itself.
+
+Five fixture tests and four adverse controls pass, with baseline, harmless and
+restored copies passing. Controls detect acceptance of mismatched receipts,
+ignored HTTP status, ignored deployment identity and reposting a resolved
+command. An initial broad receipt mutation failed at the lower journal's object
+check, so it was narrowed to the intended receipt-field comparison. The repeated
+POST control was also isolated from the first-dispatch pending assertion.
+
+```bash
+python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_artifact_rpc_controls.py
+```
+
+These tests inject transport responses. They do not establish live HTTP,
+PostgREST, normal worker recovery, Storage byte verification or scientific
+acceptance. No production worker calls this prototype. The next boundary is
+actual HTTP response loss after a committed command, followed by a fresh client
+using the retained identity.
+
+## Actual HTTP disconnect after SQL commit
+
+`verify_http_recovery.py` runs the RPC client with its default `requests.post`
+transport against an owned loopback HTTP bridge. The bridge validates the fixture
+route, synthetic credentials and payload, executes the real prototype artifact
+SQL command as `service_role`, waits for autocommit, and drops the TCP connection
+before sending the first HTTP status line. The client records uncertainty and
+exits. A fresh process loads the journaled command, retries it and records the
+original receipt. Calling delivery again returns the saved receipt without a
+third POST.
+
+Baseline, harmless and restored cases each retain one artifact and one server
+receipt after two identical HTTP POSTs. Independent reads establish the first
+commit and pending journal before retry. Two adverse controls detect a mismatched
+receipt that remains pending and a regenerated request ID that duplicates server
+records. Each case shuts down its owned HTTP server and removes its private SQL
+schema, then checks schema removal.
+
+```bash
+OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER=supabase_db_openplan-restore-target-2026091050 \
+python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_http_recovery.py
+```
+
+This is actual HTTP and SQL, but the bridge is not PostgREST. The private table
+copies still omit original application foreign keys, triggers and RLS; the
+prototype installs its own guards. The result does not establish gateway/JWT
+configuration, normal worker lifecycle integration, Storage byte validity,
+scientific acceptance or power-loss durability. Those require separate evidence.
+
+## Isolated PostgREST recovery checkpoint
+
+The HTTP recovery probe also runs through an owned PostgREST container using the
+installed `public.ecr.aws/supabase/postgrest:v14.15` image. It exposes only each
+private proof schema, disables database configuration overrides, uses one database
+connection, binds a random loopback port and limits the container to 128 MiB and
+half a CPU. A temporary signing secret and short-lived JWTs remain in process
+and container environments. No existing REST container or application migration
+changes. Configuration follows the [PostgREST 14 reference](https://docs.postgrest.org/en/v14/references/configuration.html).
+
+The bridge now forwards the exact RPC body to PostgREST with the service-role
+JWT. After PostgREST returns the committed receipt, the bridge drops the first
+client connection. A fresh client retries the identical body. Baseline, harmless
+and restored cases retain one artifact and one receipt; both adverse controls
+still detect changed identities and mismatched responses. Unsigned requests and
+signed anonymous-role requests receive 401 or 403 before any artifact is created.
+Container removal and schema removal are checked after every case.
+
+```bash
+OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER=supabase_db_openplan-restore-target-2026091050 \
+OPENPLAN_PROBE_POSTGREST=1 \
+python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_http_recovery.py
+```
+
+This closes the isolated PostgREST transport boundary for the artifact prototype.
+It does not prove the existing Supabase gateway configuration, original-table
+RLS/foreign keys, the other command types, normal worker recovery or scientific
+acceptance. Production integration and end-to-end worker journeys remain open.
+
+## Preserve legacy ownership during reaping
+
+Production integration review found that the prototype reaper enrolled every
+stale run in attempt management, even when no attempt-aware worker had claimed
+it. Installing that behavior would block the existing relaunch path during a
+staged rollout. Reaping now preserves the parent's ownership mode. Managed runs
+still revoke attempts and fence their required stages. Unmanaged runs fail their
+unfinished stages without fabricating attempts or rewriting completed stages.
+Legacy reset operations remain available until an attempt-aware claim occurs.
+This does not add attempt fencing to legacy workers.
+
+Native rollback cases verify failed-state recording, unchanged ownership mode,
+no invented attempt, unchanged completed-stage records and continued legacy
+reset access. The existing managed-deletion test now explicitly creates its
+synthetic managed fixture instead of relying on reaping to enroll it. Its
+adverse deletion control still fails for the intended reason.
+
+The first completed-stage mutation was vacuous because insertion and update
+shared a transaction timestamp. Giving the fixture an older `updated_at` made
+the unintended rewrite observable. Baseline, harmless and restored cases now
+pass with 49 adverse controls. All 44 contention cases also pass. The installed
+reaper definition remains unchanged after rollback; this is still a prototype,
+not a deployed lifecycle migration.
