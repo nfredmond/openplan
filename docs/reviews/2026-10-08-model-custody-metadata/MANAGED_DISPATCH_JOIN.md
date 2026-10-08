@@ -805,3 +805,48 @@ matching, scientific accuracy or retained count-file transport. The existing
 SQLite ResourceWarning remains unresolved. Exact count-byte and source-sidecar
 retention before assignment, package/project snapshots and consumer state
 mapping remain unfinished. T3 visual acceptance remains open.
+
+### Retain selected count bytes before assignment
+
+The actual `stage_assignment` now retains its selected CSV, optional normalized
+source sidecar and acquisition-status record before opening the engine project.
+It consumes the retained count path and returns that path plus manifest facts in
+its assignment result. Credibility assembly uses the retained acquisition-status
+directory when this result carries it; older results retain their existing
+recorded-path behavior. The second assignment retains its explicit predecessor
+count path instead of resolving a different default.
+
+`model_count_inputs.py` creates an exclusive private directory, streams regular
+files through no-follow descriptors, records byte hashes and sizes, and rechecks
+all opened sources before writing the manifest. It also rechecks absent sidecars
+so an input appearing during capture cannot silently change the described set.
+Symlinks, hard links, special files, source replacement and destination changes
+refuse completion. Failed or existing directories remain for reconciliation;
+there is no automatic adoption or overwrite. Missing counts produce a controlled
+missing path inside the retained directory. A later file at the original path
+does not become this assignment's input.
+
+Bound retention requires an output directory inside its owned attempt. It
+registers the manifest through the admitted artifact command before engine work.
+An uncertain registration stops the writer and raises the worker's reconciliation
+exception, preserving the pending command. This local adapter test uses injected
+HTTP; native lost-reply recovery of this particular manifest remains unverified.
+No claim tier changes, and the manifest labels scientific acceptance unassessed.
+
+Nine new tests cover real CSV/sidecar bytes, source mutation, absent inputs,
+unsafe file types, multi-file capture changes, the actual assignment entry before
+engine opening and the bound adapter. All 102 combined tests pass. Adjacent
+checks pass 36 count-validation, 10 count-coverage, 10 model-credibility,
+30 assignment-handoff and 38 push-trigger cases. Baseline, harmless and restored
+controls pass; six targeted faults fail, including a return of the original
+source path and writes outside the bound attempt. Results are in
+`prototype/count-retention-controls.json`.
+
+These are local Linux/POSIX captures under administrator-owned source and output
+parents. They do not establish publisher accuracy, observation eligibility,
+independent scientific validation or protection from arbitrary host writes after
+capture. The source metadata remains original acquisition evidence; its display
+must continue to distinguish acquisition status from current retained-file
+availability. Native manifest recovery, complete package/project copying and
+consumer state-path mapping remain open. No scientific model or holdout runs as
+part of the new tests.

@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Assignment now retains the selected count CSV and source metadata before engine
+work. Later stages receive the retained path. Interrupted captures are preserved
+for reconciliation instead of being overwritten or silently reused.
+
 Count validation no longer substitutes a default when the assignment's recorded
 count file is missing. It reports unavailable observations with no measured
 station count, error metric or validation gate. Explicitly recorded defaults

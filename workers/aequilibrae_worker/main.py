@@ -3814,6 +3814,34 @@ def apply_persisted_network_settings(graph, proj_dir: str, settings: dict | None
     return changed
 
 
+def retain_assignment_counts(counts_path: str | None, out_dir: str, *, status_directory: str) -> dict:
+    """Capture this assignment's selected inputs without substituting other counts."""
+    from pathlib import Path
+    import model_count_inputs
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    try:
+        if writer is not None:
+            writer.require_open()
+            if writer.files is None or not Path(out_dir).resolve(strict=True).is_relative_to(writer.files.path):
+                raise ValueError("Count input retention requires an owned attempt output directory")
+        retained = model_count_inputs.retain(counts_path, status_directory, Path(out_dir) / "count_inputs")
+        if writer is not None:
+            writer.files.verify()
+            writer.record_artifact({
+                "run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+                "artifact_type": "model_count_inputs", "file_url": "local://" + retained["manifest_path"],
+                "file_size_bytes": retained["manifest_size_bytes"], "content_hash": retained["manifest_sha256"],
+                "metadata_json": {"schema": "openplan.count-inputs.v1", "scientific_acceptance": "unassessed"},
+            }, logical_name="count-inputs")
+        return retained
+    except Exception as error:
+        if writer is not None:
+            writer.stopped = True
+            raise WorkerStateWriteUnconfirmed("Count input retention requires reconciliation") from error
+        raise
+
+
 def stage_assignment(
     run_id: str,
     stage_id: str,
@@ -3916,8 +3944,13 @@ def stage_assignment(
                            calibrate_requested=calibrate_requested)
         or VALIDATION_COUNTS_PATH
     )
-    if counts_path != VALIDATION_COUNTS_PATH:
-        log += f"Auto-ingested local DOT AADT counts for validation ({os.path.basename(counts_path)}).\n"
+    count_inputs = retain_assignment_counts(
+        counts_path, out_dir,
+        status_directory=os.path.dirname(counts_path_override) if counts_path_override else out_dir,
+    )
+    counts_path = count_inputs["counts_path"]
+    log += ("Selected count inputs retained before assignment.\n" if count_inputs["counts_status"] == "retained"
+            else "Selected count inputs are unavailable; no substitute was selected during retention.\n")
     sb_patch_stage(stage_id, {"log_tail": log})
 
     project = Project()
@@ -4654,6 +4687,7 @@ def stage_assignment(
         # run used, whichever process picks that stage up. Persisted in the run's
         # state.json by process_stage.
         "counts_path": counts_path,
+        "count_inputs": count_inputs,
         "log": log,
     }
 
@@ -5854,7 +5888,7 @@ def stage_artifacts(
     independent_validation_result = assign_result.get("independent_validation")
     credibility_evidence = model_credibility.build_model_credibility_evidence(
         counts_path=assign_result.get("counts_path"),
-        out_dir=out_dir,
+        out_dir=(assign_result.get("count_inputs") or {}).get("counts_input_directory") or out_dir,
         gateways=gateways,
         validation=validation,
         calibration=calibration_result,

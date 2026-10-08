@@ -1,0 +1,52 @@
+{
+  "source_sha256": "e2c386e1888613071241d9b441edfee853df8e14a7fcc3aeb29f4581ef7c6f7f",
+  "worker_sha256": "5f4083ca2cf378d1b4a9e0532b09c6fa5220a7b7fb22de1fda3d6009449e38c7",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "return-external-source",
+      "exit_code": 1,
+      "targeted_test": "CountRetentionTests.test_original_bytes_and_sidecars_survive_source_changes"
+    },
+    {
+      "control": "follow-source-symlink",
+      "exit_code": 1,
+      "targeted_test": "CountRetentionTests.test_symlink_hardlink_and_fifo_sources_are_refused"
+    },
+    {
+      "control": "accept-hardlink",
+      "exit_code": 1,
+      "targeted_test": "CountRetentionTests.test_symlink_hardlink_and_fifo_sources_are_refused"
+    },
+    {
+      "control": "ignore-source-replacement",
+      "exit_code": 1,
+      "targeted_test": "CountRetentionTests.test_source_replacement_before_manifest_refuses_completion"
+    },
+    {
+      "control": "ignore-new-sidecar",
+      "exit_code": 1,
+      "targeted_test": "CountRetentionTests.test_sidecar_appearance_before_manifest_refuses_completion"
+    },
+    {
+      "control": "foreign-destination",
+      "exit_code": 1,
+      "targeted_test": "BoundCountRetentionTests.test_bound_helper_refuses_foreign_destination"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Native synthetic CSV/sidecars, actual assignment entry before engine open and bound manifest adapter with injected HTTP. No native manifest registration or engine/scientific acceptance."
+}
