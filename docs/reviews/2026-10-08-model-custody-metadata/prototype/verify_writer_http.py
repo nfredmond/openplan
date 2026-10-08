@@ -25,8 +25,9 @@ import model_command_journal as journal
 from worker_import_for_tests import import_worker_main
 
 
-def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False, package_consumer=False, state_consumer=False, project_output=False):
-    package_consumer = package_consumer or state_consumer
+def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False, package_consumer=False, state_consumer=False, project_output=False, project_consumer=False):
+    project_output = project_output or project_consumer
+    package_consumer = package_consumer or state_consumer or project_consumer
     package_output = package_output or package_consumer or project_output
     count_output = count_output or count_consumer
     outputs = outputs or state_output or count_output or package_output
@@ -133,6 +134,25 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         payload = json.dumps({'id':producer_artifact,'artifact_type':'model_package_inputs',
                             'file_url':'local://'+producer_record['manifest_path'],'content_hash':producer_record['manifest_sha256'],
                             'file_size_bytes':producer_record['manifest_size_bytes'],'metadata_json':{'schema':'openplan.package-inputs.v1'}}).replace("'", "''")
+                        if project_consumer:
+                            import sqlite3
+                            import model_project_inputs
+                            db = sqlite3.connect(producer_package / 'project_database.sqlite')
+                            db.execute('CREATE TABLE evidence (id INTEGER)')
+                            db.execute('INSERT INTO evidence VALUES (7)')
+                            db.commit()
+                            db.close()
+                            producer_record = model_project_inputs.retain(producer_package, producer_directory / 'project_inputs')
+                            payload = json.dumps({'id':producer_artifact,'artifact_type':'model_project_inputs',
+                                'file_url':'local://'+producer_record['manifest_path'],
+                                'content_hash':producer_record['manifest_sha256'],
+                                'file_size_bytes':producer_record['manifest_size_bytes'],
+                                'metadata_json':{'schema':'openplan.project-inputs.v1',
+                                    'inventory_schema':'openplan.package-inputs.v1',
+                                    'database_checks':producer_record['database_checks'],
+                                    'database_consistency':producer_record['database_consistency'],
+                                    'engine_closure':'unassessed','cross_database_consistency':'unassessed',
+                                    'scientific_acceptance':'unassessed','execution_ready':False}}).replace("'", "''")
                         if state_consumer:
                             producer_state_content = b'{"package":{"package_dir":"/original/package"},"setup":{"synthetic":true}}\n'
                             producer_state_path = producer_directory / 'predecessor_state.json'
@@ -169,7 +189,9 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
                                         if package_consumer:
                                             worker.run_work_directory(run)
-                                            if state_consumer:
+                                            if project_consumer:
+                                                worker.retain_managed_predecessor_project()
+                                            elif state_consumer:
                                                 worker.retain_managed_predecessor_state()
                                             else:
                                                 worker.retain_managed_predecessor_package()
@@ -287,14 +309,14 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     or retained_path.stat().st_ino == producer_state_path.stat().st_ino):
                                 raise AssertionError('Native state consumption differs from original bytes or provenance')
                         elif status == 'package_artifact':
-                            retained_dir = writers[0].files.path / ('project_inputs' if project_output else 'predecessor_package' if package_consumer else 'package_inputs')
+                            retained_dir = writers[0].files.path / ('predecessor_project' if project_consumer else 'project_inputs' if project_output else 'predecessor_package' if package_consumer else 'package_inputs')
                             manifest = retained_dir / 'manifest.json'
                             content = manifest.read_bytes()
                             inventory = json.loads(content)
                             if (records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
                                     or records[0]['file_size_bytes'] != len(content)
                                     or records[0]['file_url'] != 'local://' + str(manifest)
-                                    or records[0]['artifact_type'] != ('model_project_inputs' if project_output else 'model_package_consumption' if package_consumer else 'model_package_inputs')):
+                                    or records[0]['artifact_type'] != ('model_project_consumption' if project_consumer else 'model_project_inputs' if project_output else 'model_package_consumption' if package_consumer else 'model_package_inputs')):
                                 raise AssertionError('Native package manifest differs from retained bytes')
                             if package_consumer:
                                 expected_provenance = {'artifact_id':producer_artifact,'stage_id':producer_stage,
@@ -303,13 +325,13 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     raise AssertionError('Native package consumer lost producer provenance')
                             expected_files = {'manifest.json': b'{"files":{}}', 'generated.csv': b'zone,trips\n1,17\n'}
                             if project_output:
-                                expected_db = (writers[0].files.path / 'package/project_database.sqlite').read_bytes()
+                                expected_db = ((producer_directory / 'project_inputs/files' if project_consumer else writers[0].files.path / 'package') / 'project_database.sqlite').read_bytes()
                                 expected_files['project_database.sqlite'] = expected_db
                                 expected_checks = {'project_database.sqlite': {'integrity': 'ok',
                                     'sha256': hashlib.sha256(expected_db).hexdigest(), 'size_bytes': len(expected_db)}}
                                 metadata = records[0]['metadata_json']
                                 if (metadata.get('database_checks') != expected_checks
-                                        or metadata.get('schema') != 'openplan.project-inputs.v1'
+                                        or metadata.get('schema') != ('openplan.project-consumption.v1' if project_consumer else 'openplan.project-inputs.v1')
                                         or metadata.get('database_consistency') != 'individual_sqlite_integrity_checked'
                                         or metadata.get('execution_ready') is not False
                                         or any(metadata.get(field) != 'unassessed' for field in ('engine_closure', 'cross_database_consistency', 'scientific_acceptance'))):
@@ -323,7 +345,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                 item = inventory['entries'][name]
                                 if (copied.read_bytes() != expected or item['sha256'] != hashlib.sha256(expected).hexdigest()
                                         or item['size_bytes'] != len(expected)
-                                        or copied.stat().st_ino == ((producer_directory / 'package_inputs/files' if package_consumer else writers[0].files.path / 'package') / name).stat().st_ino):
+                                        or copied.stat().st_ino == ((producer_directory / 'project_inputs/files' if project_consumer else producer_directory / 'package_inputs/files' if package_consumer else writers[0].files.path / 'package') / name).stat().st_ino):
                                     raise AssertionError('Native package file differs from retained inventory')
                         elif status == 'count_artifact':
                             retained_dir = writers[0].files.path / 'run_output' / ('artifact_count_inputs' if count_consumer else 'count_inputs')

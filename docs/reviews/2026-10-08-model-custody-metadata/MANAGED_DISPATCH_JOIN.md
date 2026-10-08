@@ -1378,3 +1378,28 @@ the wrong artifact type. `prototype/managed-project-handoff-controls.json`
 records exact source hashes and outcomes. Native joined recovery remains open;
 producer registration recovery and native project reopen above are separate
 checks and do not close it.
+
+### Native selected-project recovery
+
+The selected-project helper now has native read/copy/registration recovery
+evidence. The isolated proof creates and completes a native producer attempt,
+registers its real SQLite project inventory, then runs the actual consumer
+helper. The helper selects that producer, copies the full inventory and records
+`model_project_consumption` with exact producer identity and database-check
+metadata. Independent file identities, bytes, sizes and hashes are checked.
+
+Baseline, harmless and restored controls pass with eight HTTP calls each. The
+proof loses the consumer registration reply after native commit, recovers its
+receipt through a fresh CLI and verifies cached recovery without HTTP. Native
+records remain unchanged and the writer stays stopped. A deliberately incorrect
+consumer manifest hash fails the recorded-byte assertion. The proof's historical
+`package_artifact` label is shared across inventory modes; project mode explicitly
+requires project consumption type, schema, database checks and incomplete statuses.
+Private `managed-project-http-v1` retains the clone/journals and the temporary
+gateways are removed. `prototype/managed-project-http.json` records outcomes.
+
+This is a synthetic SQLite input and native command proof, separate from the
+AequilibraE spatial reopen evidence. Stage execution still resolves `aeq_project`
+under `work_dir`; a copied project alone does not change that dependency. Explicit
+execution-path mapping, remaining output/count joins, closure enforcement and
+full managed dispatch remain open. No scientific or human acceptance claim changes.
