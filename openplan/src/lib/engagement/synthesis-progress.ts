@@ -9,6 +9,8 @@ const segmentStates = ["empty_selection", "ready_for_record_consolidation", "inc
 const contextStates = ["not_prepared", "staging", "incomplete", "frames_complete"] as const;
 const thematicStates = ["inputs_not_sealed", "not_prepared", "staging", "incomplete", "proposal_complete"] as const;
 export const synthesisProgressSchema = synthesisExecutionScopeSchema.extend({ schemaVersion: z.literal(1),
+  resourceAssessment: z.object({ taskIndex: natural, requiredTaskBytes: natural,
+    taskByteLimit: z.number().int().min(4096).max(1048576) }).strict().nullable().optional(),
   checkedAt: z.string().datetime({ offset: true }), cancelled: z.boolean(),
   status: z.enum([...segmentStates, ...contextStates, ...thematicStates]),
   interpretation: z.enum(["not_assessed", "machine_unreviewed"]),
@@ -44,5 +46,10 @@ export function verifySynthesisProgress(raw: unknown, scope: SynthesisExecutionS
   const success = value.stage === "segment" ? "validated_output" : "verified";
   if (completed && (!value.taskCount || value.counts.some(row => row.disposition !== success))) throw new Error("Analysis progress completion differs");
   if (value.status === "empty_selection" && value.counts.some(row => row.disposition !== "not_required_empty_selection")) throw new Error("Empty selection contains required execution");
+  const assessment = value.resourceAssessment;
+  if (assessment && (value.stage === "segment" || value.status !== "incomplete" || value.taskCount === null ||
+    assessment.taskIndex >= value.taskCount || assessment.requiredTaskBytes <= assessment.taskByteLimit)) {
+    throw new Error("Analysis resource assessment differs");
+  }
   return value;
 }

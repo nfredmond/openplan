@@ -28,6 +28,7 @@ export async function readSynthesisProgress(client: Client, service: Service,
     sourceSha256: intent.sourceSha256, requestIntentSha256: request.intentSha256 };
   let status: SynthesisProgress["status"], sequence: number | null, manifestSha256: string;
   let taskCount: number | null, dispositions: string[];
+  let resourceAssessment: SynthesisProgress["resourceAssessment"] = null;
   if (stage === "segment") {
     const result = await loadSynthesisGenerationHistory(client, service, requestScope, signal);
     if (result.requesterId !== request.actorId || result.campaignId !== query.campaignId || result.workspaceId !== query.workspaceId ||
@@ -47,6 +48,7 @@ export async function readSynthesisProgress(client: Client, service: Service,
     status = synthesisProgressSchema.shape.status.parse(result.manifest.status); sequence = result.manifest.throughSequence;
     manifestSha256 = result.sha256; taskCount = result.plan === null ? null : result.entries.length;
     dispositions = result.entries.map(entry => entry.status);
+    resourceAssessment = result.resourceAssessment ?? null;
     if (["inputs_not_sealed", "not_prepared", "staging"].includes(status)) { taskCount = null; dispositions = []; sequence = null; }
   }
   const current = await readSynthesisGenerationRequest(client, requestScope, signal);
@@ -59,7 +61,7 @@ export async function readSynthesisProgress(client: Client, service: Service,
   }
   return verifySynthesisProgress({ schemaVersion: 1, ...scope, checkedAt: new Date().toISOString(),
     cancelled: current.cancellation !== null, status, interpretation: stage === "segment" ? "not_assessed" : "machine_unreviewed",
-    selectionSequence: sequence, manifestSha256, taskCount,
+    selectionSequence: sequence, manifestSha256, taskCount, resourceAssessment,
     counts: [...counts].map(([disposition, count]) => ({ disposition, count })),
   }, scope);
 }

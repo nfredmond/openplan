@@ -18,6 +18,18 @@ const mount = (next = scope, userId = scope.actorId) => render(<SynthesisProgres
 const open = () => fireEvent.click(screen.getByRole("button", { name: "Inspect saved analysis results" }));
 
 describe("saved analysis progress view", () => {
+  it.each(["context", "thematic"] as const)("explains the %s task limit without authorizing a retry", async stage => {
+    transport.mockResolvedValue(json({ ...summary, stage, interpretation: "machine_unreviewed",
+      counts: [{ disposition: "unselected", count: 3 }],
+      resourceAssessment: { taskIndex: 0, requiredTaskBytes: 68699, taskByteLimit: 65536 } }));
+    mount({ ...scope, stage }); open();
+    await screen.findByText("Next continuation exceeds its saved task limit");
+    expect(screen.getByText("Task 1 requires 68,699 bytes. Its saved limit is 65,536 bytes.")).toBeTruthy();
+    expect(screen.getByText("No selected attempt")).toBeTruthy();
+    expect(screen.getByText(/does not establish whether a provider call occurred/)).toBeTruthy();
+    expect(transport.mock.calls.every(([, init]) => init?.method === "GET")).toBe(true);
+  });
+
   it("reads on demand with pinned account/workspace and no write", async () => {
     mount(); expect(transport).not.toHaveBeenCalled(); open();
     await screen.findByText("Analysis results are incomplete");
