@@ -40,3 +40,35 @@ The browser does not yet show the detailed worker task-byte refusal. Host-loss,
 boot supervision, capacity, provider interpretation quality and observed human
 usefulness are not established by these local synthetic checks. These limits
 must remain visible in any release claim.
+
+## First candidate CI findings and correction
+
+PR [139](https://github.com/nfredmond/openplan/pull/139) tracks this candidate.
+The first QA and shuffled-order GitHub runs each report 1,504 passing files,
+94 skipped files and two failing files. They have the same failures: the global
+column-name guard treats the queue's `command_text` and `command_sha256` reads
+as readers of ten unrelated land-use columns, and the new runbook names
+`OPENPLAN_AI_LOCAL_ENDPOINTS` without an example configuration entry.
+
+The correction preserves all ten custody explanations in a separate name-collision
+catalog. Its guard checks that each column exists and its name occurs in application
+source; it does not establish a table-specific application reader. The unchanged
+unread-column guard still checks unexplained columns and stale entries. The example
+configuration documents the opt-in local endpoint array and separate worker setup.
+No production application code changes in this correction.
+
+The two focused files pass all 12 tests. A harmless comment mutation retains that
+result. A nonexistent collision-column mutation fails exactly the new catalog
+check, with the missing column named. Both mutations are restored. This proves
+catalog-check sensitivity, not database query behavior or complete column usage.
+The earlier full local run remains live and already recorded the original column
+failure before the correction. Its eventual result is not evidence for the corrected
+checkpoint; focused checks and subsequent CI must cover the new test/configuration.
+
+The candidate populated upgrade from v0.67.0 passes in GitHub run 37708748266.
+Focused worker and Python checks pass. The first candidate live-RLS and restore
+runs remain in progress at this checkpoint. No merge or release tag is declared.
+
+[The staff response and export record](STAFF_RESPONSE_ACCEPTANCE.md) retains the
+new queued-proposal handoff and public/private export checks, together with the
+unresolved browser errors and mobile findings.

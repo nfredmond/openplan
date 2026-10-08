@@ -73,23 +73,13 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
-  { column: "land_use_plan_implementation_report_commands.command_text", category: "READ_IN_SQL", reason: "The implementation report transaction compares exact original request bytes before replaying its retained receipt." },
-  { column: "land_use_plan_implementation_report_commands.command_sha256", category: "WRITE_ONLY", reason: "The generated digest preserves original command identity for audit. The server verifies the matching commandSha256 in the retained receipt." },
-  { column: "land_use_plan_rule_reconciliation_commands.command_text", category: "READ_IN_SQL", reason: "reconcile_land_use_plan_rules compares exact original command bytes before returning the retained receipt." },
-  { column: "land_use_plan_rule_reconciliation_commands.command_sha256", category: "WRITE_ONLY", reason: "Generated digest supports command audit. Native replay compares exact command_text; the application does not display this digest." },
   { column: "land_use_plan_rule_reconciliation_commands.descriptor_text", category: "WRITE_ONLY", reason: "Original rules are retained for audit and generate descriptor_sha256. Replay returns the original receipt without consulting current rules." },
   { column: "land_use_plan_rule_reconciliation_commands.descriptor_sha256", category: "WRITE_ONLY", reason: "Generated digest preserves the original rule descriptor identity for audit. The application reads the descriptorHash retained in the receipt." },
-  { column: "land_use_plan_creation_cancellations.command_text", category: "READ_IN_SQL", reason: "cancel_land_use_plan_creation compares the exact original command before replaying its stop receipt. Request bytes remain immutable across stop and creation races." },
-  { column: "land_use_plan_creation_commands.command_text", category: "READ_IN_SQL", reason: "The native creation command compares original bytes before returning its retained receipt, preserving the request identity before a plan exists." },
   { column: "land_use_plan_creation_commands.descriptor_text", category: "WRITE_ONLY", reason: "Original descriptor bytes are retained for creation audit and generate descriptor_sha256. Runtime replay returns the original receipt rather than reading those rules again." },
   { column: "land_use_plan_creation_commands.descriptor_sha256", category: "WRITE_ONLY", reason: "Generated digest supports native audit of the original descriptor bytes. Runtime receipts retain the matching descriptorHash but do not select this generated column." },
-  { column: "land_use_plan_context_commands.command_sha256", category: "WRITE_ONLY", reason: "Generated digest retained for command audit and native custody checks. Runtime replay compares exact command_text; it does not currently display or return this digest." },
-  { column: "land_use_plan_context_commands.command_text", category: "READ_IN_SQL", reason: "save_land_use_plan_context compares exact command bytes on replay, preventing reuse of one command ID for a different assessment." },
   { column: "land_use_plan_context_commands.expected_context_hash", category: "READ_IN_SQL", reason: "The native context command compares the original precondition on replay before returning the retained save receipt." },
   { column: "land_use_plan_context_commands.saved_context", category: "READ_IN_SQL", reason: "The native context command returns the original saved context on retry, including its original author and save time." },
   { column: "land_use_plan_context_commands.saved_context_hash", category: "READ_IN_SQL", reason: "The journal constraint checks the saved context digest and the native retry receipt returns the same contextHash." },
-  { column: "land_use_plan_freeze_commands.command_sha256", category: "WRITE_ONLY", reason: "Generated digest retained for freeze audit and native custody checks. Runtime replay compares exact command_text; this digest has no current application display." },
-  { column: "land_use_plan_freeze_commands.command_text", category: "READ_IN_SQL", reason: "The native freeze function compares exact command text before replaying the original frozen-version receipt." },
   { column: "land_use_plan_freeze_commands.expected_draft_revision", category: "READ_IN_SQL", reason: "Native replay compares the original draft revision and returns it as draftRevision, preserving the precondition of the accepted freeze." },
   { column: "land_use_plan_freeze_commands.frozen_snapshot_text", category: "READ_IN_SQL", reason: "Original snapshot bytes generate content_hash in the journal; the native freeze receipt returns that digest rather than mutable plan data." },
   { column: "land_use_plan_freeze_commands.review_event_id", category: "READ_IN_SQL", reason: "The native freeze retry returns reviewEventId for the single retained review event; the composite foreign key binds it to the same workspace." },
@@ -355,6 +345,24 @@ const TOO_GENERIC = new Set([
   "failure_reason",
 ]);
 
+/**
+ * The queue reads these names from its own table. The global identifier scan
+ * cannot attribute that read to the land-use tables below. Preserve their
+ * custody explanations without claiming that they gained application readers.
+ */
+const NAME_COLLISIONS = [
+  { column: "land_use_plan_implementation_report_commands.command_text", category: "READ_IN_SQL", reason: "The implementation report transaction compares exact original request bytes before replaying its retained receipt." },
+  { column: "land_use_plan_implementation_report_commands.command_sha256", category: "WRITE_ONLY", reason: "The generated digest preserves original command identity for audit. The server verifies the matching commandSha256 in the retained receipt." },
+  { column: "land_use_plan_rule_reconciliation_commands.command_text", category: "READ_IN_SQL", reason: "reconcile_land_use_plan_rules compares exact original command bytes before returning the retained receipt." },
+  { column: "land_use_plan_rule_reconciliation_commands.command_sha256", category: "WRITE_ONLY", reason: "Generated digest supports command audit. Native replay compares exact command_text; the application does not display this digest." },
+  { column: "land_use_plan_creation_cancellations.command_text", category: "READ_IN_SQL", reason: "cancel_land_use_plan_creation compares the exact original command before replaying its stop receipt. Request bytes remain immutable across stop and creation races." },
+  { column: "land_use_plan_creation_commands.command_text", category: "READ_IN_SQL", reason: "The native creation command compares original bytes before returning its retained receipt, preserving the request identity before a plan exists." },
+  { column: "land_use_plan_context_commands.command_sha256", category: "WRITE_ONLY", reason: "Generated digest retained for command audit and native custody checks. Runtime replay compares exact command_text; it does not currently display or return this digest." },
+  { column: "land_use_plan_context_commands.command_text", category: "READ_IN_SQL", reason: "save_land_use_plan_context compares exact command bytes on replay, preventing reuse of one command ID for a different assessment." },
+  { column: "land_use_plan_freeze_commands.command_sha256", category: "WRITE_ONLY", reason: "Generated digest retained for freeze audit and native custody checks. Runtime replay compares exact command_text; this digest has no current application display." },
+  { column: "land_use_plan_freeze_commands.command_text", category: "READ_IN_SQL", reason: "The native freeze function compares exact command text before replaying the original frozen-version receipt." },
+];
+
 /** Tables Postgres or an extension owns; not ours to explain. */
 const EXTENSION_OWNED = new Set(["spatial_ref_sys", "geography_columns", "geometry_columns"]);
 
@@ -432,8 +440,18 @@ describe("a column the application never reads has to say why", () => {
     ).toEqual([]);
   });
 
+  it("keeps name collisions tied to existing columns and actual source names", () => {
+    const schema = loadSchemaInventory();
+    const identifiers = sourceIdentifiers();
+    for (const entry of NAME_COLLISIONS) {
+      const [table, column] = entry.column.split(".");
+      expect(schema.columns(table), entry.column).toContain(column);
+      expect(identifiers.has(column), entry.column).toBe(true);
+    }
+  });
+
   it("makes every entry state which kind it is, and argue it", () => {
-    for (const entry of UNREAD_COLUMNS) {
+    for (const entry of [...UNREAD_COLUMNS, ...NAME_COLLISIONS]) {
       expect(["INERT", "WRITE_ONLY", "UNBUILT", "READ_IN_SQL"], entry.column).toContain(
         entry.category
       );
