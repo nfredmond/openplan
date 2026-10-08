@@ -46,6 +46,16 @@ worker environment. Their initial system-Python runs lack Shapely; these failed
 environment attempts are preserved rather than counted as passes. No package
 installation is needed.
 
+The broader AequilibraE worker run passes all 32 discovered suites at
+`c44048bfdd386de1e20f5333df16c2e3131942f5`, including the corrected policy marker.
+It uses the existing AequilibraE worker interpreter with the engine installed,
+runs suites serially and retains each output. The owned service
+`openplan-bounds-worker-c44048bf.service`, invocation
+`85870a67aa60402f8aa96129be4bdc57`, exits successfully. This is worker regression
+evidence, not a new field study, model-accuracy result or independent acceptance.
+The machine-readable result is `worker-suites-result.json` in the private
+proof directory below.
+
 Private reproduction and mutation logs are in
 `decisive-observation-bounds-20261007-proof` and
 `historical-matcher-20261007-proof/grade-b-no-bounds-reproduction.json`.
