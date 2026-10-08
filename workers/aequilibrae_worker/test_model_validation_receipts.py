@@ -31,10 +31,33 @@ def fixture():
     return payload, row
 
 
+def artifact_rows(payload, receipt):
+    return [{
+        'id': receipt[key], 'run_id': payload['p_model_run_id'], 'stage_id': payload['p_stage_id'],
+        'artifact_type': kind, 'file_url': payload[f'p_{prefix}_file_url'],
+        'file_size_bytes': payload[f'p_{prefix}_size'], 'content_hash': payload[f'p_{prefix}_sha256'],
+        'metadata_json': payload[f'p_{prefix}_metadata'],
+    } for prefix, key, kind in (
+        ('validation_input', 'validation_input_bundle_artifact_id', 'validation_input_bundle'),
+        ('comparison_basis', 'comparison_basis_artifact_id', 'model_comparison_basis'),
+        ('assessment', 'model_validation_assessment_artifact_id', 'model_validation_assessment'),
+    )]
+
+
 class AssessmentReceiptTests(unittest.TestCase):
     def send(self, payload, result, status=200):
-        with patch.object(main.requests, 'post', return_value=Mock(status_code=status, json=Mock(return_value=result))) as post:
+        _, good = fixture()
+        rows = artifact_rows(payload, good)
+        with patch.object(main.requests, 'get', return_value=Mock(status_code=200, json=Mock(return_value=rows))) as get, \
+             patch.object(main.requests, 'post', return_value=Mock(status_code=status, json=Mock(return_value=result))) as post:
             value = main.sb_record_modeling_validation_assessment(payload)
+        get.assert_called_once()
+        self.assertEqual(get.call_args.kwargs['params'], {
+            'id': 'in.(' + ','.join(row['id'] for row in rows) + ')',
+            'select': 'id,run_id,stage_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json',
+        })
+        self.assertIs(get.call_args.kwargs['allow_redirects'], False)
+        self.assertEqual(get.call_args.kwargs['timeout'], 30)
         return value, post
 
     def test_exact_single_receipt_and_transport(self):
@@ -71,8 +94,33 @@ class AssessmentReceiptTests(unittest.TestCase):
                    {**row, 'partition_json': {'count': True}},
                    {**row, 'comparison_basis_artifact_id': row['model_output_artifact_id']}]
         for result in invalid:
+            # Check receipt validation independently of the later artifact read.
+            with self.subTest(receipt=result), self.assertRaises(ValueError):
+                main.assessment_receipt(payload, result)
             with self.subTest(result=result), self.assertRaises(main.WorkerStateWriteUnconfirmed):
                 self.send(payload, result)
+
+    def test_retained_artifact_fields_and_completeness_are_required(self):
+        payload, receipt = fixture()
+        rows = artifact_rows(payload, receipt)
+        invalid = [[], rows[:2], [*rows, {**rows[0], 'id': IDS[8]}], [rows[0], rows[0], rows[2]], {}, [None, *rows[1:]]]
+        for position in range(3):
+            for field in rows[position]:
+                changed = copy.deepcopy(rows)
+                changed[position][field] = 'unrelated'
+                invalid.append(changed)
+                missing = copy.deepcopy(rows)
+                del missing[position][field]
+                invalid.append(missing)
+        for result in invalid:
+            with patch.object(main.requests, 'post', return_value=Mock(status_code=200, json=Mock(return_value=receipt))), \
+                 patch.object(main.requests, 'get', return_value=Mock(status_code=200, json=Mock(return_value=result))), \
+                 self.assertRaises(main.WorkerStateWriteUnconfirmed):
+                main.sb_record_modeling_validation_assessment(payload)
+        for response in (Mock(return_value=Mock(status_code=503)), Mock(side_effect=main.requests.Timeout('private'))):
+            with patch.object(main.requests, 'post', return_value=Mock(status_code=200, json=Mock(return_value=receipt))), \
+                 patch.object(main.requests, 'get', response), self.assertRaises(main.WorkerStateWriteUnconfirmed):
+                main.sb_record_modeling_validation_assessment(payload)
 
     def test_rejected_or_lost_response_is_unconfirmed(self):
         payload, row = fixture()

@@ -46,7 +46,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Tuple
 
 import requests
-from model_validation_receipts import assessment_receipt
+from model_validation_receipts import (
+    assessment_receipt, verify_assessment_artifacts,
+    ASSESSMENT_ARTIFACTS, ASSESSMENT_ARTIFACT_PROJECTION,
+)
 import numpy as np
 import pandas as pd
 from network_ids import renumber_nodes
@@ -639,7 +642,17 @@ def sb_record_modeling_validation_assessment(payload: dict) -> dict:
         )
         if response.status_code not in (200, 201):
             raise WorkerStateWriteUnconfirmed("Validation assessment write unconfirmed")
-        return assessment_receipt(payload, response.json())
+        receipt = assessment_receipt(payload, response.json())
+        artifact_ids = [receipt[key] for _, key, _ in ASSESSMENT_ARTIFACTS]
+        artifacts = requests.get(
+            f"{SUPABASE_URL}/rest/v1/model_run_artifacts", headers=HEADERS,
+            params={"id": "in.(" + ",".join(artifact_ids) + ")", "select": ASSESSMENT_ARTIFACT_PROJECTION},
+            timeout=30, allow_redirects=False,
+        )
+        if artifacts.status_code != 200:
+            raise WorkerStateWriteUnconfirmed("Validation assessment artifact read unconfirmed")
+        verify_assessment_artifacts(payload, receipt, artifacts.json())
+        return receipt
     except WorkerStateWriteUnconfirmed:
         raise
     except (requests.RequestException, ValueError, TypeError, KeyError):

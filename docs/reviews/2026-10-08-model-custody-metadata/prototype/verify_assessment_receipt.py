@@ -62,12 +62,21 @@ def check():
                 response.close()
                 raise requests.Timeout('Synthetic reply discarded after committed HTTP response')
             return response
-        worker.requests = types.SimpleNamespace(post=send, RequestException=requests.RequestException)
+        def read(url, **kwargs):
+            if url != connection['url'] + '/rest/v1/model_run_artifacts':
+                raise AssertionError('Unexpected artifact proof destination')
+            response = requests.get(connection['url'] + '/model_run_artifacts', **kwargs)
+            if mode == 'wrong-artifact-reply' and response.status_code == 200:
+                rows = copy.deepcopy(response.json())
+                rows[0]['stage_id'] = str(uuid.uuid4())
+                response.json = lambda: rows
+            return response
+        worker.requests = types.SimpleNamespace(post=send, get=read, RequestException=requests.RequestException)
         receipt = worker.sb_record_modeling_validation_assessment(payload)
         rows = json.loads(sql(f"SELECT jsonb_agg(to_jsonb(a)) FROM public.modeling_validation_assessments a WHERE model_run_id='{run}';"))
         if rows != [receipt]:
             raise AssertionError('Native assessment differs from acknowledged receipt')
-        for mode in ('wrong-scope', 'wrong-reply', 'lost-reply'):
+        for mode in ('wrong-scope', 'wrong-reply', 'wrong-artifact-reply', 'lost-reply'):
             candidate = copy.deepcopy(payload)
             if mode == 'wrong-scope':
                 candidate['p_workspace_id'] = str(uuid.uuid4())
@@ -82,7 +91,7 @@ def check():
             expected_change = 0 if mode == 'wrong-scope' else 1
             if after != before + expected_change:
                 raise AssertionError('Native commit boundary differs: ' + mode)
-        if [call['status'] for call in calls] != [200, 400, 200, 200]:
+        if [call['status'] for call in calls] != [200, 400, 200, 200, 200]:
             raise AssertionError('Unexpected native assessment statuses: ' + str(calls))
     evidence = {'run_id': run, 'stage_id': stage, 'acknowledged_assessment_id': receipt['id'], 'calls': calls,
                 'scope': 'Actual worker helper, PostgREST and database constraints in the owned proof database. Wrong and lost replies follow actual commits. Response loss is injected after HTTP completion, not a socket interruption. Synthetic artifact references are not Storage uploads or scientific observations. No automatic recovery, idempotent retry, normal dispatcher or scientific acceptance.'}
