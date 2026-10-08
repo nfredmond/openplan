@@ -422,3 +422,27 @@ This closes the isolated PostgREST transport boundary for the artifact prototype
 It does not prove the existing Supabase gateway configuration, original-table
 RLS/foreign keys, the other command types, normal worker recovery or scientific
 acceptance. Production integration and end-to-end worker journeys remain open.
+
+## Preserve legacy ownership during reaping
+
+Production integration review found that the prototype reaper enrolled every
+stale run in attempt management, even when no attempt-aware worker had claimed
+it. Installing that behavior would block the existing relaunch path during a
+staged rollout. Reaping now preserves the parent's ownership mode. Managed runs
+still revoke attempts and fence their required stages. Unmanaged runs fail their
+unfinished stages without fabricating attempts or rewriting completed stages.
+Legacy reset operations remain available until an attempt-aware claim occurs.
+This does not add attempt fencing to legacy workers.
+
+Native rollback cases verify failed-state recording, unchanged ownership mode,
+no invented attempt, unchanged completed-stage records and continued legacy
+reset access. The existing managed-deletion test now explicitly creates its
+synthetic managed fixture instead of relying on reaping to enroll it. Its
+adverse deletion control still fails for the intended reason.
+
+The first completed-stage mutation was vacuous because insertion and update
+shared a transaction timestamp. Giving the fixture an older `updated_at` made
+the unintended rewrite observable. Baseline, harmless and restored cases now
+pass with 49 adverse controls. All 44 contention cases also pass. The installed
+reaper definition remains unchanged after rollback; this is still a prototype,
+not a deployed lifecycle migration.
