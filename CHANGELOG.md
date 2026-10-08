@@ -34,6 +34,16 @@ report evidence. My Work preserves conflicting award and milestone deadlines
 and asks staff to review them. Project delivery displays calendar-only dates
 without shifting them to the preceding day in western time zones.
 
+Closed awards with recorded obligation deadlines remain visible for review.
+Invoice coverage or an imported closure does not establish timely obligation.
+Reopening requires a written reason and an explicit destination status. The
+reopen form fits narrow cards and identifies the previous closure basis.
+
+The historical observation-study verifier accepts an explicit original matcher
+source file. It verifies retained bytes without executing that source or
+presenting an old study as validation of the current matcher. The default
+continues to reject mismatched source bytes; scientific outcomes are unchanged.
+
 Published distributed model results verify retained hashes, identities, summary
 agreement and required values before display. Missing evidence stays unavailable.
 AequilibraE and ActivitySim remain separate and scientifically inconclusive.
