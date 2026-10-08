@@ -1426,3 +1426,26 @@ records source identity and results. Transport is mocked for this new method.
 Native working-copy registration recovery and native engine use of this method
 remain unproved. Explicit stage path selection, closure enforcement and full
 managed dispatch remain unfinished.
+
+### Native working-copy registration recovery
+
+The native proof now confirms selected project consumption before preparing its
+working copy. It registers both `model_project_consumption` and
+`model_project_working_copy` under the same consumer attempt, then loses the
+working-copy response after commit. Checks require the initial-inventory role,
+mutable-file flag, consumed manifest hash, producer references, database checks
+and explicit incomplete statuses. Working and retained database file identities
+differ. A real SQLite insert modifies the working file while retained input
+bytes remain unchanged. The proof restores only its mutable working database to
+its initial bytes for the subsequent inventory assertions; it does not rewrite
+retained inputs or native records.
+
+Baseline, harmless and restored controls pass. Fresh CLI receipt recovery leaves
+native records unchanged, cached recovery makes no HTTP request and the stopped
+writer does not resume. Changing the working-copy role to retained input fails
+the boundary assertion. `prototype/project-working-http.json` records exact
+source hashes and outcomes. Private `project-working-http-v1` retains clones and
+journals; temporary gateways are removed. This combines real local SQLite files
+with native commands, not an AequilibraE engine run. Native engine use of the
+working-copy helper, stage execution-path selection, closure enforcement and
+full managed dispatch remain open.

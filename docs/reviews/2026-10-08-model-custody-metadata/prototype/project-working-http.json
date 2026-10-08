@@ -1,0 +1,62 @@
+{
+  "writer_sha256": "e2305c22f9bf7b377dd531423b1a3274dc031cba7e34948d672d13cf2a10b2d7",
+  "worker_sha256": "255841353236c8a03859616dbbb6981ea6d677cfb98a33e0ac8e529fcc58b7cf",
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "package_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 9,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "package_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 9,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "erase-working-role",
+      "expected_failure": "Native working copy lost its retained input boundary"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "package_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 9,
+        "gateway_removed": true
+      }
+    }
+  ],
+  "limits": "Actual working-copy writer after native selected-project consumption, real SQLite mutation with retained input unchanged, and fresh CLI receipt recovery. No native engine in this proof, closure enforcement, cross-database consistency, normal managed dispatch or scientific acceptance."
+}

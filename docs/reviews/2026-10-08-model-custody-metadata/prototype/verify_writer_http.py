@@ -25,7 +25,8 @@ import model_command_journal as journal
 from worker_import_for_tests import import_worker_main
 
 
-def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False, package_consumer=False, state_consumer=False, project_output=False, project_consumer=False):
+def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False, package_consumer=False, state_consumer=False, project_output=False, project_consumer=False, project_working=False):
+    project_consumer = project_consumer or project_working
     project_output = project_output or project_consumer
     package_consumer = package_consumer or state_consumer or project_consumer
     package_output = package_output or package_consumer or project_output
@@ -189,7 +190,12 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
                                         if package_consumer:
                                             worker.run_work_directory(run)
-                                            if project_consumer:
+                                            if project_working:
+                                                fault['operation'] = None
+                                                consumed_project = worker.retain_managed_predecessor_project()
+                                                fault['operation'] = 'write_model_attempt_artifact'
+                                                writer.prepare_project_working_copy(consumed_project)
+                                            elif project_consumer:
                                                 worker.retain_managed_predecessor_project()
                                             elif state_consumer:
                                                 worker.retain_managed_predecessor_state()
@@ -293,6 +299,11 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         if package_consumer:
                             records = [record for record in records if record['stage_id'] == stage]
                         consumer_attempts = [attempt for attempt in observed['attempts'] if attempt['stage_id'] == stage]
+                        if project_working:
+                            if len(records) != 2 or {r['artifact_type'] for r in records} != {'model_project_consumption', 'model_project_working_copy'}:
+                                raise AssertionError('Project working copy lost its retained input record')
+                            consumed_record = next(r for r in records if r['artifact_type'] == 'model_project_consumption')
+                            records = [r for r in records if r['artifact_type'] == 'model_project_working_copy']
                         if len(records) != 1 or len(consumer_attempts) != 1 or records[0]['attempt_id'] != consumer_attempts[0]['id']:
                             raise AssertionError('Output is absent, duplicated or belongs to another attempt')
                         if state_consumer:
@@ -309,14 +320,14 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     or retained_path.stat().st_ino == producer_state_path.stat().st_ino):
                                 raise AssertionError('Native state consumption differs from original bytes or provenance')
                         elif status == 'package_artifact':
-                            retained_dir = writers[0].files.path / ('predecessor_project' if project_consumer else 'project_inputs' if project_output else 'predecessor_package' if package_consumer else 'package_inputs')
+                            retained_dir = writers[0].files.path / ('project_working' if project_working else 'predecessor_project' if project_consumer else 'project_inputs' if project_output else 'predecessor_package' if package_consumer else 'package_inputs')
                             manifest = retained_dir / 'manifest.json'
                             content = manifest.read_bytes()
                             inventory = json.loads(content)
                             if (records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
                                     or records[0]['file_size_bytes'] != len(content)
                                     or records[0]['file_url'] != 'local://' + str(manifest)
-                                    or records[0]['artifact_type'] != ('model_project_consumption' if project_consumer else 'model_project_inputs' if project_output else 'model_package_consumption' if package_consumer else 'model_package_inputs')):
+                                    or records[0]['artifact_type'] != ('model_project_working_copy' if project_working else 'model_project_consumption' if project_consumer else 'model_project_inputs' if project_output else 'model_package_consumption' if package_consumer else 'model_package_inputs')):
                                 raise AssertionError('Native package manifest differs from retained bytes')
                             if package_consumer:
                                 expected_provenance = {'artifact_id':producer_artifact,'stage_id':producer_stage,
@@ -331,11 +342,28 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     'sha256': hashlib.sha256(expected_db).hexdigest(), 'size_bytes': len(expected_db)}}
                                 metadata = records[0]['metadata_json']
                                 if (metadata.get('database_checks') != expected_checks
-                                        or metadata.get('schema') != ('openplan.project-consumption.v1' if project_consumer else 'openplan.project-inputs.v1')
-                                        or metadata.get('database_consistency') != 'individual_sqlite_integrity_checked'
+                                        or metadata.get('schema') != ('openplan.project-working-copy.v1' if project_working else 'openplan.project-consumption.v1' if project_consumer else 'openplan.project-inputs.v1')
+                                        or (not project_working and metadata.get('database_consistency') != 'individual_sqlite_integrity_checked')
                                         or metadata.get('execution_ready') is not False
-                                        or any(metadata.get(field) != 'unassessed' for field in ('engine_closure', 'cross_database_consistency', 'scientific_acceptance'))):
+                                        or any(metadata.get(field) != 'unassessed' for field in (('engine_closure', 'scientific_acceptance') if project_working else ('engine_closure', 'cross_database_consistency', 'scientific_acceptance')))):
                                     raise AssertionError('Native project database checks or limits differ')
+                                if project_working:
+                                    retained_input = writers[0].files.path / 'predecessor_project/files/project_database.sqlite'
+                                    if (metadata.get('role') != 'initial_working_inventory'
+                                            or metadata.get('files_mutable') is not True
+                                            or metadata.get('input_manifest_sha256') != consumed_record['content_hash']
+                                            or (retained_dir / 'files/project_database.sqlite').stat().st_ino == retained_input.stat().st_ino):
+                                        raise AssertionError('Native working copy lost its retained input boundary')
+                                    import sqlite3
+                                    db = sqlite3.connect(retained_dir / 'files/project_database.sqlite')
+                                    db.execute('INSERT INTO evidence VALUES (99)')
+                                    db.commit()
+                                    db.close()
+                                    if retained_input.read_bytes() != expected_db:
+                                        raise AssertionError('Working write changed retained project input')
+                                    # Restore only this proof-owned working database for
+                                    # the initial inventory assertions below.
+                                    (retained_dir / 'files/project_database.sqlite').write_bytes(expected_db)
                             if set(inventory['entries']) != set(expected_files) | {'empty'}:
                                 raise AssertionError('Native package inventory is incomplete')
                             if not (retained_dir / 'files/empty').is_dir():
