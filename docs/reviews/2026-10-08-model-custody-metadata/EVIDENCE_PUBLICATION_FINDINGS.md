@@ -389,3 +389,32 @@ zero swap and two CPUs, with one numerical-library thread. The passing unit is
 
 This is worker regression evidence. It does not replace live tenant isolation,
 restore checks, identified browser workflows or independent scientific acceptance.
+
+## Rules-v4 claim requires an explicit custody acknowledgement
+
+The normal worker's payload builder previously withheld a rules-v4 pass only
+when `validation_evidence_write` exactly equaled the failure string. A missing,
+pending or malformed status therefore produced `screening_grade` from an
+assessment marked `pass`. The new regression reproduces that behavior for both
+assignment and behavioral-demand tracks.
+
+The builder now requires `recorded` before a nonempty rules-v4 assessment can
+support its existing higher-tier path. Other write states remain prototype-only
+with a message that storage is not confirmed. The scientific outcome and source
+assessment remain in the summary. This does not change computed residuals,
+thresholds, method separation or the recorded planning-use/partition limit.
+
+The test covers missing, null, empty, pending, explicit failure, boolean, number,
+object and array write states, plus the recorded-pass control for each track.
+Harmless and restored controls pass. Restoring the old failure-string check is
+detected, as is a fault that rejects the recorded pass. Results are retained in
+`model-command-client-20261008-proof/rules-v4-publication-custody-controls.json`.
+
+All 66 worker suites pass at `f8800300`, with none skipped. The bounded unit
+`openplan-publication-workers-custody-20261008.service`, invocation
+`4e38bbbc7f29484d94e3e72ed4ae5f41`, completes October 8 at 05:41:42 Pacific in
+30.263 seconds with a 172.8 MiB memory peak. The checkout stays unchanged during
+the run. A recorded status is an internal acknowledgement, not independent
+scientific acceptance. Atomic server verification of higher-tier evidence and
+normal dispatcher integration remain required; the candidate still cannot replace
+all existing writer paths.
