@@ -111,6 +111,12 @@ dispatch, reboot, host power-loss recovery, unattended commissioning or capacity
 The existing worker's separate queue and interruption records remain applicable
 only to their tested processes and inputs.
 
+A subsequent check launches both actual worker entry points against a reserved,
+unavailable local endpoint with synthetic credentials. Both retry pass failures,
+restart after forced process exit with identical coordinator journals, and stop
+cleanly. This verifies startup and failure handling without a database or provider;
+successful queued work and host recovery remain separate acceptance boundaries.
+
 Systemd behavior follows its upstream
 [service reference](https://github.com/systemd/systemd/blob/main/man/systemd.service.xml)
 and [execution-environment reference](https://github.com/systemd/systemd/blob/main/man/systemd.exec.xml).

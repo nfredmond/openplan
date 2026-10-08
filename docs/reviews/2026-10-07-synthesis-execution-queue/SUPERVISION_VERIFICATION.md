@@ -38,3 +38,24 @@ in-place application update safe. The operator recipe preserves that boundary.
 Private commands, fixture events, generated unit and mutation logs are retained
 under `synthesis-supervision-20261007-proof` in the local OpenPlan state folder.
 No credentials, worker source records or real allowance are used by the probe.
+
+## Actual entry points against an unavailable endpoint
+
+At source `92a7b09d1e2e1c41514c5e6a44872f4f05a6eef1`, both generated services
+also launch their actual application worker entry points from the isolated
+checkout. A reserved, non-listening loopback socket supplies the unavailable
+database endpoint. The private file contains synthetic credentials. Neither
+service contacts the acceptance database or a model provider.
+
+Preparation and execution each report two failed passes without a process
+restart, then recover from one forced main-process exit through the generated
+restart policy. Each restarted process uses the same checkout and retains
+byte-identical coordinator journals. The journals explicitly identify the
+reserved endpoint. Both services handle the final stop, report a clean worker
+shutdown and exit with status zero. The test stops and unlinks both units.
+
+The retained result is `actual-workers-c61e4f55b2/result.json` in the private
+proof directory. This adds actual entry-point, unavailable-database retry and
+empty-journal restart evidence. It does not exercise a real queued task,
+successful database recovery, provider execution, boot, power loss or capacity.
+The existing native task and interruption evidence remains a separate record.
