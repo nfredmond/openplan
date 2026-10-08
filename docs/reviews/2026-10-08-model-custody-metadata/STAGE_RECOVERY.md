@@ -391,3 +391,35 @@ bytes, not an actor who can rewrite both bytes and digest. SQLite process-loss
 behavior here does not prove host power-loss recovery. A computation that started
 but never saved remains unresolved; no automatic reset or rerun is provided.
 Full worker regression after adding this component remains pending.
+
+
+## Retained legacy rules-v4 records
+
+The normal rules-v4 builder now uses the computed-record checkpoint for both
+assignment and behavioral-demand record construction. Its inputs include the
+legacy diagnostic bundle, source hashes, workspace, output artifact identity,
+scenario role and the full comparison-basis settings. The operation name includes
+the output artifact type so the two engine paths remain separate. New basis and
+assessment identities and the frozen timestamp are generated only inside the
+first computation. Exact retries return the original three records; changed
+inputs or an unresolved prior computation propagate `WorkerStateWriteUnconfirmed`.
+The existing rules-v5 instrument evaluator and its access gates are unchanged.
+
+Three focused tests of the actual builder pass. They prove exact detached reuse,
+continued inconclusive treatment of legacy diagnostics, changed-byte/scenario
+refusal before assessment, and no second assessment after a failed first call.
+Harmless and restored controls pass; bypassing the checkpoint or omitting the
+input binding each fails a targeted assertion. Private control evidence is
+`model-command-client-20261008-proof/retained-v4-controls.json`.
+
+Full worker regression passes all 77 suites, with none failed or not run. The
+owned `openplan-retained-v4-workers-20261008.service` completed at 07:22:28 Pacific
+on October 8, invocation `a34e7dcccbac4aff98457fd88bd9c122`, with a 181.6 MiB peak
+under the 1 GiB limit. The checkout remained unchanged during that run.
+
+This retains legacy record construction, not the entire preceding model or count
+validation execution. Existing assessment directories still refuse overwrite;
+recovery must verify and materialize original bytes without creating replacement
+records. ActivitySim output registration and remaining stage writes also need
+reconciliation. No whole-stage replay, independent acceptance, current ownership
+or scientific claim promotion is established by this checkpoint.

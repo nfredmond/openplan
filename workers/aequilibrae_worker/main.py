@@ -4647,6 +4647,8 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
 def build_rules_v4_validation_records(
     *,
     run_id: str,
+    stage_id: str,
+    journal_dir: str,
     model_output_artifact_id: str,
     model_output_artifact_type: str,
     link_volumes_csv: str,
@@ -4691,11 +4693,9 @@ def build_rules_v4_validation_records(
             "pre-volume match audit",
         ],
     }
-    bundle_sha256 = model_validation_core.sha256_payload(validation_input_bundle)
     scenario_role = sb_get_scenario_role(run_row.get("scenario_entry_id"))
     basis = {
         "schema": model_validation_core.COMPARISON_BASIS_SCHEMA,
-        "basis_id": str(uuid.uuid4()),
         "model_run_id": run_id,
         "model_output_artifact": {
             "artifact_id": model_output_artifact_id,
@@ -4725,18 +4725,38 @@ def build_rules_v4_validation_records(
         },
         "network_state_hashes": {"network_state": network_state_digest},
         "acceptance_rule": "unknown",
-        "frozen_at": datetime.now(timezone.utc).isoformat(),
     }
-    assessment = model_validation_core.uncontracted_v4_assessment(
-        validation or {},
-        basis,
-        assessment_id=str(uuid.uuid4()),
-        validation_input_bundle_sha256=bundle_sha256,
-    )
-    # The immutable bytes say pending. A successful custody row proves the
-    # transition to recorded; on failure the caller rewrites only the unbound
-    # local computation to the explicit failure state.
-    return validation_input_bundle, basis, assessment
+    from pathlib import Path
+    import model_stage_computation
+    import model_command_journal
+    inputs = json.loads(model_command_journal.canonical({
+        "workspace_id": run_row.get("workspace_id"),
+        "bundle": validation_input_bundle, "basis": basis,
+    }))
+
+    def compute_records():
+        frozen_basis = json.loads(model_command_journal.canonical(inputs["basis"]))
+        frozen_basis["basis_id"] = str(uuid.uuid4())
+        frozen_basis["frozen_at"] = datetime.now(timezone.utc).isoformat()
+        frozen_bundle = inputs["bundle"]
+        assessment = model_validation_core.uncontracted_v4_assessment(
+            frozen_bundle["raw_point_count_diagnostic"], frozen_basis,
+            assessment_id=str(uuid.uuid4()),
+            validation_input_bundle_sha256=model_validation_core.sha256_payload(frozen_bundle),
+        )
+        return {"bundle": frozen_bundle, "basis": frozen_basis, "assessment": assessment}
+
+    try:
+        retained = model_stage_computation.compute_once(
+            Path(journal_dir), base_url=SUPABASE_URL,
+            deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            run_id=run_id, stage_id=stage_id,
+            name="legacy-rules-v4:" + model_output_artifact_type,
+            inputs=inputs, compute=compute_records,
+        )
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Assessment computation unconfirmed; reconcile the original checkpoint before continuing") from None
+    return retained["bundle"], retained["basis"], retained["assessment"]
 
 
 def assess_rules_v5_validation_instrument(
@@ -5620,7 +5640,8 @@ def stage_artifacts(
     run_row_for_validation = sb_get_run(run_id)
     validation_input_bundle, comparison_basis, validation_assessment = (
         build_rules_v4_validation_records(
-            run_id=run_id,
+            run_id=run_id, stage_id=stage_id,
+            journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
             model_output_artifact_id=model_output_artifact_id,
             model_output_artifact_type="link_volumes",
             link_volumes_csv=link_volumes_csv,
@@ -6655,7 +6676,8 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 )
                 input_bundle, comparison_basis, activitysim_assessment = (
                     build_rules_v4_validation_records(
-                        run_id=run_id,
+                        run_id=run_id, stage_id=stage_id,
+                        journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
                         model_output_artifact_id=activitysim_artifact_id,
                         model_output_artifact_type="activitysim_link_volumes",
                         link_volumes_csv=volume_path,
