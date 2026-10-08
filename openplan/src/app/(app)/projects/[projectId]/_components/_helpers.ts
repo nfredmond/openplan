@@ -3,6 +3,7 @@ import type { RtpEvidenceRunRow } from "@/lib/rtp/modeling-evidence";
 
 import type { RecentRun } from "./_types";
 import { formatMoney } from "@/lib/money/format";
+import { formatWorkDeadlineDate } from "@/lib/work/deadlines";
 
 export type Tone = "info" | "success" | "warning" | "danger" | "neutral";
 
@@ -16,10 +17,16 @@ export function titleize(value: string | null | undefined): string {
     .join(" ");
 }
 
+/** Calendar-only records have no time zone or time of day to convert. */
 export function fmtDateTime(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
+  if (Number.isNaN(parsed.getTime())) return value;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    if (parsed.toISOString().slice(0, 10) !== value) return value;
+    return formatWorkDeadlineDate(value) ?? value;
+  }
+  return parsed.toLocaleString("en-US");
 }
 
 /**
