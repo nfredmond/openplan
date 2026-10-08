@@ -101,6 +101,8 @@ export type ProjectSpineCrosslinkInput = {
     awardRiskCount: number;
   };
   engagement: {
+    /** Recent coverage list, bounded by its reader, distinct from report contributions. */
+    campaignCount: number;
     label: string;
     itemCount: number;
     handoffReadyCount: number;
@@ -228,7 +230,7 @@ const schemaSetupNextAction: Record<ProjectSpineCrosslinkRowId, string> = {
   rtp_packets: "Apply or verify the RTP link/report packet schema, then reload this project before treating portfolio placement as missing.",
   scenario_sets: "Apply the scenario spine tables and reload; then create the baseline-versus-alternative set this project is allowed to cite.",
   funding_profile: "Apply the funding profile, award, opportunity, and invoice tables before deciding whether this project lacks a funding target.",
-  engagement_evidence: "Restore report artifact evidence-chain reads, then confirm which moderated engagement excerpts belong in the packet trail.",
+  engagement_evidence: "Restore campaign coverage and report evidence reads, then confirm which reviewed contributions belong in the report.",
   analysis_modeling: "Restore run/report artifact reads, then bind the usable model run or comparison-backed packet to this project.",
   safety_evidence: "Apply the safety crash tables, then attach the crash acquisition this project's safety evidence should cite.",
   aerial_evidence: "Apply the aerial mission and evidence package tables, then attach only material aerial context to the project spine.",
@@ -412,7 +414,7 @@ export function buildProjectSpineCrosslinkSummary(
 
   const engagementReadiness: ProjectSpineCrosslinkReadiness =
     input.engagement.itemCount === 0
-      ? "missing"
+      ? input.engagement.campaignCount > 0 ? "attention" : "missing"
       : input.engagement.handoffReadyCount < input.engagement.itemCount
         ? "attention"
         : "ready";
@@ -608,24 +610,30 @@ export function buildProjectSpineCrosslinkSummary(
       lane: "Engagement evidence",
       readiness: engagementReadiness,
       statusLabel:
-        engagementReadiness === "attention"
-          ? "Moderation/handoff pending"
-          : engagementReadiness === "ready"
-            ? "Handoff evidence ready"
-            : "No engagement evidence",
+        input.engagement.itemCount === 0 && input.engagement.campaignCount > 0
+          ? "Report evidence not retained"
+          : engagementReadiness === "attention"
+            ? "Moderation/handoff pending"
+            : engagementReadiness === "ready"
+              ? "Handoff evidence ready"
+              : "No campaign or report evidence",
       headline:
         input.engagement.itemCount > 0
-          ? `${input.engagement.label} engagement is represented in the latest source context.`
-          : "No engagement item has been surfaced for this project yet.",
-      detail: `${input.engagement.handoffReadyCount}/${input.engagement.itemCount} items ready for report handoff`,
-      evidence: "Use approved/moderated comments for appendices and public-response proof; do not treat raw intake as final findings.",
+          ? `${input.engagement.label} engagement is represented in retained report context.`
+          : input.engagement.campaignCount > 0
+            ? "Campaigns are linked, but no contribution context is retained in a report yet."
+            : "No linked campaign or retained report contribution context is available.",
+      detail: `${input.engagement.campaignCount} recent linked ${input.engagement.campaignCount === 1 ? "campaign" : "campaigns"}; ${input.engagement.handoffReadyCount}/${input.engagement.itemCount} retained report items ready for handoff`,
+      evidence: "Report counts describe retained contribution context, not current campaign intake or public release.",
       nextAction:
         engagementReadiness === "missing"
           ? "Create or attach the engagement campaign that should support this project."
-          : engagementReadiness === "attention"
-            ? "Moderate or approve enough engagement items for clean packet handoff."
-            : "Confirm the approved engagement excerpts are attached to the downstream report packet.",
-      caveat: "Engagement rows are evidence of intake and moderation status, not a substitute for adopted outreach findings or public agency response records.",
+          : input.engagement.itemCount === 0
+            ? "Review the linked campaigns and prepare a report with the contributions appropriate for its audience."
+            : engagementReadiness === "attention"
+              ? "Review contribution status and report scope before preparing a new handoff."
+              : "Confirm the retained engagement excerpts remain appropriate for the downstream report.",
+      caveat: "Linked campaigns and retained contributions do not establish representative participation, adopted findings or public agency response records.",
       href: laneHrefForProject("/engagement", input.projectId),
       actionLabel: "Open engagement",
     },
