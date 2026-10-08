@@ -387,3 +387,17 @@ assertion. The private control record is
 The first edit attempt used the nested application directory with repository-root
 paths and changed no files; the unchanged focused run reproduced all three
 failures before the corrected edit. Full QA must pass again before landing.
+
+## Full local gate after bookkeeping correction
+
+The exact checkout at `3a87fa2a3d85285a1c537cbf46261e10ffe796b2` passed
+`npm run qa:gate`: lint, dead-code checks, 20,095 tests across 1,512 passing files,
+provider connector checks, zero dependency vulnerabilities and production build.
+There were 1,580 skipped tests across 95 skipped files. Live RLS was not opted in;
+this gate does not replace the separately recorded native database proofs.
+
+Unit `openplan-assessment-qa-3a87fa2a.service`, invocation
+`4c295a3abb0e4bc58c63b84887b2a97c`, finished successfully at 07:47:20 Pacific
+on October 8. The peak was 5.9 GiB under a 7 GiB cap. No checkout edits occurred
+during the run. GitHub checks on the integrated commit remain required before
+landing. Scientific, browser, human and full-stage restart acceptance remain open.
