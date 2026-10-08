@@ -8,8 +8,15 @@ import { runSynthesisExecutionQueuePass } from "./synthesis-execution-queue-coor
 type Pass = Awaited<ReturnType<typeof runSynthesisExecutionQueuePass>>;
 /** Diagnostics never grant retries or imply that a refused call was unsent. */
 export function synthesisExecutionDiagnostics(result: Pass): string[] {
-  return result.outcomes.filter(item => item.state === "unconfirmed" && item.reason === "endpoint_policy")
-    .map(item => `Queue ${item.queueId}: provider endpoint policy refused execution. Check the worker process OPENPLAN_AI_LOCAL_ENDPOINTS and outbound host policy. Preserve its journals and inspect saved task results before any retry; dispatch may already be retained.`);
+  return result.outcomes.flatMap(item => {
+    if (item.state !== "unconfirmed") return [];
+    if (item.reason === "endpoint_policy") return [`Queue ${item.queueId}: provider endpoint policy refused execution. Check the worker process OPENPLAN_AI_LOCAL_ENDPOINTS and outbound host policy. Preserve its journals and inspect saved task results before any retry; dispatch may already be retained.`];
+    if (item.reason === "task_bytes" && item.resource) {
+      const { taskIndex, requiredTaskBytes, taskByteLimit } = item.resource;
+      return [`Queue ${item.queueId}: task index ${taskIndex} requires ${requiredTaskBytes} bytes, exceeding its saved ${taskByteLimit}-byte limit. Preserve the original request and journals. Review complete saved results before creating a separate request with an explicit larger task budget and separate execution permission. This does not authorize a retry or shorten source text.`];
+    }
+    return [];
+  });
 }
 
 export function synthesisExecutionOptions(argv: string[], environment: Partial<NodeJS.ProcessEnv>) {

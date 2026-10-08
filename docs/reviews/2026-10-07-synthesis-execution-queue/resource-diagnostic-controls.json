@@ -1,0 +1,36 @@
+[
+  {
+    "control": "harmless-comment",
+    "exitCode": 0,
+    "summary": [
+      " Test Files  2 passed (2)",
+      "      Tests  26 passed (26)"
+    ]
+  },
+  {
+    "control": "drop-resource-classification",
+    "exitCode": 1,
+    "summary": [
+      " Test Files  1 failed | 1 passed (2)",
+      "      Tests  1 failed | 25 passed (26)",
+      "\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+      " FAIL  src/test/synthesis-execution-queue-coordinator.test.ts > durable execution page coordinator > reports measured task bytes without changing queue custody"
+    ]
+  },
+  {
+    "control": "accept-invalid-measurement",
+    "exitCode": 1,
+    "summary": [
+      " Test Files  1 failed | 1 passed (2)",
+      "      Tests  7 failed | 19 passed (26)",
+      "\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 7 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+      " FAIL  src/test/synthesis-task-resource-error.test.ts > safe task byte diagnostic > rejects invalid numeric diagnosis -1 68699 65536",
+      " FAIL  src/test/synthesis-task-resource-error.test.ts > safe task byte diagnostic > rejects invalid numeric diagnosis 0 65536 65536",
+      " FAIL  src/test/synthesis-task-resource-error.test.ts > safe task byte diagnostic > rejects invalid numeric diagnosis 0 4096 4095",
+      " FAIL  src/test/synthesis-task-resource-error.test.ts > safe task byte diagnostic > rejects invalid numeric diagnosis 0 1048578 1048577",
+      " FAIL  src/test/synthesis-task-resource-error.test.ts > safe task byte diagnostic > rejects invalid numeric diagnosis 0.5 68699 65536",
+      " FAIL  src/test/synthesis-task-resource-error.test.ts > safe task byte diagnostic > rejects invalid numeric diagnosis 0 Infinity 65536",
+      " FAIL  src/test/synthesis-task-resource-error.test.ts > safe task byte diagnostic > rejects invalid numeric diagnosis 0 68699 NaN"
+    ]
+  }
+]

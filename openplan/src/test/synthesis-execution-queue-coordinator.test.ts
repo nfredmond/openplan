@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { SynthesisTaskResourceError } from "../lib/engagement/synthesis-task-resource-error";
 import { ProviderApiTransportError } from "../lib/assistant/provider-api-transport";
 import { synthesisExecutionDiagnostics } from "../lib/engagement/synthesis-execution-service";
 import { createHash } from "node:crypto";
@@ -55,8 +56,18 @@ describe("durable execution page coordinator", () => {
     expect(synthesisExecutionDiagnostics(result)).toEqual([`Queue ${id(1)}: provider endpoint policy refused execution. Check the worker process OPENPLAN_AI_LOCAL_ENDPOINTS and outbound host policy. Preserve its journals and inspect saved task results before any retry; dispatch may already be retained.`]);
     expect(mocks.run).toHaveBeenCalledTimes(2);
   });
+  it("reports measured task bytes without changing queue custody", async () => {
+    const f = await fixture(); mocks.run.mockRejectedValueOnce(new SynthesisTaskResourceError(0, 68699, 65536));
+    const result = await f.run();
+    expect(result.outcomes[0]).toEqual({ queueId: id(1), state: "unconfirmed", reason: "task_bytes",
+      resource: { taskIndex: 0, requiredTaskBytes: 68699, taskByteLimit: 65536 } });
+    expect(synthesisExecutionDiagnostics(result)).toEqual([`Queue ${id(1)}: task index 0 requires 68699 bytes, exceeding its saved 65536-byte limit. Preserve the original request and journals. Review complete saved results before creating a separate request with an explicit larger task budget and separate execution permission. This does not authorize a retry or shorten source text.`]);
+    expect(mocks.run).toHaveBeenCalledTimes(2);
+    expect((await f.journal()).pending).toEqual([]);
+  });
   it.each([new Error("secret provider body"), new ProviderApiTransportError("secret provider body"),
-    { code: "api_endpoint_denied", message: "secret provider body" }])("does not publish unknown or forged error details", async error => {
+    { code: "api_endpoint_denied", message: "secret provider body" },
+    { name: "SynthesisTaskResourceError", taskIndex: 0, requiredTaskBytes: 68699, taskByteLimit: 65536, message: "secret source" }])("does not publish unknown or forged error details", async error => {
     const f = await fixture(); mocks.run.mockRejectedValueOnce(error);
     const result = await f.run();
     expect(result.outcomes[0]).toEqual({ queueId: id(1), state: "unconfirmed" });

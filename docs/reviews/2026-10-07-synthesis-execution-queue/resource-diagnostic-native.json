@@ -1,0 +1,14 @@
+{
+  "requestId": "ec8dbd11-1473-4465-a072-496c4da12fd8",
+  "authorizationId": "8fc67324-e4a0-4f00-9fd6-4fa5705d0a5e",
+  "queueId": "3f2dcdcb-1616-4e7b-b3de-f7abd9f36dd4",
+  "taskIndex": 0,
+  "requiredTaskBytes": 68699,
+  "taskByteLimit": 65536,
+  "journalPhaseAfter": "prepared",
+  "thematicProviderCallsAfter": 2,
+  "queueEntriesVisited": 6,
+  "unconfirmedSchedules": 1,
+  "exitCode": 2,
+  "boundary": "Native isolated queue CLI diagnostic. No changed request limits, retry authority, source shortening or new accepted provider calls. Browser failure detail remains separate work."
+}

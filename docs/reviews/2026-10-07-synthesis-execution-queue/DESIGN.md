@@ -696,3 +696,29 @@ Cleanup-error messages remain unchanged. All 22 editor tests and changed-file
 lint pass. A harmless comment passes; restoring the old notice fails both
 notice assertions. These controls cover component wording, not live storage
 or human comprehension. A rebuilt browser check of this text remains pending.
+
+
+## Measured task-byte refusal for operators
+
+Context and thematic worker reconstruction now throw a typed resource diagnostic
+when the complete task exceeds its retained request budget. The diagnostic
+contains task index, required bytes and saved limit only. It does not turn
+missing tasks or invalid predecessors into a resource diagnosis. The coordinator
+exposes that known type without forwarding arbitrary error text; forged plain
+objects remain unclassified. Operator guidance preserves original requests and
+journals and requires separate request intent and permission for a larger budget.
+
+The isolated queue CLI reproduces the preserved context failure as 68,699
+required bytes against 65,536 saved bytes for task index 0. Its task journal
+stays prepared. Six entries are visited, one remains unconfirmed, and the process
+exits 2. Thematic provider calls stay at two. Native observations are retained in
+`resource-diagnostic-native.json`. Staff-facing failure diagnosis in the browser
+is still open; the CLI message is not a new browser result.
+
+All 157 focused context/thematic worker, coordinator, service and resource-error
+tests pass, as does changed-file lint. A harmless comment passes. Removing resource
+classification fails its measured diagnostic test; removing validation fails
+seven invalid-number cases. These tests do not establish provider semantics,
+independent process concurrency, interruption recovery or human acceptance.
+
+The full TypeScript check also passes under an 8 GiB memory limit.

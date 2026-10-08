@@ -1,3 +1,4 @@
+import { SynthesisTaskResourceError } from "./synthesis-task-resource-error";
 import { ProviderApiTransportError } from "@/lib/assistant/provider-api-transport";
 import { join, resolve } from "node:path";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -54,12 +55,13 @@ export async function runSynthesisExecutionQueuePass(args: {
       state.pending = page.entries.map(entry => entry.receipt); state.after = page.nextCursor;
       await save();
     }
-    const outcomes: Array<{ queueId: string; state: "schedule_returned" | "unconfirmed"; reason?: "endpoint_policy" }> = [];
+    const outcomes: Array<{ queueId: string; state: "schedule_returned" | "unconfirmed"; reason?: "endpoint_policy" | "task_bytes"; resource?: { taskIndex: number; requiredTaskBytes: number; taskByteLimit: number } }> = [];
     while (state.pending.length) {
       signal.throwIfAborted();
       const receipt = state.pending[0];
       let status: "schedule_returned" | "unconfirmed" = "unconfirmed";
-      let reason: "endpoint_policy" | undefined;
+      let reason: "endpoint_policy" | "task_bytes" | undefined;
+      let resource: { taskIndex: number; requiredTaskBytes: number; taskByteLimit: number } | undefined;
       try {
         await runQueuedSynthesisSchedule({ service: args.service, target, root, receipt, commandText: receipt.commandText, signal });
         signal.throwIfAborted(); status = "schedule_returned";
@@ -69,10 +71,14 @@ export async function runSynthesisExecutionQueuePass(args: {
         // provider messages, URLs, credentials or participant material.
         if (error instanceof ProviderApiTransportError &&
           ["api_endpoint_denied", "api_endpoint_policy_invalid"].includes(error.code)) reason = "endpoint_policy";
+        if (error instanceof SynthesisTaskResourceError) {
+          reason = "task_bytes";
+          resource = { taskIndex: error.taskIndex, requiredTaskBytes: error.requiredTaskBytes, taskByteLimit: error.taskByteLimit };
+        }
       }
       state.pending.shift();
       await save();
-      outcomes.push({ queueId: receipt.queueId, state: status, ...(reason ? { reason } : {}) });
+      outcomes.push({ queueId: receipt.queueId, state: status, ...(reason ? { reason } : {}), ...(resource ? { resource } : {}) });
     }
     return { outcomes, queueWrapped: state.after === null };
   } finally { await lock.release(); }

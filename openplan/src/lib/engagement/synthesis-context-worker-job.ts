@@ -1,3 +1,4 @@
+import { SynthesisTaskResourceError } from "./synthesis-task-resource-error";
 import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -77,6 +78,7 @@ export async function loadSynthesisContextWorkerJob(service: Service,
   for (let index = 0; index < args.taskIndex; index++) {
     signal.throwIfAborted();
     const next = processor.next();
+    if (next.status === "resource_limit") throw new SynthesisTaskResourceError(next.frameIndex, next.requiredTaskBytes, next.taskByteLimit);
     if (next.status !== "ready") throw new Error("Context predecessor exceeds task resources or available frames");
     const response = await service.rpc("read_engagement_synthesis_context_selections", { p_request: scope.requestId,
       p_through_sequence: throughSequence, p_after_task_index: index - 1, p_limit: 1 }).abortSignal(synthesisWorkerRequestSignal(signal));
@@ -117,6 +119,7 @@ export async function loadSynthesisContextWorkerJob(service: Service,
     predecessor = { attemptId: attempt.id, selectionId: selected.id, captureSha256: output.capture_sha256, resultSha256: result.sha256 };
   }
   const next = processor.next();
+  if (next.status === "resource_limit") throw new SynthesisTaskResourceError(next.frameIndex, next.requiredTaskBytes, next.taskByteLimit);
   if (next.status !== "ready" || next.frameIndex !== args.taskIndex) throw new Error("Context task exceeds requested resources or available frames");
   const checked = jobFor(authorized, args.taskIndex, args.attemptId, next.task.canonical);
   if (Date.parse(checked.intent.expiresAt) <= Date.now()) throw new Error("Context worker authorization expired");
