@@ -34,7 +34,7 @@
 import type { ProjectAssigneeRoster } from "@/lib/projects/assignee-roster";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
-import { sortDeadlineItemsBy } from "@/lib/work/deadlines";
+import { parseSortableDate, sortDeadlineItemsBy } from "@/lib/work/deadlines";
 
 import { MY_WORK_SOURCES, type MyWorkSource } from "./sources";
 import {
@@ -282,29 +282,31 @@ async function readSource(
 }
 
 /**
- * Two sources can describe the SAME obligation: a funding award's
- * `obligation_due_at` and the obligation milestone mirroring it
- * (20260416000053). When both are present the PROJECT RECORD wins, because it
- * is the one a person can be assigned and the one that carries a status — and
- * the award row is dropped rather than shown a second time in the workspace
- * block. When the milestone is filtered out by the current scope (it belongs to
- * someone else), the award row survives, which is right: the workspace still
- * has that deadline.
+ * Collapse a mirrored obligation only when its readable deadline agrees.
+ * A stale or unreadable milestone must not hide the award's current deadline.
+ * Keep assignment and milestone status on the original project record.
  */
 function deduplicate(items: MyWorkItem[]): MyWorkItem[] {
-  const claimedByProjectRecord = new Set(
-    items
-      .filter((item) => item.block !== "workspace_deadlines" && item.dedupKey)
-      .map((item) => item.dedupKey as string)
-  );
-  return items.filter(
-    (item) =>
-      !(
-        item.block === "workspace_deadlines" &&
-        item.dedupKey !== null &&
-        claimedByProjectRecord.has(item.dedupKey)
-      )
-  );
+  const projectRecords = new Map<string, MyWorkItem[]>();
+  for (const item of items) {
+    if (item.block === "workspace_deadlines" || !item.dedupKey) continue;
+    const records = projectRecords.get(item.dedupKey) ?? [];
+    records.push(item);
+    projectRecords.set(item.dedupKey, records);
+  }
+  return items.flatMap((item) => {
+    if (item.block !== "workspace_deadlines" || !item.dedupKey) return [item];
+    const records = projectRecords.get(item.dedupKey);
+    if (!records?.length) return [item];
+    const deadline = parseSortableDate(item.dueOn);
+    if (Number.isFinite(deadline) && records.every(record => parseSortableDate(record.dueOn) === deadline)) {
+      return [];
+    }
+    return [{
+      ...item,
+      detail: `${item.detail ? `${item.detail}. ` : ""}Review the obligation dates: the linked milestone has a different or unreadable deadline.`,
+    }];
+  });
 }
 
 /** Blocks that are ordered by deadline; the other two keep their read order. */
