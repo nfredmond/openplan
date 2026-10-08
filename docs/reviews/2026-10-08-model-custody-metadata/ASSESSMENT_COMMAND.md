@@ -365,3 +365,25 @@ at 06:34:59 Pacific after 34 minutes, with 6.3 GiB peak memory under a 7 GiB cap
 Only after that terminal success is its branch merged with main and retargeted.
 The resulting `30ce6651` has no file-content difference from `9385deba`.
 Exact-head GitHub CI, RLS and worker checks are now running for PR #163.
+
+
+## Full QA migration bookkeeping correction
+
+The full QA gate at `f5ebdf56` finished on October 8 at 07:09 Pacific with
+20,092 tests passed, 1,580 skipped and three failures. The failures identified
+the new receipt table's missing inventory update, its two SQL-only payload
+readers and the absent migration name in the Unreleased changelog. The installed
+isolated catalog confirms 300 application tables with RLS and 14 application
+views, excluding the PostGIS extension table and two extension views. The
+inventory now matches that catalog. The unread-column ledger names the actual
+request comparison and response replay performed by the native command. The
+changelog now gives migration 15 and the worker's configuration prerequisites.
+
+All 41 tests across the three affected suites pass. A harmless migration comment
+and the restored migration pass. Removing its RLS declaration fails the inventory
+assertion; adding an undocumented synthetic column fails the unread-column
+assertion. The private control record is
+`model-command-client-20261008-proof/assessment-inventory-controls.json`.
+The first edit attempt used the nested application directory with repository-root
+paths and changed no files; the unchanged focused run reproduced all three
+failures before the corrected edit. Full QA must pass again before landing.

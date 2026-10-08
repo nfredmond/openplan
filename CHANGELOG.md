@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Migration `20261016000015_legacy_assessment_command_receipts.sql` adds private
+assessment command receipts. Apply it before starting the updated AequilibraE
+worker. Configure `OPENPLAN_DEPLOYMENT_ID` and retain the worker's assessment
+journals with their source files. A lost reply can be recovered through the saved
+request without creating another assessment. This does not resume the full stage
+or establish scientific acceptance.
+
 Migration `20261016000014_model_attempt_command_custody.sql` adds private model
 attempts, exact command receipts and guarded output writes. Apply it before
 deploying code that uses these commands. Existing runs remain unmanaged, and
