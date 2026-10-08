@@ -20,6 +20,16 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Candidate migration `20261016000018_model_execution_retention.sql` protects
+retained model outputs and records stage starts before local computation. The
+launch route refuses retained or unreconciled work before changing its inputs
+or records. Stop model workers before applying this migration. Existing
+worker-backed runs remain readable but refuse writes until reconciled; new runs
+receive separate enrollment records. This candidate remains under upgrade,
+restore and workflow verification. Do not deploy it as completed model recovery.
+Historical reconciliation and full continuation remain unfinished.
+
+
 Migration `20261016000017_legacy_kpi_command_receipts.sql` adds private KPI
 recovery receipts. It preserves exact requests and rejects old rows whose stage
 cannot be established. Both normal worker KPI writers now retain exact requests

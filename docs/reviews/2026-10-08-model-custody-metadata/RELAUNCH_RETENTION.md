@@ -259,3 +259,49 @@ It does not execute the full dispatcher, either modeling engine, Storage uploads
 scientific publication recovery, historical operator reconciliation or the
 browser workflow. Those remain required, alongside installed migration/upgrade
 and restore checks. The branch remains unreleased and PR #168 remains held.
+
+## Additive migration and populated upgrade candidate
+
+Migration `20261016000018_model_execution_retention.sql` now contains the four
+SQL components tested above. Its SHA-256 is
+`cd3af11561a57a2928984e21df2b474f031e8cf12cf71e2789daf2bd6fbe4efd`.
+This supersedes the earlier statement that the branch has no migration; it does
+not authorize deployment or declare the recovery workflow complete.
+
+[The upgrade check](prototype/verify_retention_upgrade.py) clones the owned
+migration-17 database and runs the installed Supabase CLI's migration command
+twice. Migration history contains exactly one version-18 entry. Exact full-row
+snapshots of 19 model, scientific and command-receipt tables are unchanged,
+including 111 runs, 52 stages, 243 artifacts, 20 KPIs and both historical
+assessment formats. Every existing run receives a separate historical-unassessed
+enrollment record. No execution starts are invented. The source database remains
+at migration 17.
+
+[Installed rollback cases](prototype/model-retention-installed-cases.sql) check
+historical refusal, new-run enrollment, claim retention, the queued-parent reset
+refusal and normal completion. They preserve the original table snapshots.
+Harmless-comment and restored migration upgrades pass. Relabeling old runs as
+new fails the enrollment denominator assertion; allowing the queued-parent reset
+fails the installed behavior case. The private SQL error record identifies the
+expected failure, rather than treating any database error as a successful control.
+
+The restored upgrade adds no WARN or ERROR database advisor findings. Its three
+new INFO findings are the unused new run index and enabled RLS without client
+policies on the two deliberately private tables. Those tables remain accessible
+through their scoped functions and triggers, not direct client grants.
+
+The schema inventory now records 304 RLS tables and 14 views, or 318 relations.
+The six targeted schema suites pass 53 tests with three skips. Baseline,
+harmless-comment and restored checks pass; an extra relation and an unread
+column each fail the intended inventory assertion. The two observation timestamps
+are explicitly recorded as write-only until an operator-facing reader exists.
+The Unreleased changelog names the migration, worker-stop prerequisite and
+historical write refusal. Private evidence is `retention-cli-upgrade`,
+`retention-upgrade-controls` and `retention-schema-controls.json` under the proof
+root. No application database has been upgraded.
+
+Full candidate QA, populated restore, historical reconciliation, actual
+end-to-end dispatcher behavior and T3 acceptance remain unfinished. In
+particular, old run status must not be mistaken for current execution when the
+record is held for reconciliation. Do not merge or deploy based solely on the
+populated upgrade check. PR #168 remains held.

@@ -73,6 +73,8 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "model_execution_custody_enrollment.observed_at", category: "WRITE_ONLY", reason: "Records the enrollment observation time without inferring historical execution. The operator reconciliation reader remains unfinished." },
+  { column: "model_stage_execution_starts.observed_at", category: "WRITE_ONLY", reason: "Records when the database observed a stage start. This timestamp does not prove completion; its operator-facing history remains unfinished." },
   { column: "model_legacy_kpi_receipts.kpi_id", category: "READ_IN_SQL", reason: "record_legacy_model_kpi locates the original receipt by the prepared KPI identity before any new row insert." },
   { column: "model_legacy_kpi_receipts.request_payload", category: "READ_IN_SQL", reason: "record_legacy_model_kpi compares complete workspace, stage and KPI payload before reusing a receipt." },
   { column: "model_legacy_kpi_receipts.response_payload", category: "READ_IN_SQL", reason: "record_legacy_model_kpi returns the original row after a lost response instead of duplicating the KPI." },
