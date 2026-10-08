@@ -624,3 +624,31 @@ budget. It does not close resource diagnosis, context for the second contributio
 thematic execution, semantic validity, staff acceptance or public participation.
 The current synthetic provider is context-budget-run/provider.mjs in the private
 acceptance root, tool session 3243, port 34667. Source originals remain private.
+
+
+## Two-context thematic queue acceptance
+
+On build 0e826600, the contrasting contribution also completed four context
+tasks under a separately saved 131,072-byte request. Its four delivered journals
+and provider call count are recorded in `context-second-acceptance.json`.
+
+T3 inspected and selected both completed contexts for thematic request
+9e39538a-42ef-4ae3-961c-991388b73bd3. Preparation verified those choices and sealed
+one frame, two tasks and 47,985 saved bytes. T3 saved a two-attempt allowance,
+then explicitly requested execution. The local synthetic provider accepted the
+pinned frame and required the exact preceding output for its proposal call.
+Both journals are delivered. The captured proposal retains both source IDs as
+unassigned contributions, with explicit synthetic and staff-review caveats.
+
+T3 reports a machine draft ready for staff review and two complete output
+checks. A second full queue traversal leaves provider calls at two. Both full
+traversals visit six entries and exit 2 because the earlier low-budget context
+remains unconfirmed. This is preserved evidence, not an all-green queue claim.
+`thematic-queue-acceptance.json` records the results without raw source text.
+
+This closes the structural context-to-thematic queue path for this synthetic
+source. Staff-review navigation, current desktop and mobile result captures,
+console review, populated interruption and concurrency checks, precise resource
+diagnosis and release checks remain open. Synthetic outputs establish neither
+semantic validity nor practitioner or public acceptance. The active private
+provider is now thematic-queue-run/provider.mjs, port 34667, session 34637.

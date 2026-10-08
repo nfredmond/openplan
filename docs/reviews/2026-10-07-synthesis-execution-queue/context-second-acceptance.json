@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-08T00:04:52.134369+00:00",
+  "build": "0e826600",
+  "requestId": "fab67c76-0f21-455e-960e-3d75d22320a7",
+  "authorizationId": "d1b2500d-e5fe-407e-b922-cec8a7696288",
+  "taskByteLimit": 131072,
+  "acceptedProviderCalls": 4,
+  "journals": [
+    {
+      "phase": "delivered",
+      "taskIndex": 0,
+      "attemptId": "a8f6399a-ef48-4a29-bc79-c8e16547a35c"
+    },
+    {
+      "phase": "delivered",
+      "taskIndex": 1,
+      "attemptId": "82c0a73a-327b-46bf-8685-9d89e8307575"
+    },
+    {
+      "phase": "delivered",
+      "taskIndex": 2,
+      "attemptId": "babd654b-c48c-4e21-b50e-7b66cded40f1"
+    },
+    {
+      "phase": "delivered",
+      "taskIndex": 3,
+      "attemptId": "f5db9b30-592e-4629-8586-6e38e3aa242e"
+    }
+  ]
+}
