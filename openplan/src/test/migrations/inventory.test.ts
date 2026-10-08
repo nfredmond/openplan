@@ -538,10 +538,12 @@ const EXPECTED = {
   // Installed isolated catalog: 286 RLS application tables, 14 views, 758 policies.
   // 20261016000013 adds one private execution queue with no client policies.
   // Rollback catalog probe: 287 RLS application tables and 14 views.
-  relations: 301,
-  tables: 287,
+  // 20261016000014 adds 12 private attempt, receipt, context and instrument tables.
+  // Installed CLI-upgrade catalog: 299 application tables, all with RLS, and 14 views.
+  relations: 313,
+  tables: 299,
   views: 14,
-  rlsEnabledTables: 287,
+  rlsEnabledTables: 299,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

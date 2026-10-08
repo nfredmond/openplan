@@ -124,3 +124,35 @@ The CLI and HTTP evidence is retained under the private proof directory's
 an application or preview target. Full CI, broader application RLS regression
 and normal worker/consumer activation remain open. These synthetic fixtures do
 not establish scientific or practitioner acceptance.
+
+## Integration accounting and timeout follow-up
+
+The full local QA run at `7b727dfb` failed. Six files failed: the unread-column
+ledger, relation inventory and migration release note, plus eight timeouts in
+three thematic suites. Lint passed; later QA stages did not run. The full run
+reported 20,072 passing tests, 11 failures and 1,587 skipped tests.
+
+The installed CLI-upgrade catalog independently reports 299 application tables,
+all with RLS enabled, and 14 views, excluding extension-owned relations. The
+inventory now accounts for the 12 private tables. The unread-column ledger
+explains 21 SQL-read fields and three write-only audit fields. The prior run and
+stage snapshots and attempt revocation reason still lack application readers.
+The Unreleased changelog names the migration and its enrollment boundary.
+
+All 41 focused accounting tests pass. Harmless comments preserve that result.
+Adding an unaccounted column or table triggers its respective guard; removing
+the migration filename triggers the release-note guard. Restoring the original
+files returns all 41 tests to passing. These lexical guards do not establish SQL
+permissions, command semantics or application use. The catalog probe and native
+proofs cover separate boundaries.
+
+The three timeout-affected thematic files pass all 169 tests with one worker and
+unchanged 20-second timeouts in 170.57 seconds. The earlier full run experienced
+memory reclamation, but this targeted rerun does not establish the sole cause
+or replace a full QA pass. An initial accounting command used the repository
+root and failed to find migrations; the accepted run used the nested app and
+its installed Vitest 4.1.11.
+
+GitHub RLS run `37762423910` and restore-drill run `37762323035` both passed at
+`7b727dfb`. These results do not cover later changed files or establish normal
+worker activation, scientific acceptance or practitioner acceptance.
