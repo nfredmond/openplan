@@ -28,6 +28,8 @@ import json
 import os
 import sys
 import time
+import tempfile
+import uuid
 import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
@@ -510,7 +512,7 @@ def _materialize_screening_dir(
     # fields (they only feed a provenance excerpt).
     manifest = {
         "schema_version": "openplan.screening_handoff.v0",
-        "run_name": f"behavioral-{run_id[:12]}",
+        "run_name": f"behavioral-{run_id}",
         "screening_grade": True,
         "source": "aequilibrae_worker",
         "zones": {"count": zones},
@@ -521,11 +523,23 @@ def _materialize_screening_dir(
     return screening_dir
 
 
+def validate_run_identity(run_id: str) -> None:
+    if not isinstance(run_id, str) or str(uuid.UUID(run_id)) != run_id:
+        raise ValueError("Model run identity must be a canonical UUID")
+
+
+def create_run_workspace(run_id: str) -> str:
+    """Retain each execution separately without deleting predecessor files."""
+    validate_run_identity(run_id)
+    directory = os.path.join(ACTIVITYSIM_WORK_DIR, run_id)
+    os.makedirs(directory, exist_ok=True)
+    return tempfile.mkdtemp(prefix="execution-", dir=directory)
+
+
 def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dict:
     """Build a REAL ActivitySim input bundle from the AequilibraE screening
     artifacts, then run the preflight pipeline (no execution on $0 infra) and
     write an honest, NON-forecast evidence packet + structural KPIs."""
-    import shutil
     import sys
 
     corridor = _require_study_area(run)
@@ -551,10 +565,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
 
     # 2. Materialize the screening-run-dir + build the bundle + run the preflight
     #    pipeline. All stdlib; no ActivitySim needed for the preflight path.
-    run_root = os.path.join(ACTIVITYSIM_WORK_DIR, run_id[:12])
-    if os.path.exists(run_root):
-        shutil.rmtree(run_root)
-    os.makedirs(run_root, exist_ok=True)
+    run_root = create_run_workspace(run_id)
     screening_dir = _materialize_screening_dir(
         run_id, skim_path, zone_attr_path, setup_summary_path, run_root
     )
@@ -819,6 +830,7 @@ def process_stage(stage: dict) -> None:
     run_id = stage["run_id"]
     stage_name = stage["stage_name"]
 
+    validate_run_identity(run_id)
     claimed = sb_claim_stage(
         stage_id,
         {"status": "running", "started_at": _utc_now(), "log_tail": f"Starting {stage_name}..."},

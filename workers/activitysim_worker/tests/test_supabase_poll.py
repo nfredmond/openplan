@@ -78,7 +78,7 @@ class FakeRequests:
             return FakeResponse(200 if key in self.objects else 404, content=self.objects.get(key, b""))
         if "/rest/v1/model_runs?id=eq" in url:
             return FakeResponse(200, [{
-                "id": "run-1", "workspace_id": "ws-1",
+                "id": "12345678-1234-4123-8123-123456789abc", "workspace_id": "ws-1",
                 "corridor_geojson": {"type": "Polygon", "coordinates": [[[0, 0], [0, 1], [1, 1], [0, 0]]]},
                 "query_text": "q", "engine_key": "behavioral_demand",
                 "run_title": "Preflight", "input_snapshot_json": {},
@@ -97,7 +97,7 @@ class FakeRequests:
         self.calls.append(("PATCH", url, json))
         if "status=eq.queued" in url:
             return FakeResponse(200, [{"id": "stage-1", **json}] if self.claim_returns_rows else [])
-        return FakeResponse(200, [{"id": "stage-1" if "model_run_stages" in url else "run-1", **json}])
+        return FakeResponse(200, [{"id": "stage-1" if "model_run_stages" in url else "12345678-1234-4123-8123-123456789abc", **json}])
 
     def post(self, url, headers=None, json=None, data=None, timeout=None):
         self.calls.append(("POST", url, json if json is not None else data))
@@ -112,7 +112,34 @@ class FakeRequests:
 
 
 def make_stage():
-    return {"id": "stage-1", "run_id": "run-1", "stage_name": supabase_poll.STAGE_BUNDLE_PREFLIGHT, "sort_order": 4, "status": "queued"}
+    return {"id": "stage-1", "run_id": "12345678-1234-4123-8123-123456789abc", "stage_name": supabase_poll.STAGE_BUNDLE_PREFLIGHT, "sort_order": 4, "status": "queued"}
+
+
+class RunWorkspaceTests(unittest.TestCase):
+    def test_full_run_identity_and_repeat_execution_preserve_previous_files(self):
+        first = "12345678-1234-4123-8123-123456789abc"
+        second = "12345678-1234-4567-8567-987654321abc"
+        with tempfile.TemporaryDirectory() as root, mock.patch.object(supabase_poll, "ACTIVITYSIM_WORK_DIR", root):
+            legacy = Path(root, first[:12]); legacy.mkdir()
+            (legacy / "original.txt").write_text("legacy")
+            paths = []
+            for run in (first, second, first):
+                directory = Path(supabase_poll.create_run_workspace(run))
+                self.assertEqual(directory.parent, Path(root, run))
+                paths.append(directory)
+                (directory / "owner.txt").write_text(run)
+            self.assertEqual(len(set(paths)), 3)
+            for directory, run in zip(paths, (first, second, first)):
+                self.assertEqual((directory / "owner.txt").read_text(), run)
+            self.assertEqual((legacy / "original.txt").read_text(), "legacy")
+
+    def test_bad_identity_cannot_claim(self):
+        with mock.patch.object(supabase_poll, "sb_claim_stage", return_value=False) as claim:
+            for identity in ("../outside", "12345678-123", "12345678-1234-4123-8123-123456789ABC"):
+                stage = make_stage(); stage["run_id"] = identity
+                with self.assertRaises(ValueError):
+                    supabase_poll.process_stage(stage)
+            claim.assert_not_called()
 
 
 class SupabasePollTests(unittest.TestCase):
@@ -125,6 +152,24 @@ class SupabasePollTests(unittest.TestCase):
 
     def tearDown(self):
         self._patcher.stop()
+
+    def test_normal_preflight_retains_prior_execution_files(self):
+        stage = make_stage()
+        with tempfile.TemporaryDirectory() as root, mock.patch.object(supabase_poll, "ACTIVITYSIM_WORK_DIR", root):
+            legacy = Path(root, stage["run_id"][:12]); legacy.mkdir()
+            (legacy / "legacy.txt").write_text("untouched")
+            supabase_poll.process_stage(stage)
+            executions = list(Path(root, stage["run_id"]).iterdir())
+            self.assertEqual(len(executions), 1)
+            retained = executions[0] / "retained.txt"
+            retained.write_text("first execution")
+            supabase_poll.process_stage(stage)
+            self.assertEqual(len(list(Path(root, stage["run_id"]).iterdir())), 2)
+            self.assertEqual(retained.read_text(), "first execution")
+            self.assertEqual((legacy / "legacy.txt").read_text(), "untouched")
+            for execution in Path(root, stage["run_id"]).iterdir():
+                manifest = json.loads((execution / "screening/bundle_manifest.json").read_text())
+                self.assertEqual(manifest["run_name"], "behavioral-" + stage["run_id"])
 
     # ---- claim semantics -------------------------------------------------
     def test_claim_returns_true_when_rows_present(self):
@@ -197,7 +242,7 @@ class SupabasePollTests(unittest.TestCase):
         def get_no_artifacts(url, headers=None, timeout=None):
             if "/rest/v1/model_runs?id=eq" in url:
                 return FakeResponse(200, [{
-                    "id": "run-1", "workspace_id": "ws-1",
+                    "id": "12345678-1234-4123-8123-123456789abc", "workspace_id": "ws-1",
                     "corridor_geojson": {"type": "Polygon", "coordinates": []},
                     "query_text": "q", "engine_key": "behavioral_demand",
                     "run_title": "x", "input_snapshot_json": {},
@@ -279,7 +324,7 @@ class SupabasePollTests(unittest.TestCase):
                 "availability_status": "available",
                 "totals": {"households": 100, "persons": 250, "tours": 400, "trips": 900},
             }, f)
-        n = supabase_poll._write_executed_behavioral_kpis("run-1", {"kpi_summary_path": summary_path})
+        n = supabase_poll._write_executed_behavioral_kpis("12345678-1234-4123-8123-123456789abc", {"kpi_summary_path": summary_path})
         self.assertEqual(n, 4)
         kpis = [b for m, url, b in self.fake.calls if m == "POST" and url.endswith("/rest/v1/model_run_kpis")]
         names = {k["kpi_name"] for k in kpis}
@@ -293,7 +338,7 @@ class SupabasePollTests(unittest.TestCase):
         summary_path = os.path.join(self._fixdir, "kpi_summary_empty.json")
         with open(summary_path, "w") as f:
             json.dump({"availability_status": None, "totals": {"households": None, "persons": None, "tours": None, "trips": None}}, f)
-        n = supabase_poll._write_executed_behavioral_kpis("run-1", {"kpi_summary_path": summary_path})
+        n = supabase_poll._write_executed_behavioral_kpis("12345678-1234-4123-8123-123456789abc", {"kpi_summary_path": summary_path})
         self.assertEqual(n, 0)
 
     def test_executed_kpi_provenance_names_the_accepted_component(self):
@@ -305,7 +350,7 @@ class SupabasePollTests(unittest.TestCase):
             }, f)
 
         supabase_poll._write_executed_behavioral_kpis(
-            "run-1",
+            "12345678-1234-4123-8123-123456789abc",
             {"kpi_summary_path": summary_path},
             [{"component": "auto_ownership"}],
         )
@@ -317,7 +362,7 @@ class SupabasePollTests(unittest.TestCase):
         def get_no_corridor(url, headers=None, timeout=None):
             if "/rest/v1/model_runs?id=eq" in url:
                 return FakeResponse(200, [{
-                    "id": "run-1", "workspace_id": "ws-1", "corridor_geojson": None,
+                    "id": "12345678-1234-4123-8123-123456789abc", "workspace_id": "ws-1", "corridor_geojson": None,
                     "query_text": None, "engine_key": "behavioral_demand",
                     "run_title": "x", "input_snapshot_json": {},
                 }])

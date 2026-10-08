@@ -267,6 +267,29 @@ The first app-test invocation lacked installed dependencies and failed before
 running tests. The passing run uses this checkout's pinned Vitest 4.1.11 after
 `npm ci --ignore-scripts`; it is not a production build result.
 
+## ActivitySim execution directory retention
+
+The separate ActivitySim poll worker also used a shortened run directory and
+removed that directory before each preflight. It now validates the full run UUID
+before claiming work and creates a fresh `execution-*` directory beneath that
+full UUID. Repeat executions retain previous files. Its source manifest carries
+the full run identity. Existing prefix directories remain untouched.
+
+All 38 ActivitySim worker tests pass, including the real preflight pipeline with
+synthetic screening inputs and injected HTTP. The normal entry-point test executes
+twice and confirms that the first execution and legacy files survive. Workspace
+tests distinguish two full IDs with the same prefix. Harmless changes pass; five
+faults detect prefix directories, execution-directory reuse, omitted pre-claim
+validation, truncated source identity and swallowed state-write uncertainty.
+Existing receipt fixtures initially failed because they used non-UUID run IDs;
+they now use canonical synthetic IDs and retain their uncertainty assertions.
+
+These directory names are local execution identities, not database attempt IDs.
+Restart reconciliation must still bind them to retained claims, current ownership
+and verified predecessor artifacts. No automatic cleanup removes prior executions.
+This retention change does not establish cross-process recovery, actual model
+execution, prepared-instrument ordering or scientific acceptance.
+
 ## Remaining connection work
 
 Normal dispatchers still use their current receipt-checked legacy writes. Before
