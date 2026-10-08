@@ -692,7 +692,7 @@ function FundingAwardCloseoutRow({
           <p className="text-sm font-semibold">Re-opened {award.title}.</p>
           {outcome.priorClosureBasis ? (
             <p className="mt-1">
-              The closure it withdrew was recorded as{" "}
+              Previous closure basis:{" "}
               {formatFundingAwardClosureBasisLabel(outcome.priorClosureBasis).toLowerCase()}.
             </p>
           ) : null}

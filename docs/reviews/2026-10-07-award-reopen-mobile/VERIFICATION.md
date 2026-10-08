@@ -83,7 +83,9 @@ the successful earlier images do not establish either. Private readback
 evidence is `award-reopen-mobile-20261007-proof/browser-57a97530-reopened.json`.
 
 The success notice also repeats “recorded as” for the imported closure basis.
-That wording defect remains recorded for correction. These synthetic checks
+A follow-up replaces the sentence prefix with “Previous closure basis,” keeping
+the same source-derived label. All 19 existing component tests pass after this
+copy correction. Its rebuilt browser check remains open. These synthetic checks
 do not establish practitioner acceptance, actual obligation compliance or
 the complete grant-administration requirements. GitHub QA and live isolation
 checks remain running when this checkpoint is written.
