@@ -155,3 +155,33 @@ synthetic fixture rows remain in the isolated database. Evidence is retained in
 prove HTTP lost-response recovery, actual worker integration, immutable Storage
 bytes, full stage replay or scientific acceptance. The candidate remains
 uninstalled in application databases.
+
+
+## Artifact HTTP permissions
+
+The temporary candidate now has real PostgREST evidence in the named isolated
+proof database. The service role registers the artifact and receives the exact
+same row on retry. A workspace member and an unrelated authenticated user both
+receive 403 from the command. Anonymous and unsigned callers receive 401.
+The member can read the synthetic run through ordinary RLS while the outsider
+sees no run, establishing the fixture's membership distinction. Denied command
+calls create no artifact. Direct receipt-table reads are refused for every
+tested role, including the service role.
+
+Baseline, harmless SQL comment and restored candidates pass. In each run, an
+intentional EXECUTE grant to authenticated users lets the outsider retrieve the
+existing synthetic receipt. Revoking that grant restores 403. This control shows
+that the permission check detects real exposure rather than a missing route.
+The command and private table are removed afterward; the temporary gateway also
+exits. Synthetic artifact and user fixtures remain in the isolated database.
+
+The first invocation refused to start because the explicit disposable-container
+selection was missing. Supplying the named proof container resolved that refusal.
+No application database was selected. Evidence lives under
+`model-command-client-20261008-proof/legacy-artifact-http`, with `-harmless` and
+`-restored` companion directories. The executable check is
+`prototype/verify_legacy_artifact_http_permissions.py`.
+
+This proves HTTP access boundaries and exact service retries against a temporary
+candidate. It does not prove a lost response through the retained worker client,
+normal-stage adoption, Storage bytes, full restart recovery or model validity.
