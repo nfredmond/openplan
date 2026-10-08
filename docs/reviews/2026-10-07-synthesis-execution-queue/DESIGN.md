@@ -722,3 +722,37 @@ seven invalid-number cases. These tests do not establish provider semantics,
 independent process concurrency, interruption recovery or human acceptance.
 
 The full TypeScript check also passes under an 8 GiB memory limit.
+
+
+## Rebuilt notice, lost reply and process boundaries
+
+Build 0270e9cb passes webpack, TypeScript and 137 static pages. The owned port
+3505 server reports that commit; service openplan-synthesis-queue-prod-0270e9cb
+and PID 473314 use this checkout. The earlier owned server was stopped before
+rebuilding. T3 reloads that build and shows the revised save confirmation at
+390 pixels after creating synthetic private staff review a7a262c7.
+
+A separate two-attempt allowance for the already-completed thematic request
+exercises lost scheduling acknowledgement. The fault wrapper awaits the actual
+successful queue POST before withholding the response. The mobile interface
+shows the unconfirmed receipt message rather than claiming no server receipt
+exists. Native fetch is restored before retry. The original command bytes remain
+unchanged and retry recovers queue 62a1d379-81e7-48bf-bb01-677cb1520c3a. A native
+read confirms exactly one queue row for that allowance. Both mobile captures
+were visually inspected. `rebuilt-receipt-acceptance.json` retains this evidence.
+No worker was started for the additional allowance in this browser check.
+
+After reloading to reduce snapshot size, T3 returns all 12 retained console
+entries. None is newer than the current-build journey beginning 00:21:12 UTC
+on October 8. Older failures and warnings remain historical evidence; this
+statement covers only the recorded current-build journey, not the whole app.
+
+A separate real process holds the production coordinator lock while the CLI
+refuses with exit 1. The journal hash and provider count do not change. After
+release, the continuous worker completes an empty cursor-wrap pass and accepts
+SIGTERM, exiting 0. A one-shot restart visits six retained entries, preserves
+the known resource refusal and adds no provider calls. The journal returns to
+its original hash. `process-lock-shutdown-acceptance.json` records these checks.
+This verifies same-directory exclusion and shutdown between passes. It does
+not establish interruption during a live provider call or competing workers
+using different journal roots. Those boundaries remain open.

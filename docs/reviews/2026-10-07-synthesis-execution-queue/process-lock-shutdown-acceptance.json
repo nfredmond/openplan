@@ -1,0 +1,29 @@
+{
+  "before": {
+    "journal": "20a76c78481707c51f099e7984faee8806d08cf08780a213c2e7279189393bc3",
+    "calls": 2
+  },
+  "locked": {
+    "code": 1,
+    "signal": null,
+    "text": "Execution pass could not finish. Keep the private worker directory and retry against the same database. Existing dispatch outcomes remain unchanged.\n",
+    "stopSent": false
+  },
+  "stopped": {
+    "code": 0,
+    "signal": null,
+    "text": "Execution pass: 0 queue entries visited; 0 schedules unconfirmed. Cursor wrapped. Inspect retained task results for output status. This is not full source completion or staff approval.\nExecution worker stopped. Keep its private journals for recovery.\n",
+    "stopSent": true
+  },
+  "restarted": {
+    "code": 2,
+    "signal": null,
+    "text": "Queue 3f2dcdcb-1616-4e7b-b3de-f7abd9f36dd4: task index 0 requires 68699 bytes, exceeding its saved 65536-byte limit. Preserve the original request and journals. Review complete saved results before creating a separate request with an explicit larger task budget and separate execution permission. This does not authorize a retry or shorten source text.\nExecution pass: 6 queue entries visited; 1 schedules unconfirmed. Cursor continues. Inspect retained task results for output status. This is not full source completion or staff approval.\n",
+    "stopSent": false
+  },
+  "after": {
+    "journal": "20a76c78481707c51f099e7984faee8806d08cf08780a213c2e7279189393bc3",
+    "calls": 2
+  },
+  "boundary": "Real separate process holds production coordinator lock while CLI refuses without writes. Continuous worker receives SIGTERM after one real pass, then one-shot restarts. Does not test interruption during an in-flight provider call or independent journal roots."
+}
