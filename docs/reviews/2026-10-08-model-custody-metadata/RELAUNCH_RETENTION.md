@@ -225,3 +225,37 @@ populated upgrade/restore verification remain unfinished. The full worker path
 must still establish preserved outputs, uncertainty and claim tiers under these
 combined guards. Do not install this branch or merge PR #168 based solely on
 these bounded native checks. No full continuation or V1 acceptance is claimed.
+
+## Actual worker helper HTTP proof
+
+[The HTTP check](prototype/verify_retention_worker_http.py) creates a separate
+owned database clone with the combined prototypes. It uses the existing bounded
+private PostgREST gateway without widening its database allowlist. A loopback
+bridge forwards requests and can drop one TCP reply after the database commits.
+The temporary gateway has a 128 MB memory cap and is removed after each run.
+The proof clone, synthetic rows and local journals remain available.
+
+The normal worker helpers claim a new stage, reject a second conditional claim,
+set the parent running, retain a synthetic KPI and complete the stage and run.
+An exact KPI retry reuses its saved receipt without another HTTP request. An
+independent SQL read confirms one start, one KPI and a succeeded parent. These
+calls use the normal worker functions; model computation is not invoked.
+
+For another stage, the bridge drops the successful claim response. The worker
+reports the write as unconfirmed. SQL still shows one committed start and a
+running stage; another conditional claim returns false. The test does not treat
+that false result as proof of ownership or permission to resume. A late state
+update to an existing historical run is refused.
+
+Baseline, a harmless payload-copy wrapper and restored behavior pass. A faulty
+wrapper that swallows the transport uncertainty fails with `Committed claim loss
+was hidden`. The first invocation lacked the required disposable-container
+selection and refused before doing work; the corrected invocation supplies it
+explicitly. Private evidence is `retention-worker-http/retention-worker-http.json`
+and the exact prototype hashes are in that directory's `candidate.json`.
+
+This verifies selected actual worker HTTP helpers under the combined guards.
+It does not execute the full dispatcher, either modeling engine, Storage uploads,
+scientific publication recovery, historical operator reconciliation or the
+browser workflow. Those remain required, alongside installed migration/upgrade
+and restore checks. The branch remains unreleased and PR #168 remains held.
