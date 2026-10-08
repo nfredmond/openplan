@@ -418,3 +418,39 @@ the run. A recorded status is an internal acknowledgement, not independent
 scientific acceptance. Atomic server verification of higher-tier evidence and
 normal dispatcher integration remain required; the candidate still cannot replace
 all existing writer paths.
+
+## Validate the legacy assessment receipt
+
+`sb_record_modeling_validation_assessment` previously accepted any nonempty JSON
+response, including an unrelated row or a non-record value. The new transport
+regression reproduces those acceptances. Callers could then mark the assessment's
+storage `recorded` without checking the returned identity.
+
+The writer now accepts one record or one single-record array and compares its
+workspace, run, track, output-artifact identity, comparison-basis hash, rules
+version, partition, planning use, outcome and reasons with the submitted values.
+It checks canonical UUID identities and distinct output/input/basis/assessment
+artifact IDs. JSON comparison keeps booleans distinct from numbers. Rejected HTTP
+statuses, malformed replies and transport loss raise `WorkerStateWriteUnconfirmed`;
+redirects are disabled. Error messages do not include response bodies or transport
+details. Existing callers retain their failed-custody handling.
+
+Four test groups cover both method tracks and all three scientific outcomes,
+missing or changed receipt fields, ambiguous reply shapes, reused artifact IDs,
+JSON kinds, rejected statuses and lost replies. Harmless and restored controls
+pass. Seven targeted faults are detected for the expected receipt or transport
+boundary, not import or syntax failures. Private evidence is retained in
+`model-command-client-20261008-proof/assessment-receipt-controls.json`.
+
+All 67 worker suites pass at `17ef0352`, with zero failures or skipped suites.
+The bounded unit `openplan-assessment-receipt-workers-20261008.service`, invocation
+`5e109d4fbbe7484baf18284354f54a11`, finishes October 8 at 05:46:22 Pacific in
+31.119 seconds with a 173.1 MiB memory peak. The checkout stays unchanged during
+the run.
+
+These tests inject HTTP responses. A native round trip for this changed helper
+remains unverified. The returned assessment record does not contain the stage,
+all submitted artifact bytes, sizes or metadata, so this comparison cannot prove
+those bindings. Full retained-artifact verification, idempotent reconciliation
+of this legacy write, atomic higher-tier publication and scientific acceptance
+remain open. No assessment or validation threshold is promoted by this change.
