@@ -322,6 +322,26 @@ still mutate directories, and concurrent path replacement was not tested.
 Cross-host Storage input delivery, prepared-observation custody and automatic
 restart remain open. No scientific model or consumed holdout was run.
 
+## Native predecessor inventory checkpoint
+
+`prototype/verify_activity_handoff.py` registers three synthetic unmanaged
+artifacts in the installed CLI-upgrade proof database and calls the actual
+worker inventory reader through isolated PostgREST. The transport adapter removes
+only Kong's `/rest/v1` mount; query projection, run filter, returned rows and
+retained-file verification use the worker implementation.
+
+Run `a96c7f50-2ae9-420d-9abc-593f1c55a791` retains three verified copies. Changing
+source bytes without changing their size is refused against the original native
+hash. Restoring those bytes recovers a valid copy. An unknown run returns an
+empty native inventory. The proof leaves synthetic rows and private files for
+inspection and removes its owned PostgREST container on exit.
+
+This closes the native inventory/projection uncertainty for the synthetic local
+handoff. It does not run a model, use Storage input delivery, activate attempt
+management, prove stage-completion custody or establish scientific acceptance.
+The private result is `native-activity-handoff/native-activity-handoff.json`
+under the worker-client proof directory.
+
 ## Remaining connection work
 
 Normal dispatchers still use their current receipt-checked legacy writes. Before
