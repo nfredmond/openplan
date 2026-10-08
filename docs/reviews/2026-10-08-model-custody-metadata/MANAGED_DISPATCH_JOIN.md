@@ -850,3 +850,36 @@ must continue to distinguish acquisition status from current retained-file
 availability. Native manifest recovery, complete package/project copying and
 consumer state-path mapping remain open. No scientific model or holdout runs as
 part of the new tests.
+
+### Native count-manifest recovery
+
+The installed native HTTP fixture now calls the actual bound count-retention
+helper with a real synthetic CSV, source sidecar and acquisition-status record.
+The artifact registration commits and the bridge drops its reply. The handler
+stops with one attempt-owned manifest artifact, while the retained files remain
+on disk. Native assertions compare the artifact path, size and hash to the
+manifest, then compare every retained file to its expected original bytes and
+manifest entry.
+
+A fresh CLI recovers the exact artifact receipt without changing parent, stage,
+attempt, execution-start, artifact, KPI or receipt records. Cached recovery sends
+no HTTP. The stopped writer remains closed. Baseline, harmless and restored
+controls each pass one case and six HTTP calls. A wrong manifest hash fails the
+native file comparison. `prototype/count-manifest-http.json` retains sanitized
+results and source hashes; the owned private `count-manifest-http-v2` directory
+retains clone and journal records. Temporary gateways are removed.
+
+The first proof attempt failed during its second control because broad module
+cleanup removed a newly imported AequilibraE module while leaving ActivitySim's
+path first in the import search order. The resulting wrong entry-point import
+reported missing Flask. This was a harness isolation error, not evidence that
+the target worker required another dependency. The corrected runner restores
+only its deliberately replaced count-input module. The failed v1 directory is
+preserved; its partial run is not reported as the complete passing proof.
+
+This closes the native registration/recovery boundary for retained count
+manifests. It does not complete full assignment, package/project transfer,
+consumer path mapping, concurrent host-write protection or normal managed
+poll/push activation. Acquisition-status interpretation still needs review
+against current retained-file availability. No engine, scientific holdout or
+human acceptance test runs in this proof.

@@ -25,8 +25,8 @@ import model_command_journal as journal
 from worker_import_for_tests import import_worker_main
 
 
-def verify(output, writer_module, outputs=False, state_output=False):
-    outputs = outputs or state_output
+def verify(output, writer_module, outputs=False, state_output=False, count_output=False):
+    outputs = outputs or state_output or count_output
     source = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
     if source['container'] != 'supabase_db_openplan-restore-target-2026091050' or not re.fullmatch(r'openplan_retention_upgrade_[0-9a-f]{32}', source['database']):
         raise ValueError('Select owned retention source')
@@ -99,10 +99,10 @@ def verify(output, writer_module, outputs=False, state_output=False):
         thread.start()
         base = f'http://127.0.0.1:{server.server_port}'
         try:
-            for worker in ((aeq,) if state_output else (aeq, supabase_poll)):
+            for worker in ((aeq,) if state_output or count_output else (aeq, supabase_poll)):
                 modes = (('artifact', 'kpi', 'retained_artifact', 'retained_kpi') if worker is aeq else ('artifact', 'kpi')) if outputs else ('claim', 'running', 'succeeded', 'failed')
-                if state_output:
-                    modes = ('state_artifact',)
+                if state_output or count_output:
+                    modes = ('count_artifact' if count_output else 'state_artifact',)
                 for status in modes:
                     run, stage = [str(uuid.uuid4()) for _ in range(2)]
                     workspace = str(uuid.UUID(sql(database, f"""
@@ -137,7 +137,16 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                 else:
                                     payload = {'run_id': run, 'kpi_name': 'synthetic', 'kpi_label': 'Unassessed',
                                         'value': None, 'breakdown_json': {'status': 'unassessed'}}
-                                if status == 'state_artifact':
+                                if status == 'count_artifact':
+                                    external = output / 'selected_counts.csv'
+                                    external.write_bytes(b'station_id,count_year,aadt\nA,2020,123\n')
+                                    Path(str(external) + '.count-source.json').write_text('{"source":{"vintage":"2020"}}')
+                                    (output / 'count_source_status.json').write_text('{"status":"available"}')
+                                    with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
+                                        path = Path(worker.run_work_directory(run)) / 'run_output'
+                                        path.mkdir()
+                                        worker.retain_assignment_counts(str(external), str(path), status_directory=str(output))
+                                elif status == 'state_artifact':
                                     with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
                                         path = worker.run_work_directory(run)
                                         worker.write_run_state(path, {'setup': {'synthetic': True},
@@ -203,7 +212,27 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         records = observed['artifacts'] if status.endswith('artifact') else observed['kpis']
                         if len(records) != 1 or records[0]['attempt_id'] != observed['attempts'][0]['id']:
                             raise AssertionError('Output is absent, duplicated or belongs to another attempt')
-                        if status == 'state_artifact':
+                        if status == 'count_artifact':
+                            retained_dir = writers[0].files.path / 'run_output' / 'count_inputs'
+                            manifest = retained_dir / 'manifest.json'
+                            content = manifest.read_bytes()
+                            inventory = json.loads(content)
+                            expected_files = {
+                                'counts.csv': b'station_id,count_year,aadt\nA,2020,123\n',
+                                'counts.csv.count-source.json': b'{"source":{"vintage":"2020"}}',
+                                'count_source_status.json': b'{"status":"available"}',
+                            }
+                            if (records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
+                                    or records[0]['file_size_bytes'] != len(content)
+                                    or records[0]['file_url'] != 'local://' + str(manifest)
+                                    or records[0]['artifact_type'] != 'model_count_inputs'):
+                                raise AssertionError('Native count manifest differs from retained bytes')
+                            for name, expected in expected_files.items():
+                                item = inventory['files'][name]
+                                if ((retained_dir / name).read_bytes() != expected or item['status'] != 'retained'
+                                        or item['sha256'] != hashlib.sha256(expected).hexdigest() or item['size_bytes'] != len(expected)):
+                                    raise AssertionError('Native count inventory differs from retained inputs')
+                        elif status == 'state_artifact':
                             retained_path = writers[0].files.path / 'predecessor_state.json'
                             content = retained_path.read_bytes()
                             expected_state = {'setup': {'synthetic': True}, 'package': {'package_dir': '/original/synthetic/package'}}
