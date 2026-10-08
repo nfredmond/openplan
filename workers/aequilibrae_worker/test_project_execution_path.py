@@ -45,7 +45,7 @@ class ProjectPathTests(unittest.TestCase):
     def test_primary_output_preparation_uses_same_working_database(self):
         import model_stage_preparation
         root, expected = self.prepared()
-        with managed.bind(self.writer), patch.object(model_stage_preparation, 'prepare_files', return_value={}) as prepare:
+        with managed.bind(self.writer), patch.object(aeq, 'output_work_directory', return_value=str(root/'synthetic-output')), patch.object(model_stage_preparation, 'prepare_files', return_value={}) as prepare:
             aeq.prepare_primary_model_output(self.writer.context.run_id, self.writer.context.stage_id, str(root), {}, {}, {'package_dir':self.writer.package_directory(root)})
         self.assertEqual(prepare.call_args.kwargs['source_paths']['network'], Path(expected) / 'project_database.sqlite')
 

@@ -1768,3 +1768,29 @@ This proof uses synthetic output and skim bytes. It does not establish native
 format validity, engine closure, stage output-path enforcement, combined
 state/count mapping or full managed execution. Normal managed dispatch remains
 disabled. No scientific, browser or human acceptance boundary changes.
+
+### Managed output paths at artifact entry points
+
+Artifact extraction, primary-output preparation, volume-map publication and
+evidence-packet materialization now resolve the confirmed working-output path
+when a managed writer is bound. An unprepared path refuses; the legacy
+`run_output` layout remains for unbound execution. Assignment output creation
+is still separate and does not use this consumer resolver.
+
+Six focused tests exercise these entry points with actual prepared output files.
+They verify count-consumer destination, primary volume source, evidence-packet
+destination and refusal before volume publication reaches project lookup.
+Package/project prerequisites are mocked in these focused tests. The existing
+project-source test separately mocks the output prerequisite so it continues to
+assert its database selection boundary. An initial publication test patched
+SQLite globally and intercepted the command journal, not the model database;
+its corrected boundary intercepts project lookup instead.
+
+Baseline, harmless and restored controls pass. Four deliberate substitutions
+of the legacy output path fail their intended tests. The warning-enabled broader
+suite passes 233 tests. `prototype/output-execution-controls.json` records the
+worker source hash and fault results. This does not establish complete artifact
+extraction or publication. Combined state/count mapping, assignment output
+creation under managed dispatch, engine closure and the full lifecycle remain
+unfinished. Normal managed dispatch remains disabled, with scientific, browser
+and human acceptance still open.

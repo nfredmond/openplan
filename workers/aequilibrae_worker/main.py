@@ -5547,7 +5547,7 @@ def publish_volume_geojson(
     verified_engine_stamp: str, baseline_assignment_metadata: dict, *, workspace_id: str,
 ) -> str:
     """Publish the map artifact while preserving uncertain registration writes."""
-    out_dir = os.path.join(work_dir, "run_output")
+    out_dir = output_work_directory(work_dir)
     log = ""
     # Generate GeoJSON for the map and upload to Supabase Storage
     try:
@@ -5648,7 +5648,7 @@ def retain_model_evidence_packet(run_id: str, stage_id: str, work_dir: str, evid
             compute=lambda: {**inputs, "created_at": datetime.now(timezone.utc).isoformat()},
         )
         content = model_validation_core.canonical_json(retained).encode("utf-8")
-        model_record_files.materialize(Path(work_dir) / "run_output", {"evidence_packet.json": content})
+        model_record_files.materialize(Path(output_work_directory(work_dir)), {"evidence_packet.json": content})
         return retained, content
     except Exception:
         raise WorkerStateWriteUnconfirmed("Evidence packet retention unconfirmed; reconcile original records before continuing") from None
@@ -5665,7 +5665,7 @@ def prepare_primary_model_output(run_id: str, stage_id: str, work_dir: str, setu
             base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
             run_id=run_id, stage_id=stage_id,
             source_paths={
-                "link_volumes": Path(work_dir) / "run_output" / "link_volumes.csv",
+                "link_volumes": Path(output_work_directory(work_dir)) / "link_volumes.csv",
                 "network": Path(project_work_directory(work_dir)) / "project_database.sqlite",
             },
             inputs={"setup": setup_result, "assignment": assign_result, "package": package_meta},
@@ -5693,7 +5693,7 @@ def stage_artifacts(
     package_meta: dict | None = None,
 ) -> str:
     package_work_directory(work_dir, package_meta.get("package_dir") if isinstance(package_meta, dict) else None)
-    out_dir = os.path.join(work_dir, "run_output")
+    out_dir = output_work_directory(work_dir)
     # Preserve the assignment record while deriving a verified consumer-local
     # input set before any validation or evidence publication can occur.
     if assign_result.get("count_inputs") is not None:
@@ -6929,6 +6929,18 @@ def project_work_directory(work_dir: str) -> str:
         return writer.project_directory(work_dir)
     except Exception as error:
         raise WorkerStateWriteUnconfirmed("Managed project path requires reconciliation") from error
+
+
+def output_work_directory(work_dir: str) -> str:
+    """Use confirmed managed working files, with legacy layout outside a binding."""
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is None:
+        return os.path.join(work_dir, "run_output")
+    try:
+        return writer.output_directory(work_dir)
+    except Exception as error:
+        raise WorkerStateWriteUnconfirmed("Managed output path requires reconciliation") from error
 
 
 def run_work_directory(run_id: str) -> str:
