@@ -899,6 +899,172 @@ def test_claim_requires_exact_receipt_and_distinguishes_uncertainty_from_loss():
                 raise AssertionError("Claim uncertainty was treated as a definite outcome")
 
 
+def test_kpi_insert_requires_exact_receipt_and_preserves_null():
+    from unittest import mock
+    payload = {"run_id": RUN_ID, "value": None, "breakdown_json": {"status": "unassessed"}}
+    row = {"id": "synthetic-kpi", **payload}
+    for status, rows, accepted in ((201, [row], True), (503, [row], False), (204, None, False), (201, [], False), (201, [row, row], False), (201, [payload], False), (201, [{**row, "run_id": "other"}], False), (201, [{k: v for k, v in row.items() if k != "value"}], False), (201, [{**row, "value": 0}], False)):
+        response = mock.Mock(status_code=status, text="private response")
+        response.json.return_value = rows
+        with mock.patch.object(main.requests, "post", return_value=response) as post:
+            if accepted:
+                main.sb_post_kpi(payload)
+            else:
+                try:
+                    main.sb_post_kpi(payload)
+                except main.WorkerStateWriteUnconfirmed as error:
+                    assert "private response" not in str(error)
+                else:
+                    raise AssertionError(f"unconfirmed KPI insert accepted: {status}")
+        assert post.call_count == 1
+        assert post.call_args.kwargs["timeout"] == 30
+        assert post.call_args.kwargs["headers"]["Prefer"] == "return=representation"
+        assert post.call_args.kwargs["json"] == payload
+
+
+def test_kpi_insert_transport_or_json_uncertainty_does_not_retry():
+    from unittest import mock
+    for problem in (main.requests.Timeout("private transport"), ValueError("private JSON")):
+        response = mock.Mock(status_code=201)
+        response.json.side_effect = problem
+        with mock.patch.object(main.requests, "post", return_value=response) as post:
+            try:
+                main.sb_post_kpi({"value": None})
+            except main.WorkerStateWriteUnconfirmed as error:
+                assert "private" not in str(error)
+            else:
+                raise AssertionError("uncertain KPI receipt accepted")
+        assert post.call_count == 1
+    with mock.patch.object(main.requests, "post", side_effect=main.requests.Timeout("private transport")) as post:
+        try:
+            main.sb_post_kpi({"value": None})
+        except main.WorkerStateWriteUnconfirmed:
+            pass
+        else:
+            raise AssertionError("KPI transport failure accepted")
+        assert post.call_count == 1
+
+
+def test_uncertain_kpi_insert_stops_stage_without_terminal_rewrite():
+    import tempfile
+    from unittest import mock
+    def setup(*args, **kwargs):
+        main.sb_post_kpi({"run_id": RUN_ID, "value": None})
+        return {"log": "must not report this"}
+    with tempfile.TemporaryDirectory() as work, \
+         mock.patch.object(main, "RUN_WORK_ROOT", work), \
+         mock.patch.object(main, "sb_claim_stage", return_value=True), \
+         mock.patch.object(main, "sb_get_run", return_value={}), \
+         mock.patch.object(main, "ensure_dynamic_package", return_value={"package_dir": work, "bbox": [0, 0, 1, 1]}), \
+         mock.patch.object(main, "stage_setup", side_effect=setup), \
+         mock.patch.object(main.requests, "post", side_effect=main.requests.Timeout("acknowledgement lost")), \
+         mock.patch.object(main, "sb_patch_stage") as stage_write, \
+         mock.patch.object(main, "sb_patch_run") as run_write:
+        try:
+            main.process_stage({"id": RUN_ID, "run_id": RUN_ID, "stage_name": "AequilibraE Setup"})
+        except main.WorkerStateWriteUnconfirmed:
+            pass
+        else:
+            raise AssertionError("stage continued after uncertain KPI insert")
+        stage_write.assert_not_called()
+        assert all(call.args[1]["status"] == "running" for call in run_write.call_args_list)
+
+
+def test_artifact_insert_requires_exact_retained_receipt():
+    from unittest import mock
+    payload = {"run_id": RUN_ID, "value": None, "breakdown_json": {"status": "unassessed"}}
+    row = {"id": "synthetic-kpi", **payload}
+    for status, rows, accepted in ((201, [row], True), (503, [row], False), (204, None, False), (201, [], False), (201, [row, row], False), (201, [payload], False), (201, [{**row, "run_id": "other"}], False), (201, [{k: v for k, v in row.items() if k != "value"}], False), (201, [{**row, "value": 0}], False)):
+        response = mock.Mock(status_code=status, text="private response")
+        response.json.return_value = rows
+        with mock.patch.object(main.requests, "post", return_value=response) as post:
+            if accepted:
+                assert main.sb_post_artifact(payload) == row
+            else:
+                try:
+                    main.sb_post_artifact(payload)
+                except main.WorkerStateWriteUnconfirmed as error:
+                    assert "private response" not in str(error)
+                else:
+                    raise AssertionError(f"unconfirmed artifact insert accepted: {status}")
+        assert post.call_count == 1
+        assert post.call_args.kwargs["timeout"] == 30
+        assert post.call_args.kwargs["headers"]["Prefer"] == "return=representation"
+        assert post.call_args.kwargs["json"] == payload
+
+
+
+def test_volume_geojson_retains_registration_uncertainty():
+    import hashlib
+    import tempfile
+    from pathlib import Path
+    from unittest import mock
+    for uncertain in (False, True):
+        with tempfile.TemporaryDirectory() as work:
+            root = Path(work)
+            (root / "aeq_project").mkdir()
+            (root / "aeq_project/project_database.sqlite").touch()
+            (root / "run_output").mkdir()
+            (root / "run_output/link_volumes.csv").write_text("link_id,PCE_tot\n1,25\n")
+            connection = mock.Mock()
+            connection.execute.return_value.fetchone.return_value = (
+                1, "local", "Synthetic link", '{"type":"LineString","coordinates":[[0,0],[1,1]]}',
+            )
+            calls = []
+            def post(url, **kwargs):
+                calls.append((url, kwargs))
+                if "/storage/" in url:
+                    assert kwargs["timeout"] == 60
+                    assert kwargs["headers"]["x-upsert"] == "false"
+                    return mock.Mock(status_code=201)
+                if uncertain:
+                    raise main.requests.Timeout("synthetic registration acknowledgement lost")
+                payload = kwargs["json"]
+                retained_bytes = (root / "run_output/volumes.geojson").read_bytes()
+                assert payload["content_hash"] == hashlib.sha256(retained_bytes).hexdigest()
+                assert payload["metadata_json"]["features"] == 1
+                return mock.Mock(status_code=201, json=lambda: [{"id": "retained-artifact", **payload}])
+            with mock.patch.object(main.sqlite3, "connect", return_value=connection), mock.patch.object(main.requests, "post", side_effect=post), mock.patch.object(main.requests, "get", side_effect=lambda *a, **k: mock.Mock(status_code=200, content=(root / "run_output/volumes.geojson").read_bytes())):
+                try:
+                    result = main.publish_volume_geojson(RUN_ID, "stage", work, "synthetic-engine", {})
+                except main.WorkerStateWriteUnconfirmed:
+                    assert uncertain
+                else:
+                    if uncertain:
+                        raise AssertionError("uncertain GeoJSON registration swallowed")
+                    assert "Uploaded volumes GeoJSON (1 features)" in result
+            assert len(calls) == 2, calls
+            connection.close.assert_called_once()
+
+
+def test_volume_geojson_missing_database_remains_explicit():
+    import tempfile
+    from unittest import mock
+    with tempfile.TemporaryDirectory() as work, mock.patch.object(main.requests, "post") as post:
+        result = main.publish_volume_geojson(RUN_ID, "stage", work, "synthetic-engine", {})
+    assert "Skipped GeoJSON generation because project database was missing" in result
+    post.assert_not_called()
+
+
+def test_geojson_storage_requires_exact_bytes_and_reconciles_lost_upload():
+    import hashlib
+    from unittest import mock
+    data = b'{"type":"FeatureCollection","features":[]}'
+    for status, retained, accepted in ((200, data, True), (200, b"changed", False), (404, data, False)):
+        with mock.patch.object(main.requests, "post", side_effect=main.requests.Timeout("lost upload acknowledgement")) as post, mock.patch.object(main.requests, "get", return_value=mock.Mock(status_code=status, content=retained)) as get:
+            try:
+                reference = main.upload_volume_geojson_bytes(RUN_ID, "stage", data)
+            except main.WorkerStateWriteUnconfirmed:
+                assert not accepted
+            else:
+                if not accepted:
+                    raise AssertionError("unverified GeoJSON bytes accepted")
+                assert hashlib.sha256(data).hexdigest() in reference
+            assert post.call_count == 1 and get.call_count == 1
+            assert post.call_args.kwargs["headers"]["x-upsert"] == "false"
+            assert get.call_args.kwargs["timeout"] == 60
+
+
 TESTS = [value for name, value in sorted(globals().items()) if name.startswith("test_")]
 
 if __name__ == "__main__":
