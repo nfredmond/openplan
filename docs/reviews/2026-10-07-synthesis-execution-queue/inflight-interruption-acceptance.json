@@ -1,0 +1,57 @@
+{
+  "requestId": "c90b7710-5991-4595-8461-ac935bb145d7",
+  "authorizationId": "dabd6700-bfdd-4de9-9025-e6239e399278",
+  "before": {
+    "phase": "running",
+    "attemptId": "fea9ab79-6583-4dc6-a8a6-37dc39a170ed",
+    "workerId": "7bb5cbca-df55-4f46-bede-74ee7c412f6b"
+  },
+  "crashed": {
+    "code": null,
+    "signal": "SIGKILL",
+    "text": "Execution pass: 0 queue entries visited; 0 schedules unconfirmed. Cursor wrapped. Inspect retained task results for output status. This is not full source completion or staff approval.\n"
+  },
+  "resumed": {
+    "code": 2,
+    "signal": null,
+    "text": "Queue 3f2dcdcb-1616-4e7b-b3de-f7abd9f36dd4: task index 0 requires 68699 bytes, exceeding its saved 65536-byte limit. Preserve the original request and journals. Review complete saved results before creating a separate request with an explicit larger task budget and separate execution permission. This does not authorize a retry or shorten source text.\nExecution pass: 8 queue entries visited; 1 schedules unconfirmed. Cursor continues. Inspect retained task results for output status. This is not full source completion or staff approval.\n"
+  },
+  "after": {
+    "phase": "unobserved",
+    "attemptId": "fea9ab79-6583-4dc6-a8a6-37dc39a170ed",
+    "workerId": "7bb5cbca-df55-4f46-bede-74ee7c412f6b"
+  },
+  "providerCalls": 1,
+  "totalProviderRequests": 1,
+  "native": {
+    "attempts": [
+      {
+        "id": "fea9ab79-6583-4dc6-a8a6-37dc39a170ed",
+        "task_index": 0,
+        "authorization_id": "dabd6700-bfdd-4de9-9025-e6239e399278"
+      }
+    ],
+    "dispatchCount": 1,
+    "outputCount": 0
+  },
+  "build": "0270e9cb",
+  "browser": {
+    "status": "Analysis results are incomplete",
+    "selectedWithoutOutput": 1,
+    "unselected": 3,
+    "warning": "Do not resend an uncertain call."
+  },
+  "captures": {
+    "mobile": {
+      "privatePath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-openplan-history-localhost-muysrq10-0505d604.png",
+      "sha256": "4d87eb8733bd475e093c399d5ac48666f1b3d6780e0f559be9db32c79a57a561",
+      "visuallyInspected": true
+    },
+    "desktop": {
+      "privatePath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-openplan-history-localhost-muysrwsk-d7f9c884.png",
+      "sha256": "baf4bcda8667e321d1ec1feefaea1078326d8aa72ddc921274d4100425b95546",
+      "visuallyInspected": true
+    }
+  },
+  "boundary": "Real process crash after local synthetic provider receives task 0. No reply or semantic interpretation. Independent journal roots and crash after receipt persistence remain separate checks."
+}

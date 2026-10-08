@@ -756,3 +756,33 @@ its original hash. `process-lock-shutdown-acceptance.json` records these checks.
 This verifies same-directory exclusion and shutdown between passes. It does
 not establish interruption during a live provider call or competing workers
 using different journal roots. Those boundaries remain open.
+
+
+## No duplicate execution and in-flight process crash
+
+The extra thematic allowance from the rebuilt lost-reply test is now processed.
+Its schedule retains the two original attempts and selects zero new tasks. The
+provider count remains two. A seven-entry traversal still reports the original
+low-budget context refusal; the additional allowance does not renew completed
+task authority.
+
+T3 creates synthetic segment request c90b7710-5991-4595-8461-ac935bb145d7 from
+the same complete source, prepares four tasks and explicitly grants one attempt.
+Its local provider accepts only original task 0 and holds the response. After
+that provider logs receipt and the worker journal records running, the test
+controller sends SIGKILL to its own spawned worker. No other process is killed.
+
+A one-shot restart processes the retained queue entry and changes that same
+attempt to unobserved. Its attempt ID and worker ID remain unchanged. The
+provider records exactly one accepted call and one HTTP request, including
+rejected-request counting. Native storage retains one attempt, one dispatch
+and zero outputs. This verifies that this restart does not silently resend a
+call whose response was lost.
+
+Desktop and 390-pixel T3 inspection show incomplete analysis, one selected
+attempt without output, three unselected tasks and the instruction not to resend
+an uncertain call. Private screenshot hashes, process outputs and native counts
+are in `inflight-interruption-acceptance.json`. This closes the exercised
+in-flight crash boundary for a segment call. Competing journal roots and crashes
+after receipt persistence remain distinct checks. Synthetic interruption
+evidence does not establish provider interpretation quality or human acceptance.
