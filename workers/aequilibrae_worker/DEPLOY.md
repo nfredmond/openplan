@@ -215,3 +215,12 @@ another worker can still take.
 - **RAM:** ~200MB peak during assignment
 - **Disk:** ~50MB temp space per run (cleaned after completion)
 - **Network:** Downloads ~5MB OSM data per run, uploads ~1MB results
+
+## Assessment recovery configuration
+
+This revision requires `OPENPLAN_DEPLOYMENT_ID`, migration
+`20261016000015_legacy_assessment_command_receipts.sql`, and persistent storage
+for `AEQ_WORK_DIR`. Keep the deployment identity stable for the same database
+installation. Retain each assessment's `command-journal` with its source files.
+See [local assessment recovery](LOCAL.md#retained-assessment-writes) before
+operating this revision. Receipt recovery does not automatically resume a stage.

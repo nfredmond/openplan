@@ -633,6 +633,30 @@ def sb_post_artifact(payload: dict):
     return _confirmed_record_insert("model_run_artifacts", payload)
 
 
+def sb_record_retained_modeling_validation_assessment(payload: dict, *, assessment_id: str, journal_dir: str) -> dict:
+    """Retain this assessment request before transport; never fall back on uncertainty."""
+    from pathlib import Path
+    import model_assessment_command
+    import model_command_client
+    try:
+        deployment = os.environ.get("OPENPLAN_DEPLOYMENT_ID", "")
+        if not deployment.strip():
+            raise ValueError("Assessment recovery deployment identity is missing")
+        directory = Path(journal_dir)
+        command = model_assessment_command.prepare(
+            directory, assessment_id, payload, base_url=SUPABASE_URL, deployment_id=deployment,
+        )
+        response = model_command_client.deliver(
+            directory, command, base_url=SUPABASE_URL, deployment_id=deployment,
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+        return response["assessment"]
+    except Exception:
+        # A delivery failure can follow commit. Preserve the exact journal and
+        # let the stage's uncertainty handler stop before further publication.
+        raise WorkerStateWriteUnconfirmed("Retained assessment custody unconfirmed; recover the saved request before continuing") from None
+
+
 def sb_record_modeling_validation_assessment(payload: dict) -> dict:
     """Confirm the returned assessment before callers acknowledge its custody."""
     try:
@@ -4777,7 +4801,7 @@ def persist_rules_v4_validation_records(
         assessment_size, assessment_hash = facts("model_validation_assessment")
         if basis_hash != model_validation_core.sha256_payload(comparison_basis):
             raise RuntimeError("comparison-basis byte hash drifted")
-        custody_receipt = sb_record_modeling_validation_assessment({
+        custody_receipt = sb_record_retained_modeling_validation_assessment({
             "p_workspace_id": workspace_id,
             "p_model_run_id": run_id,
             "p_stage_id": stage_id,
@@ -4815,9 +4839,12 @@ def persist_rules_v4_validation_records(
             "p_planning_use": str(assessment["planning_use"]),
             "p_scientific_outcome": assessment["scientific_outcome"],
             "p_reasons": assessment["reasons"],
-        })
+        }, assessment_id=assessment["assessment_id"], journal_dir=os.path.join(record_dir, "command-journal"))
         assessment["validation_custody_receipt"] = json.loads(json.dumps(custody_receipt, allow_nan=False))
         assessment["validation_evidence_write"] = "recorded"
+    except WorkerStateWriteUnconfirmed:
+        assessment.pop("validation_custody_receipt", None)
+        raise
     except Exception as exc:
         assessment.pop("validation_custody_receipt", None)
         assessment["validation_evidence_write"] = "validation evidence write failed"
@@ -5802,7 +5829,7 @@ def stage_artifacts(
         expected_basis_hash = model_validation_core.sha256_payload(comparison_basis)
         if basis_hash != expected_basis_hash:
             raise RuntimeError("validation evidence write failed: comparison-basis byte hash drifted")
-        custody_receipt = sb_record_modeling_validation_assessment({
+        custody_receipt = sb_record_retained_modeling_validation_assessment({
             "p_workspace_id": _ws_id,
             "p_model_run_id": run_id,
             "p_stage_id": stage_id,
@@ -5842,11 +5869,14 @@ def stage_artifacts(
             "p_planning_use": str(validation_assessment["planning_use"]),
             "p_scientific_outcome": validation_assessment["scientific_outcome"],
             "p_reasons": validation_assessment["reasons"],
-        })
+        }, assessment_id=validation_assessment["assessment_id"], journal_dir=os.path.join(os.path.dirname(validation_record_paths["model_validation_assessment"]), "command-journal"))
         validation["validation_evidence_write"] = "recorded"
         validation_assessment["validation_custody_receipt"] = json.loads(json.dumps(custody_receipt, allow_nan=False))
         validation_assessment["validation_evidence_write"] = "recorded"
         log += "Rules-v4 validation assessment recorded in immutable custody.\n"
+    except WorkerStateWriteUnconfirmed:
+        validation_assessment.pop("validation_custody_receipt", None)
+        raise
     except Exception as exc:
         validation["validation_evidence_write"] = "validation evidence write failed"
         validation_assessment.pop("validation_custody_receipt", None)

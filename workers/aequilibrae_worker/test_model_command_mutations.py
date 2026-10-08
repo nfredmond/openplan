@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parent
-FILES = ('model_receipt_values.py', 'model_publication_values.py', 'test_model_publication_client.py', 'model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py', 'test_model_command_ownership.py', 'model_command_recovery.py', 'test_model_command_recovery.py')
+FILES = ('model_assessment_values.py', 'model_validation_receipts.py', 'model_receipt_values.py', 'model_publication_values.py', 'test_model_publication_client.py', 'model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py', 'test_model_command_ownership.py', 'model_command_recovery.py', 'test_model_command_recovery.py')
 
 
 class MutationTests(unittest.TestCase):

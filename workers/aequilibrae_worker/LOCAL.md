@@ -30,6 +30,7 @@ The worker needs a Supabase URL + **service-role** key. It reads, in order:
 ```
 SUPABASE_URL=<your-supabase-url>            # or NEXT_PUBLIC_SUPABASE_URL
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+OPENPLAN_DEPLOYMENT_ID=<stable identity for this database installation>
 # Optional, defaults shown:
 SPATIALITE_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/mod_spatialite.so
 AEQ_WORK_DIR=<scratch dir; default is <system temp>/openplan-model-runs>
@@ -103,3 +104,20 @@ directory based on its name alone; it does not prove the complete run identity.
 Legacy `local://` references under shortened paths are refused by the updated
 application. Existing private Storage references keep their original identity.
 Automated reconciliation of legacy local files remains unfinished.
+
+## Retained assessment writes
+
+Before running this worker revision, apply migration
+`20261016000015_legacy_assessment_command_receipts.sql` to the intended database.
+Set `OPENPLAN_DEPLOYMENT_ID` to a stable installation identity. Keep it unchanged
+when restarting that installation; use a different identity for a replacement
+database. Missing identity stops assessment delivery. There is no fallback to
+the old non-idempotent assessment RPC.
+
+Use a durable `AEQ_WORK_DIR`. Each assessment directory retains its exact command
+under `command-journal/model-commands.sqlite3`. Back up this journal together with
+the assessment files. An unconfirmed write stops the stage before publication.
+Use `model_command_recovery.py --help` to list or recover the original request,
+with the same deployment identity, URL and journal directory. Recovery confirms
+custody only. Automatic continuation of the original stage remains unfinished;
+do not regenerate an assessment with a new UUID as a substitute for recovery.

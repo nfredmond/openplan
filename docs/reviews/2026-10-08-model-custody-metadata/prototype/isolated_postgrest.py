@@ -31,7 +31,7 @@ def token(secret, role, subject=None):
 
 @contextmanager
 def gateway(schema, *, database=None, subjects=()):
-    if database is not None and not re.fullmatch(r'openplan_attempt_(?:upgrade|cli)_[0-9a-f]{32}', database):
+    if database is not None and not re.fullmatch(r'openplan_(?:attempt_(?:upgrade|cli)|assessment_upgrade)_[0-9a-f]{32}', database):
         raise ValueError('Only owned attempt proof databases may be exposed')
     if not (schema == 'public' and database is not None) and not re.fullmatch('http_recovery_[0-9a-f]{32}', schema):
         raise ValueError('Only owned HTTP proof schemas may be exposed')

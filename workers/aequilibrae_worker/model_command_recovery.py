@@ -28,7 +28,7 @@ def pending_summaries(directory, *, base_url, deployment_id):
     return [{'request_id': saved['command']['request_id'], 'operation': saved['command']['operation'],
              'run_id': saved['command']['arguments']['run_id'],
              'stage_id': saved['command']['arguments'].get('stage_id'),
-             **({'track': saved['command']['arguments']['track']} if saved['command']['operation'] == 'publish_legacy_model_evidence' else {})}
+             **({'track': saved['command']['arguments']['track']} if saved['command']['operation'] in ('publish_legacy_model_evidence', 'record_legacy_model_assessment') else {})}
             for saved in _checked_records(directory, base_url, deployment_id)]
 
 

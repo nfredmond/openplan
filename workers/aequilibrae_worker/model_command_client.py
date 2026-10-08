@@ -11,6 +11,7 @@ from urllib.parse import urlsplit
 from uuid import UUID
 import model_command_journal as journal
 import model_publication_values as publication
+import model_assessment_values as assessment
 from datetime import datetime
 
 
@@ -173,6 +174,9 @@ def validate_command(command: dict):
     _uuid(command['request_id'])
     args = command['arguments']
     operation = command['operation']
+    if operation == 'record_legacy_model_assessment':
+        assessment.validate(command)
+        return
     if operation == 'publish_legacy_model_evidence':
         publication.validate(command)
         return
@@ -218,6 +222,11 @@ def _timestamp(value):
 
 
 def checked_receipt(command: dict, receipt: object) -> dict:
+    if command['operation'] == 'record_legacy_model_assessment':
+        try:
+            return assessment.check_receipt(command, receipt)
+        except (ValueError, TypeError, KeyError, AttributeError):
+            raise DeliveryUnconfirmed('Assessment receipt does not match the prepared evidence') from None
     if command['operation'] == 'publish_legacy_model_evidence':
         try:
             return publication.check_receipt(command, receipt)
@@ -270,6 +279,8 @@ def checked_receipt(command: dict, receipt: object) -> dict:
 
 def rpc_arguments(command: dict) -> dict:
     args = command['arguments']
+    if command['operation'] == 'record_legacy_model_assessment':
+        return {'p_request': command['request_id'], 'p_payload': args['payload']}
     if command['operation'] == 'publish_legacy_model_evidence':
         return {'p_request': command['request_id'], 'p_workspace': args['workspace_id'], 'p_run': args['run_id'],
                 'p_track': args['track'], 'p_expected': args['expected'], 'p_payload': args['payload']}
