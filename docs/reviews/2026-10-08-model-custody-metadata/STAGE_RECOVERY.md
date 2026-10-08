@@ -595,3 +595,17 @@ Private controls are in `activitysim-artifact-controls.json`. These tests mock
 the scientific assignment and HTTP; they do not prove ActivitySim accuracy or
 whole-stage recovery. KPI delivery, agreement output registration, retained
 geometry computation and current restart ownership remain open.
+
+## Full local application QA, October 8
+
+Exact commit `7c4e992ed304387a97e313854b17f6879dea221b` passed `npm run qa:gate`
+under `openplan-stage-qa-7c4e992e.service`, invocation
+`bb4b619443084a66b7e62369a906b4a0`. The run finished at 08:23:57 Pacific with
+20,095 tests passing and 1,580 skipped across 1,512 passing and 95 skipped files.
+Lint, dead-code checks, provider checks, dependency audit and the production
+webpack build passed. The audit reports zero vulnerabilities. Peak memory was
+6.6 GiB under a 7 GiB cap. The checkout stayed unchanged during the run.
+
+Live database isolation was not opted into this local run. GitHub checks,
+complete worker recovery, T3 visual acceptance and scientific acceptance remain
+separate obligations. This result does not authorize replay of a full stage.
