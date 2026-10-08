@@ -95,3 +95,13 @@ All 31 tests in `workers/activitysim_worker/tests` pass. Existing mock responses
 The production ActivitySim claim helper also passes five concurrent native request races in the named disposable stack, with independently queried winner markers. A harmless copy passes, removing the queued predicate admits two winners, and a timeout injected after a real committed claim remains uncertain. The private `native-activity-claim-race.json` records the pre-commit base and tested source hash. These are claim requests, not ActivitySim computations or separate worker processes.
 
 Artifact and KPI insert receipts in ActivitySim remain unchecked in this change. Attempt ownership, atomic completion, stale-worker fencing and restart reconciliation remain open for both workers. Native and mocked proof files use `activity-receipts-` and `native-activity-claim-race` prefixes in the private proof directory.
+
+## ActivitySim artifact and KPI insert receipts
+
+ActivitySim now requires HTTP 201, one identified returned row and equality for every submitted field before accepting an artifact or KPI insert. Missing fields remain distinct from explicitly null values. Invalid or lost acknowledgements raise the existing write-uncertainty exception, so the process-stage handler does not declare success or invent a failure after a possibly committed insert. The helper does not retry.
+
+All 33 ActivitySim worker tests pass. Two added tests cover returned inserts and process-stage interruption before success; the pre-correction source fails them. Existing pipeline fixtures now return the requested retained fields. Harmless and restored controls pass; ignoring HTTP status, ignoring payload fields, equating absent and null fields, dropping the timeout and swallowing acknowledgement loss each fail.
+
+Native PostgREST checks retain a synthetic null-valued KPI and artifact metadata in the named disposable stack, verified independently in PostgreSQL. A second KPI insert commits before a simulated transport timeout; the helper raises uncertainty, sends one request and leaves exactly one matching row. The artifact is explicitly synthetic metadata, with no claim that an actual model output file was uploaded or recovered. Source hash and fixture identities remain in `native-activity-inserts.json`; executable probe and unit/control logs use `native-activity-inserts` and `activity-inserts-` prefixes.
+
+This supersedes the unchecked-insert boundary above for these two ActivitySim helpers. Storage upload remains a best-effort, upserting path, and record insertion does not establish immutable artifact bytes or idempotent recovery. These remain M3 and scientific-custody work, alongside attempt fencing and atomic completion.

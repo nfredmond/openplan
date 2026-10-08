@@ -32,6 +32,36 @@ class StateReceipts(unittest.TestCase):
             self.assertFalse(worker.sb_claim_stage("fixture", payload))
             with self.assertRaises(RuntimeError): worker.sb_patch_stage("fixture", payload)
 
+    def test_insert_requires_the_exact_persisted_record(self):
+        payload = {"run_id": "run-fixture", "value": None, "metadata_json": {"uncalibrated": True}}
+        row = {"id": "record-fixture", **payload}
+        for writer in (worker.sb_post_kpi, worker.sb_post_artifact):
+            for status, rows, accepted in ((201, [row], True), (503, [row], False), (204, None, False), (201, [], False), (201, [{**row, "run_id": "other"}], False), (201, [{**row, "metadata_json": {"uncalibrated": False}}], False), (201, [{k: v for k, v in row.items() if k != "value"}], False), (201, [payload], False), (201, [row, row], False)):
+                with self.subTest(writer=writer.__name__, status=status, rows=rows):
+                    response = mock.Mock(status_code=status)
+                    response.json.return_value = rows
+                    with mock.patch.object(worker.requests, "post", return_value=response) as post:
+                        if accepted: writer(payload)
+                        else:
+                            with self.assertRaisesRegex(RuntimeError, "unconfirmed"): writer(payload)
+                    self.assertEqual(post.call_args.kwargs.get("timeout"), 30)
+                    self.assertEqual(post.call_args.kwargs["headers"]["Prefer"], "return=representation")
+            with mock.patch.object(worker.requests, "post", side_effect=worker.requests.Timeout("private transport")):
+                with self.assertRaisesRegex(RuntimeError, "unconfirmed") as caught: writer(payload)
+                self.assertNotIn("private transport", str(caught.exception))
+
+    def test_uncertain_insert_does_not_report_stage_success(self):
+        for writer in (worker.sb_post_kpi, worker.sb_post_artifact):
+            def handler(*args):
+                writer({"run_id": "fixture"})
+                return {"log": "done"}
+            with self.subTest(writer=writer.__name__), mock.patch.object(worker, "sb_claim_stage", return_value=True), mock.patch.object(worker, "sb_get_run", return_value={}), mock.patch.dict(worker.STAGE_DISPATCH, {"synthetic": handler}), mock.patch.object(worker, "sb_patch_stage") as stage_write, mock.patch.object(worker, "sb_patch_run") as run_write, mock.patch.object(worker.requests, "post", side_effect=worker.requests.Timeout("acknowledgement lost")), mock.patch.object(worker, "maybe_mark_run_succeeded") as complete:
+                with self.assertRaisesRegex(RuntimeError, "unconfirmed"):
+                    worker.process_stage({"id": "fixture", "run_id": "fixture", "stage_name": "synthetic"})
+                stage_write.assert_not_called()
+                self.assertEqual(run_write.call_args_list, [mock.call("fixture", {"status": "running"})])
+                complete.assert_not_called()
+
     def test_completion_read_requires_a_list(self):
         for status, value in ((200, None), (200, {}), (200, False), (200, ""), (503, [])):
             with self.subTest(value=value, status=status), mock.patch.object(worker.requests, "get", return_value=mock.Mock(status_code=status, json=lambda: value)), mock.patch.object(worker, "sb_patch_run") as write:

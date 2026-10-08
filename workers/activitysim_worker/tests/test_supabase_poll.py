@@ -98,7 +98,7 @@ class FakeRequests:
         self.calls.append(("POST", url, json if json is not None else data))
         if "/storage/v1/object/run-artifacts/" in url:
             return FakeResponse(200, {})
-        return FakeResponse(201, [{}])
+        return FakeResponse(201, [{"id": "retained-record", **json}])
 
 
 def make_stage():

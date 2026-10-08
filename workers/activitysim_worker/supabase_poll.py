@@ -257,14 +257,33 @@ def sb_patch_run(run_id: str, payload: dict):
 
 
 
+def _confirmed_record_insert(table: str, payload: dict) -> None:
+    """Confirm retained fields without retrying a possibly committed insert."""
+    try:
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/{table}",
+            headers=HEADERS, json=payload, timeout=30,
+        )
+        if response.status_code != 201:
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: HTTP response failed")
+        rows = response.json()
+        if (not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict)
+                or not isinstance(rows[0].get("id"), str) or not rows[0]["id"]):
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: missing retained record")
+        if any(field not in rows[0] or rows[0][field] != value for field, value in payload.items()):
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: returned values differ")
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except (requests.RequestException, ValueError, TypeError) as error:
+        raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: no valid receipt") from error
+
+
 def sb_post_kpi(payload: dict) -> None:
-    url = f"{SUPABASE_URL}/rest/v1/model_run_kpis"
-    requests.post(url, headers=HEADERS, json=payload, timeout=30)
+    _confirmed_record_insert("model_run_kpis", payload)
 
 
 def sb_post_artifact(payload: dict) -> None:
-    url = f"{SUPABASE_URL}/rest/v1/model_run_artifacts"
-    requests.post(url, headers=HEADERS, json=payload, timeout=30)
+    _confirmed_record_insert("model_run_artifacts", payload)
 
 
 def sb_get_run(run_id: str) -> dict:
