@@ -5,6 +5,7 @@ import { gunzip } from "node:zlib";
 import { promisify } from "node:util";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
 
 const gunzipAsync = promisify(gunzip);
 const STUDY_DIRECTORY = "data/modeling/distributed-work-loading-study-2026-08-31";
@@ -52,34 +53,55 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+function evidenceNumber(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    throw new Error("Published distributed work-loading study has missing or invalid numeric evidence.");
+  }
+  return value;
+}
+
 function numbers(value: unknown): Record<string, number> {
-  if (!isObject(value)) return {};
-  return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, number] => typeof entry[1] === "number"));
+  if (!isObject(value)) throw new Error("Published distributed work-loading study omitted coverage.");
+  for (const key of ["loaded", "unloaded", "unreachable", "unsupported", "ambiguous", "excluded", "missing_output"]) evidenceNumber(value[key]);
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, evidenceNumber(item)]));
 }
 
 function exactRecord(value: unknown, label: string): { path: string; stored_path: string; sha256: string } {
-  if (!isObject(value) || typeof value.path !== "string" || typeof value.stored_path !== "string" || typeof value.sha256 !== "string") {
+  if (!isObject(value) || typeof value.path !== "string" || typeof value.stored_path !== "string" || typeof value.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(value.sha256)) {
     throw new Error(`Published distributed work-loading study omitted ${label}.`);
   }
   return { path: value.path, stored_path: value.stored_path, sha256: value.sha256 };
 }
 
 async function logicalBytes(relativePath: string, storedPath?: string): Promise<Buffer> {
-  const stored = await readFile(path.join(root(), storedPath ?? relativePath));
+  const target = path.resolve(root(), storedPath ?? relativePath);
+  if (!target.startsWith(path.join(root(), STUDY_DIRECTORY) + path.sep)) throw new Error("Published distributed work-loading artifact is outside its study.");
+  const stored = await readFile(target);
   return (storedPath ?? relativePath).endsWith(".gz") ? gunzipAsync(stored) : stored;
+}
+
+async function verifiedObject(record: { path: string; stored_path: string; sha256: string }): Promise<Record<string, unknown>> {
+  const bytes = await logicalBytes(record.path, record.stored_path);
+  if (createHash("sha256").update(bytes).digest("hex") !== record.sha256) throw new Error("Published distributed work-loading bytes changed.");
+  const value: unknown = JSON.parse(bytes.toString("utf8"));
+  if (!isObject(value)) throw new Error("Published distributed work-loading artifact is not an object.");
+  return value;
 }
 
 /** Load the immutable development checkpoint without promoting it to a model default. */
 export async function loadPublishedDistributedWorkLoadingStudy(): Promise<PublishedDistributedWorkLoadingStudy> {
   const value = JSON.parse(await readFile(path.join(root(), STUDY_DIRECTORY, "study-result.json"), "utf8")) as Record<string, unknown>;
-  if (value.schema !== STUDY_SCHEMA || value.scientific_outcome !== "inconclusive" || value.method_aggregation !== "separate" || value.method_records !== 14 || !Array.isArray(value.counties)) {
+  if (value.schema !== STUDY_SCHEMA || value.scientific_outcome !== "inconclusive" || value.method_aggregation !== "separate" || value.method_records !== 14 || !Array.isArray(value.counties) || value.defaults_changed !== false || value.holdout_accessed !== false || typeof value.candidate_advanced !== "boolean") {
     throw new Error("Published distributed work-loading study has an invalid contract.");
   }
   const records: PublishedDistributedWorkLoadingRecord[] = [];
+  const geographyIds = new Set<string>();
   for (const county of value.counties) {
     if (!isObject(county) || typeof county.geography_id !== "string" || typeof county.name !== "string" || !isObject(county.methods)) {
       throw new Error("Published distributed work-loading study has an invalid geography record.");
     }
+    if (geographyIds.has(county.geography_id)) throw new Error("Published distributed work-loading study repeats a geography.");
+    geographyIds.add(county.geography_id);
     for (const method of METHODS) {
       const methodValue = county.methods[method];
       if (!isObject(methodValue) || !isObject(methodValue.development_gate) || !isObject(methodValue.coverage)) {
@@ -88,7 +110,14 @@ export async function loadPublishedDistributedWorkLoadingStudy(): Promise<Publis
       const input = exactRecord(methodValue.input, `${county.geography_id}/${method} input`);
       const audit = exactRecord(methodValue.audit, `${county.geography_id}/${method} audit`);
       const comparison = exactRecord(methodValue.comparison, `${county.geography_id}/${method} comparison`);
-      const auditValue = JSON.parse((await logicalBytes(audit.path, audit.stored_path)).toString("utf8")) as Record<string, unknown>;
+      const auditValue = await verifiedObject(audit);
+      const comparisonValue = await verifiedObject(comparison);
+      for (const artifact of [auditValue, comparisonValue]) {
+        if (artifact.method !== method || !isObject(artifact.geography) || artifact.geography.geography_id !== county.geography_id) throw new Error("Published distributed work-loading artifact has a different method or geography.");
+      }
+      if (auditValue.schema !== "openplan.pre-output-audit.v1" || comparisonValue.schema !== "openplan.development-comparison.v1" || !isObject(comparisonValue.bindings) || comparisonValue.bindings.pre_output_audit_sha256 !== audit.sha256 || !isObject(auditValue.bindings) || !isObject(auditValue.bindings.loading_input) || auditValue.bindings.loading_input.sha256 !== input.sha256) throw new Error("Published distributed work-loading artifact bindings disagree.");
+      if (!isDeepStrictEqual(comparisonValue.coverage, methodValue.coverage) || !isDeepStrictEqual(comparisonValue.development_gate, methodValue.development_gate)) throw new Error("Published distributed work-loading summaries disagree with verified comparison evidence.");
+      if (comparisonValue.scientific_outcome !== "inconclusive" || comparisonValue.defaults_changed !== false || comparisonValue.holdout_accessed !== false || typeof methodValue.development_gate.advanced !== "boolean") throw new Error("Published distributed work-loading comparison has an invalid claim boundary.");
       const accounting = isObject(auditValue.demand_accounting) ? auditValue.demand_accounting : {};
       records.push({
         geographyId: county.geography_id,
@@ -102,11 +131,11 @@ export async function loadPublishedDistributedWorkLoadingStudy(): Promise<Publis
         comparisonPath: comparison.path,
         comparisonStoredPath: comparison.stored_path,
         comparisonSha256: comparison.sha256,
-        accessPointCount: Number(auditValue.access_point_count ?? 0),
-        retainedAccessPointCount: Number(auditValue.retained_unroutable_access_point_count ?? 0),
-        originalWorkTrips: Number(accounting.original_work_total ?? 0),
-        distributedWorkTrips: Number(accounting.work_loaded_at_access_points ?? 0),
-        retainedWorkTrips: Number(accounting.work_retained_at_original_centroids ?? 0),
+        accessPointCount: evidenceNumber(auditValue.access_point_count),
+        retainedAccessPointCount: evidenceNumber(auditValue.retained_unroutable_access_point_count),
+        originalWorkTrips: evidenceNumber(accounting.original_work_total),
+        distributedWorkTrips: evidenceNumber(accounting.work_loaded_at_access_points),
+        retainedWorkTrips: evidenceNumber(accounting.work_retained_at_original_centroids),
         baselineCoverage: numbers(methodValue.coverage.baseline),
         candidateCoverage: numbers(methodValue.coverage.candidate),
         advanced: methodValue.development_gate.advanced === true,
@@ -114,6 +143,7 @@ export async function loadPublishedDistributedWorkLoadingStudy(): Promise<Publis
     }
   }
   if (records.length !== 14) throw new Error("Published distributed work-loading study must retain fourteen separate records.");
+  if (value.candidate_advanced !== records.every((record) => record.advanced)) throw new Error("Published distributed work-loading overall disposition disagrees with its methods.");
   const release = isObject(value.release) ? value.release : {};
   return {
     version: String(release.version ?? "unknown"),

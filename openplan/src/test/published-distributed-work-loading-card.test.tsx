@@ -4,6 +4,12 @@ import { describe, expect, it } from "vitest";
 import { PublishedDistributedWorkLoadingCard } from "@/components/models/published-distributed-work-loading-card";
 
 describe("PublishedDistributedWorkLoadingCard", () => {
+  it("discloses unavailable evidence without showing zero or download claims", () => {
+    render(<PublishedDistributedWorkLoadingCard study={null} />);
+    expect(screen.getByRole("status")).toHaveTextContent("Development evidence unavailable");
+    expect(screen.getByRole("status")).toHaveTextContent("unavailable, not zero");
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
   it("keeps the scientific boundary visible and exposes method-specific downloads", () => {
     render(<PublishedDistributedWorkLoadingCard study={{
       version: "0.44.0", releaseSha: "a".repeat(40), createdAt: "2026-08-31T23:30:00Z",
