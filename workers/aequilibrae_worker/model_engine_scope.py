@@ -38,3 +38,23 @@ def close_project_log(project, directory):
         if isinstance(handler, logging.FileHandler) and Path(handler.baseFilename).resolve() == expected:
             handler.close()
             logger.removeHandler(handler)
+
+
+@contextmanager
+def matrix_scope():
+    """Attempt each owned matrix close once, including when another close fails."""
+    from contextlib import ExitStack
+    seen = set()
+    try:
+        with ExitStack() as stack:
+            def own(matrix):
+                if id(matrix) not in seen:
+                    seen.add(id(matrix))
+                    stack.callback(matrix.close)
+                return matrix
+            yield own
+    except BaseException:
+        writer = model_attempt_writer.current()
+        if writer is not None:
+            writer.stopped = True
+        raise

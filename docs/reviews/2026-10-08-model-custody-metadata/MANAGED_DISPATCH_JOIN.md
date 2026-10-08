@@ -1956,3 +1956,26 @@ threads or matrices, interruption during SQLite writes, process crashes or
 cross-process file use. Full engine quiescence before capture, managed dispatch,
 publication/terminal handling and scientific/browser/human acceptance remain
 open.
+
+### Owned assignment matrix cleanup
+
+Assignment now registers its initial skim matrix before execution and registers
+each demand matrix before initialization, including calibration demand matrices.
+A matrix scope retains those objects and attempts close once per object in
+reverse acquisition order. ExitStack continues remaining cleanup when one close
+raises. Matrix cleanup runs before project cleanup, and any failure stops a bound
+managed writer. No demand values or assignment settings change.
+
+Three added tests cover duplicate ownership, reverse order, interrupted cleanup
+ordering and continuing after a failed close. The combined scope suite passes
+11 tests; the warning-enabled broader suite passes 260 tests. Existing controls
+were scoped to the project helper after adding the matrix helper. Baseline,
+harmless and restored controls pass, and eight faults now detect project/log and
+matrix cleanup defects. `prototype/engine-scope-controls.json` records outcomes.
+
+This covers directly acquired demand and initial skim matrices. Engine-created
+assignment result matrices, selected-link results, native memory mappings and
+worker threads still require inspection and native evidence. Calling matrix.close
+is not proof all mapped views are released. Normal managed dispatch and completed
+capture remain disabled pending the remaining lifecycle work. Scientific,
+browser and human acceptance remain open.

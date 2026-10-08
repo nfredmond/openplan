@@ -1,6 +1,6 @@
 {
-  "scope_sha256": "09033d6d5e0252f1d27b7618e5a5ca93b9265c0ad68a6aa20ceaea99934d77b7",
-  "worker_sha256": "65ab279efdef8fb78dce417f95abd076926f70ab4837162ecd6fe99b81679537",
+  "scope_sha256": "faeda72e06e00f80c961fc93c5caad26e4874b214f1326a835365bc41d5d2599",
+  "worker_sha256": "ecfc74cc050a7744c6a1e563e802787d04223cc209e6124e5a86fcb2253237f9",
   "controls": [
     {
       "control": "baseline",
@@ -36,6 +36,21 @@
       "control": "omit-project-log-close",
       "exit_code": 1,
       "targeted_test": "test_project_log_closes_without_touching_unrelated_handler"
+    },
+    {
+      "control": "omit-matrix-cleanup",
+      "exit_code": 1,
+      "targeted_test": "test_matrices_close_once_in_reverse_order"
+    },
+    {
+      "control": "duplicate-matrix-cleanup",
+      "exit_code": 1,
+      "targeted_test": "test_matrices_close_once_in_reverse_order"
+    },
+    {
+      "control": "ignore-matrix-failure-stop",
+      "exit_code": 1,
+      "targeted_test": "test_matrix_close_failure_does_not_skip_remaining_cleanup"
     },
     {
       "control": "restored",

@@ -8,14 +8,24 @@ WORKER=ROOT.parents[3]/'workers/aequilibrae_worker'
 def main():
     source=(WORKER/'model_engine_scope.py').read_text()
     def change(old,new):
-        if source.count(old)!=1:raise AssertionError('Engine scope mutation anchor changed')
-        return source.replace(old,new)
+        end=source.index('@contextmanager\ndef matrix_scope')
+        part=source[:end]
+        if part.count(old)!=1:raise AssertionError('Engine scope mutation anchor changed')
+        return part.replace(old,new)+source[end:]
+    def matrix_change(old,new):
+        begin=source.index('@contextmanager\ndef matrix_scope')
+        part=source[begin:]
+        if part.count(old)!=1:raise AssertionError('Matrix scope mutation anchor changed')
+        return source[:begin]+part.replace(old,new)
     cases=[('baseline',source,None),('harmless',source+'\n# Harmless comment.\n',None),
       ('omit-close',change('                project.close()','                pass'),'test_actual_assignment_closes_after_graph_failure'),
       ('ignore-interruption',change('                project.close()',"                if not isinstance(__import__('sys').exception(), KeyboardInterrupt): project.close()"),'test_interrupt_closes_and_preserves_exception'),
       ('ignore-managed-stop',change('            writer.stopped = True','            pass'),'test_partial_open_closes_and_stops_managed_writer'),
       ('swallow-close-error',change('                project.close()', '                try: project.close()\n                except OSError: pass'),'test_cleanup_failure_propagates_with_original_error'),
       ('omit-project-log-close',change('                close_project_log(project, directory)','                pass'),'test_project_log_closes_without_touching_unrelated_handler'),
+      ('omit-matrix-cleanup',matrix_change('                    stack.callback(matrix.close)','                    pass'),'test_matrices_close_once_in_reverse_order'),
+      ('duplicate-matrix-cleanup',matrix_change('if id(matrix) not in seen:','if True:'),'test_matrices_close_once_in_reverse_order'),
+      ('ignore-matrix-failure-stop',matrix_change('            writer.stopped = True','            pass'),'test_matrix_close_failure_does_not_skip_remaining_cleanup'),
       ('restored',source,None)]
     runner='''
 import importlib.util,sys,unittest

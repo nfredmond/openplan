@@ -71,5 +71,33 @@ class EngineScopeTests(unittest.TestCase):
             self.assertIsNotNone(unrelated.stream)
             self.assertIn(unrelated,logger.handlers)
 
+    def test_matrices_close_once_in_reverse_order(self):
+        order=[]
+        first=Mock();second=Mock()
+        first.close.side_effect=lambda:order.append('first')
+        second.close.side_effect=lambda:order.append('second')
+        with scope.matrix_scope() as own:
+            self.assertIs(own(first),first);own(first);own(second)
+        self.assertEqual(order,['second','first'])
+        first.close.assert_called_once();second.close.assert_called_once()
+
+    def test_matrix_close_failure_does_not_skip_remaining_cleanup(self):
+        first=Mock();second=Mock();failure=OSError('matrix close failed')
+        second.close.side_effect=failure;writer=Mock(stopped=False)
+        with patch.object(scope.model_attempt_writer,'current',return_value=writer),self.assertRaises(OSError) as caught:
+            with scope.matrix_scope() as own:own(first);own(second)
+        self.assertIs(caught.exception,failure)
+        first.close.assert_called_once();second.close.assert_called_once()
+        self.assertTrue(writer.stopped)
+
+    def test_matrix_interruption_closes_before_project(self):
+        order=[];project=Mock();matrix=Mock()
+        project.close.side_effect=lambda:order.append('project')
+        matrix.close.side_effect=lambda:order.append('matrix')
+        with self.assertRaises(KeyboardInterrupt):
+            with scope.project_scope(lambda:project,'/synthetic'),scope.matrix_scope() as own:
+                own(matrix);raise KeyboardInterrupt('synthetic')
+        self.assertEqual(order,['matrix','project'])
+
 
 if __name__=='__main__':unittest.main()

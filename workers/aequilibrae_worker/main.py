@@ -4250,8 +4250,8 @@ def stage_assignment(
             else "Selected count inputs are unavailable; no substitute was selected during retention.\n")
     sb_patch_stage(stage_id, {"log_tail": log})
 
-    from model_engine_scope import project_scope
-    with project_scope(Project, proj_dir) as project:
+    from model_engine_scope import project_scope, matrix_scope
+    with project_scope(Project, proj_dir) as project, matrix_scope() as own_matrix:
         project.network.build_graphs(modes=["c"])
         graph = project.network.graphs["c"]
         # distance_net zeroes virtual centroid connectors so the routed-distance
@@ -4327,6 +4327,7 @@ def stage_assignment(
         sb_patch_stage(stage_id, {"log_tail": log})
 
         skimming = NetworkSkimming(graph)
+        own_matrix(skimming.results.skims)
         skimming.set_cores(AEQ_CORES)
         skimming.execute()
         skim_mat = skimming.results.skims
@@ -4736,7 +4737,7 @@ def stage_assignment(
         # "resident"/"external" become link_volumes.csv columns resident_ab/ba/tot
         # and external_ab/ba/tot, which link_vmt.py reads.
         def _demand_matrix(file_stem: str, core_name: str, demand_array: np.ndarray) -> AequilibraeMatrix:
-            mat = AequilibraeMatrix()
+            mat = own_matrix(AequilibraeMatrix())
             mat.create_empty(
                 file_name=os.path.join(out_dir, f"{file_stem}.omx"),
                 zones=n_assign, matrix_names=[core_name], memory_only=False,
@@ -4934,7 +4935,7 @@ def stage_assignment(
         if should_run_calibration(calibrate_requested and not demand_is_vehicle, counts_path):
             try:
                 def _make_resident_mat(demand_array):
-                    m = AequilibraeMatrix()
+                    m = own_matrix(AequilibraeMatrix())
                     m.create_empty(zones=n_assign, matrix_names=["resident"], memory_only=True)
                     m.index = np.array(assignment_centroids)
                     m.matrix["resident"][:, :] = demand_array
