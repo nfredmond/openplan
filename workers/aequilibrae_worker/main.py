@@ -916,6 +916,46 @@ def retain_managed_predecessor_package() -> dict:
         raise WorkerStateWriteUnconfirmed("Package handoff requires reconciliation") from error
 
 
+def retain_managed_predecessor_outputs() -> dict:
+    """Bind the selected producer's assignment outputs to an owned consumer snapshot."""
+    from pathlib import Path
+    import model_attempt_writer
+    import model_package_inputs
+    writer = model_attempt_writer.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Output handoff requires a managed invocation")
+    try:
+        writer.require_open()
+        if writer.files is None:
+            raise ValueError("Output handoff requires an owned consumer directory")
+        selected = select_managed_predecessor_input("model_assignment_outputs")
+        installation = hashlib.sha256(writer.context.destination.encode()).hexdigest()
+        expected = (writer.files.root / writer.context.run_id / "attempts" / installation
+                    / selected["stage_id"] / selected["attempt_id"] / "assignment_outputs" / "manifest.json")
+        if selected.get("file_url") != "local://" + str(expected) or expected.resolve(strict=True) != expected:
+            raise ValueError("Output reference differs from selected producer directory")
+        if ((selected.get("metadata_json") or {}).get("schema") != "openplan.assignment-outputs.v1"
+                or (selected.get("metadata_json") or {}).get("inventory_schema") != "openplan.package-inputs.v1"):
+            raise ValueError("Selected outputs has no supported inventory schema")
+        source = {"manifest_path": str(expected), "package_directory": str(expected.parent / "files"),
+                  "manifest_sha256": selected.get("content_hash"), "manifest_size_bytes": selected.get("file_size_bytes")}
+        retained = model_package_inputs.consume(source, writer.files.path / "predecessor_outputs")
+        writer.files.verify()
+        provenance = {"artifact_id": selected["id"], "stage_id": selected["stage_id"],
+                      "attempt_id": selected["attempt_id"], "manifest_sha256": selected["content_hash"]}
+        writer.record_artifact({
+            "run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+            "artifact_type": "model_output_consumption", "file_url": "local://" + retained["manifest_path"],
+            "content_hash": retained["manifest_sha256"], "file_size_bytes": retained["manifest_size_bytes"],
+            "metadata_json": {"schema": "openplan.output-consumption.v1", "inventory_schema": "openplan.package-inputs.v1", "producer": provenance,
+                              "scientific_acceptance": "unassessed", "database_consistency": "unassessed"},
+        }, logical_name="predecessor-assignment-outputs")
+        return {**retained, "outputs_directory": retained["package_directory"], "producer": provenance}
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Output handoff requires reconciliation") from error
+
+
 def retain_managed_predecessor_project() -> dict:
     """Bind the selected producer's project bytes to an owned consumer snapshot."""
     from pathlib import Path

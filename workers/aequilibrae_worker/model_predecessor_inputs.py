@@ -13,7 +13,7 @@ PREDECESSORS = {
 
 
 def select(context, stages, artifacts, artifact_type):
-    if artifact_type not in {'model_predecessor_state', 'model_package_inputs', 'model_project_inputs'}:
+    if artifact_type not in {'model_predecessor_state', 'model_package_inputs', 'model_project_inputs', 'model_assignment_outputs'}:
         raise ValueError('Unsupported predecessor input kind')
     if not isinstance(stages, list) or not isinstance(artifacts, list):
         raise ValueError('Predecessor read must return row lists')

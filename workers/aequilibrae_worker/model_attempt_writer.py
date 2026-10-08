@@ -191,6 +191,28 @@ class AttemptWriter:
             self.stopped = True
             raise
 
+    def retain_assignment_outputs(self, directory):
+        """Retain this attempt's completed assignment outputs before a successor can copy it."""
+        import model_package_inputs
+        self.require_open()
+        try:
+            if self.files is None or not Path(directory).resolve(strict=True).is_relative_to(self.files.path):
+                raise ValueError('Output retention requires an owned attempt source')
+            retained = model_package_inputs.retain(directory, self.files.path / 'assignment_outputs')
+            self.files.verify()
+            self.record_artifact({
+                'run_id': self.context.run_id, 'stage_id': self.context.stage_id,
+                'artifact_type': 'model_assignment_outputs',
+                'file_url': 'local://' + retained['manifest_path'],
+                'file_size_bytes': retained['manifest_size_bytes'], 'content_hash': retained['manifest_sha256'],
+                'metadata_json': {'schema': 'openplan.assignment-outputs.v1', 'inventory_schema': 'openplan.package-inputs.v1',
+                                  'scientific_acceptance': 'unassessed', 'database_consistency': 'unassessed'},
+            }, logical_name='assignment-outputs')
+            return retained
+        except BaseException:
+            self.stopped = True
+            raise
+
     def retain_project(self, directory):
         """Register owned project bytes and checks without authorizing execution.
 

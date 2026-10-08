@@ -1667,3 +1667,29 @@ These are path-selection checks, not full engine execution. Normal managed
 dispatch remains disabled pending the remaining output/count joins, engine
 closure and complete execution/publication/terminal lifecycle. No scientific,
 human or browser acceptance boundary changes.
+
+### Selected assignment-output transfer
+
+The managed writer now captures an owned assignment-output directory as a
+complete inventory. The consumer selects the declared completed producer,
+checks its exact attempt path and registered manifest, copies all files into
+an independent retained directory and registers a separate consumption record.
+That record preserves the producer artifact, stage, attempt and manifest hash.
+Nested count metadata stays byte-for-byte unchanged, including source labels.
+An uncertain registration reply stops the writer with the exact pending command.
+
+Six focused tests cover capture, ownership refusal, independent copying,
+changed nested count metadata, producer provenance and reply loss. Baseline,
+harmless and restored controls pass. Five deliberate faults fail the intended
+tests: ignored producer path, ignored inventory changes, erased producer attempt,
+incorrect artifact type and ignored capture ownership. The control report records
+package-copy, main-worker and writer source hashes. The warning-enabled broader
+suite passes 221 tests. Its completed output is retained locally at
+`/tmp/openplan-output-handoff-tests.log`.
+
+Transport is mocked and the skim fixture contains synthetic bytes. These checks
+do not validate native output formats, native receipt recovery for this transfer,
+mutable output paths, engine closure or scientific accuracy. The helper is not
+connected to normal dispatch. Output/state/count pairing and the complete
+execution, publication and terminal lifecycle remain open. No browser or human
+acceptance is claimed, and normal managed dispatch remains disabled.
