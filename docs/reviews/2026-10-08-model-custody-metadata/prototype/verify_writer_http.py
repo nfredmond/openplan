@@ -25,7 +25,8 @@ import model_command_journal as journal
 from worker_import_for_tests import import_worker_main
 
 
-def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False):
+def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False, package_consumer=False):
+    package_output = package_output or package_consumer
     count_output = count_output or count_consumer
     outputs = outputs or state_output or count_output or package_output
     source = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
@@ -66,7 +67,7 @@ def verify(output, writer_module, outputs=False, state_output=False, count_outpu
 
             def forward(self, method):
                 path = self.path.removeprefix('/rest/v1')
-                allowed = (method == 'GET' and path.startswith('/model_run_stages?')) or (
+                allowed = (method == 'GET' and (path.startswith('/model_run_stages?') or path.startswith('/model_run_artifacts?'))) or (
                     method == 'POST' and path in ('/rpc/claim_model_stage_attempt', '/rpc/write_model_stage_attempt', '/rpc/write_model_attempt_artifact', '/rpc/write_model_attempt_kpi'))
                 if not allowed or self.headers.get('Authorization') != 'Bearer ' + key:
                     self.send_error(403)
@@ -114,6 +115,24 @@ INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order,log_t
  VALUES('{stage}','{run}','Synthetic computation','queued',1,'Existing synthetic log');
 SELECT workspace_id FROM public.model_runs WHERE id='{run}';
 """)))
+                    if package_consumer:
+                        import model_package_inputs
+                        producer_stage, producer_artifact = str(uuid.uuid4()), str(uuid.uuid4())
+                        sql(database, f"UPDATE public.model_run_stages SET stage_name='Artifact Extraction' WHERE id='{stage}'; INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order) VALUES('{producer_stage}','{run}','Network Assignment','queued',0);")
+                        claim = json.loads(sql(database, f"SET ROLE service_role; SELECT public.claim_model_stage_attempt('{uuid.uuid4()}','{producer_stage}','native-package-producer');"))
+                        producer_attempt = str(uuid.UUID(claim['attempt_id']))
+                        installation = hashlib.sha256(client.destination(base,database).encode()).hexdigest()
+                        producer_directory = output / 'scratch/runs' / run / 'attempts' / installation / producer_stage / producer_attempt
+                        producer_package = producer_directory / 'package'
+                        producer_package.mkdir(parents=True)
+                        (producer_package / 'manifest.json').write_bytes(b'{"files":{}}')
+                        (producer_package / 'generated.csv').write_bytes(b'zone,trips\n1,17\n')
+                        (producer_package / 'empty').mkdir()
+                        producer_record = model_package_inputs.retain(producer_package, producer_directory / 'package_inputs')
+                        payload = json.dumps({'id':producer_artifact,'artifact_type':'model_package_inputs',
+                            'file_url':'local://'+producer_record['manifest_path'],'content_hash':producer_record['manifest_sha256'],
+                            'file_size_bytes':producer_record['manifest_size_bytes'],'metadata_json':{'schema':'openplan.package-inputs.v1'}}).replace("'", "''")
+                        sql(database,f"SET ROLE service_role; SELECT public.write_model_attempt_artifact('{uuid.uuid4()}','{producer_attempt}','{payload}'::jsonb); SELECT public.write_model_stage_attempt('{uuid.uuid4()}','{producer_attempt}','succeeded','Synthetic package complete',NULL);")
                     directory = output / worker.__name__ / status
                     artifact_id = str(uuid.uuid4())
                     handled = []
@@ -140,6 +159,10 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                         'value': None, 'breakdown_json': {'status': 'unassessed'}}
                                 if status == 'package_artifact':
                                     with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
+                                        if package_consumer:
+                                            worker.run_work_directory(run)
+                                            worker.retain_managed_predecessor_package()
+                                            raise AssertionError('Lost consumer reply did not stop handler')
                                         source_package = Path(worker.run_work_directory(run)) / 'package'
                                         source_package.mkdir()
                                         (source_package / 'manifest.json').write_bytes(b'{"files":{}}')
@@ -221,22 +244,30 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         raise AssertionError('Native terminal outcome differs')
                     if status != 'claim' and observed['stage']['log_tail'] != 'Useful synthetic partial log':
                         raise AssertionError('Native stage did not retain partial log')
-                    if observed['receipt'] is None or observed['starts'] != 1 or len(observed['attempts']) != 1:
+                    if observed['receipt'] is None or observed['starts'] != (2 if package_consumer else 1) or len(observed['attempts']) != (2 if package_consumer else 1):
                         raise AssertionError('Native receipt or execution identity missing')
                     if outputs:
                         records = observed['artifacts'] if status.endswith('artifact') else observed['kpis']
-                        if len(records) != 1 or records[0]['attempt_id'] != observed['attempts'][0]['id']:
+                        if package_consumer:
+                            records = [record for record in records if record['stage_id'] == stage]
+                        consumer_attempts = [attempt for attempt in observed['attempts'] if attempt['stage_id'] == stage]
+                        if len(records) != 1 or len(consumer_attempts) != 1 or records[0]['attempt_id'] != consumer_attempts[0]['id']:
                             raise AssertionError('Output is absent, duplicated or belongs to another attempt')
                         if status == 'package_artifact':
-                            retained_dir = writers[0].files.path / 'package_inputs'
+                            retained_dir = writers[0].files.path / ('predecessor_package' if package_consumer else 'package_inputs')
                             manifest = retained_dir / 'manifest.json'
                             content = manifest.read_bytes()
                             inventory = json.loads(content)
                             if (records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
                                     or records[0]['file_size_bytes'] != len(content)
                                     or records[0]['file_url'] != 'local://' + str(manifest)
-                                    or records[0]['artifact_type'] != 'model_package_inputs'):
+                                    or records[0]['artifact_type'] != ('model_package_consumption' if package_consumer else 'model_package_inputs')):
                                 raise AssertionError('Native package manifest differs from retained bytes')
+                            if package_consumer:
+                                expected_provenance = {'artifact_id':producer_artifact,'stage_id':producer_stage,
+                                    'attempt_id':producer_attempt,'manifest_sha256':producer_record['manifest_sha256']}
+                                if records[0]['metadata_json'].get('producer') != expected_provenance:
+                                    raise AssertionError('Native package consumer lost producer provenance')
                             expected_files = {'manifest.json': b'{"files":{}}', 'generated.csv': b'zone,trips\n1,17\n'}
                             if set(inventory['entries']) != {'manifest.json', 'generated.csv', 'empty'}:
                                 raise AssertionError('Native package inventory is incomplete')
@@ -247,7 +278,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                 item = inventory['entries'][name]
                                 if (copied.read_bytes() != expected or item['sha256'] != hashlib.sha256(expected).hexdigest()
                                         or item['size_bytes'] != len(expected)
-                                        or copied.stat().st_ino == (writers[0].files.path / 'package' / name).stat().st_ino):
+                                        or copied.stat().st_ino == ((producer_directory / 'package_inputs/files' if package_consumer else writers[0].files.path / 'package') / name).stat().st_ino):
                                     raise AssertionError('Native package file differs from retained inventory')
                         elif status == 'count_artifact':
                             retained_dir = writers[0].files.path / 'run_output' / ('artifact_count_inputs' if count_consumer else 'count_inputs')

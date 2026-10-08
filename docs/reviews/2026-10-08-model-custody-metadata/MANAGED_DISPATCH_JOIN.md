@@ -1126,3 +1126,27 @@ The joined native recovery proof remains open. Earlier native predecessor reads
 and producer-manifest registration remain separate evidence. This helper is not
 yet called by normal dispatch. Retained original state, execution-state mapping,
 coherent project transfer and full scientific acceptance remain unfinished.
+
+### Native selected-package consumption and recovery
+
+The full selected-package helper now has native evidence. A completed managed
+producer registers a real package inventory at its owned attempt path. A fresh
+consumer reads that declared predecessor through native HTTP, verifies the
+recorded package, creates independent copies and registers
+`model_package_consumption` with the original producer provenance. The harness
+drops the reply after that consumer registration commits.
+
+Baseline, harmless and restored controls each pass one joined case with eight
+HTTP calls. Native checks confirm the consumer manifest URL, hash, size, artifact
+type, attempt, exact producer provenance, generated CSV bytes, original package
+manifest and empty directory. A fresh CLI recovers the exact receipt while the
+native records remain unchanged; cached recovery sends no HTTP and the writer
+stays stopped. An incorrect consumer manifest hash fails the native comparison.
+Results are in `prototype/managed-package-http.json`; the owned private
+`managed-package-http-v1` directory retains fixture clones and journals. Temporary
+gateways are removed. No application database is changed.
+
+This closes the selected-package registration/recovery proof boundary. It does
+not provide execution-state mapping, coherent SQLite project transfer, complete
+normal dispatcher execution or scientific acceptance. Original state and project
+handoffs remain required before managed dispatch can be enabled.
