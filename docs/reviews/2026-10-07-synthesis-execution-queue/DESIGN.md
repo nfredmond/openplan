@@ -599,3 +599,28 @@ mechanism, not proof that any declared budget will accommodate every continuatio
 The same long context contribution still needs a new identified-build journey
 with a separately saved budget. Precise staff-facing resource diagnosis and the
 context/thematic queue acceptance remain unfinished.
+
+
+## Same long contribution with a separately saved budget
+
+Build 0e826600 passes webpack, TypeScript and 137 static pages; the owned port
+3505 runtime identifies that build. T3 navigated from saved source history to the
+completed segment request and selected the same long multilingual contribution.
+The create form explicitly saved 131,072 task bytes in new request
+faf4121a-bd8c-46c5-878a-4a3ba550d974. The original 65,536-byte request is unchanged.
+
+Preparation retains four frames and 206,380 saved bytes. T3 saved allowance
+022f500a-a319-45ae-92a5-62aaca0a919f and explicitly queued execution. The pinned
+local provider accepted all four frames in order and required each preceding
+output unchanged. Four task journals are delivered. T3 reports four complete
+output checks and combined context ready for theme preparation, with staff-review
+and meaning caveats. Another queue traversal leaves accepted provider calls at
+four. That traversal still exits 2 because the preserved earlier low-budget
+context request remains unconfirmed. This result does not erase its failure.
+
+`context-budget-acceptance.json` records the measured outcome. This establishes
+a structural context path for the same source with an explicit new request
+budget. It does not close resource diagnosis, context for the second contribution,
+thematic execution, semantic validity, staff acceptance or public participation.
+The current synthetic provider is context-budget-run/provider.mjs in the private
+acceptance root, tool session 3243, port 34667. Source originals remain private.
