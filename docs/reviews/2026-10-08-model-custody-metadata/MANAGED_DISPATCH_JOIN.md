@@ -2082,3 +2082,30 @@ The warning-enabled broader suite passes 268 tests, and the native borrowed-view
 check passes again. This is Linux launch-directory evidence, not a sandbox for
 arbitrary absolute paths, containment of descendants or permission to capture
 outputs. The child authority protocol and supervisor-loss handling remain open.
+
+### Preserve unconfirmed progress-write failures
+
+Tracing the child protocol found an existing production connection defect:
+AssignmentProgress._send swallowed every callback exception, including
+WorkerStateWriteUnconfirmed from stage progress writes. The handler now accepts
+an explicit fatal exception policy, and the actual assignment context supplies
+WorkerStateWriteUnconfirmed. Ordinary display callback failures remain best
+effort. Fatal failures propagate with their original exception identity.
+Logger detachment and level restoration also complete if the final pending
+progress update raises.
+
+The 17 progress tests and the broader warning-enabled 285-test suite pass.
+Baseline, harmless and restored controls pass; swallowing custody failures,
+omitting level restoration and removing the assignment fatal policy each fail
+their targeted test. The assignment-policy test executes the context expression
+extracted from the actual stage function, with a synthetic callback failure.
+See prototype/progress-custody-controls.json for source hashes and outcomes.
+The first edit command used the wrong relative directory and made no changes;
+the corrected command and subsequent tests exercise the actual patch.
+
+This verifies Python callback propagation, not native solver interruption or
+cross-thread callback ownership. The child still needs explicit authority for
+run reads, path resolution, count retention and stage progress. Importing main
+also loads operator environment files, so removing credentials from only the
+child environment would not establish credential isolation. The engine child
+protocol, descendant containment and supervisor-loss reconciliation remain open.
