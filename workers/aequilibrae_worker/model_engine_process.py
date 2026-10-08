@@ -9,6 +9,8 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import socket
+from model_engine_channel import ProgressParent, CHANNEL_FD_ENV
 
 
 class EngineStillRunning(RuntimeError):
@@ -25,15 +27,21 @@ def _record(descriptor, name, payload):
 
 class EngineProcess:
     """Observe only a process launched by this object, never a saved PID."""
-    def __init__(self, writer, argv, *, env):
+    def __init__(self, writer, argv, *, env, progress=False):
         writer.require_open()
         if writer.files is None:
             raise ValueError('Engine launch requires an owned attempt workspace')
         if not isinstance(argv,list) or not argv or any(not isinstance(arg,str) or not arg for arg in argv):
             raise ValueError('Engine launch requires a nonempty argument vector')
+        if CHANNEL_FD_ENV in env:
+            raise ValueError("Engine channel descriptor must come from this launch")
         self.writer=writer
         self.directory=writer.files.path/'engine_process'
         self.receipt=None
+        self.progress=None
+        child_channel=None
+        child_env=dict(env)
+        inherited=()
         try:
             with writer.files.pinned() as descriptor:
                 os.mkdir('engine_process',mode=0o700,dir_fd=descriptor)
@@ -47,6 +55,11 @@ class EngineProcess:
             self.identity={'schema':'openplan.engine-process.v1','run_id':writer.context.run_id,
                            'stage_id':writer.context.stage_id,'attempt_id':writer.context.attempt_id,
                            'command_sha256':hashlib.sha256(json.dumps(argv,separators=(',',':')).encode()).hexdigest()}
+            if progress:
+                parent_channel,child_channel=socket.socketpair()
+                self.progress=ProgressParent(parent_channel,writer)
+                inherited=(child_channel.fileno(),)
+                child_env[CHANNEL_FD_ENV]=str(child_channel.fileno())
             with self._pinned() as descriptor:
                 _record(descriptor,'launch-reserved.json',self.identity)
                 # Reservation survives spawn failure. Raw arguments and environment
@@ -56,12 +69,15 @@ class EngineProcess:
                     # Linux procfs resolves the parent's pinned directory while Popen
                     # waits for exec. No directory descriptor is inherited by the engine.
                     working_path=f'/proc/{os.getpid()}/fd/{working}'
-                    self.process=subprocess.Popen(argv,cwd=working_path,env=env,
+                    self.process=subprocess.Popen(argv,cwd=working_path,env=child_env,
                         stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,
-                        start_new_session=True,close_fds=True)
+                        start_new_session=True,close_fds=True,pass_fds=inherited)
         except BaseException:
             writer.stopped=True
+            if self.progress is not None:self.progress.stop()
             raise
+        finally:
+            if child_channel is not None:child_channel.close()
 
     @contextmanager
     def _pinned(self):
@@ -99,6 +115,7 @@ class EngineProcess:
         except BaseException:
             self.writer.stopped=True
             raise
+        if self.progress is not None:self.progress.stop()
         if code!=0:
             self.writer.stopped=True
             raise RuntimeError('Engine exited unsuccessfully; retained files require reconciliation')

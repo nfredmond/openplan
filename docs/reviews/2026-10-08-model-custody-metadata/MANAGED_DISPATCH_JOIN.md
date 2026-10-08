@@ -2196,3 +2196,29 @@ real-child test launches its own disposable process. Run reads, count preparatio
 path resolution, solver integration, launch admission, descendant containment and
 supervisor-loss recovery are not established. Frame size bounds memory use, not
 wall-clock liveness; the eventual supervisor must own deadlines and interruption.
+
+### Connect the reserved launch to its progress channel
+
+EngineProcess can now create a private socket pair for its reserved child. It
+passes only the child endpoint through pass_fds and supplies its descriptor in a
+launch-specific environment copy. The parent closes its copy of the child
+endpoint after Popen; spawn failure closes both endpoints while retaining the
+launch reservation and stopping the writer. A supplied descriptor setting is
+rejected before launch. The child consumes that setting once and marks the
+endpoint noninheritable. Observed child exit closes the parent channel.
+
+Three new tests exercise the actual reserved launch and parent writer with a
+real socket and command journal. HTTP remains mocked. The child waits for the
+confirmed progress response, writes its completion marker and cannot reopen the
+endpoint from the consumed environment setting. Four targeted controls catch
+parent/child endpoint leaks, a foreign descriptor setting and failure to close
+the completed channel. Existing process and channel controls pass again, as does
+the native borrowed-matrix-view check. The warning-enabled broader suite passes
+300 tests. See prototype/engine-launch-channel-controls.json and the refreshed
+process/channel/native reports.
+
+This joins launch and progress only. It does not establish native solver use of
+the channel, run/path/count operations, provisional result handling, descendant
+containment, supervisor restart or full normal dispatch. Consuming an environment
+setting prevents accidental reuse; it is not protection against arbitrary
+same-user code retaining a descriptor or creating new sockets.

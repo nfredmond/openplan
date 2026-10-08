@@ -4,11 +4,13 @@ The parent retains database authority. This channel is not a sandbox against
 same-user processes and does not authorize child startup or output capture.
 """
 import json
+import os
 import socket
 import struct
 
 MAX_FRAME = 65536
 VERSION = 1
+CHANNEL_FD_ENV = "OPENPLAN_ENGINE_CHANNEL_FD"
 
 
 class ChannelStopped(RuntimeError):
@@ -117,3 +119,13 @@ class ProgressParent(Channel):
             self.writer.stopped = True
             self.stop()
             raise
+
+
+def inherited_progress_client():
+    """Consume this child's descriptor setting, with no persistent reconnect path."""
+    raw = os.environ.pop(CHANNEL_FD_ENV, None)
+    if raw is None or not raw.isdecimal() or int(raw) < 3:
+        raise ChannelStopped('No inherited engine progress endpoint')
+    connection = socket.socket(fileno=int(raw))
+    connection.set_inheritable(False)
+    return ProgressClient(connection)
