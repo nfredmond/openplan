@@ -308,3 +308,27 @@ server contains now or which worker owns the stage. The output states those
 limits explicitly. Missing journals and invalid records fail inspection; they
 are not reported as an empty successful inventory. A different installation
 returns no matching records. Keep that scope in mind when checking completeness.
+
+## Inspect a retained managed claim
+
+For a retained `claim_model_stage_attempt` receipt, inspect current stage and
+parent ownership with the original request ID and explicit workspace scope:
+
+```bash
+python3 model_command_recovery.py --journal /path/to/original/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --inspect-ownership "$CLAIM_REQUEST_ID" --workspace-id "$WORKSPACE_ID"
+```
+
+This action needs `SUPABASE_SERVICE_ROLE_KEY`. It makes a scoped read through
+the existing ownership reader. It does not replay a command or update the local
+journal. Pending claims, wrong installations, invalid receipts and missing
+scope are refused. Legacy claims without a retained managed-claim receipt do
+not qualify for this command.
+
+`ownership.owns_stage` describes the database snapshot at the read. It is not
+a lease, scientific permission or authority to continue later. The output keeps
+`point_in_time_only` true and `continuation_authorized` and `model_resumed` false.
+A failed or incomplete read returns `ownership_unconfirmed` with exit 2, not a
+confirmed negative ownership result. Current ownership and every later write
+still require the database attempt fence. Automatic restart remains unfinished.

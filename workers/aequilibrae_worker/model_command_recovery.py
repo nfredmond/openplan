@@ -63,6 +63,24 @@ def command_summaries(directory, *, base_url, deployment_id):
     return summaries
 
 
+def inspect_saved_ownership(directory, request_id, *, workspace_id, base_url, deployment_id, service_key, get=None):
+    """Read current ownership from a retained claim, without replay or journal writes."""
+    client._uuid(request_id)
+    client._uuid(workspace_id)
+    records = _checked_records(directory, base_url, deployment_id, request_id)
+    if len(records) != 1 or not records[0]['resolved']:
+        raise ValueError('Ownership inspection requires one retained claim receipt')
+    saved = records[0]
+    state = client.inspect_ownership(saved['command'], saved['response'], workspace_id=workspace_id,
+                                    base_url=base_url, deployment_id=deployment_id,
+                                    service_key=service_key, get=get)
+    return {'request_id': request_id, 'workspace_id': workspace_id,
+            'run_id': saved['command']['arguments']['run_id'],
+            'stage_id': saved['command']['arguments']['stage_id'],
+            'ownership': state, 'point_in_time_only': True,
+            'continuation_authorized': False, 'model_resumed': False}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--journal', required=True, type=Path)
@@ -73,9 +91,18 @@ def main(argv=None):
     action.add_argument('--list-commands', action='store_true')
     action.add_argument('--list-computations', action='store_true')
     action.add_argument('--request-id')
+    action.add_argument('--inspect-ownership', metavar='CLAIM_REQUEST_ID')
+    parser.add_argument('--workspace-id')
     args = parser.parse_args(argv)
     try:
-        if args.list_commands:
+        if args.workspace_id and not args.inspect_ownership:
+            raise ValueError('Workspace scope is only used by ownership inspection')
+        if args.inspect_ownership:
+            print(json.dumps(inspect_saved_ownership(
+                args.journal, args.inspect_ownership, workspace_id=args.workspace_id,
+                base_url=args.base_url, deployment_id=args.deployment_id,
+                service_key=os.environ.get('SUPABASE_SERVICE_ROLE_KEY', ''))))
+        elif args.list_commands:
             print(json.dumps({'commands': command_summaries(
                 args.journal, base_url=args.base_url, deployment_id=args.deployment_id),
                 'server_state_checked': False, 'ownership_checked': False, 'model_resumed': False}))
@@ -89,6 +116,9 @@ def main(argv=None):
             recover_request(args.journal, args.request_id, base_url=args.base_url,
                             deployment_id=args.deployment_id, service_key=os.environ.get('SUPABASE_SERVICE_ROLE_KEY', ''))
             print(json.dumps({'request_id': args.request_id, 'outcome': 'command_receipt_retained', 'model_resumed': False}))
+    except client.OwnershipUnconfirmed:
+        print(json.dumps({'outcome': 'ownership_unconfirmed', 'continuation_authorized': False, 'model_resumed': False}))
+        return 2
     except client.DeliveryUnconfirmed:
         print(json.dumps({'outcome': 'delivery_unconfirmed', 'model_resumed': False}))
         return 2

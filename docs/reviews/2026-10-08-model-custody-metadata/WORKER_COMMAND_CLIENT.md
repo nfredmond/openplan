@@ -511,3 +511,23 @@ inventory completeness, filesystem adversary resistance, current attempt
 ownership or safe model resumption. The first targeted test invocation used an
 incorrect relative file path and did not create or run the new test; the
 corrected invocation and regression results above supersede it.
+
+## Read-only ownership inspection from the recovery CLI
+
+The CLI now exposes the existing scoped ownership reader through
+`--inspect-ownership CLAIM_REQUEST_ID --workspace-id WORKSPACE_ID`. It opens the
+existing journal without creating one, requires a resolved original claim,
+checks its receipt and deployment, and reads the current parent/stage snapshot.
+It neither redelivers pending commands nor writes journal records. Its output
+separates point-in-time ownership from continuation authority and model resumption.
+
+The focused reader, inventory, recovery and new CLI tests pass, followed by all
+55 command tests. That wider run reports an unclosed SQLite connection warning;
+it does not fail. New tests use explicitly closed connections. Controls retain a
+harmless comment and restored baseline; false continuation authorization, false
+resumption and reporting a failed ownership read as exit 0 all fail. Results are
+in `prototype/ownership-cli-controls.json`. The new checks use injected HTTP
+responses and the real local SQLite journal, not native database authorization.
+Existing native ownership-reader evidence remains separate. A fresh CLI against
+a native managed claim, operator reconciliation and actual model restart remain
+open. This command is not connected to the legacy normal dispatcher as a lease.
