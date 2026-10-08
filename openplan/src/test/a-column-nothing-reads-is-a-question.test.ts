@@ -73,6 +73,9 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "model_legacy_artifact_receipts.artifact_id", category: "READ_IN_SQL", reason: "record_legacy_model_artifact selects the saved receipt by its prepared artifact identity before deciding whether to insert a row." },
+  { column: "model_legacy_artifact_receipts.request_payload", category: "READ_IN_SQL", reason: "record_legacy_model_artifact compares the workspace and complete artifact payload before accepting an exact retry." },
+  { column: "model_legacy_artifact_receipts.response_payload", category: "READ_IN_SQL", reason: "record_legacy_model_artifact returns the saved artifact row after committed response loss without inserting another row." },
   { column: "model_assessment_command_receipts.request_payload", category: "READ_IN_SQL", reason: "record_legacy_model_assessment compares the retained request on retry and refuses changed assessment payloads." },
   { column: "model_assessment_command_receipts.response_payload", category: "READ_IN_SQL", reason: "record_legacy_model_assessment returns the original assessment and artifact rows on an exact retry." },
   { column: "model_stage_claim_receipts.request_payload", category: "READ_IN_SQL", reason: "The native command compares the original payload on retry and refuses request identity reuse with different arguments." },

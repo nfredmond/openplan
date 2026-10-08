@@ -337,3 +337,27 @@ creation timestamp, so recomputing it is not an exact retry.
 This is an implementation dependency within roadmap M3/S1, not a replacement
 queue or reduced v1 contract. Recovering the primary receipt alone neither
 reexecutes scientific assessment nor establishes current stage ownership.
+
+
+## Artifact release bookkeeping
+
+The branch now includes the assessment branch's `3a87fa2a` inventory and operator
+notice corrections through an ordinary merge. Migration 16 is also named in the
+Unreleased changelog with its worker upgrade prerequisites and replay limits.
+The isolated installed catalog confirms 301 application tables, all with RLS,
+and 14 application views after excluding PostGIS extension relations. The schema
+inventory matches those counts. The unread-column ledger documents the artifact
+identity lookup and the exact request/response reads inside the database command.
+
+The first focused run identified the artifact identity column as another SQL-only
+reader; documenting its actual lookup resolved the failure. All 41 tests across
+the column, schema and release-ordering suites then pass. Harmless and restored
+migration controls pass; removing RLS and adding an undocumented synthetic column
+each fail the expected assertion. Evidence is in
+`model-command-client-20261008-proof/artifact-inventory-controls.json`.
+
+This checkout now has its own dependency installation. The bounded `npm ci`
+completed successfully, and a native in-memory SQLite query passed afterward.
+The assessment checkout stays unchanged while its second full QA runs. Full
+application QA for the artifact branch remains pending and will run serially
+after that job. No release or scientific acceptance follows from these checks.

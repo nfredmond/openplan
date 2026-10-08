@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Migration `20261016000016_legacy_artifact_command_receipts.sql` adds private
+artifact recovery receipts. Apply it before starting the updated AequilibraE
+worker. Primary link-volume registration retains its prepared identity and
+request in the stage journal. The recovery CLI can retrieve a committed receipt
+after a lost reply. Keep the journal with the original source files. Secondary
+artifact and KPI writes still prevent safe replay of the complete stage.
+
 Migration `20261016000015_legacy_assessment_command_receipts.sql` adds private
 assessment command receipts. Apply it before starting the updated AequilibraE
 worker. Configure `OPENPLAN_DEPLOYMENT_ID` and retain the worker's assessment
