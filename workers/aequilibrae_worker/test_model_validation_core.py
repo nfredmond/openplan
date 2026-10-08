@@ -175,13 +175,59 @@ def test_incompatible_year_day_direction_and_units_are_inconclusive():
         assert any(row["key"] == key and row["status"] == "incompatible" for row in finding), finding
 
 
+def supported_bounds():
+    """Synthetic interval for positive controls, not a real acceptance allowance."""
+    return {
+        "lower": 95.0, "upper": 105.0,
+        "method": "synthetic publisher interval method",
+        "authority": "synthetic test authority", "artifact_sha256": HASH,
+    }
+
+
 def test_pce_requires_a_frozen_recorded_conversion():
     comparison_basis = basis(unit="pce", acceptance=frozen_rule())
     comparison_basis["vehicle_basis"]["vehicle_pce_conversion"] = {
         "status": "proven", "factor": 0.94, "artifact_sha256": HASH
     }
-    result = assess([observation()], comparison_basis)
+    result = assess([observation(bounds=supported_bounds())], comparison_basis)
     assert result["scientific_outcome"] == "pass", result
+
+
+def test_grade_b_without_bounds_cannot_pass_or_fail_scientific_acceptance():
+    for volume in (100.0, 1000.0):
+        result = assess([observation()], basis(acceptance=frozen_rule()), {"link-1": volume})
+        assert result["scientific_outcome"] == "inconclusive", result
+        row = result["observation_results"][0]
+        assert row["evidence_grade"] == "B"
+        assert row["observed_bounds"] == "unknown"
+        assert row["raw_signed_residual"] == volume - 100.0
+        assert not row["decisive"]
+        assert result["metrics"]["all_computed"]["observations"] == 1
+        assert result["coverage"]["decisive"] == 0
+        assert any("no source-supported bounds" in reason for reason in result["reasons"])
+
+
+def test_unknown_bounds_cannot_fill_the_decisive_observation_minimum():
+    bounded = observation(bounds=supported_bounds())
+    unbounded = observation("unbounded", link_id="link-2")
+    result = assess(
+        [bounded, unbounded], basis(acceptance=frozen_rule(minimum_decisive_observations=2)),
+        {"link-1": 100.0, "link-2": 100.0},
+    )
+    assert result["scientific_outcome"] == "inconclusive", result
+    assert result["coverage"]["decisive"] == 1
+    assert result["metrics"]["all_computed"]["observations"] == 2
+    assert any("Only 1 decisive" in reason for reason in result["reasons"])
+
+
+def test_supported_bounds_preserve_frozen_raw_error_decisions():
+    for volume, expected in ((110.0, "pass"), (200.0, "fail")):
+        result = assess(
+            [observation(bounds=supported_bounds())], basis(acceptance=frozen_rule()),
+            {"link-1": volume},
+        )
+        assert result["scientific_outcome"] == expected, result
+        assert result["coverage"]["decisive"] == 1
 
 
 def test_raw_residual_zero_observation_and_source_interval_metrics():

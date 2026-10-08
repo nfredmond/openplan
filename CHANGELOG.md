@@ -44,6 +44,11 @@ source file. It verifies retained bytes without executing that source or
 presenting an old study as validation of the current matcher. The default
 continues to reject mismatched source bytes; scientific outcomes are unchanged.
 
+New rules-v4 assessments exclude observations with unknown source-supported
+bounds from decisive metrics and scientific pass/fail decisions. Raw diagnostics
+and original grades remain visible. This corrects a possible grade-B false pass;
+it does not rewrite historical assessments or establish model accuracy.
+
 Published distributed model results verify retained hashes, identities, summary
 agreement and required values before display. Missing evidence stays unavailable.
 AequilibraE and ActivitySim remain separate and scientifically inconclusive.
