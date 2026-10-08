@@ -226,3 +226,19 @@ The committed result is `prototype/braces-copy-controls.json`. Remaining local
 dependency audit and production build have not yet passed on the corrected tree.
 The prior full application suite is retained as evidence for its stated commit,
 not relabeled as a complete successful QA gate for this later candidate.
+
+## Corrected dependency audit and production build
+
+The bounded `openplan-recovery-audit-build-aa5e8318.service` job completes with
+exit 0 on `aa5e8318`. It runs the dependency audit and production build after
+the earlier QA job's failure. All 19 vendor checks pass, the ten installed
+manifest files match, npm audit reports zero vulnerabilities, and the webpack
+build completes TypeScript checking and page generation. The command uses the
+same synthetic build configuration and explicitly disables local live RLS.
+
+This is the completed remainder of local validation, not a new monolithic
+`qa:gate` pass. The earlier 20,139-test result remains tied to `989128da`; the
+later worker inventory and documentation/configuration changes have their
+separate targeted tests. GitHub live RLS and full-archive restoration on
+`85a12549` are still running at this checkpoint. The corrected integration head
+has not yet received new GitHub checks or desktop/390px T3 acceptance.
