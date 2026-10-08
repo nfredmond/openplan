@@ -90,3 +90,30 @@ uncertain-result behavior. Report readers must distinguish retained evidence
 from current confirmed publication. Browser evidence must identify the build
 and cover desktop and 390px rendering through T3. These software checks still
 do not establish independent scientific or practitioner acceptance.
+
+## Immediate failure containment
+
+The legacy worker now stops at a rejected claim, metric deletion or metric
+insertion response. Lost replies and missing workspace identity raise
+`WorkerStateWriteUnconfirmed`. Requests keep their timeout and refuse redirects.
+The artifact caller propagates uncertainty before logging an acknowledged update;
+the existing dispatcher leaves uncertain state for reconciliation. Scientific
+tier calculation and method separation are unchanged.
+
+Five focused tests pass, including 21 rejected-response combinations and three
+lost-reply positions. They execute the actual helper with injected transport;
+the artifact caller test executes its actual extracted try block. Ten existing
+credibility checks and 27 assignment-handoff checks also pass. Baseline, harmless
+and restored cases pass. Eight targeted faults are detected: each of the three
+response guards, missing workspace, swallowed transport error, swallowed caller
+uncertainty, enabled redirects and disabled timeout. Private evidence is
+`model-command-client-20261008-proof/evidence-delivery-controls.json`.
+
+An initial test command used an incorrect relative path and failed before the
+test file existed. The corrected worker-directory command produced these results.
+
+This contains the reproduced continuation after a rejected upsert. It does not
+make multiple HTTP writes atomic, validate a receipt body, undo a committed
+delete, retain the previous publication, or provide automatic recovery. The
+county path is unchanged. Native transaction/retry and reader evidence described
+above remains required before declaring publication recovery complete.

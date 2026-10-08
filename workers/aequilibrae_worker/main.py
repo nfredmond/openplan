@@ -1089,9 +1089,10 @@ def write_model_run_modeling_evidence(
     from the observed-count gate. NEVER 'claim_grade_passed' (that needs the
     county-lane validation-threshold pass). A calibration selection holdout is
     not independent accuracy evidence: a calibrated tier requires a separate,
-    untouched validation result. Best-effort; never fails a run."""
+    untouched validation result. Unconfirmed writes stop further publication.
+    These legacy HTTP writes are not atomic; retained publication is still required."""
     if not workspace_id:
-        return
+        raise WorkerStateWriteUnconfirmed("Modeling evidence workspace is unavailable")
     try:
         matched = int((validation or {}).get("stations_matched", 0) or 0)
         median_ape = (validation or {}).get("median_ape")
@@ -1220,7 +1221,7 @@ def write_model_run_modeling_evidence(
         upsert_headers["Prefer"] = "resolution=merge-duplicates,return=minimal"
         if track not in {"assignment", "behavioral_demand"}:
             raise ValueError(f"unsupported modeling evidence track: {track}")
-        requests.post(
+        claim_response = requests.post(
             f"{SUPABASE_URL}/rest/v1/modeling_claim_decisions?on_conflict=model_run_id,track",
             headers=upsert_headers,
             json={
@@ -1233,13 +1234,17 @@ def write_model_run_modeling_evidence(
                         validation, calibration, independent_validation
                     ),
                 },
-            }, timeout=20,
+            }, timeout=20, allow_redirects=False,
         )
+        if claim_response.status_code not in (200, 201):
+            raise WorkerStateWriteUnconfirmed("Modeling claim update unconfirmed")
         # Refresh the per-metric validation rows for this run/track.
-        requests.delete(
+        delete_response = requests.delete(
             f"{SUPABASE_URL}/rest/v1/modeling_validation_results?model_run_id=eq.{run_id}&track=eq.{track}",
-            headers=HEADERS, timeout=20,
+            headers=HEADERS, timeout=20, allow_redirects=False,
         )
+        if delete_response.status_code not in (200, 204):
+            raise WorkerStateWriteUnconfirmed("Modeling metric replacement unconfirmed")
         if validation and matched > 0:
             # Same zone qualification the claim decision above applied, so the
             # metric row and the claim beside it cannot tell a planner two
@@ -1286,9 +1291,18 @@ def write_model_run_modeling_evidence(
                 "detail": f"{matched} station(s) matched; >=3 required for a screening claim.",
                 "metadata_json": {"stations_matched": matched},
             }]
-            requests.post(f"{SUPABASE_URL}/rest/v1/modeling_validation_results", headers=HEADERS, json=rows, timeout=20)
+            metric_response = requests.post(
+                f"{SUPABASE_URL}/rest/v1/modeling_validation_results",
+                headers=HEADERS, json=rows, timeout=20, allow_redirects=False,
+            )
+            if metric_response.status_code not in (200, 201):
+                raise WorkerStateWriteUnconfirmed("Modeling metric write unconfirmed")
+    except WorkerStateWriteUnconfirmed:
+        raise
     except Exception:
-        pass  # evidence spine is best-effort; never fail the run over it
+        # A missing reply can follow a commit. Do not convert it into success
+        # or issue more writes against an uncertain publication.
+        raise WorkerStateWriteUnconfirmed("Modeling evidence update unconfirmed") from None
 
 
 def sb_get_run(run_id: str) -> dict:
@@ -5826,7 +5840,9 @@ def stage_artifacts(
             calibration_result,
             independent_validation_result,
         )
-        log += "Modeling claim spine updated from the rules-v4 scientific outcome.\n"
+        log += "Modeling evidence update acknowledged.\n"
+    except WorkerStateWriteUnconfirmed:
+        raise
     except Exception as exc:
         log += f"Modeling evidence spine warning: {exc}\n"
 
