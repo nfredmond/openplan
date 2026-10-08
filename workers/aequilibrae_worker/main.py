@@ -6795,11 +6795,20 @@ def _claim_and_run_stage(stage: dict) -> bool:
         return True
 
     # Check if run is complete
-    res = requests.get(
-        f"{SUPABASE_URL}/rest/v1/model_run_stages?run_id=eq.{run_id}&status=neq.succeeded",
-        headers=HEADERS,
-    )
-    if res.status_code == 200 and not res.json():
+    try:
+        res = requests.get(
+            f"{SUPABASE_URL}/rest/v1/model_run_stages?run_id=eq.{run_id}&status=neq.succeeded",
+            headers=HEADERS,
+            timeout=30,
+        )
+        if res.status_code != 200:
+            raise RuntimeError("Worker completion read unconfirmed: HTTP response failed")
+        unfinished_stages = res.json()
+        if not isinstance(unfinished_stages, list):
+            raise RuntimeError("Worker completion read unconfirmed: expected a stage list")
+    except (requests.RequestException, ValueError) as error:
+        raise RuntimeError("Worker completion read unconfirmed: no valid response") from error
+    if not unfinished_stages:
         sb_patch_run(run_id, {"status": "succeeded", "completed_at": datetime.now(timezone.utc).isoformat()})
         print(f"[{time.strftime('%X')}] 🎉 Run {run_id[:8]}… complete!")
 

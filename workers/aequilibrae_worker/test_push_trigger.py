@@ -821,6 +821,47 @@ def test_stage_write_lost_ack_does_not_overwrite_possible_success_with_failure()
         assert "complete!" not in output.getvalue(), output.getvalue()
 
 
+def test_run_completion_requires_a_confirmed_stage_list():
+    import contextlib
+    import io
+    import tempfile
+    from unittest import mock
+
+    cases = [(200, [], True), (200, [{"status": "running"}], False),
+             (200, None, None), (200, {}, None), (200, False, None),
+             (200, "", None), (503, [], None), (403, [], None),
+             (200, ValueError("private invalid JSON"), None),
+             (200, main.requests.Timeout("private transport detail"), None)]
+    for status, rows, complete in cases:
+        response = mock.Mock(status_code=status)
+        response.json.side_effect = rows if isinstance(rows, ValueError) else None
+        response.json.return_value = rows
+        get_args = {"side_effect": rows} if isinstance(rows, main.requests.RequestException) else {"return_value": response}
+        output = io.StringIO()
+        with tempfile.TemporaryDirectory() as work, contextlib.redirect_stdout(output), \
+             mock.patch.object(main, "RUN_WORK_ROOT", work), \
+             mock.patch.object(main, "sb_claim_stage", return_value=True), \
+             mock.patch.object(main, "sb_get_run", return_value={}), \
+             mock.patch.object(main, "ensure_dynamic_package", return_value={"package_dir": work, "bbox": [0, 0, 1, 1]}), \
+             mock.patch.object(main, "stage_setup", return_value={"log": "synthetic completed computation"}), \
+             mock.patch.object(main, "sb_patch_stage") as stage_write, \
+             mock.patch.object(main, "sb_patch_run") as run_write, \
+             mock.patch.object(main.requests, "get", **get_args) as get:
+            try:
+                main.process_stage({"id": RUN_ID, "run_id": RUN_ID, "stage_name": "AequilibraE Setup"})
+            except RuntimeError as error:
+                assert complete is None, (status, rows, str(error))
+                assert "completion read unconfirmed" in str(error)
+                assert "private" not in str(error)
+            else:
+                assert complete is not None, f"Unconfirmed completion accepted: {status}, {rows}"
+            assert get.call_args.kwargs.get("timeout") == 30
+            assert get.call_args.args[0].endswith(f"model_run_stages?run_id=eq.{RUN_ID}&status=neq.succeeded")
+            assert [c.args[1]["status"] for c in run_write.call_args_list] == (["running", "succeeded"] if complete else ["running"])
+            assert [c.args[1]["status"] for c in stage_write.call_args_list] == ["succeeded"]
+            assert ("complete!" in output.getvalue()) == bool(complete)
+
+
 TESTS = [value for name, value in sorted(globals().items()) if name.startswith("test_")]
 
 if __name__ == "__main__":

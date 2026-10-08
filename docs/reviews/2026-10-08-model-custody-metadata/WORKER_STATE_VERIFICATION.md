@@ -57,3 +57,13 @@ The native probe covers successful receipts and missing-row refusal. Lost
 acknowledgements and rejected responses use controlled requests. PR #155's
 running full QA and GitHub checks cover its earlier commit, not this follow-up.
 No release or full worker-recovery claim follows.
+
+## Completion-read correction
+
+A follow-up audit found that the final unfinished-stage query treated any falsy JSON response as an empty list. HTTP 200 with `null`, `{}`, `false` or an empty string could therefore authorize a run-success write. That GET also had no transport timeout.
+
+The worker now requires HTTP 200 and a JSON list, with a 30-second timeout. An empty list permits the existing completion write; a nonempty list leaves the run incomplete. Failed HTTP, malformed JSON, non-list payloads and transport errors stop completion with an explicit unconfirmed-read error. This check is outside the stage failure handler, so an uncertain completion read does not rewrite a successfully completed stage as failed. Public log text excludes transport exception detail.
+
+The push-trigger suite passes all 28 checks. The added process-stage test uses synthetic computation and mocked HTTP. It covers valid empty and nonempty lists, null/object/boolean/string responses, HTTP 503 and 403, JSON parse failure and timeout. It checks the request timeout and run filter, retained successful stage, run writes and absence of false completion logging. The original source fails the new check. A harmless comment passes; accepting non-list JSON, ignoring HTTP status, removing the timeout and leaking the transport exception each fail. Restored source passes.
+
+These checks do not establish live network timeout behavior, attempt fencing, host recovery or atomic completion. The stage-list read and run-status write remain separate operations. M3 still needs ownership and reconciliation work; this correction does not claim to close that boundary. Logs remain in the private proof directory as `completion-read-*.log` and `completion-read-controls.json`.
