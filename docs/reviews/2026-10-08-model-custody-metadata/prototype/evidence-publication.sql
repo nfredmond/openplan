@@ -120,6 +120,7 @@ BEGIN
  SELECT * INTO parent FROM public.model_runs WHERE id=p_run FOR UPDATE;
  IF NOT FOUND OR parent.workspace_id IS DISTINCT FROM p_workspace THEN RAISE EXCEPTION 'Publication workspace mismatch'; END IF;
  IF parent.attempt_managed THEN RAISE EXCEPTION 'Managed publication requires instrument ingestion'; END IF;
+ IF parent.status IN ('failed','cancelled') THEN RAISE EXCEPTION 'Stopped run cannot publish new model evidence'; END IF;
  previous:=public.read_legacy_model_evidence(p_workspace,p_run,p_track);
  IF previous IS DISTINCT FROM p_expected THEN RAISE EXCEPTION 'Publication evidence changed'; END IF;
  INSERT INTO public.model_evidence_publication_context VALUES(txid_current(),p_run,p_track);

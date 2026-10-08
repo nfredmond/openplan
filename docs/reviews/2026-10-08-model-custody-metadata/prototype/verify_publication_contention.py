@@ -51,12 +51,16 @@ def verify():
             payload={'claim':{'workspace_id':ws,'model_run_id':run,'track':'assignment','claim_status':'prototype_only','status_reason':'Synthetic concurrent publication','validation_summary_json':{}},'metrics':[]}
             def call(identity):
                 return f"public.publish_legacy_model_evidence('{identity}','{ws}','{run}','assignment',{quoted(json.dumps(expected))}::jsonb,{quoted(json.dumps(payload))}::jsonb)"
+            lifecycle=mode in ('reaper-first','publication-first')
+            reap=f"public.reap_model_run_if_stale('{run}',clock_timestamp()+interval '1 minute','Synthetic publication race')"
+            owner_call=reap if mode=='reaper-first' else call(request)
             owner=subprocess.Popen(command,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1)
-            owner.stdin.write('SET statement_timeout=12000; SET idle_in_transaction_session_timeout=15000; BEGIN; SET LOCAL ROLE service_role; SELECT '+call(request)+';\n');owner.stdin.flush()
+            owner.stdin.write('SET statement_timeout=12000; SET idle_in_transaction_session_timeout=15000; BEGIN; SET LOCAL ROLE service_role; SELECT to_json('+owner_call+');\n');owner.stdin.flush()
             first=ready(owner)
             contender_id=request if mode=='retry' else str(uuid.uuid4())
+            contender_call=reap if mode=='publication-first' else call(contender_id)
             contender=subprocess.Popen(command,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
-            contender.stdin.write(f"SET application_name='{label}'; SET statement_timeout=12000; SET ROLE service_role; SELECT "+call(contender_id)+';\n');contender.stdin.close();contender.stdin=None
+            contender.stdin.write(f"SET application_name='{label}'; SET statement_timeout=12000; SET ROLE service_role; SELECT to_json("+contender_call+');\n');contender.stdin.close();contender.stdin=None
             blocked=False
             for _ in range(40):
                 if sql(f"SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE application_name='{label}' AND wait_event_type='Lock' AND cardinality(pg_blocking_pids(pid))>0);")=='t':
@@ -69,6 +73,23 @@ def verify():
             _,error=owner.communicate(timeout=15)
             if owner.returncode:raise RuntimeError(error)
             output,error=contender.communicate(timeout=15)
+            if lifecycle:
+                if mode=='reaper-first':
+                    if first is not True:raise AssertionError('Reaper did not stop fixture')
+                    if contender.returncode==0:raise AssertionError('Publication committed after reaper')
+                    if 'Stopped run cannot publish new model evidence' not in error:raise RuntimeError(error)
+                    wanted_count='0'
+                else:
+                    if contender.returncode or json.loads(output) is not True:raise AssertionError('Reaper did not finish after publication')
+                    wanted_count='1'
+                    retry=json.loads(sql('SELECT '+call(request)+';'))
+                    if retry!=first:raise AssertionError('Reaped run lost historical publication receipt')
+                count=sql(f"SELECT count(*) FROM public.model_evidence_publication_receipts WHERE run_id='{run}';")
+                retained=json.loads(sql(f"SELECT public.read_legacy_model_evidence('{ws}','{run}','assignment');"))
+                expected_retained=expected if mode=='reaper-first' else first['evidence']
+                if count!=wanted_count or retained!=expected_retained:raise AssertionError('Lifecycle race changed retained evidence')
+                if sql(f"SELECT status FROM public.model_runs WHERE id='{run}';")!='failed':raise AssertionError('Lifecycle race did not retain failed run')
+                return {'mode':mode,'run_id':run,'lock_wait_observed':True,'receipt_count':int(count),'run_status':'failed'}
             if mode=='retry':
                 if contender.returncode or json.loads(output)!=first:
                     raise AssertionError('Concurrent exact retry did not return original receipt')
@@ -101,21 +122,22 @@ DROP TABLE public.model_evidence_publication_receipts;
 COMMIT;''')
     results=[]
     for name,candidate in [('baseline',source),('harmless',source+'\n-- Harmless contention comment.\n')]:
-        for mode in ('retry','competing'):
+        for mode in ('retry','competing','reaper-first','publication-first'):
             results.append({'case':name,**check(candidate,mode)})
     mutants=[('stale-check-bypass',source.replace('IF previous IS DISTINCT FROM p_expected THEN','IF false THEN',1),'competing','Two stale publishers both committed'),('wrong-retry-receipt',source.replace('RETURN receipt.response_payload;',"RETURN '{}'::jsonb;",1),'retry','Concurrent exact retry did not return original receipt')]
+    mutants.append(('stopped-run-bypass',source.replace("IF parent.status IN ('failed','cancelled') THEN",'IF false THEN',1),'reaper-first','Publication committed after reaper'))
     for name,candidate,mode,error in mutants:
         try:check(candidate,mode)
         except AssertionError as failure:
             if str(failure)!=error:raise
             results.append({'case':name,'mode':mode,'caught':error})
         else:raise AssertionError('Contention mutation survived: '+name)
-    for mode in ('retry','competing'):
+    for mode in ('retry','competing','reaper-first','publication-first'):
         results.append({'case':'restored',**check(source,mode)})
     if sql("SELECT to_regclass('public.model_evidence_publication_receipts') IS NULL;")!='t':
         raise AssertionError('Publication proof cleanup failed')
     output=Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_OUTPUT']).resolve();output.mkdir(mode=0o700,parents=True,exist_ok=True)
-    evidence={'cases':results,'cleanup_confirmed':True,'scope':'Committed synthetic records in the named owned proof DB, actual constraints and service-role calls in separate PostgreSQL sessions. Candidate proof objects removed; synthetic run/projection rows retained. No installed migration, HTTP, reaper race, worker adoption, county or scientific acceptance.'}
+    evidence={'cases':results,'cleanup_confirmed':True,'scope':'Committed synthetic records in the named owned proof DB, actual constraints and service-role calls in separate PostgreSQL sessions. Candidate proof objects removed; synthetic run/projection rows retained. Legacy publication versus native stale-run reaper ordering only. No installed migration, HTTP, managed ingestion, worker adoption, county or scientific acceptance.'}
     (output/'publication-contention.json').write_text(json.dumps(evidence,indent=2)+'\n')
     return evidence
 

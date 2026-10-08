@@ -153,6 +153,18 @@ BEGIN
   OR EXISTS(SELECT 1 FROM public.model_evidence_publication_context WHERE run_id=run) THEN
   RAISE EXCEPTION 'Receipt failure left partial publication';
  END IF;
+ FOREACH text_key IN ARRAY ARRAY['failed','cancelled'] LOOP
+  UPDATE public.model_runs SET status=text_key WHERE id=run;
+  rejected:=false;
+  BEGIN PERFORM public.publish_legacy_model_evidence(gen_random_uuid(),ws,run,'assignment',after_state,payload);
+  EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'Stopped run cannot publish new model evidence' THEN RAISE; END IF; rejected:=true; END;
+  IF NOT rejected THEN RAISE EXCEPTION 'Stopped run publication accepted'; END IF;
+  IF public.publish_legacy_model_evidence(req,ws,run,'assignment',before_state,payload) IS DISTINCT FROM response
+   OR public.read_legacy_model_evidence(ws,run,'assignment') IS DISTINCT FROM after_state THEN
+   RAISE EXCEPTION 'Stopped run changed historical receipt or evidence';
+  END IF;
+ END LOOP;
+ UPDATE public.model_runs SET status='queued' WHERE id=run;
  INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order) VALUES(stage,run,'Synthetic managed boundary','queued',1);
  PERFORM public.claim_model_stage_attempt(gen_random_uuid(),stage,'synthetic-publication-boundary');
  rejected:=false;

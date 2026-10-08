@@ -330,3 +330,33 @@ This is refusal of ambiguous legacy model evidence, not county publication or
 a migration of prior records. Installation, normal dispatcher adoption, managed
 scientific ingestion, lifecycle/reaper ordering and scientific acceptance remain
 open. The candidate remains uninstalled in application databases.
+
+## Publication and stale-run reaper ordering
+
+The candidate now refuses a new publication when the locked parent run is
+failed or cancelled. An exact retry still returns the original committed receipt
+before that check. Receipt recovery records a past write; it does not reactivate
+the run or establish a current scientific claim.
+
+Native rollback cases cover failed and cancelled runs, unchanged evidence, and
+historical receipt recovery. Baseline, harmless and restored variants pass, and
+all fifteen targeted faults are detected. The new guard's bypass permits a
+stopped-run publication and fails for that reason.
+
+Separate service-role PostgreSQL sessions exercise both transaction orders
+against the installed `reap_model_run_if_stale` function. The test observes an
+actual lock wait before releasing the first transaction. Reaper-first refuses
+publication with zero receipts. Publication-first retains one receipt and its
+evidence, allows the reaper to mark the run failed, and returns the same receipt
+on exact retry. Both orders pass in baseline, harmless and restored variants.
+The concurrent guard-bypass mutation is detected when publication incorrectly
+commits after the reaper. Together with existing retry and competing-publication
+cases, all fifteen concurrency cases have their expected outcomes.
+
+Temporary candidate objects are removed. Synthetic rows remain in the owned
+proof database. Evidence is retained under
+`model-command-client-20261008-proof/atomic-publication-lifecycle/` and
+`publication-contention-lifecycle/`. This closes the tested legacy publication
+versus stale-reaper ordering boundary only. Cancellation is tested sequentially;
+managed ingestion, normal worker adoption, installed migration, county evidence,
+reader presentation and scientific acceptance remain open.
