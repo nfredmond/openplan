@@ -1,0 +1,92 @@
+# Evidence publication findings
+
+Reviewed October 8, 2026 at `d4399e5f9c79602da59b31c285e9b81f028d9224`.
+This records implementation defects within the existing M3/S1 work. It does not
+replace the roadmap or declare managed worker adoption complete.
+
+## Reproduced worker failure sequence
+
+`workers/aequilibrae_worker/main.py::write_model_run_modeling_evidence` sends
+a claim upsert, deletes existing metric rows, and optionally inserts new rows.
+It ignores each HTTP status and suppresses all exceptions. An isolated execution
+of the exact AST-extracted function, with synthetic transport responses, returned
+normally after this sequence:
+
+1. Claim upsert returned HTTP 503.
+2. Validation metric deletion returned HTTP 204.
+3. No exception reached the caller.
+
+The input used a synthetic run/workspace and no validation result. Only transport
+and the independent-validation summarizer were injected. No database, full
+dispatcher or scientific model ran. This demonstrates the control flow, not a
+production loss. Private evidence is retained at
+`model-command-client-20261008-proof/legacy-evidence-partial-write.json`.
+The inspected worker source SHA-256 is
+`8189fe2d16ad19fb7d2707d907cf586f3aa8f5e106f8bcca73cf2f94b89b642d`.
+
+The AequilibraE artifact path calls this writer and then appends a claim-update
+success message. The ActivitySim assignment path calls the same writer for the
+separate `behavioral_demand` track before completing its stage. A normal return
+therefore cannot establish that either projection was stored. This finding does
+not authorize promoting or merging their scientific outcomes.
+
+## Related county path
+
+`openplan/src/lib/models/evidence-backbone.ts::refreshCountyRunModelingEvidence`
+deletes existing validation and claim rows before upserting sources and inserting
+replacements. Unlike the worker, it checks returned errors. Those checks cannot
+roll back earlier successful HTTP requests. A later error can leave an incomplete
+projection. This is a source inspection finding; a native failure-injection case
+for the county path remains required. County and model-run identities must remain
+distinct through any shared publication mechanism.
+
+## Current database boundary
+
+Migration `20261016000014_model_attempt_command_custody.sql` installs
+`guard_managed_model_projection` on both projection tables. It refuses writes
+when either old or new model run is managed. County-only rows and legacy model
+runs remain outside that refusal. The guard is intentional protection while
+attempt-bound ingestion remains unfinished. Removing it to accommodate these
+writers would reopen stale-worker publication.
+
+## Required integration behavior
+
+Publication must bind an exact request to its deployment, run or county identity,
+workspace, method/track, source evidence and payload. The server must atomically
+retain the prior publication, write its replacement, and save its receipt. A
+retry with the same request and payload returns the original receipt; changed
+payload reuse is refused. A lost HTTP reply remains unconfirmed until receipt
+reconciliation, without deleting or regenerating evidence.
+
+For managed runs, publication also verifies the active producing attempt and
+its retained assessment/output identities in the same transaction. Completion,
+reaping and publication must have explicit lock ordering and concurrency proof.
+Legacy and county publication must not acquire a managed scientific claim by
+using a compatibility route. Authorization must be checked at the actual entry
+point, including workspace and run relationships.
+
+Preserve prior rows and their source references before changing any current
+projection. Retained history must distinguish the last completed publication
+from a failed or unconfirmed replacement. Readers and reports need that status;
+an old success must not appear as evidence for newly computed, unpublished
+results. Source manifests, metrics and claim records form one publication.
+
+The normal dispatchers must propagate publication uncertainty and avoid logging
+success before confirmation. Existing rules-v4 and instrument evidence retain
+their separate identities and claim limits. No generic publication RPC may turn
+a caller-supplied status into independent scientific acceptance.
+
+## Evidence still required for the fix
+
+Native tests must inject failure after each write and establish that previous
+records survive intact. They must cover exact retry, changed-payload refusal,
+concurrent publishers, cross-workspace requests, stale attempts and both
+publication/reaper orderings. A dropped reply after commit must recover through
+the normal retained-command path. Harmless controls must pass and targeted
+broken behavior must fail for each changed guard.
+
+Worker and county caller tests must establish the actual request projection and
+uncertain-result behavior. Report readers must distinguish retained evidence
+from current confirmed publication. Browser evidence must identify the build
+and cover desktop and 390px rendering through T3. These software checks still
+do not establish independent scientific or practitioner acceptance.
