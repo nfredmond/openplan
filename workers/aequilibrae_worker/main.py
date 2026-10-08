@@ -625,18 +625,7 @@ def sb_patch_run(run_id: str, payload: dict):
 
 
 def sb_post_artifact(payload: dict):
-    url = f"{SUPABASE_URL}/rest/v1/model_run_artifacts"
-    response = requests.post(url, headers=HEADERS, json=payload, timeout=30)
-    if not 200 <= response.status_code < 300:
-        raise RuntimeError(
-            "Failed to register model artifact: "
-            f"{response.status_code} {response.text[:200]}"
-        )
-    try:
-        rows = response.json()
-    except ValueError:
-        rows = []
-    return rows[0] if isinstance(rows, list) and rows else None
+    return _confirmed_record_insert("model_run_artifacts", payload)
 
 
 def sb_record_modeling_validation_assessment(payload: dict) -> dict:
@@ -860,24 +849,10 @@ def register_agreement_artifact(
     with open(path, "rb") as handle:
         payload = handle.read()
     filename = os.path.basename(path)
-    object_path = f"model-runs/{run_id}/agreement/{filename}"
-    upload_url = f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}"
-    response = requests.post(
-        upload_url,
-        headers={
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": content_type,
-            "x-upsert": "true",
-        },
-        data=payload,
-        timeout=60,
-    )
-    file_url = (
-        f"storage://run-artifacts/{object_path}"
-        if response.status_code in (200, 201)
-        else f"local://{path}"
-    )
+    try:
+        file_url = upload_content_addressed_artifact(run_id, stage_id, filename, payload, content_type)
+    except WorkerStateWriteUnconfirmed:
+        file_url = f"local://{path}"
     profile, profile_payload, profile_digest = validated_assignment_profile(
         assignment_profile,
         assignment_profile_payload_json,
@@ -937,7 +912,7 @@ def register_agreement_artifact(
             "network_settings_digest": settings_digest,
             "network_state_record": state,
             "network_state_digest": state_digest,
-            "upload_status": "stored" if response.status_code in (200, 201) else "local_fallback",
+            "upload_status": "stored" if file_url.startswith("storage://") else "local_fallback",
         },
     })
 
@@ -1073,9 +1048,30 @@ def activitysim_assignment_package(run_id: str) -> str | None:
     return package_dir
 
 
+def _confirmed_record_insert(table: str, payload: dict) -> dict:
+    """Require the retained output receipt without retrying an uncertain insert."""
+    try:
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/{table}",
+            headers=HEADERS, json=payload, timeout=30,
+        )
+        if response.status_code != 201:
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: HTTP {response.status_code}")
+        rows = response.json()
+        if (not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict)
+                or not isinstance(rows[0].get("id"), str) or not rows[0]["id"]):
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: missing retained record")
+        if any(field not in rows[0] or rows[0][field] != value for field, value in payload.items()):
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: returned values differ")
+        return rows[0]
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except (requests.RequestException, ValueError, TypeError) as error:
+        raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: no valid receipt") from error
+
+
 def sb_post_kpi(payload: dict):
-    url = f"{SUPABASE_URL}/rest/v1/model_run_kpis"
-    requests.post(url, headers=HEADERS, json=payload)
+    _confirmed_record_insert("model_run_kpis", payload)
 
 
 def write_model_run_modeling_evidence(
@@ -4934,6 +4930,134 @@ def _network_coverage_for_run(run_id: str, db_path: str, link_volumes_csv: str) 
         return {"measured": False, "reason": f"{type(error).__name__}: {error}"}
 
 
+def upload_content_addressed_artifact(
+    run_id: str, stage_id: str, filename: str, data: bytes, content_type: str,
+) -> str:
+    """Retain content-addressed artifact bytes and reconcile through an exact read."""
+    digest = hashlib.sha256(data).hexdigest()
+    object_path = f"model-runs/{run_id}/stages/{stage_id}/sha256-{digest}/{filename}"
+    headers = {
+        "apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": content_type, "x-upsert": "false",
+    }
+    try:
+        requests.post(
+            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
+            headers=headers, data=data, timeout=60,
+        )
+    except requests.RequestException:
+        # The upload may have committed. Resolve custody by reading, not by
+        # repeating or overwriting the object.
+        pass
+    try:
+        retained = requests.get(
+            f"{SUPABASE_URL}/storage/v1/object/authenticated/run-artifacts/{object_path}",
+            headers=HEADERS, timeout=60,
+        )
+        if retained.status_code != 200 or retained.content != data:
+            raise WorkerStateWriteUnconfirmed("Artifact stored bytes unconfirmed")
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except requests.RequestException as error:
+        raise WorkerStateWriteUnconfirmed("Artifact stored bytes unconfirmed") from error
+    return f"storage://run-artifacts/{object_path}"
+
+
+def upload_volume_geojson_bytes(run_id: str, stage_id: str, data: bytes) -> str:
+    return upload_content_addressed_artifact(
+        run_id, stage_id, "volumes.geojson", data, "application/geo+json",
+    )
+
+
+def publish_volume_geojson(
+    run_id: str, stage_id: str, work_dir: str,
+    verified_engine_stamp: str, baseline_assignment_metadata: dict,
+) -> str:
+    """Publish the map artifact while preserving uncertain registration writes."""
+    out_dir = os.path.join(work_dir, "run_output")
+    log = ""
+    # Generate GeoJSON for the map and upload to Supabase Storage
+    try:
+        import csv as csv_mod
+        db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
+        if os.path.exists(db_path):
+            conn = sqlite3.connect(db_path)
+            conn.enable_load_extension(True)
+            conn.load_extension(SPATIALITE_PATH)
+
+            volumes = {}
+            vol_path = os.path.join(out_dir, "link_volumes.csv")
+            with open(vol_path) as f:
+                for row in csv_mod.DictReader(f):
+                    lid = int(float(row.get("link_id", row.get("", 0))))
+                    pce = float(row.get("PCE_tot", 0))
+                    if pce > 0:
+                        volumes[lid] = {
+                            "pce_tot": round(pce),
+                            "pce_ab": round(float(row.get("PCE_AB", 0))),
+                            "pce_ba": round(float(row.get("PCE_BA", 0))),
+                            "voc_max": round(float(row.get("VOC_max", 0)), 3),
+                            "delay_factor": round(float(row.get("Delay_factor_Max", 0)), 3),
+                        }
+
+            features = []
+            for lid, vol in volumes.items():
+                row = conn.execute(
+                    "SELECT link_id, link_type, name, AsGeoJSON(geometry) FROM links WHERE link_id=?", (lid,)
+                ).fetchone()
+                if row and row[3]:
+                    features.append({
+                        "type": "Feature",
+                        "properties": {"link_id": row[0], "name": row[2] or "", "link_type": row[1], **vol},
+                        "geometry": json.loads(row[3]),
+                    })
+            conn.close()
+
+            max_vol = max((v["pce_tot"] for v in volumes.values()), default=0)
+            fc = {
+                "type": "FeatureCollection",
+                "features": features,
+                "metadata": {
+                    "totalLinks": len(features),
+                    "maxVolume": max_vol,
+                    "engine": verified_engine_stamp,
+                    "modelRunId": run_id,
+                    **baseline_assignment_metadata,
+                },
+            }
+
+            geojson_path = os.path.join(out_dir, "volumes.geojson")
+            with open(geojson_path, "w") as f:
+                json.dump(fc, f)
+
+            with open(geojson_path, "rb") as geojson_file:
+                geojson_bytes = geojson_file.read()
+            storage_ref = upload_volume_geojson_bytes(run_id, stage_id, geojson_bytes)
+            sb_post_artifact({
+                "run_id": run_id,
+                "stage_id": stage_id,
+                "artifact_type": "volumes_geojson",
+                "file_url": storage_ref,
+                "file_size_bytes": len(geojson_bytes),
+                "content_hash": hashlib.sha256(geojson_bytes).hexdigest(),
+                "metadata_json": {
+                    **baseline_assignment_metadata,
+                    "format": "geojson",
+                    "features": len(features),
+                    "maxVolume": max_vol,
+                },
+            })
+            log += f"Uploaded volumes GeoJSON ({len(features)} features) to private Storage as {storage_ref}.\n"
+        else:
+            log += f"Skipped GeoJSON generation because project database was missing at {db_path}.\n"
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except Exception as e:
+        log += f"GeoJSON generation warning: {e}\n"
+
+    return log
+
+
 def stage_artifacts(
     run_id: str,
     stage_id: str,
@@ -5709,27 +5833,15 @@ def stage_artifacts(
     # Write it after custody so it carries the actual persistence state.
     with open(evidence_path, "w") as handle:
         json.dump(evidence, handle, indent=2)
-    evidence_storage_ref = None
-    try:
-        ev_object_path = f"model-runs/{run_id}/evidence_packet.json"
-        with open(evidence_path, "rb") as handle:
-            ev_upload_res = requests.post(
-                f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{ev_object_path}",
-                headers={
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": f"Bearer {SUPABASE_KEY}",
-                    "Content-Type": "application/json",
-                    "x-upsert": "true",
-                },
-                data=handle.read(),
-                timeout=60,
-            )
-        if ev_upload_res.status_code in (200, 201):
-            evidence_storage_ref = f"storage://run-artifacts/{ev_object_path}"
-    except Exception as exc:
-        log += f"Evidence packet Storage upload warning: {exc}\n"
     with open(evidence_path, "rb") as handle:
         evidence_bytes = handle.read()
+    evidence_storage_ref = None
+    try:
+        evidence_storage_ref = upload_content_addressed_artifact(
+            run_id, stage_id, "evidence_packet.json", evidence_bytes, "application/json",
+        )
+    except WorkerStateWriteUnconfirmed as exc:
+        log += f"Evidence packet Storage upload warning: {exc}\n"
     sb_post_artifact({
         "run_id": run_id,
         "stage_id": stage_id,
@@ -6042,100 +6154,9 @@ def stage_artifacts(
             }
         sb_post_kpi(kpi_payload)
 
-    # Generate GeoJSON for the map and upload to Supabase Storage
-    try:
-        import csv as csv_mod
-        db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
-        if os.path.exists(db_path):
-            conn = sqlite3.connect(db_path)
-            conn.enable_load_extension(True)
-            conn.load_extension(SPATIALITE_PATH)
-
-            volumes = {}
-            vol_path = os.path.join(out_dir, "link_volumes.csv")
-            with open(vol_path) as f:
-                for row in csv_mod.DictReader(f):
-                    lid = int(float(row.get("link_id", row.get("", 0))))
-                    pce = float(row.get("PCE_tot", 0))
-                    if pce > 0:
-                        volumes[lid] = {
-                            "pce_tot": round(pce),
-                            "pce_ab": round(float(row.get("PCE_AB", 0))),
-                            "pce_ba": round(float(row.get("PCE_BA", 0))),
-                            "voc_max": round(float(row.get("VOC_max", 0)), 3),
-                            "delay_factor": round(float(row.get("Delay_factor_Max", 0)), 3),
-                        }
-
-            features = []
-            for lid, vol in volumes.items():
-                row = conn.execute(
-                    "SELECT link_id, link_type, name, AsGeoJSON(geometry) FROM links WHERE link_id=?", (lid,)
-                ).fetchone()
-                if row and row[3]:
-                    features.append({
-                        "type": "Feature",
-                        "properties": {"link_id": row[0], "name": row[2] or "", "link_type": row[1], **vol},
-                        "geometry": json.loads(row[3]),
-                    })
-            conn.close()
-
-            max_vol = max((v["pce_tot"] for v in volumes.values()), default=0)
-            fc = {
-                "type": "FeatureCollection",
-                "features": features,
-                "metadata": {
-                    "totalLinks": len(features),
-                    "maxVolume": max_vol,
-                    "engine": verified_engine_stamp,
-                    "modelRunId": run_id,
-                    **baseline_assignment_metadata,
-                },
-            }
-
-            geojson_path = os.path.join(out_dir, "volumes.geojson")
-            with open(geojson_path, "w") as f:
-                json.dump(fc, f)
-
-            # Upload to the (private) run-artifacts bucket. Store the storage
-            # PATH — not a public URL — so the app resolves it through a
-            # service-role signed URL and workspace RLS is never bypassed.
-            bucket = "run-artifacts"
-            object_path = f"model-runs/{run_id}/volumes.geojson"
-            upload_url = f"{SUPABASE_URL}/storage/v1/object/{bucket}/{object_path}"
-            with open(geojson_path, "rb") as f:
-                upload_headers = {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": f"Bearer {SUPABASE_KEY}",
-                    "Content-Type": "application/geo+json",
-                    "x-upsert": "true",
-                }
-                upload_res = requests.post(upload_url, headers=upload_headers, data=f.read())
-
-            if upload_res.status_code in (200, 201):
-                storage_ref = f"storage://{bucket}/{object_path}"
-                with open(geojson_path, "rb") as geojson_file:
-                    geojson_hash = hashlib.sha256(geojson_file.read()).hexdigest()
-                sb_post_artifact({
-                    "run_id": run_id,
-                    "stage_id": stage_id,
-                    "artifact_type": "volumes_geojson",
-                    "file_url": storage_ref,
-                    "file_size_bytes": os.path.getsize(geojson_path),
-                    "content_hash": geojson_hash,
-                    "metadata_json": {
-                        **baseline_assignment_metadata,
-                        "format": "geojson",
-                        "features": len(features),
-                        "maxVolume": max_vol,
-                    },
-                })
-                log += f"Uploaded volumes GeoJSON ({len(features)} features) to private Storage as {storage_ref}.\n"
-            else:
-                log += f"Storage upload failed ({upload_res.status_code}): {upload_res.text[:200]}\n"
-        else:
-            log += f"Skipped GeoJSON generation because project database was missing at {db_path}.\n"
-    except Exception as e:
-        log += f"GeoJSON generation warning: {e}\n"
+    log += publish_volume_geojson(
+        run_id, stage_id, work_dir, verified_engine_stamp, baseline_assignment_metadata,
+    )
 
     log += "Artifact extraction complete.\n"
     return log

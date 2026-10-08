@@ -311,25 +311,33 @@ def sb_get_run_artifacts(run_id: str) -> list[dict]:
     return res.json()
 
 
-def sb_upload_evidence(run_id: str, filename: str, data: bytes, content_type: str) -> str | None:
-    """Upload to the private run-artifacts bucket. Returns the storage:// ref the app
-    resolves via a service-role signed URL, or None on failure (best-effort)."""
-    object_path = f"model-runs/{run_id}/{filename}"
-    url = f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}"
-    res = requests.post(
-        url,
-        headers={
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": content_type,
-            "x-upsert": "true",
-        },
-        data=data,
-        timeout=60,
-    )
-    if res.status_code in (200, 201):
-        return f"storage://run-artifacts/{object_path}"
-    print(f"  Evidence upload returned {res.status_code}: {res.text[:200]}")
+def sb_upload_evidence(
+    run_id: str, filename: str, data: bytes, content_type: str, *, stage_id: str,
+) -> str | None:
+    """Return verified content-addressed evidence, or explicit unavailability."""
+    digest = hashlib.sha256(data).hexdigest()
+    object_path = f"model-runs/{run_id}/stages/{stage_id}/sha256-{digest}/{filename}"
+    try:
+        requests.post(
+            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
+            headers={
+                "apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}",
+                "Content-Type": content_type, "x-upsert": "false",
+            },
+            data=data, timeout=60,
+        )
+    except requests.RequestException:
+        pass
+    try:
+        retained = requests.get(
+            f"{SUPABASE_URL}/storage/v1/object/authenticated/run-artifacts/{object_path}",
+            headers=HEADERS, timeout=60,
+        )
+        if retained.status_code == 200 and retained.content == data:
+            return f"storage://run-artifacts/{object_path}"
+    except requests.RequestException:
+        pass
+    print("  Evidence Storage bytes could not be verified")
     return None
 
 
@@ -646,7 +654,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         "caveats": lead_caveats + list(pipeline.get("caveats", [])),
     }
     data = (json.dumps(evidence, indent=2) + "\n").encode("utf-8")
-    storage_ref = sb_upload_evidence(run_id, "behavioral_demand_evidence_packet.json", data, "application/json")
+    storage_ref = sb_upload_evidence(run_id, "behavioral_demand_evidence_packet.json", data, "application/json", stage_id=stage_id)
     if storage_ref:
         sb_post_artifact(
             {

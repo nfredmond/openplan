@@ -52,7 +52,8 @@ def _write_fixtures(dirpath: str):
 
 
 class FakeResponse:
-    def __init__(self, status_code=200, payload=None):
+    def __init__(self, status_code=200, payload=None, content=b""):
+        self.content = content
         self.status_code = status_code
         self._payload = payload if payload is not None else []
         self.text = ""
@@ -64,6 +65,7 @@ class FakeResponse:
 class FakeRequests:
     def __init__(self, za_path, skim_path, setup_path):
         self.calls = []
+        self.objects = {}
         self.claim_returns_rows = True
         self.za_path = za_path
         self.skim_path = skim_path
@@ -71,6 +73,9 @@ class FakeRequests:
 
     def get(self, url, headers=None, timeout=None):
         self.calls.append(("GET", url, None))
+        if "/storage/v1/object/authenticated/" in url:
+            key = url.split("/storage/v1/object/authenticated/", 1)[1]
+            return FakeResponse(200 if key in self.objects else 404, content=self.objects.get(key, b""))
         if "/rest/v1/model_runs?id=eq" in url:
             return FakeResponse(200, [{
                 "id": "run-1", "workspace_id": "ws-1",
@@ -97,7 +102,12 @@ class FakeRequests:
     def post(self, url, headers=None, json=None, data=None, timeout=None):
         self.calls.append(("POST", url, json if json is not None else data))
         if "/storage/v1/object/run-artifacts/" in url:
-            return FakeResponse(200, {})
+            key = url.split("/storage/v1/object/", 1)[1]
+            assert headers["x-upsert"] == "false"
+            if key in self.objects:
+                return FakeResponse(409, {})
+            self.objects[key] = data
+            return FakeResponse(201, {})
         return FakeResponse(201, [{"id": "retained-record", **json}])
 
 
