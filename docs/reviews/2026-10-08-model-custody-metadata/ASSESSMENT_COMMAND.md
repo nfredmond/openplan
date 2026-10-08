@@ -75,3 +75,31 @@ is `model-command-client-20261008-proof/assessment-contention/assessment-content
 This proves legacy assessment transaction ordering against the actual stale-run
 reaper. It does not exercise HTTP loss, journal recovery, normal workers,
 managed ingestion, Storage bytes or scientific acceptance.
+
+## Retained client checkpoint
+
+The command client now accepts `record_legacy_model_assessment`. It validates the
+complete payload and its run, stage and method bindings before transport. The
+existing destination-bound journal retains the exact request before POST. A
+response resolves the request only when its request UUID, assessment values and
+all three artifact records match. Recovery lists the saved run, stage and track,
+then resends the original request. Normal workers still use the old RPC.
+
+Four new client tests cover write ordering, cached receipts, lost-response mock
+recovery, invalid input and mismatched assessment/artifact receipts. The combined
+client, journal, recovery, publication, KPI, instrument and ownership run passes
+42 tests. It emits a SQLite ResourceWarning from an existing test connection;
+this run does not establish connection cleanup. The existing seven mutation
+suites pass after adding the new import dependencies to their isolated copies.
+
+Baseline, harmless and restored assessment-client controls pass. Four faults in
+request binding, assessment validation, artifact validation and argument scope
+fail for the expected assertion. The first scope fault reached mock transport
+and raised an unconfirmed-delivery error; the input test now asserts that no
+transport occurs even when a different exception is raised. The repeated control
+then fails at that explicit assertion. Private controls are retained in
+`model-command-client-20261008-proof/assessment-client-controls.json`.
+
+HTTP loss after native commit and fresh-process recovery remain the next proof.
+These mocked transport checks do not establish either, and this candidate is
+still uninstalled. Full worker checks on this checkpoint remain pending.
