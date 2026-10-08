@@ -30,9 +30,10 @@ Private logs are in the local `v068-release-20261007-proof` state directory.
 [Combined acceptance](COMBINED_ACCEPTANCE.md) records local full QA, production
 build, GitHub normal and shuffled tests, worker checks, the populated upgrade,
 and T3 desktop/mobile journeys on exact application commit `10c3bc0c`.
-Candidate live RLS run 37719603999 subsequently passes. Full-archive restore
-run 37719725094 is still active. It has no concurrency cancellation rule tied
-to branch updates, so advancing the integration does not restart that job.
+Candidate live RLS run 37719603999 and full-archive restore run 37719725094
+both pass on that application commit. The combined record retains the restore
+manifest scope and excluded external services. Final integration checks remain
+separate from these application-commit results.
 
 The integration adds evidence and current main/calendar merge ancestry without
 changing application files relative to `10c3bc0c`. Final GitHub checks remain

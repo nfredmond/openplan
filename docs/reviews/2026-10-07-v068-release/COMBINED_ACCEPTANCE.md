@@ -131,3 +131,31 @@ cases and targeted ESLint pass again. The original failure log is retained as
 `main-2e2-ci-failed.log`; callback-control logs are `context-editor-*.log` in
 the private release proof directory. These are component-timing checks, not
 new browser or native database evidence.
+
+The follow-up assertion audit finds the same asynchronous callback boundary in
+"keep draft copy and use saved context." That test also waits for the callback,
+with no timeout change. Its harmless comment passes, permanently blocking the
+callback fails the targeted case, and all 26 restored editor tests pass.
+Private evidence is in `context-preserve-*.log` and
+`context-preserve-mutations.json`. This additional test correction does not
+change the application build or restart the separately running obligation QA.
+
+## Refreshed branch and worktree inventory
+
+The next audit checks 64 worktrees against candidate `834ac66c`. Every worktree
+HEAD is present in a remote branch. The only uncommitted file is the canonical
+checkout's untracked `.directory`, which remains untouched. All heads except
+`11a897f6` are ancestors of the candidate. That exception is the intentional
+closed-award obligation-review follow-up in PR #144, pushed on
+`work/award-obligation-review-20261007`, with local QA still running.
+
+The branch inventory covers 79 local branches and 81 remote refs. Among branches
+with commits since September 7, the same obligation-review follow-up is the only
+head outside the candidate. There are no stashes. This establishes custody of
+registered worktrees and refs, not recovery of unsaved editor buffers or unknown
+external clones. It does not mean these candidate changes have reached main.
+
+Private records are `branch-audit.json` and
+`worktree-audit-final-candidate.json` in the release proof directory. Candidate
+CI run 37724531583 and live RLS run 37724531629 remain active at this checkpoint;
+worker run 37724531612 passes. No release tag is created.

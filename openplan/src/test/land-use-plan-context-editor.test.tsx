@@ -123,7 +123,7 @@ describe("plan context editor",()=>{
     render(<LandUsePlanContextEditor {...props}/>);await ready();edit();const record=readPlanContextRecovery(localStorage,scope)[0];
     fireEvent.click(screen.getByRole("button",{name:"Keep draft copy and use saved context"}));
     await screen.findByText("The earlier draft is preserved. This form starts from the current saved context.");
-    expect(bodyField()).toHaveValue("Synthetic planning body");expect(readPlanContextRecovery(localStorage,scope)).toEqual([{...record,key:expect.stringContaining(":copy:"),archived:true}]);expect(blocked()).toBe(false);expect(posts).toEqual([]);
+    expect(bodyField()).toHaveValue("Synthetic planning body");expect(readPlanContextRecovery(localStorage,scope)).toEqual([{...record,key:expect.stringContaining(":copy:"),archived:true}]);await waitFor(()=>expect(blocked()).toBe(false));expect(posts).toEqual([]);
   });
   it("keeps malformed copies downloadable and refuses a new save until they are preserved",async()=>{
     localStorage.setItem(`openplan:plan-context:${scope.actorId}:${scope.workspaceId}:${scope.planId}:pending:${id(30)}`,"{unreadable");
