@@ -2261,10 +2261,10 @@ def download_selected_feed_bytes(row: dict) -> bytes:
     return raw
 
 
-def load_selected_feed_version(feed_version_id: str, run_workspace_id: str | None) -> tuple:
+def _prepare_selected_feed_version(feed_version_id: str, run_workspace_id: str | None) -> tuple:
     """Resolve, download, verify and parse a run's chosen feed version.
 
-    Returns ``(los, meta)`` where every value in `meta` was read from the database
+    Returns ``(raw, los, meta)`` where every value in `meta` was read from the database
     or computed here — NOTHING comes from the run snapshot, which a workspace
     member can write. Raises `SelectedFeedError` on every failure, and the caller
     must not fall back to another feed on any of them.
@@ -2317,7 +2317,55 @@ def load_selected_feed_version(feed_version_id: str, run_workspace_id: str | Non
         "frequency_trips_excluded": los.frequency_trips_excluded,
         "scheduled_trips_used": los.scheduled_trips_used,
     }
+    return raw, los, meta
+
+
+def load_selected_feed_version(feed_version_id: str, run_workspace_id: str | None) -> tuple:
+    """Preserve the existing loaded-feed interface using the exact selected bytes."""
+    _raw, los, meta = _prepare_selected_feed_version(feed_version_id, run_workspace_id)
     return los, meta
+
+
+def retain_managed_selected_transit(out_dir: str) -> dict:
+    """Prepare this owned run's selected feed and confirm its retained artifact."""
+    from pathlib import Path
+    import model_attempt_writer as managed
+    import model_transit_inputs
+    writer = managed.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Transit retention requires a bound parent writer")
+    writer.require_open()
+    try:
+        if writer.files is None or not Path(out_dir).resolve(strict=True).is_relative_to(writer.files.path):
+            raise ValueError("Transit retention requires owned outputs")
+        writer.files.verify()
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Transit destination requires reconciliation") from error
+    run_row = writer.read_run(writer.context.run_id)
+    selection = gtfs_skim.parse_feed_selection(run_row)
+    if selection is None or selection.status != "selected":
+        raise gtfs_skim.SelectedFeedError(
+            selection.no_feed_reason if selection is not None else "selected_feed_not_selected",
+            "This preparation requires the run's selected feed; no substitute was acquired.",
+        )
+    raw, los, meta = _prepare_selected_feed_version(selection.feed_version_id, writer.context.workspace_id)
+    metadata = {**meta, "source_url": los.source_url, "source_name": los.source_name}
+    try:
+        writer.require_open()
+        retained = model_transit_inputs.retain(raw, metadata, gtfs_skim.skim_settings(),
+                                               Path(out_dir) / "transit_inputs")
+        writer.files.verify()
+        writer.record_artifact({
+            "run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+            "artifact_type": "model_transit_inputs", "file_url": "local://" + retained["manifest_path"],
+            "file_size_bytes": retained["manifest_size_bytes"], "content_hash": retained["manifest_sha256"],
+            "metadata_json": {"schema": model_transit_inputs.SCHEMA, "scientific_acceptance": "unassessed"},
+        }, logical_name="transit-inputs")
+        return retained
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Transit retention requires reconciliation") from error
 
 
 def build_mode_provenance(mode_split: dict | None) -> str:

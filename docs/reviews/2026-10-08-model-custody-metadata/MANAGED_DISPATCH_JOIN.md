@@ -2558,3 +2558,32 @@ No live feed is fetched and no database is changed by these checks. Parent artif
 registration, lost-reply recovery for that registration, the exact selected-feed
 loading adapter, parser-setting custody and the engine channel remain unfinished.
 This bundle does not establish operating-system containment or scientific validity.
+
+### Parent confirmation of selected transit inputs
+
+The existing selected-feed loader now delegates to `_prepare_selected_feed_version`,
+which preserves the exact downloaded bytes alongside its parsed feed and original
+metadata. The public loaded-feed return remains unchanged. The new bound parent
+adapter reads the owned run, derives its selected feed from the existing handoff,
+uses the writer's workspace for source authorization, retains the archive and
+settings under owned outputs, and confirms a `model_transit_inputs` artifact before
+returning the manifest. A missing or refused selection does not acquire another
+feed. File or registration uncertainty stops the writer and preserves the retained
+bundle for reconciliation.
+
+Six tests drive the actual loader and retained artifact adapter with real files
+and journals. The feed transport returns only projected fields, and a dedicated
+check asserts that the existing projection includes workspace ownership. Cases
+cover confirmed metadata/bytes, lost registration reply, foreign workspace,
+foreign output and missing selection. The initial fixture changed workspace but
+kept the old storage prefix, and the existing storage guard correctly refused it;
+the fixture now uses a consistent synthetic owner and prefix. All 51 existing
+transit-handoff checks pass. Four targeted faults fail for omitted registration,
+foreign output acceptance, wrong workspace and missing ownership projection;
+baseline, harmless and restored controls pass. See
+`prototype/managed-transit-retention-controls.json`.
+
+Registration transport remains mocked in these tests. Native database lost-reply
+recovery, parent channel handoff, parser-setting custody, other feed origins and
+acquisition containment remain unfinished. No normal dispatcher is enabled and no
+scientific acceptance claim changes.

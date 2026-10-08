@@ -1,0 +1,41 @@
+{
+  "worker_sha256": "85f9eb66c91bd48f8f8d2e6f1c6d264d9921c7b9dda242aebf8d792a4c3eb15e",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "omit-registration",
+      "exit_code": 1,
+      "targeted_test": "test_lost_registration_keeps_bytes_and_stops_without_handoff"
+    },
+    {
+      "control": "allow-foreign-output",
+      "exit_code": 1,
+      "targeted_test": "test_foreign_output_refused_before_source_loading"
+    },
+    {
+      "control": "wrong-workspace",
+      "exit_code": 1,
+      "targeted_test": "test_foreign_workspace_feed_refused_without_substitution"
+    },
+    {
+      "control": "omit-ownership-projection",
+      "exit_code": 1,
+      "targeted_test": "test_selected_feed_projection_includes_workspace_ownership"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual selected-feed loader and parent retained artifact adapter, real bytes/journal, projection-aware mocked feed HTTP. No native database registration, channel handoff, acquisition containment or scientific acceptance."
+}
