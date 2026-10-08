@@ -87,4 +87,27 @@ class PrimaryOutputPreparation(unittest.TestCase):
             legacy.assert_not_called()
 
 
+    def test_zone_input_registration_reuses_receipt_and_refuses_changed_bytes(self):
+        function=next(n for n in ast.parse(Path(main.__file__).read_text()).body if isinstance(n,ast.FunctionDef) and n.name=='stage_artifacts')
+        branch=next(n for n in ast.walk(function) if isinstance(n,ast.If) and ast.unparse(n.test)=="os.path.exists(zone_attr_path)")
+        path=self.root/'package'/'zone_attributes.csv';path.parent.mkdir()
+        path.write_bytes(b'zone,population\n1,10\n')
+        def send(url,**kwargs):
+            return Mock(status_code=200,json=Mock(return_value={**kwargs['json']['p_payload'],'attempt_id':None}))
+        with patch.object(main.requests,'post',side_effect=send) as post,patch.object(main,'sb_post_artifact') as legacy:
+            scope=dict(vars(main),run_id=RUN,stage_id=STAGE,zone_attr_path=str(path),_ws_id=RUN,work_dir=str(self.root))
+            code=compile(ast.Module(body=[branch],type_ignores=[]),main.__file__,'exec')
+            exec(code,scope);exec(code,scope)
+            self.assertEqual(post.call_count,1)
+            payload=post.call_args.kwargs['json']['p_payload']
+            self.assertEqual(payload['file_size_bytes'],len(path.read_bytes()))
+            self.assertEqual(payload['content_hash'],main.hashlib.sha256(path.read_bytes()).hexdigest())
+            self.assertEqual(payload['artifact_type'],'zone_attributes')
+            self.assertEqual(payload['file_url'],'local://'+str(path))
+            path.write_bytes(b'zone,population\n1,11\n')
+            with self.assertRaises(main.WorkerStateWriteUnconfirmed):exec(code,scope)
+            self.assertEqual(post.call_count,1)
+            legacy.assert_not_called()
+
+
 if __name__=='__main__':unittest.main()

@@ -504,3 +504,21 @@ Evidence-packet and zone-attribute registration, KPI writes, GeoJSON publication
 and ActivitySim output registration remain separate recovery obligations. Older
 artifacts with unrelated random identities are not silently adopted. No unsafe
 whole-stage replay is enabled by this change.
+
+## Zone-attribute registration recovery
+
+The normal zone-attribute registration now uses the retained artifact command
+with logical name `zone_attributes.csv`. Its actual branch test verifies the
+file reference, byte count and digest, one delivery for exact repeats, and
+refusal of changed bytes before another request. Harmless and restored controls
+pass; restoring direct insertion fails the expected delivery-count assertion.
+Private control output is `zone-artifact-controls.json` under the proof root.
+
+All 78 worker suites pass with no checkout edits during regression. Unit
+`openplan-zone-artifact-workers-20261008.service`, invocation
+`7e21c7596e1a447a9d14763e79df6d5c`, completed at 07:40:08 Pacific on October 8,
+with a 175.5 MiB peak under a 1 GiB cap. This branch test uses mocked HTTP and
+inherits the separately tested retained-command gateway behavior. It does not
+prove immutable custody of the local file or permit whole-stage replay.
+Evidence-packet retention, KPI delivery, GeoJSON publication, ActivitySim output
+registration and restart ownership remain open.

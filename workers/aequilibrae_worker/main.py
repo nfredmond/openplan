@@ -6013,7 +6013,7 @@ def stage_artifacts(
     if os.path.exists(zone_attr_path):
         with open(zone_attr_path, "rb") as fh:
             za_hash = hashlib.sha256(fh.read()).hexdigest()
-        sb_post_artifact({
+        sb_record_retained_artifact({
             "run_id": run_id,
             "stage_id": stage_id,
             "artifact_type": "zone_attributes",
@@ -6021,7 +6021,9 @@ def stage_artifacts(
             "file_size_bytes": os.path.getsize(zone_attr_path),
             "content_hash": za_hash,
             "metadata_json": {"filename": "zone_attributes.csv"},
-        })
+        }, workspace_id=_ws_id,
+            journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
+            logical_name="zone_attributes.csv")
 
     # Register KPIs
     kpis = [
