@@ -131,3 +131,11 @@ cases and targeted ESLint pass again. The original failure log is retained as
 `main-2e2-ci-failed.log`; callback-control logs are `context-editor-*.log` in
 the private release proof directory. These are component-timing checks, not
 new browser or native database evidence.
+
+The follow-up assertion audit finds the same asynchronous callback boundary in
+"keep draft copy and use saved context." That test also waits for the callback,
+with no timeout change. Its harmless comment passes, permanently blocking the
+callback fails the targeted case, and all 26 restored editor tests pass.
+Private evidence is in `context-preserve-*.log` and
+`context-preserve-mutations.json`. This additional test correction does not
+change the application build or restart the separately running obligation QA.
