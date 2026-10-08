@@ -18,6 +18,7 @@ import { NextRequest } from "next/server";
  */
 
 const createClientMock = vi.fn();
+const custodyRpcMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const loadModelAccessMock = vi.fn();
@@ -32,6 +33,7 @@ const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: () => ({ rpc: custodyRpcMock }),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -150,6 +152,7 @@ function stageResetHappened(): boolean {
 describe("POST /api/models/[modelId]/runs/[modelRunId]/launch — the stage read", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    custodyRpcMock.mockResolvedValue({ data: { run_id: MODEL_RUN_ID, workspace_id: WORKSPACE_ID, state: "unstarted" }, error: null });
     dbCalls.length = 0;
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
@@ -183,6 +186,28 @@ describe("POST /api/models/[modelId]/runs/[modelRunId]/launch — the stage read
       },
     });
     installClient();
+  });
+
+  it.each(["retained", "unassessed", "unavailable"])("refuses %s recovery state before any writes", async state => {
+    custodyRpcMock.mockResolvedValue(state === "unavailable"
+      ? { data: null, error: { message: "Private recovery detail" } }
+      : { data: { run_id: MODEL_RUN_ID, workspace_id: WORKSPACE_ID, state }, error: null });
+    const response = await launchModelRun(launchRequest(), routeContext);
+    expect(response.status).toBe(state === "unavailable" ? 503 : 409);
+    const body = await response.json();
+    expect(body.code).toBe(state === "unavailable" ? "model_recovery_check_unavailable" : "model_recovery_reconciliation_required");
+    expect(JSON.stringify(body)).not.toContain("Private recovery detail");
+    expect(custodyRpcMock).toHaveBeenCalledExactlyOnceWith("inspect_model_relaunch_custody", {
+      p_workspace: WORKSPACE_ID, p_run: MODEL_RUN_ID,
+    });
+    expect(dbCalls.filter(call => ["insert", "update", "delete"].includes(call.method))).toEqual([]);
+  });
+
+  it("does not inspect private recovery state before user authorization", async () => {
+    authGetUserMock.mockResolvedValue({ data: { user: null } });
+    expect((await launchModelRun(launchRequest(), routeContext)).status).toBe(401);
+    expect(custodyRpcMock).not.toHaveBeenCalled();
+    expect(dbCalls).toEqual([]);
   });
 
   it("requires the exact stale observation before relaunching", async () => {

@@ -11,6 +11,7 @@ import { recordAssistantActionExecution } from "@/lib/observability/action-audit
 import { getActionMetadata } from "@/lib/runtime/action-metadata";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
+import { inspectRelaunchCustody } from "@/lib/models/relaunch-custody";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import {
   isWriteFailure,
@@ -270,6 +271,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
           { status: 403 }
         );
       }
+    }
+
+    const custody = await inspectRelaunchCustody(workspaceId, modelRun.id);
+    if (custody !== "unstarted") {
+      audit.warn("model_run_relaunch_requires_reconciliation", {
+        modelId: access.model.id,
+        modelRunId: modelRun.id,
+        custody,
+      });
+      return NextResponse.json(
+        {
+          error: custody === "unavailable"
+            ? "Could not verify this run's recovery records. No relaunch changes were made."
+            : "This run has retained or unreconciled work. Relaunch is unavailable until its recovery records are reconciled. Existing results are preserved.",
+          code: custody === "unavailable" ? "model_recovery_check_unavailable" : "model_recovery_reconciliation_required",
+        },
+        { status: custody === "unavailable" ? 503 : 409 }
+      );
     }
 
     const nowIso = new Date().toISOString();
