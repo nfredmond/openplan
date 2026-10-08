@@ -366,6 +366,34 @@ not whether that producing stage completed or still owns an active attempt.
 These provenance additions do not establish scientific suitability, restart
 reconciliation or independent model acceptance.
 
+## Completed predecessor and ownership snapshot
+
+The artifact inventory now joins the producing stage in the same PostgREST read.
+Before copying bytes, the worker requires the matching stage and run IDs and a
+succeeded producer. Legacy records must have no attempt identity. Managed
+records must match the producing stage's active attempt. Missing ownership flags,
+inactive attempts and inconsistent legacy ownership are refused. The source
+manifest retains the observed producing-stage record and artifact attempt ID.
+
+All 44 worker tests pass. Harmless controls and six targeted faults cover producer
+status, run identity, ownership-flag type, current attempt, legacy consistency
+and the joined query projection. Each fault fails the corresponding assertion;
+the restored suite passes. The managed-attempt cases use injected rows and do not
+establish normal dispatcher activation.
+
+Native run `b4fffdf7-1c77-4e1d-b1b4-3e6fe1692f2a` verifies the join against the
+installed candidate, with three synthetic unmanaged artifacts. Changing the
+producing stage to failed refuses the handoff before a file is created. Restoring
+succeeded status permits the original verified bytes. The corruption and run
+filter controls also pass. Private evidence is under `native-activity-producer/`.
+
+Apply migration `20261016000014_model_attempt_command_custody.sql` before this
+worker revision; the joined query reads its ownership columns. A missing producer
+or unavailable joined read is not accepted as completed evidence. This snapshot
+is not a lease, and it does not atomically fence later consumer writes. Complete
+attempt-aware dispatch, cancellation/restart reconciliation and scientific
+acceptance remain required.
+
 ## Remaining connection work
 
 Normal dispatchers still use their current receipt-checked legacy writes. Before

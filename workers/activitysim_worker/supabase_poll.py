@@ -312,7 +312,7 @@ def sb_get_run(run_id: str) -> dict:
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
-        "&select=id,run_id,stage_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json"
+        "&select=id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,model_run_stages!inner(id,run_id,status,attempt_managed,active_attempt_id)"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
@@ -453,6 +453,19 @@ def _retain_handoff_file(artifacts: list[dict], artifact_type: str, run_id: str,
     if artifact.get("run_id") != run_id:
         raise RuntimeError("Screening handoff run identity differs")
     validate_run_identity(artifact.get("id"))
+    producer = artifact.get("model_run_stages")
+    if not isinstance(producer, dict) or producer.get("id") != artifact.get("stage_id") or producer.get("run_id") != run_id or producer.get("status") != "succeeded":
+        raise RuntimeError("Screening handoff requires a completed producing stage of this run")
+    validate_run_identity(producer.get("id"))
+    managed = producer.get("attempt_managed")
+    if type(managed) is not bool:
+        raise RuntimeError("Screening handoff producer ownership is unconfirmed")
+    if managed:
+        validate_run_identity(artifact.get("attempt_id"))
+        if producer.get("active_attempt_id") != artifact["attempt_id"]:
+            raise RuntimeError("Screening handoff belongs to an inactive attempt")
+    elif artifact.get("attempt_id") is not None or producer.get("active_attempt_id") is not None:
+        raise RuntimeError("Screening handoff legacy ownership is inconsistent")
     source = _local_path(artifact.get("file_url"))
     if not source or not os.path.isabs(source):
         raise RuntimeError("Screening handoff requires an absolute local:// reference")
@@ -547,7 +560,7 @@ def _materialize_screening_dir(
         if len(matches) != 1 or matches[0].get("run_id") != run_id:
             raise RuntimeError("Screening provenance requires one exact run artifact per input")
         row = matches[0]
-        source_records.append({key: row.get(key) for key in ("id", "run_id", "stage_id", "artifact_type", "content_hash", "file_size_bytes")})
+        source_records.append({key: row.get(key) for key in ("id", "run_id", "stage_id", "attempt_id", "artifact_type", "content_hash", "file_size_bytes", "model_run_stages")})
     materialized = []
     for relative, transformation in (
         ("run_output/travel_time_skims.omx", "exact_copy"),

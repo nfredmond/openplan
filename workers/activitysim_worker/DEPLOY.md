@@ -269,3 +269,9 @@ The behavioral worker verifies copies inside its new execution directory before
 preflight. Missing, ambiguous, shortened-path or unverifiable inputs stop the
 handoff. Do not invent hashes or rename old files based on a shortened prefix.
 Cross-host Storage input delivery and automated legacy reconciliation remain open.
+
+The current handoff query also requires migration
+`20261016000014_model_attempt_command_custody.sql`. It reads the producing stage
+and refuses unfinished stages, inactive attempts and unconfirmed ownership. Apply
+the migration before updating this worker. This read is a snapshot; it does not
+enable attempt-aware execution or replace fenced writes during later recovery.

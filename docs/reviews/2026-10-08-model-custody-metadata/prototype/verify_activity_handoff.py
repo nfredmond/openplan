@@ -27,7 +27,7 @@ def check():
     source.mkdir(mode=0o700, parents=True)
     execution = source_root / 'retained'
     execution.mkdir(mode=0o700)
-    statement = f"INSERT INTO public.model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by) SELECT '{run}',workspace_id,model_id,'aequilibrae','queued','Synthetic handoff byte proof',created_by FROM public.model_runs WHERE id='{fixture}'; INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order) VALUES('{stage}','{run}','Synthetic predecessor','queued',1);"
+    statement = f"INSERT INTO public.model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by) SELECT '{run}',workspace_id,model_id,'aequilibrae','queued','Synthetic handoff byte proof',created_by FROM public.model_runs WHERE id='{fixture}'; INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order) VALUES('{stage}','{run}','Synthetic predecessor','succeeded',1);"
     result = subprocess.run(['docker','exec','-i',meta['container'],'psql','-X','-qAt','-U','postgres','-d',meta['database'],'-v','ON_ERROR_STOP=1'],input=statement,text=True,capture_output=True,timeout=20)
     if result.returncode:
         raise RuntimeError('Owned fixture creation failed')
@@ -81,9 +81,31 @@ def check():
         retained = worker._retain_handoff_file(worker.sb_get_run_artifacts(run),'skim_matrix',run,str(restored))
         if Path(retained).read_bytes() != original:
             raise AssertionError('Restored bytes did not recover')
+        def producer_status(status):
+            if status not in ('failed', 'succeeded'):
+                raise ValueError('Unsupported proof state')
+            changed = subprocess.run(['docker','exec','-i',meta['container'],'psql','-X','-qAt','-U','postgres','-d',meta['database'],'-v','ON_ERROR_STOP=1'],input=f"UPDATE public.model_run_stages SET status='{status}' WHERE id='{stage}' AND run_id='{run}';",text=True,capture_output=True,timeout=20)
+            if changed.returncode:
+                raise RuntimeError('Owned producer-state mutation failed')
+        producer_status('failed')
+        inactive = source_root/'inactive'; inactive.mkdir()
+        try:
+            try:
+                worker._retain_handoff_file(worker.sb_get_run_artifacts(run),'skim_matrix',run,str(inactive))
+            except RuntimeError as error:
+                if 'completed producing stage' not in str(error):
+                    raise
+            else:
+                raise AssertionError('Native failed predecessor was accepted')
+            if list(inactive.iterdir()):
+                raise AssertionError('Failed predecessor copied bytes')
+        finally:
+            producer_status('succeeded')
+        recovered = source_root/'producer-restored'; recovered.mkdir()
+        worker._retain_handoff_file(worker.sb_get_run_artifacts(run),'skim_matrix',run,str(recovered))
         if worker.sb_get_run_artifacts(str(uuid.uuid4())) != []:
             raise AssertionError('Run filter returned unrelated artifacts')
-    evidence={'run_id':run,'stage_id':stage,'artifact_ids':[r['id'] for r in records],'native_artifacts':3,'retained_copies_verified':3,'same_size_source_drift_refused':True,'restored_copy_verified':True,'unknown_run_inventory_empty':True,'queries':observed_queries,'scope':'Installed candidate, synthetic unmanaged records, actual PostgREST and local bytes. Kong mount omitted. No model, Storage delivery, attempt activation or scientific acceptance.'}
+    evidence={'run_id':run,'stage_id':stage,'artifact_ids':[r['id'] for r in records],'native_artifacts':3,'retained_copies_verified':3,'same_size_source_drift_refused':True,'restored_copy_verified':True,'unknown_run_inventory_empty':True,'failed_producer_refused_before_copy':True,'restored_producer_accepted':True,'queries':observed_queries,'scope':'Installed candidate, synthetic unmanaged records, actual PostgREST and local bytes. Kong mount omitted. No model, Storage delivery, attempt activation or scientific acceptance.'}
     (root/'native-activity-handoff.json').write_text(json.dumps(evidence,indent=2)+'\n')
     return evidence
 

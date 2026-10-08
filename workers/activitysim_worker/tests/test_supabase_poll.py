@@ -52,6 +52,10 @@ def _write_fixtures(dirpath: str):
     return za, skim, setup
 
 
+def _source_owner(run_id, stage_id="bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"):
+    return {"stage_id": stage_id, "attempt_id": None, "model_run_stages": {"id": stage_id, "run_id": run_id, "status": "succeeded", "attempt_managed": False, "active_attempt_id": None}}
+
+
 class FakeResponse:
     def __init__(self, status_code=200, payload=None, content=b""):
         self.content = content
@@ -86,9 +90,9 @@ class FakeRequests:
             }])
         if "/rest/v1/model_run_artifacts?run_id=eq" in url:
             return FakeResponse(200, [
-                {"id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", "stage_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "skim_matrix", "file_url": f"local://{self.skim_path}", "file_size_bytes": Path(self.skim_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.skim_path).read_bytes()).hexdigest(), "metadata_json": {}},
-                {"id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2", "stage_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "zone_attributes", "file_url": f"local://{self.za_path}", "file_size_bytes": Path(self.za_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.za_path).read_bytes()).hexdigest(), "metadata_json": {}},
-                {"id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3", "stage_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "network_setup_summary", "file_url": f"local://{self.setup_path}", "file_size_bytes": Path(self.setup_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.setup_path).read_bytes()).hexdigest(), "metadata_json": {}},
+                {**_source_owner("12345678-1234-4123-8123-123456789abc"), "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", "stage_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "skim_matrix", "file_url": f"local://{self.skim_path}", "file_size_bytes": Path(self.skim_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.skim_path).read_bytes()).hexdigest(), "metadata_json": {}},
+                {**_source_owner("12345678-1234-4123-8123-123456789abc"), "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2", "stage_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "zone_attributes", "file_url": f"local://{self.za_path}", "file_size_bytes": Path(self.za_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.za_path).read_bytes()).hexdigest(), "metadata_json": {}},
+                {**_source_owner("12345678-1234-4123-8123-123456789abc"), "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3", "stage_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "run_id": "12345678-1234-4123-8123-123456789abc", "artifact_type": "network_setup_summary", "file_url": f"local://{self.setup_path}", "file_size_bytes": Path(self.setup_path).stat().st_size, "content_hash": hashlib.sha256(Path(self.setup_path).read_bytes()).hexdigest(), "metadata_json": {}},
             ])
         if "model_run_stages" in url and "status=neq.succeeded" in url:
             return FakeResponse(200, [])
@@ -150,10 +154,31 @@ class HandoffCopyTests(unittest.TestCase):
             source = Path(root, "runs", run, "input.csv"); source.parent.mkdir(parents=True)
             source.write_bytes(b"original")
             destination = Path(root, "execution"); destination.mkdir()
-            row = {"id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": 8, "content_hash": hashlib.sha256(b"original").hexdigest()}
+            row = {**_source_owner(run), "id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": 8, "content_hash": hashlib.sha256(b"original").hexdigest()}
             retained = Path(supabase_poll._retain_handoff_file([row], "zone_attributes", run, str(destination)))
             source.write_bytes(b"replaced")
             self.assertEqual(retained.read_bytes(), b"original")
+
+    def test_producer_must_be_completed_and_current_before_copy(self):
+        run = "12345678-1234-4123-8123-123456789abc"
+        attempt = "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+        with tempfile.TemporaryDirectory() as root, mock.patch.dict(os.environ, {"AEQ_WORK_DIR": root}):
+            source = Path(root, "runs", run, "input"); source.parent.mkdir(parents=True); source.write_bytes(b"ok")
+            original = {**_source_owner(run), "id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": 2, "content_hash": hashlib.sha256(b"ok").hexdigest()}
+            for index, patch in enumerate([{"status": "running"}, {"status": "failed"}, {"run_id": attempt}, {"id": attempt}, {"attempt_managed": None}, {"attempt_managed": True, "active_attempt_id": attempt}, {"active_attempt_id": attempt}]):
+                row = {**original, "model_run_stages": {**original["model_run_stages"], **patch}}
+                directory = Path(root, str(index)); directory.mkdir()
+                with self.subTest(patch=patch), self.assertRaises((RuntimeError, ValueError)):
+                    supabase_poll._retain_handoff_file([row], "zone_attributes", run, str(directory))
+                self.assertEqual(list(directory.iterdir()), [])
+            managed = {**original, "attempt_id": attempt, "model_run_stages": {**original["model_run_stages"], "attempt_managed": True, "active_attempt_id": attempt}}
+            directory = Path(root, "current"); directory.mkdir()
+            self.assertEqual(Path(supabase_poll._retain_handoff_file([managed], "zone_attributes", run, str(directory))).read_bytes(), b"ok")
+            managed["model_run_stages"]["active_attempt_id"] = run
+            directory = Path(root, "revoked"); directory.mkdir()
+            with self.assertRaisesRegex(RuntimeError, "inactive attempt"):
+                supabase_poll._retain_handoff_file([managed], "zone_attributes", run, str(directory))
+            self.assertEqual(list(directory.iterdir()), [])
 
     def test_boolean_size_cannot_describe_empty_bytes(self):
         run = "12345678-1234-4123-8123-123456789abc"
@@ -161,7 +186,7 @@ class HandoffCopyTests(unittest.TestCase):
             source = Path(root, "runs", run, "empty"); source.parent.mkdir(parents=True)
             source.write_bytes(b"")
             destination = Path(root, "execution"); destination.mkdir()
-            row = {"id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": False, "content_hash": hashlib.sha256(b"").hexdigest()}
+            row = {**_source_owner(run), "id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": False, "content_hash": hashlib.sha256(b"").hexdigest()}
             with self.assertRaisesRegex(RuntimeError, "byte size is unavailable"):
                 supabase_poll._retain_handoff_file([row], "zone_attributes", run, str(destination))
 
@@ -172,7 +197,7 @@ class HandoffCopyTests(unittest.TestCase):
             source.write_bytes(b"original")
             outside = Path(root, "other.csv"); outside.write_bytes(b"original")
             linked = source.parent / "linked.csv"; linked.symlink_to(outside)
-            row = {"id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": 8, "content_hash": hashlib.sha256(b"original").hexdigest()}
+            row = {**_source_owner(run), "id": run, "run_id": run, "artifact_type": "zone_attributes", "file_url": "local://" + str(source), "file_size_bytes": 8, "content_hash": hashlib.sha256(b"original").hexdigest()}
             bad_rows = [[{**row, **patch}] for patch in [
                 {"run_id": "12345678-1234-4567-8567-987654321abc"},
                 {"file_url": "local://" + str(outside)}, {"file_url": "local://" + str(linked)},
@@ -222,7 +247,7 @@ class SupabasePollTests(unittest.TestCase):
                 self.assertEqual(manifest["model_run_id"], stage["run_id"])
                 self.assertEqual(manifest["consumer_stage_id"], stage["id"])
                 records = self.fake.get("/rest/v1/model_run_artifacts?run_id=eq." + stage["run_id"]).json()
-                expected = [{key: row[key] for key in ("id", "run_id", "stage_id", "artifact_type", "content_hash", "file_size_bytes")} for row in records]
+                expected = [{key: row[key] for key in ("id", "run_id", "stage_id", "attempt_id", "artifact_type", "content_hash", "file_size_bytes", "model_run_stages")} for row in records]
                 self.assertEqual(manifest["source_artifacts"], expected)
                 self.assertEqual(len(manifest["materialized_files"]), 3)
                 for item in manifest["materialized_files"]:
@@ -241,7 +266,7 @@ class SupabasePollTests(unittest.TestCase):
         supabase_poll.sb_get_run_artifacts(make_stage()["run_id"])
         url = self.fake.calls[-1][1]
         self.assertIn("run_id=eq." + make_stage()["run_id"], url)
-        self.assertEqual(url.split("&select=")[1], "id,run_id,stage_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json")
+        self.assertEqual(url.split("&select=")[1], "id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,model_run_stages!inner(id,run_id,status,attempt_managed,active_attempt_id)")
 
     def test_unverified_handoff_never_reaches_preflight_materialization(self):
         stage = make_stage()
