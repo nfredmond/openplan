@@ -394,6 +394,32 @@ is not a lease, and it does not atomically fence later consumer writes. Complete
 attempt-aware dispatch, cancellation/restart reconciliation and scientific
 acceptance remain required.
 
+## Native managed predecessor revocation
+
+The native handoff proof now accepts `--managed`. It uses the retained-command
+client against real claim, artifact-write and completion RPCs, with a second
+queued stage keeping the synthetic parent run active. Three registered files
+from the completed current attempt pass the actual joined inventory and copy
+checks. Same-size byte corruption remains refused, and restoring the original
+bytes permits a new copy.
+
+The native reaper then revokes the synthetic run. It preserves the producer's
+succeeded status and artifacts while clearing active ownership. The handoff
+reader refuses those same files as an inactive attempt before creating a copy.
+The proof does not restore a revoked attempt or rewrite its history.
+
+Managed run `eb4db6a9-4adf-4714-b4d3-2fd50cd9c5d5`, attempt
+`658e427d-3d57-46b0-9b3e-44b895b81e4f`, retains this evidence under
+`native-activity-managed/`. The refactored legacy path also passes for run
+`ce53cb55-0f67-49ba-beda-65c4d46ce85c` under
+`native-activity-producer-recheck/`. Current proof output uses null for controls
+that do not apply to its selected mode; the initial managed receipt used false
+for its unexecuted legacy-only controls. The managed revocation control passed.
+
+This verifies the reader against native ownership changes. It does not activate
+the normal managed dispatcher, fence a consumer's later writes, reconcile file
+ownership after restart, run scientific models or establish scientific acceptance.
+
 ## Remaining connection work
 
 Normal dispatchers still use their current receipt-checked legacy writes. Before
