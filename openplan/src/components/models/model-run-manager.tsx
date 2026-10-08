@@ -22,7 +22,7 @@ import { ModelRunEngagementPanel } from "@/components/models/model-run-engagemen
 import { ModelRunScreeningGradeNote } from "@/components/models/model-run-screening-grade-note";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { formatDurationSeconds, formatFileSize, labelForArtifactType, labelForEngineKey } from "@/lib/models/evidence-packet";
-import { MANAGED_RUN_MODE_DEFINITIONS, getManagedRunModeDefinition, type ManagedRunModeKey } from "@/lib/models/run-modes";
+import { MANAGED_RUN_MODE_DEFINITIONS, getManagedRunModeDefinition, isWorkerExecutedRunMode, type ManagedRunModeKey } from "@/lib/models/run-modes";
 import { resolveVmtDeterminationRunEligibility } from "@/lib/planner-pack/vmt-determination-inputs";
 import {
   IN_PROCESS_ENGINE_KEYS,
@@ -1978,7 +1978,7 @@ function ModelRunStagingAndArtifacts({
         />
       ) : null}
 
-      {(run.status === "succeeded" || run.engine_key === "aequilibrae") ? (
+      {(run.status === "succeeded" || isWorkerExecutedRunMode(run.engine_key)) ? (
         <ModelRunEvidencePanel
           recovery={run.recovery}
           modelId={modelId}

@@ -49,3 +49,36 @@ reconciliation decisions, dispatcher recovery, current ownership checks and
 whole-installation restoration remain unfinished. Cron reaping still attempts
 historical writes and relies on the database refusal. The new-run state records
 enrollment, not a current execution lease or a scientific acceptance decision.
+
+## Native reader and rendered controls follow-up
+
+The rollback-only native reader proof now passes against the owned migration-18
+upgrade fixture. It compares complete historical/new enrollment records and the
+actual stage-start timestamp/count. Wrong workspace, missing run and null scope
+return no record. Actual calls under anonymous and authenticated roles are
+refused; the service role reads the scoped state. Every variant rolls back.
+Removing workspace filtering, relabeling historical enrollment, widening role
+permission and losing the start count each fail the intended assertion.
+Baseline, harmless comment and restored baseline pass. This supersedes the
+untested-native-permission boundary above, but does not install migration 19 or
+prove its migration history, whole upgrade or restore.
+
+Nine component tests pass using the real manager and evidence panel in jsdom.
+They check notices, saved stage labels, absent relaunch/progress, stopped polling
+for historical records and continued progress/polling for a new running record.
+Positive cases require an available queue control for both worker engines.
+
+The first control run exposed a vacuous relaunch assertion. The fixture used
+`behavioral_demand`, whose parent omitted the evidence panel for unfinished
+runs, so removing the relaunch guard still passed. A positive case reproduced
+that missing control. The parent now uses the shared worker-engine predicate.
+The corrected tests catch omitted panel mounting and bypasses of relaunch,
+progress and polling guards. Harmless and restored runs pass. Initial label
+queries also assumed a single copy, but both the summary and run badge display
+the state; the corrected assertions require both copies.
+
+Private evidence is `recovery-status-native/recovery-reader.json` and
+`recovery-component-controls.json` under the existing proof root. Targeted lint
+passes. These tests do not establish page-level authorization, real navigation,
+CSS/mobile usability, downloadable artifacts or browser acceptance. The full
+candidate and T3 desktop/390px checks remain open.
