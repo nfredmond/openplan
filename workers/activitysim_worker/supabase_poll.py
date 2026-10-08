@@ -198,30 +198,63 @@ def _utc_now() -> str:
 # ---------------------------------------------------------------------------
 # Supabase REST helpers (mirror workers/aequilibrae_worker/main.py:304-437).
 # ---------------------------------------------------------------------------
-def sb_patch_stage(stage_id: str, payload: dict) -> None:
-    url = f"{SUPABASE_URL}/rest/v1/model_run_stages?id=eq.{stage_id}"
-    requests.patch(url, headers=HEADERS, json=payload, timeout=30)
+class WorkerStateWriteUnconfirmed(RuntimeError):
+    """A state update has no matching receipt; it may already be committed."""
+
+
+def _confirmed_state_patch(table: str, record_id: str, payload: dict, *, queued_claim: bool = False) -> bool:
+    """Require a returned row without exposing provider response bodies.
+
+    An absent acknowledgement is not proof of rollback. Callers must not turn
+    this exception into a contradictory failed-stage update.
+    """
+    try:
+        response = requests.patch(
+            f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{record_id}" + ("&status=eq.queued" if queued_claim else ""),
+            headers=HEADERS, json=payload, timeout=30,
+        )
+        if response.status_code != 200:
+            raise WorkerStateWriteUnconfirmed(
+                f"Worker state write unconfirmed for {table} (HTTP {response.status_code})"
+            )
+        rows = response.json()
+        if queued_claim and rows == []:
+            return False
+        if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict) or rows[0].get("id") != record_id:
+            raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: missing matching row")
+        for field, expected in payload.items():
+            actual = rows[0].get(field)
+            if field.endswith("_at") and isinstance(expected, str) and isinstance(actual, str):
+                matches = datetime.fromisoformat(expected.replace("Z", "+00:00")) == datetime.fromisoformat(actual.replace("Z", "+00:00"))
+            else:
+                matches = field in rows[0] and actual == expected
+            if not matches:
+                raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: returned values differ")
+        return True
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except (requests.RequestException, ValueError, TypeError) as error:
+        raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: no valid receipt") from error
+
+
+def sb_patch_stage(stage_id: str, payload: dict):
+    _confirmed_state_patch("model_run_stages", stage_id, payload)
 
 
 def sb_claim_stage(stage_id: str, payload: dict) -> bool:
-    """Atomically claim a queued stage: transition queued -> running only if the row
-    is still queued. The conditional filter + return=representation means a worker
-    that lost the race gets an empty result and skips, so no double-processing."""
-    url = f"{SUPABASE_URL}/rest/v1/model_run_stages?id=eq.{stage_id}&status=eq.queued"
-    res = requests.patch(url, headers=HEADERS, json=payload, timeout=30)
-    if res.status_code not in (200, 201, 204):
-        print(f"  Claim PATCH returned {res.status_code}: {res.text[:200]}")
-        return False
-    try:
-        rows = res.json()
-    except ValueError:
-        rows = []
-    return bool(rows)
+    """Atomically claim a queued stage.
+
+    Transitions status queued -> running only if the row is still queued. Using
+    a conditional PATCH (id=eq.X & status=eq.queued) with return=representation
+    means a second worker that lost the race gets an empty result set and skips,
+    so two replicas never double-process the same stage.
+    """
+    return _confirmed_state_patch("model_run_stages", stage_id, payload, queued_claim=True)
 
 
-def sb_patch_run(run_id: str, payload: dict) -> None:
-    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}"
-    requests.patch(url, headers=HEADERS, json=payload, timeout=30)
+def sb_patch_run(run_id: str, payload: dict):
+    _confirmed_state_patch("model_runs", run_id, payload)
+
 
 
 def sb_post_kpi(payload: dict) -> None:
@@ -323,18 +356,30 @@ def mark_stage_skipped(stage: dict, reason: str) -> None:
     )
 
 
+class WorkerStateReadUnconfirmed(RuntimeError):
+    """The worker cannot determine whether unfinished stages remain."""
+
+
 def maybe_mark_run_succeeded(run_id: str) -> None:
-    """Mark the run succeeded once no non-succeeded stage remains. Idempotent and
-    safe when a run's stages are split across this worker and the AequilibraE
-    worker (whichever finishes the final stage flips the run)."""
-    res = requests.get(
-        f"{SUPABASE_URL}/rest/v1/model_run_stages?run_id=eq.{run_id}&status=neq.succeeded&select=id",
-        headers=HEADERS,
-        timeout=30,
-    )
-    if res.status_code == 200 and not res.json():
-        print(f"[{time.strftime('%X')}] behavioral preflight run {run_id[:8]}… complete")
+    """Require a stage-list response before requesting run completion.
+
+    The read and write are separate operations; this is not attempt fencing.
+    """
+    try:
+        res = requests.get(
+            f"{SUPABASE_URL}/rest/v1/model_run_stages?run_id=eq.{run_id}&status=neq.succeeded&select=id",
+            headers=HEADERS, timeout=30,
+        )
+        if res.status_code != 200:
+            raise WorkerStateReadUnconfirmed("Worker completion read unconfirmed: HTTP response failed")
+        unfinished = res.json()
+        if not isinstance(unfinished, list):
+            raise WorkerStateReadUnconfirmed("Worker completion read unconfirmed: expected a stage list")
+    except (requests.RequestException, ValueError) as error:
+        raise WorkerStateReadUnconfirmed("Worker completion read unconfirmed: no valid response") from error
+    if not unfinished:
         sb_patch_run(run_id, {"status": "succeeded", "completed_at": _utc_now()})
+        print(f"[{time.strftime('%X')}] behavioral preflight run {run_id[:8]} complete")
 
 
 # ---------------------------------------------------------------------------
@@ -765,6 +810,9 @@ def process_stage(stage: dict) -> None:
             {"status": "succeeded", "completed_at": _utc_now(), "log_tail": result["log"]},
         )
         maybe_mark_run_succeeded(run_id)
+    except (WorkerStateWriteUnconfirmed, WorkerStateReadUnconfirmed):
+        # A completion may already be committed. Preserve state for reconciliation.
+        raise
     except Exception as exc:  # noqa: BLE001 — record any failure honestly on the stage
         error_msg = f"{type(exc).__name__}: {exc}"
         print(f"[{time.strftime('%X')}] ❌ {stage_name} failed (run={run_id[:8]}…): {error_msg}")

@@ -91,8 +91,8 @@ class FakeRequests:
     def patch(self, url, headers=None, json=None, timeout=None):
         self.calls.append(("PATCH", url, json))
         if "status=eq.queued" in url:
-            return FakeResponse(200, [{"id": "stage-1"}] if self.claim_returns_rows else [])
-        return FakeResponse(204, [])
+            return FakeResponse(200, [{"id": "stage-1", **json}] if self.claim_returns_rows else [])
+        return FakeResponse(200, [{"id": "stage-1" if "model_run_stages" in url else "run-1", **json}])
 
     def post(self, url, headers=None, json=None, data=None, timeout=None):
         self.calls.append(("POST", url, json if json is not None else data))
