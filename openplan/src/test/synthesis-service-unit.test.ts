@@ -1,6 +1,6 @@
 /** @vitest-environment node */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { chmodSync, mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, renameSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -77,4 +77,19 @@ describe("reviewable synthesis supervisor units", () => {
     const result = run(); refused(result);
     expect(result.stderr).toContain("Paths must not contain control characters.");
   });
+  it("resolves an ordinary application symlink to the retained checkout", () => {
+    const target = app;
+    app = join(root, "app-link"); symlinkSync(target, app);
+    const result = run();
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain(`WorkingDirectory=${target.replaceAll("%", "%%")}\n`);
+  });
+  it("refuses a symlink whose resolved application path contains a line break", () => {
+    const target = join(root, "app\nRestart=no");
+    renameSync(app, target);
+    app = join(root, "app-link"); symlinkSync(target, app);
+    const result = run(); refused(result);
+    expect(result.stderr).toContain("Paths must not contain control characters.");
+  });
+
 });

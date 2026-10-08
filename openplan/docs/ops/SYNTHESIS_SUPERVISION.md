@@ -43,6 +43,7 @@ For preparation, use `--worker preparation`, its existing
 
 The generated unit pins the resolved application, Node and environment-file
 paths. Spaces, quotes, dollar signs and systemd percent specifiers remain literal.
+Both supplied and resolved paths must be free of control characters.
 Application paths ending in whitespace or a backslash are refused. The selected
 journal directory is set in the process environment, which takes precedence over
 the file's value. Confirm it matches existing worker commands.

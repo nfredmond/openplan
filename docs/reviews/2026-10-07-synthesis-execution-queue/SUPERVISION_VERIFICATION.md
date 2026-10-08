@@ -100,3 +100,23 @@ Private evidence is `logging-controls.json` and
 configuration and observed streams on the test host, not log retention across
 host loss. Durable worker journals retain their separate recovery role. The
 earlier full QA at `d2f92dcc` does not cover this subsequent generator change.
+
+## Resolved application paths
+
+A new regression fixture exposes a gap at `017d9d91`: an ordinary symlink can
+resolve to an existing application directory with a newline in its name. The
+original generator accepts the supplied link name, then emits the resolved
+name directly into WorkingDirectory. The regression fails with status zero
+where refusal is expected. No generated unit from this fixture is installed.
+
+The generator now checks the resolved path for control characters before using
+it. An ordinary application symlink still succeeds and names the resolved
+checkout. All fourteen focused tests and targeted lint pass. A harmless comment
+passes; removing the resolved-path guard reproduces the regression failure;
+restored source passes. Private evidence is `symlink-before.log` and
+`symlink-controls.json` in the existing supervisor proof directory.
+
+This check covers control characters in resolved paths at generation time. It
+does not establish filesystem immutability between generation and service start,
+real queued-task recovery, boot behavior or host power-loss acceptance. The
+running full QA at `d2f92dcc` does not cover this follow-up.

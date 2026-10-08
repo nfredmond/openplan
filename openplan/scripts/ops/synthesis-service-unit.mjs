@@ -42,6 +42,8 @@ async function checkedPath(value, kind, privateAccess = false) {
   if (!isAbsolute(value)) throw new Error("All paths must be absolute.");
   quoted(value);
   const path = await realpath(value);
+  // A harmless-looking symlink can resolve to a path containing unit syntax.
+  quoted(path);
   const info = await stat(path);
   if (kind === "directory" ? !info.isDirectory() : !info.isFile()) throw new Error(`Expected a ${kind}.`);
   if (privateAccess && (info.uid !== process.getuid() || (info.mode & 0o077) !== 0)) {
