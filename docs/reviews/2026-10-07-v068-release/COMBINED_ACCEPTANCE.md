@@ -107,3 +107,27 @@ passes all seven checks, but GitHub refuses its merge because main advanced.
 The normal update-branch operation produces `d93347f3`; its new CI and RLS
 checks are running. No protection is bypassed. These heads are included in
 the combined integration history, but integration into main is still pending.
+
+## Restore completion and main CI follow-up
+
+Full-archive restore run 37719725094 succeeds on `10c3bc0c`. Its retained
+manifest covers 340 database tables, 385 migration records and one seeded
+Storage object, with bootstrap state preserved. The drill reports matching
+database rows, evidence custody, Storage bytes, relationships and live RLS.
+Its native suite passes 1,462 tests in 101 files, with 125 skipped. The scope is
+the default local CLI database and Storage; external workers, custom roles and
+scheduled SQL jobs remain outside this drill.
+
+Main CI run 37721660435 at `2e2c9e94` fails two land-use context-editor tests.
+Both immediately inspect the parent freeze callback after waiting for a separate
+rendered state. The component publishes that callback through a React effect.
+The tests now wait for the asserted callback value using the existing waitFor
+deadline. No application code, assertion outcome or timeout is changed.
+
+All 26 editor tests pass on the restored component. A harmless component comment
+passes the two changed cases. Holding the callback permanently blocked fails
+both cases at their bounded assertions. The mutation is restored, and all 26
+cases and targeted ESLint pass again. The original failure log is retained as
+`main-2e2-ci-failed.log`; callback-control logs are `context-editor-*.log` in
+the private release proof directory. These are component-timing checks, not
+new browser or native database evidence.

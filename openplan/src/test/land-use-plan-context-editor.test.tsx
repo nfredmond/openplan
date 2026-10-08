@@ -171,10 +171,10 @@ describe("plan context editor",()=>{
     expect(props.onBlockChange.mock.calls.at(-1)?.[0]).toBe(`${scope.actorId}:${scope.workspaceId}:${scope.planId}:${base.versionId}:8`);
   });
   it("blocks freezing until a changed revision has a fresh context read even without edits",async()=>{
-    const view=render(<LandUsePlanContextEditor {...props}/>);await ready();expect(blocked()).toBe(false);
+    const view=render(<LandUsePlanContextEditor {...props}/>);await ready();await waitFor(()=>expect(blocked()).toBe(false));
     let finish!:(response:Response)=>void;transport.mockImplementation(()=>new Promise(resolve=>{finish=resolve;}));
     view.rerender(<LandUsePlanContextEditor {...props} draftRevision={8}/>);expect(blocked()).toBe(true);
-    await act(async()=>finish(Response.json(current)));expect(blocked()).toBe(false);expect(posts).toEqual([]);
+    await act(async()=>finish(Response.json(current)));await waitFor(()=>expect(blocked()).toBe(false));expect(posts).toEqual([]);
   });
   it("preserves unsaved fields during manual refresh and keeps permission changes read-only",async()=>{
     const view=render(<LandUsePlanContextEditor {...props}/>);await ready();edit("Unsaved local body");
@@ -230,7 +230,7 @@ describe("plan context editor",()=>{
     fireEvent.change(screen.getByLabelText("Plan area label"),{target:{value:"Synthetic replacement area"}});fireEvent.click(screen.getByRole("button",{name:"Add responsible body"}));
     fireEvent.change(screen.getAllByLabelText("Body name")[1],{target:{value:"Synthetic sovereign body"}});fireEvent.change(screen.getAllByLabelText("Role in this plan")[1],{target:{value:"Consulting authority"}});
     fireEvent.change(screen.getAllByLabelText("Type of body")[1],{target:{value:"Tribal government"}});fireEvent.click(saveButton());
-    await screen.findByText("Plan context saved and refreshed.");expect(posts).toHaveLength(1);expect(blocked()).toBe(false);
+    await screen.findByText("Plan context saved and refreshed.");expect(posts).toHaveLength(1);await waitFor(()=>expect(blocked()).toBe(false));
     expect(JSON.parse(posts[0]).place).toMatchObject({mode:"uploaded",label:"Synthetic replacement area"});expect(screen.getAllByLabelText("Jurisdiction is not assessed")[1]).toBeChecked();
   });
   it("bounds restored file size and restores pending bytes locally without sending",async()=>{
