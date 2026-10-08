@@ -1,0 +1,229 @@
+{
+  "source_sha256": "c48785f62cbb87040a7e6a4d49ec21279f2238768f4347c366c8c74568336fe2",
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "claim",
+            "handler_calls": 0,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "running",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "succeeded",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "failed",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "claim",
+            "handler_calls": 0,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "running",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "succeeded",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "failed",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 40,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "claim",
+            "handler_calls": 0,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "running",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "succeeded",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "failed",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "claim",
+            "handler_calls": 0,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "running",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "succeeded",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "failed",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 40,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "erase-log",
+      "expected_failure": "Native stage did not retain partial log"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "claim",
+            "handler_calls": 0,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "running",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "succeeded",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "failed",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "claim",
+            "handler_calls": 0,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "running",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "succeeded",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "failed",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 40,
+        "gateway_removed": true
+      }
+    }
+  ],
+  "limits": "Installed native claim and stage commands, fresh invocation helper and both bound worker stage adapters. Synthetic handler only; no normal poll/push loop, outputs, filesystem continuation, engine or scientific acceptance."
+}

@@ -434,3 +434,33 @@ all GitHub checks, including live RLS job 113493639537 and full-archive restore
 job 113493639216. Its documented T3 acceptance hold remains: a new snapshot
 attempt still fails on the connected frozen preview. This does not change the
 preview checkout or establish desktop/390px visual acceptance.
+
+### Native HTTP admission and stage-write checks
+
+The installed migration-20 clone now exercises the fresh invocation helper and
+both bound worker stage-write adapters through native PostgREST. The handler is
+synthetic; normal poll/push dispatch and model computation are not invoked.
+
+For each worker, the proof drops a committed reply at claim, progress, success
+and failure. A lost claim calls no handler. The other cases call the handler
+once, first confirming a useful partial log, then losing the next command's
+reply. Native reads confirm the intended stage and parent statuses, one attempt,
+one observed start and the retained receipt. The partial log survives both
+status-only progress and terminal writes.
+
+A fresh recovery CLI retrieves each original request without changing parent,
+stage, attempt, start or receipt records. A second cached CLI needs no credential
+and sends no HTTP. The original writer remains stopped after receipt recovery.
+The proof forbids direct PATCH while either actual worker adapter is bound.
+
+Baseline, harmless and restored controls each pass eight cases and 40 HTTP calls.
+An intentional adapter change that replaces prior state with an empty log fails
+with `Native stage did not retain partial log`. Each bounded gateway is removed;
+private clone metadata and command journals remain outside the repository.
+`writer-http.json` records sanitized outcomes and the tested writer source hash.
+
+This closes the native writer HTTP boundary recorded above. Complete normal
+managed dispatch, attempt-owned output registration and files, cancellation
+while computing, cross-process execution competition and explicit continuation
+still require integration evidence. No engine, browser, practitioner or
+scientific acceptance is inferred from these synthetic cases.
