@@ -324,7 +324,7 @@ def test_a_pushed_stage_is_taken_with_the_same_conditional_claim_as_a_polled_one
         def json():
             return []
 
-    def fake_patch(url, headers=None, json=None):
+    def fake_patch(url, headers=None, json=None, timeout=None):
         calls.append(url)
         return _Response()
 
@@ -742,6 +742,161 @@ def test_the_run_work_directory_is_not_named_for_one_place():
     assert not hasattr(main, "PILOT_WORK_DIR")
     assert "nevada" not in main.RUN_WORK_ROOT.lower(), main.RUN_WORK_ROOT
     assert "pilot" not in main.RUN_WORK_ROOT.lower(), main.RUN_WORK_ROOT
+
+
+def test_stage_and_run_writes_require_the_exact_returned_record():
+    from unittest import mock
+
+    for writer, table in ((main.sb_patch_stage, "model_run_stages"), (main.sb_patch_run, "model_runs")):
+        payload = {"status": "succeeded", "completed_at": "2026-10-08T07:00:00+00:00"}
+        response = mock.Mock(status_code=200)
+        response.json.return_value = [{"id": RUN_ID, "status": "succeeded", "completed_at": "2026-10-08T07:00:00Z", "extra": "allowed"}]
+        with mock.patch.object(main.requests, "patch", return_value=response) as patch:
+            writer(RUN_ID, payload)
+        assert patch.call_args.kwargs.get("timeout") == 30, "state writes need a bounded transport"
+        assert patch.call_args.kwargs["headers"]["Prefer"] == "return=representation"
+        assert patch.call_args.args[0].endswith(f"/{table}?id=eq.{RUN_ID}")
+
+
+def test_stage_and_run_writes_refuse_failed_empty_or_different_receipts():
+    from unittest import mock
+
+    correct = {"id": RUN_ID, "status": "succeeded", "log_tail": "original"}
+    receipts = [
+        (503, [correct]), (403, [correct]), (204, None), (200, []),
+        (200, correct), (200, [{**correct, "id": "other"}]),
+        (200, [{**correct, "status": "running"}]),
+        (200, [correct] * 2),
+        (200, [{"id": RUN_ID, "status": "succeeded", "log_tail": "different"}]),
+    ]
+    for writer in (main.sb_patch_stage, main.sb_patch_run):
+        for status, rows in receipts:
+            response = mock.Mock(status_code=status, text="private response must not appear")
+            response.json.return_value = rows
+            with mock.patch.object(main.requests, "patch", return_value=response):
+                try:
+                    writer(RUN_ID, {"status": "succeeded", "log_tail": "original"})
+                except RuntimeError as error:
+                    assert "unconfirmed" in str(error)
+                    assert "private response" not in str(error)
+                else:
+                    raise AssertionError(f"unconfirmed state write accepted: {status}, {rows}")
+
+
+def test_stage_write_lost_ack_does_not_overwrite_possible_success_with_failure():
+    import contextlib
+    import io
+    import tempfile
+    from unittest import mock
+
+    for lost_table in ("model_run_stages", "model_runs"):
+        stage_patches = []
+        def patch(url, *, headers, json, timeout=None):
+            if "model_run_stages" in url:
+                stage_patches.append(dict(json))
+            if f"/{lost_table}?" in url and json.get("status") == "succeeded":
+                raise main.requests.Timeout("synthetic write committed, acknowledgement lost")
+            response = mock.Mock(status_code=200)
+            response.json.return_value = [{"id": RUN_ID, **json}]
+            return response
+
+        output = io.StringIO()
+        with tempfile.TemporaryDirectory() as work, contextlib.redirect_stdout(output), \
+             mock.patch.object(main, "RUN_WORK_ROOT", work), \
+             mock.patch.object(main, "sb_claim_stage", return_value=True), \
+             mock.patch.object(main, "sb_get_run", return_value={}), \
+             mock.patch.object(main, "ensure_dynamic_package", return_value={"package_dir": work, "bbox": [0, 0, 1, 1]}), \
+             mock.patch.object(main, "stage_setup", return_value={"log": "synthetic completed computation"}), \
+             mock.patch.object(main.requests, "patch", side_effect=patch), \
+             mock.patch.object(main.requests, "get", return_value=mock.Mock(status_code=200, json=lambda: [])):
+            try:
+                main.process_stage({"id": RUN_ID, "run_id": RUN_ID, "stage_name": "AequilibraE Setup"})
+            except RuntimeError as error:
+                assert "unconfirmed" in str(error)
+            else:
+                raise AssertionError("worker continued after an uncertain state write")
+        assert [item["status"] for item in stage_patches] == ["succeeded"], stage_patches
+        if lost_table == "model_run_stages":
+            assert "Setup succeeded" not in output.getvalue(), output.getvalue()
+        assert "complete!" not in output.getvalue(), output.getvalue()
+
+
+def test_run_completion_requires_a_confirmed_stage_list():
+    import contextlib
+    import io
+    import tempfile
+    from unittest import mock
+
+    cases = [(200, [], True), (200, [{"status": "running"}], False),
+             (200, None, None), (200, {}, None), (200, False, None),
+             (200, "", None), (503, [], None), (403, [], None),
+             (200, ValueError("private invalid JSON"), None),
+             (200, main.requests.Timeout("private transport detail"), None)]
+    for status, rows, complete in cases:
+        response = mock.Mock(status_code=status)
+        response.json.side_effect = rows if isinstance(rows, ValueError) else None
+        response.json.return_value = rows
+        get_args = {"side_effect": rows} if isinstance(rows, main.requests.RequestException) else {"return_value": response}
+        output = io.StringIO()
+        with tempfile.TemporaryDirectory() as work, contextlib.redirect_stdout(output), \
+             mock.patch.object(main, "RUN_WORK_ROOT", work), \
+             mock.patch.object(main, "sb_claim_stage", return_value=True), \
+             mock.patch.object(main, "sb_get_run", return_value={}), \
+             mock.patch.object(main, "ensure_dynamic_package", return_value={"package_dir": work, "bbox": [0, 0, 1, 1]}), \
+             mock.patch.object(main, "stage_setup", return_value={"log": "synthetic completed computation"}), \
+             mock.patch.object(main, "sb_patch_stage") as stage_write, \
+             mock.patch.object(main, "sb_patch_run") as run_write, \
+             mock.patch.object(main.requests, "get", **get_args) as get:
+            try:
+                main.process_stage({"id": RUN_ID, "run_id": RUN_ID, "stage_name": "AequilibraE Setup"})
+            except RuntimeError as error:
+                assert complete is None, (status, rows, str(error))
+                assert "completion read unconfirmed" in str(error)
+                assert "private" not in str(error)
+            else:
+                assert complete is not None, f"Unconfirmed completion accepted: {status}, {rows}"
+            assert get.call_args.kwargs.get("timeout") == 30
+            assert get.call_args.args[0].endswith(f"model_run_stages?run_id=eq.{RUN_ID}&status=neq.succeeded")
+            assert [c.args[1]["status"] for c in run_write.call_args_list] == (["running", "succeeded"] if complete else ["running"])
+            assert [c.args[1]["status"] for c in stage_write.call_args_list] == ["succeeded"]
+            assert ("complete!" in output.getvalue()) == bool(complete)
+
+
+def test_claim_requires_exact_receipt_and_distinguishes_uncertainty_from_loss():
+    from unittest import mock
+
+    payload = {"status": "running", "started_at": "2026-10-08T07:00:00+00:00"}
+    valid = {"id": RUN_ID, **payload}
+    cases = [(200, [], False), (200, [{**valid, "started_at": "2026-10-08T07:00:00Z", "extra": "allowed"}], True),
+             (503, [], None), (204, None, None), (201, [valid], None),
+             (200, valid, None), (200, [valid, valid], None),
+             (200, [{**valid, "id": "other"}], None),
+             (200, [{**valid, "status": "queued"}], None),
+             (200, [{"id": RUN_ID, "status": "running"}], None)]
+    for status, rows, expected in cases:
+        response = mock.Mock(status_code=status, text="private response")
+        response.json.return_value = rows
+        with mock.patch.object(main.requests, "patch", return_value=response) as patch:
+            try:
+                actual = main.sb_claim_stage(RUN_ID, payload)
+            except main.WorkerStateWriteUnconfirmed as error:
+                assert expected is None
+                assert "private" not in str(error)
+            else:
+                assert expected is not None, f"Unconfirmed claim accepted: {status}, {rows}"
+                assert actual is expected
+        assert patch.call_args.kwargs.get("timeout") == 30
+        assert patch.call_args.args[0].endswith(f"model_run_stages?id=eq.{RUN_ID}&status=eq.queued")
+    for error in (main.requests.Timeout("private transport"), ValueError("private JSON")):
+        response = mock.Mock(status_code=200)
+        response.json.side_effect = error
+        with mock.patch.object(main.requests, "patch", return_value=response):
+            try:
+                main.sb_claim_stage(RUN_ID, payload)
+            except main.WorkerStateWriteUnconfirmed as caught:
+                assert "private" not in str(caught)
+            else:
+                raise AssertionError("Claim uncertainty was treated as a definite outcome")
 
 
 TESTS = [value for name, value in sorted(globals().items()) if name.startswith("test_")]
