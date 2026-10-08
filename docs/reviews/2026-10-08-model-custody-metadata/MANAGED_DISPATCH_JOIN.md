@@ -1573,3 +1573,44 @@ temporary gateway is removed. These controls use synthetic native SQLite files,
 not a network assignment. Mutable package preparation, remaining output/count
 mapping, closure enforcement and full dispatch/publication/terminal handling
 remain open. Execution readiness remains false and no scientific claim changes.
+
+### Separate package working files and combined mapping
+
+The writer now prepares an exclusive package working copy from the exact owned
+consumed package. It verifies the recorded inventory and registers
+`model_package_working_copy` as an initial mutable inventory with producer and
+consumed-manifest references. Existing destinations, changed inputs and foreign
+references refuse preparation. Uncertain registration stops the writer and
+retains its pending command. The retained package remains separate from files
+that assignment or calibration may change.
+
+Project-inclusive preparation now creates both working copies and maps
+`package.package_dir` to the package working directory. The mapping retains
+separate package/project initial manifest identities and the original input
+references. Source labels, original state and recorded count paths stay
+unchanged. The older two-input preparation mode remains partial and does not
+activate model dispatch.
+
+Four working-package tests cover real file mutation without retained-byte
+changes, no reuse, foreign input, changed input and lost registration response.
+The combined-input test checks the new working path and package manifest links.
+Baseline, harmless and restored controls pass; retained-input aliasing, erased
+provenance and ignored source ownership fail. The combined mapping controls
+also pass at current source. The warning-enabled broader suite passes 209 tests.
+`prototype/package-working-copy-controls.json` and
+`prototype/execution-input-controls.json` preserve results and hashes.
+
+Native combined preparation now retains six consumer records and uses 14 HTTP
+calls per valid case. The proof checks independent package working files,
+initial-inventory role and exact saved working paths/hashes. Final mapping
+lost-reply recovery still passes through a fresh CLI, with seven native tables
+unchanged and the writer stopped. Private `execution-input-http-v3` and
+`prototype/execution-input-http.json` retain the result. The v2 attempt failed
+because its expected returned package path still named the retained input;
+the corrected proof checks the explicitly owned working path. Original v2
+artifacts remain available, and the failed run is not claimed as passing.
+
+Native loss of the package-working registration response itself remains separate
+from final-mapping recovery and is currently covered only by injected transport.
+Remaining output/count joins, stage-side package-path enforcement, engine closure
+and full managed execution/publication/terminal handling remain open.

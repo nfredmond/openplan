@@ -1,6 +1,6 @@
 {
   "selector_sha256": "f7cd8abdb4afdda487bdb3a2ad6f7438a420a591f481aba0d90934ae703cf087",
-  "worker_sha256": "fdad9cc033a7c9ec07e41635f4202525347cb373d88fd5f9ea738e9cf206008d",
+  "worker_sha256": "5c6e76691bb74d8d50488457040d2ece31a9e2df6255746367f1598e349247f3",
   "controls": [
     {
       "control": "baseline",
@@ -9,7 +9,7 @@
         "original_preserved": true,
         "execution_ready": false
       },
-      "consumer_artifacts": 5,
+      "consumer_artifacts": 6,
       "http_calls": [
         {
           "method": "POST",
@@ -49,6 +49,10 @@
         },
         {
           "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
           "status": 200
         },
         {
@@ -72,7 +76,7 @@
         "original_preserved": true,
         "execution_ready": false
       },
-      "consumer_artifacts": 5,
+      "consumer_artifacts": 6,
       "http_calls": [
         {
           "method": "POST",
@@ -112,6 +116,10 @@
         },
         {
           "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
           "status": 200
         },
         {
@@ -133,7 +141,7 @@
       "outcome": {
         "mapping_fault_detected": true
       },
-      "consumer_artifacts": 5,
+      "consumer_artifacts": 6,
       "http_calls": [
         {
           "method": "POST",
@@ -173,6 +181,10 @@
         },
         {
           "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
           "status": 200
         },
         {
@@ -240,7 +252,7 @@
         "cached_no_http": true,
         "native_tables_unchanged": 7
       },
-      "consumer_artifacts": 5,
+      "consumer_artifacts": 6,
       "http_calls": [
         {
           "method": "POST",
@@ -280,6 +292,10 @@
         },
         {
           "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
           "status": 200
         },
         {
@@ -303,7 +319,7 @@
         "original_preserved": true,
         "execution_ready": false
       },
-      "consumer_artifacts": 5,
+      "consumer_artifacts": 6,
       "http_calls": [
         {
           "method": "POST",
@@ -343,6 +359,10 @@
         },
         {
           "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
           "status": 200
         },
         {

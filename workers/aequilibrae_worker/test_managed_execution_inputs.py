@@ -53,13 +53,22 @@ class ExecutionInputsTests(unittest.TestCase):
         self.assertEqual(mapping['working_project']['input_manifest_sha256'], result['project_input']['manifest_sha256'])
         self.assertEqual(mapping['working_project']['initial_manifest_sha256'], hashlib.sha256(Path(mapping['working_project']['initial_manifest_path']).read_bytes()).hexdigest())
         self.assertEqual(mapping['mapped_fields'], ['package.package_dir'])
+        self.assertEqual(mapping['state']['package']['package_dir'], result['package_working_copy']['package_directory'])
+        retained = Path(result['package_input']['package_directory']) / 'zones.csv'
+        working = Path(result['package_working_copy']['package_directory']) / 'zones.csv'
+        original_bytes = retained.read_bytes()
+        self.assertNotEqual(working.stat().st_ino, retained.stat().st_ino)
+        working.write_bytes(b'generated demand change')
+        self.assertEqual(retained.read_bytes(), original_bytes)
+        self.assertEqual(mapping['working_package']['input_manifest_sha256'], result['package_input']['manifest_sha256'])
+        self.assertEqual(mapping['working_package']['initial_manifest_sha256'], hashlib.sha256(Path(mapping['working_package']['initial_manifest_path']).read_bytes()).hexdigest())
         self.assertIs(mapping['execution_ready'], False)
         self.assertEqual(result['state_input']['state'], original)
         self.assertEqual(path.read_bytes(), content)
         self.assertEqual(mapping['state']['assignment'], original['assignment'])
         self.assertEqual(mapping['state']['package']['source_label'], original['package']['source_label'])
         kinds = [call.kwargs['json']['p_payload']['artifact_type'] for call in self.post.call_args_list]
-        self.assertEqual(kinds, ['model_state_consumption','model_package_consumption','model_project_consumption','model_project_working_copy','model_input_mapping'])
+        self.assertEqual(kinds, ['model_state_consumption','model_package_consumption','model_project_consumption','model_project_working_copy','model_package_working_copy','model_input_mapping'])
 
     def test_different_project_attempt_refuses_before_working_copy(self):
         self.prepare()

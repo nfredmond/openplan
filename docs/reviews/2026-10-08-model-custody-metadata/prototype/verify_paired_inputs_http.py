@@ -134,7 +134,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                             if control!='source-mismatch' or 'source directory disagree' not in str(error.__cause__) or not writer.stopped:raise
                             return {'refused':True,'writer_stopped':True}
                     mapped=result['package_mapped_state']
-                    expected={**original_state,'package':{**original_state['package'],'package_dir':result['package_input']['package_directory']}}
+                    expected={**original_state,'package':{**original_state['package'],'package_dir':str(writer.files.path/'package_working/files') if include_project else result['package_input']['package_directory']}}
                     if mapped!=expected:
                         if control!='omit-package-mapping':raise AssertionError('Native paired mapping differs')
                         return {'mapping_fault_detected':True}
@@ -150,7 +150,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                 expected_types=['model_package_consumption','model_state_consumption']
                 if control!='source-mismatch':
                     expected_types.insert(0,'model_input_mapping')
-                    if include_project:expected_types=sorted(expected_types+['model_project_consumption','model_project_working_copy'])
+                    if include_project:expected_types=sorted(expected_types+['model_project_consumption','model_project_working_copy','model_package_working_copy'])
                 if [row['artifact_type'] for row in records]!=expected_types:
                     raise AssertionError('Native paired input/mapping records differ')
                 for row in records:
@@ -158,7 +158,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         mapping_path=Path(row['file_url'].removeprefix('local://'))
                         content=mapping_path.read_bytes();mapping=json.loads(content)
                         expected_saved_state={**original_state,'package':{**original_state['package'],
-                            'package_dir':str(mapping_path.parent/'predecessor_package/files')}}
+                            'package_dir':str(mapping_path.parent/('package_working/files' if include_project else 'predecessor_package/files'))}}
                         if control=='omit-package-mapping':expected_saved_state=original_state
                         if mapping['state']!=expected_saved_state:
                             raise AssertionError('Native saved mapping state differs')
@@ -178,6 +178,12 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     or mapping['working_project']['initial_manifest_sha256']!=hashlib.sha256(working_manifest.read_bytes()).hexdigest()
                                     or mapping['working_project']['input_manifest_sha256']!=hashlib.sha256(consumed_manifest.read_bytes()).hexdigest()):
                                 raise AssertionError('Native combined mapping lost project working identity')
+                            package_manifest=mapping_path.parent/'package_working/manifest.json'
+                            consumed_package=mapping_path.parent/'predecessor_package/manifest.json'
+                            if (mapping['working_package']['initial_manifest_path']!=str(package_manifest)
+                                    or mapping['working_package']['initial_manifest_sha256']!=hashlib.sha256(package_manifest.read_bytes()).hexdigest()
+                                    or mapping['working_package']['input_manifest_sha256']!=hashlib.sha256(consumed_package.read_bytes()).hexdigest()):
+                                raise AssertionError('Native combined mapping lost package working identity')
                         continue
                     if include_project and row['artifact_type'] in ('model_project_consumption','model_project_working_copy'):
                         manifest_path=Path(row['file_url'].removeprefix('local://'))
@@ -198,8 +204,22 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     or row['metadata_json']['input_manifest_sha256']!=hashlib.sha256((consumed/'manifest.json').read_bytes()).hexdigest()
                                     or copied.stat().st_ino==(consumed/'files/project_database.sqlite').stat().st_ino):
                                 raise AssertionError('Native combined working boundary differs')
+                    if include_project and row['artifact_type']=='model_package_working_copy':
+                        manifest_path=Path(row['file_url'].removeprefix('local://'))
+                        content=manifest_path.read_bytes()
+                        consumed=manifest_path.parent.parent/'predecessor_package'
+                        copied=manifest_path.parent/'files/zones.csv'
+                        if (row['content_hash']!=hashlib.sha256(content).hexdigest()
+                                or row['file_size_bytes']!=len(content)
+                                or row['metadata_json']['role']!='initial_working_inventory'
+                                or row['metadata_json']['files_mutable'] is not True
+                                or row['metadata_json']['execution_ready'] is not False
+                                or row['metadata_json']['input_manifest_sha256']!=hashlib.sha256((consumed/'manifest.json').read_bytes()).hexdigest()
+                                or copied.read_bytes()!=(consumed/'files/zones.csv').read_bytes()
+                                or copied.stat().st_ino==(consumed/'files/zones.csv').stat().st_ino):
+                            raise AssertionError('Native combined package working boundary differs')
                     provenance=row['metadata_json']['producer']
-                    expected_id=(project_id if include_project and row['artifact_type'] in ('model_project_consumption','model_project_working_copy') else package_id if row['artifact_type']=='model_package_consumption' else state_id)
+                    expected_id=(project_id if include_project and row['artifact_type'] in ('model_project_consumption','model_project_working_copy') else package_id if row['artifact_type'] in ('model_package_consumption','model_package_working_copy') else state_id)
                     if provenance['artifact_id']!=expected_id or provenance['stage_id']!=producer_stage or provenance['attempt_id']!=attempt:
                         raise AssertionError('Native paired provenance differs')
                 if sql(database,f"SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_run_artifacts a WHERE stage_id='{producer_stage}';")!=before:

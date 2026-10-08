@@ -1045,6 +1045,15 @@ def retain_managed_state_and_package(*, include_project: bool = False) -> dict:
                    or not state_input["producer"].get(key) for key in ("stage_id", "attempt_id")):
                 raise ValueError("State and project must belong to the same producer attempt")
             working_project = writer.prepare_project_working_copy(project_input)
+            working_package = writer.prepare_package_working_copy(package_input)
+            mapped = model_predecessor_inputs.map_package(
+                state_input, {**package_input, "package_directory": working_package["package_directory"]})
+            mapping["state"] = mapped
+            mapping["working_package"] = {
+                "initial_manifest_path": working_package["initial_manifest_path"],
+                "initial_manifest_sha256": working_package["initial_manifest_sha256"],
+                "input_manifest_sha256": working_package["input_manifest_sha256"],
+            }
             mapping["inputs"]["project"] = project_input["producer"]
             mapping["execution_paths"] = {"project_directory": working_project["project_directory"]}
             mapping["working_project"] = {
@@ -1052,7 +1061,8 @@ def retain_managed_state_and_package(*, include_project: bool = False) -> dict:
                 "initial_manifest_sha256": working_project["initial_manifest_sha256"],
                 "input_manifest_sha256": working_project["input_manifest_sha256"],
             }
-            project_records = {"project_input": project_input, "project_working_copy": working_project}
+            project_records = {"project_input": project_input, "project_working_copy": working_project,
+                               "package_working_copy": working_package}
         retained_mapping = writer.retain_input_mapping(mapping)
         return {**project_records, "state_input": state_input, "package_input": package_input,
                 "package_mapped_state": mapped, "mapping_record": retained_mapping,

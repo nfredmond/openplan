@@ -260,6 +260,43 @@ class AttemptWriter:
             self.stopped = True
             raise
 
+    def prepare_package_working_copy(self, record):
+        """Make an exclusive mutable copy while retaining original consumed inputs.
+
+        The registered manifest describes initial bytes, not later engine state.
+        Preparing files does not authorize execution or confirm engine closure.
+        """
+        import model_package_inputs
+        self.require_open()
+        try:
+            if self.files is None:
+                raise ValueError('Package preparation requires an owned attempt')
+            expected = self.files.path / 'predecessor_package' / 'manifest.json'
+            if record.get('manifest_path') != str(expected) or expected.resolve(strict=True) != expected:
+                raise ValueError('Package preparation requires the owned consumed package')
+            retained = model_package_inputs.consume(record, self.files.path / 'package_working')
+            self.files.verify()
+            self.record_artifact({
+                'run_id': self.context.run_id, 'stage_id': self.context.stage_id,
+                'artifact_type': 'model_package_working_copy',
+                'file_url': 'local://' + retained['manifest_path'],
+                'file_size_bytes': retained['manifest_size_bytes'], 'content_hash': retained['manifest_sha256'],
+                'metadata_json': {'schema': 'openplan.package-working-copy.v1',
+                                  'role': 'initial_working_inventory', 'files_mutable': True,
+                                  'input_manifest_sha256': record['manifest_sha256'],
+                                  'producer': record['producer'],
+                                  'execution_ready': False,
+                                  'scientific_acceptance': 'unassessed'},
+            }, logical_name='package-working-copy')
+            return {'package_directory': retained['package_directory'],
+                    'initial_manifest_path': retained['manifest_path'],
+                    'initial_manifest_sha256': retained['manifest_sha256'],
+                    'input_manifest_sha256': record['manifest_sha256'],
+                    'producer': record['producer'], 'execution_ready': False}
+        except BaseException:
+            self.stopped = True
+            raise
+
     def project_directory(self, work_dir):
         """Resolve only this invocation's confirmed, independently prepared copy."""
         self.require_open()
