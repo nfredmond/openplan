@@ -20,7 +20,7 @@ from worker_import_for_tests import import_worker_main
 from isolated_postgrest import gateway
 
 
-def _check():
+def _check(named=False):
     meta = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
     if not re.fullmatch(r'openplan_attempt_cli_[0-9a-f]{32}', meta['database']) or meta['container'] != 'supabase_db_openplan-restore-target-2026091050':
         raise ValueError('Select the named owned proof database')
@@ -80,10 +80,12 @@ def _check():
             workspace = str(uuid.UUID(sql(f"SELECT workspace_id FROM public.model_runs WHERE id='{run}';")))
             artifact = str(uuid.uuid4())
             payload = dict(id=artifact,run_id=run,stage_id=stage,artifact_type='link_volumes',file_url='local://synthetic',file_size_bytes=2,content_hash='a'*64,metadata_json={})
+            if named:
+                payload.pop('id')
             worker=import_worker_main()
             def deliver_saved():
                 with patch.object(worker,'SUPABASE_URL',base), patch.object(worker,'SUPABASE_KEY',token), patch.dict(os.environ,{'OPENPLAN_DEPLOYMENT_ID':meta['database']}):
-                    return worker.sb_record_retained_primary_artifact(payload,workspace_id=workspace,journal_dir=str(directory))
+                    return worker.sb_record_retained_artifact(payload,workspace_id=workspace,journal_dir=str(directory),logical_name='demand.omx' if named else None)
             try:
                 deliver_saved()
             except worker.WorkerStateWriteUnconfirmed:
@@ -95,6 +97,7 @@ def _check():
                 raise AssertionError('Lost reply did not leave the exact command pending')
             command = pending[0]['command']
             request = command['request_id']
+            artifact = command['arguments']['payload']['id']
             cli = [sys.executable, '-B', str(REPO / 'workers/aequilibrae_worker/model_command_recovery.py'), '--journal', str(directory), '--base-url', base, '--deployment-id', meta['database']]
             def invoke(action):
                 result = subprocess.run([*cli, *action], capture_output=True, text=True, timeout=40, env={**os.environ, 'SUPABASE_SERVICE_ROLE_KEY': token})
@@ -123,12 +126,12 @@ def _check():
             thread.join(timeout=5)
             if thread.is_alive():
                 raise RuntimeError('Owned recovery bridge did not stop')
-    result = {'run_id':run,'request_id':request,'http_posts':2,'lost_tcp_reply_after_commit':True,'fresh_cli_recovered':True,'cached_cli_sent_no_request':True,'client_reused_recovered_receipt':True,'record_counts':counts,'operation':operation,'model_resumed':False,'scope':'Actual normal worker helper with synthetic artifact, real PostgREST, dropped TCP reply after native commit, fresh recovery CLI and client receipt reuse. Candidate objects removed. No normal dispatch, Storage bytes, managed ingestion or scientific acceptance.'}
+    result = {'named_artifact':named,'run_id':run,'request_id':request,'http_posts':2,'lost_tcp_reply_after_commit':True,'fresh_cli_recovered':True,'cached_cli_sent_no_request':True,'client_reused_recovered_receipt':True,'record_counts':counts,'operation':operation,'model_resumed':False,'scope':'Actual normal worker helper with synthetic artifact, real PostgREST, dropped TCP reply after native commit, fresh recovery CLI and client receipt reuse. Candidate objects removed. No normal dispatch, Storage bytes, managed ingestion or scientific acceptance.'}
     (output / 'recovery-cli.json').write_text(json.dumps(result, indent=2) + '\n')
     return result
 
 
-def check():
+def check(named=False):
     meta = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
     if not re.fullmatch(r'openplan_attempt_cli_[0-9a-f]{32}', meta['database']) or meta['container'] != 'supabase_db_openplan-restore-target-2026091050':
         raise ValueError('Select the named owned proof database')
@@ -141,7 +144,7 @@ def check():
         raise RuntimeError('Candidate proof objects already exist; leave them unchanged')
     sql('BEGIN;\n'+Path(__file__).with_name('legacy-artifact-command.sql').read_text()+'\nCOMMIT;')
     try:
-        return _check()
+        return _check(named)
     finally:
         sql("""BEGIN;
 DROP FUNCTION public.record_legacy_model_artifact(uuid,jsonb);
@@ -152,4 +155,7 @@ COMMIT;""")
 
 
 if __name__ == '__main__':
-    print(json.dumps(check(), indent=2))
+    import argparse
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--named',action='store_true')
+    print(json.dumps(check(parser.parse_args().named), indent=2))

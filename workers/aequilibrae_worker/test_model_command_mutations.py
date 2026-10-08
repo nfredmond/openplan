@@ -142,6 +142,7 @@ class MutationTests(unittest.TestCase):
             ("if any(args[key] != payload[key] for key in ('run_id', 'stage_id')):", 'if False:', 'invalid_commands_never_send'),
             ("if journal.canonical({key: receipt[key] for key in expected}) != journal.canonical(expected):", 'if False:', 'mismatched_receipts_stay_pending'),
             ("'artifact_id': payload['id']", "'artifact_id': payload", 'stable_identity_and_conflicting_request'),
+            ("'name': name", "'name': payload", 'named_artifact_slot_reuses_identity'),
             ("if type(size) is not int or not 0 <= size <= 9223372036854775807:", 'if False:', 'invalid_commands_never_send'),
         ]
         for old, new, boundary in cases:

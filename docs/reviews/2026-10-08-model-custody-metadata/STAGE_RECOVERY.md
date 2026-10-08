@@ -473,3 +473,34 @@ All 78 worker suites pass, with none failed or not run. The owned
 on October 8, invocation `07e506a11bee4ebea7a62c079883d412`, with a 175.3 MiB peak
 under its 1 GiB limit. No files changed during that regression. Whole-stage
 replay still requires the remaining output writes and current ownership checks.
+
+
+## Named secondary artifact delivery
+
+The five secondary outputs in the normal registration loop now use retained
+commands: calibrated link volumes, accepted network calibration, demand matrix,
+travel-time skims and network setup summary. `prepare_named` derives a stable
+artifact identity from deployment, run, stage and logical filename. The payload
+is not part of that identity, so changed bytes or metadata must reconcile the
+original request rather than silently create another artifact. The shared worker
+helper is now named `sb_record_retained_artifact` and accepts either the prepared
+primary identity or a logical secondary name.
+
+The actual registration branch passes exact-repeat checks for all five outputs:
+one request each, distinct identities, and changed-byte refusal. The maintained
+mutation suite includes a payload-derived-name fault, and restoring the direct
+insert in the actual branch fails its targeted test. Harmless and restored
+controls pass. Native `--named` response-loss proof enters the normal helper,
+commits through PostgREST, drops the first TCP reply, and recovers from a fresh
+CLI process. Exactly two identical POSTs leave one artifact and one receipt;
+subsequent cached reuse sends no request. Private results are in
+`named-artifact-worker-native-cli/` and `named-artifact-branch-controls.json`
+under the proof root.
+
+All 78 worker suites pass. `openplan-named-artifact-workers-20261008.service`
+completed at 07:32:51 Pacific, invocation `dbcbc90a8efb431fb0b05a52cc4890d2`, with
+a 173.3 MiB peak under its 1 GiB limit. No checkout edits occurred during the run.
+Evidence-packet and zone-attribute registration, KPI writes, GeoJSON publication
+and ActivitySim output registration remain separate recovery obligations. Older
+artifacts with unrelated random identities are not silently adopted. No unsafe
+whole-stage replay is enabled by this change.

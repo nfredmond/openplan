@@ -23,6 +23,17 @@ class LegacyArtifactTests(unittest.TestCase):
         return artifact.prepare(self.root/'journal', IDS[3], self.payload() if payload is None else payload,
                                 base_url=URL, deployment_id=deployment)
 
+    def test_named_artifact_slot_reuses_identity_and_refuses_changed_bytes(self):
+        payload=self.payload();payload.pop('id')
+        def prepare(value=payload,name='demand.omx'):
+            return artifact.prepare_named(self.root/'journal',IDS[3],value,name=name,base_url=URL,deployment_id='synthetic')
+        first=prepare();self.assertEqual(prepare(),first)
+        self.assertNotEqual(prepare(name='skim.omx')['request_id'],first['request_id'])
+        changed={**payload,'content_hash':'b'*64}
+        with self.assertRaisesRegex(ValueError,'identity reused'):prepare(changed)
+        with self.assertRaises(ValueError):prepare(name='../demand.omx')
+        with self.assertRaises(ValueError):prepare(self.payload())
+
     def test_stable_identity_and_conflicting_request(self):
         cmd=self.prepare()
         self.assertEqual(self.prepare(),cmd)

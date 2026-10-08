@@ -50,3 +50,23 @@ def prepare(directory, workspace_id, payload, *, base_url, deployment_id):
     command = json.loads(journal.canonical(command))
     client.validate_command(command)
     return journal.prepare(directory, command)['command']
+
+
+# Identity depends on the logical output slot, never on mutable payload contents.
+ARTIFACT_NAMESPACE = UUID('341ebc0b-de09-4772-880d-15597635430a')
+
+
+def prepare_named(directory, workspace_id, payload, *, name, base_url, deployment_id):
+    import model_command_client as client
+    if not isinstance(name, str) or not re.fullmatch(r'[a-z][a-z0-9_.-]*', name):
+        raise ValueError('Stable logical artifact name required')
+    if not isinstance(payload, dict) or set(payload) != FIELDS - {'id'}:
+        raise ValueError('Named artifact must supply all fields except identity')
+    bound = client.destination(base_url, deployment_id)
+    for key in ('run_id', 'stage_id'):
+        client._uuid(payload[key])
+    identity = str(uuid5(ARTIFACT_NAMESPACE, journal.canonical({
+        'destination': bound, 'run_id': payload['run_id'], 'stage_id': payload['stage_id'], 'name': name,
+    })))
+    return prepare(directory, workspace_id, {'id': identity, **payload},
+                   base_url=base_url, deployment_id=deployment_id)

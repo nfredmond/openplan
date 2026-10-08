@@ -55,7 +55,7 @@ class PrimaryOutputPreparation(unittest.TestCase):
         prepared=self.prefix()['prepared_output'];facts=prepared['source_files']['link_volumes']
         payload=dict(run_id=RUN,stage_id=STAGE,artifact_type='link_volumes',content_hash=facts['sha256'],file_size_bytes=facts['size_bytes'])
         writer=Mock(return_value={'id':prepared['output_artifact_id']})
-        scope=dict(vars(main),atype='link_volumes',prepared_output=prepared,artifact_payload=payload,model_output_artifact_id=prepared['output_artifact_id'],_ws_id=RUN,work_dir=str(self.root),stage_id=STAGE,sb_record_retained_primary_artifact=writer)
+        scope=dict(vars(main),atype='link_volumes',prepared_output=prepared,artifact_payload=payload,model_output_artifact_id=prepared['output_artifact_id'],_ws_id=RUN,work_dir=str(self.root),stage_id=STAGE,sb_record_retained_artifact=writer)
         exec(compile(ast.Module(body=[branch],type_ignores=[]),main.__file__,'exec'),scope)
         self.assertEqual(payload['id'],prepared['output_artifact_id'])
         writer.assert_called_once_with(payload,workspace_id=RUN,journal_dir=str(self.root/'stage-journals'/STAGE))
@@ -66,6 +66,25 @@ class PrimaryOutputPreparation(unittest.TestCase):
         payload['content_hash']=facts['sha256']
         writer.side_effect=main.WorkerStateWriteUnconfirmed('Synthetic lost reply')
         with self.assertRaises(main.WorkerStateWriteUnconfirmed):exec(compile(ast.Module(body=[branch],type_ignores=[]),main.__file__,'exec'),scope)
+
+    def test_secondary_registration_slots_use_exact_retained_delivery(self):
+        function=next(n for n in ast.parse(Path(main.__file__).read_text()).body if isinstance(n,ast.FunctionDef) and n.name=='stage_artifacts')
+        branch=next(n for n in ast.walk(function) if isinstance(n,ast.If) and ast.unparse(n.test)=="atype == 'link_volumes'")
+        names=[('link_volumes_calibrated.csv','link_volumes_calibrated'),('accepted_network_calibration.json','accepted_network_calibration'),('demand.omx','demand_matrix'),('travel_time_skims.omx','skim_matrix'),('network_setup_summary.json','network_setup_summary')]
+        def send(url,**kwargs):
+            return Mock(status_code=200,json=Mock(return_value={**kwargs['json']['p_payload'],'attempt_id':None}))
+        with patch.object(main.requests,'post',side_effect=send) as post,patch.object(main,'sb_post_artifact') as legacy:
+            identities=[]
+            for fname,atype in names:
+                payload=dict(run_id=RUN,stage_id=STAGE,artifact_type=atype,file_url='local://'+fname,content_hash='a'*64,file_size_bytes=2,metadata_json={})
+                scope=dict(vars(main),atype=atype,fname=fname,artifact_payload=payload,_ws_id=RUN,work_dir=str(self.root),stage_id=STAGE)
+                for _ in range(2):exec(compile(ast.Module(body=[branch],type_ignores=[]),main.__file__,'exec'),scope)
+                identities.append(scope['registered']['id'])
+                payload['content_hash']='b'*64
+                with self.assertRaises(main.WorkerStateWriteUnconfirmed):exec(compile(ast.Module(body=[branch],type_ignores=[]),main.__file__,'exec'),scope)
+            self.assertEqual(len(set(identities)),5)
+            self.assertEqual(post.call_count,5)
+            legacy.assert_not_called()
 
 
 if __name__=='__main__':unittest.main()
