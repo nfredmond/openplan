@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { chmodSync, mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const generator = resolve("scripts/ops/synthesis-service-unit.mjs");
@@ -62,9 +62,17 @@ describe("reviewable synthesis supervisor units", () => {
     refused(run(["--worker", "preparation"])); refused(run(["--start", "yes"]));
   });
   it("refuses another worker name", () => refused(run([], "generation")));
-  it("refuses relative paths", () => { state = "relative"; refused(run()); });
+  it("refuses an existing relative path for the stated reason", () => {
+    state = relative(process.cwd(), state);
+    const result = run(); refused(result);
+    expect(result.stderr).toContain("All paths must be absolute.");
+  });
   it("refuses an application path whose trailing space would be stripped", () => {
     renameSync(app, `${app} `); app += " "; refused(run());
   });
-  it("refuses line breaks in paths", () => { state = join(root, "line\nbreak"); refused(run()); });
+  it("refuses an existing path with a line break for the stated reason", () => {
+    state = join(root, "line\nbreak"); mkdirSync(state, { mode: 0o700 });
+    const result = run(); refused(result);
+    expect(result.stderr).toContain("Paths must not contain control characters.");
+  });
 });
