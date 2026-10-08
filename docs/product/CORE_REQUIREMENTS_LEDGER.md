@@ -324,6 +324,18 @@ draft and the decision remains proposed. Synthetic execution and staff actions
 do not prove model interpretation quality, agency approval, representative
 participation or observed human usefulness. Native spreadsheet operation,
 host-loss recovery, boot supervision and capacity evidence remain open.
+The October 8 [supervision record](../reviews/2026-10-07-synthesis-execution-queue/SUPERVISION_VERIFICATION.md)
+adds bounded M3 evidence for these synthesis services. Both real entry points
+restart in a disposable Linux guest after clean reboot and abrupt guest loss,
+retaining identical empty-coordinator journals. A separate native case kills the
+CLI after syncing a provider result but before its output write; restart delivers
+the original result with one provider call total. These are distinct tests, not
+a combined populated-host recovery demonstration. The supervisor and follow-up
+evidence are development work pending main integration. Agency commissioning,
+nonempty guest-loss recovery, full external-worker restore, demand-worker
+operation and capacity remain open; CORE-OPS-CONTROL-01 native-GUI acceptance is
+unchanged.
+
 Transient database-lock contention produces console-visible read failures;
 later successful retries do not establish an uninterrupted workflow.
 

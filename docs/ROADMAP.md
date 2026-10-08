@@ -252,6 +252,16 @@ replacement or completed OWP administration claim.
 - **Verification:** clean-machine commissioning; healthy computation beyond 45 minutes; process/database/network failure; duplicate/late workers; exact storage and local model-byte recovery; nonempty migrations; denied external traffic; correct final deployed identity. Run every worker family, not import-only substitutes.
 - **Risks/questions/cost:** storage grows with models/imagery, tiles have license and update obligations, physical-disk failure defeats same-disk backups, authentication/email and public exposure need operational ownership. Measure resources and recovery objectives. Spending on hardware or a service requires Nathaniel; free software alone does not promise zero operating effort.
 
+**October 8 synthesis operations checkpoint.** The
+[supervision verification](reviews/2026-10-07-synthesis-execution-queue/SUPERVISION_VERIFICATION.md)
+records generated Linux user units, actual service restart in a disposable guest
+with unchanged empty-coordinator journals, and a separate native process crash
+after result persistence but before the database output write. Restart retains
+that original output without a second provider call. These development records
+await main integration. They do not complete clean agency commissioning, populated
+guest-loss recovery, external-worker backup/restore, either demand worker or
+capacity acceptance. Continue M3 from those remaining boundaries.
+
 ### M3a. Dependable desktop control and demo recovery
 
 - **Outcome:** Nathaniel starts from the existing desktop icon and understands which site is running, whether the demonstration target is accepted and ready, what work is underway and how to recover without shell commands. CORE-OPS-CONTROL-01 covers this early operational requirement.
