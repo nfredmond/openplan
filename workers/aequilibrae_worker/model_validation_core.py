@@ -17,6 +17,7 @@ from typing import Any, Iterable, Mapping, Sequence
 
 
 VALIDATION_RULES_VERSION = 4
+DECISIVE_OBSERVATION_POLICY = "source-supported-bounds-required.v1"
 OBSERVATION_SCHEMA = "openplan.observed-traffic-observation.v1"
 COMPARISON_BASIS_SCHEMA = "openplan.model-comparison-basis.v1"
 ASSESSMENT_SCHEMA = "openplan.model-validation-assessment.v1"
@@ -485,6 +486,7 @@ def assess_validation(
         "created_at": created_at or datetime.now(timezone.utc).isoformat(),
         "exact_inputs": exact_inputs,
         "planning_use": basis["planning_use"],
+        "decisive_observation_policy": DECISIVE_OBSERVATION_POLICY,
         "partition": dict(partition),
         "comparability_findings": {row["observation_id"]: row["comparability"] for row in rows},
         "observation_results": rows,

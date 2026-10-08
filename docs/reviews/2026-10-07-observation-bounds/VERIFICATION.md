@@ -24,6 +24,9 @@ under the unchanged frozen rule.
 No archived observation, study result, registry, matcher, model default or
 holdout is rewritten. Existing stored assessments keep their historical
 contents. This is not a rerun or regrading of the published studies.
+New full assessments identify their eligibility policy as
+`source-supported-bounds-required.v1`. Historical rules-v4 records without
+that marker are not silently relabeled as having used this correction.
 
 ## Verification
 

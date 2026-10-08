@@ -197,6 +197,7 @@ def test_grade_b_without_bounds_cannot_pass_or_fail_scientific_acceptance():
     for volume in (100.0, 1000.0):
         result = assess([observation()], basis(acceptance=frozen_rule()), {"link-1": volume})
         assert result["scientific_outcome"] == "inconclusive", result
+        assert result["decisive_observation_policy"] == "source-supported-bounds-required.v1"
         row = result["observation_results"][0]
         assert row["evidence_grade"] == "B"
         assert row["observed_bounds"] == "unknown"
