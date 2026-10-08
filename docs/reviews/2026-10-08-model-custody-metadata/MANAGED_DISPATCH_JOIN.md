@@ -984,3 +984,16 @@ This proof stops at the first artifact-stage registration. It does not establish
 complete evidence generation, full package/project transfer, normal managed
 poll/push dispatch, scientific accuracy or practitioner acceptance. Those remain
 separate requirements. Disk had 81 GiB available before these small fixture clones.
+
+### Package and project transfer source audit
+
+The [stage input handoff design](STAGE_INPUT_HANDOFF.md) records current consumers,
+mutable package outputs, SQLite success-path close points, required caches and
+explicit predecessor/path-mapping requirements. A state hash alone does not close
+this boundary. The audit found zone-attribute registration using a different
+package path from the artifact calculations. Registration now follows the
+recorded package directory and cannot substitute a legacy file when that recorded
+file is missing. Legacy records without a package directory retain their fallback.
+Four real-file registration-block tests pass, including a harmless control and a
+wrong-directory fault. The focused suite passes 25 tests. Registration is mocked;
+full package/project custody and native project reopening remain unproved.

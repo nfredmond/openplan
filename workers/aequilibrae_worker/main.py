@@ -6218,7 +6218,8 @@ def stage_artifacts(
     # to build a real ActivitySim input bundle; it's also useful screening
     # provenance for any run. Lives in package/, not run_output/, so it's not in
     # the loop above.
-    zone_attr_path = os.path.join(work_dir, "package", "zone_attributes.csv")
+    zone_package_dir = (package_meta or {}).get("package_dir") or os.path.join(work_dir, "package")
+    zone_attr_path = os.path.join(zone_package_dir, "zone_attributes.csv")
     if os.path.exists(zone_attr_path):
         with open(zone_attr_path, "rb") as fh:
             za_hash = hashlib.sha256(fh.read()).hexdigest()
