@@ -168,3 +168,30 @@ pass, 1,565 skip, dependency auditing reports zero vulnerabilities, and the
 production webpack build completes. Live RLS is disabled in that local gate.
 These results do not cover the later generator fixes; the exact integrated
 supervisor head has separate GitHub checks in progress.
+
+## Native process loss before the output write
+
+A new native test kills the real synthesis-generation CLI with SIGKILL after its
+`observed` journal is synced but before the proxy forwards the output-retention
+request to PostgreSQL. The initial process leaves one provider call, the observed
+journal, zero forwarded output writes and zero database outputs. A fresh process
+uses that journal and saves exactly one output with the same attempt, worker,
+observation and capture hash. The provider call count remains one.
+
+This extends the existing native acknowledgement-loss tests, which already cover
+a database write followed by a lost response. The new case tests process loss
+before that write. Only the model is synthetic; the CLI, private files, PostgreSQL,
+PostgREST and Kong are real. Unique fixture identities remain in the explicitly
+named disposable verification stack. The test does not reuse or renew an old
+allowance, edit a retained observation or change existing browser fixtures.
+
+The new focused case passes. A harmless source comment passes; disabling recovery
+from the observed phase fails the new resumed-process assertion; restored source
+passes. Targeted lint passes. All sixteen tests in the modified native file then
+pass with live database testing enabled. Private records are `preack-native.log`,
+`preack-controls.json`, the control logs and `preack-full-native-result.json` in
+the supervisor proof directory. Production worker code is unchanged.
+
+This proves original-output recovery across the tested CLI process loss. It does
+not combine the populated case with guest power loss, restore a database, validate
+a provider's interpretation or complete the broader agency commissioning journey.
