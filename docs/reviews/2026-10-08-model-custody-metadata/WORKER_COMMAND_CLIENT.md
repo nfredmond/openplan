@@ -106,13 +106,17 @@ changes pass. Injecting a different output ID before assessment or only before
 custody persistence fails the corresponding assertion. The uncalibrated fixture
 now supplies its required run and evidence responses and asserts completion; it
 previously could pass after the stage failed to read its run. The adjacent
-push-trigger suite passes 36 checks.
+push-trigger suite now passes 37 checks.
 
 These checks use synthetic assignment output and mocked scientific evaluators and
 persistence. They do not execute ActivitySim or establish native assessment
-custody. The existing push suite emitted two rejected background heartbeat calls
-to its default local test URL with its test credential; it is not network-isolated
-proof. The returned HTTP status was 401. No successful heartbeat write was shown.
+custody. The initial push-suite run emitted two rejected background heartbeat
+calls to its default local test URL with its test credential. Both returned 401;
+no successful heartbeat write was shown. The startup-mode fixture now replaces
+the heartbeat class with a local recorder and restores the prior global instance.
+The rerun completes all 37 checks without those calls. Harmless source changes
+pass; a changed default mode and an omitted heartbeat start fail their respective
+assertions. This covers startup wiring, not live heartbeat delivery.
 
 ## Remaining connection work
 
