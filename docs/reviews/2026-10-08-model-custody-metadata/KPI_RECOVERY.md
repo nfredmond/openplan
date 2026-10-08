@@ -81,3 +81,26 @@ proof database. Private evidence is in `legacy-kpi-contention/` and
 `legacy-kpi-http/{baseline,harmless,restored}/` under the proof root. These results
 supersede the concurrency and HTTP-permission gaps above. They do not establish
 lost-response recovery through a retained client or normal worker adoption.
+
+## Retained client and recovery dispatch
+
+`model_legacy_kpi_command.py` now prepares complete requests in the existing
+SQLite journal. Identity derives from deployment, run, stage and a named KPI
+slot, not the value or other mutable payload fields. Changed requests refuse
+reuse before and after receipt resolution. The common client and recovery CLI
+recognize the candidate RPC. Normal `sb_post_kpi` callers remain unchanged until
+migration and native client recovery evidence are complete.
+
+Six focused tests cover slot and deployment separation, exact request recovery
+after a lost reply, cached receipt reuse, explicit null versus zero, numeric
+receipt equivalence, field completeness and invalid values that never send.
+Mismatched receipts stay pending. The maintained mutation suite now includes the
+new dependency and test file. Harmless copies pass; four targeted faults fail
+at scope, numeric precision, mutable identity and receipt comparison boundaries.
+All nine mutation-test methods pass. This uses mocked HTTP and does not replace
+the required native lost-response proof.
+
+All 80 worker suites pass. Unit `openplan-kpi-client-workers-20261008.service`,
+invocation `349cde41adfb4ed3ad245b2e28320407`, completed at 08:07:39 Pacific on
+October 8 with a 189.4 MiB peak under a 1 GiB cap. No checkout edits occurred
+during the run. Parent application QA remains active and its checkout unchanged.

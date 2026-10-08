@@ -1,7 +1,7 @@
 """Deliver retained model commands without treating a missing reply as rollback.
 
-The stage dispatchers do not use this client yet. Adoption requires their complete
-claim, output, assessment, completion and restart paths to use attempt custody.
+Selected legacy output and assessment writes use this client. Complete stage
+restart still requires claim, output, completion and current ownership custody.
 Credentials stay in memory; every request is bound to a deployment and URL.
 """
 import json
@@ -13,6 +13,7 @@ import model_command_journal as journal
 import model_publication_values as publication
 import model_assessment_values as assessment
 import model_legacy_artifact_command as legacy_artifact
+import model_legacy_kpi_command as legacy_kpi
 from datetime import datetime
 
 
@@ -175,6 +176,9 @@ def validate_command(command: dict):
     _uuid(command['request_id'])
     args = command['arguments']
     operation = command['operation']
+    if operation == 'record_legacy_model_kpi':
+        legacy_kpi.validate(command)
+        return
     if operation == 'record_legacy_model_artifact':
         legacy_artifact.validate(command)
         return
@@ -226,6 +230,11 @@ def _timestamp(value):
 
 
 def checked_receipt(command: dict, receipt: object) -> dict:
+    if command['operation'] == 'record_legacy_model_kpi':
+        try:
+            return legacy_kpi.check_receipt(command, receipt)
+        except (ValueError, TypeError, KeyError, AttributeError):
+            raise DeliveryUnconfirmed('Legacy KPI receipt does not match the prepared command') from None
     if command['operation'] == 'record_legacy_model_artifact':
         try:
             return legacy_artifact.check_receipt(command, receipt)
@@ -288,7 +297,7 @@ def checked_receipt(command: dict, receipt: object) -> dict:
 
 def rpc_arguments(command: dict) -> dict:
     args = command['arguments']
-    if command['operation'] == 'record_legacy_model_artifact':
+    if command['operation'] in ('record_legacy_model_artifact', 'record_legacy_model_kpi'):
         return {'p_workspace': args['workspace_id'], 'p_payload': args['payload']}
     if command['operation'] == 'record_legacy_model_assessment':
         return {'p_request': command['request_id'], 'p_payload': args['payload']}

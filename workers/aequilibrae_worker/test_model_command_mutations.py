@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parent
-FILES = ('model_legacy_artifact_command.py', 'test_model_legacy_artifact_client.py', 'model_assessment_values.py', 'model_validation_receipts.py', 'model_receipt_values.py', 'model_publication_values.py', 'test_model_publication_client.py', 'model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py', 'test_model_command_ownership.py', 'model_command_recovery.py', 'test_model_command_recovery.py')
+FILES = ('model_legacy_kpi_command.py', 'test_model_legacy_kpi_client.py', 'model_legacy_artifact_command.py', 'test_model_legacy_artifact_client.py', 'model_assessment_values.py', 'model_validation_receipts.py', 'model_receipt_values.py', 'model_publication_values.py', 'test_model_publication_client.py', 'model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py', 'test_model_command_ownership.py', 'model_command_recovery.py', 'test_model_command_recovery.py')
 
 
 class MutationTests(unittest.TestCase):
@@ -153,6 +153,22 @@ class MutationTests(unittest.TestCase):
                 self.assertIn('FAIL:', result.stderr)
                 self.assertNotIn('SyntaxError', result.stderr)
                 self.assertNotIn('ModuleNotFoundError', result.stderr)
+
+    def test_legacy_kpi_faults_fail_at_scope_number_identity_or_receipt(self):
+        cases = [
+            ("if any(args[key] != payload[key] for key in ('run_id', 'stage_id')):", 'if False:', 'scope_and_numeric_guards'),
+            ("client._kpi_number(payload['value'])", 'pass', 'scope_and_numeric_guards'),
+            ("if journal.canonical(actual) != journal.canonical(expected):", 'if False:', 'mismatched_or_missing_receipts'),
+            ("'name': name", "'name': payload", 'slot_identity_refuses_changed_payload'),
+        ]
+        for old,new,boundary in cases:
+            with self.subTest(boundary=boundary):
+                result=self.run_case('model_legacy_kpi_command.py',old,new,test='test_model_legacy_kpi_client.py')
+                self.assertNotEqual(result.returncode,0,'KPI fault escaped checks')
+                self.assertIn(boundary,result.stderr)
+                self.assertIn('FAIL:',result.stderr)
+                self.assertNotIn('SyntaxError',result.stderr)
+                self.assertNotIn('ModuleNotFoundError',result.stderr)
 
 
 if __name__ == '__main__':
