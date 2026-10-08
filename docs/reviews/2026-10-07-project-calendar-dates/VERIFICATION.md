@@ -25,3 +25,25 @@ Production build, identified desktop/390px T3 verification, console review and
 GitHub checks remain pending. The earlier observation establishes the defect,
 not rendered acceptance of this correction. Other date formatters and deadline
 comparison semantics are outside this helper change and require their own audit.
+
+## Identified browser acceptance
+
+Implementation d7d116ed passes the production webpack build, TypeScript and
+137 static pages. Build ID is `I8KmVdgX_jAlbc_zGXfJ6`. The owned port 3508
+server reports this commit and its PID cwd matches the isolated checkout.
+
+T3 navigation from the existing synthetic project to Delivery shows December 15
+in the next-milestone summary, deadline queue and milestone target card, without
+inventing a time. The same persisted record previously displayed December 14
+at 4 PM Pacific. No stored record changes during this check. Desktop 1440 by
+900 and mobile 390 by 844 screenshots are inspected. Mobile document width is
+390, and the displayed date and record controls fit. The page contains no prior
+December 14 label after navigation settles. Timestamp behavior remains covered
+by the three-time-zone test; no separate timestamp browser case is claimed.
+
+All retained console entries are inspected through the same tab's health page;
+none is new during this corrected-build journey. Older network entries remain
+truncated. Private screenshots, runtime identity and diagnostics reside in
+project-calendar-dates-20261007-proof/acceptance.json under local state.
+GitHub checks and main integration remain pending. This synthetic visual check
+does not establish a platform-wide date audit or practitioner acceptance.
