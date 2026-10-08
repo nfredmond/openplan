@@ -219,3 +219,29 @@ fresh-process recovery remain unproved for this artifact operation. The normal
 primary artifact registration still uses its existing writer, and the database
 candidate remains outside application migrations. Full worker regression after
 this client addition remains pending.
+
+
+## Native artifact response-loss recovery
+
+`prototype/verify_legacy_artifact_recovery_cli.py` now passes against the actual
+retained client and a temporary PostgREST gateway in the named isolated database.
+A loopback bridge forwards the first request, waits for the database's successful
+reply, then closes the TCP connection without returning that reply to the client.
+The client leaves one exact request pending. A fresh recovery CLI process lists
+and retries it. A second CLI process uses the retained response without sending
+a request. The original client also reuses that response.
+
+The proof observes exactly two identical HTTP request bodies, one artifact row
+and one command receipt. The local resolved response equals the database receipt.
+Baseline, harmless and restored runs pass. Swallowing the transport uncertainty
+and returning an empty cached receipt each fail their specific assertions.
+Private evidence is retained under
+`model-command-client-20261008-proof/legacy-artifact-native-cli/` and the
+`legacy-artifact-native-*` control directories and JSON record. Candidate schema
+objects, the temporary gateway and the loopback bridge are removed afterward.
+Synthetic database rows and local recovery journals remain for inspection.
+
+This is committed-write response-loss evidence for the retained artifact client.
+The normal stage does not call this operation yet. Application migration, normal
+registration adoption, remaining artifact/KPI side effects, complete restart
+ownership, Storage byte custody and scientific acceptance remain open.
