@@ -117,6 +117,11 @@ restart after forced process exit with identical coordinator journals, and stop
 cleanly. This verifies startup and failure handling without a database or provider;
 successful queued work and host recovery remain separate acceptance boundaries.
 
+Both workers also resume empty-queue reads when a controlled HTTP endpoint
+recovers from 503 responses, without restarting the process. Returning that
+endpoint to 503 produces failures again. This checks transport recovery and
+retained target identity, not the contents or recovery of a real database.
+
 Systemd behavior follows its upstream
 [service reference](https://github.com/systemd/systemd/blob/main/man/systemd.service.xml)
 and [execution-environment reference](https://github.com/systemd/systemd/blob/main/man/systemd.exec.xml).

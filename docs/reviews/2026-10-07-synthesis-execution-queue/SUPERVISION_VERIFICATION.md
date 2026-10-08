@@ -59,3 +59,28 @@ proof directory. This adds actual entry-point, unavailable-database retry and
 empty-journal restart evidence. It does not exercise a real queued task,
 successful database recovery, provider execution, boot, power loss or capacity.
 The existing native task and interruption evidence remains a separate record.
+
+## Connection recovery and stronger refusal controls
+
+Both actual entry points also run against a controlled HTTP endpoint that moves
+from 503 responses to successful empty-queue responses and back to 503. Each
+worker keeps the same PID and has zero supervisor restarts throughout. Each
+records successful bounded passes only during the successful responses, then
+reports failures again. The observed requests are GETs against the expected queue
+table, projection and page limit. Each service stops cleanly with an empty
+coordinator journal naming that endpoint. Both units are unlinked afterward.
+
+This transport exercise uses worker source `88889cd1` and unit-generator source
+`d2f92dcc`; the worker files are identical between those commits. Its private
+record is `reconnect-6b24c900b3/result.json`. A controlled empty response is not
+successful recovery of a real database or queued task. There are no write
+requests, execution allowances or model calls in this exercise.
+
+The path-test audit finds that missing fixture paths could hide removal of the
+relative-path or control-character guards. Those two tests now create or use
+existing paths and assert the specific refusal reason. A harmless comment passes
+all twelve tests. Removing either guard makes its corresponding strengthened
+case fail; restored source passes all twelve tests and targeted lint. No
+generator or worker behavior changes. The private result is
+`strong-path-controls.json`. Full QA at `d2f92dcc` remains attributable to that
+earlier test checkpoint, not this follow-up.
