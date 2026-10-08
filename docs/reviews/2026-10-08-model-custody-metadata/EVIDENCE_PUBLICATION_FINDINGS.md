@@ -516,3 +516,29 @@ All 67 worker suites pass at `7aaa894d`, with none skipped. Unit
 These checks cover registered fields, not downloaded Storage bytes. The original
 model-output artifact's byte identity, automatic/idempotent recovery, managed
 worker adoption and scientific acceptance remain separate unfinished requirements.
+
+## Preserve the acknowledged assessment identity for publication
+
+Both normal custody callers now retain `validation_custody_receipt` in the
+in-memory assessment after the receipt helper succeeds. The receipt is a detached
+JSON copy and survives the publication payload builder. It identifies the database
+assessment separately from the assessment document's own generated identity.
+A failed custody call removes an older receipt before returning the failure state.
+The annotation does not rewrite the immutable assessment file after a successful
+write; the file remains the original pending computation bytes.
+
+The caller tests execute the complete shared persistence helper and the actual
+assignment custody try block extracted from `stage_artifacts`. They inject the
+already-verified custody response rather than executing a model. They check saved
+file bytes, publication handoff, detached receipt data and stale-receipt removal
+on failure. Harmless and restored controls pass; six targeted omitted/aliased/stale
+receipt faults are detected across the two callers. Evidence is retained in
+`model-command-client-20261008-proof/assessment-caller-controls.json`.
+
+All 68 worker suites pass at `8d17fcea`, with none skipped. Unit
+`openplan-assessment-callers-workers-20261008.service`, invocation
+`aa22a4d281654496857721738f7a3330`, completes October 8 at 05:55:45 Pacific in
+32.219 seconds with a 172.1 MiB peak. The checkout stays unchanged during testing.
+This preserves the available receipt identity. It does not activate atomic
+higher-tier publication, prove Storage bytes, add idempotent assessment recovery,
+or complete either model's independent scientific acceptance.
