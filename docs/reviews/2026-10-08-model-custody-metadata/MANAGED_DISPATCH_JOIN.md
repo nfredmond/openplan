@@ -1846,3 +1846,35 @@ Native recovery of this complete eight-record preparation remains unverified.
 Normal dispatch still does not invoke these helpers. Managed assignment creation,
 engine closure and complete publication/terminal handling remain unfinished.
 No scientific, browser or human acceptance is claimed.
+
+### Native complete input mapping recovery
+
+The native join now verifies all four selected producer inputs and eight
+consumer records, including separate project, package and output working copies.
+It checks the saved count paths against independently constructed expectations,
+preserves the count manifest bytes and consumes those mapped counts through the
+actual count-input reader. Output inventory entries, copied bytes and independent
+inodes are compared with the retained producer output. The final mapping retains
+all producer IDs, initial working hashes, consumed hashes and execution paths.
+Original state and native producer records remain unchanged.
+
+Baseline, harmless and restored cases pass. Deliberately omitted package mapping
+and count mapping are detected; a contradictory package source refuses. Lost
+replies at final mapping, package-working and output-working registration recover
+through a fresh CLI. Seven native tables stay unchanged, cached recovery forbids
+HTTP and the original writer stays stopped. Final mapping loss retains eight
+consumer records; output-working loss retains seven without a final mapping;
+package-working loss retains five before output preparation starts.
+
+`prototype/output-mapping-http.json` records nine controls. Private
+`output-mapping-http-v1` retains the initial passing proof; `output-mapping-http-v2`
+adds direct count-mapping fault detection. Producer fixtures use native SQL
+commands. HTTP calls and fresh recovery use the disclosed direct-PostgREST
+route-prefix adapter. Temporary gateways are removed; isolated databases and
+journals remain retained.
+
+This establishes combined input preparation and receipt recovery with synthetic
+files. It does not establish native engine computation, engine closure, normal
+dispatch, complete publication/terminal handling or scientific acceptance.
+Normal managed dispatch remains disabled, and browser/human acceptance stays
+open.

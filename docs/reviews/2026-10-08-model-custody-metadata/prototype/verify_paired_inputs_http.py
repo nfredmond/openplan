@@ -22,7 +22,8 @@ import model_predecessor_inputs as predecessor
 from worker_import_for_tests import import_worker_main
 
 
-def main(*, include_project=False):
+def main(*, include_project=False, include_outputs=False):
+    include_project = include_project or include_outputs
     output=Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_OUTPUT'])
     output.mkdir(mode=0o700,parents=True,exist_ok=False)
     source=json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
@@ -47,7 +48,7 @@ def main(*, include_project=False):
         base,key=connection['url'],connection['service_token']
         calls=[]
         dropped={'reply':False}
-        loss_types={'lost-mapping-reply':'model_input_mapping', 'lost-package-working-reply':'model_package_working_copy'}
+        loss_types={'lost-mapping-reply':'model_input_mapping', 'lost-package-working-reply':'model_package_working_copy', 'lost-output-working-reply':'model_output_working_copy'}
         def transport(method,url,**kwargs):
             # The isolated gateway exposes PostgREST directly, without /rest/v1.
             if not url.startswith(base+'/rest/v1/'):
@@ -66,6 +67,7 @@ def main(*, include_project=False):
         try:
             controls=['baseline','harmless','omit-package-mapping','source-mismatch','lost-mapping-reply']
             if include_project:controls.append('lost-package-working-reply')
+            if include_outputs:controls.extend(['lost-output-working-reply','omit-count-mapping'])
             for control in [*controls,'restored']:
                 dropped['reply']=False
                 start=len(calls)
@@ -87,6 +89,15 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                 package_record=package.retain(source_package,producer/'package_inputs')
                 original_state={'package':{'package_dir':str(source_package) if control!='source-mismatch' else '/different/package',
                                            'source_label':str(source_package)},'setup':{'bbox':[-122,38,-120,40]},'assignment':{'counts_path':'/original/counts.csv'}}
+                if include_outputs:
+                    import model_count_inputs
+                    source_outputs=producer/'run_output';source_outputs.mkdir()
+                    selected_counts=producer/'selected_counts.csv';selected_counts.write_bytes(b'station_id,aadt\nA,17\n')
+                    count_record=model_count_inputs.retain(str(selected_counts),str(source_outputs),source_outputs/'count_inputs')
+                    original_state['assignment']={'counts_path':count_record['counts_path'],'count_inputs':count_record,'source_label':str(selected_counts)}
+                    (source_outputs/'link_volumes.csv').write_bytes(b'link_id,PCE_tot\n1,17\n')
+                    output_record=package.retain(source_outputs,producer/'assignment_outputs')
+                    output_id=str(uuid.uuid4())
                 state_content=(json.dumps(original_state)+'\n').encode()
                 state_path=producer/'predecessor_state.json';state_path.write_bytes(state_content)
                 payloads=[{'id':state_id,'artifact_type':'model_predecessor_state','file_url':'local://'+str(state_path),
@@ -110,6 +121,20 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                             'database_checks':project_record['database_checks'],'database_consistency':project_record['database_consistency'],
                             'engine_closure':'unassessed','cross_database_consistency':'unassessed',
                             'scientific_acceptance':'unassessed','execution_ready':False}})
+                if include_outputs:
+                    payloads.append({'id':output_id,'artifact_type':'model_assignment_outputs',
+                        'file_url':'local://'+output_record['manifest_path'],'content_hash':output_record['manifest_sha256'],
+                        'file_size_bytes':output_record['manifest_size_bytes'],
+                        'metadata_json':{'schema':'openplan.assignment-outputs.v1','inventory_schema':'openplan.package-inputs.v1'}})
+                def expected_counts(state,root):
+                    import copy
+                    mapped=copy.deepcopy(state)
+                    if include_outputs:
+                        directory=root/'predecessor_outputs/files/count_inputs'
+                        mapped['assignment']['counts_path']=str(directory/'counts.csv')
+                        mapped['assignment']['count_inputs'].update(counts_path=str(directory/'counts.csv'),
+                            counts_input_directory=str(directory),manifest_path=str(directory/'manifest.json'))
+                    return mapped
                 for payload in payloads:
                     encoded=json.dumps(payload).replace("'","''")
                     sql(database,f"SET ROLE service_role; SELECT public.write_model_attempt_artifact('{uuid.uuid4()}','{attempt}','{encoded}'::jsonb);")
@@ -120,6 +145,11 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                     anchor="mapped['package']['package_dir'] = package_input['package_directory']"
                     if body.count(anchor)!=1:raise AssertionError('Mapping mutation anchor changed')
                     body=body.replace(anchor,'pass')
+                if control=='omit-count-mapping':
+                    begin=body.index('def map_assignment_counts(')
+                    part=body[begin:]
+                    if part.count('return mapped')!=1:raise AssertionError('Count mapping mutation anchor changed')
+                    body=body[:begin]+part.replace('return mapped','return copy.deepcopy(original)')
                 candidate=types.ModuleType('model_predecessor_inputs');exec(compile(body,predecessor.__file__,'exec'),candidate.__dict__)
                 sys.modules['model_predecessor_inputs']=candidate
                 directory=output/control/'journal'
@@ -130,7 +160,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                     writer.workspace(output/'files/runs',run)
                     with managed.bind(writer):
                         try:
-                            result=worker.retain_managed_state_and_package(include_project=include_project)
+                            result=worker.retain_managed_state_and_package(include_project=include_project,include_outputs=include_outputs)
                         except worker.WorkerStateWriteUnconfirmed as error:
                             if control in loss_types:
                                 if not dropped['reply'] or not writer.stopped:raise
@@ -139,10 +169,11 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                             return {'refused':True,'writer_stopped':True}
                     mapped=result['package_mapped_state']
                     expected={**original_state,'package':{**original_state['package'],'package_dir':str(writer.files.path/'package_working/files') if include_project else result['package_input']['package_directory']}}
+                    expected=expected_counts(expected,writer.files.path)
                     if mapped!=expected:
-                        if control!='omit-package-mapping':raise AssertionError('Native paired mapping differs')
+                        if control not in ('omit-package-mapping','omit-count-mapping'):raise AssertionError('Native paired mapping differs')
                         return {'mapping_fault_detected':True}
-                    if control=='omit-package-mapping':raise AssertionError('Missing mapping fault passed')
+                    if control in ('omit-package-mapping','omit-count-mapping'):raise AssertionError('Missing mapping fault passed')
                     if result['execution_ready'] is not False or result['state_input']['state']!=original_state:
                         raise AssertionError('Native pair altered original state or claimed readiness')
                     if Path(result['state_input']['retained_path']).read_bytes()!=state_content or state_path.read_bytes()!=state_content:
@@ -155,7 +186,9 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                 if control!='source-mismatch':
                     expected_types.insert(0,'model_input_mapping')
                     if include_project:expected_types=sorted(expected_types+['model_project_consumption','model_project_working_copy','model_package_working_copy'])
-                if control=='lost-package-working-reply':
+                if include_outputs and control not in ('source-mismatch','lost-package-working-reply'):
+                    expected_types=sorted(expected_types+['model_output_consumption','model_output_working_copy'])
+                if control in ('lost-package-working-reply','lost-output-working-reply'):
                     expected_types.remove('model_input_mapping')
                     if (writers[0].files.path/'input_mapping.json').exists():
                         raise AssertionError('Unconfirmed package preparation continued to mapping')
@@ -168,10 +201,11 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         expected_saved_state={**original_state,'package':{**original_state['package'],
                             'package_dir':str(mapping_path.parent/('package_working/files' if include_project else 'predecessor_package/files'))}}
                         if control=='omit-package-mapping':expected_saved_state=original_state
+                        if control!='omit-count-mapping':expected_saved_state=expected_counts(expected_saved_state,mapping_path.parent)
                         if mapping['state']!=expected_saved_state:
                             raise AssertionError('Native saved mapping state differs')
                         if (row['content_hash']!=hashlib.sha256(content).hexdigest() or row['file_size_bytes']!=len(content)
-                                or mapping['execution_ready'] is not False or mapping['mapped_fields']!=['package.package_dir']
+                                or mapping['execution_ready'] is not False or mapping['mapped_fields']!=(['package.package_dir','assignment.counts_path','assignment.count_inputs.counts_path','assignment.count_inputs.counts_input_directory','assignment.count_inputs.manifest_path'] if include_outputs else ['package.package_dir'])
                                 or mapping['inputs']['state']['artifact_id']!=state_id
                                 or mapping['inputs']['package']['artifact_id']!=package_id
                                 or row['metadata_json']['inputs']!=mapping['inputs']):
@@ -181,7 +215,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                             working_manifest=mapping_path.parent/'project_working/manifest.json'
                             consumed_manifest=mapping_path.parent/'predecessor_project/manifest.json'
                             if (mapping['inputs']['project']['artifact_id']!=project_id
-                                    or mapping['execution_paths']!={'project_directory':str(working_dir)}
+                                    or mapping['execution_paths']!=({'project_directory':str(working_dir),'outputs_directory':str(mapping_path.parent/'output_working/files')} if include_outputs else {'project_directory':str(working_dir)})
                                     or mapping['working_project']['initial_manifest_path']!=str(working_manifest)
                                     or mapping['working_project']['initial_manifest_sha256']!=hashlib.sha256(working_manifest.read_bytes()).hexdigest()
                                     or mapping['working_project']['input_manifest_sha256']!=hashlib.sha256(consumed_manifest.read_bytes()).hexdigest()):
@@ -192,6 +226,20 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     or mapping['working_package']['initial_manifest_sha256']!=hashlib.sha256(package_manifest.read_bytes()).hexdigest()
                                     or mapping['working_package']['input_manifest_sha256']!=hashlib.sha256(consumed_package.read_bytes()).hexdigest()):
                                 raise AssertionError('Native combined mapping lost package working identity')
+                        if include_outputs:
+                            working_manifest=mapping_path.parent/'output_working/manifest.json'
+                            consumed_manifest=mapping_path.parent/'predecessor_outputs/manifest.json'
+                            if (mapping['inputs']['outputs']['artifact_id']!=output_id
+                                    or mapping['working_outputs']['initial_manifest_path']!=str(working_manifest)
+                                    or mapping['working_outputs']['initial_manifest_sha256']!=hashlib.sha256(working_manifest.read_bytes()).hexdigest()
+                                    or mapping['working_outputs']['input_manifest_sha256']!=hashlib.sha256(consumed_manifest.read_bytes()).hexdigest()):
+                                raise AssertionError('Native combined mapping lost output working identity')
+                            mapped_counts=mapping['state']['assignment']['count_inputs']
+                            if Path(mapped_counts['manifest_path']).read_bytes()!=Path(count_record['manifest_path']).read_bytes():
+                                raise AssertionError('Mapped count source manifest changed')
+                            consumed_counts=model_count_inputs.consume(mapped_counts,mapping_path.parent/'proof_count_consumption')
+                            if Path(consumed_counts['counts_path']).read_bytes()!=selected_counts.read_bytes():
+                                raise AssertionError('Mapped counts cannot be consumed unchanged')
                         continue
                     if include_project and row['artifact_type'] in ('model_project_consumption','model_project_working_copy'):
                         manifest_path=Path(row['file_url'].removeprefix('local://'))
@@ -226,8 +274,27 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                 or copied.read_bytes()!=(consumed/'files/zones.csv').read_bytes()
                                 or copied.stat().st_ino==(consumed/'files/zones.csv').stat().st_ino):
                             raise AssertionError('Native combined package working boundary differs')
+                    if include_outputs and row['artifact_type'] in ('model_output_consumption','model_output_working_copy'):
+                        manifest_path=Path(row['file_url'].removeprefix('local://'))
+                        content=manifest_path.read_bytes()
+                        expected_inventory=json.loads(Path(output_record['manifest_path']).read_bytes())['entries']
+                        if (row['content_hash']!=hashlib.sha256(content).hexdigest() or row['file_size_bytes']!=len(content)
+                                or json.loads(content)['entries']!=expected_inventory):
+                            raise AssertionError('Native combined output inventory differs')
+                        for name,entry in expected_inventory.items():
+                            original_file=Path(output_record['package_directory'])/name
+                            copied=manifest_path.parent/'files'/name
+                            if original_file.is_file() and (copied.read_bytes()!=original_file.read_bytes() or copied.stat().st_ino==original_file.stat().st_ino):
+                                raise AssertionError('Native combined output bytes differ')
+                        if row['artifact_type']=='model_output_working_copy':
+                            consumed=manifest_path.parent.parent/'predecessor_outputs'
+                            if (row['metadata_json']['role']!='initial_working_inventory' or row['metadata_json']['files_mutable'] is not True
+                                    or row['metadata_json']['execution_ready'] is not False
+                                    or row['metadata_json']['input_manifest_sha256']!=hashlib.sha256((consumed/'manifest.json').read_bytes()).hexdigest()
+                                    or (manifest_path.parent/'files/link_volumes.csv').stat().st_ino==(consumed/'files/link_volumes.csv').stat().st_ino):
+                                raise AssertionError('Native combined output working boundary differs')
                     provenance=row['metadata_json']['producer']
-                    expected_id=(project_id if include_project and row['artifact_type'] in ('model_project_consumption','model_project_working_copy') else package_id if row['artifact_type'] in ('model_package_consumption','model_package_working_copy') else state_id)
+                    expected_id=(output_id if include_outputs and row['artifact_type'] in ('model_output_consumption','model_output_working_copy') else project_id if include_project and row['artifact_type'] in ('model_project_consumption','model_project_working_copy') else package_id if row['artifact_type'] in ('model_package_consumption','model_package_working_copy') else state_id)
                     if provenance['artifact_id']!=expected_id or provenance['stage_id']!=producer_stage or provenance['attempt_id']!=attempt:
                         raise AssertionError('Native paired provenance differs')
                 if sql(database,f"SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_run_artifacts a WHERE stage_id='{producer_stage}';")!=before:
@@ -270,8 +337,10 @@ raise SystemExit(recovery.main())
             'controls':results,'gateway_removed':True,'limits':'Actual paired helper and native commands through a route-prefix transport adapter. Producer fixture registration uses native SQL commands. Durable partial mapping is verified. Fresh CLI mapping recovery uses the same route-prefix adapter; cached recovery forbids HTTP. No project/output/count mapping, full dispatcher or scientific acceptance.'}
     if include_project:
         report['limits']='Actual combined state/package/project and working-copy helper with native commands through a direct-PostgREST route-prefix adapter. Producer fixture registration uses native SQL commands. Final mapping and package-working lost-reply recovery use a fresh CLI with the same adapter; cached recovery forbids HTTP. No complete output/count mapping, closure enforcement, full dispatcher or scientific acceptance.'
+    if include_outputs:
+        report['limits']='Actual combined four-input preparation, separate working files, byte-preserved count manifest and actual count consumption. Native SQL producer fixtures; direct-PostgREST route-prefix adapter. Fresh CLI receipt recovery with seven tables unchanged and stopped writer. No full dispatcher, native engine computation, engine closure or scientific acceptance.'
     content=json.dumps(report,indent=2)+'\n'
-    name='execution-input-http.json' if include_project else 'paired-input-http.json'
+    name='output-mapping-http.json' if include_outputs else 'execution-input-http.json' if include_project else 'paired-input-http.json'
     (output/name).write_text(content);(ROOT/name).write_text(content)
     print(content)
 
