@@ -42,3 +42,13 @@ The October 8 continuation adds a persistent managed-run flag and private transa
 Native baseline, harmless and restored controls pass. All nine adverse controls fail for their intended assertions, including a disabled parent guard that permits a legacy overwrite. Prototype tables are absent after every transaction and the installed reaper definition retains its original digest. These checks prove sequential command behavior in the disposable database. They do not prove concurrent recovery, prevent privileged administrator changes, or protect artifact bytes.
 
 Parent completion still requires an atomic command that checks all required stages. The stage-write command does not yet complete the parent. Relaunch, artifact binding, worker adapters and interruption recovery remain necessary before promoting this prototype into application migrations. No deployed defect is claimed fixed by this checkpoint.
+
+## Atomic successful completion checkpoint
+
+The next October 8 checkpoint makes a successful stage command check every retained stage under the parent lock. When all stages have succeeded, it completes the parent within that command transaction. The saved response includes parent status and completion time, so an exact retry returns the original result.
+
+Native checks retain an unfinished second stage and prove that the parent stays running. A separate final-stage fixture proves successful parent completion and exact retry. A temporary parent trigger deliberately refuses completion: the stage update, request receipt and temporary authorizations all roll back. Removing that trigger permits the same request to succeed. All fixture and trigger DDL rolls back with the outer test transaction.
+
+Baseline, harmless and restored cases pass. Eleven adverse controls detect their intended failures, including early completion despite an unfinished stage and omission of the parent update. Independent SQL reads confirm persisted parent status and rollback behavior.
+
+This supersedes the earlier note that successful parent completion is absent. Failed-stage closure, stage-set insertion/deletion protection, relaunch, artifact binding, both worker adapters, concurrent-process contention and interruption recovery remain unfinished. The complete protocol must control changes to the required stage set before this can become a production migration. No scientific or human acceptance claim changes.

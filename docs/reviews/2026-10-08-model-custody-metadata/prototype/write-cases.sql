@@ -19,6 +19,7 @@ BEGIN
   IF SQLERRM <> 'Managed model stage requires an attempt command' THEN RAISE; END IF;
  END;
  first_result := public.write_model_stage_attempt('9b64f1cf-5c33-4805-adb3-6adeef3a6c85',attempt,'succeeded','finished',NULL);
+ IF first_result->>'run_status' <> 'running' OR first_result->>'run_completed_at' IS NOT NULL THEN RAISE EXCEPTION 'unfinished run completed'; END IF;
  IF first_result->>'status' <> 'succeeded' OR first_result->>'completed_at' IS NULL THEN RAISE EXCEPTION 'terminal write absent'; END IF;
  IF public.write_model_stage_attempt('9b64f1cf-5c33-4805-adb3-6adeef3a6c85',attempt,'succeeded','finished',NULL) IS DISTINCT FROM first_result THEN RAISE EXCEPTION 'terminal retry changed'; END IF;
  BEGIN

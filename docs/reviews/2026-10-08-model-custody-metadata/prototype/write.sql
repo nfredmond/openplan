@@ -46,8 +46,20 @@ BEGIN
     completed_at=CASE WHEN p_status='running' THEN NULL ELSE clock_timestamp() END
     WHERE id=v_stage.id RETURNING * INTO v_stage;
   DELETE FROM public.model_stage_write_context WHERE transaction_id=txid_current() AND stage_id=v_stage.id;
+  -- The parent lock serializes lifecycle commands. Lock the retained stage set
+  -- before deciding whether this successful stage completes the run.
+  IF p_status='succeeded' THEN
+    PERFORM id FROM public.model_run_stages WHERE run_id=v_run.id ORDER BY id FOR UPDATE;
+    IF NOT EXISTS (SELECT 1 FROM public.model_run_stages WHERE run_id=v_run.id AND status <> 'succeeded') THEN
+      INSERT INTO public.model_run_write_context VALUES(txid_current(),v_run.id);
+      UPDATE public.model_runs SET status='succeeded',completed_at=clock_timestamp(),error_message=NULL
+        WHERE id=v_run.id RETURNING * INTO v_run;
+      DELETE FROM public.model_run_write_context WHERE transaction_id=txid_current() AND run_id=v_run.id;
+    END IF;
+  END IF;
   v_response := jsonb_build_object('stage_id',v_stage.id,'attempt_id',p_attempt_id,
-    'status',v_stage.status,'completed_at',v_stage.completed_at,'request_id',p_request_id);
+    'status',v_stage.status,'completed_at',v_stage.completed_at,'request_id',p_request_id,
+    'run_status',v_run.status,'run_completed_at',v_run.completed_at);
   INSERT INTO public.model_stage_write_receipts(request_id,request_payload,response_payload)
     VALUES(p_request_id,v_request,v_response);
   RETURN v_response;
