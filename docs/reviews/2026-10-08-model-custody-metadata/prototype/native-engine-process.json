@@ -1,0 +1,29 @@
+{
+  "engine_process_sha256": "a20e45d7fefefa2089d8ac1f1f79915fd4c7de4279b876e0f046b457665f90fd",
+  "controls": [
+    {
+      "control": "baseline",
+      "live_child_refused": true,
+      "exit_code": 0,
+      "separate_native_reopen": true
+    },
+    {
+      "control": "harmless",
+      "live_child_refused": true,
+      "exit_code": 0,
+      "separate_native_reopen": true
+    },
+    {
+      "control": "premature-exit",
+      "detected": true,
+      "reason": "Live native child was falsely accepted"
+    },
+    {
+      "control": "restored",
+      "live_child_refused": true,
+      "exit_code": 0,
+      "separate_native_reopen": true
+    }
+  ],
+  "limits": "Synthetic native 2x2 matrix; borrowed view remains alive at the barrier. Managed registration fixtures are mocked. No full assignment, escaped-descendant containment, supervisor recovery, capture authority or scientific acceptance."
+}

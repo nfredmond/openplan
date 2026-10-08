@@ -2031,3 +2031,19 @@ children that escape into a different session, transfer attempt authority into
 an engine child, resume a lost supervisor or authorize completed output capture.
 The native engine protocol and those custody boundaries remain unfinished.
 Independent scientific, browser and human acceptance remain open.
+
+### Native child exit with a retained matrix view
+
+The process helper now has a native AequilibraE check. A disposable child creates
+a two-by-two disk-backed matrix, exports OMX, closes the matrix scope and holds
+its borrowed computational view at a release barrier. The real parent helper
+refuses completion while that child is live and writes no exit receipt. After
+release and observed exit, a separate native reader verifies the OMX values
+and zone indices. Baseline, equivalent-wrapper and restored cases pass. Replacing
+the exit check with a premature success response fails the same live-child
+assertion. `prototype/native-engine-process.json` records the outcomes and
+helper source hash; `prototype/verify_native_engine_process.py` reproduces them.
+
+Registration remains mocked in this check. It does not run full assignment,
+contain escaped descendants, recover a lost supervisor, authorize capture or
+establish scientific acceptance. Normal managed dispatch remains disabled.
