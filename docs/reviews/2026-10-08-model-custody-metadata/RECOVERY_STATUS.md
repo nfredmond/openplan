@@ -194,3 +194,35 @@ established as its cause. The actual live RLS and full-archive restore jobs
 remain in progress at this checkpoint. Local QA continues on the frozen
 `989128da` checkout and does not cover the later operator documentation or CLI
 inventory changes. No new full-suite or release success is claimed.
+
+## Direct CI log and local dependency-fixture failure
+
+The direct GitHub job log resolves the earlier shuffled-log uncertainty. Seed
+465711 fails the same environment-template documentation assertion, with 20,138
+passing tests, one failure and 1,587 skips. The first combined log retrieval was
+incomplete. The configuration correction addresses that named failure; a new
+GitHub run is still required.
+
+Local QA on `989128da` ends at 11:06:11 Pacific after 20,139 passing tests and
+1,587 skips. It then fails the braces vendor mutation checks. The dependency
+installation uses per-package symlinks. The fixture's default `cpSync` copied
+that symlink rather than package bytes, and its mutations changed the shared
+installed LICENSE, parser, compile, expand and stringify files. This is a test
+isolation failure introduced by combining the fixture with this dependency
+layout, not a successful dependency audit. No tracked application files changed.
+
+The five affected files were restored from the repository's hash-verified local
+archive. All ten installed manifest files and the actual depth checks pass
+again. The fixture now dereferences package links into its own temporary copy
+and asserts that ownership before any mutation. A synthetic linked-package
+regression checks that changing the copy leaves source bytes unchanged. All 19
+vendor checks pass, followed by another successful installed-byte/behavior check.
+
+Baseline, harmless comment and restored synthetic-copy controls pass. Removing
+dereferencing fails the fixture ownership check. Removing both dereferencing and
+the ownership assertion fails the source-preservation assertion. These adverse
+variants run only the synthetic-copy test, not the installed-package mutations.
+The committed result is `prototype/braces-copy-controls.json`. Remaining local
+dependency audit and production build have not yet passed on the corrected tree.
+The prior full application suite is retained as evidence for its stated commit,
+not relabeled as a complete successful QA gate for this later candidate.

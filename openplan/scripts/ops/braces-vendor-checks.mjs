@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cpSync, mkdtempSync, readFileSync, writeFileSync, rmSync, mkdirSync, symlinkSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, writeFileSync, rmSync, mkdirSync, symlinkSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,11 +12,34 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const require = createRequire(import.meta.url);
 const rewrite = (path, change) => writeFileSync(path, JSON.stringify(change(JSON.parse(readFileSync(path, 'utf8')))));
 
+function copyInstalledPackage(source, target) {
+  // A worktree may link installed packages. Mutations must own their bytes.
+  cpSync(source, target, { recursive: true, dereference: true });
+  assert.equal(realpathSync(target), target, 'mutation fixture must own its installed package');
+}
+
+test('linked package fixture mutations leave source bytes unchanged', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'openplan-braces-copy-'));
+  try {
+    const source = join(directory, 'source');
+    const link = join(directory, 'linked');
+    const target = join(directory, 'copied');
+    mkdirSync(source);
+    writeFileSync(join(source, 'probe.txt'), 'original bytes');
+    symlinkSync(source, link);
+    copyInstalledPackage(link, target);
+    writeFileSync(join(target, 'probe.txt'), 'mutated fixture');
+    assert.equal(readFileSync(join(source, 'probe.txt'), 'utf8'), 'original bytes', 'fixture mutation reached source bytes');
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 function fixture(run) {
   const directory = mkdtempSync(join(tmpdir(), 'openplan-braces-test-'));
   try {
     cpSync(join(root, 'vendor/braces'), join(directory, 'vendor/braces'), { recursive: true });
-    cpSync(join(root, 'node_modules/braces'), join(directory, 'node_modules/braces'), { recursive: true });
+    copyInstalledPackage(join(root, 'node_modules/braces'), join(directory, 'node_modules/braces'));
     const bracesMetadata = JSON.parse(readFileSync(require.resolve('braces/package.json'), 'utf8'));
     const bracesRequire = createRequire(require.resolve('braces/package.json'));
     for (const dependency of Object.keys(bracesMetadata.dependencies)) {
