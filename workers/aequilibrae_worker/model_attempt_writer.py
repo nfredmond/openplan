@@ -189,6 +189,26 @@ class AttemptWriter:
             self.stopped = True
             raise
 
+    def retain_input_mapping(self, mapping):
+        """Record a partial derived mapping without authorizing computation."""
+        self.require_open()
+        try:
+            if self.files is None or not isinstance(mapping, dict) or mapping.get('execution_ready') is not False:
+                raise ValueError('Input mapping requires an owned attempt and explicit incomplete status')
+            retained = self.files.retain_input_mapping(mapping)
+            self.files.verify()
+            self.record_artifact({
+                'run_id': self.context.run_id, 'stage_id': self.context.stage_id,
+                'artifact_type': 'model_input_mapping', 'file_url': 'local://' + retained['path'],
+                'content_hash': retained['sha256'], 'file_size_bytes': retained['size_bytes'],
+                'metadata_json': {'schema': 'openplan.input-mapping.v1', 'execution_ready': False,
+                                  'mapped_fields': mapping['mapped_fields'], 'inputs': mapping['inputs']},
+            }, logical_name='input-mapping')
+            return retained
+        except BaseException:
+            self.stopped = True
+            raise
+
     def publish_state(self, directory, state):
         self.require_open()
         try:

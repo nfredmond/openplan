@@ -27,7 +27,7 @@ def main():
          'PairedInputTests.test_recorded_package_mismatch_stops_join'),
         ('share-original-nested-state', change(source, 'mapped = copy.deepcopy(original)', 'mapped = original.copy()'), None,
          'PairedInputTests.test_real_join_maps_only_package_and_preserves_original'),
-        ('claim-execution-readiness', source, change(adapter, '"execution_ready": False', '"execution_ready": True'),
+        ('claim-execution-readiness', source, change(adapter, '"execution_ready": mapping["execution_ready"]', '"execution_ready": True'),
          'PairedInputTests.test_real_join_maps_only_package_and_preserves_original'),
         ('restored', source, None, None)]
     records = []

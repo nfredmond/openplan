@@ -1,6 +1,6 @@
 {
   "source_sha256": "9d0b3a59a1bbc2e88bc4d63a484a588bf6850ecbe94ab27f8c6f0d12453d3eea",
-  "worker_sha256": "44e2c4937a74cea87b7396409bd5a206c30ea84559143ab28c79300c2fcdc599",
+  "worker_sha256": "cec65d74bdd7f465b9e2ca8769c3a6496891c8458e2273b54aa555c94de45483",
   "controls": [
     {
       "control": "baseline",

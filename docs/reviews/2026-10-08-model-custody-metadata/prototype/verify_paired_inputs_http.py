@@ -117,20 +117,37 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                 outcome=invocation.invoke_new_attempt(directory,run_id=run,stage_id=consumer_stage,worker_id='native-paired-consumer',workspace_id=workspace,
                     base_url=base,deployment_id=database,service_key=key,handler=handler,post=post,get=get)
                 records=json.loads(sql(database,f"SELECT jsonb_agg(to_jsonb(a) ORDER BY artifact_type) FROM public.model_run_artifacts a WHERE stage_id='{consumer_stage}';"))
-                if [row['artifact_type'] for row in records]!=['model_package_consumption','model_state_consumption']:
-                    raise AssertionError('Native pair did not register two distinct consumption records')
+                expected_types=['model_package_consumption','model_state_consumption']
+                if control!='source-mismatch':expected_types.insert(0,'model_input_mapping')
+                if [row['artifact_type'] for row in records]!=expected_types:
+                    raise AssertionError('Native paired input/mapping records differ')
                 for row in records:
+                    if row['artifact_type']=='model_input_mapping':
+                        mapping_path=Path(row['file_url'].removeprefix('local://'))
+                        content=mapping_path.read_bytes();mapping=json.loads(content)
+                        expected_saved_state={**original_state,'package':{**original_state['package'],
+                            'package_dir':str(mapping_path.parent/'predecessor_package/files')}}
+                        if control=='omit-package-mapping':expected_saved_state=original_state
+                        if mapping['state']!=expected_saved_state:
+                            raise AssertionError('Native saved mapping state differs')
+                        if (row['content_hash']!=hashlib.sha256(content).hexdigest() or row['file_size_bytes']!=len(content)
+                                or mapping['execution_ready'] is not False or mapping['mapped_fields']!=['package.package_dir']
+                                or mapping['inputs']['state']['artifact_id']!=state_id
+                                or mapping['inputs']['package']['artifact_id']!=package_id
+                                or row['metadata_json']['inputs']!=mapping['inputs']):
+                            raise AssertionError('Native durable mapping identity differs')
+                        continue
                     provenance=row['metadata_json']['producer']
                     expected_id=package_id if row['artifact_type']=='model_package_consumption' else state_id
                     if provenance['artifact_id']!=expected_id or provenance['stage_id']!=producer_stage or provenance['attempt_id']!=attempt:
                         raise AssertionError('Native paired provenance differs')
                 if sql(database,f"SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_run_artifacts a WHERE stage_id='{producer_stage}';")!=before:
                     raise AssertionError('Native pair rewrote producer artifacts')
-                results.append({'control':control,'outcome':outcome,'consumer_artifacts':2,'http_calls':calls[start:]})
+                results.append({'control':control,'outcome':outcome,'consumer_artifacts':len(records),'http_calls':calls[start:]})
         finally:
             sys.modules['model_predecessor_inputs']=predecessor
     report={'selector_sha256':hashlib.sha256(original.encode()).hexdigest(),'worker_sha256':hashlib.sha256(Path(worker.__file__).read_bytes()).hexdigest(),
-            'controls':results,'gateway_removed':True,'limits':'Actual paired helper and native commands through a route-prefix transport adapter. Producer fixture registration uses native SQL commands. No durable mapped-state publication, project/output/count mapping, full dispatcher or scientific acceptance.'}
+            'controls':results,'gateway_removed':True,'limits':'Actual paired helper and native commands through a route-prefix transport adapter. Producer fixture registration uses native SQL commands. Durable partial mapping is verified. No mapping lost-reply recovery, project/output/count mapping, full dispatcher or scientific acceptance.'}
     content=json.dumps(report,indent=2)+'\n'
     (output/'paired-input-http.json').write_text(content);(ROOT/'paired-input-http.json').write_text(content)
     print(content)

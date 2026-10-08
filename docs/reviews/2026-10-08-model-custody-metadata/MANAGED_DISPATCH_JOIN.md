@@ -1232,3 +1232,29 @@ removed. No application database changes. Durable mapped-state publication,
 project/output/count relocation, coherent project transfer, normal dispatch and
 scientific acceptance remain open. These successful pair controls do not replace
 the separately recorded lost-reply recovery evidence for each consumption write.
+
+### Durable partial input mapping
+
+Paired inputs now produce an exclusive `input_mapping.json` through the owned
+workspace's pinned directory descriptor. The file contains the separately derived
+state, exact state/package producer references, the explicit mapped field list
+and `execution_ready: false`. The writer registers its hash and size as
+`model_input_mapping`. It neither overwrites original predecessor state nor
+replaces an existing mapping. Capture or registration uncertainty stops the writer.
+
+The paired suite includes saved-content/provenance checks, no-overwrite behavior
+and lost mapping-reply preservation. The combined suite passes 172 tests.
+Baseline, harmless and restored controls pass; the existing four pairing faults
+remain detected, and two new controls detect mapping overwrite and erased input
+references. The SQLite ResourceWarning remains unresolved.
+
+Native paired proof now checks three consumer records for valid pairs, including
+the mapping file's actual state content, hash, size, mapped fields and input links.
+A mismatched pair retains only its two input records. Valid and mapping-fault
+controls use nine HTTP calls; source mismatch uses eight. All responses are 200.
+Private `paired-input-http-v3` and `prototype/paired-input-http.json` preserve the
+latest proof. The earlier v2 run checked mapping identity; v3 adds direct saved
+state-content comparison. Producer records stay unchanged and temporary gateways
+are removed. Native lost-reply recovery for the mapping write remains separate
+and unproved. This checkpoint does not transfer the project, outputs or counts,
+enable normal managed dispatch, or change scientific acceptance.

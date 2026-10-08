@@ -44,6 +44,14 @@ class PairedInputTests(unittest.TestCase):
         with managed.bind(self.writer):
             result=aeq.retain_managed_state_and_package()
         self.assertFalse(result['execution_ready'])
+        mapping_path=Path(result['mapping_record']['path'])
+        mapping=json.loads(mapping_path.read_bytes())
+        self.assertEqual(mapping['state'],result['package_mapped_state'])
+        self.assertEqual(mapping['inputs']['state'],result['state_input']['producer'])
+        self.assertEqual(mapping['inputs']['package'],result['package_input']['producer'])
+        self.assertEqual(mapping['mapped_fields'],['package.package_dir'])
+        self.assertFalse(mapping['execution_ready'])
+        self.assertEqual(result['mapping_record']['sha256'],hashlib.sha256(mapping_path.read_bytes()).hexdigest())
         mapped=result['package_mapped_state']
         self.assertEqual(mapped['package']['package_dir'],result['package_input']['package_directory'])
         self.assertEqual(mapped['package']['source_label'],original['package']['source_label'])
@@ -53,8 +61,11 @@ class PairedInputTests(unittest.TestCase):
         self.assertEqual(result['state_input']['state'],original)
         self.assertEqual(path.read_bytes(),content)
         self.assertEqual(Path(result['state_input']['retained_path']).read_bytes(),content)
+        mapping_payload=self.post.call_args.kwargs['json']['p_payload']
+        self.assertEqual(mapping_payload['content_hash'],result['mapping_record']['sha256'])
+        self.assertEqual(mapping_payload['metadata_json']['inputs'],mapping['inputs'])
         types=[call.kwargs['json']['p_payload']['artifact_type'] for call in self.post.call_args_list]
-        self.assertEqual(types,['model_state_consumption','model_package_consumption'])
+        self.assertEqual(types,['model_state_consumption','model_package_consumption','model_input_mapping'])
     def test_recorded_package_mismatch_stops_join(self):
         self.prepare(wrong_source=True)
         with managed.bind(self.writer):
@@ -67,3 +78,31 @@ class PairedInputTests(unittest.TestCase):
         other={'producer':{'stage_id':'stage','attempt_id':'two'},'source_package_directory':'/source','package_directory':'/copy'}
         with self.assertRaisesRegex(ValueError,'same producer attempt'):
             predecessor.map_package(state,other)
+
+    def test_lost_mapping_reply_preserves_three_records_for_reconciliation(self):
+        import model_command_journal as journal
+        self.prepare()
+        response=self.response
+        def lose_mapping(url,**kwargs):
+            if kwargs.get('json',{}).get('p_payload',{}).get('artifact_type')=='model_input_mapping':
+                raise TimeoutError('synthetic lost mapping reply')
+            return response(url,**kwargs)
+        self.post.side_effect=lose_mapping
+        with managed.bind(self.writer):
+            with self.assertRaises(aeq.WorkerStateWriteUnconfirmed):
+                aeq.retain_managed_state_and_package()
+        self.assertTrue(self.writer.stopped)
+        path=self.writer.files.path/'input_mapping.json'
+        self.assertFalse(json.loads(path.read_bytes())['execution_ready'])
+        pending=journal.pending(self.directory,self.writer.context.destination)
+        self.assertEqual(len(pending),1)
+        self.assertEqual(pending[0]['command']['arguments']['payload']['artifact_type'],'model_input_mapping')
+
+    def test_mapping_record_never_overwrites_existing_bytes(self):
+        self.prepare()
+        with managed.bind(self.writer):
+            result=aeq.retain_managed_state_and_package()
+        path=Path(result['mapping_record']['path']);before=path.read_bytes()
+        with self.assertRaises(FileExistsError):
+            self.writer.files.retain_input_mapping({'execution_ready':False,'changed':True})
+        self.assertEqual(path.read_bytes(),before)

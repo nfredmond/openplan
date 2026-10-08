@@ -984,8 +984,13 @@ def retain_managed_state_and_package() -> dict:
         package_input = retain_managed_predecessor_package()
         mapped = model_predecessor_inputs.map_package(state_input, package_input)
         writer.require_open()
+        mapping = {"schema": "openplan.input-mapping.v1", "state": mapped,
+                   "inputs": {"state": state_input["producer"], "package": package_input["producer"]},
+                   "mapped_fields": ["package.package_dir"], "execution_ready": False}
+        retained_mapping = writer.retain_input_mapping(mapping)
         return {"state_input": state_input, "package_input": package_input,
-                "package_mapped_state": mapped, "execution_ready": False}
+                "package_mapped_state": mapped, "mapping_record": retained_mapping,
+                "execution_ready": mapping["execution_ready"]}
     except Exception as error:
         writer.stopped = True
         raise WorkerStateWriteUnconfirmed("Paired predecessor inputs require reconciliation") from error

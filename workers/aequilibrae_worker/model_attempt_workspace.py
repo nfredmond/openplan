@@ -142,3 +142,30 @@ class AttemptWorkspace:
                     os.unlink(name, dir_fd=descriptor)
         return {'path': str(self.path / 'predecessor_state.json'),
                 'sha256': hashlib.sha256(content).hexdigest(), 'size_bytes': len(content)}
+
+    def retain_input_mapping(self, state):
+        """Retain a derived mapping separately from original predecessor state."""
+        if not isinstance(state, dict):
+            raise ValueError('Input mapping must be an object')
+        content = json.dumps(state, allow_nan=False).encode()
+        with self.pinned() as descriptor:
+            name = '.input-mapping-' + uuid.uuid4().hex
+            temporary = False
+            try:
+                file = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                               0o600, dir_fd=descriptor)
+                temporary = True
+                with os.fdopen(file, 'wb') as stream:
+                    stream.write(content)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                os.link(name, 'input_mapping.json', src_dir_fd=descriptor,
+                        dst_dir_fd=descriptor, follow_symlinks=False)
+                os.unlink(name, dir_fd=descriptor)
+                temporary = False
+                os.fsync(descriptor)
+            finally:
+                if temporary:
+                    os.unlink(name, dir_fd=descriptor)
+        return {'path': str(self.path / 'input_mapping.json'),
+                'sha256': hashlib.sha256(content).hexdigest(), 'size_bytes': len(content)}
