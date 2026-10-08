@@ -1,7 +1,8 @@
 """Inspect pending model commands or recover one exact saved receipt.
 
 This command does not resume models, create a new request, or infer completion.
-The normal stage dispatchers have not adopted the retained-command client yet.
+Selected normal worker writes and calculations retain journals. Listing or
+recovering these records does not establish current ownership or resume a stage.
 """
 import argparse
 import json
@@ -50,10 +51,15 @@ def main(argv=None):
     parser.add_argument('--deployment-id', required=True)
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument('--list-pending', action='store_true')
+    action.add_argument('--list-computations', action='store_true')
     action.add_argument('--request-id')
     args = parser.parse_args(argv)
     try:
-        if args.list_pending:
+        if args.list_computations:
+            import model_stage_computation
+            print(json.dumps({'computations': model_stage_computation.summaries(
+                args.journal, base_url=args.base_url, deployment_id=args.deployment_id)}))
+        elif args.list_pending:
             print(json.dumps({'pending': pending_summaries(args.journal, base_url=args.base_url, deployment_id=args.deployment_id)}))
         else:
             recover_request(args.journal, args.request_id, base_url=args.base_url,

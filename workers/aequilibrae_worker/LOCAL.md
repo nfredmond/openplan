@@ -142,3 +142,22 @@ recovery. A lost reply stops the stage; use `model_command_recovery.py` to
 recover its original receipt. Changed values under the same KPI identity are
 refused. Explicit null values remain null. Receipt recovery does not authorize
 whole-stage replay or establish model accuracy.
+
+
+## Inspect saved calculations
+
+Use the same deployment identity, URL and stage journal as the original worker:
+
+```bash
+python model_command_recovery.py --journal /path/to/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --list-computations
+```
+
+This read-only listing reports `result_retained` or `started_without_result` for
+each saved calculation. It prints identifiers and states, not inputs or result
+payloads. A missing journal or damaged record is refused. An older journal with
+no calculation records returns an empty list. This does not contact the server,
+claim the stage or resume work. Preserve an interrupted start and its source
+files for reconciliation. Do not delete it to make the calculation run again.
+Use `--list-pending` separately to inspect delivery requests.

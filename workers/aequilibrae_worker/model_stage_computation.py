@@ -52,3 +52,37 @@ def compute_once(directory, *, base_url, deployment_id, run_id, stage_id, name, 
         if cursor.rowcount != 1:
             raise ComputationUnconfirmed('Computation checkpoint changed before result retention')
     return json.loads(payload)
+
+
+def summaries(directory, *, base_url, deployment_id):
+    """Inspect one deployment without exposing inputs/results or executing work."""
+    from pathlib import Path
+    import sqlite3
+    bound = client.destination(base_url, deployment_id)
+    path = (Path(directory) / 'model-commands.sqlite3').resolve()
+    with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=30)) as connection:
+        exists = connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='stage_computations'").fetchone()
+        if exists is None:
+            return []
+        rows = connection.execute('SELECT run_id,stage_id,name,inputs_json,result_json,result_sha256 FROM stage_computations WHERE destination=? ORDER BY run_id,stage_id,name', (bound,)).fetchall()
+    result = []
+    for run_id, stage_id, name, inputs_json, result_json, digest in rows:
+        client._uuid(run_id)
+        client._uuid(stage_id)
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError('Invalid computation name')
+        inputs = json.loads(inputs_json)
+        if not isinstance(inputs, dict) or journal.canonical(inputs) != inputs_json:
+            raise ValueError('Invalid retained computation inputs')
+        if result_json is None:
+            if digest is not None:
+                raise ValueError('Incomplete computation receipt')
+            state = 'started_without_result'
+        else:
+            saved = json.loads(result_json)
+            if not isinstance(saved, dict) or journal.canonical(saved) != result_json or hashlib.sha256(result_json.encode()).hexdigest() != digest:
+                raise ValueError('Invalid retained computation result')
+            state = 'result_retained'
+        result.append({'run_id': run_id, 'stage_id': stage_id, 'name': name,
+            'state': state, 'model_resumed': False})
+    return result

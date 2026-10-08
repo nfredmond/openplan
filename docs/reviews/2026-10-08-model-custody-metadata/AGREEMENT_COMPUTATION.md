@@ -98,3 +98,33 @@ All 82 worker suites pass again with none failed or omitted. Unit
 peak under a 1 GiB cap. Worker source files stayed unchanged during regression.
 Stage ownership, interrupted-computation reconciliation and scientific acceptance
 remain separate obligations. Whole-stage replay remains disabled.
+
+## Inspect interrupted calculations
+
+The recovery CLI now accepts `--list-computations`. It opens an existing journal
+read-only and filters records by the configured deployment identity and URL.
+Each summary names the run, stage and calculation, with either `result_retained`
+or `started_without_result`. It checks canonical inputs, result hashes and UUIDs
+before reporting them. Damaged records refuse the listing. An older journal
+without a computation table returns an empty list. A missing journal is not
+created. Inputs and result payloads are not printed.
+
+This makes the interrupted-start condition visible without rerunning a
+calculation, creating a request, contacting the server or claiming ownership.
+`started_without_result` remains a reconciliation requirement, not permission
+to delete the start or recompute consumed observations. A retained result does
+not prove current source availability, local file custody or scientific validity.
+
+Three focused tests pass, including a fresh CLI process, scoped saved/interrupted
+states, no payload output, unchanged database bytes, missing/older journals and
+damaged fields. Baseline, harmless and restored controls pass. Eight faults fail
+at read-only mode, deployment scope, run/stage identity, name, input shape,
+partial receipt and result integrity. Evidence is
+`model-command-client-20261008-proof/computation-inspection-controls.json`.
+The initial test used SQLite transaction contexts without closing connections;
+the test now closes them explicitly and passes without that resource warning.
+
+All 83 worker suites pass with none failed or omitted. Unit
+`openplan-computation-inspection-workers-20261008.service`, invocation
+`795b9371945b40b8b8a0bf6930a99a5f`, finished at 08:44:05 Pacific with a 170 MiB
+peak under a 1 GiB cap. Worker source stayed unchanged during the run.
