@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parent
-FILES = ('model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py')
+FILES = ('model_command_client.py', 'model_command_journal.py', 'test_model_command_client.py', 'test_model_command_journal.py', 'test_model_command_kpi.py', 'test_model_command_instrument.py')
 
 
 class MutationTests(unittest.TestCase):
@@ -64,6 +64,21 @@ class MutationTests(unittest.TestCase):
             with self.subTest(boundary=boundary, old=old):
                 result = self.run_case('model_command_client.py', old, new, test='test_model_command_kpi.py')
                 self.assertNotEqual(result.returncode, 0, 'KPI fault escaped checks')
+                self.assertIn(boundary, result.stderr)
+                self.assertNotIn('SyntaxError', result.stderr)
+                self.assertNotIn('ModuleNotFoundError', result.stderr)
+
+    def test_instrument_faults_fail_at_identity_or_outcome_boundary(self):
+        cases = [
+            ("if payload['demand_method'] not in ('aequilibrae', 'activitysim') or payload['scientific_outcome'] != 'inconclusive':", 'if False:', 'incomplete_reused_or_promoted'),
+            ("if len(set(identities)) != len(identities):", 'if False:', 'incomplete_reused_or_promoted'),
+            ("raise ValueError('Instrument artifact hash missing or invalid')", 'pass', 'incomplete_reused_or_promoted'),
+            ("raise ValueError('Instrument receipt custody differs')", 'pass', 'each_receipt_binding'),
+        ]
+        for old, new, boundary in cases:
+            with self.subTest(boundary=boundary, old=old):
+                result = self.run_case('model_command_client.py', old, new, test='test_model_command_instrument.py')
+                self.assertNotEqual(result.returncode, 0, 'Instrument fault escaped checks')
                 self.assertIn(boundary, result.stderr)
                 self.assertNotIn('SyntaxError', result.stderr)
                 self.assertNotIn('ModuleNotFoundError', result.stderr)

@@ -104,6 +104,48 @@ def _kpi_receipt(command: dict, receipt: object) -> dict:
     return receipt
 
 
+INSTRUMENT_ROLES = ('model_output', 'input_bundle', 'match_audit', 'comparison_basis', 'assessment', 'diagnosis')
+
+
+def _validate_instrument(command: dict):
+    args = command['arguments']
+    if set(args) != {'workspace_id', 'run_id', 'stage_id', 'attempt_id', 'payload'}:
+        raise ValueError('Invalid instrument command arguments')
+    for key in ('workspace_id', 'run_id', 'stage_id', 'attempt_id'):
+        _uuid(args[key])
+    payload = args['payload']
+    required = {'demand_method', 'scientific_outcome'} | {
+        role + suffix for role in INSTRUMENT_ROLES for suffix in ('_artifact_id', '_sha256')}
+    if not isinstance(payload, dict) or set(payload) != required:
+        raise ValueError('Incomplete or unexpected instrument payload fields')
+    if payload['demand_method'] not in ('aequilibrae', 'activitysim') or payload['scientific_outcome'] != 'inconclusive':
+        raise ValueError('Unsupported instrument method or outcome')
+    identities = []
+    for role in INSTRUMENT_ROLES:
+        _uuid(payload[role + '_artifact_id'])
+        identities.append(payload[role + '_artifact_id'])
+        digest = payload[role + '_sha256']
+        if not isinstance(digest, str) or not re.fullmatch('[0-9a-f]{64}', digest):
+            raise ValueError('Instrument artifact hash missing or invalid')
+    if len(set(identities)) != len(identities):
+        raise ValueError('Instrument artifact identities must be distinct')
+
+
+def _instrument_receipt(command: dict, receipt: object) -> dict:
+    try:
+        if not isinstance(receipt, dict):
+            raise ValueError('Instrument receipt is not an object')
+        _uuid(receipt.get('id'))
+        args = command['arguments']
+        expected = {'workspace_id': args['workspace_id'], 'model_run_id': args['run_id'],
+                    'stage_id': args['stage_id'], 'attempt_id': args['attempt_id'], **args['payload']}
+        if any(key not in receipt for key in expected) or journal.canonical({key: receipt[key] for key in expected}) != journal.canonical(expected):
+            raise ValueError('Instrument receipt custody differs')
+    except (ValueError, TypeError, AttributeError, KeyError):
+        raise DeliveryUnconfirmed('Instrument receipt does not match the prepared command') from None
+    return receipt
+
+
 def _artifact_receipt(command: dict, receipt: object) -> dict:
     if not isinstance(receipt, dict):
         raise DeliveryUnconfirmed('Artifact receipt is not an object')
@@ -135,6 +177,9 @@ def validate_command(command: dict):
         return
     if operation == 'write_model_attempt_kpi':
         _validate_kpi(command)
+        return
+    if operation == 'record_model_attempt_instrument':
+        _validate_instrument(command)
         return
     fields = {
         'claim_model_stage_attempt': {'run_id', 'stage_id', 'worker_id'},
@@ -173,6 +218,8 @@ def checked_receipt(command: dict, receipt: object) -> dict:
         return _artifact_receipt(command, receipt)
     if command['operation'] == 'write_model_attempt_kpi':
         return _kpi_receipt(command, receipt)
+    if command['operation'] == 'record_model_attempt_instrument':
+        return _instrument_receipt(command, receipt)
     args = command['arguments']
     try:
         if not isinstance(receipt, dict):
@@ -220,6 +267,7 @@ def rpc_arguments(command: dict) -> dict:
         'write_model_stage_attempt': ('attempt_id', 'status', 'log_tail', 'error'),
         'write_model_attempt_artifact': ('attempt_id', 'payload'),
         'write_model_attempt_kpi': ('attempt_id', 'payload'),
+        'record_model_attempt_instrument': ('attempt_id', 'payload'),
     }[command['operation']]
     result.update({'p_' + key: args[key] for key in keys})
     return result
