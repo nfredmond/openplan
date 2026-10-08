@@ -107,3 +107,35 @@ not backfilled by this prototype. Those upgrade and reconciliation decisions
 remain required before any migration or production adoption. Run/stage scope
 mutation, the projection guards and full authenticated launch behavior also
 remain open. No browser or scientific acceptance is added by these tests.
+
+## Competing-session claim boundary
+
+The first concurrent reset case exposed another defect in the prototype. The
+stage claim commits before the normal worker changes its parent run from queued
+to running. A reset that writes queued over queued passed the guard's former
+status-change condition even though the stage start was retained. The guard now
+refuses writes that leave a retained run queued. The worker's subsequent update
+to running remains permitted.
+
+[The contention check](prototype/verify_stage_start_contention.py) creates a
+49 MB owned proof clone and uses separate service-role PostgreSQL sessions. It
+observes a database lock wait before releasing the first session. A second
+conditional claim changes no rows. A reset and KPI deletion after a committed
+claim are refused. If the first claim rolls back, the waiting cleanup succeeds
+and no execution-start marker remains. These four cases pass for baseline,
+harmless-comment and restored sources. Reintroducing the queued-parent condition
+or allowing deletion produces the corresponding expected failure.
+
+The original 30 receipt-family checks and atomic-start checks also pass after
+the guard correction, including their adverse controls. Private evidence lives
+in `stage-start-contention/stage-start-contention.json`,
+`retained-output-protection-v2/retained-output-protection.json` and
+`stage-execution-start-v2/stage-execution-start.json` under the existing proof
+root. The contention clone and synthetic rows remain for investigation; the
+prototype functions, triggers and start table are removed after each case.
+
+This covers the stated claim-first races, not every lock order or an actual
+worker process. Reset-first input changes, reaper/cancellation interactions,
+HTTP loss, historical upgrade reconciliation, scientific projection mutation
+and the authenticated route remain required. The launch route still needs an
+early refusal before writing history or rebuilding inputs. PR #168 remains held.

@@ -22,7 +22,7 @@ BEGIN
  PERFORM id FROM public.model_runs WHERE id=run FOR UPDATE;
  IF public.model_run_has_retained_commands(run) THEN
   IF TG_TABLE_NAME='model_runs' AND TG_OP='UPDATE' THEN
-   IF NEW.status='queued' AND OLD.status IS DISTINCT FROM NEW.status
+   IF NEW.status='queued'
       OR NEW.input_snapshot_json IS DISTINCT FROM OLD.input_snapshot_json
       OR NEW.workspace_id IS DISTINCT FROM OLD.workspace_id
       OR NEW.model_id IS DISTINCT FROM OLD.model_id
