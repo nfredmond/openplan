@@ -838,6 +838,45 @@ def sb_get_run_artifacts(run_id: str) -> list[dict]:
     return response.json()
 
 
+def select_managed_predecessor_input(artifact_type: str) -> dict:
+    """Read the current consumer and its declared producer before file access."""
+    import model_attempt_writer
+    import model_predecessor_inputs
+    writer = model_attempt_writer.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Predecessor selection requires a managed invocation")
+    writer.require_open()
+    try:
+        get = writer.get or requests.get
+        headers = {"apikey": writer.service_key, "Authorization": "Bearer " + writer.service_key}
+        response = get(
+            writer.base_url.rstrip("/") + "/rest/v1/model_run_stages", headers=headers,
+            params={"run_id": "eq." + writer.context.run_id,
+                    "select": "id,run_id,stage_name,sort_order,status,attempt_managed,active_attempt_id"},
+            timeout=30, allow_redirects=False,
+        )
+        if response.status_code != 200:
+            raise ValueError("Predecessor stage read did not succeed")
+        artifacts = get(
+            writer.base_url.rstrip("/") + "/rest/v1/model_run_artifacts", headers=headers,
+            params={"run_id": "eq." + writer.context.run_id,
+                    "artifact_type": "eq." + artifact_type,
+                    "select": "id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,model_run_stages(id,run_id,status,attempt_managed,active_attempt_id)"},
+            timeout=30, allow_redirects=False,
+        )
+        if artifacts.status_code != 200:
+            raise ValueError("Predecessor artifact read did not succeed")
+        selected = model_predecessor_inputs.select(
+            writer.context, response.json(), artifacts.json(), artifact_type,
+        )
+        require_completed_artifact_producer(selected, writer.context.run_id)
+        writer.require_open()
+        return selected
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Predecessor input requires reconciliation") from error
+
+
 def require_completed_artifact_producer(artifact: dict, run_id: str) -> None:
     """Refuse incomplete or superseded inputs before checking scientific identity.
 

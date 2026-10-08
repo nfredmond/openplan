@@ -1054,3 +1054,28 @@ The native proof concerns producer registration, not consumer selection or full
 stage execution. Explicit predecessor authority, execution-state mapping, coherent
 project-database transfer and normal managed dispatch remain unfinished. No engine
 or scientific holdout is run, and no acceptance grade changes.
+
+### Explicit predecessor selection
+
+The worker now has a bound predecessor-read adapter for retained state and package
+inputs. Network Assignment declares Setup as its producer; Artifact Extraction
+and ActivitySim Network Assignment declare Network Assignment. Selection requires
+a unique named producer earlier in the same run, successful managed completion,
+a current running consumer attempt and a unique artifact with matching producer
+attempt ownership. Unrelated newer artifacts cannot supply the input. Duplicate
+or inconsistent records require reconciliation rather than guessed selection.
+
+The adapter reads through the bound writer's installation and credential, not an
+unrelated global URL. It projects stage names, order, status and attempt fields,
+and compares the selected artifact's embedded producer through the existing
+completed-producer check. A disagreement stops the writer before file access.
+These are read-time checks, not a concurrent revocation fence. Normal dispatcher
+activation and the connection from selection to verified file transfer remain open.
+
+Seven tests pass with mocked HTTP. Initial fixture setup indexed past its shared
+UUID list; the test now defines its additional identities locally. Baseline,
+harmless and restored controls pass. Five faults detect ignored completion,
+consumer ownership, artifact ownership, producer ambiguity and an omitted stage
+order projection. The combined suite passes 156 tests. Native predecessor reads,
+complete consumer mapping, project transfer and scientific acceptance remain
+unproved. The SQLite ResourceWarning remains unresolved.
