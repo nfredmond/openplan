@@ -235,10 +235,8 @@ function fixtures() {
         project_id: PROJECT_TWO,
         title: "Closed-out award",
         obligation_due_at: "2026-08-16T00:00:00.000Z",
-        // The same row carries a lapse date, so the `fully_spent` filter is
-        // proven for BOTH award kinds by one fixture: money already spent
-        // cannot lapse, and a reminder that it might would be an alarm about
-        // nothing.
+        // The same row retains obligation review while expenditure reminders
+        // continue to use the existing spending filter.
         expenditure_deadline_at: "2026-08-16T00:00:00.000Z",
         spending_status: "fully_spent",
         awarded_amount: 500000,
@@ -449,6 +447,7 @@ describe("the daily deadline sweep", () => {
         `${ALICE}:fo-pending`,
         `${BOB}:bi-overdue`,
         `${BOB}:fa-1`,
+        `${BOB}:fa-spent`,
         `${BOB}:fa-lapse`,
         `${BOB}:m-1`,
         `${BOB}:s-1`,
@@ -459,9 +458,9 @@ describe("the daily deadline sweep", () => {
     // Each row carries the workspace of its OWN record, not of the sweep.
     const carolRow = db.notifications.find((row) => row.recipient_user_id === CAROL);
     expect(carolRow?.workspace_id).toBe(WORKSPACE_TWO);
-    expect(db.notifications.filter((row) => row.workspace_id === WORKSPACE_ONE)).toHaveLength(8);
+    expect(db.notifications.filter((row) => row.workspace_id === WORKSPACE_ONE)).toHaveLength(9);
 
-    expect(result.notificationsCreated).toBe(9);
+    expect(result.notificationsCreated).toBe(10);
     expect(result.digestsComposed).toBe(3);
     expect(result.horizonDays).toBe(WORK_DEADLINE_HORIZON_DAYS);
   });
@@ -512,7 +511,7 @@ describe("the daily deadline sweep", () => {
   it("runs twice and creates nothing, and mails nothing, the second time", async () => {
     const db = makeDb();
     const first = await run(db);
-    expect(first.notificationsCreated).toBe(9);
+    expect(first.notificationsCreated).toBe(10);
     expect(first.digestsComposed).toBe(3);
     const outboxAfterFirst = db.outbox.length;
     expect(outboxAfterFirst).toBe(3);
@@ -521,7 +520,7 @@ describe("the daily deadline sweep", () => {
 
     expect(second.notificationsCreated).toBe(0);
     expect(second.digestsComposed).toBe(0);
-    expect(db.notifications).toHaveLength(9);
+    expect(db.notifications).toHaveLength(10);
     expect(db.outbox).toHaveLength(outboxAfterFirst);
 
     // And it did TRY — the idempotency is the database's, not a pre-read that
@@ -554,7 +553,7 @@ describe("the daily deadline sweep", () => {
     const { db, tables } = makeDbWithFixtures();
 
     const first = await run(db);
-    expect(first.notificationsCreated).toBe(9);
+    expect(first.notificationsCreated).toBe(10);
     expect(first.digestsComposed).toBe(3);
     expect(db.outbox).toHaveLength(3);
 
@@ -639,7 +638,7 @@ describe("the daily deadline sweep", () => {
     // Bob's invoice is overdue by `invoicePriority`, not by a second date test
     // written here: unsettled AND past due.
     const bob = db.outbox.find((row) => row.to_email === "bob@example.gov");
-    expect(bob?.subject).toBe("OpenPlan: 1 overdue, 4 due in the next 7 days");
+    expect(bob?.subject).toBe("OpenPlan: 1 overdue, 5 due in the next 7 days");
     expect(String(bob?.body)).toContain("Invoice 2026-014");
 
     const overdueRow = db.notifications.find((row) => row.subject_id === "d-overdue");
@@ -649,16 +648,31 @@ describe("the daily deadline sweep", () => {
     expect(String(upcomingRow?.body)).not.toContain("overdue");
   });
 
+  it.each([
+    ["earned_coverage", "Closed out on invoice coverage"],
+    ["recorded_on_import", "Recorded as closed on import"],
+    ["unrecorded_legacy", "Closure basis not recorded"],
+  ])("retains %s obligation review without declaring compliance", async (basis, label) => {
+    const { db, tables } = makeDbWithFixtures();
+    tables.funding_awards.find(row => row.id === "fa-spent")!.closure_basis = basis;
+    await run(db);
+    const reminder = db.notifications.find(row => row.subject_id === "fa-spent");
+    expect(reminder?.kind).toBe("award_obligation_due");
+    expect(reminder?.body).toContain(label);
+    expect(reminder?.body).toContain("Obligation timing is not established");
+    expect(reminder?.body).not.toContain("must be obligated");
+    expect(WORK_SWEEP_SOURCES.find(source => source.kind === "award_obligation_due")?.select.split(",").map(x => x.trim())).toContain("closure_basis");
+  });
+
   it("leaves out records that are closed, settled, already decided, unassigned or beyond the week", async () => {
     const db = makeDb();
     await run(db);
 
     const subjects = db.notifications.map((row) => row.subject_id);
-    for (const excluded of ["d-complete", "d-far", "d-unassigned", "fo-decided", "fa-spent", "bi-paid"]) {
+    for (const excluded of ["d-complete", "d-far", "d-unassigned", "fo-decided", "bi-paid"]) {
       expect(subjects, `${excluded} must not produce a reminder`).not.toContain(excluded);
     }
-    // `fa-spent` carries BOTH award dates, so its single absence above proves
-    // the `fully_spent` filter on both award sources at once.
+    // Closed awards retain obligation review independently of expenditure reminders.
     expect(
       db.notifications.filter((row) => row.kind === "award_expenditure_due").map((row) => row.subject_id)
     ).toEqual(["fa-lapse"]);
@@ -845,7 +859,7 @@ describe("the daily deadline sweep", () => {
     const result = await run(db);
 
     // The reminder matters more than its heading — nobody's digest is withheld.
-    expect(result.notificationsCreated).toBe(9);
+    expect(result.notificationsCreated).toBe(10);
     expect(db.outbox).toHaveLength(3);
     const alice = db.outbox.find((row) => row.to_email === "alice@example.gov");
     expect(String(alice?.body)).toContain("Here is what is on your plate.");
@@ -859,7 +873,7 @@ describe("the daily deadline sweep", () => {
     // No emails resolved at all: the auth lookup answered null for everyone.
     const result = await run(db);
 
-    expect(result.notificationsCreated).toBe(9);
+    expect(result.notificationsCreated).toBe(10);
     expect(result.digestsComposed).toBe(3);
     expect(result.emailUnavailable).toBe(3);
     expect(result.emailsSkipped).toBe(0);
