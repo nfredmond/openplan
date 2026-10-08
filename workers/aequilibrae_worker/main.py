@@ -5833,27 +5833,15 @@ def stage_artifacts(
     # Write it after custody so it carries the actual persistence state.
     with open(evidence_path, "w") as handle:
         json.dump(evidence, handle, indent=2)
-    evidence_storage_ref = None
-    try:
-        ev_object_path = f"model-runs/{run_id}/evidence_packet.json"
-        with open(evidence_path, "rb") as handle:
-            ev_upload_res = requests.post(
-                f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{ev_object_path}",
-                headers={
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": f"Bearer {SUPABASE_KEY}",
-                    "Content-Type": "application/json",
-                    "x-upsert": "true",
-                },
-                data=handle.read(),
-                timeout=60,
-            )
-        if ev_upload_res.status_code in (200, 201):
-            evidence_storage_ref = f"storage://run-artifacts/{ev_object_path}"
-    except Exception as exc:
-        log += f"Evidence packet Storage upload warning: {exc}\n"
     with open(evidence_path, "rb") as handle:
         evidence_bytes = handle.read()
+    evidence_storage_ref = None
+    try:
+        evidence_storage_ref = upload_content_addressed_artifact(
+            run_id, stage_id, "evidence_packet.json", evidence_bytes, "application/json",
+        )
+    except WorkerStateWriteUnconfirmed as exc:
+        log += f"Evidence packet Storage upload warning: {exc}\n"
     sb_post_artifact({
         "run_id": run_id,
         "stage_id": stage_id,

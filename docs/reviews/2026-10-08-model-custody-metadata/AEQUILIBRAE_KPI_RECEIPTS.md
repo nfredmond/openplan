@@ -57,3 +57,13 @@ The shared byte uploader now accepts the caller's artifact basename and content 
 All 26 assignment-handoff checks pass. The agreement fixture covers exact retained bytes, a missing object and changed bytes, including upload failure followed by a successful exact read. Only the verified case is labeled stored. Harmless/restored controls pass; removing byte comparison fails at `unverified agreement storage accepted`. Targeted GeoJSON checks also pass after sharing the helper. The initial refactor left a reference to the removed response variable in upload-status metadata; the suite caught it, and the corrected status now derives from the verified storage reference.
 
 This checkpoint has mocked agreement transport evidence, not a native agreement upload. Both workers' evidence-packet upsert paths remain unchanged. The helper's callers provide an artifact basename or fixed filename. Attempt ownership, metadata deduplication, privileged mutation and restart recovery remain open.
+
+## Evidence-packet object retention
+
+Both workers now upload new evidence packets under stage-specific SHA-256 paths with upsert disabled. Each helper requires an authenticated exact-byte read before returning a Storage reference. AequilibraE preserves its labeled local fallback; ActivitySim returns explicit unavailability when bytes cannot be verified. A lost upload acknowledgement can resolve through the retained bytes without repeating the POST. This supersedes the preceding checkpoint's unchanged-packet boundary.
+
+All 34 ActivitySim tests and 36 AequilibraE push-trigger checks pass. The ActivitySim test covers exact bytes after a lost acknowledgement, changed bytes and a missing object. Harmless and restored controls pass; removing the byte comparison fails at `unverified evidence accepted`. Two malformed nested test helpers introduced during editing caused an import failure and were corrected before verification.
+
+The private `native-evidence-packet-bytes.py/json` probe calls both production upload helpers against the named isolated restore-target Storage service. It checks the database port against that container before writes. Identical bytes resolve the same key; changed bytes produce another key; an independent authenticated read confirms the original remains unchanged. Results retain both source digests and synthetic object identities without credentials.
+
+The native probe does not execute either complete artifact stage or register packet metadata. Mocked preflight tests cover the ActivitySim caller. AequilibraE's packet caller is inspected directly and uses the previously tested shared helper. Attempt ownership, metadata deduplication, privileged Storage mutation, process recovery and scientific acceptance remain unproved.
