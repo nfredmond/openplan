@@ -75,3 +75,13 @@ The conditional claim used a separate unchecked response path. Any nonempty JSON
 All 29 push-trigger checks pass, as do the 26 ActivitySim assignment-handoff checks. The new mocked claim cases cover normalized timestamps, extra returned metadata, empty results, HTTP errors, wrong IDs, missing or changed values, multiple rows, JSON errors and request exceptions. The existing conditional-claim test retains its URL and lost-race assertions. Both modified tests pass a harmless comment and restored source. Five adverse controls are caught: ignoring record identity, ignoring payload values, treating HTTP failure as loss, removing the queued condition and removing the timeout. The pre-correction suite fails the new test.
 
 This does not establish a native simultaneous claim race or add per-attempt fencing. A claim acknowledgement can be lost after the stage becomes running, so recovery still requires persisted-state reconciliation. The timestamp-based reaper and stage-ID-only later writes remain separate M3 boundaries. Proof files use the `claim-receipt-` prefix in the private proof directory.
+
+## Native conditional-claim evidence
+
+At source commit `08e0a1e7`, five fresh synthetic stages were each claimed by two concurrent HTTP requests using the production `sb_claim_stage` function. Every round returned one `True` and one `False`. Independent PostgreSQL reads confirmed running status and the winning request's distinct log marker. The probe verified that the resolved database port belonged to `supabase_db_openplan-restore-target-2026091050` before creating fixtures.
+
+A harmless payload copy retained that result. An adverse call through the production state-write helper without the queued predicate returned two winners, which the one-winner check rejected. This establishes that the assertion distinguishes unconditional writes from the conditional claim behavior.
+
+A separate fresh stage exercised acknowledgement loss. The real HTTP PATCH completed, then the test transport raised a timeout before returning the response to the claim helper. The helper raised `WorkerStateWriteUnconfirmed`; an independent database query found the committed running stage. A subsequent normal claim returned `False`. This is a simulated lost acknowledgement after a real commit, not a killed process or a network-fault injection.
+
+The probe uses concurrent requests in one test process. It does not execute a scientific stage, establish distributed process recovery, or supply attempt fencing. Those boundaries remain open. Synthetic fixture identities and exact results remain in `native-claim-race.json`; the retained executable probe is `native-claim-race.py`, both under the private proof directory.
