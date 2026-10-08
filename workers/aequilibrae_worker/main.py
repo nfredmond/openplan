@@ -6618,7 +6618,8 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     )
                 with open(volume_path, "rb") as volume_handle:
                     volume_bytes = volume_handle.read()
-                activitysim_artifact = sb_post_artifact({
+                run_row = sb_get_run(run_id)
+                activitysim_artifact = sb_record_retained_artifact({
                     "run_id": run_id,
                     "stage_id": stage_id,
                     "artifact_type": "activitysim_link_volumes",
@@ -6644,7 +6645,9 @@ def _claim_and_run_stage(stage: dict) -> bool:
                             ),
                         },
                     },
-                })
+                }, workspace_id=str(run_row.get("workspace_id") or ""),
+                    journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
+                    logical_name="activitysim_link_volumes.csv")
                 activitysim_artifact_id = activitysim_artifact["id"]
                 for kpi_name, kpi_label, value, unit, provenance in (
                     (
@@ -6691,7 +6694,6 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     intrazonal_share_pct=None,
                     zone_count=(result.get("network") or {}).get("zones"),
                 )
-                run_row = sb_get_run(run_id)
                 activitysim_profile, _profile_payload, activitysim_profile_digest = (
                     validated_convergence_profile(
                         result.get("convergence"), "ActivitySim validation assessment"

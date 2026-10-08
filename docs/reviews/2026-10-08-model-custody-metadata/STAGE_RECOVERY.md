@@ -570,3 +570,28 @@ The publisher still regenerates that file before registering; changed output
 cannot replace its original retained command. Native spatial computation,
 Storage durability, KPI delivery, ActivitySim output delivery and current
 restart ownership remain separate boundaries. Whole-stage replay stays disabled.
+
+## Separate ActivitySim output registration
+
+The ActivitySim assignment dispatcher now reads the run's workspace before
+registering its output through the retained named command. Its returned artifact
+identity still feeds both assessment preparation and custody. The logical slot
+and artifact type remain separate from trip-based link volumes. No model outputs
+are averaged or promoted to independent acceptance.
+
+The dispatcher fixture now exercises the actual retained client and RPC envelope.
+Its existing harmless, restored and invented-identity controls pass. A new test
+executes the actual registration statement, verifies exact receipt reuse, checks
+behavioral provenance, and refuses changed output bytes before another request.
+Restoring direct insertion fails that test; harmless and restored controls pass.
+The first fixture run failed because its HTTP placeholder was not loopback; the
+fixture now uses loopback without weakening deployment URL validation.
+
+All 78 worker suites pass, including 27 ActivitySim handoff checks. Unit
+`openplan-activitysim-artifact-workers-20261008.service`, invocation
+`6d913662f69c4cecad6f2b057407331b`, completed at 07:49:09 Pacific on October 8,
+with a 175.2 MiB peak under a 1 GiB cap and no checkout edits during regression.
+Private controls are in `activitysim-artifact-controls.json`. These tests mock
+the scientific assignment and HTTP; they do not prove ActivitySim accuracy or
+whole-stage recovery. KPI delivery, agreement output registration, retained
+geometry computation and current restart ownership remain open.

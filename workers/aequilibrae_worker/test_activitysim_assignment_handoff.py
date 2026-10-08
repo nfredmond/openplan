@@ -390,10 +390,12 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
         retained_artifact_id = "22222222-2222-4222-8222-222222222222"
 
         def retained_artifact_response(url, **kwargs):
-            assert url.endswith("/rest/v1/model_run_artifacts")
-            return mock.Mock(status_code=201, json=mock.Mock(return_value=[{
-                **kwargs["json"], "id": retained_artifact_id,
-            }]))
+            nonlocal retained_artifact_id
+            assert url.endswith("/rest/v1/rpc/record_legacy_model_artifact")
+            retained_artifact_id = kwargs["json"]["p_payload"]["id"]
+            return mock.Mock(status_code=200, json=mock.Mock(return_value={
+                **kwargs["json"]["p_payload"], "attempt_id": None,
+            }))
 
         def assignment(*args, **kwargs):
             calls.append((args, kwargs))
@@ -427,6 +429,8 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
         completion = mock.Mock(status_code=200)
         completion.json.return_value = []
         with (
+            mock.patch.dict(main.os.environ, {"OPENPLAN_DEPLOYMENT_ID": "synthetic"}),
+            mock.patch.object(main, "SUPABASE_URL", "http://127.0.0.1:54321"),
             mock.patch.object(main, "RUN_WORK_ROOT", str(work_root)),
             mock.patch.object(main, "sb_claim_stage", return_value=True),
             mock.patch.object(main, "sb_patch_stage") as patch_stage,
@@ -444,14 +448,14 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
             mock.patch.object(
                 main,
                 "sb_get_run",
-                return_value={"workspace_id": "workspace-1"},
+                return_value={"workspace_id": "33333333-3333-4333-8333-333333333333"},
             ),
             mock.patch.object(main, "write_model_run_modeling_evidence") as write_evidence,
             mock.patch.object(main.requests, "get", return_value=completion),
         ):
             assert main.process_stage(
                 {
-                    "id": "stage-5",
+                    "id": "44444444-4444-4444-8444-444444444444",
                     "run_id": run_id,
                     "stage_name": "ActivitySim Network Assignment",
                 }
@@ -472,8 +476,8 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
             "network_state_digest"
         ]
         assert kwargs["assignment_profile_override"] == first_profile
-        payload = post_artifact.call_args.kwargs["json"]
-        assert "id" not in payload, "assignment must let artifact registration return its retained identity"
+        payload = post_artifact.call_args.kwargs["json"]["p_payload"]
+        assert payload["id"] == retained_artifact_id
         assert build_assessment.call_args.kwargs["model_output_artifact_id"] == retained_artifact_id, "assessment used an invented artifact identity"
         assert persist_assessment.call_args.kwargs["model_output_artifact_id"] == retained_artifact_id, "custody used an invented artifact identity"
         assert payload["artifact_type"] == "activitysim_link_volumes"
@@ -499,7 +503,7 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
         assert validate.call_count == 1
         write_evidence.assert_called_once_with(
             run_id,
-            "workspace-1",
+            "33333333-3333-4333-8333-333333333333",
             activitysim_validation,
             track="behavioral_demand",
         )
@@ -586,7 +590,7 @@ def test_uncalibrated_assignment_handoff_reuses_the_canonical_baseline_digest():
             mock.patch.object(main, "sb_claim_stage", return_value=True),
             mock.patch.object(main, "sb_patch_stage") as patch_stage,
             mock.patch.object(main, "sb_patch_run"),
-            mock.patch.object(main, "sb_post_artifact", return_value={"id": "22222222-2222-4222-8222-222222222222"}) as post_artifact,
+            mock.patch.object(main, "sb_record_retained_artifact", return_value={"id": "22222222-2222-4222-8222-222222222222"}) as post_artifact,
             mock.patch.object(main, "build_rules_v4_validation_records", return_value=({}, {}, {"assessment_id": "synthetic-assessment"})),
             mock.patch.object(main, "persist_rules_v4_validation_records", return_value={"scientific_outcome": "inconclusive", "validation_evidence_write": "recorded"}),
             mock.patch.object(main, "sb_post_kpi"),

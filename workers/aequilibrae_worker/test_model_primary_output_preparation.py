@@ -139,4 +139,22 @@ class PrimaryOutputPreparation(unittest.TestCase):
             self.assertEqual(post.call_count,1);legacy.assert_not_called()
 
 
+    def test_activitysim_registration_reuses_its_separate_output_identity(self):
+        tree=ast.parse(Path(main.__file__).read_text())
+        node=next(n for n in ast.walk(tree) if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='activitysim_artifact' for t in n.targets))
+        code=compile(ast.Module(body=[node],type_ignores=[]),main.__file__,'exec')
+        def send(url,**kwargs):
+            return Mock(status_code=200,json=Mock(return_value={**kwargs['json']['p_payload'],'attempt_id':None}))
+        with patch.object(main.requests,'post',side_effect=send) as post,patch.object(main,'sb_post_artifact') as legacy:
+            scope=dict(vars(main),run_id=RUN,stage_id=STAGE,work_dir=str(self.root),run_row={'workspace_id':RUN},volume_path=str(self.root/'activitysim_assignment_output/link_volumes.csv'),volume_bytes=b'synthetic behavioral volumes',result={},calibrated_handoff=False,activitysim_assigned_vehicle_trips=10,activitysim_daily_vmt=20,assignment_artifact_metadata=lambda *args:{'assignment_engine':'synthetic'})
+            exec(code,scope);first=scope['activitysim_artifact'];exec(code,scope)
+            self.assertEqual(first,scope['activitysim_artifact']);self.assertEqual(post.call_count,1)
+            self.assertEqual(first['artifact_type'],'activitysim_link_volumes')
+            self.assertFalse(first['metadata_json']['trip_based_od_adjustments_reused'])
+            self.assertEqual(first['metadata_json']['assignment_totals']['daily_vmt'],20)
+            scope['volume_bytes']=b'changed behavioral volumes'
+            with self.assertRaises(main.WorkerStateWriteUnconfirmed):exec(code,scope)
+            self.assertEqual(post.call_count,1);legacy.assert_not_called()
+
+
 if __name__=='__main__':unittest.main()
