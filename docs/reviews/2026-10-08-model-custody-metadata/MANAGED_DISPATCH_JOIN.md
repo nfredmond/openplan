@@ -2135,3 +2135,21 @@ retains the warning case; v3 retains the iteration case and controls. The curren
 report is prototype/native-progress-failure.json. These are synthetic engine
 interruption checks, not database transport evidence, a full stage run, assurance
 about larger-network threads, supervisor recovery or scientific acceptance.
+
+### Do not downgrade select-link custody failures to warnings
+
+An audit of assignment try blocks found the select-link diagnostic setup caught
+WorkerStateWriteUnconfirmed from its stage-log update and continued. It now
+rethrows that exception before the ordinary diagnostic warning handler. SQLite
+extension setup also runs inside the existing finally block, so loading failures
+close the diagnostic connection.
+
+Three tests execute the actual extracted try block with a real CSV and controlled
+database, screenline and transport substitutes. Unconfirmed stage writes escape
+with the same exception object; ordinary screenline failures still warn and skip;
+extension failures close the database. Baseline, harmless and restored controls
+pass. Three targeted faults detect swallowed writes, omitted closure and treating
+an ordinary diagnostic failure as fatal. The warning-enabled broader suite passes
+288 tests. See prototype/select-link-custody-controls.json for source hash and
+outcomes. These checks do not execute full assignment or establish scientific
+acceptance. Engine child authority transfer and supervisor recovery remain open.

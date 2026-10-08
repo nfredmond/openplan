@@ -4780,9 +4780,9 @@ def stage_assignment(
                 with open(counts_path) as _f:
                     _sl_stations = list(_csv.DictReader(_f))
                 _sl_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
-                _sl_db.enable_load_extension(True)
-                _sl_db.load_extension(SPATIALITE_PATH)
                 try:
+                    _sl_db.enable_load_extension(True)
+                    _sl_db.load_extension(SPATIALITE_PATH)
                     _sl_rows = _sl_db.execute(
                         "SELECT link_id, COALESCE(name,''), COALESCE(link_type,''), "
                         "X(Centroid(geometry)), Y(Centroid(geometry)) FROM links "
@@ -4810,6 +4810,8 @@ def stage_assignment(
                         f"({sum(len(v) for v in select_link_sets.values())} links).\n"
                     )
                     sb_patch_stage(stage_id, {"log_tail": log})
+        except WorkerStateWriteUnconfirmed:
+            raise
         except Exception as e:
             select_link_sets = {}
             log += f"Select-link setup warning ({e}); corridor attribution skipped.\n"

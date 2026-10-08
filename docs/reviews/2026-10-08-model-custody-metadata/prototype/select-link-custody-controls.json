@@ -1,0 +1,36 @@
+{
+  "worker_sha256": "bf25167e9c14c8ecad2db8786528bb39f16dd59c0e9c45fe0e1622b8b4ea23be",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "swallow-write",
+      "exit_code": 1,
+      "targeted_test": "test_unconfirmed_stage_write_escapes_diagnostic_handler"
+    },
+    {
+      "control": "omit-database-close",
+      "exit_code": 1,
+      "targeted_test": "test_extension_failure_still_closes_database"
+    },
+    {
+      "control": "reject-ordinary-diagnostic",
+      "exit_code": 1,
+      "targeted_test": "test_ordinary_diagnostic_failure_remains_a_warning"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual extracted select-link block, real CSV and mocked database, screenline selection and state transport. No full assignment or scientific acceptance."
+}
