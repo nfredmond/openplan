@@ -1820,3 +1820,29 @@ caller must supply the already verified state/output records; the helper alone
 does not establish native producer authority. Native joined recovery, managed
 assignment creation, engine closure and full dispatch remain unfinished.
 Scientific, browser and human acceptance remain open.
+
+### Combined output and count input preparation
+
+Combined preparation now accepts an explicit output mode, requiring project
+and package working copies. It selects the output producer, maps count execution
+paths against the original output source, prepares independent working outputs
+and records all four input identities in the final mapping. The mapping retains
+working-output initial hash, retained-input hash and execution path. Count reads
+point to the retained output copy; artifact writes point to separate working
+outputs. Original state and source labels stay unchanged, and execution readiness
+remains false. A lost final mapping reply stops all working-path use.
+
+Four tests exercise actual combined helpers with real synthetic files and
+mocked HTTP, including subsequent count consumption. The broader warning-enabled
+suite passes 243 tests. The first prerequisite test was vacuous because a missing
+workspace refused before the intended guard. A deliberate guard removal exposed
+that flaw. The corrected fixture prepares valid inputs and asserts the specific
+prerequisite refusal. Baseline, harmless and restored controls now pass all four
+tests; four targeted faults fail for skipped count mapping, retained-output path
+substitution, erased input hash and omitted project prerequisite.
+`prototype/output-mapping-controls.json` records the final outcomes.
+
+Native recovery of this complete eight-record preparation remains unverified.
+Normal dispatch still does not invoke these helpers. Managed assignment creation,
+engine closure and complete publication/terminal handling remain unfinished.
+No scientific, browser or human acceptance is claimed.

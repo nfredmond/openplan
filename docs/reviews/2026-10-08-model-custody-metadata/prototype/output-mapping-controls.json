@@ -1,0 +1,41 @@
+{
+  "worker_sha256": "fdce5fe4f89b1ded5c756d3f9a6193c3356b04fee1897f1579d394910e5f7e6f",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "skip-count-mapping",
+      "exit_code": 1,
+      "targeted_test": "test_complete_mapping_preserves_original_and_consumable_counts"
+    },
+    {
+      "control": "retained-as-working",
+      "exit_code": 1,
+      "targeted_test": "test_complete_mapping_preserves_original_and_consumable_counts"
+    },
+    {
+      "control": "erase-input-hash",
+      "exit_code": 1,
+      "targeted_test": "test_complete_mapping_preserves_original_and_consumable_counts"
+    },
+    {
+      "control": "skip-project-prerequisite",
+      "exit_code": 1,
+      "targeted_test": "test_output_mode_requires_project_preparation"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual combined helpers, real synthetic input files and actual count consumption; mocked HTTP. No native combined mapping recovery, full dispatch, engine closure or scientific acceptance."
+}

@@ -1063,7 +1063,7 @@ def retain_managed_predecessor_state() -> dict:
         raise WorkerStateWriteUnconfirmed("State handoff requires reconciliation") from error
 
 
-def retain_managed_state_and_package(*, include_project: bool = False) -> dict:
+def retain_managed_state_and_package(*, include_project: bool = False, include_outputs: bool = False) -> dict:
     """Pair verified inputs and map the package without claiming full execution readiness."""
     import model_attempt_writer
     import model_predecessor_inputs
@@ -1071,6 +1071,8 @@ def retain_managed_state_and_package(*, include_project: bool = False) -> dict:
     if writer is None:
         raise WorkerStateWriteUnconfirmed("Paired handoff requires a managed invocation")
     try:
+        if include_outputs and not include_project:
+            raise ValueError("Output preparation requires project and package working copies")
         state_input = retain_managed_predecessor_state()
         package_input = retain_managed_predecessor_package()
         mapped = model_predecessor_inputs.map_package(state_input, package_input)
@@ -1103,6 +1105,23 @@ def retain_managed_state_and_package(*, include_project: bool = False) -> dict:
             }
             project_records = {"project_input": project_input, "project_working_copy": working_project,
                                "package_working_copy": working_package}
+        if include_outputs:
+            output_input = retain_managed_predecessor_outputs()
+            mapped = model_predecessor_inputs.map_assignment_counts(
+                {**state_input, "state": mapped}, output_input)
+            working_outputs = writer.prepare_output_working_copy(output_input)
+            mapping["state"] = mapped
+            mapping["inputs"]["outputs"] = output_input["producer"]
+            mapping["execution_paths"]["outputs_directory"] = working_outputs["outputs_directory"]
+            mapping["working_outputs"] = {
+                "initial_manifest_path": working_outputs["initial_manifest_path"],
+                "initial_manifest_sha256": working_outputs["initial_manifest_sha256"],
+                "input_manifest_sha256": working_outputs["input_manifest_sha256"],
+            }
+            mapping["mapped_fields"].extend([
+                "assignment.counts_path", "assignment.count_inputs.counts_path",
+                "assignment.count_inputs.counts_input_directory", "assignment.count_inputs.manifest_path"])
+            project_records.update(output_input=output_input, output_working_copy=working_outputs)
         retained_mapping = writer.retain_input_mapping(mapping)
         return {**project_records, "state_input": state_input, "package_input": package_input,
                 "package_mapped_state": mapped, "mapping_record": retained_mapping,
