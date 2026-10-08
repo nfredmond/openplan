@@ -181,3 +181,18 @@ Production KPI and evidence-packet routes currently read output rows by run ID. 
 Native cases cover empty results, wrong-workspace refusal, null KPI preservation, unknown legacy rows, active production, completed-stage outputs and retained records after reaping. A malformed artifact-stage fixture uses a temporary administrator trigger bypass within the rollback transaction and is classified invalid. The trigger is reenabled, and all fixture changes roll back. The reader grants no execution to anonymous or ordinary authenticated roles.
 
 Baseline, harmless and restored cases plus 37 adverse controls pass. Four new controls detect removed workspace scope, fabricated legacy provenance, revoked output promoted to current, and ignored artifact-stage binding. The runner also verifies that the reader function is absent after rollback. This does not install an API, change production readers, establish user authorization, verify Storage bytes, or prove concurrent read/relaunch snapshots. Populated-output relaunch remains refused until the full reader and writer integration is complete.
+
+## Concurrent output snapshot checkpoint
+
+`verify_output_snapshot.py` pauses the reader between its parent query and output query using an injected advisory lock. It observes the actual lock wait, commits reaping from another database session, releases the reader, and performs a fresh read. The paused stable function returns the earlier running state and its current output together. The fresh read returns failed state and the same raw record labeled inactive. Neither read nor reaping changes the retained KPI.
+
+Baseline, harmless and restored cases pass. Changing the function from STABLE to VOLATILE makes its output query observe the later revocation while its parent record still reflects the earlier state. The test rejects that mixed snapshot. Every case removes its private schema and verifies absence.
+
+Run against the named disposable stack:
+
+```bash
+OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER=supabase_db_openplan-restore-target-2026091050 \
+  python3 -B docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_output_snapshot.py
+```
+
+This controlled read/reaper schedule uses private table copies without original application foreign keys, triggers or RLS. The advisory pause is test instrumentation only. It does not prove concurrent read/relaunch, HTTP caching behavior, application authorization or any worker recovery path. A returned snapshot can become stale after it is read; a caller must not treat it as a new write authorization.
