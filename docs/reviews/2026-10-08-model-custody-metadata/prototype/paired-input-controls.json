@@ -1,0 +1,42 @@
+{
+  "source_sha256": "9d0b3a59a1bbc2e88bc4d63a484a588bf6850ecbe94ab27f8c6f0d12453d3eea",
+  "worker_sha256": "44e2c4937a74cea87b7396409bd5a206c30ea84559143ab28c79300c2fcdc599",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-producer-attempt",
+      "exit_code": 1,
+      "targeted_test": "PairedInputTests.test_different_attempts_cannot_be_paired"
+    },
+    {
+      "control": "ignore-package-source",
+      "exit_code": 1,
+      "targeted_test": "PairedInputTests.test_recorded_package_mismatch_stops_join"
+    },
+    {
+      "control": "share-original-nested-state",
+      "exit_code": 1,
+      "targeted_test": "PairedInputTests.test_real_join_maps_only_package_and_preserves_original"
+    },
+    {
+      "control": "claim-execution-readiness",
+      "exit_code": 1,
+      "targeted_test": "PairedInputTests.test_real_join_maps_only_package_and_preserves_original"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual paired handoff with real state/package files and mocked HTTP. Only package path mapping; no native paired proof, project/output/count relocation, normal dispatch or scientific acceptance."
+}

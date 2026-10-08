@@ -972,6 +972,25 @@ def retain_managed_predecessor_state() -> dict:
         raise WorkerStateWriteUnconfirmed("State handoff requires reconciliation") from error
 
 
+def retain_managed_state_and_package() -> dict:
+    """Pair verified inputs and map the package without claiming full execution readiness."""
+    import model_attempt_writer
+    import model_predecessor_inputs
+    writer = model_attempt_writer.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Paired handoff requires a managed invocation")
+    try:
+        state_input = retain_managed_predecessor_state()
+        package_input = retain_managed_predecessor_package()
+        mapped = model_predecessor_inputs.map_package(state_input, package_input)
+        writer.require_open()
+        return {"state_input": state_input, "package_input": package_input,
+                "package_mapped_state": mapped, "execution_ready": False}
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Paired predecessor inputs require reconciliation") from error
+
+
 def require_completed_artifact_producer(artifact: dict, run_id: str) -> None:
     """Refuse incomplete or superseded inputs before checking scientific identity.
 

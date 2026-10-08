@@ -51,3 +51,21 @@ def select(context, stages, artifacts, artifact_type):
     if not isinstance(value, str) or str(uuid.UUID(value)) != value:
         raise ValueError('Predecessor artifact identity must be canonical')
     return selected
+
+
+def map_package(state_input, package_input):
+    """Map only the package path, preserving a separate original state object."""
+    import copy
+    state_producer, package_producer = state_input['producer'], package_input['producer']
+    if any(state_producer.get(key) != package_producer.get(key) or not state_producer.get(key)
+           for key in ('stage_id', 'attempt_id')):
+        raise ValueError('State and package must belong to the same producer attempt')
+    original = state_input['state']
+    package = original.get('package') if isinstance(original, dict) else None
+    if not isinstance(package, dict) or not isinstance(package.get('package_dir'), str):
+        raise ValueError('Predecessor state has no recorded package directory')
+    if package['package_dir'] != package_input['source_package_directory']:
+        raise ValueError('Predecessor state and package source directory disagree')
+    mapped = copy.deepcopy(original)
+    mapped['package']['package_dir'] = package_input['package_directory']
+    return mapped

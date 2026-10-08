@@ -1183,3 +1183,26 @@ Temporary gateways are removed.
 This preserves original state custody. It does not implement consumer execution
 mapping, state/package pairing, coherent project transfer or normal managed
 dispatch. Those joins remain required, alongside scientific and human acceptance.
+
+### State/package pairing and explicit package-path mapping
+
+The package consumer now returns its verified original source directory from the
+registered manifest. `retain_managed_state_and_package` retains both selected
+inputs and requires matching producer stage/attempt identities. The state's
+recorded package directory must equal that manifest's original source directory.
+A mismatch stops the writer; independently valid files are not sufficient proof
+that they belong together.
+
+Mapping creates a deep copy of the original state and changes only
+`package.package_dir` to the consumer package directory. Source labels, count
+paths, geography and other fields remain unchanged. The original state bytes and
+parsed record stay separate. The result explicitly records `execution_ready: false`;
+it is not supplied to an engine or called by normal dispatch.
+
+Three paired cases pass through the actual helper with real files and mocked
+transport. Baseline, harmless and restored controls pass. Four faults detect an
+ignored attempt, an ignored source-directory mismatch, shared nested state and a
+false execution-ready flag. The combined suite passes 170 tests. The SQLite
+ResourceWarning remains unresolved. Results are in `prototype/paired-input-controls.json`.
+Native paired evidence, durable derived-state publication, project/output/count
+mapping and coherent project transfer remain open. No scientific claim changes.

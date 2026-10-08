@@ -165,8 +165,11 @@ def consume(record, destination):
                 raise ValueError('Invalid package file inventory')
         else:
             raise ValueError('Invalid package inventory kind')
+    if not isinstance(manifest.get('source_directory'), str) or not Path(manifest['source_directory']).is_absolute():
+        raise ValueError('Package manifest requires its original source directory')
     copied = retain(record['package_directory'], destination)
     actual = json.loads(Path(copied['manifest_path']).read_bytes())
     if actual['entries'] != manifest['entries']:
         raise ValueError('Package copy differs from recorded inventory')
+    copied['source_package_directory'] = manifest['source_directory']
     return copied
