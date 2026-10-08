@@ -2222,3 +2222,34 @@ the channel, run/path/count operations, provisional result handling, descendant
 containment, supervisor restart or full normal dispatch. Consuming an environment
 setting prevents accidental reuse; it is not protection against arbitrary
 same-user code retaining a descriptor or creating new sockets.
+
+### Native solver progress through the reserved child channel
+
+The joined native proof now runs the two-node, one-link assignment inside an
+EngineProcess reservation. The child consumes the inherited channel, and its
+native logger callback waits for the parent writer's command acknowledgement.
+The progress context comes from the actual assignment source expression; a
+synthetic adapter translates channel loss into the worker's fatal-error policy.
+It is not yet the full assignment entrypoint or a production child adapter.
+
+Baseline, harmless and restored cases complete after confirmed progress writes.
+Every observed progress line matches an ordered journal command with the exact
+run/stage/attempt identity. A simulated database-response timeout on an iteration
+interrupts the native solver and retains one pending command. A lost child
+response after the command confirms also interrupts computation, stops the
+parent writer and leaves zero pending commands. The child project closes with
+no project descriptors left open in either interrupted case. A control that
+acknowledges the iteration without writing its command fails the exact-line
+journal comparison even though the earlier warning command exists.
+
+Private native-engine-channel-v1 retains the first joined run. Version 2
+strengthens the assertion from a nonzero write count to every observed line and
+identity. Synthetic journals, projects and child logs are retained after child
+exit. `prototype/native-engine-channel.json` records source hashes, observations
+and controls. No production code changed in this checkpoint.
+
+HTTP and initial ownership are mocked. The timeout does not prove a server-side
+commit; installed lost-commit recovery requires a separate native database check.
+This proof does not supply the run/path/count protocol, result publication,
+detached-descendant containment, restored supervisor or scientific acceptance.
+Normal managed dispatch remains disabled.
