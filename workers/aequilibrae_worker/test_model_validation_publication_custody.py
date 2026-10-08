@@ -25,18 +25,19 @@ def records():
 
 
 class PublicationCustodyTests(unittest.TestCase):
-    def exercise(self, caller, failed=False):
+    def exercise(self, caller, failed=False, uncertain=False):
         bundle, basis, assessment = records()
         receipt = {'id': 'verified-database-row', 'partition_json': {'synthetic': True}}
         original = copy.deepcopy(assessment)
-        if failed:
+        if failed or uncertain:
             assessment['validation_custody_receipt'] = {'id': 'stale-prior-row'}
+        before_write = copy.deepcopy(assessment)
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             with patch.object(main, 'upload_immutable_validation_json', side_effect=lambda run, identity, path: 'storage://synthetic/' + Path(path).name), \
-                 patch.object(main, 'sb_record_modeling_validation_assessment', side_effect=main.WorkerStateWriteUnconfirmed('synthetic uncertainty') if failed else None, return_value=receipt):
+                 patch.object(main, 'sb_record_modeling_validation_assessment', side_effect=main.WorkerStateWriteUnconfirmed('synthetic uncertainty') if uncertain else ValueError('synthetic preparation failure') if failed else None, return_value=receipt):
                 if caller == 'behavioral_demand':
-                    result = main.persist_rules_v4_validation_records(
+                    invoke = lambda: main.persist_rules_v4_validation_records(
                         run_id='synthetic-run', stage_id='synthetic-stage', workspace_id='synthetic-workspace',
                         track=caller, model_output_artifact_id='synthetic-output', record_dir=str(root/'records'),
                         validation_input_bundle=bundle, comparison_basis=basis, assessment=assessment)
@@ -61,9 +62,18 @@ class PublicationCustodyTests(unittest.TestCase):
                                      validation_input_bundle=bundle, comparison_basis=basis,
                                      validation_assessment=assessment, validation={'model_validation_assessment': assessment},
                                      validation_record_paths=paths, log='')
-                    exec(compile(ast.Module(body=blocks, type_ignores=[]), main.__file__, 'exec'), namespace)
-                    result = namespace['validation_assessment']
+                    def invoke():
+                        exec(compile(ast.Module(body=blocks, type_ignores=[]), main.__file__, 'exec'), namespace)
+                        return namespace['validation_assessment']
                     path = Path(paths['model_validation_assessment'])
+                if uncertain:
+                    with self.assertRaisesRegex(main.WorkerStateWriteUnconfirmed, 'synthetic uncertainty'):
+                        invoke()
+                    self.assertEqual(path.read_bytes(), main.model_validation_core.canonical_json(before_write).encode())
+                    self.assertEqual(assessment['reasons'], before_write['reasons'])
+                    self.assertNotIn('validation_custody_receipt', assessment)
+                    return
+                result = invoke()
                 if failed:
                     self.assertEqual(result['validation_evidence_write'], 'validation evidence write failed')
                     self.assertNotIn('validation_custody_receipt', result)
@@ -83,6 +93,11 @@ class PublicationCustodyTests(unittest.TestCase):
         for caller in ('assignment', 'behavioral_demand'):
             with self.subTest(caller=caller):
                 self.exercise(caller)
+
+    def test_uncertain_custody_stops_both_callers_without_rewriting_bytes(self):
+        for caller in ('assignment', 'behavioral_demand'):
+            with self.subTest(caller=caller):
+                self.exercise(caller, uncertain=True)
 
     def test_failed_custody_cannot_reuse_an_old_receipt(self):
         for caller in ('assignment', 'behavioral_demand'):

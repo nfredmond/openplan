@@ -160,3 +160,25 @@ Complete the evidence-bound publication policy and the normal caller recovery
 path before treating atomic publication as adopted. The assessment command can
 be installed additively without enrolling a run in managed attempts, but an
 installed unused function would not close the worker connection requirement.
+
+## Stop after uncertain assessment custody
+
+The existing assignment custody block and shared rules-v4 persistence helper now
+rethrow `WorkerStateWriteUnconfirmed` before their generic failure annotations.
+They remove any stale in-memory custody receipt and preserve the original local
+assessment bytes. The enclosing stage dispatcher already propagates this error
+without issuing its generic terminal failure update. Successful custody and
+ordinary preparation failure keep their existing paths.
+
+The caller tests execute the real shared helper and the actual assignment try
+block extracted from `stage_artifacts`. Both now prove uncertainty propagation,
+unchanged canonical bytes and removal of stale in-memory receipts. The assignment
+case does not execute the complete model stage or database transport.
+Baseline, harmless and restored controls pass. Removing either rethrow or either
+stale-receipt removal produces its targeted assertion failure, four adverse
+controls in total. Results are retained in
+`model-command-client-20261008-proof/assessment-stop-controls.json`.
+
+This closes the swallowed-uncertainty behavior. It does not yet give normal
+callers a retained command identity or automatic reconciliation. Full worker
+regression for this changed caller checkpoint is pending.

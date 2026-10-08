@@ -4818,6 +4818,9 @@ def persist_rules_v4_validation_records(
         })
         assessment["validation_custody_receipt"] = json.loads(json.dumps(custody_receipt, allow_nan=False))
         assessment["validation_evidence_write"] = "recorded"
+    except WorkerStateWriteUnconfirmed:
+        assessment.pop("validation_custody_receipt", None)
+        raise
     except Exception as exc:
         assessment.pop("validation_custody_receipt", None)
         assessment["validation_evidence_write"] = "validation evidence write failed"
@@ -5847,6 +5850,9 @@ def stage_artifacts(
         validation_assessment["validation_custody_receipt"] = json.loads(json.dumps(custody_receipt, allow_nan=False))
         validation_assessment["validation_evidence_write"] = "recorded"
         log += "Rules-v4 validation assessment recorded in immutable custody.\n"
+    except WorkerStateWriteUnconfirmed:
+        validation_assessment.pop("validation_custody_receipt", None)
+        raise
     except Exception as exc:
         validation["validation_evidence_write"] = "validation evidence write failed"
         validation_assessment.pop("validation_custody_receipt", None)
