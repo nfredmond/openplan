@@ -1,0 +1,36 @@
+{
+  "source_sha256": "c41877db0fc0e4665b71e127f373543cab751ef3c668adbcafc581f6ca661b37",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "recovered-claim-replay",
+      "exit_code": 1,
+      "targeted_test": "test_lost_claim_recovery_never_admits_handler"
+    },
+    {
+      "control": "revoked-ownership",
+      "exit_code": 1,
+      "targeted_test": "test_revoked_or_unconfirmed_ownership_never_runs_or_writes_failure"
+    },
+    {
+      "control": "missing-durable-entry",
+      "exit_code": 1,
+      "targeted_test": "test_claim_and_admission_precede_transport_and_callback"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real local SQLite, competing threads and a fresh process; injected HTTP. No native database, cross-host admission, filesystem ownership or normal dispatcher acceptance."
+}

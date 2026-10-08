@@ -345,3 +345,49 @@ managed claims, progress, output publication, terminal outcomes, filesystem
 ownership and continuation reconciliation remain unfinished. These synthetic
 checks do not establish engine execution, whole-run restart, browser acceptance
 or independent scientific acceptance.
+
+### Local execution admission prepared
+
+`model_attempt_invocation.py` prepares the next integration boundary. Its public
+entry creates a fresh claim request rather than accepting a recovered request.
+It reserves that request and a local admission in one SQLite transaction before
+transport. Only a checked claimed receipt and a current ownership snapshot can
+reach the handler. The journal consumes admission before callback entry. Saved
+requests require reconciliation, including requests whose replies were later
+recovered. A declined claim invokes no handler and performs no ownership read.
+The callback receives immutable installation, workspace, run, stage, attempt and
+claim identities. No global attempt cache is added.
+
+Nine tests use actual local SQLite transactions with injected HTTP. They check
+ordering, competing threads, declined claims, ownership revocation/uncertainty,
+lost claim recovery, fresh request identities and a fresh process refusing a
+saved invocation after simulated callback process loss. They do not simulate a
+kernel kill. All 35 focused admission/client/journal/ownership/recovery tests
+pass. Harmless and restored controls pass; three targeted changes fail when
+saved receipts admit replay, revoked ownership is ignored or durable entry is
+omitted. `invocation-controls.json` records source identity and control outcomes.
+
+This is not wired into either normal dispatcher. Database locking across hosts,
+filesystem ownership, managed progress/output/terminal commands and explicit
+continuation remain required before that switch. The ownership read is a
+snapshot, not a lease. Each later write must still use its database attempt
+check. Local admission alone does not protect a copied or rolled-back journal;
+the fresh public claim and database ownership checks remain distinct boundaries.
+No terminal failure is inferred from a transport failure or callback exception.
+
+| Event | Required dispatcher behavior | Current evidence boundary |
+| --- | --- | --- |
+| Fresh claim | Retain request, accept only checked ownership, consume admission before handler | Local admission helper tested; normal dispatch not connected |
+| Lost or uncertain claim reply | Keep original request; recover receipt without invoking handler | Client recovery and local refusal tested separately |
+| Declined claim | Return without computation or terminal write | Local helper tested with injected transport |
+| Progress | Retain complete log/error intent through the attempt command | Command client exists; normal progress adapters pending |
+| Output | Bind bytes and output identity to the producing attempt | Managed commands exist; both normal output adapters pending |
+| Successful completion | Let fenced terminal transaction decide parent completion | Native command evidence exists; normal dispatcher join pending |
+| Computation failure | Preserve useful log and error in one fenced terminal command | Normal managed failure adapter pending |
+| Blocked predecessor | Retain skip/no-op without inventing execution | Both normal skip functions have combined native HTTP evidence |
+| Cancellation or reaping | Stop future fenced writes; do not infer renewed ownership from a receipt | Native revocation and reader evidence exists; invocation journey pending |
+| Restart | Recover exact receipts, reconcile files and state, require explicit continuation | Receipt recovery exists; full continuation remains pending |
+
+The direction check still passes with registry-age and intervening-change
+reminders. This implementation does not change review dates, capability grades,
+scientific claim tiers or the full v1 destination.
