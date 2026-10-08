@@ -1313,3 +1313,39 @@ This helper is not yet registered or selected by the managed writer. Producer
 closure enforcement, cross-file semantic consistency, remaining output/count
 mapping, normal dispatch and scientific acceptance remain open. This small
 native reopen is not a network assignment or an independent scientific study.
+
+### Owned project registration and receipt recovery
+
+The managed writer now captures project inputs only from its owned attempt
+workspace and verifies ownership again before registration. A separate
+`model_project_inputs` artifact records the complete inventory hash/size,
+individual database checks and explicit incomplete statuses. Its metadata uses
+`openplan.project-inputs.v1` and names the nested inventory schema separately.
+Engine closure, cross-database consistency and scientific acceptance remain
+unassessed; execution readiness remains false. Any copy or registration failure
+stops the writer. Normal dispatch does not call this method.
+
+Four tests exercise real SQLite files with mocked transport, checking exact
+registration metadata, foreign-source refusal, journal refusal and pending
+payload preservation after response loss. The combined relevant suite passes
+66 tests. Baseline, harmless and restored controls pass; erasing database checks
+or promoting execution readiness fails at the intended assertion. The initial
+test expected run/stage RPC parameters that this command does not accept; it now
+checks the actual attempt parameter while the existing command tests protect
+run/stage scope. Results are in `prototype/managed-project-capture-controls.json`.
+
+The native project manifest proof passes baseline, harmless and restored cases,
+with six HTTP calls per case. It drops the response after native registration,
+checks exact retained bytes, independent files and database-check metadata, then
+recovers through a fresh CLI. Cached recovery makes no HTTP call, native records
+remain unchanged and the stopped writer does not resume. Erasing database checks
+fails with the expected metadata assertion. Private `project-manifest-http-v1`
+preserves the clones and journals; the temporary gateways are removed.
+`prototype/project-manifest-http.json` records outcomes and source identity.
+The shared proof labels this branch `package_artifact`, but its project mode
+explicitly requires the `model_project_inputs` artifact type and project metadata.
+
+This proof uses a synthetic SQLite project and installed artifact commands, not
+an engine assignment. Native AequilibraE reopen remains the separate evidence
+above. Consumer selection, closure enforcement and full input/state joins remain
+unfinished; no release or scientific claim changes.

@@ -189,6 +189,36 @@ class AttemptWriter:
             self.stopped = True
             raise
 
+    def retain_project(self, directory):
+        """Register owned project bytes and checks without authorizing execution.
+
+        Engine closure and cross-database consistency remain separate evidence.
+        """
+        import model_project_inputs
+        self.require_open()
+        try:
+            if self.files is None or not Path(directory).resolve(strict=True).is_relative_to(self.files.path):
+                raise ValueError('Project retention requires an owned attempt source')
+            retained = model_project_inputs.retain(directory, self.files.path / 'project_inputs')
+            self.files.verify()
+            self.record_artifact({
+                'run_id': self.context.run_id, 'stage_id': self.context.stage_id,
+                'artifact_type': 'model_project_inputs',
+                'file_url': 'local://' + retained['manifest_path'],
+                'file_size_bytes': retained['manifest_size_bytes'], 'content_hash': retained['manifest_sha256'],
+                'metadata_json': {'schema': 'openplan.project-inputs.v1',
+                                  'inventory_schema': 'openplan.package-inputs.v1',
+                                  'database_checks': retained['database_checks'],
+                                  'database_consistency': retained['database_consistency'],
+                                  'cross_database_consistency': 'unassessed',
+                                  'engine_closure': 'unassessed', 'execution_ready': False,
+                                  'scientific_acceptance': 'unassessed'},
+            }, logical_name='project-inputs')
+            return retained
+        except BaseException:
+            self.stopped = True
+            raise
+
     def retain_input_mapping(self, mapping):
         """Record a partial derived mapping without authorizing computation."""
         self.require_open()

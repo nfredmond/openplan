@@ -25,9 +25,9 @@ import model_command_journal as journal
 from worker_import_for_tests import import_worker_main
 
 
-def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False, package_consumer=False, state_consumer=False):
+def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False, package_consumer=False, state_consumer=False, project_output=False):
     package_consumer = package_consumer or state_consumer
-    package_output = package_output or package_consumer
+    package_output = package_output or package_consumer or project_output
     count_output = count_output or count_consumer
     outputs = outputs or state_output or count_output or package_output
     source = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
@@ -179,7 +179,16 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                         (source_package / 'manifest.json').write_bytes(b'{"files":{}}')
                                         (source_package / 'generated.csv').write_bytes(b'zone,trips\n1,17\n')
                                         (source_package / 'empty').mkdir()
-                                        writer.retain_package(source_package)
+                                        if project_output:
+                                            import sqlite3
+                                            db = sqlite3.connect(source_package / 'project_database.sqlite')
+                                            db.execute('CREATE TABLE evidence (id INTEGER)')
+                                            db.execute('INSERT INTO evidence VALUES (7)')
+                                            db.commit()
+                                            db.close()
+                                            writer.retain_project(source_package)
+                                        else:
+                                            writer.retain_package(source_package)
                                 elif status == 'count_artifact':
                                     external = output / 'selected_counts.csv'
                                     external.write_bytes(b'station_id,count_year,aadt\nA,2020,123\n')
@@ -278,14 +287,14 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                     or retained_path.stat().st_ino == producer_state_path.stat().st_ino):
                                 raise AssertionError('Native state consumption differs from original bytes or provenance')
                         elif status == 'package_artifact':
-                            retained_dir = writers[0].files.path / ('predecessor_package' if package_consumer else 'package_inputs')
+                            retained_dir = writers[0].files.path / ('project_inputs' if project_output else 'predecessor_package' if package_consumer else 'package_inputs')
                             manifest = retained_dir / 'manifest.json'
                             content = manifest.read_bytes()
                             inventory = json.loads(content)
                             if (records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
                                     or records[0]['file_size_bytes'] != len(content)
                                     or records[0]['file_url'] != 'local://' + str(manifest)
-                                    or records[0]['artifact_type'] != ('model_package_consumption' if package_consumer else 'model_package_inputs')):
+                                    or records[0]['artifact_type'] != ('model_project_inputs' if project_output else 'model_package_consumption' if package_consumer else 'model_package_inputs')):
                                 raise AssertionError('Native package manifest differs from retained bytes')
                             if package_consumer:
                                 expected_provenance = {'artifact_id':producer_artifact,'stage_id':producer_stage,
@@ -293,7 +302,19 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                 if records[0]['metadata_json'].get('producer') != expected_provenance:
                                     raise AssertionError('Native package consumer lost producer provenance')
                             expected_files = {'manifest.json': b'{"files":{}}', 'generated.csv': b'zone,trips\n1,17\n'}
-                            if set(inventory['entries']) != {'manifest.json', 'generated.csv', 'empty'}:
+                            if project_output:
+                                expected_db = (writers[0].files.path / 'package/project_database.sqlite').read_bytes()
+                                expected_files['project_database.sqlite'] = expected_db
+                                expected_checks = {'project_database.sqlite': {'integrity': 'ok',
+                                    'sha256': hashlib.sha256(expected_db).hexdigest(), 'size_bytes': len(expected_db)}}
+                                metadata = records[0]['metadata_json']
+                                if (metadata.get('database_checks') != expected_checks
+                                        or metadata.get('schema') != 'openplan.project-inputs.v1'
+                                        or metadata.get('database_consistency') != 'individual_sqlite_integrity_checked'
+                                        or metadata.get('execution_ready') is not False
+                                        or any(metadata.get(field) != 'unassessed' for field in ('engine_closure', 'cross_database_consistency', 'scientific_acceptance'))):
+                                    raise AssertionError('Native project database checks or limits differ')
+                            if set(inventory['entries']) != set(expected_files) | {'empty'}:
                                 raise AssertionError('Native package inventory is incomplete')
                             if not (retained_dir / 'files/empty').is_dir():
                                 raise AssertionError('Native package lost empty directory')

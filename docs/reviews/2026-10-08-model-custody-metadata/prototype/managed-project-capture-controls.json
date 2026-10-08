@@ -1,0 +1,31 @@
+{
+  "source_sha256": "9b9844f3a427c064e27cb7c94af8fcecda4e219605a35ed1dd2f816d2c491f5c",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "erase-database-checks",
+      "exit_code": 1,
+      "targeted_test": "test_owned_project_registers_exact_files_checks_and_limits"
+    },
+    {
+      "control": "promote-execution-ready",
+      "exit_code": 1,
+      "targeted_test": "test_owned_project_registers_exact_files_checks_and_limits"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Owned writer with real SQLite files and mocked transport. Native receipt recovery, closure enforcement, cross-database consistency, normal dispatch and scientific acceptance remain unproved."
+}
