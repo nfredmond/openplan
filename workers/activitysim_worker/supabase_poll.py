@@ -516,18 +516,24 @@ def _retain_handoff_file(artifacts: list[dict], artifact_type: str, run_id: str,
     if type(expected_size) is not int or expected_size < 0:
         raise RuntimeError("Screening handoff byte size is unavailable")
     destination = Path(execution_dir) / (artifact_type + ".retained")
-    digest = hashlib.sha256()
-    size = 0
-    with resolved.open("rb") as reader, destination.open("xb") as writer:
-        while chunk := reader.read(1024 * 1024):
-            size += len(chunk)
-            if size > expected_size:
-                raise RuntimeError("Screening handoff byte size differs")
-            digest.update(chunk)
-            writer.write(chunk)
-    if size != expected_size or digest.hexdigest() != expected_hash:
-        raise RuntimeError("Screening handoff bytes differ from the registered artifact")
-    return str(destination)
+    import model_handoff_files
+    import model_attempt_writer
+    managed = model_attempt_writer.current()
+    try:
+        if managed is not None:
+            managed.require_open()
+            if managed.files is None or Path(execution_dir) != managed.files.path:
+                raise ValueError("Screening handoff destination is not the owned attempt directory")
+        retained = model_handoff_files.copy_registered(shared_root, run_id, resolved, destination,
+            sha256=expected_hash, size_bytes=expected_size)
+        if managed is not None:
+            managed.files.verify()
+        return retained
+    except (OSError, ValueError) as error:
+        if managed is not None:
+            managed.stopped = True
+        reason = str(error) if isinstance(error, ValueError) else "Local filesystem operation failed"
+        raise RuntimeError("Screening handoff file copy was not confirmed: " + reason) from error
 
 
 def _adapt_zone_attributes(src_csv: str, dest_csv: str) -> int:

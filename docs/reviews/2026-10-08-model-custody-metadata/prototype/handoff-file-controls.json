@@ -1,0 +1,46 @@
+{
+  "source_sha256": "76e51c8b88571dcfe42d6fe6ea9f6e2fa10ce7ca3e632451ebba9a72b4059421",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-content-hash",
+      "exit_code": 1,
+      "targeted_test": "test_wrong_hash_never_publishes_a_destination"
+    },
+    {
+      "control": "follow-final-symlink",
+      "exit_code": 1,
+      "targeted_test": "test_source_symlink_swap_is_refused_before_foreign_open"
+    },
+    {
+      "control": "follow-parent-symlink",
+      "exit_code": 1,
+      "targeted_test": "test_parent_symlink_swap_is_refused_before_foreign_open"
+    },
+    {
+      "control": "ignore-source-replacement",
+      "exit_code": 1,
+      "targeted_test": "test_source_replacement_after_read_refuses_publication"
+    },
+    {
+      "control": "accept-linked-source",
+      "exit_code": 1,
+      "targeted_test": "test_hard_link_and_fifo_sources_are_refused"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Native file copies and actual ActivitySim bound destination checks with injected admission HTTP. No native producer authorization, complete AequilibraE predecessor handoff, model execution or scientific acceptance."
+}

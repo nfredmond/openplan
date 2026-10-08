@@ -587,3 +587,38 @@ The normal claim path still does not activate this binding.
 
 The final AequilibraE push-trigger script passes all 38 checks. Local free disk
 space is 81 GiB at this checkpoint; no existing worktree or proof clone is deleted.
+
+### ActivitySim predecessor file retention
+
+The actual ActivitySim handoff now copies registered predecessor files through
+pinned directory descriptors. Existing producer-stage completion, active-attempt,
+run and artifact checks remain in place. The copy checks registered size and
+SHA-256, refuses symlink races and non-private regular sources, and checks source
+identity again before publishing. A private temporary file becomes the final
+input through a no-overwrite link only after those checks pass. A destination
+rename cannot redirect publication into the replacement directory. The helper
+refuses the changed destination path rather than reporting successful retention.
+
+A bound invocation also requires its owned attempt directory and verifies that
+ownership after copying. File-copy failures stop the bound writer. Nine new
+native filesystem and actual ActivitySim adapter tests pass. All 84 combined
+worker checks and all 44 ActivitySim tests pass. The existing SQLite
+ResourceWarning remains unresolved. The first ActivitySim regression run passed
+43 tests but failed the expected byte-mismatch diagnostic: the new wrapper hid
+the underlying reason. The corrected wrapper retains validation reasons, and the
+44-test rerun passes without weakening that expectation.
+
+The saved handoff-file controls pass baseline, harmless and restored cases.
+Removing hash verification, final-component no-follow, parent no-follow,
+source-replacement detection or hard-link refusal fails the corresponding test.
+The leaf-symlink test checks that the foreign file was never opened, not merely
+that a later check refused it. Results and implementation hash are retained in
+`prototype/handoff-file-controls.json`.
+
+This is Linux/POSIX file-copy evidence, with injected admission HTTP in the bound
+adapter tests. It does not establish native producer authorization or confine
+arbitrary engines or host administrators. Complete AequilibraE predecessor
+scratch/state/package handoff, managed assessment/publication and normal managed
+claim activation remain unfinished. No model executes and no scientific claim
+advances. T3 still loads the existing acceptance page but fails snapshots in both
+the existing and a fresh tab; visual acceptance remains open.

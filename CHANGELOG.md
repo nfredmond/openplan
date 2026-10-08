@@ -29,8 +29,10 @@ now route artifact and KPI registration through the admitted attempt when a
 managed writer is explicitly bound. Normal claim dispatch remains unchanged;
 complete managed continuation is still unfinished. Bound invocations now allocate
 exclusive attempt directories with retained ownership records and descriptor-based
-state publication. They refuse existing attempt directories; predecessor handoff
-and full normal dispatcher activation remain unfinished.
+state publication. They refuse existing attempt directories. ActivitySim retains
+registered predecessor files through verified, no-overwrite copies and checks a
+bound destination against its owned attempt directory. Complete AequilibraE
+predecessor handoff and full normal dispatcher activation remain unfinished.
 
 Candidate migration `20261016000020_model_blocked_stage_receipts.sql` adds a
 service-only blocked-stage command with immutable retry receipts. It checks the
