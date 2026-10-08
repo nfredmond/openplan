@@ -522,3 +522,29 @@ inherits the separately tested retained-command gateway behavior. It does not
 prove immutable custody of the local file or permit whole-stage replay.
 Evidence-packet retention, KPI delivery, GeoJSON publication, ActivitySim output
 registration and restart ownership remain open.
+
+## Retained evidence packet
+
+The assignment stage now creates its readable packet after custody, retaining
+its timestamp and canonical bytes through the existing computation checkpoint.
+The complete evidence object binds that checkpoint. Exact repeats reuse the
+original packet; changed evidence requires reconciliation. Immutable local
+materialization repairs a missing file but refuses an altered file. The earlier
+pre-custody write is removed, and registration uses the named retained command.
+
+The test executes the actual packet publication block with mocked HTTP and
+Storage. It checks timestamp reuse, unchanged bytes and inode, missing-file
+repair, changed-evidence refusal, changed-local-file refusal and one delivery
+across exact retries. Harmless and restored controls pass. Removing input
+binding or restoring direct insertion fails its targeted assertion. Results are
+in `packet-artifact-controls.json` under the private proof root.
+
+All 78 worker suites pass. Unit
+`openplan-packet-artifact-workers-20261008.service`, invocation
+`8dc6597485074bbb91b49acec2371b94`, completed at 07:42:43 Pacific on October 8,
+with a 169.7 MiB peak under a 1 GiB cap. No checkout edits occurred during the
+regression. Existing packets with different bytes require reconciliation rather
+than overwrite. A changed Storage-versus-local reference also refuses command
+reuse. This does not establish Storage durability, scientific acceptance or
+whole-stage replay. KPI writes, GeoJSON publication, ActivitySim output delivery
+and current restart ownership remain open.

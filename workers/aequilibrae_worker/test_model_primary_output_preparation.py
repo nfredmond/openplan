@@ -110,4 +110,33 @@ class PrimaryOutputPreparation(unittest.TestCase):
             legacy.assert_not_called()
 
 
+    def test_evidence_packet_retains_timestamp_bytes_and_delivery(self):
+        function=next(n for n in ast.parse(Path(main.__file__).read_text()).body if isinstance(n,ast.FunctionDef) and n.name=='stage_artifacts')
+        start=next(i for i,n in enumerate(function.body) if isinstance(n,ast.Assign) and isinstance(n.value,ast.Call) and getattr(n.value.func,'id',None)=='retain_model_evidence_packet')
+        end=next(i for i,n in enumerate(function.body[start:],start) if isinstance(n,ast.Expr) and isinstance(n.value,ast.Call) and getattr(n.value.func,'id',None)=='sb_record_retained_artifact')
+        code=compile(ast.Module(body=function.body[start:end+1],type_ignores=[]),main.__file__,'exec')
+        path=self.root/'run_output/evidence_packet.json'
+        evidence={'validation':{'scientific_outcome':'inconclusive','validation_evidence_write':'recorded'}}
+        def send(url,**kwargs):
+            return Mock(status_code=200,json=Mock(return_value={**kwargs['json']['p_payload'],'attempt_id':None}))
+        with patch.object(main.requests,'post',side_effect=send) as post,patch.object(main,'sb_post_artifact') as legacy,patch.object(main,'upload_content_addressed_artifact',return_value='storage://synthetic/packet'):
+            def invoke(value):
+                scope=dict(vars(main),run_id=RUN,stage_id=STAGE,work_dir=str(self.root),evidence=copy.deepcopy(value),evidence_path=str(path),_ws_id=RUN,log='')
+                exec(code,scope)
+                return scope['evidence']
+            first=invoke(evidence);original=path.read_bytes();inode=path.stat().st_ino
+            self.assertIn('created_at',first)
+            self.assertEqual(invoke(evidence),first)
+            self.assertEqual(path.read_bytes(),original);self.assertEqual(path.stat().st_ino,inode)
+            self.assertEqual(post.call_count,1)
+            path.unlink();self.assertEqual(invoke(evidence),first);self.assertEqual(path.read_bytes(),original)
+            changed=copy.deepcopy(evidence);changed['validation']['validation_evidence_write']='failed'
+            with self.assertRaises(main.WorkerStateWriteUnconfirmed):invoke(changed)
+            self.assertEqual(path.read_bytes(),original)
+            path.write_bytes(b'changed local record')
+            with self.assertRaises(main.WorkerStateWriteUnconfirmed):invoke(evidence)
+            self.assertEqual(path.read_bytes(),b'changed local record')
+            self.assertEqual(post.call_count,1);legacy.assert_not_called()
+
+
 if __name__=='__main__':unittest.main()

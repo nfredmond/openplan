@@ -5175,6 +5175,27 @@ def publish_volume_geojson(
     return log
 
 
+def retain_model_evidence_packet(run_id: str, stage_id: str, work_dir: str, evidence: dict) -> tuple[dict, bytes]:
+    """Retain the original summary timestamp and bytes after assessment custody."""
+    from pathlib import Path
+    import model_stage_computation
+    import model_record_files
+    try:
+        inputs = json.loads(model_validation_core.canonical_json(evidence))
+        retained = model_stage_computation.compute_once(
+            Path(work_dir) / "stage-journals" / stage_id,
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            run_id=run_id, stage_id=stage_id, name="evidence-packet",
+            inputs=inputs,
+            compute=lambda: {**inputs, "created_at": datetime.now(timezone.utc).isoformat()},
+        )
+        content = model_validation_core.canonical_json(retained).encode("utf-8")
+        model_record_files.materialize(Path(work_dir) / "run_output", {"evidence_packet.json": content})
+        return retained, content
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Evidence packet retention unconfirmed; reconcile original records before continuing") from None
+
+
 def prepare_primary_model_output(run_id: str, stage_id: str, work_dir: str, setup_result: dict, assign_result: dict, package_meta: dict | None) -> dict:
     """Keep the primary artifact identity bound to measured bytes and saved inputs."""
     from pathlib import Path
@@ -5831,14 +5852,10 @@ def stage_artifacts(
             ]
             if c
         ],
-        "created_at": datetime.now(timezone.utc).isoformat(),
         "model_area": model_area_label,
     }
 
     evidence_path = os.path.join(out_dir, "evidence_packet.json")
-    with open(evidence_path, "w") as f:
-        json.dump(evidence, f, indent=2)
-    log += f"Wrote evidence packet to {evidence_path}.\n"
 
     # Register non-validation artifacts first. The exact link-volume artifact id
     # is already frozen into the comparison basis and is the parent of the
@@ -5983,10 +6000,7 @@ def stage_artifacts(
 
     # The evidence packet is a readable summary rather than a bound assessment.
     # Write it after custody so it carries the actual persistence state.
-    with open(evidence_path, "w") as handle:
-        json.dump(evidence, handle, indent=2)
-    with open(evidence_path, "rb") as handle:
-        evidence_bytes = handle.read()
+    evidence, evidence_bytes = retain_model_evidence_packet(run_id, stage_id, work_dir, evidence)
     evidence_storage_ref = None
     try:
         evidence_storage_ref = upload_content_addressed_artifact(
@@ -5994,7 +6008,7 @@ def stage_artifacts(
         )
     except WorkerStateWriteUnconfirmed as exc:
         log += f"Evidence packet Storage upload warning: {exc}\n"
-    sb_post_artifact({
+    sb_record_retained_artifact({
         "run_id": run_id,
         "stage_id": stage_id,
         "artifact_type": "evidence_packet",
@@ -6002,7 +6016,9 @@ def stage_artifacts(
         "file_size_bytes": len(evidence_bytes),
         "content_hash": hashlib.sha256(evidence_bytes).hexdigest(),
         "metadata_json": evidence,
-    })
+    }, workspace_id=_ws_id,
+        journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
+        logical_name="evidence_packet.json")
 
     # Register the zone-attributes package input (local:// — same-host consumers
     # only). The ActivitySim behavioral worker reads this + travel_time_skims.omx
