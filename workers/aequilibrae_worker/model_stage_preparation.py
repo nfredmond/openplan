@@ -37,3 +37,44 @@ def prepare(directory, *, base_url, deployment_id, run_id, stage_id, source_file
             client._uuid(identity)
     return {'destination': bound, 'run_id': run_id, 'stage_id': stage_id,
             'output_artifact_id': identity, **json.loads(evidence)}
+
+
+def file_facts(path):
+    """Hash a regular file and refuse mutation or path replacement during reading."""
+    import hashlib
+    import os
+    import stat
+    descriptor = os.open(path, os.O_RDONLY | os.O_NONBLOCK | os.O_CLOEXEC)
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError('Stage source must be a regular file')
+        digest = hashlib.sha256()
+        count = 0
+        with os.fdopen(descriptor, 'rb') as stream:
+            descriptor = None
+            for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                digest.update(chunk)
+                count += len(chunk)
+            after = os.fstat(stream.fileno())
+            current = os.stat(path)
+        fields = ('st_dev', 'st_ino', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+        snapshot = lambda value: tuple(getattr(value, field) for field in fields)
+        if snapshot(before) != snapshot(after) or snapshot(after) != snapshot(current) or count != after.st_size:
+            raise ValueError('Stage source changed while reading')
+        return {'sha256': digest.hexdigest(), 'size_bytes': count}
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+
+
+def prepare_files(directory, *, source_paths, **arguments):
+    """Prepare from actual bytes after the caller's scientific access gates pass.
+
+    This does not pin files for later readers. They must verify the saved facts
+    again or consume an immutable copy before a recovered operation uses them.
+    """
+    if not isinstance(source_paths, dict) or not source_paths or any(not isinstance(label, str) or not label.strip() for label in source_paths):
+        raise ValueError('Named stage source files required')
+    facts = {label: file_facts(path) for label, path in source_paths.items()}
+    return prepare(directory, source_files=facts, **arguments)

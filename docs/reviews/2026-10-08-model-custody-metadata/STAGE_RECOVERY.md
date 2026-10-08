@@ -46,3 +46,26 @@ Private results are in
 This work owns `work/model-stage-recovery-20261008`. PR #164's assessment checkout
 remains unchanged while its full QA gate runs at `f5ebdf56`. The new preparation
 component does not change scientific outputs or claim tiers.
+
+## Reading actual source files
+
+`prepare_files` now computes SHA-256 and byte size from actual regular files
+before saving preparation. It streams one MiB chunks and compares descriptor
+and path identity, size and modification metadata before and after reading.
+It refuses in-place mutation and path replacement observed during that read.
+A nonblocking descriptor allows nonregular sources such as FIFOs to be refused
+without waiting for a writer. Missing or refused sources do not create a journal.
+
+Three file tests pass, alongside the five preparation tests. They verify exact
+hash and size, harmless access-time changes, changed retained contents,
+in-place mutation during hashing, path replacement and missing/nonregular files.
+Baseline, harmless and restored controls pass. Removing the mutation check,
+removing the regular-file check or returning a false digest each fails its
+intended assertion. Private evidence is
+`model-command-client-20261008-proof/stage-file-controls.json`.
+
+This is a per-file read check. It does not freeze files after closing them,
+produce a simultaneous snapshot of several files or establish that caller
+scientific gates authorize reading output bytes. Those gates must precede this
+helper. A later consumer must recheck the saved byte identity or use an immutable
+copy. The normal stage still does not call this preparation component.
