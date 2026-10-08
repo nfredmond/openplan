@@ -570,7 +570,7 @@ class WorkerStateWriteUnconfirmed(RuntimeError):
     """A state update has no matching receipt; it may already be committed."""
 
 
-def _confirmed_state_patch(table: str, record_id: str, payload: dict):
+def _confirmed_state_patch(table: str, record_id: str, payload: dict, *, queued_claim: bool = False) -> bool:
     """Require a returned row without exposing provider response bodies.
 
     An absent acknowledgement is not proof of rollback. Callers must not turn
@@ -578,7 +578,7 @@ def _confirmed_state_patch(table: str, record_id: str, payload: dict):
     """
     try:
         response = requests.patch(
-            f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{record_id}",
+            f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{record_id}" + ("&status=eq.queued" if queued_claim else ""),
             headers=HEADERS, json=payload, timeout=30,
         )
         if response.status_code != 200:
@@ -586,6 +586,8 @@ def _confirmed_state_patch(table: str, record_id: str, payload: dict):
                 f"Worker state write unconfirmed for {table} (HTTP {response.status_code})"
             )
         rows = response.json()
+        if queued_claim and rows == []:
+            return False
         if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict) or rows[0].get("id") != record_id:
             raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: missing matching row")
         for field, expected in payload.items():
@@ -596,6 +598,7 @@ def _confirmed_state_patch(table: str, record_id: str, payload: dict):
                 matches = field in rows[0] and actual == expected
             if not matches:
                 raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: returned values differ")
+        return True
     except WorkerStateWriteUnconfirmed:
         raise
     except (requests.RequestException, ValueError, TypeError) as error:
@@ -614,16 +617,7 @@ def sb_claim_stage(stage_id: str, payload: dict) -> bool:
     means a second worker that lost the race gets an empty result set and skips,
     so two replicas never double-process the same stage.
     """
-    url = f"{SUPABASE_URL}/rest/v1/model_run_stages?id=eq.{stage_id}&status=eq.queued"
-    res = requests.patch(url, headers=HEADERS, json=payload)
-    if res.status_code not in (200, 201, 204):
-        print(f"  Claim PATCH returned {res.status_code}: {res.text[:200]}")
-        return False
-    try:
-        rows = res.json()
-    except ValueError:
-        rows = []
-    return bool(rows)
+    return _confirmed_state_patch("model_run_stages", stage_id, payload, queued_claim=True)
 
 
 def sb_patch_run(run_id: str, payload: dict):
