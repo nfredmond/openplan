@@ -27,7 +27,9 @@ BEGIN
     WHERE run_id=p_run_id;
   DELETE FROM public.model_stage_write_context WHERE transaction_id=txid_current()
     AND stage_id IN (SELECT id FROM public.model_run_stages WHERE run_id=p_run_id);
-  UPDATE public.model_runs SET status='failed',error_message=p_message,completed_at=clock_timestamp() WHERE id=p_run_id;
+  INSERT INTO public.model_run_write_context VALUES (txid_current(), p_run_id);
+  UPDATE public.model_runs SET attempt_managed=true,status='failed',error_message=p_message,completed_at=clock_timestamp() WHERE id=p_run_id;
+  DELETE FROM public.model_run_write_context WHERE transaction_id=txid_current() AND run_id=p_run_id;
   RETURN true;
 END;
 $$;

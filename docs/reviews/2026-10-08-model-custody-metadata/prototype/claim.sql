@@ -50,6 +50,31 @@ REVOKE ALL ON FUNCTION public.guard_model_stage_attempt_write() FROM PUBLIC, ano
 CREATE TRIGGER guard_model_stage_attempt_write BEFORE UPDATE ON public.model_run_stages
   FOR EACH ROW EXECUTE FUNCTION public.guard_model_stage_attempt_write();
 
+-- Parent state belongs to the same command transaction as stage state.
+ALTER TABLE public.model_runs ADD COLUMN attempt_managed boolean NOT NULL DEFAULT false;
+CREATE TABLE public.model_run_write_context (
+  transaction_id bigint NOT NULL,
+  run_id uuid NOT NULL,
+  PRIMARY KEY(transaction_id, run_id)
+);
+ALTER TABLE public.model_run_write_context ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.model_run_write_context FROM PUBLIC, anon, authenticated, service_role;
+CREATE FUNCTION public.guard_model_run_attempt_write() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+BEGIN
+  IF NEW.attempt_managed OR OLD.attempt_managed THEN
+    IF NOT NEW.attempt_managed OR NEW.id IS DISTINCT FROM OLD.id OR NOT EXISTS (
+      SELECT 1 FROM public.model_run_write_context c
+      WHERE c.transaction_id = txid_current() AND c.run_id = OLD.id
+    ) THEN RAISE EXCEPTION 'Managed model run requires an attempt command'; END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.guard_model_run_attempt_write() FROM PUBLIC, anon, authenticated, service_role;
+CREATE TRIGGER guard_model_run_attempt_write BEFORE UPDATE ON public.model_runs
+  FOR EACH ROW EXECUTE FUNCTION public.guard_model_run_attempt_write();
+
 CREATE FUNCTION public.claim_model_stage_attempt(p_request_id uuid, p_stage_id uuid, p_worker_id text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE
@@ -98,7 +123,9 @@ BEGIN
       started_at = clock_timestamp(), completed_at = NULL, error_message = NULL
       WHERE id = p_stage_id;
     DELETE FROM public.model_stage_write_context WHERE transaction_id = txid_current() AND stage_id = p_stage_id;
-    UPDATE public.model_runs SET status = 'running' WHERE id = v_run.id;
+    INSERT INTO public.model_run_write_context VALUES (txid_current(), v_run.id);
+    UPDATE public.model_runs SET status = 'running', attempt_managed = true WHERE id = v_run.id;
+    DELETE FROM public.model_run_write_context WHERE transaction_id = txid_current() AND run_id = v_run.id;
     v_response := jsonb_build_object('outcome', 'claimed', 'request_id', p_request_id,
       'stage_id', p_stage_id, 'run_id', v_run.id, 'attempt_id', v_attempt);
   END IF;

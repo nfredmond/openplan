@@ -10,9 +10,10 @@ if not re.fullmatch(r"supabase_db_openplan-restore-target-[1-9][0-9]*", containe
     raise SystemExit("Select a named disposable restore-target container explicitly")
 root = Path(__file__).resolve().parent
 source = (root / "claim.sql").read_text() + "\n" + (root / "write.sql").read_text() + "\n" + (root / "reap.sql").read_text()
-cases = (root / "claim-cases.sql").read_text() + "\n" + (root / "write-cases.sql").read_text() + "\n" + (root / "reap-cases.sql").read_text()
+run_cases = (root / "run-cases.sql").read_text()
+cases = (root / "claim-cases.sql").read_text() + run_cases + "\n" + (root / "write-cases.sql").read_text() + "\n" + (root / "reap-cases.sql").read_text() + run_cases
 command = ["docker", "exec", "-i", container, "psql", "-X", "-qAt", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"]
-absence_query = "SELECT to_regclass('public.model_stage_attempts') IS NULL AND to_regclass('public.model_stage_claim_receipts') IS NULL AND to_regclass('public.model_stage_write_context') IS NULL AND to_regclass('public.model_stage_write_receipts') IS NULL;"
+absence_query = "SELECT to_regclass('public.model_stage_attempts') IS NULL AND to_regclass('public.model_stage_claim_receipts') IS NULL AND to_regclass('public.model_stage_write_context') IS NULL AND to_regclass('public.model_stage_write_receipts') IS NULL AND to_regclass('public.model_run_write_context') IS NULL;"
 
 def assert_absent():
     result = subprocess.run(command, input=absence_query, text=True, capture_output=True, timeout=15, check=True)
@@ -34,6 +35,7 @@ for name, sql, expected_failure in [
     ("bypass-attempt-identity-both", source.replace("v_stage.active_attempt_id IS DISTINCT FROM p_attempt_id", "false").replace("AND c.attempt_id IS NOT DISTINCT FROM NEW.active_attempt_id", ""), "old attempt overwrote new owner"),
     ("forget-reaped-fence", source.replace("IF OLD.attempt_managed OR NEW.attempt_managed THEN", "IF OLD.active_attempt_id IS NOT NULL OR NEW.active_attempt_id IS NOT NULL THEN"), "legacy write after reaping accepted"),
     ("lose-revocation", source.replace("s.active_attempt_id=a.id", "false"), "revocation not recorded"),
+    ("allow-parent-overwrite", source.replace("IF NEW.attempt_managed OR OLD.attempt_managed THEN", "IF false THEN"), "legacy parent overwrite accepted"),
     ("restored", source, None),
 ]:
     result = subprocess.run(command, input="BEGIN; SET LOCAL statement_timeout=10000; SET LOCAL lock_timeout=1000;\n" + sql + "\n" + cases + "\nROLLBACK;\n", text=True, capture_output=True, timeout=40)
