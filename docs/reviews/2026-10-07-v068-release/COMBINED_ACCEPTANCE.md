@@ -85,3 +85,25 @@ every artifact's native save, independent scientific acceptance or the full V1
 contract. Both modeling methods remain distinct. No frozen modeling artifact or
 acceptance holdout is changed or reopened. Required database checks and final
 main integration remain open at this checkpoint.
+
+## Integration accounting
+
+Integration commit `4cc48ca131758c627cc49985bb74bd153ed3ebd2` includes the
+updated calendar branch `d93347f32a11ff652d50e8c701872984657438af` and current
+main `2e2c9e94eccfcb92d1fed699d41eaa4f2d29ae8f`. Its application tree is
+identical to the tested candidate. Its only file difference is this evidence
+record. The branch is pushed as `work/v068-evidence-20261007`.
+
+The refreshed 63-worktree audit finds every worktree HEAD reachable from this
+integration commit and contained in a remote branch. The only working change
+is the canonical checkout's untracked `.directory`, which is preserved.
+This accounts for recorded worktree heads, not lost unsaved buffers or unknown
+external clones. The machine-readable private record is
+`v068-release-20261007-proof/worktree-audit-latest.json`.
+
+PR #140 at `92894d9168be32ea653e9afd7fb68a7480aa1197` now passes all seven
+GitHub checks, including live RLS run 37719459636. PR #142's previous head
+passes all seven checks, but GitHub refuses its merge because main advanced.
+The normal update-branch operation produces `d93347f3`; its new CI and RLS
+checks are running. No protection is bypassed. These heads are included in
+the combined integration history, but integration into main is still pending.
