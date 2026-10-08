@@ -1276,3 +1276,40 @@ The checked worker and selector hashes match the current source. Private
 uses the disclosed direct-PostgREST route-prefix adapter. This evidence covers
 receipt reconciliation, not resumption, project transfer, full managed dispatch,
 scientific acceptance or browser acceptance.
+
+### Project copy and native reopen foundation
+
+`model_project_inputs.py` reuses complete byte-checked package capture and
+consumption. It requires the project database, refuses WAL, shared-memory,
+rollback and super-journal sidecars, and checks every SQLite database in the
+private copy with read-only immutable `integrity_check`. It rechecks each
+database's identity, size and inventory hash afterward. No source database is
+opened, checkpointed or repaired. Failed destinations remain for reconciliation.
+Individual database integrity is explicit; cross-database consistency and
+scientific acceptance remain unassessed. The caller must establish completed
+producer ownership and successful engine closure before capture.
+
+Nine new tests cover independent original/consumer bytes and records, harmless
+extra files, missing/corrupt databases, sidecars including a real committed WAL,
+secondary databases, registered-byte tampering, source changes and an injected
+integrity failure. The combined input suite passes 46 tests. Baseline, harmless
+and restored controls pass. Four temporary faults detect ignored sidecars,
+integrity failure, consumer inventory and secondary databases. Results and exact
+source hash are in `prototype/project-input-controls.json`.
+
+The native proof creates a synthetic two-node, one-link spatial project using
+installed AequilibraE 1.6.2, closes it, retains five files, consumes them into an
+independent directory and reopens that directory with `Project.open()`. Exact
+node/link geometry survives. Both project and public-transport SQLite databases
+pass integrity checks. Consumer bytes equal source bytes before native open,
+and the source remains unchanged afterward. Native open can modify the consumer,
+so that later working directory is not represented as immutable retained input.
+`prototype/native-project-copy.json` records the result; private
+`native-project-copy-v2` retains the files. The first run reached the final report
+but failed reading a nonexistent version attribute. The corrected second run
+uses installed distribution metadata and completed successfully.
+
+This helper is not yet registered or selected by the managed writer. Producer
+closure enforcement, cross-file semantic consistency, remaining output/count
+mapping, normal dispatch and scientific acceptance remain open. This small
+native reopen is not a network assignment or an independent scientific study.
