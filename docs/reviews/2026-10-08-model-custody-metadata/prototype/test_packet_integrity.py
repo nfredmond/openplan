@@ -1,8 +1,9 @@
 """Synthetic packet references only; no model or frozen study is opened."""
+import copy
 import hashlib
 import json
 import unittest
-from packet_integrity import validate_packet, SCHEMAS, _rules
+from packet_integrity import validate_packet, build_custody_payload, ARTIFACT_TYPES, SCHEMAS, _rules
 
 
 def encoded(value):
@@ -68,6 +69,57 @@ class PacketIntegrity(unittest.TestCase):
         files = fixture(); assessment = json.loads(files['assessment']); assessment['scientific_outcome'] = 'pass'; files['assessment'] = encoded(assessment)
         with self.assertRaisesRegex(ValueError, 'packet outcome or rules mismatch'):
             self.check(files)
+
+
+def receipts_for(files, method):
+    receipts = {}
+    for role in {*SCHEMAS, 'model_output'}:
+        metadata = {'demand_method': method} if role == 'model_output' else json.loads(files[role])
+        if role == 'assessment':
+            metadata = {**metadata, 'demand_method': method}
+        receipts[role] = {'id': 'synthetic-' + role, 'file_url': 'storage://run-artifacts/synthetic/' + role, 'run_id': 'synthetic-run', 'stage_id': 'stage', 'attempt_id': 'attempt', 'artifact_type': ARTIFACT_TYPES.get(role) or ('link_volumes' if method == 'aequilibrae' else 'activitysim_link_volumes'), 'content_hash': digest(files[role]), 'file_size_bytes': len(files[role]), 'metadata_json': metadata}
+    return receipts
+
+
+class ReceiptBinding(unittest.TestCase):
+    def build(self, files, receipts, method='aequilibrae'):
+        return build_custody_payload(files, receipts, model_run_id='synthetic-run', stage_id='stage', attempt_id='attempt', demand_method=method, storage_refs={role: 'storage://run-artifacts/synthetic/' + role for role in {*SCHEMAS, 'model_output'}})
+
+    def test_both_methods_bind_exact_receipts(self):
+        for method in ('aequilibrae', 'activitysim'):
+            files = fixture(method); receipts = receipts_for(files, method)
+            result = self.build(files, receipts, method)
+            self.assertEqual(result['demand_method'], method)
+            self.assertEqual(result['scientific_outcome'], 'inconclusive')
+            for role, receipt in receipts.items():
+                self.assertEqual(result[role + '_artifact_id'], receipt['id'])
+                self.assertEqual(result[role + '_sha256'], digest(files[role]))
+
+    def test_mismatched_receipts_are_refused(self):
+        files = fixture(); receipts = receipts_for(files, 'aequilibrae')
+        for field, value, message in (
+            ('run_id', 'other', 'ownership mismatch'),
+            ('stage_id', 'other', 'ownership mismatch'),
+            ('attempt_id', 'old', 'ownership mismatch'),
+            ('content_hash', 'b' * 64, 'byte identity mismatch'),
+            ('file_size_bytes', True, 'byte identity mismatch'),
+            ('file_size_bytes', 0, 'byte identity mismatch'),
+            ('artifact_type', 'wrong', 'type mismatch'),
+            ('file_url', 'storage://run-artifacts/other', 'storage reference mismatch'),
+            ('metadata_json', {}, 'metadata differs from packet'),
+        ):
+            with self.subTest(field=field, value=value):
+                changed = copy.deepcopy(receipts); changed['assessment'][field] = value
+                with self.assertRaisesRegex(ValueError, message):
+                    self.build(files, changed)
+
+    def test_missing_and_duplicate_receipts_are_refused(self):
+        files = fixture(); receipts = receipts_for(files, 'aequilibrae')
+        with self.assertRaisesRegex(ValueError, 'incomplete or unexpected'):
+            self.build(files, {k: v for k, v in receipts.items() if k != 'assessment'})
+        receipts['assessment']['id'] = receipts['model_output']['id']
+        with self.assertRaisesRegex(ValueError, 'identity missing or reused'):
+            self.build(files, receipts)
 
 
 if __name__ == '__main__':

@@ -59,3 +59,52 @@ def validate_packet(payloads: Mapping[str, bytes], *, model_run_id: str, demand_
     expected = {name + '_sha256': hashes[name] for name in ('model_output', 'input_bundle', 'match_audit', 'comparison_basis', 'assessment', 'observation_package')}
     _require(all(bindings.get(key) == value for key, value in expected.items()), 'diagnosis file binding mismatch')
     return {name: {'sha256': hashes[name], 'bytes': len(data)} for name, data in payloads.items()}
+
+
+ARTIFACT_TYPES = {
+    'input_bundle': 'validation_input_bundle_v2',
+    'match_audit': 'pre_volume_match_audit_v2',
+    'comparison_basis': 'model_comparison_basis_v2',
+    'assessment': 'model_validation_assessment_v2',
+    'diagnosis': 'model_validation_structural_diagnosis_v2',
+}
+
+
+def build_custody_payload(
+    payloads: Mapping[str, bytes], receipts: Mapping[str, dict], *,
+    model_run_id: str, stage_id: str, attempt_id: str, demand_method: str,
+    storage_refs: Mapping[str, str],
+) -> dict:
+    """Bind checked packet bytes to registration receipts without sending a write.
+
+    A receipt alone is not Storage verification. The caller must retain its exact
+    request and independently verify uploaded bytes before submitting this result.
+    """
+    identities = validate_packet(payloads, model_run_id=model_run_id, demand_method=demand_method)
+    roles = {*SCHEMAS, 'model_output'}
+    _require(set(receipts) == roles and set(storage_refs) == roles, 'incomplete or unexpected artifact receipts')
+    result = {'demand_method': demand_method, 'scientific_outcome': 'inconclusive'}
+    seen = set()
+    for role in sorted(roles):
+        receipt = receipts[role]
+        _require(isinstance(receipt, dict), 'artifact receipt must be an object')
+        identifier = receipt.get('id')
+        _require(isinstance(identifier, str) and bool(identifier) and identifier not in seen, 'artifact receipt identity missing or reused')
+        seen.add(identifier)
+        expected_type = ARTIFACT_TYPES.get(role) or ('link_volumes' if demand_method == 'aequilibrae' else 'activitysim_link_volumes')
+        _require(receipt.get('run_id') == model_run_id and receipt.get('stage_id') == stage_id and receipt.get('attempt_id') == attempt_id, 'artifact receipt ownership mismatch')
+        _require(receipt.get('artifact_type') == expected_type, 'artifact receipt type mismatch')
+        _require(isinstance(storage_refs[role], str) and storage_refs[role].startswith('storage://run-artifacts/') and receipt.get('file_url') == storage_refs[role], 'artifact receipt storage reference mismatch')
+        _require(receipt.get('content_hash') == identities[role]['sha256'] and type(receipt.get('file_size_bytes')) is int and receipt['file_size_bytes'] == identities[role]['bytes'], 'artifact receipt byte identity mismatch')
+        metadata = receipt.get('metadata_json')
+        _require(isinstance(metadata, dict), 'artifact receipt metadata missing')
+        if role == 'model_output':
+            _require(metadata.get('demand_method') == demand_method, 'output receipt method mismatch')
+        else:
+            expected_metadata = json.loads(payloads[role])
+            if role == 'assessment':
+                expected_metadata = {**expected_metadata, 'demand_method': demand_method}
+            _require(metadata == expected_metadata, 'artifact receipt metadata differs from packet')
+        result[role + '_artifact_id'] = identifier
+        result[role + '_sha256'] = identities[role]['sha256']
+    return result

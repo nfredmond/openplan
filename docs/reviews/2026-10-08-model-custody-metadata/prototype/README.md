@@ -236,3 +236,11 @@ The validator accepts supplied logical bytes for the output, observation package
 `verify_packet_controls.py` runs baseline, harmless and restored suites, then removes diagnosis, method and assessment-input checks separately. Each mutation permits an invalid packet and fails at an expected refusal assertion. The exact validator source is restored in a finally block. No frozen study is opened or changed.
 
 This is post-computation packet-reference verification, not proof that preparation preceded output access. It does not load all external readiness sources, validate every observation or inter-artifact semantic relationship, download Storage objects, prove the model-output method from computation, or persist custody. Observation-package contents are hash-bound here, not scientifically assessed. Database metadata and logical bytes still need a single verified worker ingestion path.
+
+## Packet-to-receipt binding checkpoint
+
+The packet helper now prepares the successor custody payload from verified logical file identities and six artifact registration receipts. It requires distinct identified records, the exact run/stage/attempt, expected artifact types, matching hashes and integer byte sizes, matching document metadata, and the caller's expected Storage references. Output metadata preserves an explicit demand method; assessment metadata includes that method alongside the original document. The builder does not perform a network write or generate a new request identity.
+
+Nine synthetic tests pass for both methods and for mismatched ownership, bytes, type, metadata, Storage reference, missing receipt and duplicate identity. The existing canonical/file-hash checks continue to pass. Baseline, harmless and restored runs pass; six removed-check mutations admit invalid data and are detected, including three new receipt ownership/byte/Storage controls.
+
+The provided Storage references must come from the separately verified upload path. Comparing a receipt with such a reference does not itself download or authenticate the object. The helper is still outside packaged workers; no native database receipt is passed through it in this checkpoint. Request journaling, unknown-acknowledgement recovery, complete preparation custody and final ingestion remain open.
