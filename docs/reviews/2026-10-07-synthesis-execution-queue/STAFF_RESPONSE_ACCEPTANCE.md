@@ -65,3 +65,30 @@ layout. These findings remain open; successful file downloads do not resolve the
 
 Observed human usefulness, interpretation quality, native spreadsheet operation,
 host-loss recovery and the complete V1 contract remain separate requirements.
+
+## Mobile diagnosis and source correction
+
+A subsequent T3 event probe identifies the pointer failure. Before focus, Projects
+occupies x=150.959 to 221.444 CSS pixels, with width 70.485. Pointer-down reaches
+that anchor at x=186.201. Desktop short-height focus rules then restore six group
+heading margins. The anchor moves to x=100.571 to 127.866, width 27.295; pointer-up
+and click reach a DIV instead. Keyboard activation does not depend on that pointer
+position and succeeds.
+
+A temporary phone-only style keeps those heading margins and heights at zero.
+The same pointer interaction then reaches the anchor for all three events and
+navigates to Projects. The source correction adds that rule to the existing phone
+bar stylesheet. Desktop heading rules remain scoped as before.
+
+The Projects action container already wraps, but its intrinsic width is 568.222
+CSS pixels inside the 390-pixel viewport. A temporary maximum width of 100 percent
+and minimum width of zero bounds it to 352.845 pixels. All three actions then fit
+on separate lines. The source correction adds these constraints to PageHeader's
+shared action container. The existing six safety-map rail tests and targeted
+PageHeader lint pass. No test or guard changes in this layout correction.
+
+The diagnostic screenshot is retained privately as
+`browser-screenshot-openplan-history-localhost-muyttgjj-0d5cb937.png`. It shows
+injected diagnostic styles, not a rebuilt candidate. These causal checks do not
+replace desktop and 390px acceptance against the next identified production build.
+The three earlier HTTP 503 entries remain unexplained.
