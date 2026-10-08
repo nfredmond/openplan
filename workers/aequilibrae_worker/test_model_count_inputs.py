@@ -181,5 +181,29 @@ class BoundCountRetentionTests(unittest.TestCase):
         self.post.assert_not_called()
 
 
+    def test_bound_artifact_consumer_registers_verified_copy(self):
+        output = self.prepare()
+        original = inputs.retain(str(self.source), str(self.directory), self.directory / 'original-counts')
+        with managed.bind(self.writer):
+            retained = aeq.retain_assignment_counts(original['counts_path'], str(output),
+                status_directory=str(self.directory), retained_record=original, artifact_consumer=True)
+        self.assertEqual(retained['counts_input_directory'], str(output / 'artifact_count_inputs'))
+        payload = self.post.call_args.kwargs['json']['p_payload']
+        self.assertEqual(payload['file_url'], 'local://' + retained['manifest_path'])
+        self.assertEqual(payload['content_hash'], hashlib.sha256(Path(retained['manifest_path']).read_bytes()).hexdigest())
+        self.assertNotEqual(Path(original['counts_path']).stat().st_ino, Path(retained['counts_path']).stat().st_ino)
+
+    def test_bound_artifact_consumer_stops_before_registration_on_tampering(self):
+        output = self.prepare()
+        original = inputs.retain(str(self.source), str(self.directory), self.directory / 'original-counts')
+        Path(original['counts_path']).write_bytes(b'changed')
+        with managed.bind(self.writer):
+            with self.assertRaises(aeq.WorkerStateWriteUnconfirmed):
+                aeq.retain_assignment_counts(original['counts_path'], str(output),
+                    status_directory=str(self.directory), retained_record=original, artifact_consumer=True)
+        self.assertTrue(self.writer.stopped)
+        self.post.assert_not_called()
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -3814,20 +3814,21 @@ def apply_persisted_network_settings(graph, proj_dir: str, settings: dict | None
     return changed
 
 
-def retain_assignment_counts(counts_path: str | None, out_dir: str, *, status_directory: str, retained_record: dict | None = None) -> dict:
+def retain_assignment_counts(counts_path: str | None, out_dir: str, *, status_directory: str, retained_record: dict | None = None, artifact_consumer: bool = False) -> dict:
     """Capture this assignment's selected inputs without substituting other counts."""
     from pathlib import Path
     import model_count_inputs
     import model_attempt_writer
     writer = model_attempt_writer.current()
+    input_directory = Path(out_dir) / ("artifact_count_inputs" if artifact_consumer else "count_inputs")
     try:
         if writer is not None:
             writer.require_open()
             if writer.files is None or not Path(out_dir).resolve(strict=True).is_relative_to(writer.files.path):
                 raise ValueError("Count input retention requires an owned attempt output directory")
-        retained = (model_count_inputs.consume(retained_record, Path(out_dir) / "count_inputs")
+        retained = (model_count_inputs.consume(retained_record, input_directory)
                     if retained_record is not None else
-                    model_count_inputs.retain(counts_path, status_directory, Path(out_dir) / "count_inputs"))
+                    model_count_inputs.retain(counts_path, status_directory, input_directory))
         if writer is not None:
             writer.files.verify()
             writer.record_artifact({
@@ -3835,7 +3836,7 @@ def retain_assignment_counts(counts_path: str | None, out_dir: str, *, status_di
                 "artifact_type": "model_count_inputs", "file_url": "local://" + retained["manifest_path"],
                 "file_size_bytes": retained["manifest_size_bytes"], "content_hash": retained["manifest_sha256"],
                 "metadata_json": {"schema": "openplan.count-inputs.v1", "scientific_acceptance": "unassessed"},
-            }, logical_name="count-inputs")
+            }, logical_name="artifact-count-inputs" if artifact_consumer else "count-inputs")
         return retained
     except Exception as error:
         if writer is not None:
@@ -5416,6 +5417,16 @@ def stage_artifacts(
     package_meta: dict | None = None,
 ) -> str:
     out_dir = os.path.join(work_dir, "run_output")
+    # Preserve the assignment record while deriving a verified consumer-local
+    # input set before any validation or evidence publication can occur.
+    if assign_result.get("count_inputs") is not None:
+        retained_counts = retain_assignment_counts(
+            assign_result.get("counts_path"), out_dir,
+            status_directory=out_dir, retained_record=assign_result["count_inputs"],
+            artifact_consumer=True,
+        )
+        assign_result = {**assign_result, "count_inputs": retained_counts,
+                         "counts_path": retained_counts["counts_path"]}
     (
         verified_assignment_profile,
         verified_assignment_profile_payload,

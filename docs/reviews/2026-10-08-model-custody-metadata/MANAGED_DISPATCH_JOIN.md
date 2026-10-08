@@ -937,3 +937,28 @@ that is not proof of earlier custody. Source parents remain administrator-owned.
 Failed captures remain for reconciliation, and arbitrary subsequent host writes
 are outside this check. Full package/project transfer, normal managed dispatch,
 rendered T3 acceptance and independent scientific acceptance remain open.
+
+### Artifact extraction verifies a separate count-input copy
+
+Artifact extraction now consumes the recorded manifest before preparing output
+metadata, validation or credibility evidence. It retains a separate
+`artifact_count_inputs` directory and uses a derived assignment dictionary;
+the original assignment record and files are unchanged. A bound writer registers
+this consumer's manifest under its own artifact slot. Changed inputs stop the
+writer before registration. Legacy records without a manifest retain their
+previous behavior and gain no custody claim.
+
+Five added cases exercise the actual artifact entry point, independent file
+identity, unchanged assignment records, legacy behavior and bound registration
+or refusal. Baseline, harmless and restored controls pass. Seven fault controls
+include bypasses at assignment, artifact extraction and bound registration.
+The combined suite passes 131 tests, including primary-output preparation and
+validation-publication custody; all 10 credibility checks pass. An initial
+unittest invocation from the repository root failed module discovery and was
+rerun from the worker directory. The SQLite ResourceWarning persists.
+
+These checks stop before full evidence generation and engine computation.
+They do not close native consumer-manifest recovery, complete package/project
+transfer, normal managed dispatch, scientific acceptance or rendered browser
+acceptance. Previously recorded native producer-manifest recovery remains
+separate evidence. No scientific observation, acceptance grade or holdout changes.

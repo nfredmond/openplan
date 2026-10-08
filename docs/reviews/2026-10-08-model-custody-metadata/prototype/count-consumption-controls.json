@@ -1,5 +1,6 @@
 {
   "source_sha256": "5b0b5b2af6b09907a8d43ad1e9d9ca0f9e9807ecbf82b55ccc9b977fd894e594",
+  "main_sha256": "290b6e6fcf33ba151920d1e4574f4eede4a9d16cc072179d5fd9234c1914b685",
   "controls": [
     {
       "control": "baseline",
@@ -37,9 +38,19 @@
       "targeted_test": null
     },
     {
-      "control": "bypass-assignment-verification",
+      "control": "bypass-test_assignment_verifies_before_engine_open",
       "exit_code": 1,
       "targeted_test": "test_assignment_verifies_before_engine_open"
+    },
+    {
+      "control": "bypass-test_artifacts_refuse_tampered_counts_before_evidence",
+      "exit_code": 1,
+      "targeted_test": "test_artifacts_refuse_tampered_counts_before_evidence"
+    },
+    {
+      "control": "bypass-test_bound_artifact_consumer_stops_before_registration_on_tampering",
+      "exit_code": 1,
+      "targeted_test": "test_bound_artifact_consumer_stops_before_registration_on_tampering"
     }
   ],
   "limits": "Synthetic local-file verification and assignment refusal before engine entry. No engine computation, browser journey, arbitrary host confinement or scientific acceptance."

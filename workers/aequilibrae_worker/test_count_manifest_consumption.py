@@ -77,3 +77,51 @@ class ConsumptionTests(unittest.TestCase):
                     {'centroid_map': {1: 1}, 'bbox': (-122, 38, -120, 40)}, 'unused',
                     counts_path_override=self.record['counts_path'], count_inputs_override=self.record)
             project.assert_not_called()
+
+    def test_artifacts_use_independent_inputs_without_rewriting_assignment(self):
+        from test_model_skip_dispatch import aeq
+        import copy
+        assignment = {'count_inputs': self.record, 'counts_path': self.record['counts_path']}
+        original = copy.deepcopy(assignment)
+        output = self.root / 'run_output'
+        output.mkdir()
+        class StopBeforeEvidence(Exception):
+            pass
+        def inspect(local, name):
+            path = Path(local['counts_path'])
+            self.assertEqual(path, output / 'artifact_count_inputs/counts.csv')
+            self.assertEqual(path.read_bytes(), Path(self.record['counts_path']).read_bytes())
+            self.assertNotEqual(path.stat().st_ino, Path(self.record['counts_path']).stat().st_ino)
+            self.assertEqual(local['count_inputs']['counts_input_directory'], str(path.parent))
+            self.assertEqual(assignment, original)
+            raise StopBeforeEvidence()
+        with patch.object(aeq, 'validated_convergence_profile', return_value=({}, '', '')), patch.object(
+                aeq, 'assignment_artifact_metadata', side_effect=inspect):
+            with self.assertRaises(StopBeforeEvidence):
+                aeq.stage_artifacts('run', 'stage', str(self.root), {}, assignment)
+        self.assertEqual(assignment, original)
+
+    def test_artifacts_refuse_tampered_counts_before_evidence(self):
+        from test_model_skip_dispatch import aeq
+        (self.root / 'run_output').mkdir()
+        Path(self.record['counts_path']).write_bytes(b'changed counts')
+        with patch.object(aeq, 'validated_convergence_profile', side_effect=AssertionError('Evidence entered before count verification')) as evidence:
+            with self.assertRaisesRegex(ValueError, 'bytes differ'):
+                aeq.stage_artifacts('run', 'stage', str(self.root), {},
+                    {'count_inputs': self.record, 'counts_path': self.record['counts_path']})
+            evidence.assert_not_called()
+
+    def test_legacy_artifact_record_does_not_claim_retained_inputs(self):
+        from test_model_skip_dispatch import aeq
+        assignment = {'counts_path': str(self.root / 'source.csv')}
+        class StopBeforeEvidence(Exception):
+            pass
+        def inspect(local, name):
+            self.assertIs(local, assignment)
+            self.assertNotIn('count_inputs', local)
+            raise StopBeforeEvidence()
+        with patch.object(aeq, 'validated_convergence_profile', return_value=({}, '', '')), patch.object(
+                aeq, 'assignment_artifact_metadata', side_effect=inspect):
+            with self.assertRaises(StopBeforeEvidence):
+                aeq.stage_artifacts('run', 'stage', str(self.root), {}, assignment)
+        self.assertFalse((self.root / 'run_output/artifact_count_inputs').exists())
