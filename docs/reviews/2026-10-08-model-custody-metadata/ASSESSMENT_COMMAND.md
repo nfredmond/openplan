@@ -103,3 +103,32 @@ then fails at that explicit assertion. Private controls are retained in
 HTTP loss after native commit and fresh-process recovery remain the next proof.
 These mocked transport checks do not establish either, and this candidate is
 still uninstalled. Full worker checks on this checkpoint remain pending.
+
+## Native lost-response recovery
+
+`prototype/verify_assessment_recovery_cli.py` now exercises the retained client
+against actual PostgREST and the candidate command in the owned proof database.
+Its loopback bridge forwards the first request, receives the native committed
+response, then closes the TCP connection before sending the response to the
+client. The command stays pending. A fresh worker recovery CLI reads and retries
+the saved request. A second fresh invocation uses the journal's checked receipt.
+Exactly two identical HTTP POSTs occur. The database retains one receipt, one
+assessment and four artifact rows, including the original model output.
+The resolved local receipt equals the database's retained response.
+
+Baseline, harmless-comment and restored runs pass. Changing the server's exact
+retry response to an empty object causes the fresh recovery CLI to refuse the
+receipt. The proof catches that failure at the expected boundary. Source is
+restored after the control. The temporary gateway, bridge, function and receipt
+table are removed; synthetic fixture rows and private journals remain.
+
+Baseline evidence is retained under
+`model-command-client-20261008-proof/assessment-native-cli/recovery-cli.json`.
+Controls are in `assessment-native-cli-controls.json` beside that directory.
+The baseline run is `95da84ea-87b6-485b-a24c-1d14108f782d` and request is
+`b9f0d969-365c-4286-ad47-562243b9126a`.
+
+This verifies native legacy assessment receipt recovery after response loss.
+It does not install the candidate, activate normal workers, verify Storage
+bytes, cover managed ingestion or establish scientific acceptance. Those
+boundaries remain open, as does the full worker suite on this branch.
