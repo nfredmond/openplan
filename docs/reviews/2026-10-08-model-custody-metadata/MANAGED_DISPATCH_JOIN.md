@@ -2327,3 +2327,25 @@ fails on client preview-f07599c0933f53222dd8b3633c13d8cf. Its visual-acceptance 
 therefore remains. PR 171 run 37858832956 was live at its observed head; no check
 was cancelled or inferred successful. Count preparation, production child entry,
 provisional result handling, containment and supervisor recovery remain open.
+
+### Parent-selected output reservation over the channel
+
+EngineProcess can now configure one supported output-directory name for its
+parent channel. The child sends create_outputs without arguments; the parent
+calls the writer's existing exclusive directory creator under the owned attempt.
+The child cannot supply a name or path. An unconfigured destination refuses,
+and an existing destination is not adopted after a repeated request.
+
+Four tests include a reserved child creating and writing the parent-selected
+activitysim_assignment_output directory with mode 0700, without creating the
+trip-based run_output directory or making an artifact registration. Repetition
+preserves existing bytes and stops the writer. Three targeted faults detect
+accepted child-name fields, unconfigured creation and adoption of existing files.
+Baseline, harmless and restored controls pass. The warning-enabled broader suite
+passes 316 tests. See prototype/engine-output-channel-controls.json.
+
+This creates a local destination only. The future stage adapter must derive the
+parent's chosen name from the actual stage and preserve the distinct demand
+methods; this channel does not itself validate stage-name policy. Completed
+output capture/publication, count preparation, engine entry, descriptor-pinned
+later opens, descendant containment and supervisor recovery remain open.

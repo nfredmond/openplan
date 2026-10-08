@@ -106,11 +106,15 @@ class ProgressClient(Channel):
     def read_paths(self):
         return self._request('read_paths', {}, result=True)
 
+    def create_outputs(self):
+        return self._request('create_outputs', {}, result=True)
+
 
 class ProgressParent(Channel):
-    def __init__(self, connection, writer):
+    def __init__(self, connection, writer, *, output_name=None):
         super().__init__(connection)
         self.writer = writer
+        self.output_name = output_name
 
     def serve_one(self):
         """Run on the writer's owning thread; never accept a child-supplied identity."""
@@ -122,7 +126,7 @@ class ProgressParent(Channel):
             if (set(request) != fields
                     or type(request['version']) is not int or request['version'] != VERSION
                     or type(request['sequence']) is not int or request['sequence'] != self.sequence
-                    or operation not in ('progress', 'read_run', 'read_paths')):
+                    or operation not in ('progress', 'read_run', 'read_paths', 'create_outputs')):
                 raise ChannelStopped('Engine request is outside the allowed protocol')
             if operation == 'progress':
                 if not isinstance(request['log_tail'], str) or len(request['log_tail']) > 20000:
@@ -134,6 +138,11 @@ class ProgressParent(Channel):
                 self.writer.patch_stage(self.writer.context.stage_id, {'log_tail': request['log_tail']})
             elif operation == 'read_run':
                 response['result'] = self.writer.read_run(self.writer.context.run_id)
+            elif operation == 'create_outputs':
+                if self.output_name is None or self.writer.files is None:
+                    raise ChannelStopped('Engine output destination was not configured by the parent')
+                response['result'] = {'output_directory': self.writer.create_assignment_outputs(
+                    self.writer.files.path, self.output_name)}
             else:
                 if self.writer.files is None:
                     raise ChannelStopped('Engine paths require an owned workspace')

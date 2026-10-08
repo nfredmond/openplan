@@ -27,7 +27,7 @@ def _record(descriptor, name, payload):
 
 class EngineProcess:
     """Observe only a process launched by this object, never a saved PID."""
-    def __init__(self, writer, argv, *, env, progress=False):
+    def __init__(self, writer, argv, *, env, progress=False, output_name=None):
         writer.require_open()
         if writer.files is None:
             raise ValueError('Engine launch requires an owned attempt workspace')
@@ -57,7 +57,7 @@ class EngineProcess:
                            'command_sha256':hashlib.sha256(json.dumps(argv,separators=(',',':')).encode()).hexdigest()}
             if progress:
                 parent_channel,child_channel=socket.socketpair()
-                self.progress=ProgressParent(parent_channel,writer)
+                self.progress=ProgressParent(parent_channel,writer,output_name=output_name)
                 inherited=(child_channel.fileno(),)
                 child_env[CHANNEL_FD_ENV]=str(child_channel.fileno())
             with self._pinned() as descriptor:
