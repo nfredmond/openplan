@@ -675,3 +675,24 @@ not establish clean-console acceptance. Export downloads remain unchecked here.
 The creation notice still says revision 1 after the import, while the current
 revision heading and history correctly show revision 2. Record that stale notice
 for correction rather than treating the whole visible workflow as finished.
+
+
+## Original proposal exports and historical save confirmation
+
+On build 0e826600, T3 clicked both original JSON download buttons. A temporary
+object URL observer retained each exact Blob without suppressing the native
+download. Both parsed as JSON and matched the rendered original evidence text
+byte for byte. The proposal retains two context records and two unassigned
+source IDs with machine_unreviewed status; its history records two verified
+tasks and proposal_complete. Hashes and limits appear in
+`thematic-export-acceptance.json`. Private copies were parsed separately. The
+browser's native download destination was not inspected. The observer was
+restored after capture.
+
+The review save notice now identifies the earlier confirmed save and directs
+the reader to the selected revision below. It no longer presents a bare saved
+revision number that can be mistaken for the current revision after import.
+Cleanup-error messages remain unchanged. All 22 editor tests and changed-file
+lint pass. A harmless comment passes; restoring the old notice fails both
+notice assertions. These controls cover component wording, not live storage
+or human comprehension. A rebuilt browser check of this text remains pending.

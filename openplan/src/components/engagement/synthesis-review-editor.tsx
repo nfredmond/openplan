@@ -160,7 +160,7 @@ function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, app
       }
       const result = await sendReviewRequest(localStorage, request);
       if (current !== epoch.current) return;
-      adopt(result.working); setNotice(result.cleanupError ?? `Review saved, revision ${result.receipt.revisionNo}.`);
+      adopt(result.working); setNotice(result.cleanupError ?? `Save confirmed for revision ${result.receipt.revisionNo}. The selected revision is shown below.`);
       void list(); void open(result.receipt.reviewId, result.receipt.requestId);
     } catch (cause) {
       if (current === epoch.current && cause instanceof ReviewSaveError && (cause.status === 401 || cause.status === 403)) { epoch.current++; setAccessLost(true); onAccessLost(); }
