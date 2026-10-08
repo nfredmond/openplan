@@ -15,6 +15,7 @@ REPO = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO / 'workers/aequilibrae_worker'))
 import model_command_client as client
 import model_command_journal as journal
+import model_assessment_command as assessment_command
 from isolated_postgrest import gateway
 
 
@@ -84,8 +85,8 @@ def _check():
             payload['p_validation_input_metadata'] = {'schema':'openplan.validation-input-bundle.v1','comparison_basis_sha256':'a'*64}
             payload['p_comparison_basis_metadata'] = {'schema':'openplan.model-comparison-basis.v1'}
             payload['p_assessment_metadata'] = {'schema':'openplan.model-validation-assessment.v1','comparison_basis_sha256':'a'*64,'rules_version':4,'scientific_outcome':payload['p_scientific_outcome'],'planning_use':payload['p_planning_use'],'partition':payload['p_partition'],'reasons':payload['p_reasons']}
-            arguments = {'run_id':run,'stage_id':stage,'track':payload['p_track'],'payload':payload}
-            command = {'request_id': request, 'destination': client.destination(base, meta['database']), 'operation': operation, 'arguments': arguments}
+            command = assessment_command.prepare(directory, request, payload, base_url=base, deployment_id=meta['database'])
+            request = command['request_id']
             try:
                 client.deliver(directory, command, base_url=base, deployment_id=meta['database'], service_key=token)
             except client.DeliveryUnconfirmed:

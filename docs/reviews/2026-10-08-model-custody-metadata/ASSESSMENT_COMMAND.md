@@ -188,3 +188,32 @@ and zero suites not run. Unit `openplan-assessment-stop-workers-20261008.service
 invocation `022628d2696e4d4dbc481566b37c91f7`, finishes at 06:21 Pacific under
 the same 1 GiB, zero-swap, one-CPU limits. Wall time is 33.843 seconds and peak
 memory is 169.8 MB. This includes both corrected assessment callers.
+
+## Stable assessment request preparation
+
+`model_assessment_command.prepare` now binds a retained command to the configured
+deployment and an existing canonical assessment UUID. Its UUIDv5 namespace is
+specific to the legacy assessment operation. Payload contents do not enter that
+request key. A changed payload for the same assessment therefore reaches the
+journal's exact-request refusal instead of creating another command. The helper
+validates and detaches the payload, then commits it to the journal before
+returning. It does not send a request or resume a stage.
+
+Five tests pass, including preparation in a fresh process, changed payloads,
+resolved-request immutability, distinct assessment/deployment identities and
+invalid input before journal creation. Baseline, harmless and restored controls
+pass. Four faults that add payload to the key, omit retention, omit validation
+or omit assessment identity fail for the expected assertions. Private results
+are in `model-command-client-20261008-proof/assessment-preparation-controls.json`.
+
+The native lost-response proof now uses this helper. It again retains one
+assessment and three new artifacts after a dropped committed reply, fresh CLI
+recovery and a cached second recovery. Its run is
+`31e56f6e-20e8-47b3-885d-358a89c3b7e9`; its request is
+`f0c42bff-47c1-51a6-9db1-46b32cdc2523`. Evidence is under
+`model-command-client-20261008-proof/assessment-prepared-native-cli/`.
+
+Normal callers must load the original persisted assessment identity after
+interruption. Rebuilding an assessment with a fresh UUID is a new operation and
+is not made safe recovery by this helper. That caller connection, application
+migration and complete restart reconciliation remain unfinished.
