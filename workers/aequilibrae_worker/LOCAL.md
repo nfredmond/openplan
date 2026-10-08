@@ -247,3 +247,13 @@ a lease, scientific permission or authority to continue later. The output keeps
 A failed or incomplete read returns `ownership_unconfirmed` with exit 2, not a
 confirmed negative ownership result. Current ownership and every later write
 still require the database attempt fence. Automatic restart remains unfinished.
+
+## App reads of local artifacts
+
+When the app uses `OPENPLAN_WORKER_LOCAL_ROOT`, secure local reads require the
+Linux reference host with `/proc/self/fd` available. The app holds directory
+handles while opening the file so parent-path replacements cannot redirect the
+read. Other hosts refuse local artifact reads; use retained Storage artifacts
+there. A configured root alias is supported, but a run directory cannot redirect
+to a different run. This does not make mutable local files immutable or establish
+worker write ownership. Keep the worker root under operator control.

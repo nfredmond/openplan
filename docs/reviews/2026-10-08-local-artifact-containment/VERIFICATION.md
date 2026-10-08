@@ -46,3 +46,47 @@ exits 134. A separate retry uses a 6 GiB heap under a 7 GiB service memory cap,
 with two CPUs and core dumps disabled. It completes with exit 0 in 57.496 seconds, using 5.1 GiB peak memory and no
 swap. Unit `openplan-local-containment-types-20261008.service`, invocation
 `4fad2549346b477b874aeac8e96c385e`, identifies that completed check.
+
+## Parent replacement correction
+
+A controlled real-filesystem probe confirms that the first correction still
+reads foreign synthetic bytes if a parent directory becomes a symlink after
+canonical resolution. `O_NOFOLLOW` on the final file does not protect its parents.
+The earlier statement that this boundary was unproved is superseded by that
+reproduction and the correction below.
+
+The production reader now opens the authorized run directory, verifies its
+actual descriptor path, and holds directory handles while opening each child
+through `/proc/self/fd`. Each child directory and final file refuse symlinks.
+The final descriptor must name a regular file. Reads use that descriptor;
+cleanup attempts to close every opened handle on success and failure. Ordinary
+contained symlinks still work because canonical resolution precedes the handle
+walk. Configured root aliases retain their existing behavior.
+
+Forty-two focused tests pass, including seven new platform/race cases. The tests
+perform real filesystem operations and pause the real production calls at
+specific boundaries to replace ancestors, the run directory, a child directory
+or the final file. They either retain original authorized bytes or refuse the
+read, never returning the synthetic foreign bytes. Every case verifies handle
+cleanup. Four adjacent suites pass another 56 tests; targeted ESLint passes.
+A first invocation again used the wrong path for the new test file, so its
+35-test output does not cover the later race cases. The corrected run does.
+
+Harmless-comment and restored controls pass. Reopening the final file by its
+pathname reads foreign bytes after child replacement. Allowing symlinks admits
+parent/final-file redirection. Omitting opened-root identity admits ancestor
+redirection. Each adverse variant fails its matching assertion. Results are in
+`race-controls.json`.
+
+Secure local reads require the documented Linux reference host and its proc
+filesystem. Unsupported hosts fail explicitly; Storage-backed reads are
+unchanged. This is a local-mode compatibility boundary, not a claim of broader
+platform acceptance. The checks do not establish immutable bytes during an
+in-place file write, hard-link provenance, worker write isolation, deployment or
+attempt ownership, browser acceptance or scientific accuracy. Privileged host
+administration remains outside this file-read boundary.
+
+The production handle-walk tree passes standalone TypeScript under unit
+`openplan-pinned-artifact-types-20261008.service`, invocation
+`4f40b34f712645959dc639cd61094ba8`. It exits 0 in 56.596 seconds, with a
+5.1 GiB peak and no swap under the 7 GiB cap.

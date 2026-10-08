@@ -63,6 +63,11 @@ vi.mock("@/lib/models/api", () => ({
   loadModelAccess: (...args: unknown[]) => loadModelAccessMock(...args),
 }));
 
+// Filesystem race behavior is covered by the native containment suites.
+vi.mock("@/lib/models/local-artifact-file", () => ({
+  readPinnedLocalFile: (_root: string, file: string) => readFileMock(file, { flag: 0 }),
+}));
+
 vi.mock("node:fs/promises", () => {
   const readFile = (...args: unknown[]) => readFileMock(...args);
   const realpath = (value: string) => realpathMock(value);

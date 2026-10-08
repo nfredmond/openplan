@@ -1,5 +1,5 @@
-import { readFile, realpath } from "node:fs/promises";
-import { constants } from "node:fs";
+import { realpath } from "node:fs/promises";
+import { readPinnedLocalFile } from "@/lib/models/local-artifact-file";
 import path from "node:path";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
@@ -109,8 +109,7 @@ export async function readContainedLocalArtifact(fileUrl: string, root: string):
   if (!resolveContainedLocalPath(actualFile, actualRoot)) {
     throw new Error("Local artifact target escapes this run's scope.");
   }
-  // Refuse a final-component link substituted after canonical resolution.
-  return new Uint8Array(await readFile(actualFile, { flag: constants.O_RDONLY | constants.O_NOFOLLOW }));
+  return readPinnedLocalFile(actualRoot, actualFile);
 }
 
 /** Read the exact stored bytes after applying the same run scope as JSON reads. */
