@@ -67,3 +67,19 @@ select an unrelated legacy file. Four tests execute the actual registration
 block with conflicting real CSVs, compare URL/hash/size, cover absence and legacy
 behavior, and detect a deliberately restored wrong-directory reference.
 These tests mock registration and do not prove complete package custody.
+
+## Installed project closure inspection
+
+Inspection of installed AequilibraE 1.6.2 confirms that `Project.db_connection`
+creates a `commit_and_close` context. Its normal exit commits and closes that
+connection. `Project.close()` also calls `clean()`, which deletes disconnected
+non-centroid nodes through another such context. Closing is therefore a database
+mutation boundary, not just a handle release.
+
+This does not prove that all callers or native components released their own
+connections. In addition, `commit_and_close.__exit__` does not place `close()`
+in a `finally` block, so a commit or rollback exception can bypass closure.
+A capture implementation must preserve a failed-close refusal and must verify
+SQLite consistency separately. Do not infer quiescence or copy safety solely
+from a return from `Project.close()`. Native reopen and source-change tests
+remain required before activating project transfer.

@@ -1258,3 +1258,21 @@ state-content comparison. Producer records stay unchanged and temporary gateways
 are removed. Native lost-reply recovery for the mapping write remains separate
 and unproved. This checkpoint does not transfer the project, outputs or counts,
 enable normal managed dispatch, or change scientific acceptance.
+
+### Native partial mapping recovery
+
+The v4 paired proof drops the mapping response after the native artifact command
+commits. The writer stops and retains exactly one pending mapping command. A
+fresh recovery CLI process retrieves its receipt. A second process recovers from
+the local journal without credentials and with HTTP forbidden. Checksums of
+seven native model and receipt tables remain unchanged across recovery, and the
+original writer remains stopped. Three consumer artifacts remain registered.
+
+Baseline, harmless and restored pairing controls still pass. Removing the
+package mapping remains detectable; contradictory source paths still refuse.
+The checked worker and selector hashes match the current source. Private
+`paired-input-http-v4` retains the journals and clone; the repository result is
+`prototype/paired-input-http.json`. The temporary gateway is removed. CLI HTTP
+uses the disclosed direct-PostgREST route-prefix adapter. This evidence covers
+receipt reconciliation, not resumption, project transfer, full managed dispatch,
+scientific acceptance or browser acceptance.

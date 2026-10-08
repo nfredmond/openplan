@@ -16,6 +16,7 @@ sys.path.insert(0,str(REPO/'workers/aequilibrae_worker'))
 import model_attempt_invocation as invocation
 import model_attempt_writer as managed
 import model_command_client as client
+import model_command_journal as journal
 import model_package_inputs as package
 import model_predecessor_inputs as predecessor
 from worker_import_for_tests import import_worker_main
@@ -45,17 +46,24 @@ def main():
     with gateway('public',database=database) as connection:
         base,key=connection['url'],connection['service_token']
         calls=[]
+        dropped={'mapping':False}
         def transport(method,url,**kwargs):
             # The isolated gateway exposes PostgREST directly, without /rest/v1.
             if not url.startswith(base+'/rest/v1/'):
                 raise AssertionError('Unexpected native proof destination')
             response=requests.request(method,base+'/'+url.removeprefix(base+'/rest/v1/'),**kwargs)
             calls.append({'method':method,'status':response.status_code})
+            if (control=='lost-mapping-reply' and method=='POST' and response.status_code==200
+                    and kwargs.get('json',{}).get('p_payload',{}).get('artifact_type')=='model_input_mapping'
+                    and not dropped['mapping']):
+                dropped['mapping']=True
+                response.close()
+                raise requests.Timeout('Synthetic committed mapping reply loss')
             return response
         def get(url,**kwargs):return transport('GET',url,**kwargs)
         def post(url,**kwargs):return transport('POST',url,**kwargs)
         try:
-            for control in ('baseline','harmless','omit-package-mapping','source-mismatch','restored'):
+            for control in ('baseline','harmless','omit-package-mapping','source-mismatch','lost-mapping-reply','restored'):
                 start=len(calls)
                 run,producer_stage,consumer_stage,state_id,package_id=[str(uuid.uuid4()) for _ in range(5)]
                 workspace=sql(database,f"""
@@ -94,13 +102,18 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                 candidate=types.ModuleType('model_predecessor_inputs');exec(compile(body,predecessor.__file__,'exec'),candidate.__dict__)
                 sys.modules['model_predecessor_inputs']=candidate
                 directory=output/control/'journal'
+                writers=[]
                 def handler(context):
                     writer=managed.AttemptWriter(directory,context,base_url=base,deployment_id=database,service_key=key,post=post,get=get)
+                    writers.append(writer)
                     writer.workspace(output/'files/runs',run)
                     with managed.bind(writer):
                         try:
                             result=worker.retain_managed_state_and_package()
                         except worker.WorkerStateWriteUnconfirmed as error:
+                            if control=='lost-mapping-reply':
+                                if not dropped['mapping'] or not writer.stopped:raise
+                                return {'delivery_unconfirmed':True,'writer_stopped':True}
                             if control!='source-mismatch' or 'source directory disagree' not in str(error.__cause__) or not writer.stopped:raise
                             return {'refused':True,'writer_stopped':True}
                     mapped=result['package_mapped_state']
@@ -143,11 +156,42 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         raise AssertionError('Native paired provenance differs')
                 if sql(database,f"SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_run_artifacts a WHERE stage_id='{producer_stage}';")!=before:
                     raise AssertionError('Native pair rewrote producer artifacts')
+                if control=='lost-mapping-reply':
+                    pending=journal.pending(directory,client.destination(base,database))
+                    if len(pending)!=1 or pending[0]['command']['arguments']['payload']['artifact_type']!='model_input_mapping':
+                        raise AssertionError('Exact pending mapping command missing')
+                    request=pending[0]['command']['request_id']
+                    def snapshot():
+                        tables=('model_runs','model_run_stages','model_stage_attempts','model_run_artifacts','model_stage_claim_receipts','model_stage_write_receipts','model_artifact_write_receipts')
+                        return {table:sql(database,f"SELECT md5(coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text)::text,'[]')) FROM public.{table} t;") for table in tables}
+                    saved=snapshot()
+                    shim="""
+import os,requests
+import model_command_recovery as recovery
+original=requests.post
+def post(url,**kwargs):
+ if os.environ.get('OPENPLAN_PROOF_CACHED')=='1':raise AssertionError('Cached recovery attempted HTTP')
+ return original(url.replace('/rest/v1/','/'),**kwargs)
+requests.post=post
+raise SystemExit(recovery.main())
+"""
+                    argv=[sys.executable,'-B','-c',shim,'--journal',str(directory),'--base-url',base,'--deployment-id',database,'--request-id',request]
+                    for cached in (False,True):
+                        response=subprocess.run(argv,cwd=REPO/'workers/aequilibrae_worker',capture_output=True,text=True,timeout=40,
+                            env={**os.environ,'SUPABASE_SERVICE_ROLE_KEY':'' if cached else key,'OPENPLAN_PROOF_CACHED':'1' if cached else '0'})
+                        if response.returncode or json.loads(response.stdout)!={'request_id':request,'outcome':'command_receipt_retained','model_resumed':False}:
+                            raise AssertionError('Fresh CLI mapping recovery failed: '+response.stderr)
+                        if key in response.stdout or key in response.stderr:raise AssertionError('Recovery disclosed credential')
+                    if snapshot()!=saved:raise AssertionError('Mapping recovery changed native records')
+                    try: writers[0].require_open()
+                    except invocation.ReconciliationRequired: pass
+                    else: raise AssertionError('Mapping recovery reopened writer')
+                    outcome.update(fresh_cli_recovered=True,cached_no_http=True,native_tables_unchanged=7)
                 results.append({'control':control,'outcome':outcome,'consumer_artifacts':len(records),'http_calls':calls[start:]})
         finally:
             sys.modules['model_predecessor_inputs']=predecessor
     report={'selector_sha256':hashlib.sha256(original.encode()).hexdigest(),'worker_sha256':hashlib.sha256(Path(worker.__file__).read_bytes()).hexdigest(),
-            'controls':results,'gateway_removed':True,'limits':'Actual paired helper and native commands through a route-prefix transport adapter. Producer fixture registration uses native SQL commands. Durable partial mapping is verified. No mapping lost-reply recovery, project/output/count mapping, full dispatcher or scientific acceptance.'}
+            'controls':results,'gateway_removed':True,'limits':'Actual paired helper and native commands through a route-prefix transport adapter. Producer fixture registration uses native SQL commands. Durable partial mapping is verified. Fresh CLI mapping recovery uses the same route-prefix adapter; cached recovery forbids HTTP. No project/output/count mapping, full dispatcher or scientific acceptance.'}
     content=json.dumps(report,indent=2)+'\n'
     (output/'paired-input-http.json').write_text(content);(ROOT/'paired-input-http.json').write_text(content)
     print(content)

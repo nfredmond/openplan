@@ -184,6 +184,55 @@
       ]
     },
     {
+      "control": "lost-mapping-reply",
+      "outcome": {
+        "delivery_unconfirmed": true,
+        "writer_stopped": true,
+        "fresh_cli_recovered": true,
+        "cached_no_http": true,
+        "native_tables_unchanged": 7
+      },
+      "consumer_artifacts": 3,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
       "control": "restored",
       "outcome": {
         "paired": true,
@@ -232,5 +281,5 @@
     }
   ],
   "gateway_removed": true,
-  "limits": "Actual paired helper and native commands through a route-prefix transport adapter. Producer fixture registration uses native SQL commands. Durable partial mapping is verified. No mapping lost-reply recovery, project/output/count mapping, full dispatcher or scientific acceptance."
+  "limits": "Actual paired helper and native commands through a route-prefix transport adapter. Producer fixture registration uses native SQL commands. Durable partial mapping is verified. Fresh CLI mapping recovery uses the same route-prefix adapter; cached recovery forbids HTTP. No project/output/count mapping, full dispatcher or scientific acceptance."
 }
