@@ -365,6 +365,11 @@ pass failed or a one-pass invocation was interrupted. Keep the journal directory
 and database target unchanged when recovering. Host-loss, boot supervision and
 capacity acceptance remain separate from the recorded process-restart checks.
 
+The [Linux user-service recipe](SYNTHESIS_SUPERVISION.md) generates reviewable
+systemd units for the existing preparation and execution workers. Generation
+does not install or start a service. Preserve the same private configuration and
+journals; supervisor process checks do not establish host-loss recovery.
+
 ## Separate inspection from changes
 
 | Action | Operational effect |

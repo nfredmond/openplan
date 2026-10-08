@@ -20,7 +20,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No additional changes beyond the development candidate below.
+A Linux setup command generates reviewable systemd user units for the existing
+synthesis preparation and execution workers. It checks private paths and pins
+the chosen checkout and journal directory without installing or starting a
+service. Initial supervision evidence covers a synthetic process, not real
+worker dispatch, boot or host-loss recovery.
 
 ## 0.68.0 (development candidate)
 
