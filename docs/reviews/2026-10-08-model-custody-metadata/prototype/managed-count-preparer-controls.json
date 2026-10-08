@@ -1,0 +1,41 @@
+{
+  "worker_sha256": "eade17ceda9800acc4eb0eb0f3c27f29220db11fe6fdad127d454a750429e9a7",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "lose-calibration",
+      "exit_code": 1,
+      "targeted_test": "test_original_setup_and_current_calibration_reach_acquisition"
+    },
+    {
+      "control": "share-setup",
+      "exit_code": 1,
+      "targeted_test": "test_original_setup_and_current_calibration_reach_acquisition"
+    },
+    {
+      "control": "skip-owned-read",
+      "exit_code": 1,
+      "targeted_test": "test_changed_ownership_stops_before_preparation"
+    },
+    {
+      "control": "ignore-bound-owner",
+      "exit_code": 1,
+      "targeted_test": "test_requires_original_binding_at_invocation"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual parent adapter, channel and real child using retained bytes; mocked HTTP, acquisition and project resolver. No live provider, native registration, full stage or scientific acceptance."
+}

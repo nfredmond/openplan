@@ -2407,3 +2407,31 @@ child stage adapter, parent acquisition subprocess custody, native database
 registration/recovery, supervisor restart, escaped descendants and scientific
 acceptance remain open. Existing GitHub run 37859472244 was still in progress
 when polled after the local suite; it was not restarted.
+
+### Fixed parent adapter for assignment count preparation
+
+`main.managed_assignment_count_preparer` supplies the channel's trusted callback
+using the actual assignment preparation helper. Configuration requires a bound
+writer and copies setup and retained count records. Invocation requires that same
+writer, reads the currently owned run through its scoped reader, resolves the
+confirmed working project path and derives calibration with the existing per-run
+resolver. No child argument chooses these inputs. The generic channel callback
+mechanism remains internal; the normal dispatcher is still disabled.
+
+Ten adapter tests include the six channel cases with this fixed callback,
+including the reserved real child and lost registration reply. Added cases cover
+missing binding, invocation outside the original binding, revoked ownership before
+preparation and unchanged setup geography with current calibration. The broad
+warning-enabled suite passes 336 tests. Baseline, harmless and restored controls
+pass, and four faults detect lost calibration, shared mutable setup, skipped
+ownership read and missing invocation binding. The first missing-binding control
+reached an unrelated absent output directory; the test now mocks the downstream
+helper to isolate the intended refusal. See
+`prototype/managed-count-preparer-controls.json`.
+
+The project resolver and acquisition transport are mocked in the adapter test;
+separate existing path tests protect confirmed working-copy selection. This is
+not native database, live provider, full stage, subprocess containment or scientific
+acceptance evidence. The next integration boundary remains the child assignment
+entrypoint and its explicit resolved settings, without importing operator dotenv
+files or enabling legacy database transport in that child.

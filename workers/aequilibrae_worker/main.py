@@ -4170,6 +4170,35 @@ def prepare_assignment_count_inputs(run_row: dict, setup_result: dict, proj_dir:
         status_directory=os.path.dirname(counts_path_override) if counts_path_override else out_dir)
 
 
+
+def managed_assignment_count_preparer(setup_result: dict, *,
+                                      counts_path_override: str | None = None,
+                                      count_inputs_override: dict | None = None):
+    """Fix parent inputs before launch; read current owned configuration on request."""
+    import copy
+    import model_attempt_writer as managed
+    writer = managed.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Count preparation requires a bound parent writer")
+    writer.require_open()
+    setup = copy.deepcopy(setup_result)
+    retained = copy.deepcopy(count_inputs_override)
+
+    def prepare(out_dir):
+        if managed.current() is not writer:
+            raise WorkerStateWriteUnconfirmed("Count preparation differs from its parent invocation")
+        writer.require_open()
+        run_row = writer.read_run(writer.context.run_id)
+        project = writer.project_directory(writer.files.path)
+        return prepare_assignment_count_inputs(
+            run_row, setup, project, out_dir,
+            calibrate_requested=resolve_calibration_enabled(run_row),
+            counts_path_override=counts_path_override, count_inputs_override=retained,
+        )
+
+    return prepare
+
+
 def stage_assignment(
     run_id: str,
     stage_id: str,
