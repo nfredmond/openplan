@@ -94,3 +94,49 @@ handoff against the isolated native stack. Verify both normal dispatch entrypoin
 restart/cancel, long-running liveness and retained local-byte recovery. These checks
 remain distinct from untouched scientific acceptance and planner/public-participant
 acceptance. No existing green helper test closes those requirements.
+
+## Extraction audit at 145935596
+
+The static symbol inventory in `prototype/assignment-dependencies.json` records
+45 reachable functions in `main.py`, including the 849-line assignment function.
+The accompanying script parses source without importing `main`, so it does not
+load operator configuration. It follows referenced module-level functions through
+nested scopes. It includes optional branches and overapproximates actual calls;
+it does not inspect imported library internals or establish runtime containment.
+The JSON records the exact source hash and line locations for review.
+
+The inventory and direct source inspection change the extraction sequence.
+Preparing counts alone does not remove credentialed operations from assignment.
+The selected transit-feed branch reaches `resolve_selected_feed_version`,
+`download_selected_feed_bytes` and `_feed_version_agency_name`. These read the
+workspace feed version, private stored archive and display metadata using parent
+credentials. The current run reader and progress adapter also reach legacy HTTP
+when unbound. `auto_ingest_counts` starts a subprocess. Imported `gtfs_skim` reads
+operator settings, discovers feeds, downloads archives and writes a shared cache.
+These operations must not become implicit side effects of importing or invoking
+the engine child.
+
+Separate transit preparation from the numerical skim before extracting the full
+assignment body. The parent must retain the selected archive bytes and original
+version metadata, preserving checksum verification and workspace ownership.
+The child should parse those retained bytes and compute the skim from explicit
+settings. Keep the existing precedence of a run's chosen feed over operator and
+catalog choices. Preserve the distinctions among catalog failure, no covering
+feed, selected-feed failure, schedule expiry and modeled service. An unavailable
+chosen feed must not trigger substitution. Preserve ingest-authoritative service
+windows and the disclosure of excluded frequency-based trips. Parent-side
+acquisition also needs an owned deadline and descendant boundary; relocating a
+call does not establish those properties.
+
+The existing public-row allowance and private-storage ownership rule have a
+boundary worth retaining explicitly: a version with no workspace can pass the
+row resolver, but its archive cannot pass the workspace-prefix download rule.
+This audit does not broaden either permission or claim such a version is usable.
+A representative public-feed journey remains necessary before making that claim.
+
+Resolve numerical settings explicitly across process boundaries, including core
+count, transit access/fare/walk and budget settings, passthrough share, assignment
+profile, network settings and calibration controls. Do not inherit scientific
+settings accidentally through a different process environment. This extends the
+implementation detail of the existing extraction decision; it creates no new
+product queue and changes no v1 scope or scientific acceptance requirement.

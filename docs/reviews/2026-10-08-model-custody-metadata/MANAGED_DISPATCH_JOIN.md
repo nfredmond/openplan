@@ -2435,3 +2435,20 @@ not native database, live provider, full stage, subprocess containment or scient
 acceptance evidence. The next integration boundary remains the child assignment
 entrypoint and its explicit resolved settings, without importing operator dotenv
 files or enabling legacy database transport in that child.
+
+### Assignment extraction dependency audit
+
+At 145935596, a reproducible static inventory found 45 reachable `main.py`
+functions from `stage_assignment`. Direct inspection confirms that the transit
+branch retains credentialed database/private-storage reads and optional catalog
+and archive acquisition. The full child extraction therefore requires a retained
+transit-preparation boundary as well as count preparation. The protocol decision
+now identifies the source ownership, exact bytes, feed precedence, service-window
+provenance and explicit settings that must survive that separation. No transit
+capability is disabled to simplify extraction.
+
+The inventory records source hashes, function locations, references, attribute
+calls and local imports without importing the worker. It is an extraction aid,
+not a security or scientific gate. Existing application behavior and test guards
+are unchanged. GitHub run 37860237074 remains in progress on live polling. Browser
+acceptance and normal managed dispatch activation remain unfinished.
