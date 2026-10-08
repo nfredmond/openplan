@@ -2064,3 +2064,21 @@ borrowed-view child check also passes again with the updated helper source hash.
 This constrains record publication, not arbitrary same-user engine code or host
 administrators. It does not solve descendant containment, child working-directory
 races, supervisor loss or capture authorization. Normal dispatch remains disabled.
+
+### Pin the child working directory through launch
+
+The subprocess launch now resolves its working directory through the parent's
+open attempt descriptor using Linux procfs. The descriptor remains open until
+Popen returns from its exec handshake; the engine inherits no directory descriptor.
+If procfs access is unavailable, launch fails and the reservation remains for
+reconciliation. There is no fallback to an unverified pathname.
+
+A real-child test replaces the attempt pathname immediately before Popen. The
+child writes only into the original pinned directory. Subsequent exit recording
+refuses the changed attempt identity and stops the writer. Restoring pathname
+resolution makes this test fail because output lands in the replacement.
+Baseline, harmless and restored controls pass with seven targeted faults caught.
+The warning-enabled broader suite passes 268 tests, and the native borrowed-view
+check passes again. This is Linux launch-directory evidence, not a sandbox for
+arbitrary absolute paths, containment of descendants or permission to capture
+outputs. The child authority protocol and supervisor-loss handling remain open.

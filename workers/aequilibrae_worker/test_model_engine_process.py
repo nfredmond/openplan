@@ -1,5 +1,5 @@
 """Real child process exit, durable no-relaunch and refusal before completion."""
-import json,os,sys,time
+import json,os,sys,time,subprocess
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -44,6 +44,30 @@ class EngineProcessTests(unittest.TestCase):
             with self.assertRaises(FileExistsError) as error:EngineProcess(self.writer,[sys.executable,'-c','pass'],env=dict(os.environ))
         self.assertEqual(Path(error.exception.filename).name,'engine_process')
         launch.assert_not_called();self.assertTrue(self.writer.stopped)
+
+    def test_child_uses_pinned_directory_after_path_replacement(self):
+        self.prepared()
+        directory=self.writer.files.path
+        retained=directory.with_name(directory.name+'-retained')
+        launch=subprocess.Popen
+        def replace_then_launch(*args,**kwargs):
+            directory.rename(retained)
+            directory.mkdir()
+            return launch(*args,**kwargs)
+        code="from pathlib import Path;Path('child-output').write_text('original')"
+        with patch('model_engine_process.subprocess.Popen',side_effect=replace_then_launch):
+            handle=EngineProcess(self.writer,[sys.executable,'-B','-c',code],env=dict(os.environ))
+        try:
+            self.assertEqual(handle.process.wait(timeout=10),0)
+            self.assertFalse((directory/'child-output').exists(),'Child wrote into replacement directory')
+            self.assertEqual((retained/'child-output').read_text(),'original')
+            with self.assertRaisesRegex(ValueError,'Attempt directory identity changed'):
+                handle.confirm_exit()
+            self.assertTrue(self.writer.stopped)
+            self.assertFalse((retained/'engine_process/observed-exit.json').exists())
+        finally:
+            if handle.process.poll() is None:handle.process.terminate()
+            handle.process.wait(timeout=10)
 
     def test_replaced_record_directory_refuses_exit(self):
         handle=self.start('pass');handle.process.wait(timeout=10)

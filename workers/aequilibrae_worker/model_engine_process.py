@@ -52,8 +52,11 @@ class EngineProcess:
                 # Reservation survives spawn failure. Raw arguments and environment
                 # are not written to the receipt; child output belongs in a private log.
                 file=os.open('engine.log',os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600,dir_fd=descriptor)
-                with os.fdopen(file,'wb') as log:
-                    self.process=subprocess.Popen(argv,cwd=writer.files.path,env=env,
+                with os.fdopen(file,'wb') as log, writer.files.pinned() as working:
+                    # Linux procfs resolves the parent's pinned directory while Popen
+                    # waits for exec. No directory descriptor is inherited by the engine.
+                    working_path=f'/proc/{os.getpid()}/fd/{working}'
+                    self.process=subprocess.Popen(argv,cwd=working_path,env=env,
                         stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,
                         start_new_session=True,close_fds=True)
         except BaseException:

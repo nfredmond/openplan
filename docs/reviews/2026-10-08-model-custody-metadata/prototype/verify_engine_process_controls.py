@@ -17,6 +17,7 @@ def main():
       ('adopt-reservation-directory',change("os.mkdir('engine_process',mode=0o700,dir_fd=descriptor)","os.makedirs(self.directory,mode=0o700,exist_ok=True)"),'test_existing_reservation_never_launches_again'),
       ('ignore-directory-identity',change('if (info.st_dev,info.st_ino)!=self.directory_identity:', 'if False:'),'test_replaced_record_directory_refuses_exit'),
       ('follow-record-symlink',change("descriptor=os.open('engine_process',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=parent)","descriptor=os.open('engine_process',os.O_RDONLY|os.O_DIRECTORY,dir_fd=parent)"),'test_symlink_record_directory_refuses_exit'),
+      ('resolve-replaced-working-path',change('cwd=working_path','cwd=writer.files.path'),'test_child_uses_pinned_directory_after_path_replacement'),
       ('restored',source,None)]
     runner='''
 import importlib.util,sys,unittest
