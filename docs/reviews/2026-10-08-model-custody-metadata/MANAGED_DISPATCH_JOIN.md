@@ -3072,3 +3072,22 @@ This closes the preceding separation between scoped execution and installed
 command tests. It does not establish cancellation, parent-loss recovery, final
 output publication, normal dispatch, realistic network performance or scientific
 acceptance. No preview database, holdout or acceptance tolerance changes.
+
+## Retained local scope cancellation, October 8
+
+The scoped handle now verifies its original invocation and cgroup directory,
+retains a cancellation intent, then sends SIGKILL through the pinned cgroup file.
+A separate local receipt records observed termination only after the leader exits
+and the scope empties. The database status remains unchanged, the writer stays
+stopped and outputs remain unauthorized. A stopped writer may still stop its own
+scope; an unscoped handle, foreign thread or already observed exit cannot cancel.
+
+Ten cancellation tests and the broader 83-test engine suite pass. Twelve fault
+controls prove the checks detect omitted/early signaling, changed ownership,
+uncertain resend and unsupported lifecycle calls. The detached-child test uses
+an actual separate session after leader exit. Database transport is mocked, and
+all signaled processes belong to disposable test scopes.
+
+This adds local cancellation machinery, not the full cancellation workflow.
+Native-solver interruption, lost-receipt reconciliation, parent-loss recovery,
+database status decisions, UI behavior and normal dispatch remain unverified.

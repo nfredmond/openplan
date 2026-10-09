@@ -109,5 +109,29 @@ class OwnedEngineScope:
         if state.get('Result')!='success':raise RuntimeError('Owned engine scope failed')
         return {**self.identity,'observed_scope_empty':True,'scope_result':state['Result']}
 
+    def kill_owned(self,record_intent):
+        """Signal through a verified cgroup file descriptor after retaining intent.
+
+        A pinned cgroup.kill file cannot be redirected by reusing a unit name.
+        The caller must retain uncertainty if recording or signaling fails.
+        """
+        if self.identity is None:raise ValueError('Scope identity is not verified')
+        state=self.state()
+        if state.get('InvocationID')!=self.identity['invocation_id'] or state.get('ControlGroup')!=self.identity['cgroup']:
+            raise ValueError('Owned scope identity changed before cancellation')
+        directory=Path('/sys/fs/cgroup')/self.identity['cgroup'].lstrip('/')
+        descriptor=os.open(directory,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+        try:
+            info=os.fstat(descriptor)
+            if (info.st_dev,info.st_ino)!=(self.identity['cgroup_device'],self.identity['cgroup_inode']):
+                raise ValueError('Owned cgroup directory changed before cancellation')
+            kill_file=os.open('cgroup.kill',os.O_WRONLY|os.O_NOFOLLOW,dir_fd=descriptor)
+            try:
+                record_intent(dict(self.identity))
+                if os.write(kill_file,b'1')!=1:raise OSError('Owned scope signal write was incomplete')
+            finally:os.close(kill_file)
+        finally:os.close(descriptor)
+        return {'scope':dict(self.identity),'signal':'SIGKILL','signal_written':True,'termination_observed':False}
+
     def close_gate(self):
         self.parent.close();self.child.close()

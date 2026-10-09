@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import subprocess
 import socket
+import threading
 from model_engine_channel import ProgressParent, CHANNEL_FD_ENV
 
 
@@ -40,6 +41,9 @@ class EngineProcess:
         self.receipt=None
         self.progress=None
         self.scope=None
+        self.cancellation_requested=False
+        self.cancellation=None
+        self.cancelled_receipt=None
         child_channel=None
         child_env=dict(env)
         inherited=()
@@ -107,6 +111,45 @@ class EngineProcess:
                     raise ValueError('Engine process directory identity changed')
                 yield descriptor
             finally:os.close(descriptor)
+
+    def cancel(self):
+        """Stop this live object's owned scope without changing database status.
+
+        A stopped writer may still terminate its own processes. This never restores
+        write authority or reconstructs cancellation from a saved unit name.
+        """
+        if self.writer.thread_id!=threading.get_ident():raise ValueError('Cancellation belongs to another invocation thread')
+        if self.scope is None:raise ValueError('Cancellation requires an owned engine scope')
+        if self.receipt is not None:raise ValueError('Engine exit was already observed')
+        if self.cancellation is not None:return dict(self.cancellation)
+        if self.cancellation_requested:raise RuntimeError('Unconfirmed cancellation requires reconciliation')
+        self.writer.stopped=True
+        def record_intent(scope):
+            with self._pinned() as descriptor:
+                _record(descriptor,'cancellation-requested.json',{**self.identity,'scope':scope,'signal':'SIGKILL','termination_observed':False})
+            self.cancellation_requested=True
+        result=self.scope.kill_owned(record_intent)
+        with self._pinned() as descriptor:
+            _record(descriptor,'cancellation-signal-written.json',{**self.identity,**result})
+        self.cancellation=result
+        if self.progress is not None:self.progress.stop()
+        return dict(result)
+
+    def confirm_cancelled(self):
+        """Retain observed termination separately from a database cancellation decision."""
+        if self.writer.thread_id!=threading.get_ident():raise ValueError('Cancellation belongs to another invocation thread')
+        if self.cancellation is None:raise RuntimeError('Cancellation signal has not been confirmed')
+        if self.cancelled_receipt is not None:return dict(self.cancelled_receipt)
+        code=self.process.poll()
+        if code is None:raise EngineStillRunning('Cancelled engine has not exited')
+        from model_engine_supervision import ScopeStillPopulated
+        try:scope=self.scope.require_empty()
+        except ScopeStillPopulated as error:raise EngineStillRunning(str(error)) from error
+        receipt={**self.identity,'scope':scope,'returncode':code,'termination_observed':True,
+                 'execution_ready':False,'database_status_changed':False}
+        with self._pinned() as descriptor:_record(descriptor,'cancellation-observed.json',receipt)
+        self.cancelled_receipt=receipt
+        return dict(receipt)
 
     def confirm_exit(self):
         """Refuse live work; retain observed exit without authorizing model capture."""

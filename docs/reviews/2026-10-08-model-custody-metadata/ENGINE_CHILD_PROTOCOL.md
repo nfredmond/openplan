@@ -230,3 +230,33 @@ model resumption and an empty original scope. The six controls detect omitted
 supervision even when native execution and receipt recovery otherwise work.
 This supersedes the preceding missing live-database scope join. Cancellation,
 parent-loss reconciliation, final publication and normal dispatch remain open.
+
+## Live owned-scope cancellation, October 8
+
+`EngineProcess.cancel()` now operates only on its live, scoped handle and original
+invocation thread. It can stop processes after the writer has stopped, without
+restoring database write authority. Unscoped handles and already recorded engine
+exits are refused. No saved PID or unit name can construct this operation.
+
+The scope adapter verifies the invocation and cgroup directory identity, opens
+the owned `cgroup.kill` file through that directory descriptor, and requires the
+caller to retain a cancellation intent before writing the signal. The pinned
+file descriptor avoids selecting a different scope through a later unit-name
+lookup. This is forced SIGKILL termination, not graceful native checkpointing.
+The signal receipt does not claim termination until a later observation confirms
+both leader exit and an empty scope. Neither receipt changes database status or
+authorizes output publication.
+
+Failure to retain the intent sends no signal. An uncertain signal receipt leaves
+the writer stopped and refuses another signal attempt. Confirmed repeated calls
+return the existing local receipt. A detached child is terminated even after its
+leader exits. The full related suite passes 83 tests, including ten cancellation
+tests. Twelve controls detect early signaling, omitted signaling, bypassed
+invocation/directory/thread checks, uncertain resend and invalid lifecycle calls.
+See `prototype/scope-cancellation-controls.json` for source hashes and outcomes.
+
+These tests use disposable Linux processes and mocked database transport. Actual
+native-solver cancellation, fresh-process reconciliation of a lost cancellation
+receipt, parent-loss handling, database cancellation decisions, UI cancellation
+and normal dispatch remain open. Permission or identity failure does not fall
+back to killing a process group or an unverified unit.
