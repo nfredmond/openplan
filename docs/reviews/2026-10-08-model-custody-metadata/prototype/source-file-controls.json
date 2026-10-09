@@ -1,0 +1,46 @@
+{
+  "source_sha256": "09f42c9bf809e38f4a65a68ae81919a37f7d1aa33e7fe751bd4f3d3e6b0f3a60",
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "logical-hash",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "logical-size",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "context",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "output-alias",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "disk-budget",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "unpublished-status",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": "Synthetic local files. No native producer authority, Storage upload, crash recovery, scientific or human acceptance."
+}

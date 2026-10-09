@@ -149,3 +149,36 @@ Next, the owned-file copier and streaming publisher must consume this catalog,
 verify exact stored/logical bytes and retained authority, and preserve its roles
 through publication and recovery. The earlier archive and acceptance requirements
 remain binding.
+
+
+## Local retention checkpoint, October 9
+
+`model_validation_source_files.retain` rebuilds the declared catalog from exact
+primary document bytes and explicit bindings. It checks the expected context and
+requires one physical file location for every role. The existing descriptor-based
+copier verifies each role within the configured run directory, including roles
+whose hashes already have a retained object. Preparation sources cannot name the
+same physical file as modeled output. Gzip logical verification reads bounded
+chunks and refuses excess logical bytes or a mismatched hash.
+
+The destination is exclusive. A free-space check accounts for unique stored
+objects, a transient copy and overhead. Original documents remain unchanged.
+Objects use catalog-relative names. The local manifest appears after all copies
+and logical checks, with `retained_locally` status and scientific acceptance still
+unassessed. Failed partial directories remain for reconciliation; retries cannot
+overwrite them. This is not an implemented resume or power-loss recovery protocol.
+
+Six local file tests pass, including relocation, duplicate-hash corruption,
+logical hash and size, output alias, context, disk budget and destination refusal.
+Eight [fault-control cases](prototype/source-file-controls.json) include harmless
+and restored runs. The nine catalog tests and their twelve controls still pass.
+The tests use synthetic files and caller-supplied context. They do not prove native
+producer authority, independent preparation, provider redistribution permission,
+Storage publication, normal dispatch, crash recovery or scientific acceptance.
+The caller must establish producer completion and attempt authority; the local
+administrator owns the source root and destination parent. These are not security
+boundaries against another process with the same user's unrestricted access.
+
+Next, bind this helper to the admitted attempt writer and register the manifest
+through its retained command. Then implement bounded, resumable object publication
+and native recovery proof before adding consumer download claims.

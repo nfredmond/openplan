@@ -33,6 +33,7 @@ jobs:
           python -B scripts/modeling/tests/test_structural_preparation_files.py
           python -B scripts/modeling/tests/test_validation_prepared_context.py
           python -B workers/aequilibrae_worker/test_model_validation_source_catalog.py
+          python -B workers/aequilibrae_worker/test_model_validation_source_files.py
           python -B workers/aequilibrae_worker/test_immutable_upload_recovery.py
           python -B workers/aequilibrae_worker/test_activity_managed_dispatch.py
           python -B scripts/modeling/tests/test_directional_refusal.py

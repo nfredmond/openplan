@@ -8,7 +8,7 @@ import uuid
 import model_validation_source_catalog as catalog
 
 
-def fixture(method='aequilibrae'):
+def fixture(method='aequilibrae', *, include_payloads=False):
     context = {key:str(uuid.uuid4()) for key in ('workspace_id','model_run_id','stage_id','attempt_id')}
     context['method'] = method
     payloads, records, documents, bindings = {}, {}, {}, {}
@@ -51,7 +51,8 @@ def fixture(method='aequilibrae'):
         '/comparison_basis/network_state_hashes/network':inputs['network'],
     }
     bindings.update(copy.deepcopy(role_records))
-    return {'context':context,'documents':documents,'document_records':records,'bindings':bindings}
+    arguments = {'context':context,'documents':documents,'document_records':records,'bindings':bindings}
+    return (arguments, payloads) if include_payloads else arguments
 
 
 class CatalogTests(unittest.TestCase):
