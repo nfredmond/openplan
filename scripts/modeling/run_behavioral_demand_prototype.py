@@ -272,6 +272,11 @@ def run_behavioral_demand_prototype(
         raise RuntimeError(f"Screening run directory does not exist: {screening_path}")
 
     resolved_output_root = Path(output_root).expanduser().resolve() if output_root else default_output_root(screening_path)
+    # The runtime records sit beside its output, inside this pipeline root.
+    # Replacing the parent would erase both execution evidence and model logs.
+    custody = resolved_output_root / "runtime.container-custody"
+    if custody.exists() or custody.is_symlink():
+        raise RuntimeError("Retained container custody exists; choose a new pipeline output root")
     if resolved_output_root.exists():
         if not force:
             raise RuntimeError(f"Output root already exists: {resolved_output_root}")

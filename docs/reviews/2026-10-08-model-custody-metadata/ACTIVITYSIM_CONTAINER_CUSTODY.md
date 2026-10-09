@@ -533,3 +533,18 @@ verification to native ActivitySim, the database poller/attempt dispatcher,
 remote/rootless Docker, Podman, worker-inside-container deployment, daemon/host
 failure, scientific accuracy or human acceptance. Broader coverage is required
 before the full v1 execution obligation is satisfied.
+
+
+## Pipeline parent-directory protection
+
+The behavioral pipeline previously removed its complete output root under
+`force=True`, bypassing the runtime guard and deleting retained container
+records with their command logs. It now refuses replacement when
+`runtime.container-custody` exists, including a dangling symbolic link. The
+operator must select a fresh pipeline output root.
+
+All five behavioral pipeline tests pass. A harmless mutation passes; disabling
+the parent guard makes the retained-record regression fail with the expected
+missing refusal; restored code passes. See `prototype/pipeline-custody-controls.json`
+and its executable verifier. This verifies a synthetic filesystem boundary,
+not database recovery, native model execution or scientific acceptance.

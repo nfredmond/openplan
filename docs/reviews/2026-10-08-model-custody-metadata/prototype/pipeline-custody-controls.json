@@ -1,0 +1,23 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "erase-retained-pipeline",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "source_sha256": "cf4e23d4ec7ba1ed550cdef77a9e6176b98da87f1ccbe3579b7fddbc3754a7df",
+  "limits": [
+    "Synthetic pipeline filesystem regression; no database, native model or scientific acceptance"
+  ]
+}
