@@ -1,0 +1,44 @@
+[
+  {
+    "case": "baseline",
+    "expectedPass": true,
+    "returnCode": 0,
+    "stdout": "[\n  {\n    \"case\": \"completion_wins\",\n    \"observedLockWait\": true,\n    \"waiterReturnCode\": 0,\n    \"state\": {\n      \"status\": \"ready\",\n      \"fenced\": false,\n      \"routeRows\": 1\n    }\n  },\n  {\n    \"case\": \"cleanup_blocks_derived\",\n    \"observedLockWait\": true,\n    \"waiterReturnCode\": 3,\n    \"state\": {\n      \"status\": \"failed\",\n      \"fenced\": true,\n      \"routeRows\": 0\n    }\n  },\n  {\n    \"case\": \"cleanup_blocks_stage\",\n    \"observedLockWait\": true,\n    \"waiterReturnCode\": 3,\n    \"state\": {\n      \"status\": \"failed\",\n      \"fenced\": true,\n      \"routeRows\": 0\n    }\n  },\n  {\n    \"case\": \"cleanup_rollback\",\n    \"observedLockWait\": true,\n    \"waiterReturnCode\": 0,\n    \"state\": {\n      \"status\": \"parsing\",\n      \"fenced\": false,\n      \"routeRows\": 1\n    }\n  }\n]\n",
+    "stderr": ""
+  },
+  {
+    "case": "harmless_comment",
+    "expectedPass": true,
+    "returnCode": 0,
+    "stdout": "[\n  {\n    \"case\": \"completion_wins\",\n    \"observedLockWait\": true,\n    \"waiterReturnCode\": 0,\n    \"state\": {\n      \"status\": \"ready\",\n      \"fenced\": false,\n      \"routeRows\": 1\n    }\n  },\n  {\n    \"case\": \"cleanup_blocks_derived\",\n    \"observedLockWait\": true,\n    \"waiterReturnCode\": 3,\n    \"state\": {\n      \"status\": \"failed\",\n      \"fenced\": true,\n      \"routeRows\": 0\n    }\n  },\n  {\n    \"case\": \"cleanup_blocks_stage\",\n    \"observedLockWait\": true,\n    \"waiterReturnCode\": 3,\n    \"state\": {\n      \"status\": \"failed\",\n      \"fenced\": true,\n      \"routeRows\": 0\n    }\n  },\n  {\n    \"case\": \"cleanup_rollback\",\n    \"observedLockWait\": true,\n    \"waiterReturnCode\": 0,\n    \"state\": {\n      \"status\": \"parsing\",\n      \"fenced\": false,\n      \"routeRows\": 1\n    }\n  }\n]\n",
+    "stderr": ""
+  },
+  {
+    "case": "omit_cleanup_lock",
+    "expectedPass": false,
+    "returnCode": 1,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/gtfs-ingest-recovery-20261009/docs/reviews/2026-10-09-gtfs-ingest-recovery/verify_failure_concurrency.py\", line 95, in <module>\n    print(json.dumps([run_case('completion_wins', completion=True), run_case('cleanup_blocks_derived'),\n                      ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/gtfs-ingest-recovery-20261009/docs/reviews/2026-10-09-gtfs-ingest-recovery/verify_failure_concurrency.py\", line 74, in run_case\n    assert waiter.returncode == 0 and json.loads(stdout.strip()) == {'recorded': False, 'feedStatusChanged': False}, (stdout, stderr)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('{\"recorded\": true, \"feedStatusChanged\": false}\\n', '')\n"
+  },
+  {
+    "case": "omit_version_fence",
+    "expectedPass": false,
+    "returnCode": 1,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/gtfs-ingest-recovery-20261009/docs/reviews/2026-10-09-gtfs-ingest-recovery/verify_failure_concurrency.py\", line 96, in <module>\n    run_case('cleanup_blocks_stage', stage=True), run_case('cleanup_rollback', rollback=True)], indent=2))\n    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/gtfs-ingest-recovery-20261009/docs/reviews/2026-10-09-gtfs-ingest-recovery/verify_failure_concurrency.py\", line 78, in run_case\n    assert waiter.returncode != 0 and '55000' in stderr and 'closed' in stderr, (stdout, stderr)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('', '')\n"
+  },
+  {
+    "case": "omit_derived_fence",
+    "expectedPass": false,
+    "returnCode": 1,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/gtfs-ingest-recovery-20261009/docs/reviews/2026-10-09-gtfs-ingest-recovery/verify_failure_concurrency.py\", line 95, in <module>\n    print(json.dumps([run_case('completion_wins', completion=True), run_case('cleanup_blocks_derived'),\n                                                                    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/gtfs-ingest-recovery-20261009/docs/reviews/2026-10-09-gtfs-ingest-recovery/verify_failure_concurrency.py\", line 78, in run_case\n    assert waiter.returncode != 0 and '55000' in stderr and 'closed' in stderr, (stdout, stderr)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('', '')\n"
+  },
+  {
+    "case": "restored",
+    "expectedPass": true,
+    "returnCode": 0,
+    "stdout": "[\n  {\n    \"case\": \"completion_wins\",\n    \"observedLockWait\": true,\n    \"waiterReturnCode\": 0,\n    \"state\": {\n      \"status\": \"ready\",\n      \"fenced\": false,\n      \"routeRows\": 1\n    }\n  },\n  {\n    \"case\": \"cleanup_blocks_derived\",\n    \"observedLockWait\": true,\n    \"waiterReturnCode\": 3,\n    \"state\": {\n      \"status\": \"failed\",\n      \"fenced\": true,\n      \"routeRows\": 0\n    }\n  },\n  {\n    \"case\": \"cleanup_blocks_stage\",\n    \"observedLockWait\": true,\n    \"waiterReturnCode\": 3,\n    \"state\": {\n      \"status\": \"failed\",\n      \"fenced\": true,\n      \"routeRows\": 0\n    }\n  },\n  {\n    \"case\": \"cleanup_rollback\",\n    \"observedLockWait\": true,\n    \"waiterReturnCode\": 0,\n    \"state\": {\n      \"status\": \"parsing\",\n      \"fenced\": false,\n      \"routeRows\": 1\n    }\n  }\n]\n",
+    "stderr": ""
+  }
+]
