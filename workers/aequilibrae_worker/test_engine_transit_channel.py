@@ -104,6 +104,18 @@ class TransitChannelTests(unittest.TestCase):
         with self.assertRaisesRegex(ChannelStopped,'already requested'):self.request(parent,peer,'prepare_selected_transit',3)
         self.callback.assert_called_once()
 
+    def test_general_request_cannot_override_coordinates(self):
+        self.prepare();parent,peer=self.pair();self.request(parent,peer,'create_outputs',1)
+        with self.assertRaises(ChannelStopped):self.request(parent,peer,'prepare_transit',2,lons=[0],lats=[0])
+        self.callback.assert_not_called()
+
+    def test_general_alias_cannot_repeat_selected_preparation(self):
+        self.prepare();parent,peer=self.pair();self.request(parent,peer,'create_outputs',1)
+        self.request(parent,peer,'prepare_selected_transit',2)
+        self.callback.side_effect=None;self.callback.return_value={}
+        with self.assertRaisesRegex(ChannelStopped,'already requested'):self.request(parent,peer,'prepare_transit',3)
+        self.callback.assert_called_once()
+
     def test_child_cannot_override_selected_version(self):
         self.prepare();parent,peer=self.pair();self.request(parent,peer,'create_outputs',1)
         with self.assertRaises(ChannelStopped):self.request(parent,peer,'prepare_selected_transit',2,feed_version_id='foreign')

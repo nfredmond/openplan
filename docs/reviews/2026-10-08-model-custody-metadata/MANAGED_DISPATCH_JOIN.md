@@ -2752,3 +2752,26 @@ registered geometry transfer. The geometry hash identifies bytes read from the
 mutable working package; it does not establish original producer authority.
 Complete native assignment, operational recovery, browser and scientific
 acceptance remain open. The dispatcher remains disabled.
+
+
+## General transit channel and retained geometry, October 8
+
+The channel now accepts a parameter-free `prepare_transit` request using the
+same one-time parent callback as selected transit. Child coordinates and repeat
+requests across either name are refused. The callback registers geometry as a
+separate file bundle before returning its reference. The child verifies an
+independent copy. Geometry arrays no longer occupy the bounded control frame.
+
+A real child consumes parent geometry after a synthetic catalog no-match.
+A lost registration reply prevents child consumption. A 20,000-zone fixture
+exceeds the 64 KB control limit as raw JSON, but its file reference fits and its
+copied values match. Tampered retained geometry fails verification. The related
+suite passes 79 tests. Four parent callback, two file custody, and six channel
+fault controls fail their targeted checks; baseline, harmless and restored
+controls pass. Reports reside in the prototype directory.
+
+The no-match general child path and the existing selected-feed child skim are
+proven separately with mocked database/source transports. General modeled-feed
+child consumption using these coordinates is next. Full native assignment,
+real registration recovery, original producer geometry authority and scientific
+acceptance remain unproved. The dispatcher remains disabled.

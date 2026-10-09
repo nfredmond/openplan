@@ -9,6 +9,7 @@ cases=[('baseline',source,''),('harmless',source+'\n# Harmless comment.\n',''),
  ('mutable-setup',source.replace('setup = copy.deepcopy(setup_result)', 'setup = setup_result'),'test_callback_uses_owned_coordinates_and_frozen_zone_order'),
  ('omit-deadline',source.replace('lats=np.asarray(geometry["lats"], dtype=float), deadline=deadline,', 'lats=np.asarray(geometry["lats"], dtype=float), deadline=None,'),'test_deadline_is_forwarded_with_owned_geometry'),
  ('wrong-longitudes',source.replace('out_dir, lons=np.asarray(geometry["lons"], dtype=float),', 'out_dir, lons=np.zeros(len(geometry["lons"])), '),'test_callback_uses_owned_coordinates_and_frozen_zone_order'),
+ ('omit-registration',source.replace('writer.record_artifact({', '(lambda *args, **kwargs: None)({'),'test_real_child_consumes_registered_geometry'),
  ('restored',source,'')]
 runner='''
 import importlib.util,sys,unittest
@@ -28,5 +29,5 @@ with tempfile.TemporaryDirectory() as directory:
    if r.returncode!=1 or 'FAIL: '+target not in r.stderr:raise AssertionError(name+': '+r.stderr)
   elif r.returncode:raise AssertionError(name+': '+r.stderr)
   records.append({'control':name,'exit_code':r.returncode,'targeted_test':target or None})
-report={'module_sha256':hashlib.sha256(source.encode()).hexdigest(),'controls':records,'limits':'Synthetic CSV and owned package fixtures. No complete assignment, child geometry handoff, original producer manifest authority or scientific acceptance.'}
+report={'module_sha256':hashlib.sha256(source.encode()).hexdigest(),'controls':records,'limits':'Synthetic CSV and owned package fixtures. Real child geometry handoff with synthetic no-match discovery and mocked registration. No general modeled child transit, full native assignment, original producer authority or scientific acceptance.'}
 content=json.dumps(report,indent=2)+'\n';(ROOT/'transit-geometry-controls.json').write_text(content);print(content)

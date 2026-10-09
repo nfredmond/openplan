@@ -1,5 +1,5 @@
 {
-  "channel_sha256": "4edf04d29c535e4b78e8a598bc74bd2deb417638d8465897e010bd1ea3009691",
+  "channel_sha256": "bd0f6f63bf5f8a611c663d37fd6df8562fe139a210ee29ff2cdfc4530fdbdf63",
   "adapter_sha256": "70d1b369e1116f1742f86a79ff07ec65837c361a1e7fb9064b8b9b8123671501",
   "controls": [
     {
@@ -31,6 +31,16 @@
       "control": "downgrade-uncertain-write",
       "exit_code": 1,
       "targeted_test": "test_uncertain_write_not_reported_as_feed_unavailable"
+    },
+    {
+      "control": "allow-child-coordinates",
+      "exit_code": 1,
+      "targeted_test": "test_general_request_cannot_override_coordinates"
+    },
+    {
+      "control": "allow-general-repeat",
+      "exit_code": 1,
+      "targeted_test": "test_general_alias_cannot_repeat_selected_preparation"
     },
     {
       "control": "restored",

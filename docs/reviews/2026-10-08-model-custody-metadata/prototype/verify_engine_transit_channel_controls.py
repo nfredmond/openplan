@@ -11,6 +11,8 @@ cases=[('baseline',source,body,''),('harmless',source+'\n# Harmless comment.\n',
  ('allow-repeat',source.replace('if self.transit_preparation_started:', 'if False:'),body,'test_repeat_refused_before_second_preparation'),
  ('skip-parent-preparation',source.replace("response['result'] = self._prepare_inputs(self.transit_preparer)","response['result'] = {'status':'unavailable','no_feed_reason':'fake'}"),body,'test_child_consumes_registered_bytes_and_skims'),
  ('downgrade-uncertain-write',source,body.replace('except gtfs_skim.SelectedFeedError as error:','except Exception as error:').replace('error.no_feed_reason',"getattr(error, 'no_feed_reason', 'fake')"),'test_uncertain_write_not_reported_as_feed_unavailable'),
+ ('allow-child-coordinates',source.replace('set(request) != fields','not fields.issubset(request)'),body,'test_general_request_cannot_override_coordinates'),
+ ('allow-general-repeat',source.replace('if self.transit_preparation_started:', 'if False:'),body,'test_general_alias_cannot_repeat_selected_preparation'),
  ('restored',source,body,'')]
 runner='''
 import importlib.util,sys,unittest

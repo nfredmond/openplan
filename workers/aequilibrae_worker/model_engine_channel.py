@@ -109,6 +109,9 @@ class ProgressClient(Channel):
     def read_paths(self):
         return self._request('read_paths', {}, result=True)
 
+    def prepare_transit(self):
+        return self._request('prepare_transit', {}, result=True)
+
     def prepare_selected_transit(self):
         return self._request('prepare_selected_transit', {}, result=True)
 
@@ -141,7 +144,7 @@ class ProgressParent(Channel):
             if (set(request) != fields
                     or type(request['version']) is not int or request['version'] != VERSION
                     or type(request['sequence']) is not int or request['sequence'] != self.sequence
-                    or operation not in ('progress', 'read_run', 'read_paths', 'create_outputs', 'prepare_counts', 'prepare_selected_transit')):
+                    or operation not in ('progress', 'read_run', 'read_paths', 'create_outputs', 'prepare_counts', 'prepare_selected_transit', 'prepare_transit')):
                 raise ChannelStopped('Engine request is outside the allowed protocol')
             if operation == 'progress':
                 if not isinstance(request['log_tail'], str) or len(request['log_tail']) > 20000:
@@ -166,7 +169,7 @@ class ProgressParent(Channel):
                     raise ChannelStopped('Count preparation was already requested')
                 self.count_preparation_started = True
                 response['result'] = self._prepare_inputs(self.count_preparer)
-            elif operation == 'prepare_selected_transit':
+            elif operation in ('prepare_selected_transit', 'prepare_transit'):
                 if self.transit_preparation_started:
                     raise ChannelStopped('Transit preparation was already requested')
                 self.transit_preparation_started = True

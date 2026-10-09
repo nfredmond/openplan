@@ -2427,8 +2427,22 @@ def managed_assignment_transit_preparer(setup_result: dict, *, deadline):
             out_dir, lons=np.asarray(geometry["lons"], dtype=float),
             lats=np.asarray(geometry["lats"], dtype=float), deadline=deadline,
         )
-        writer.require_open()
-        return {**result, "geometry": geometry}
+        from pathlib import Path
+        import model_geometry_inputs
+        try:
+            writer.require_open()
+            retained = model_geometry_inputs.retain(geometry, Path(out_dir) / "geometry_inputs")
+            writer.files.verify()
+            writer.record_artifact({
+                "run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+                "artifact_type": "model_assignment_geometry", "file_url": "local://" + retained["manifest_path"],
+                "file_size_bytes": retained["manifest_size_bytes"], "content_hash": retained["manifest_sha256"],
+                "metadata_json": {"schema": geometry["schema"], "scientific_acceptance": "unassessed"},
+            }, logical_name="assignment-geometry")
+            return {**result, "geometry_record": retained}
+        except Exception as error:
+            writer.stopped = True
+            raise WorkerStateWriteUnconfirmed("Geometry retention requires reconciliation") from error
 
     return prepare
 
