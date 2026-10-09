@@ -33,6 +33,10 @@ def run(name, expected, selection=None):
 
 
 mutations = [
+    ("parent_environment_inherited", PARENT, 'env: { NODE_ENV: "production" }',
+     'env: { ...process.env, NODE_ENV: "production" }', "gives the child only the explicit production environment"),
+    ("production_environment_omitted", PARENT, 'env: { NODE_ENV: "production" }',
+     'env: {}', "gives the child only the explicit production environment"),
     ("checksum_removed", CHILD,
      'if (createHash("sha256").update(bytes).digest("hex") !== request.checksumSha256)',
      "if (false)", "refuses changed archive bytes"),

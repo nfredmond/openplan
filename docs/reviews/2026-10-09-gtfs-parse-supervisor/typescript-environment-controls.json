@@ -1,0 +1,15 @@
+{
+  "checks": [
+    {
+      "name": "old_environment",
+      "exitCode": 2,
+      "logSha256": "6ba61e4930054a374994ac2100b63aa1f99b46b334162f54850d33def305c830"
+    },
+    {
+      "name": "restored_environment",
+      "exitCode": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "sourceRestored": true
+}

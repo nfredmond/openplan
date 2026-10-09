@@ -65,6 +65,20 @@ process.once('message',()=>{writeSync(5,'cpu-active',0);while(true){Math.sqrt(Ma
 }
 
 describe("GTFS parsing in an independently supervised process", () => {
+  it("gives the child only the explicit production environment", async () => {
+    const { options, directory, outputPath } = await setup();
+    const entrypoint = path.join(directory, "environment.mjs");
+    await writeFile(entrypoint, `import {writeSync} from 'node:fs';import {createHash} from 'node:crypto';
+process.once('message',()=>{const bytes=Buffer.from(JSON.stringify(process.env));writeSync(5,bytes,0,bytes.length,0);
+process.send({byteSize:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),parsed:false},()=>process.exit(0));});`);
+    launched.fixture = entrypoint;
+    vi.stubEnv("OPENPLAN_PARSER_TEST_SECRET", "synthetic-parent-only");
+    try {
+      expect((await superviseGtfsParse(options)).ok).toBe(true);
+      expect(JSON.parse(await readFile(outputPath, "utf8"))).toEqual({ NODE_ENV: "production" });
+    } finally { vi.unstubAllEnvs(); }
+  });
+
   it("retains the production parser's complete result with a verified digest", async () => {
     const bytes = await archive(), { options, outputPath } = await setup(bytes);
     let renewals = 0;

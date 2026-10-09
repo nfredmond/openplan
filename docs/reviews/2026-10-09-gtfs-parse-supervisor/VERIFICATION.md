@@ -95,3 +95,26 @@ python3 docs/reviews/2026-10-09-gtfs-parse-supervisor/verify_controls.py /privat
 cd openplan
 node --import tsx ../docs/reviews/2026-10-09-gtfs-parse-supervisor/verify_archive.mts /private/retained.zip /private/new-proof-directory
 ```
+
+## Production environment correction
+
+GitHub QA at `cf02933e0` passes the tests but fails the production type check
+because Next.js augments `ProcessEnv` with a required `NODE_ENV`. The earlier
+scoped TypeScript configuration omitted that declaration and therefore missed
+this defect. The parent now supplies only `NODE_ENV=production`. It still
+passes no inherited database or provider credentials to the parser.
+
+A real child fixture reads its own environment. It confirms the exact explicit
+value and refuses a synthetic parent-only variable. All 56 supervisor and parser
+tests pass. The [updated controls](environment-controls.json) pass baseline,
+harmless and restored runs and detect twelve targeted failures, including
+inheriting the parent environment and omitting `NODE_ENV`. The controlled service
+exits successfully after 57.756 seconds with a 228.6M journal-reported peak under
+its 2 GiB cap, without swap.
+
+The scoped type check now includes Next.js's actual global declaration. The
+[TypeScript controls](typescript-environment-controls.json) reproduce the original
+missing-`NODE_ENV` error with the old expression and pass after restoration.
+Targeted ESLint passes. Full production CI remains required on the corrected
+commit; this targeted check does not substitute for it. No import route,
+scientific tier, database or release version changes.

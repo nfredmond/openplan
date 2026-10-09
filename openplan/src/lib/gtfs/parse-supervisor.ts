@@ -95,7 +95,7 @@ export async function superviseGtfsParse(options: GtfsParseProcessOptions): Prom
       execArgv: ["--import", "tsx", `--max-old-space-size=${options.maxOldSpaceMb}`],
       // The parser receives bytes through descriptors, with no database or
       // provider credentials. Its stderr cannot accidentally dump source rows.
-      env: {},
+      env: { NODE_ENV: "production" },
       stdio: ["ignore", "ignore", "ignore", "ipc", options.archive.fd, options.output.fd],
     });
     let receipt: z.infer<typeof receiptSchema> | undefined;
