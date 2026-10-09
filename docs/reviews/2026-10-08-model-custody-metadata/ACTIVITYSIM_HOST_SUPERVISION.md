@@ -99,3 +99,39 @@ proves neither full-population capacity nor restart, continuation, graceful
 project closure, container custody, nationwide use-specific accuracy or human
 acceptance. The 779 rows demonstrate runnable output, not plausible local travel
 behavior or an independent acceptance result.
+
+## Read-only inspection after interruption
+
+From the repository root, an operator can inspect a retained host execution:
+
+```bash
+python workers/activitysim_worker/host_recovery.py --records "/path/to/runtime/stages/030-run-activitysim/host_supervision"
+```
+
+The command reads private records owned by the current user. It checks the
+launch/startup/exit relationship, guard and engine boot identity, and live
+systemd/cgroup observations through the existing shared inspectors. Duplicate
+JSON fields, oversized/nonprivate records and inconsistent identities are
+refused. It rechecks record hashes after observation. These sequential checks
+do not make process state atomic.
+
+The output separates a currently absent scope from a retained completion record.
+A missing startup record remains unconfirmed. An old boot remains unassessed
+through the shared inspector. Process absence never establishes termination
+cause, successful computation, server-side attempt ownership or permission to
+restart. The command has no signaling, model execution or database-write path.
+Malformed or inaccessible records produce a refusal and exit code 3.
+
+All 57 ActivitySim suite tests pass with live host tests enabled. Six deliberate
+faults are detected, with harmless/restored passes: invented continuation
+authority, changed startup accepted, boolean exit code accepted, changed record
+ignored, missing startup called absent, and nonprivate record accepted. The
+mutation runner checks the named failing test, not merely any failing suite.
+Unit live-state observations are mocked; the separate native-record campaign
+invokes the CLI twice on each of the four retained native runs. Both readings
+match, original bytes remain unchanged, and only the owner-alive native run has
+a completion record. All four scope/guard observations report absent on the
+same boot. Results and procedures are in `prototype/activitysim-recovery-controls.json`,
+`prototype/activitysim-retained-inspection.json`, and their matching verification
+scripts. This establishes local inspection only. Database reconciliation,
+restart authorization, container custody and scientific acceptance remain open.

@@ -1,0 +1,61 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    },
+    {
+      "case": "promote-continuation",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_absence_does_not_authorize_restart_or_infer_cause"
+    },
+    {
+      "case": "accept-changed-startup",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_changed_startup_is_refused_before_observation"
+    },
+    {
+      "case": "accept-boolean-exit",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_inconsistent_exit_is_refused"
+    },
+    {
+      "case": "ignore-record-change",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_change_during_live_observation_is_refused"
+    },
+    {
+      "case": "invent-startup-observation",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_missing_startup_remains_unconfirmed"
+    },
+    {
+      "case": "accept-public-record",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_nonprivate_file_is_refused"
+    },
+    {
+      "case": "restored",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    }
+  ],
+  "source_sha256": {
+    "recovery": "0996765230894df2513853917048d73f98fcce05546e386f55ae88c6cefc27cf",
+    "reader": "21c9dbd76321ecc19ea4fc0a5adb065decb0fe527d907d485ae90835c6d12328"
+  },
+  "limits": [
+    "Synthetic retained identities with mocked live observations",
+    "Separate native retained-record CLI checks establish the local systemd observation boundary",
+    "No restart, signal, database reconciliation or scientific acceptance"
+  ]
+}
