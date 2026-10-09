@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """The behavioral assignment consumes one intact, hash-verified local package."""
 import hashlib
+import ast
 import inspect
 import json
 import os
@@ -1265,6 +1266,18 @@ def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
                 raise AssertionError("tampered assignment-state metadata was accepted")
 
 
+def assert_pre_execution_network_guard(source):
+    calls=[node for node in ast.walk(ast.parse(source)) if isinstance(node,ast.Call)]
+    guards=[node for node in calls if isinstance(node.func,ast.Name) and node.func.id=='require_expected_network_state']
+    entries=[node for node in calls if isinstance(node.func,ast.Attribute)
+             and isinstance(node.func.value,ast.Name) and node.func.value.id=='model_assignment_input_snapshot'
+             and node.func.attr=='retain_and_execute']
+    assert len(guards)==len(entries)==1, 'Expected one network guard and retained execution entry'
+    assert guards[0].lineno < entries[0].lineno, 'Network guard must precede retained execution'
+    assert not any(isinstance(node.func,ast.Attribute) and isinstance(node.func.value,ast.Name)
+                   and node.func.value.id=='assig' and node.func.attr=='execute' for node in calls), 'Direct assignment bypasses retained execution'
+
+
 def test_stage5_network_state_mismatch_is_guarded_before_execute():
     identity = identity_record(0.0004)
     state = identity["network_state_record"]
@@ -1285,7 +1298,7 @@ def test_stage5_network_state_mismatch_is_guarded_before_execute():
         raise AssertionError("a changed Stage-5 retained network was accepted")
 
     source = inspect.getsource(main.stage_assignment)
-    assert source.index("require_expected_network_state(") < source.index("assig.execute()")
+    assert_pre_execution_network_guard(source)
 
 
 def test_agreement_geometry_excludes_connectors_and_binds_exact_roadway_count():

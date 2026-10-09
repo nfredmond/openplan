@@ -4998,6 +4998,7 @@ def stage_assignment(
                 context={"run_id": run_id, "stage_id": stage_id,
                          "demand_method": "activitysim" if demand_is_vehicle else "aequilibrae"},
                 profile=assignment_profile, network_state=network_state_record,
+                network_database=os.path.join(proj_dir, "project_database.sqlite"),
                 network_settings=applied_network_settings,
             )
 

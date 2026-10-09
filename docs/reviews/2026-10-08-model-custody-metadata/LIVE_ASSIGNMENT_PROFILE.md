@@ -70,3 +70,7 @@ Bind the prepared network to the actual assigned graph and preserve the demand
 transformations between the preparation package and the final resident/external
 matrices. Do not infer equivalence from profile agreement. The full v1 contract,
 roadmap and independent geographic acceptance requirements remain unchanged.
+
+The subsequent [network-source checkpoint](ASSIGNMENT_NETWORK_SOURCE.md) binds
+the preparation's logical node/link records to the working project's records.
+The graph and demand transformations remain separate unfinished boundaries.

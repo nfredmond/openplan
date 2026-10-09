@@ -20,7 +20,7 @@ def _document(path, expected_hash, expected_size):
         parse_constant=lambda value: (_ for _ in ()).throw(ValueError('Nonfinite preparation metadata')))
 
 
-def retained_preparation(writer, method, *, assignment_profile):
+def retained_preparation(writer, method, *, assignment_profile, network_source=None):
     """Select from this parent's journal, never a child-provided artifact ID."""
     from model_assignment_input_publication import _file
     from model_validation_source_catalog import _artifact
@@ -92,8 +92,22 @@ def retained_preparation(writer, method, *, assignment_profile):
     current = canonical_assignment_profile(assignment_profile)
     if prepared != current:
         raise ValueError('Prepared assignment profile differs from initial assignment')
+    networks = [entry for entry in entries if entry['role'] == 'network']
+    if len(networks) != 1:
+        raise ValueError('Preparation link requires one network source')
+    from model_assignment_network_source import identity
+    network_record = networks[0]
+    prepared_network = identity(path.parent / network_record['object_name'])
+    # Recheck retained bytes after the read-only SQLite transaction as well.
+    checked, _ = _file(path.parent / network_record['object_name'])
+    if checked['sha256'] != network_record['sha256'] or checked['bytes'] != network_record['bytes']:
+        raise ValueError('Prepared network changed during identity comparison')
+    if prepared_network != network_source:
+        raise ValueError('Prepared network source differs from initial assignment')
     return {'status': 'retained', 'artifact_id': receipt['id'],
         'manifest_sha256': payload['content_hash'], 'producer': producer,
         'assignment_profile': {'status': 'matched', 'scope': 'declared_assignment_profile',
             'prepared_sha256': profile_record['sha256'], 'canonical_sha256': assignment_profile_digest(current)},
+        'network_source': {'status': 'matched', 'scope': 'source_node_link_records',
+            'prepared_file_sha256': network_record['sha256'], 'logical_sha256': prepared_network['sha256']},
         'solver_input_equivalence': 'unassessed'}

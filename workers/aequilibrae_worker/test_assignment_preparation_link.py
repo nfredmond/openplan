@@ -1,5 +1,7 @@
 """Real preparation files and receipts; synthetic solver and database transport."""
 from pathlib import Path
+import shutil
+import sqlite3
 import unittest
 from unittest.mock import patch
 
@@ -7,6 +9,7 @@ import model_attempt_writer as managed
 import model_assignment_input_snapshot as snapshot
 import model_assignment_preparation_link as link
 import assignment_settings
+import model_assignment_network_source as network_source
 import test_model_preparation_handoff as handoff
 import test_assignment_input_snapshot as inputs
 
@@ -28,6 +31,8 @@ class PreparationLinkTests(unittest.TestCase):
         self.writer.get = self.get
         self.post.reset_mock()
         self.output = self.writer.files.path / 'run_output'; self.output.mkdir()
+        self.network_database = self.writer.files.path / 'assignment-network.sqlite'
+        shutil.copyfile(self.retained['source_paths']['network'],self.network_database)
 
     def execute(self):
         with managed.bind(self.writer):
@@ -35,7 +40,7 @@ class PreparationLinkTests(unittest.TestCase):
                 directory=self.output / 'initial_assignment_inputs',
                 context={'run_id': self.writer.context.run_id, 'stage_id': self.writer.context.stage_id,
                          'demand_method': 'aequilibrae'},
-                profile=self.profile, network_state={}, network_settings={})
+                profile=self.profile, network_state={}, network_settings={},network_database=self.network_database)
 
     def test_parent_links_confirmed_consumption_before_solver(self):
         def verify():
@@ -47,6 +52,8 @@ class PreparationLinkTests(unittest.TestCase):
             self.assertEqual(record['solver_input_equivalence'], 'unassessed')
             self.assertEqual(record['assignment_profile']['status'], 'matched')
             self.assertEqual(record['assignment_profile']['scope'], 'declared_assignment_profile')
+            self.assertEqual(record['network_source']['status'], 'matched')
+            self.assertEqual(record['network_source']['scope'], 'source_node_link_records')
             self.assertEqual(record['assignment_profile']['canonical_sha256'], assignment_settings.assignment_profile_digest(self.profile))
             self.assertEqual(metadata['scientific_acceptance'], 'unassessed')
             self.assertEqual(metadata['preparation_independence'], 'unassessed')
@@ -77,7 +84,8 @@ class PreparationLinkTests(unittest.TestCase):
             try:
                 path.write_bytes(original + b' ')
                 with self.subTest(name=name), self.assertRaisesRegex(ValueError, 'file bytes differ'):
-                    link.retained_preparation(self.writer, 'aequilibrae', assignment_profile=self.profile)
+                    link.retained_preparation(self.writer, 'aequilibrae', assignment_profile=self.profile,
+                        network_source=network_source.identity(self.network_database))
             finally:
                 path.write_bytes(original)
 
@@ -117,6 +125,17 @@ class PreparationLinkTests(unittest.TestCase):
             handoff.aeq.retain_managed_validation_preparation('aequilibrae')
         with self.assertRaises(assignment_settings.AssignmentSettingsError):
             link.retained_preparation(fixture.writer, 'aequilibrae', assignment_profile=self.profile)
+
+    def test_changed_working_network_refuses_before_registration_and_solver(self):
+        with sqlite3.connect(self.network_database) as connection:
+            connection.execute('UPDATE links SET capacity_ab=999')
+        with self.assertRaisesRegex(ValueError,'Prepared network source differs'):self.execute()
+        self.post.assert_not_called();self.engine.execute.assert_not_called()
+        self.assertTrue(self.writer.stopped)
+
+    def test_missing_working_network_identity_is_not_assumed_equal(self):
+        with self.assertRaisesRegex(ValueError,'Prepared network source differs'):
+            link.retained_preparation(self.writer,'aequilibrae',assignment_profile=self.profile)
 
     def test_duplicate_consumption_refuses(self):
         read = link.journal.read_existing

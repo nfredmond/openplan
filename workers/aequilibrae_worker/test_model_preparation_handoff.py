@@ -29,6 +29,8 @@ class HandoffTests(unittest.TestCase):
         arguments['relative_to']=inputs
         if assignment_profile is not None:
             arguments['assignment_profile_path'].write_text(json.dumps(assignment_profile))
+            from test_assignment_network_source import prepare_fixture
+            prepare_fixture(arguments)
         retained=preparation.retain(files=files,method='aequilibrae',bundle_arguments=arguments)
         self.producer={'id':producer.stage_id,'run_id':consumer.run_id,'stage_name':'AequilibraE Setup','status':'succeeded',
                        'sort_order':1,'attempt_managed':True,'active_attempt_id':producer.attempt_id}

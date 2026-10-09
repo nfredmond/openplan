@@ -1,0 +1,42 @@
+{
+  "stage_source_sha256": "99744d3c8cdf43971df480893d933f5abdcffb913c3deaf558f40468ed6a111d",
+  "controls": [
+    {
+      "control": "baseline",
+      "expected_failure": null,
+      "observed_failure": null,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "expected_failure": null,
+      "observed_failure": null,
+      "matched": true
+    },
+    {
+      "control": "omit-guard",
+      "expected_failure": "Expected one network guard",
+      "observed_failure": "Expected one network guard and retained execution entry",
+      "matched": true
+    },
+    {
+      "control": "late-guard",
+      "expected_failure": "Network guard must precede",
+      "observed_failure": "Network guard must precede retained execution",
+      "matched": true
+    },
+    {
+      "control": "direct-execute",
+      "expected_failure": "Direct assignment bypasses",
+      "observed_failure": "Direct assignment bypasses retained execution",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "expected_failure": null,
+      "observed_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Direct semantic network mismatch check plus AST order and direct-bypass assertions. Not a dynamic execution of the entire assignment stage."
+}

@@ -223,6 +223,10 @@ def main():
                  and item['command']['arguments']['payload'].get('artifact_type')=='model_initial_assignment_inputs']
         assert len(initial)==1 and initial[0]['resolved'], 'Native assignment initial input registration missing'
         assert initial[0]['command']['arguments']['payload']['content_hash']==result['initial_assignment_inputs']['sha256']
+        import model_assignment_network_source
+        snapshot=json.loads(Path(result['initial_assignment_inputs']['manifest_path']).read_text())
+        expected_source=model_assignment_network_source.identity(Path(writer.project_directory(root))/'project_database.sqlite')
+        assert snapshot.get('network_source')==expected_source, 'Native assignment source network identity missing or different'
         receipt=handle.confirm_exit();assert receipt['execution_ready'] is False
         artifacts={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (root/'run_output').rglob('*') if p.is_file()}
         assert 'run_output/link_volumes.csv' in artifacts

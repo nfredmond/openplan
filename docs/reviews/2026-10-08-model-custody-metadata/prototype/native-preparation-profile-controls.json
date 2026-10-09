@@ -1,5 +1,5 @@
 {
-  "proof_sha256": "a29c66efd2037385c4c3a46f2db38880b6d4872eb902429e8fc937c604b26827",
+  "proof_sha256": "17593084163f1cedbdde996cbbf3b7e03c5aad221e492230cf553319d2e38ca8",
   "handoff_sha256": "fd070f2de43dfe7c321b9c36dc39da0628215fb1e02b9358803d3ed33a16dcef",
   "controls": [
     {
@@ -29,7 +29,25 @@
     {
       "control": "skip-comparison",
       "returncode": 1,
-      "expected_failure": "Profile defect reached assignment without refusal",
+      "expected_failure": "Prepared input defect reached assignment without refusal",
+      "matched": true
+    },
+    {
+      "control": "network-metadata",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "network-mismatch",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "skip-network-comparison",
+      "returncode": 1,
+      "expected_failure": "Prepared input defect reached assignment without refusal",
       "matched": true
     },
     {

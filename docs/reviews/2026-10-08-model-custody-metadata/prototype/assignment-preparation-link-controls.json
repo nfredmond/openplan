@@ -1,7 +1,7 @@
 {
   "source_sha256": {
-    "model_assignment_preparation_link.py": "ca2df443ebaedb7a798ab359a6a77014c85fce9426ced12c3b73994eb4ac5630",
-    "model_assignment_input_publication.py": "3e8e82f661c9ebdc14304671c53076eafd2ccc00f10a07cc135f58d848171fb9"
+    "model_assignment_preparation_link.py": "54a9a1780e68c4fee1fd455c3e960e62b6cf0b37a37cb93baffe6b32fbc3eee3",
+    "model_assignment_input_publication.py": "3fee7e7597d5eef1dbc7d095913211f5010db3c9414bee3a77dc19aeca13ad99"
   },
   "controls": [
     {
@@ -68,6 +68,12 @@
       "control": "incomplete-prepared-profile",
       "returncode": 1,
       "expected_failure": "ValueError: Prepared assignment profile differs",
+      "matched": true
+    },
+    {
+      "control": "network-mismatch",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
       "matched": true
     },
     {

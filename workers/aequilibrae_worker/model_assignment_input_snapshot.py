@@ -19,7 +19,7 @@ def _digest(path):
     return {'path':path.name,'sha256':digest.hexdigest(),'bytes':path.stat().st_size}
 
 
-def retain_and_execute(assignment, *, directory, context, profile, network_state, network_settings):
+def retain_and_execute(assignment, *, directory, context, profile, network_state, network_settings, network_database=None):
     """Read the configured traffic classes, persist their inputs, then execute.
 
     A fresh directory is mandatory. An interrupted snapshot is retained and
@@ -50,11 +50,13 @@ def retain_and_execute(assignment, *, directory, context, profile, network_state
         records.append((item,index,values))
     from model_assignment_live_profile import verify
     live_profile = verify(assignment, profile)
+    from model_assignment_network_source import identity
+    network_source = identity(network_database) if network_database is not None else None
     # Validate all JSON before creating files. Non-finite metadata is not a
     # usable substitute for explicit unavailable evidence.
     metadata=json.loads(json.dumps({'context':context,'profile':profile,
         'network_state':network_state,'network_settings':network_settings,
-        'live_profile_verification':live_profile},allow_nan=False))
+        'live_profile_verification':live_profile,'network_source':network_source},allow_nan=False))
     destination=Path(directory)
     destination.mkdir(mode=0o700,exist_ok=False)
     entries=[]

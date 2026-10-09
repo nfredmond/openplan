@@ -1,8 +1,8 @@
 {
   "control": "baseline",
-  "database": "openplan_attempt_cli_08002c7f8e57483db170c3577e0713fd",
-  "run_id": "ce4769f4-db1b-40a8-a70b-7a53e35a30aa",
-  "stage_id": "fe599e35-1cc7-4f88-8327-272240f08f1c",
+  "database": "openplan_attempt_cli_69e4d00c8fab4e2f820d6f26ad3e78c7",
+  "run_id": "ad9ec2ab-c14d-4d7a-a539-5603035b9ba2",
+  "stage_id": "b9aa66c4-7661-4c16-a5a4-5ef15d4dc257",
   "native_converged": true,
   "modeled_transit": "modeled",
   "replay": null,
@@ -25,7 +25,7 @@
       "method": "POST",
       "operation": "/rpc/claim_model_stage_attempt",
       "status": 200,
-      "body_sha256": "2bb272495dc181053d51f257a536c654ffa18ca8589865cb070bbe4ec0c3d6f9"
+      "body_sha256": "d03539988483d75b5fc607318fa7bde05e5cb3287e45bf41469d0ce651a06462"
     },
     {
       "method": "GET",
@@ -37,13 +37,13 @@
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "7f772fa817ddadb49bad28ee5a953bae06578fd169797c442491d578e8a58693"
+      "body_sha256": "b294f8a47149e4cf7432a6a384e3fcd50391be31228792202ed8b93a8f216678"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "4e541a34db29c60de412b193182e9ef5fecaca16c17731296ff40ce05592ad43"
+      "body_sha256": "b10ee448fd9dcbdf22c548741c51a33c1a8c2bd0bd6fa2f989dc52ae235a89b2"
     },
     {
       "method": "GET",
@@ -61,7 +61,7 @@
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "c1eea4d75ac18e9b6051065abe3fc51eab65b00f38509711d0e3ab800ab6791f"
+      "body_sha256": "111a41fb823d80dadb0b7f6d4165031e3ee20ee8c952af310212ff832fe32e66"
     },
     {
       "method": "GET",
@@ -73,19 +73,19 @@
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "f7fa2b27d0148a3496a715c5b1cbbbb2a91813b9991fb6341dc3489e5a4e002f"
+      "body_sha256": "9a111a762601a8b33f51fa7de8164f7810d9c7c79d6554d4203ba115feab7a43"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "0dcc60abaeaa9d642f2bc895b68e7ffc52dc7a3470ab0a6db79d5c72ae6e528f"
+      "body_sha256": "3e1e93a5a76b7ceca0783d842460d1bfa35b5f934a7872a417565c15a5f1ff66"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "aa957cd988fb8f2452d865ebfee16f499f5a9f65eafcca57b2992addb73427d9"
+      "body_sha256": "7955607e28de4f2c4c92bb7d8b3f46f34f91e3c8fc702b43fa3d89686b1ca6a8"
     },
     {
       "method": "GET",
@@ -97,19 +97,19 @@
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "35156f2b7f2f5d7a8330a6379843f051a441475a2f5953d6d583662f1a006b7b"
+      "body_sha256": "79280be80eadaca42af85bfc5f9c1efaddb5809869d54d697c15a700d0328e49"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "3e9447e9b3df5cd4d77c1a960083e04e0d7dd5e85227a301f4d3cbc9f966de0f"
+      "body_sha256": "f8502a75ed6b3528eb0d1fb94040cb9907161396338f61257ed303a1107637d0"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "9962c82c79aef082bee53f85c8a491255afb2d613ee36027aa1f035060579ee6"
+      "body_sha256": "38aae343320bfac5be82b8f6893a4336055a2a6de4431993ba9fb749c523af16"
     },
     {
       "method": "GET",
@@ -121,16 +121,16 @@
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "2e937ffcf401dfc6f24c3272527316e7942c2380906c7f9839afef64019593fc"
+      "body_sha256": "21266901cdf0d27c5848ffe785656ff2622f1f529e9c4f76d8ff43d79e7db5ee"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "82d197832590fa89d823a8dbe300dcf85d1b5a10c98aa8f37288d77195b8e35a"
+      "body_sha256": "fec78e5614ec722b900005a4d7772d7f0d96d233e84d56f481d73634000dcc8e"
     }
   ],
   "stage_remains_running": true,
-  "worker_sha256": "edc0b4dbf2921c9177038604abf47b10dda4803eda03f01282f9611b07a68105",
+  "worker_sha256": "7cdf39de115f8ea860efb838a49e86820ee147edf5ed20188a71e3b337a91735",
   "limits": "Full small native assignment with live isolated PostgREST and installed command schema. Synthetic predecessor inventories directly constructed. Lost-commit replay is recorded when selected. No final publication, model restart, scientific acceptance or normal dispatcher activation."
 }

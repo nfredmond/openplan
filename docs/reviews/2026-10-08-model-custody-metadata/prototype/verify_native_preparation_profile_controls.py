@@ -11,14 +11,15 @@ proof = root / 'verify_native_preparation_profile.py'
 output = Path(os.environ['OPENPLAN_PREPARATION_PROFILE_CONTROLS'])
 output.mkdir(mode=0o700, parents=True, exist_ok=False)
 results = []
-for control in ('baseline', 'harmless', 'mismatch', 'incomplete', 'skip-comparison', 'restored'):
+for control in ('baseline', 'harmless', 'mismatch', 'incomplete', 'skip-comparison',
+                'network-metadata','network-mismatch','skip-network-comparison','restored'):
     env = dict(os.environ, OPENPLAN_PREPARATION_PROFILE_CONTROL=control,
                OPENPLAN_MODEL_COMMAND_PROOF_OUTPUT=str(output/control))
     result = subprocess.run([sys.executable, '-B', str(proof)], env=env,
                             capture_output=True, text=True, timeout=120)
     log = result.stdout + result.stderr
     (output/(control+'.log')).write_text(log)
-    failure = 'Profile defect reached assignment without refusal' if control == 'skip-comparison' else None
+    failure = 'Prepared input defect reached assignment without refusal' if control in ('skip-comparison','skip-network-comparison') else None
     matched = result.returncode == 0 if failure is None else result.returncode != 0 and failure in log
     results.append({'control': control, 'returncode': result.returncode, 'expected_failure': failure, 'matched': matched})
     if not matched: raise AssertionError(f'{control}: {log[-4000:]}')
