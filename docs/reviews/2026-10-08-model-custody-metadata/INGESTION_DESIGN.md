@@ -297,3 +297,39 @@ T3 capture was retried separately: screenshot capture still fails, recording
 start times out and recording stop fails. PR #170 retains all eight passing
 GitHub checks, but its visible model-creation and recovery changes still lack
 completed visual acceptance. This Storage evidence does not remove that hold.
+
+
+### Recover immutable uploads through exact native readback
+
+Validation and structural uploads previously trusted a successful POST and
+rejected an already-present object. A lost successful reply therefore stranded
+the same immutable object on retry. The content-addressed map uploader already
+used authenticated exact readback. The three upload families now share
+`upload_verified_immutable_bytes`, retaining their existing object paths.
+
+Every upload remains non-upserted. The helper reads the exact authenticated
+object after either a response or a transport exception, and returns a Storage
+reference only when status is 200 and bytes equal the submitted payload. Changed,
+missing or unreadable bytes raise `WorkerStateWriteUnconfirmed`. Redirects are
+disabled for both upload and readback. No local-path fallback is introduced.
+
+Five fresh native Storage cases pass their expected outcomes: normal, harmless
+whitespace, lost acknowledgement after actual native commit, upsert fault and
+restored. Successful cases also retry the original bytes and recover the same
+reference. Changed uploads retain the original bytes; unauthenticated access is
+refused. The upsert fault still fails the immutability assertion. See
+`prototype/native-validation-storage-recovery-controls.json` and the private
+`native-validation-storage-recovery-20261009a` directory. Temporary services and
+credential files are removed; isolated databases and object directories remain.
+
+Five unit tests cover all three upload families. Two targeted shared-readback
+faults fail on changed bytes and unavailable reads; harmless/restored controls
+pass. The legacy count-ingest failure test now supplies a failed GET as well as
+POST, preventing accidental external access. A targeted false-confirmation fault
+fails that test. See `prototype/immutable-upload-controls.json`. All eight
+count-ingest checks, four validation-publication tests and the existing GeoJSON
+lost-upload/readback regression pass.
+
+This establishes same-process upload recovery after a lost acknowledgement. It
+does not complete process-restart recovery, joined native Storage/database
+custody, full user-role RLS, source publication or scientific acceptance.

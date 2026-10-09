@@ -21,7 +21,7 @@ from worker_import_for_tests import import_worker_main
 
 def main():
     control = os.environ.get('OPENPLAN_NATIVE_STORAGE_CONTROL', 'normal')
-    assert control in ('normal', 'harmless', 'upsert', 'restored')
+    assert control in ('normal', 'harmless', 'lost-ack', 'upsert', 'restored')
     output = Path(os.environ['OPENPLAN_NATIVE_STORAGE_PROOF_OUTPUT'])
     output.mkdir(mode=0o700, parents=True, exist_ok=False)
     source = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
@@ -84,6 +84,11 @@ def main():
         responses = []
         class PrefixProxy(BaseHTTPRequestHandler):
             def log_message(self, *_): pass
+            def do_GET(self):
+                assert self.path.startswith('/storage/v1/object/authenticated/'), 'Unexpected readback'
+                response = requests.get(native+self.path.removeprefix('/storage/v1'),
+                    headers={key:self.headers[key] for key in ('Authorization','apikey')}, timeout=15)
+                self.send_response(response.status_code); self.end_headers(); self.wfile.write(response.content)
             def do_POST(self):
                 assert self.path.startswith('/storage/v1/object/'), 'Unexpected worker request'
                 payload = self.rfile.read(int(self.headers['Content-Length']))
@@ -100,12 +105,21 @@ def main():
         if control == 'harmless': original += b'\n'
         path.write_bytes(original)
         original_post = requests.post
+        lost_ack = []
         def controlled_post(url, **kwargs):
             if control == 'upsert' and '/storage/v1/object/' in url:
                 kwargs['headers'] = {**kwargs['headers'], 'x-upsert':'true'}
-            return original_post(url, **kwargs)
+            response = original_post(url, **kwargs)
+            if control == 'lost-ack' and '/storage/v1/object/' in url and not lost_ack:
+                assert response.status_code in (200,201), 'No successful upload to interrupt'
+                lost_ack.append(True)
+                response.close()
+                raise requests.Timeout('Synthetic lost upload acknowledgement after native commit')
+            return response
         with patch.object(worker,'SUPABASE_URL',f'http://127.0.0.1:{server.server_port}'), patch.object(worker,'SUPABASE_KEY',token), patch.object(requests,'post',controlled_post):
             uri = worker.upload_immutable_validation_json(run, assessment, str(path))
+            assert worker.upload_immutable_validation_json(run, assessment, str(path)) == uri, 'Exact retry changed reference'
+            if control == 'lost-ack': assert lost_ack == [True], 'Lost acknowledgement was not exercised'
             object_path = uri.removeprefix('storage://run-artifacts/')
             def fetch():
                 response = requests.get(native+'/object/authenticated/run-artifacts/'+object_path, headers=headers, timeout=10)
@@ -121,10 +135,10 @@ def main():
             anonymous = requests.get(native+'/object/authenticated/run-artifacts/'+object_path, timeout=10)
             assert anonymous.status_code in (400,401,403), 'Private object allowed unauthenticated access'
         report = {'control':control,'upload_responses':responses,'database':database,'storage_image':inspected['Config']['Image'],
-            'exact_bytes_downloaded':True,'changed_upload_refused':True,'original_bytes_preserved':True,
+            'exact_bytes_downloaded':True,'exact_retry_reused':True,'lost_ack_exercised':bool(lost_ack),'changed_upload_refused':True,'original_bytes_preserved':True,
             'unauthenticated_status':anonymous.status_code,'content_sha256':hashlib.sha256(original).hexdigest(),
             'limits':['Native private Storage and actual worker upload with a prefix-only HTTP proxy',
-                      'No custody RPC, RLS user matrix, lost-ack recovery, full source publication or scientific acceptance']}
+                      'No custody RPC, RLS user matrix, process-restart recovery, full source publication or scientific acceptance']}
         (output/'result.json').write_text(json.dumps(report,indent=2)+'\n')
         print(json.dumps(report,indent=2))
     finally:

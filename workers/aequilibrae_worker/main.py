@@ -781,62 +781,50 @@ def sb_record_modeling_structural_demand_diagnosis(payload: dict) -> dict:
     return result[0] if isinstance(result, list) else result
 
 
+def upload_verified_immutable_bytes(object_path: str, data: bytes, content_type: str) -> str:
+    """Resolve upload custody through exact stored bytes, including lost replies."""
+    headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+    try:
+        requests.post(
+            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
+            headers={**headers, "Content-Type": content_type, "x-upsert": "false"},
+            data=data, timeout=60, allow_redirects=False,
+        )
+    except requests.RequestException:
+        # A missing reply cannot distinguish an absent object from a committed one.
+        pass
+    try:
+        retained = requests.get(
+            f"{SUPABASE_URL}/storage/v1/object/authenticated/run-artifacts/{object_path}",
+            headers=headers, timeout=60, allow_redirects=False,
+        )
+        if retained.status_code != 200 or retained.content != data:
+            raise WorkerStateWriteUnconfirmed("Artifact stored bytes unconfirmed")
+    except requests.RequestException as error:
+        raise WorkerStateWriteUnconfirmed("Artifact stored bytes unconfirmed") from error
+    return f"storage://run-artifacts/{object_path}"
+
+
 def upload_immutable_validation_json(run_id: str, assessment_id: str, path: str) -> str:
-    """Upload one assessment file to a unique private object.
-
-    A local computation may survive a failed upload, but a local path is not
-    immutable evidence custody and must never be recorded as though it were.
-    """
-    object_path = (
-        f"model-runs/{run_id}/validation-assessments/{assessment_id}/"
-        f"{os.path.basename(path)}"
-    )
+    """Verify one private assessment object without replacing existing bytes."""
+    object_path = f"model-runs/{run_id}/validation-assessments/{assessment_id}/{os.path.basename(path)}"
     with open(path, "rb") as handle:
-        response = requests.post(
-            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
-            headers={
-                "apikey": SUPABASE_KEY,
-                "Authorization": f"Bearer {SUPABASE_KEY}",
-                "Content-Type": "application/json",
-                "x-upsert": "false",
-            },
-            data=handle.read(),
-            timeout=60,
-        )
-    if response.status_code in (200, 201):
-        return f"storage://run-artifacts/{object_path}"
-    raise RuntimeError(
-        "validation evidence write failed: immutable storage upload returned "
-        f"{response.status_code} {response.text[:200]}"
-    )
+        data = handle.read()
+    try:
+        return upload_verified_immutable_bytes(object_path, data, "application/json")
+    except WorkerStateWriteUnconfirmed as error:
+        raise WorkerStateWriteUnconfirmed("validation evidence write failed: stored bytes unconfirmed") from error
 
 
-def upload_immutable_structural_demand_json(
-    run_id: str, diagnosis_id: str, path: str
-) -> str:
-    """Upload one structural record to a unique, non-upserted private object."""
-    object_path = (
-        f"model-runs/{run_id}/structural-demand-diagnoses/{diagnosis_id}/"
-        f"{os.path.basename(path)}"
-    )
+def upload_immutable_structural_demand_json(run_id: str, diagnosis_id: str, path: str) -> str:
+    """Verify one private structural object without replacing existing bytes."""
+    object_path = f"model-runs/{run_id}/structural-demand-diagnoses/{diagnosis_id}/{os.path.basename(path)}"
     with open(path, "rb") as handle:
-        response = requests.post(
-            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
-            headers={
-                "apikey": SUPABASE_KEY,
-                "Authorization": f"Bearer {SUPABASE_KEY}",
-                "Content-Type": "application/json",
-                "x-upsert": "false",
-            },
-            data=handle.read(),
-            timeout=60,
-        )
-    if response.status_code in (200, 201):
-        return f"storage://run-artifacts/{object_path}"
-    raise RuntimeError(
-        "structural demand evidence write failed: immutable storage upload returned "
-        f"{response.status_code} {response.text[:200]}"
-    )
+        data = handle.read()
+    try:
+        return upload_verified_immutable_bytes(object_path, data, "application/json")
+    except WorkerStateWriteUnconfirmed as error:
+        raise WorkerStateWriteUnconfirmed("structural demand evidence write failed: stored bytes unconfirmed") from error
 
 
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
@@ -5655,31 +5643,7 @@ def upload_content_addressed_artifact(
     """Retain content-addressed artifact bytes and reconcile through an exact read."""
     digest = hashlib.sha256(data).hexdigest()
     object_path = f"model-runs/{run_id}/stages/{stage_id}/sha256-{digest}/{filename}"
-    headers = {
-        "apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": content_type, "x-upsert": "false",
-    }
-    try:
-        requests.post(
-            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
-            headers=headers, data=data, timeout=60,
-        )
-    except requests.RequestException:
-        # The upload may have committed. Resolve custody by reading, not by
-        # repeating or overwriting the object.
-        pass
-    try:
-        retained = requests.get(
-            f"{SUPABASE_URL}/storage/v1/object/authenticated/run-artifacts/{object_path}",
-            headers=HEADERS, timeout=60,
-        )
-        if retained.status_code != 200 or retained.content != data:
-            raise WorkerStateWriteUnconfirmed("Artifact stored bytes unconfirmed")
-    except WorkerStateWriteUnconfirmed:
-        raise
-    except requests.RequestException as error:
-        raise WorkerStateWriteUnconfirmed("Artifact stored bytes unconfirmed") from error
-    return f"storage://run-artifacts/{object_path}"
+    return upload_verified_immutable_bytes(object_path, data, content_type)
 
 
 def upload_volume_geojson_bytes(run_id: str, stage_id: str, data: bytes) -> str:
