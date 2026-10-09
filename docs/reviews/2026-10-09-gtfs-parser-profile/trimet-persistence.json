@@ -1,0 +1,402 @@
+{
+  "inputSha256": "bf808d4f3c8da436f1a873aa9d2ae0e198b29017d4b06ed30f39ce56714eaaa5",
+  "archiveBytes": 43392539,
+  "parseMs": 18442.009504,
+  "persistenceMs": 3578.6063680000007,
+  "processMaxRssKiB": 254440,
+  "begin": {
+    "ok": true,
+    "feedId": "c32909b9-6da9-4df9-999c-8bd17fb75201",
+    "versionId": "44ee8509-5b73-4d69-ae81-f02467fb6990",
+    "createdFeed": true
+  },
+  "result": {
+    "ok": true,
+    "routeServiceLevelRows": 1023,
+    "stopServiceLevelRows": 39272,
+    "droppedForMissingCoordinates": 0,
+    "displayName": "TriMet",
+    "tractService": {
+      "computed": true,
+      "rows": 0
+    }
+  },
+  "promotion": {
+    "ok": true,
+    "promoted": true
+  },
+  "version": {
+    "success": true,
+    "error": null,
+    "data": {
+      "status": "ready",
+      "is_current": true,
+      "route_service_level_rows": 1023,
+      "stop_service_level_rows": 39272,
+      "tract_service_rows": 0,
+      "tract_service_computed_at": "2026-10-09T14:28:28.625+00:00"
+    },
+    "count": null,
+    "status": 200,
+    "statusText": "OK"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/gtfs_feeds",
+      "bodyBytes": 262,
+      "status": 201,
+      "elapsedMs": 22.00432400000136
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 303,
+      "status": 201,
+      "elapsedMs": 5.692782999998599
+    },
+    {
+      "method": "PATCH",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 20,
+      "status": 200,
+      "elapsedMs": 3.8861130000004778
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_route_service_levels",
+      "bodyBytes": 697174,
+      "status": 201,
+      "elapsedMs": 49.97244199999841
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_route_service_levels",
+      "bodyBytes": 16000,
+      "status": 201,
+      "elapsedMs": 4.8457239999988815
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 708666,
+      "status": 201,
+      "elapsedMs": 68.3773340000007
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 705407,
+      "status": 201,
+      "elapsedMs": 50.008348999999725
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 704264,
+      "status": 201,
+      "elapsedMs": 47.90523100000064
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 707527,
+      "status": 201,
+      "elapsedMs": 47.464608999998745
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 705041,
+      "status": 201,
+      "elapsedMs": 49.913822000002256
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 709492,
+      "status": 201,
+      "elapsedMs": 48.28653100000156
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 709102,
+      "status": 201,
+      "elapsedMs": 47.92022899999938
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 706294,
+      "status": 201,
+      "elapsedMs": 46.659520000001066
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 705135,
+      "status": 201,
+      "elapsedMs": 47.64538100000209
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 708497,
+      "status": 201,
+      "elapsedMs": 46.58387800000128
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 706390,
+      "status": 201,
+      "elapsedMs": 47.96032500000001
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 711227,
+      "status": 201,
+      "elapsedMs": 47.85555799999929
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 710569,
+      "status": 201,
+      "elapsedMs": 47.332580999998754
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 707941,
+      "status": 201,
+      "elapsedMs": 47.14966500000082
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 707132,
+      "status": 201,
+      "elapsedMs": 49.235631999999896
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 710894,
+      "status": 201,
+      "elapsedMs": 48.602827000002435
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 707995,
+      "status": 201,
+      "elapsedMs": 49.30384000000049
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 713589,
+      "status": 201,
+      "elapsedMs": 49.66649399999733
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 708764,
+      "status": 201,
+      "elapsedMs": 47.7611590000015
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 707165,
+      "status": 201,
+      "elapsedMs": 49.316182999999
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 706236,
+      "status": 201,
+      "elapsedMs": 48.876523999999336
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 709972,
+      "status": 201,
+      "elapsedMs": 49.37603599999784
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 706987,
+      "status": 201,
+      "elapsedMs": 53.99286899999788
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 712321,
+      "status": 201,
+      "elapsedMs": 50.464459999999235
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 706371,
+      "status": 201,
+      "elapsedMs": 48.695221999998466
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 705178,
+      "status": 201,
+      "elapsedMs": 48.17595199999778
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 704549,
+      "status": 201,
+      "elapsedMs": 49.663518000001204
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 707938,
+      "status": 201,
+      "elapsedMs": 48.91710099999909
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 705193,
+      "status": 201,
+      "elapsedMs": 53.206654999998136
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 710936,
+      "status": 201,
+      "elapsedMs": 48.55950500000108
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 708171,
+      "status": 201,
+      "elapsedMs": 56.15530999999828
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 706643,
+      "status": 201,
+      "elapsedMs": 48.7518790000031
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 706541,
+      "status": 201,
+      "elapsedMs": 48.248068000000785
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 709092,
+      "status": 201,
+      "elapsedMs": 48.98302500000136
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 708165,
+      "status": 201,
+      "elapsedMs": 48.62078100000144
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 705450,
+      "status": 201,
+      "elapsedMs": 49.149138999997376
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 704286,
+      "status": 201,
+      "elapsedMs": 49.22676499999943
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 706106,
+      "status": 201,
+      "elapsedMs": 50.59121999999843
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 705870,
+      "status": 201,
+      "elapsedMs": 52.590533000002324
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 191403,
+      "status": 201,
+      "elapsedMs": 18.61652099999992
+    },
+    {
+      "method": "POST",
+      "path": "/rpc/compute_gtfs_tract_service",
+      "bodyBytes": 60,
+      "status": 200,
+      "elapsedMs": 26.62639599999966
+    },
+    {
+      "method": "PATCH",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 876,
+      "status": 200,
+      "elapsedMs": 2.939366999999038
+    },
+    {
+      "method": "GET",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 1.5527500000025611
+    },
+    {
+      "method": "GET",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 1.4731400000018766
+    },
+    {
+      "method": "POST",
+      "path": "/rpc/promote_gtfs_feed_version",
+      "bodyBytes": 55,
+      "status": 204,
+      "elapsedMs": 2.9618589999990945
+    },
+    {
+      "method": "GET",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 1.260349000000133
+    }
+  ]
+}
