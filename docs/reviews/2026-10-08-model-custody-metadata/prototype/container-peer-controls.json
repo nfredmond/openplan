@@ -1,0 +1,23 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_result_observed": true
+    },
+    {
+      "case": "unbound-peer",
+      "returncode": 1,
+      "expected_result_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_result_observed": true
+    }
+  ],
+  "source_sha256": "1ad78b92e2254811de598deec3eadda602a03ffaaa946316daa609d87309b855",
+  "limits": [
+    "Live local systemd Docker only; prototype peer gate, not production admission"
+  ]
+}

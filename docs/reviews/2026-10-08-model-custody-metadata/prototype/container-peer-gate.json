@@ -1,0 +1,97 @@
+{
+  "cases": [
+    {
+      "case": "owner-loss",
+      "lost_process": "owner",
+      "fault_omitted_watch": false,
+      "container_stopped": true,
+      "expected_behavior_observed": true,
+      "bootstrap_peer_verified": true,
+      "unrelated_peer_refused": true,
+      "exit_code": 125,
+      "container_id": "11fd200c59ff383690d6dd46579a58b463ce66b8d0b1e8e03bc31e4ff6b407af",
+      "bootstrap_sha256": "7ed4e2e35b3b4a9c3684aa746165a31dad964831b88a6792b749793035c6e4e3"
+    },
+    {
+      "case": "controller-loss",
+      "lost_process": "controller",
+      "fault_omitted_watch": false,
+      "container_stopped": true,
+      "expected_behavior_observed": true,
+      "bootstrap_peer_verified": true,
+      "unrelated_peer_refused": true,
+      "exit_code": 125,
+      "container_id": "ac63ac074bd02ff40328825f257a73a530780ed588158c24e272d808b65bd99c",
+      "bootstrap_sha256": "7ed4e2e35b3b4a9c3684aa746165a31dad964831b88a6792b749793035c6e4e3"
+    },
+    {
+      "case": "owner-before-start",
+      "lost_process": "owner-before-start",
+      "fault_omitted_watch": false,
+      "container_stopped": true,
+      "expected_behavior_observed": true,
+      "bootstrap_peer_verified": true,
+      "unrelated_peer_refused": true,
+      "exit_code": 1,
+      "container_id": "84a641a8360e0c68873875923194a9427b5e56e10888c317d55b98ae5e12a06d",
+      "bootstrap_sha256": "7ed4e2e35b3b4a9c3684aa746165a31dad964831b88a6792b749793035c6e4e3"
+    },
+    {
+      "case": "bootstrap-loss",
+      "lost_process": "bootstrap",
+      "fault_omitted_watch": false,
+      "container_stopped": true,
+      "expected_behavior_observed": true,
+      "bootstrap_peer_verified": true,
+      "unrelated_peer_refused": true,
+      "exit_code": 137,
+      "container_id": "e2d5793fb193c0d89e3a21117ce706ad9b60a5d8c4130cc0e9cb48287b178fb8",
+      "bootstrap_sha256": "7ed4e2e35b3b4a9c3684aa746165a31dad964831b88a6792b749793035c6e4e3"
+    },
+    {
+      "case": "harmless",
+      "lost_process": "owner",
+      "fault_omitted_watch": false,
+      "container_stopped": true,
+      "expected_behavior_observed": true,
+      "bootstrap_peer_verified": true,
+      "unrelated_peer_refused": true,
+      "exit_code": 125,
+      "container_id": "be2fdd0048e6dd4949ce722fb30885883a12ed19e27fb64bf802e2682e87621e",
+      "bootstrap_sha256": "054888e7866ca8e96c9bf38445df9810a209dcc031f4db40106dd8c6dc9b10b0"
+    },
+    {
+      "case": "omitted-watch",
+      "lost_process": "owner",
+      "fault_omitted_watch": true,
+      "container_stopped": false,
+      "expected_behavior_observed": true,
+      "bootstrap_peer_verified": true,
+      "unrelated_peer_refused": true,
+      "exit_code": 0,
+      "container_id": "c35585e4ab2c7c4b74567b57d1da8e9202e1c33cc9b9aa5c0b3be94ac77c06dc",
+      "bootstrap_sha256": "ee7da8625c0df780a65fadd2634751f89c1fe80fcc782cd4c811fb0443493b22"
+    },
+    {
+      "case": "restored",
+      "lost_process": "owner",
+      "fault_omitted_watch": false,
+      "container_stopped": true,
+      "expected_behavior_observed": true,
+      "bootstrap_peer_verified": true,
+      "unrelated_peer_refused": true,
+      "exit_code": 125,
+      "container_id": "cce94777dc7cc63876d8b74193752f1d1027fdd2e78d8fb7231250b8339e0438",
+      "bootstrap_sha256": "7ed4e2e35b3b4a9c3684aa746165a31dad964831b88a6792b749793035c6e4e3"
+    }
+  ],
+  "all_owned_containers_removed": true,
+  "source_sha256": "7ed4e2e35b3b4a9c3684aa746165a31dad964831b88a6792b749793035c6e4e3",
+  "peer_gate_sha256": "1ad78b92e2254811de598deec3eadda602a03ffaaa946316daa609d87309b855",
+  "limits": [
+    "Synthetic Python work with a detached child in a private Docker PID namespace",
+    "Prototype descriptor delivery is performed by the proof process after live peer verification",
+    "No production startup integration, database admission or native ActivitySim evidence"
+  ]
+}
+

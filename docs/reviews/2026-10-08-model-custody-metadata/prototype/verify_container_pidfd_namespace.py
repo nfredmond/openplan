@@ -12,6 +12,7 @@ import time
 import uuid
 
 from verify_created_container_identity import docker
+from container_peer_gate import pin_bootstrap_peer
 
 BOOTSTRAP = Path(__file__).with_name('container_pidfd_bootstrap.py')
 IMAGE = os.environ['OPENPLAN_CONTAINER_CUSTODY_IMAGE']
@@ -52,34 +53,59 @@ def case(root, name, victim, omit_watch=False, harmless=False):
         docker('--host', 'unix:///run/docker.sock', 'start', container)
         connection, _ = listener.accept()
         with connection:
+            observed = json.loads(docker('--host', 'unix:///run/docker.sock', 'inspect', container))[0]
+            pinned_peer = pin_bootstrap_peer(connection, observed, container, os.getuid())
+            os.close(pinned_peer)
+            # A live local connector must not receive descriptors intended for
+            # the daemon-confirmed bootstrap, even with the same user ID.
+            unrelated = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            unrelated.connect(str(control / 'gate.sock'))
+            unexpected, _ = listener.accept()
+            with unrelated, unexpected:
+                try:
+                    pin_bootstrap_peer(unexpected, observed, container, os.getuid())
+                except ValueError:
+                    pass
+                else:
+                    raise AssertionError('Unrelated socket peer accepted')
+            if victim == -1:
+                signal.pidfd_send_signal(descriptors[0], signal.SIGKILL)
+                processes[0].wait(timeout=3)
             connection.sendmsg([b'G'], [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array('i', descriptors))])
         deadline = time.monotonic() + 8
-        while not (output / 'child-heartbeat').exists():
+        while victim != -1 and not (output / 'child-heartbeat').exists():
             if time.monotonic() > deadline:
                 raise AssertionError(docker('--host', 'unix:///run/docker.sock', 'logs', container))
             time.sleep(.03)
-        signal.pidfd_send_signal(descriptors[victim], signal.SIGKILL)
-        processes[victim].wait(timeout=3)
+        if victim in (0, 1):
+            signal.pidfd_send_signal(descriptors[victim], signal.SIGKILL)
+            processes[victim].wait(timeout=3)
+        elif victim == 2:
+            docker('--host', 'unix:///run/docker.sock', 'kill', container)
         deadline = time.monotonic() + 3
         while True:
             observed = json.loads(docker('--host', 'unix:///run/docker.sock', 'inspect', container))[0]
             if not observed['State']['Running'] or time.monotonic() > deadline:
                 break
             time.sleep(.05)
-        if omit_watch:
+        if victim == -1:
+            assert observed['State']['Status'] == 'exited' and observed['State']['ExitCode'] == 1
+            assert not (output / 'started').exists() and not (output / 'child-heartbeat').exists()
+        elif omit_watch:
             assert observed['State']['Running'], 'Broken watchdog unexpectedly stopped workload'
             before = (output / 'child-heartbeat').read_text()
             time.sleep(.1)
             assert (output / 'child-heartbeat').read_text() != before
         else:
             assert observed['State']['Status'] == 'exited' and observed['State']['Pid'] == 0
-            assert observed['State']['ExitCode'] == 125
+            assert observed['State']['ExitCode'] == (137 if victim == 2 else 125)
             before = (output / 'child-heartbeat').read_bytes()
             time.sleep(.1)
             assert (output / 'child-heartbeat').read_bytes() == before
-        return {'case': name, 'lost_process': 'owner' if victim == 0 else 'controller',
+        return {'case': name, 'lost_process': {-1: 'owner-before-start', 0: 'owner', 1: 'controller', 2: 'bootstrap'}[victim],
                 'fault_omitted_watch': omit_watch, 'container_stopped': not observed['State']['Running'],
-                'expected_behavior_observed': True, 'exit_code': observed['State']['ExitCode'],
+                'expected_behavior_observed': True, 'bootstrap_peer_verified': True,
+                'unrelated_peer_refused': True, 'exit_code': observed['State']['ExitCode'],
                 'container_id': container, 'bootstrap_sha256': hashlib.sha256(script.read_bytes()).hexdigest()}
     finally:
         if container:
@@ -101,15 +127,17 @@ if __name__ == '__main__':
     root.mkdir(mode=0o700, parents=True, exist_ok=False)
     results = []
     for name, victim, broken, harmless in [('owner-loss',0,False,False), ('controller-loss',1,False,False),
+        ('owner-before-start',-1,False,False), ('bootstrap-loss',2,False,False),
         ('harmless',0,False,True), ('omitted-watch',0,True,False), ('restored',0,False,False)]:
         result = case(root / name, name, victim, broken, harmless)
         results.append(result)
         (root / name / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
     report = {'cases': results, 'all_owned_containers_removed': True,
         'source_sha256': hashlib.sha256(BOOTSTRAP.read_bytes()).hexdigest(),
+        'peer_gate_sha256': hashlib.sha256(BOOTSTRAP.with_name('container_peer_gate.py').read_bytes()).hexdigest(),
         'limits': ['Synthetic Python work with a detached child in a private Docker PID namespace',
-                   'Prototype descriptor delivery is performed by the proof process',
-                   'No production startup handshake, peer authentication, database admission or native ActivitySim evidence']}
+                   'Prototype descriptor delivery is performed by the proof process after live peer verification',
+                   'No production startup integration, database admission or native ActivitySim evidence']}
     text = json.dumps(report, indent=2) + '\n'
     (root / 'result.json').write_text(text)
     print(text)

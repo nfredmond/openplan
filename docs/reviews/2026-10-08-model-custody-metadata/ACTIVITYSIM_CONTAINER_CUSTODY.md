@@ -278,3 +278,46 @@ production connection, implement and test that handshake, pre-start owner loss,
 bootstrap loss, malformed descriptors, normal command completion, detached-child
 completion policy, log/exit retention and native ActivitySim interruption.
 Remote/rootless variants and daemon/full-host recovery remain separate checks.
+
+
+## Live bootstrap peer and startup interruption checks
+
+The prototype now checks the peer before sending any process descriptors. Linux
+`SO_PEERPIDFD`, identified in the installed `asm-generic/socket.h`, returns a
+process descriptor for the connected peer. The helper compares its live PID and
+socket credentials against Docker's inspected bootstrap PID and expected user,
+then checks the process's exact container cgroup. A dead peer or an unsupported
+socket option fails. This experiment deliberately supports only the observed
+local Linux/systemd Docker cgroup layout; it does not claim portable/rootless
+coverage or fall back to a PID-only check.
+
+Seven live cases passed their stated expectations. Each verifies the actual
+container peer and refuses an unrelated same-user socket connection. Owner and
+controller loss stop the workload with exit 125. Owner loss before descriptor
+delivery exits the bootstrap with status 1 and creates neither workload marker.
+Killing the bootstrap exits the container with status 137 and stops its detached
+child. Harmless/restored controls stop normally; omitting the watchdog leaves
+work running, as expected for the deliberate defect. All owned containers were
+removed after each case. Records remain under
+`~/.local/state/openplan/gate-20261008b/`.
+
+A separate source-control campaign repeats the live checks with a harmless
+comment, with peer identity/cgroup binding deliberately bypassed, and with the
+original source restored. The bypass fails because the unrelated peer is
+accepted. Both unchanged-behavior campaigns pass. The original peer-gate bytes
+match the retained source hash. Private control logs and files were copied from
+the short socket-path workspace to
+`~/.local/state/openplan/peer-controls-20261008a/` for retention.
+
+The helper is `prototype/container_peer_gate.py`. Reports are
+`prototype/container-peer-gate.json` and `prototype/container-peer-controls.json`;
+control runner `prototype/verify_container_peer_controls.py` exercises the
+expanded `prototype/verify_container_pidfd_namespace.py` campaign. Earlier
+reports remain dated evidence for their earlier source and procedure.
+
+This verifies delivery to a live daemon-identified bootstrap, not complete
+execution admission. Production must bind the inspected bootstrap to the
+retained immutable creation plan and a live owner/controller, retain the startup
+and exit records, and integrate the database attempt. Malformed descriptor,
+normal completion, detached-child completion and native ActivitySim tests remain
+required before connecting this prototype to normal execution.
