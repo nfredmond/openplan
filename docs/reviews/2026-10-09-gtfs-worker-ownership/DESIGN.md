@@ -75,3 +75,20 @@ Reproduce against the owned proof database described by its private configuratio
 python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_ownership.py \
   /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
 ```
+
+## Committed claims and contention, October 9
+
+The [concurrent runner](verify_ownership_concurrency.py) now tests separate PostgreSQL sessions. It discards a successful claim response, exits that client, and recovers the exact receipt through another process using the retained token. It also observes each waiter blocked by the identified holder PID through `pg_blocking_pids`, then checks the result after commit or rollback:
+
+- A replacement claim commits before the old writer resumes. The old writer receives SQLSTATE 55000 and leaves no output.
+- A terminal version update commits before its waiting writer resumes. That writer receives SQLSTATE 55000.
+- A competing claim waits for the first claim. After commit it receives no ownership; after rollback it acquires attempt 1. The stored owner and attempt match the outcome.
+
+Baseline, harmless-comment and restored runs pass. Removing the version lock causes the expected lock-wait check to fail. Removing the owner-token predicate lets stale output through and fails the refusal check. [Retained results](ownership-concurrency-controls.json) carry the prototype hash and successful fixture identifiers.
+
+Unlike the earlier rollback suite, this experiment retains small, uniquely named private schemas and synthetic workspaces in the owned proof database. Committed state is necessary to test another process reading the receipt. Deliberately broken variants exist only inside their private experimental schemas. No production function, route, worker or existing fixture is replaced. The runner uses database-owner privileges and controlled lease expiry. It does not prove role isolation, a durable worker journal, HTTP reply-loss handling, actual derived batch writes, storage, supervisor renewal or a planner journey. Those remain required before managed imports are connected.
+
+```bash
+python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_ownership_concurrency.py \
+  /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
+```

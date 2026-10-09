@@ -1,0 +1,86 @@
+{
+  "recordedAt": "2026-10-09T15:07:31.000521+00:00",
+  "sourceSha256": "8003d889ab22b55baadf1f91b0808fde4b5f34cb7c00e90683341eeb59dbb30c",
+  "cases": [
+    {
+      "case": "baseline",
+      "schema": "ownership_concurrent_d5eb1545ead841049a15f4d2a4fac46d",
+      "workspace": "d34e938f-1c68-4e9d-abae-1b89f2f1a706",
+      "results": {
+        "committedReplayAcrossProcesses": true,
+        "replacementFencesWaitingWriter": {
+          "observedLockWait": true,
+          "waiterExitCode": 3
+        },
+        "terminalTransitionFencesWaitingWriter": {
+          "observedLockWait": true,
+          "waiterExitCode": 3
+        },
+        "competingClaimCommit": {
+          "observedLockWait": true,
+          "waiterExitCode": 0
+        },
+        "competingClaimRollback": {
+          "observedLockWait": true,
+          "waiterExitCode": 0
+        }
+      }
+    },
+    {
+      "case": "harmless",
+      "schema": "ownership_concurrent_18df8bd93d64401cab7d2052b816f70f",
+      "workspace": "c7282a62-1fb4-44b6-aa41-b5affeb47cfa",
+      "results": {
+        "committedReplayAcrossProcesses": true,
+        "replacementFencesWaitingWriter": {
+          "observedLockWait": true,
+          "waiterExitCode": 3
+        },
+        "terminalTransitionFencesWaitingWriter": {
+          "observedLockWait": true,
+          "waiterExitCode": 3
+        },
+        "competingClaimCommit": {
+          "observedLockWait": true,
+          "waiterExitCode": 0
+        },
+        "competingClaimRollback": {
+          "observedLockWait": true,
+          "waiterExitCode": 0
+        }
+      }
+    },
+    {
+      "case": "missing-version-lock",
+      "expectedFailure": "Expected ownership lock wait absent"
+    },
+    {
+      "case": "missing-owner-check",
+      "expectedFailure": "Stale or terminal worker accepted output"
+    },
+    {
+      "case": "restored",
+      "schema": "ownership_concurrent_fdc56423ab934a3db3ef9cb5bbe6fc67",
+      "workspace": "d30013ef-3bbc-4edc-8f7f-1fe954251317",
+      "results": {
+        "committedReplayAcrossProcesses": true,
+        "replacementFencesWaitingWriter": {
+          "observedLockWait": true,
+          "waiterExitCode": 3
+        },
+        "terminalTransitionFencesWaitingWriter": {
+          "observedLockWait": true,
+          "waiterExitCode": 3
+        },
+        "competingClaimCommit": {
+          "observedLockWait": true,
+          "waiterExitCode": 0
+        },
+        "competingClaimRollback": {
+          "observedLockWait": true,
+          "waiterExitCode": 0
+        }
+      }
+    }
+  ]
+}
