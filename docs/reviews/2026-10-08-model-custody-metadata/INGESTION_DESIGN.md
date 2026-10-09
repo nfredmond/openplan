@@ -436,3 +436,12 @@ This verifies joined native publication and exact receipt recovery for authored
 software fixtures. Independent preparation, real network/population evidence,
 publication of all supporting sources, normal dispatcher integration, the full
 RLS matrix, practitioner observation and scientific acceptance remain open.
+
+## October 9 consumer handoff audit
+
+[The consumer handoff decision](CONSUMER_HANDOFF.md) traces the authenticated
+project freeze, report citations and assistant reader. All three omit the new
+attempt-specific custody. Its table currently denies application reads. Reports
+also keep one historical comparable record per parent run, which cannot retain
+both methods and multiple attempts. Read authorization, complete exports and
+method-specific citations require implementation before claiming this handoff.
