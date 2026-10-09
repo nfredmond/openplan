@@ -7,6 +7,8 @@ import { recoveryInspectionSchema } from "@/lib/models/recovery-decision";
 import { readRecoveryArchives, reviewRecoveryCopy, restoreRecoveryCopy, recoveryDecisionKey, readRecoveryDecisions, retainRecoveryDecision, sendRecoveryDecision, recoveryEndpoint, recoveryHeaders, type RecoveryScope, type SavedRecoveryDecision } from "@/lib/models/pending-recovery-decision";
 import type { z } from "zod";
 
+const recoveryControlClassName = "h-auto min-h-10 max-w-full whitespace-normal";
+
 type Props = RecoveryScope & { permission: "allowed" | "denied" | "unavailable"; stageNames?: Record<string, string>; onConfirmed?: () => void };
 function download(name: string, content: string) {
   const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
@@ -99,8 +101,8 @@ export function ModelRecoveryPanel({ userId, workspaceId, modelId, runId, permis
       {storageError ? <p role="alert">{storageError}</p> : null}
       {message ? <p role="status" aria-live="polite">{message}</p> : null}
       <div className="flex flex-wrap gap-2">
-        <Button type="button" size="sm" variant="outline" disabled={blocked || pending} onClick={() => void inspect()}>Review current execution state</Button>
-        <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={refresh}>Reload saved decisions</Button>
+        <Button type="button" className={recoveryControlClassName} size="sm" variant="outline" disabled={blocked || pending} onClick={() => void inspect()}>Review current execution state</Button>
+        <Button type="button" className={recoveryControlClassName} size="sm" variant="ghost" disabled={busy} onClick={refresh}>Reload saved decisions</Button>
       </div>
       {inspection ? <section className="space-y-3" aria-label="Reviewed execution state">
         <p>Recorded run status: <strong>{inspection.expected_state.status}</strong>. Reviewed version: {inspection.expected_state.updated_at}.</p>
@@ -108,7 +110,7 @@ export function ModelRecoveryPanel({ userId, workspaceId, modelId, runId, permis
         {active ? <>
           <label className="block space-y-1" htmlFor={fieldId}><span>Reason for abandoning this execution</span><Textarea id={fieldId} maxLength={2000} value={reason} onChange={(event) => setReason(event.target.value)} disabled={busy || pending} /></label>
           <label className="flex items-start gap-2"><input type="checkbox" className="mt-1" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} disabled={busy || pending} /><span>I understand that this revokes write authority without confirming process termination or restarting the model.</span></label>
-          <Button type="button" variant="destructive" className="h-auto min-h-10 max-w-full whitespace-normal" disabled={blocked || pending || !acknowledged || !reason.trim()} onClick={() => void send()}>Save abandonment decision</Button>
+          <Button type="button" variant="destructive" className={recoveryControlClassName} disabled={blocked || pending || !acknowledged || !reason.trim()} onClick={() => void send()}>Save abandonment decision</Button>
         </> : <p>This run is already terminal. This recovery command cannot abandon it again.</p>}
       </section> : null}
       <section className="space-y-2 border-t border-border pt-3" aria-label="Restore recovery files">
@@ -119,20 +121,20 @@ export function ModelRecoveryPanel({ userId, workspaceId, modelId, runId, permis
           <p>Request: {reviewedCopy.record.decision.requestId}</p>
           <p className="whitespace-pre-wrap">{reviewedCopy.record.decision.reason}</p>
           {damagedCopy ? <label className="flex items-start gap-2"><input type="checkbox" checked={preserveDamaged} onChange={(event) => setPreserveDamaged(event.target.checked)} /><span>Preserve the unreadable bytes in an archive before restoring this same request.</span></label> : null}
-          <Button type="button" size="sm" variant="outline" disabled={busy || permission !== "allowed" || storageError !== null || Boolean(damagedCopy && !preserveDamaged)} onClick={restoreCopy}>Restore decision copy</Button>
+          <Button type="button" className={recoveryControlClassName} size="sm" variant="outline" disabled={busy || permission !== "allowed" || storageError !== null || Boolean(damagedCopy && !preserveDamaged)} onClick={restoreCopy}>Restore decision copy</Button>
         </div> : null}
       </section>
-      {archives.map((archive) => <section key={archive.key} className="space-y-2 border-t border-border pt-3" aria-label="Preserved unreadable recovery copy"><p>Original unreadable bytes were preserved during restoration.</p><Button type="button" size="sm" variant="outline" onClick={() => download("preserved-model-recovery.json", archive.raw)}>Download preserved original</Button></section>)}
+      {archives.map((archive) => <section key={archive.key} className="space-y-2 border-t border-border pt-3" aria-label="Preserved unreadable recovery copy"><p>Original unreadable bytes were preserved during restoration.</p><Button type="button" className={recoveryControlClassName} size="sm" variant="outline" onClick={() => download("preserved-model-recovery.json", archive.raw)}>Download preserved original</Button></section>)}
       {saved.records.map((record) => <section key={record.decision.requestId} className="space-y-2 border-t border-border pt-3" aria-label="Saved recovery decision">
         <p className="font-medium">{record.phase === "confirmed" ? "Decision receipt retained" : record.phase === "conflict" ? "Decision requires a new review" : "Decision awaiting confirmation"}</p>
         <p className="whitespace-pre-wrap">{record.decision.reason}</p>
         {record.phase === "confirmed" ? <p>Write authority was abandoned. Process termination remains unconfirmed.</p> : null}
         <div className="flex flex-wrap gap-2">
-          {record.phase === "pending" ? <Button type="button" size="sm" variant="outline" disabled={blocked} onClick={() => void send(record)}>Retry saved decision</Button> : null}
-          <Button type="button" size="sm" variant="outline" onClick={() => download(`model-recovery-${record.decision.requestId}.json`, JSON.stringify(record, null, 2) + "\n")}>Download decision{record.phase === "confirmed" ? " and receipt" : " copy"}</Button>
+          {record.phase === "pending" ? <Button type="button" className={recoveryControlClassName} size="sm" variant="outline" disabled={blocked} onClick={() => void send(record)}>Retry saved decision</Button> : null}
+          <Button type="button" className={recoveryControlClassName} size="sm" variant="outline" onClick={() => download(`model-recovery-${record.decision.requestId}.json`, JSON.stringify(record, null, 2) + "\n")}>Download decision{record.phase === "confirmed" ? " and receipt" : " copy"}</Button>
         </div>
       </section>)}
-      {saved.unreadable.map((record) => <div key={record.key} className="space-y-2 border-t border-border pt-3" role="alert"><p>A saved recovery copy cannot be verified. It remains untouched. Download it before resolving this storage problem.</p><Button type="button" size="sm" variant="outline" onClick={() => download("unreadable-model-recovery.json", record.raw)}>Download unreadable copy</Button></div>)}
+      {saved.unreadable.map((record) => <div key={record.key} className="space-y-2 border-t border-border pt-3" role="alert"><p>A saved recovery copy cannot be verified. It remains untouched. Download it before resolving this storage problem.</p><Button type="button" className={recoveryControlClassName} size="sm" variant="outline" onClick={() => download("unreadable-model-recovery.json", record.raw)}>Download unreadable copy</Button></div>)}
     </div>
   </details>;
 }
