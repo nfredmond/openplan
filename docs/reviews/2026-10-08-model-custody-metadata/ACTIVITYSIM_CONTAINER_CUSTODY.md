@@ -565,3 +565,22 @@ Harmless and restored controls pass. The new tests build a synthetic bundle and
 stop at a mocked runtime boundary. They do not establish live database dispatch,
 managed attempt binding, native container execution or scientific acceptance.
 See `prototype/pipeline-policy-controls.json` and its executable verifier.
+
+
+## Live behavioral pipeline execution
+
+The actual pipeline CLI now has a live synthetic-container check covering bundle
+preparation, supervised execution and output ingestion. Normal execution waits
+for a detached child to write one synthetic trip row, then verifies that ingestion
+reads that row. The controller retains its log and confirms container removal.
+Killing the pipeline process stops the owned container with exit 125, leaves no
+runtime completion summary and preserves the command log. The proof reconciles
+and removes only its recorded, stopped container.
+
+Dropping the explicit socket at either the pipeline CLI or runtime handoff fails
+the live check. Harmless and restored controls pass. Source hashes and limits are
+in `prototype/supervised-pipeline-live.json` and `prototype/pipeline-live-controls.json`;
+private records are under `~/.local/state/openplan/pipeline-live-controls-20261008b/`.
+This uses a synthetic bundle and command. It proves neither native ActivitySim
+behavior nor live database dispatch, managed attempt publication or scientific
+acceptance. Database integration remains a separate open boundary.
