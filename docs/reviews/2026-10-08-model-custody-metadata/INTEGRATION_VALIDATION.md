@@ -454,3 +454,21 @@ a candidate mechanism. The production guard's lifetime, startup handshake,
 self-failure, native interrupted files and restart decision remain unproved.
 The design boundary is recorded in ENGINE_CHILD_PROTOCOL.md. No full worker-suite
 rerun is claimed for an unchanged worker; source hashes identify the code used.
+
+### Relaunch fixtures corrected after full CI
+
+GitHub QA run `37880717472`, job `113659536138`, reports eight failures in
+`a-failed-run-says-it-failed.test.tsx` and
+`a-relaunch-says-whether-the-fix-took.test.tsx`. A local run reproduces all eight.
+Those fixtures omit recovery custody while expecting a relaunch button or its
+runtime guidance. The production gate deliberately refuses that unknown state.
+
+The relaunch fixtures now supply explicit newly enrolled, unstarted custody.
+The failed-run card still withholds forward-looking runtime copy. Tests for
+historical, unavailable, retained and unassessed custody still refuse relaunch.
+No production gate or assertion was removed to make the suite pass. The five
+related files pass 85 tests. The
+[fixture controls](prototype/relaunch-fixture-controls.json) pass harmless and
+restored cases and detect missing runtime copy, a false demographics warning
+and an unsafe relaunch offer. These are component tests with mocked fetch;
+they do not establish browser acceptance or passing current-head GitHub CI.

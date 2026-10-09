@@ -162,20 +162,11 @@ describe("a stopped run promises nothing about what happens next", () => {
     expect(screen.queryByTestId("run-runtime-expectation")).toBeNull();
   });
 
-  it("leaves the evidence panel's copy of that line alone, deliberately", () => {
-    /**
-     * BOTH surfaces render a runtime expectation, and only ONE of them is a
-     * defect. In the evidence panel the sentence directly above is "This worker
-     * run can be reset and queued again without leaving the model page", so the
-     * runtime line reads as describing that requeue — true and useful. On the
-     * run card it sat immediately beneath the failure headline with nothing
-     * between, which is what made a terminal failure look transient.
-     *
-     * Asserted so the difference stays a decision rather than becoming an
-     * inconsistency somebody later "tidies up" in either direction.
-     */
+  it("shows evidence-panel runtime guidance for a verified unstarted relaunch", () => {
+    // A failed preparation may be retried only when custody confirms no execution started.
     renderRun(
       baseRun({
+        recovery: { state: "new_run", relaunchCustody: "unstarted", enrolledAt: "2026-10-08T10:00:00Z", observedStarts: 0, lastStartObservedAt: null },
         stages: [
           stage({ id: "s1", stage_name: "AequilibraE Setup", status: "failed", sort_order: 1, error_message: CENSUS_KEY_MESSAGE }),
         ],
