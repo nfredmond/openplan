@@ -7,7 +7,7 @@ import model_transit_inputs
 from model_transit_skim import skim_prepared_transit
 
 
-def consume_and_skim(prepared, destination):
+def consume_and_skim(prepared, destination, *, expected_geometry=None):
     """Consume exact retained files without source discovery or database access."""
     status = prepared['status']
     if status not in ('retained', 'unavailable'):
@@ -15,6 +15,8 @@ def consume_and_skim(prepared, destination):
     destination = Path(destination)
     destination.mkdir(mode=0o700, exist_ok=False)
     geometry = model_geometry_inputs.consume(prepared['geometry_record'], destination / 'geometry')
+    if expected_geometry is not None and geometry != expected_geometry:
+        raise ValueError('Retained transit geometry differs from assignment geometry')
     if status == 'unavailable':
         return {'geometry': geometry, 'transit_status': prepared['transit_status'],
                 'metadata': prepared['metadata'], 'skim': None, 'log': ''}

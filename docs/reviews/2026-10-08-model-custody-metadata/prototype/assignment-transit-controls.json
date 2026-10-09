@@ -1,0 +1,36 @@
+{
+  "module_sha256": "ceabf55109539c20b5615cbbe491d949b52492242dbc45bf15435587426793f6",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-geometry-identity",
+      "exit_code": 1,
+      "targeted_test": "test_changed_assignment_geometry_stops_without_auto_fallback"
+    },
+    {
+      "control": "erase-transit-status",
+      "exit_code": 1,
+      "targeted_test": "test_actual_mode_choice_uses_retained_result_and_writes_auto_matrix"
+    },
+    {
+      "control": "swallow-custody-failure",
+      "exit_code": 1,
+      "targeted_test": "test_corrupted_feed_stops_without_auto_fallback"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual mode-choice AST branch, real synthetic feed and geometry, and auto matrix artifact. No full native assignment, dispatcher lifecycle or scientific acceptance."
+}

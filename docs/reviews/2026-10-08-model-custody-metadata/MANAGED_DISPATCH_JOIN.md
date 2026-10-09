@@ -2798,3 +2798,29 @@ This demonstrates synthetic transit computation, not full native assignment,
 all-origin child acceptance, real database recovery or scientific validity.
 No production dispatcher is enabled. Next integrate the consumer with the
 assignment mode-choice branch and test retained geometry/feed use there.
+
+
+## Retained transit joins assignment mode choice, October 8
+
+`stage_assignment` accepts an explicit retained transit preparation record.
+When mode choice applies, this path consumes the registered feed and geometry
+without rediscovery. It compares the copied geometry against the assignment's
+current ordered geometry before computing. The actual mode-choice branch then
+uses the resulting skim, status, metadata and log when writing the auto OD file.
+An uncertain retained input or mode-choice failure propagates a reconciliation
+error instead of silently assigning all person trips to auto.
+
+Three tests execute the actual mode-choice AST branch with a synthetic feed and
+real auto OD output. They cover modeled output, changed geometry and corrupt
+feed bytes. The related unittest suite passes 87 tests. The separate script
+runners pass 51 feed-handoff and 25 discovery checks. Three targeted faults
+(ignore geometry identity, erase transit status, swallow custody failure) fail;
+baseline, harmless comment and restored controls pass. Pytest is not installed;
+these repositories' script runners supplied the separate function checks.
+
+This exercises the assignment branch without native project setup or traffic
+assignment. The full reserved child assignment launcher still needs to supply
+the retained record. Retained-path numerical exceptions currently stop the
+attempt for reconciliation; they do not claim a successful auto-only result.
+Dispatcher activation, real recovery, browser and scientific acceptance remain
+open. No published claim tier changes.

@@ -4249,6 +4249,17 @@ def managed_assignment_count_preparer(setup_result: dict, *,
     return prepare
 
 
+def consume_assignment_transit(prepared: dict, zone_geometry: dict, out_dir: str) -> dict:
+    """Refuse an uncertain retained handoff rather than assigning fallback demand."""
+    from pathlib import Path
+    from model_transit_execution import consume_and_skim
+    try:
+        return consume_and_skim(prepared, Path(out_dir) / "assignment_transit",
+                                expected_geometry=zone_geometry)
+    except Exception as error:
+        raise WorkerStateWriteUnconfirmed("Retained assignment transit requires reconciliation") from error
+
+
 def stage_assignment(
     run_id: str,
     stage_id: str,
@@ -4260,6 +4271,7 @@ def stage_assignment(
     demand_is_vehicle: bool = False,
     counts_path_override: str | None = None,
     count_inputs_override: dict | None = None,
+    transit_inputs_override: dict | None = None,
     persisted_network_settings: dict | None = None,
     persisted_network_settings_payload_json: str | None = None,
     persisted_network_settings_digest: str | None = None,
@@ -4522,163 +4534,168 @@ def stage_assignment(
                 transit_skim = None
                 transit_status = "modeled"
                 transit_los_meta = {}
-                try:
-                    # One wall-clock budget for the WHOLE transit stage — discovery,
-                    # feed download and skim together — started before any of it runs.
-                    # The worker's stages are serial inside one queued job, so an
-                    # unbounded transit stage stalls every run behind this one. The
-                    # budget is COOPERATIVE — it stops the stage at the next
-                    # check_deadline call, not the instant it expires, so a stalled
-                    # download is still bounded by requests' own timeout rather than by
-                    # this. It never changes a modeled number, only converts an
-                    # open-ended stall into a named refusal.
-                    transit_deadline = gtfs_skim.stage_deadline()
-                    feed_plan, discovery = resolve_transit_feed_plan(run_row, lons, lats)
-                    if discovery is not None and discovery.url:
-                        log += f"GTFS discovery selected a feed covering this study area: {discovery.url}\n"
-                    feed_origin = feed_plan.origin
-                    transit_los_meta = {"feed_origin": feed_origin}
-                    if feed_plan.operator_env_overridden:
-                        # An operator who pinned GTFS_URL/GTFS_PATH and finds a run
-                        # skimmed something else is owed the reason, on the run, not
-                        # in a changelog. This is the disclosure that makes the
-                        # precedence reversal honest rather than surprising.
-                        transit_los_meta["operator_env_overridden"] = True
-                        log += (
-                            "This run names its own transit feed, which takes precedence over the "
-                            "deployment-wide GTFS_URL/GTFS_PATH feed for this run only.\n"
-                        )
-                    if feed_plan.selection_reason:
-                        transit_los_meta["selection_reason"] = feed_plan.selection_reason[:300]
-                    if feed_plan.discovery_error:
-                        # Kept even when the fallback below goes on to model transit
-                        # successfully: a run that says "modeled" must still disclose
-                        # that discovery never actually ran for this study area.
+                if transit_inputs_override is not None:
+                    retained_transit = consume_assignment_transit(transit_inputs_override, zone_geometry, out_dir)
+                    transit_skim = retained_transit["skim"]
+                    transit_status = retained_transit["transit_status"]
+                    transit_los_meta = retained_transit["metadata"]
+                    log += retained_transit["log"]
+                else:
+                    try:
+                        # One wall-clock budget for the WHOLE transit stage — discovery,
+                        # feed download and skim together — started before any of it runs.
+                        # The worker's stages are serial inside one queued job, so an
+                        # unbounded transit stage stalls every run behind this one. The
+                        # budget is COOPERATIVE — it stops the stage at the next
+                        # check_deadline call, not the instant it expires, so a stalled
+                        # download is still bounded by requests' own timeout rather than by
+                        # this. It never changes a modeled number, only converts an
+                        # open-ended stall into a named refusal.
+                        transit_deadline = gtfs_skim.stage_deadline()
+                        feed_plan, discovery = resolve_transit_feed_plan(run_row, lons, lats)
+                        if discovery is not None and discovery.url:
+                            log += f"GTFS discovery selected a feed covering this study area: {discovery.url}\n"
+                        feed_origin = feed_plan.origin
+                        transit_los_meta = {"feed_origin": feed_origin}
+                        if feed_plan.operator_env_overridden:
+                            # An operator who pinned GTFS_URL/GTFS_PATH and finds a run
+                            # skimmed something else is owed the reason, on the run, not
+                            # in a changelog. This is the disclosure that makes the
+                            # precedence reversal honest rather than surprising.
+                            transit_los_meta["operator_env_overridden"] = True
+                            log += (
+                                "This run names its own transit feed, which takes precedence over the "
+                                "deployment-wide GTFS_URL/GTFS_PATH feed for this run only.\n"
+                            )
+                        if feed_plan.selection_reason:
+                            transit_los_meta["selection_reason"] = feed_plan.selection_reason[:300]
+                        if feed_plan.discovery_error:
+                            # Kept even when the fallback below goes on to model transit
+                            # successfully: a run that says "modeled" must still disclose
+                            # that discovery never actually ran for this study area.
+                            # Truncated so an unexpectedly long message cannot bloat the packet.
+                            transit_los_meta["discovery_error"] = feed_plan.discovery_error[:300]
+                        if feed_plan.fallback_after_catalog_failure:
+                            log += (
+                                "GTFS feed catalog could not be reached "
+                                f"({feed_plan.discovery_error or 'reason not reported'}); falling back to the feed "
+                                "bundled with the worker, which is applied only if its own stops fall inside "
+                                "this study area. Discovery did NOT run for this study area, so a published "
+                                "feed covering it may exist and was not looked for.\n"
+                            )
+                        if not feed_plan.load:
+                            # Two very different refusals share this branch, and each says
+                            # its own sentence. Neither may fall back to another feed:
+                            # discovery's is a checked coverage fact about the AREA, and a
+                            # selection's is a fact about the feed the planner CHOSE.
+                            transit_status = feed_plan.status
+                            transit_los_meta["no_feed_reason"] = feed_plan.no_feed_reason
+                            if feed_plan.origin == "workspace_feed_version":
+                                log += (
+                                    "The transit feed chosen for this run could not be used "
+                                    f"({feed_plan.no_feed_reason}"
+                                    + (f": {feed_plan.selection_reason}" if feed_plan.selection_reason else "")
+                                    + "); transit not modeled (transit share 0 — NOT 'no transit demand'). "
+                                    "No other feed was substituted: a run that names one feed must not "
+                                    "report numbers produced by another.\n"
+                                )
+                            else:
+                                log += (
+                                    "GTFS discovery found no scheduled feed covering this study area; "
+                                    "transit not modeled (transit share 0 — NOT 'no transit demand').\n"
+                                )
+                        elif feed_plan.feed_version_id:
+                            # The run named one of the workspace's own ingested feeds.
+                            # Everything this path does lives in one function so a test can
+                            # DRIVE it — the rest of this stage cannot be called without a
+                            # built AequilibraE project, which is how a branch that does
+                            # nothing would otherwise reach production green.
+                            _sel_meta, transit_skim, _sel_log = skim_selected_feed_version(
+                                feed_plan.feed_version_id,
+                                run_row.get("workspace_id"),
+                                lons,
+                                lats,
+                                deadline=transit_deadline,
+                                feed_origin=feed_origin,
+                            )
+                            transit_los_meta.update(_sel_meta)
+                            log += _sel_log
+                        else:
+                            los = gtfs_skim.load_feed(url=feed_plan.url)
+                            transit_los_meta["source_url"] = los.source_url
+                            transit_los_meta["source_name"] = los.source_name
+                            # A slow-drip download can outlast requests' per-read timeout;
+                            # check before committing to the skim rather than starting one
+                            # there is no longer time to finish.
+                            gtfs_skim.check_deadline(transit_deadline, "downloading and parsing the feed")
+                            if not gtfs_skim.feed_covers(los, lons, lats):
+                                # The feed loaded but none of its stops fall within the study
+                                # area — skimming it would report a misleading transit_status
+                                # of "modeled" with a 0 share.
+                                refusal = transit_coverage_refusal(feed_origin)
+                                transit_status = refusal["transit_status"]
+                                transit_los_meta["no_feed_reason"] = refusal["no_feed_reason"]
+                                log += refusal["log"]
+                            else:
+                                transit_skim = gtfs_skim.transit_skim(los, lons, lats, deadline=transit_deadline)
+                                transit_los_meta.update(_transit_feed_summary(los))
+                                log += (
+                                    f"Transit LOS from {los.source_url or los.source_name} "
+                                    f"({feed_origin}): {los.n_routes} route(s), {los.n_stops} served stop(s), "
+                                    f"service day {los.service_day}, service window "
+                                    f"{transit_los_meta['service_period'] or 'not stated in the feed calendar'}.\n"
+                                )
+                                # The SAME sentence the chosen-feed path prints. The
+                                # operator-env, discovered-catalog and bundled feeds are
+                                # exactly the origins that used to say nothing about an
+                                # expired schedule — and the bundled feed is expired
+                                # today, so this is the ordinary deployment rather than
+                                # an edge case.
+                                log += _feed_expiry_log_note(transit_los_meta)
+                    except Exception as te:
+                        transit_status = "feed_unavailable"
+                        # Carry forward whatever provenance was already established, then
+                        # name the REAL reason (e.g. the loud frequencies.txt rejection).
                         # Truncated so an unexpectedly long message cannot bloat the packet.
-                        transit_los_meta["discovery_error"] = feed_plan.discovery_error[:300]
-                    if feed_plan.fallback_after_catalog_failure:
-                        log += (
-                            "GTFS feed catalog could not be reached "
-                            f"({feed_plan.discovery_error or 'reason not reported'}); falling back to the feed "
-                            "bundled with the worker, which is applied only if its own stops fall inside "
-                            "this study area. Discovery did NOT run for this study area, so a published "
-                            "feed covering it may exist and was not looked for.\n"
-                        )
-
-                    if not feed_plan.load:
-                        # Two very different refusals share this branch, and each says
-                        # its own sentence. Neither may fall back to another feed:
-                        # discovery's is a checked coverage fact about the AREA, and a
-                        # selection's is a fact about the feed the planner CHOSE.
-                        transit_status = feed_plan.status
-                        transit_los_meta["no_feed_reason"] = feed_plan.no_feed_reason
-                        if feed_plan.origin == "workspace_feed_version":
-                            log += (
-                                "The transit feed chosen for this run could not be used "
-                                f"({feed_plan.no_feed_reason}"
-                                + (f": {feed_plan.selection_reason}" if feed_plan.selection_reason else "")
-                                + "); transit not modeled (transit share 0 — NOT 'no transit demand'). "
-                                "No other feed was substituted: a run that names one feed must not "
-                                "report numbers produced by another.\n"
-                            )
+                        #
+                        # Which failure it was decides what we may say. `load_feed` stamps
+                        # the feed's identity the moment it succeeds, so the presence of a
+                        # source is the evidence that the feed WAS read and something after
+                        # it — the coverage check or the skim itself — is what failed.
+                        # Reporting that as "the feed could not be read" would give a real
+                        # refusal the wrong reason, and would send a planner off to fix a
+                        # feed that is fine.
+                        _feed_was_read = bool(transit_los_meta.get("source_url") or transit_los_meta.get("source_name"))
+                        if isinstance(te, gtfs_skim.SelectedFeedError):
+                            # A run that NAMED a feed already knows exactly what went
+                            # wrong with it, and that specificity is the whole value of
+                            # letting a planner choose. Flattening it into
+                            # "feed_load_failed" would send someone to re-upload an
+                            # archive when the real answer was "that feed does not serve
+                            # this study area".
+                            _no_feed_reason = te.no_feed_reason
+                        elif isinstance(te, gtfs_skim.GtfsFrequencyOnly):
+                            # Not a broken feed: an agency that publishes headway bands
+                            # instead of a timetable. Named separately so nobody is sent
+                            # to fix a feed that is fine.
+                            _no_feed_reason = "feed_publishes_frequencies_only"
+                        elif isinstance(te, gtfs_skim.GtfsTimeout):
+                            # Ran out of time, not out of data. Reported separately because
+                            # nothing about the feed is wrong — a rerun, a smaller zone
+                            # system or a larger GTFS_STAGE_BUDGET_S is the answer, and
+                            # calling it a feed problem would send a planner to their
+                            # transit agency over a budget the operator sets.
+                            _no_feed_reason = "transit_skim_timed_out"
+                        elif _feed_was_read:
+                            _no_feed_reason = "transit_skim_failed"
                         else:
-                            log += (
-                                "GTFS discovery found no scheduled feed covering this study area; "
-                                "transit not modeled (transit share 0 — NOT 'no transit demand').\n"
-                            )
-                    elif feed_plan.feed_version_id:
-                        # The run named one of the workspace's own ingested feeds.
-                        # Everything this path does lives in one function so a test can
-                        # DRIVE it — the rest of this stage cannot be called without a
-                        # built AequilibraE project, which is how a branch that does
-                        # nothing would otherwise reach production green.
-                        _sel_meta, transit_skim, _sel_log = skim_selected_feed_version(
-                            feed_plan.feed_version_id,
-                            run_row.get("workspace_id"),
-                            lons,
-                            lats,
-                            deadline=transit_deadline,
-                            feed_origin=feed_origin,
-                        )
-                        transit_los_meta.update(_sel_meta)
-                        log += _sel_log
-                    else:
-                        los = gtfs_skim.load_feed(url=feed_plan.url)
-                        transit_los_meta["source_url"] = los.source_url
-                        transit_los_meta["source_name"] = los.source_name
-                        # A slow-drip download can outlast requests' per-read timeout;
-                        # check before committing to the skim rather than starting one
-                        # there is no longer time to finish.
-                        gtfs_skim.check_deadline(transit_deadline, "downloading and parsing the feed")
-                        if not gtfs_skim.feed_covers(los, lons, lats):
-                            # The feed loaded but none of its stops fall within the study
-                            # area — skimming it would report a misleading transit_status
-                            # of "modeled" with a 0 share.
-                            refusal = transit_coverage_refusal(feed_origin)
-                            transit_status = refusal["transit_status"]
-                            transit_los_meta["no_feed_reason"] = refusal["no_feed_reason"]
-                            log += refusal["log"]
-                        else:
-                            transit_skim = gtfs_skim.transit_skim(los, lons, lats, deadline=transit_deadline)
-                            transit_los_meta.update(_transit_feed_summary(los))
-                            log += (
-                                f"Transit LOS from {los.source_url or los.source_name} "
-                                f"({feed_origin}): {los.n_routes} route(s), {los.n_stops} served stop(s), "
-                                f"service day {los.service_day}, service window "
-                                f"{transit_los_meta['service_period'] or 'not stated in the feed calendar'}.\n"
-                            )
-                            # The SAME sentence the chosen-feed path prints. The
-                            # operator-env, discovered-catalog and bundled feeds are
-                            # exactly the origins that used to say nothing about an
-                            # expired schedule — and the bundled feed is expired
-                            # today, so this is the ordinary deployment rather than
-                            # an edge case.
-                            log += _feed_expiry_log_note(transit_los_meta)
-                except Exception as te:
-                    transit_status = "feed_unavailable"
-                    # Carry forward whatever provenance was already established, then
-                    # name the REAL reason (e.g. the loud frequencies.txt rejection).
-                    # Truncated so an unexpectedly long message cannot bloat the packet.
-                    #
-                    # Which failure it was decides what we may say. `load_feed` stamps
-                    # the feed's identity the moment it succeeds, so the presence of a
-                    # source is the evidence that the feed WAS read and something after
-                    # it — the coverage check or the skim itself — is what failed.
-                    # Reporting that as "the feed could not be read" would give a real
-                    # refusal the wrong reason, and would send a planner off to fix a
-                    # feed that is fine.
-                    _feed_was_read = bool(transit_los_meta.get("source_url") or transit_los_meta.get("source_name"))
-                    if isinstance(te, gtfs_skim.SelectedFeedError):
-                        # A run that NAMED a feed already knows exactly what went
-                        # wrong with it, and that specificity is the whole value of
-                        # letting a planner choose. Flattening it into
-                        # "feed_load_failed" would send someone to re-upload an
-                        # archive when the real answer was "that feed does not serve
-                        # this study area".
-                        _no_feed_reason = te.no_feed_reason
-                    elif isinstance(te, gtfs_skim.GtfsFrequencyOnly):
-                        # Not a broken feed: an agency that publishes headway bands
-                        # instead of a timetable. Named separately so nobody is sent
-                        # to fix a feed that is fine.
-                        _no_feed_reason = "feed_publishes_frequencies_only"
-                    elif isinstance(te, gtfs_skim.GtfsTimeout):
-                        # Ran out of time, not out of data. Reported separately because
-                        # nothing about the feed is wrong — a rerun, a smaller zone
-                        # system or a larger GTFS_STAGE_BUDGET_S is the answer, and
-                        # calling it a feed problem would send a planner to their
-                        # transit agency over a budget the operator sets.
-                        _no_feed_reason = "transit_skim_timed_out"
-                    elif _feed_was_read:
-                        _no_feed_reason = "transit_skim_failed"
-                    else:
-                        _no_feed_reason = "feed_load_failed"
-                    transit_los_meta = {
-                        **transit_los_meta,
-                        "no_feed_reason": _no_feed_reason,
-                        "error": str(te)[:300],
-                    }
-                    log += f"Transit LOS unavailable ({te}); transit reported as 0 (feed_unavailable).\n"
-
+                            _no_feed_reason = "feed_load_failed"
+                        transit_los_meta = {
+                            **transit_los_meta,
+                            "no_feed_reason": _no_feed_reason,
+                            "error": str(te)[:300],
+                        }
+                        log += f"Transit LOS unavailable ({te}); transit reported as 0 (feed_unavailable).\n"
                 auto_float, auto_int, transit_int, active_int, mm = mode_choice.split_matrix(
                     od_array, time_skim, dist_miles, transit=transit_skim
                 )
@@ -4709,7 +4726,11 @@ def stage_assignment(
                     f"(auto {shares['auto']:.1f}% · transit {shares['transit']:.2f}% · active {shares['active']:.1f}%; "
                     f"transit {transit_status}, {mm['transit_available_pairs']}/{mm['transit_total_pairs']} pairs served)\n"
                 )
+            except WorkerStateWriteUnconfirmed:
+                raise
             except Exception as e:
+                if transit_inputs_override is not None:
+                    raise WorkerStateWriteUnconfirmed("Retained mode choice requires reconciliation") from e
                 log += f"Mode choice warning ({e}); assigning all internal trips as auto.\n"
                 mode_split = None
                 _clear_stale_auto_od()
