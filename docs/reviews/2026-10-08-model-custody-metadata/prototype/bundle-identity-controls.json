@@ -6,42 +6,27 @@
       "expected_behavior_observed": true
     },
     {
-      "control": "bypass-builder-check",
+      "control": "empty-identity",
       "returncode": 1,
       "expected_behavior_observed": true
     },
     {
-      "control": "ignore-hash",
+      "control": "study-binding",
       "returncode": 1,
       "expected_behavior_observed": true
     },
     {
-      "control": "ignore-size",
+      "control": "geography-binding",
       "returncode": 1,
       "expected_behavior_observed": true
     },
     {
-      "control": "skip-unavailable",
+      "control": "audit-geography",
       "returncode": 1,
       "expected_behavior_observed": true
     },
     {
-      "control": "skip-malformed",
-      "returncode": 1,
-      "expected_behavior_observed": true
-    },
-    {
-      "control": "skip-nonrecord",
-      "returncode": 1,
-      "expected_behavior_observed": true
-    },
-    {
-      "control": "accept-nonsequence",
-      "returncode": 1,
-      "expected_behavior_observed": true
-    },
-    {
-      "control": "retain-mutable-record",
+      "control": "registry-binding",
       "returncode": 1,
       "expected_behavior_observed": true
     },
@@ -53,7 +38,7 @@
   ],
   "source_sha256": "efcc1b5b7caea645ed5db4af83d6cded1464a1962bdd1abbefa31dbb6e0a848f",
   "limits": [
-    "Synthetic retained files through the real bundle builder",
-    "No source quality, observation lineage, filesystem race, independent freezing or scientific acceptance proof"
+    "Synthetic identities and exact file bindings",
+    "No registry membership, authority applicability, boundary validity, source quality or filesystem-race acceptance"
   ]
 }

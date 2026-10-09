@@ -706,6 +706,20 @@ def build_input_bundle(
     audit = validate_match_audit(match_audit_path, network_path, observation_package_path, registry_path)
     if audit.get("model_output_bytes_read") is not False:
         raise InstrumentV2Error("Input bundle was not frozen before output reveal")
+    if not isinstance(study_id, str) or not study_id.strip() or not isinstance(geography_id, str) or not geography_id.strip():
+        raise InstrumentV2Error("Bundle study and geography identities must be nonempty strings")
+    registry = json.loads(registry_path.read_text())
+    package = validate_observation_package(observation_package_path)
+    if not isinstance(registry, Mapping) or registry.get('study_id') != study_id or package.get('study_id') != study_id:
+        raise InstrumentV2Error("Bundle study identity differs from registry or observation package")
+    geography = package.get('geography')
+    if not isinstance(geography, Mapping) or geography.get('geography_id') != geography_id:
+        raise InstrumentV2Error("Bundle geography identity differs from observation package")
+    if not isinstance(audit.get('geography'), Mapping) or canonical_json_bytes(audit['geography']) != canonical_json_bytes(geography):
+        raise InstrumentV2Error("Match audit geography differs from observation package")
+    package_registry = package.get('registry_artifact')
+    if not isinstance(package_registry, Mapping) or package_registry.get('sha256') != sha256_file(registry_path):
+        raise InstrumentV2Error("Observation package registry binding differs")
     return {
         "schema": INPUT_BUNDLE_SCHEMA,
         "bundle_id": f"{study_id}:{geography_id}:validation-input-v2",

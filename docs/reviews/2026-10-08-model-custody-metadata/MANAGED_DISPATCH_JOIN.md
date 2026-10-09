@@ -4144,3 +4144,35 @@ This is retention verification, not source quality or observation-lineage
 validation. It does not fence concurrent filesystem replacement or prove that
 a caller froze its instrument independently of model output. General prepared
 worker inputs and scientific acceptance remain open.
+
+
+### Bind bundle labels to frozen study and geography identities
+
+The bundle builder previously accepted `study_id` and `geography_id` without
+comparing them with the files it retained. It now requires nonempty string IDs,
+the same study ID in registry and observation package, the requested geography
+ID in the package, the same full geography descriptor in the match audit, and
+the package's exact registry hash. A caller cannot relabel otherwise valid
+files as another study or geography. The descriptor comparison preserves JSON
+value types through canonical serialization.
+
+Geography IDs stay opaque. No country, county, FIPS format, jurisdiction count,
+or adopting-authority type is added to the shared builder. The positive test
+uses an arbitrary study-geometry ID and separate overlapping authority and home
+jurisdiction fields. This tests record preservation rather than assuming those
+facts describe the same geography.
+
+Eight identity tests pass. Five targeted guard faults fail their named tests;
+harmless and restored controls pass. The report is
+`prototype/bundle-identity-controls.json`. The source-record fixture now carries
+actual study/geography/registry bindings so its six tests continue to exercise
+the real builder. Its eight targeted controls were rerun successfully, with the
+updated source hash recorded in `prototype/source-record-controls.json`. The
+existing validation-instrument suite and three directional-refusal tests pass.
+Worker CI includes the new identity suite.
+
+This does not verify membership in a registry's geography collection, resolve a
+boundary, establish an authority's legal applicability, validate source quality,
+or fence changing files. Those remain separate preparation and acceptance
+requirements. No historical study outputs or frozen holdouts were opened or
+rewritten for this change.

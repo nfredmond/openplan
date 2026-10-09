@@ -20,10 +20,14 @@ class SourceRecordsTests(unittest.TestCase):
         self.record = instrument.artifact_record(self.source, relative_to=self.root)
         paths = {name: self.root/(name+'.json') for name in ('registry', 'network', 'profile', 'package', 'audit')}
         for path in paths.values(): path.write_text('{}')
+        paths['registry'].write_text(json.dumps({'study_id': 'synthetic'}))
+        geography = {'geography_id': 'synthetic', 'name': 'Synthetic study geometry'}
         paths['package'].write_text(json.dumps({'schema': instrument.PACKAGE_SCHEMA,
+            'study_id': 'synthetic', 'geography': geography,
+            'registry_artifact': instrument.artifact_record(paths['registry'], relative_to=self.root),
             'observations': [], 'series_count': 0, 'measurement_count': 0}))
         paths['audit'].write_text(json.dumps({'schema': instrument.MATCH_AUDIT_SCHEMA,
-            'frozen_before_model_volume': True, 'model_output_bytes_read': False, 'matches': [],
+            'frozen_before_model_volume': True, 'model_output_bytes_read': False, 'matches': [], 'geography': geography,
             'network_sha256': instrument.sha256_file(paths['network']),
             'observation_package_sha256': instrument.sha256_file(paths['package']),
             'registry_sha256': instrument.sha256_file(paths['registry'])}))
