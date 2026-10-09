@@ -3598,3 +3598,29 @@ under the corresponding `a` and `b` directories.
 This verifies actual database responses for selection and refusal. It does not
 run native models, copy files, prove a full RLS matrix, fence a concurrent
 revocation, activate normal managed dispatch or establish scientific acceptance.
+
+
+### Database-selected files reach the owned ActivitySim directory
+
+The live database handoff proof now writes real synthetic producer files and
+registers their hashes, sizes and local references through native attempt
+commands. The actual bound ActivitySim adapter selects the declared producer's
+three records and copies each file into its own attempt directory. Retained
+bytes match the records and unchanged sources.
+
+The five-case campaign includes normal, harmless, changed-source, bypassed-hash
+and restored cases. Changing source bytes without changing their length refuses
+the third copy, stops the writer and leaves no published destination for that
+file. Disabling the hash comparison admits the corrupt bytes and fails the
+acceptance assertion. Valid cases still pass database revocation refusal and
+seven-table read/copy snapshot comparisons. Temporary gateways are removed.
+
+`prototype/activity-handoff-copy-controls.json` and
+`prototype/activity-handoff-copy-http.json` record results and source hashes.
+Their executable verifiers retain the procedure. Private journals, files,
+clone identities and the expected failing control log are under
+`~/.local/state/openplan/activity-handoff-copy-controls-20261008a/`.
+
+This joins native database selection to actual file retention with synthetic
+contents. It does not run a model, activate the normal dispatcher, fence a
+concurrent revocation, prove the full RLS matrix or change scientific claims.
