@@ -20,16 +20,16 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes after the 0.68.0 candidate are recorded here.
+No changes are recorded here.
 
-## 0.68.0 (development candidate)
+## 0.68.0 (2026-10-09)
 
-This accumulated candidate includes land-use and engagement workflows, model
+This development version includes land-use and engagement workflows, model
 recovery safeguards, GTFS failure cleanup, restore integrity and navigation
-corrections. It is not tagged or released. Final combined GitHub checks govern
-landing and publication. The [release evidence](docs/reviews/2026-10-09-v068-final/VERIFICATION.md)
-records the populated upgrade, workflow checks and their source builds. Version
-1.0 and its scientific and observed practitioner outcomes remain unfinished.
+corrections. The [release evidence](docs/reviews/2026-10-09-v068-final/RELEASE_RECORD.md)
+records the application checks, populated upgrade, archive restore and identified
+workflow builds. Version 1.0 and its scientific and observed practitioner
+outcomes remain unfinished.
 
 There are 399 migrations through
 `20261016000027_run_project_workspace_foreign_keys.sql`, including 26 additions
@@ -319,7 +319,7 @@ The [context editor evidence](docs/reviews/2026-10-07-land-use-authority/CONTEXT
 and subsequent creation acceptance report retain the original partial results
 and later bounded rendered checks. The [creation workflow evidence](docs/reviews/2026-10-07-land-use-authority/CREATION_WORKFLOW.md) records request recovery, stopping and their remaining acceptance limits.
 These records describe isolated verification, not acceptance of an agency
-installation. Publication status is stated at the start of this section.
+installation. The GitHub release and tag identify the published source.
 
 ## 0.67.0 (2026-10-07)
 

@@ -1,8 +1,8 @@
 # v0.68 upgrade and recovery
 
-This guide describes the accumulated v0.68 development candidate. It does not
-declare a release or authorize an update to an unidentified installation. Check
-the final GitHub release and commit before deploying. The candidate contains
+This guide describes v0.68.0. Identify the installation and check the GitHub
+release tag and commit before deploying. A package version alone does not
+establish publication or the served build. This version contains
 399 migrations through `20261016000027_run_project_workspace_foreign_keys.sql`,
 including 26 additions since v0.67.0. Read the [changelog](../../../CHANGELOG.md)
 for the complete capability and migration inventory.
@@ -11,7 +11,7 @@ for the complete capability and migration inventory.
 
 1. Record the current app commit, database target, worker versions and running
    job IDs. Use the [runbook](RUNBOOK.md) to identify the served app. A package
-   version alone cannot distinguish the different v0.68 candidate builds.
+   version alone cannot distinguish the different v0.68 development builds.
 2. Preserve and rehearse a recoverable backup using
    [backup and restore](BACKUP_AND_RESTORE.md). Include model source/output files,
    private command journals, worker configuration and stable installation
