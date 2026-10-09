@@ -235,3 +235,46 @@ This provides read-only reconciliation evidence. It does not adopt a container,
 reconstruct a live owner, authorize removal, or satisfy supervised startup.
 Independent owner/controller-loss handling, database admission and integration
 into the normal execution path remain unfinished.
+
+
+## Container-internal owner observation experiment
+
+The local Docker daemon uses the systemd cgroup driver and cgroup v2, with live
+restore disabled. The host owner guard does not own Docker's workload scope.
+A different mechanism was tested before attempting a production controller:
+pass original owner and controller process descriptors into a private container
+PID namespace, then let its PID 1 observe both throughout the command.
+
+Linux documents [file descriptor transfer over Unix sockets](https://man7.org/linux/man-pages/man7/unix.7.html)
+and [termination of a PID namespace's remaining processes when PID 1 exits](https://man7.org/linux/man-pages/man7/pid_namespaces.7.html).
+The experiment combines those mechanisms. Its Python bootstrap requires PID 1,
+receives exactly two process descriptors over a mounted Unix socket, refuses
+already-exited processes, and checks both while a synthetic command runs.
+When either descriptor reports exit, the bootstrap exits with status 125.
+The kernel then terminates remaining namespace processes. No Docker stop call
+is needed for the observed owner/controller-loss cases.
+
+Five live cases use the cached Python image, 64 MiB memory with no swap allowance,
+16 processes, 0.25 CPU, no network, no capabilities and no new privileges. Owner
+loss and controller loss both produce an exited container with PID zero and
+exit code 125. A detached child's heartbeat stops. A harmless source comment and
+restored source give the same result. Deliberately omitting the watchdog leaves
+the container running and its detached child's heartbeat advancing. The proof
+then explicitly kills and removes only that identified test container. All five
+containers were removed; a subsequent label query found none remaining.
+
+The first attempt hit the Unix-socket pathname limit. The completed campaign
+uses the shorter private path `~/.local/state/openplan/pidfd-20261008b/`.
+Individual case reports survive interruption. The retained source, runner and
+report are `prototype/container_pidfd_bootstrap.py`,
+`prototype/verify_container_pidfd_namespace.py` and
+`prototype/container-pidfd-namespace.json`.
+
+This is an executable design experiment, not production supervision. The proof
+process supplies both descriptors; the processes designated owner and controller
+are synthetic. It does not authenticate the socket peer, bind descriptor delivery
+to the verified Docker creation record, or implement database admission. Before
+production connection, implement and test that handshake, pre-start owner loss,
+bootstrap loss, malformed descriptors, normal command completion, detached-child
+completion policy, log/exit retention and native ActivitySim interruption.
+Remote/rootless variants and daemon/full-host recovery remain separate checks.
