@@ -8,6 +8,7 @@ import model_command_client as client
 import model_command_recovery as commands
 from model_attempt_invocation import AttemptContext
 from model_engine_supervision import inspect_saved_scope,SupervisionUnavailable
+from model_owner_guard_recovery import inspect_guard,validate_guard
 
 
 def unique_object(pairs):
@@ -73,6 +74,21 @@ def inspect_engine(root,journal_directory,*,base_url,deployment_id,request_id):
         scope=started['scope']
         if not isinstance(scope,dict):raise ValueError('Invalid startup scope record')
         if launch.get('scope_unit')!=scope.get('unit'):raise ValueError('Scope unit differs from launch')
+        guard_record,digest=read_record(descriptor,'owner-guard-started.json',optional=True)
+        result['owner_guard']={'outcome':'guard_record_absent','guard_has_live_processes':None}
+        guard=None
+        if guard_record is None:
+            if 'owner_guard_unit' in launch:raise ValueError('Required owner guard record missing')
+        else:
+            hashes['owner-guard-started.json']=digest
+            if {k:v for k,v in guard_record.items() if k!='guard'}!=launch:
+                raise ValueError('Owner guard record differs from launch')
+            guard=guard_record.get('guard')
+            validate_guard(guard)
+            if 'owner_guard_unit' in launch and (launch['owner_guard_unit']!=guard['unit'] or launch.get('supervisor_pid')!=guard['owner_pid']):
+                raise ValueError('Owner guard identity differs from launch')
+            if scope.get('boot_id')!=guard['boot_id']:raise ValueError('Owner guard boot differs from engine')
+
         for name in ('cancellation-requested.json','cancellation-signal-written.json','cancellation-observed.json'):
             record,digest=read_record(descriptor,name,optional=True)
             result[name.removesuffix('.json').replace('-','_')]=record is not None
@@ -91,7 +107,9 @@ def inspect_engine(root,journal_directory,*,base_url,deployment_id,request_id):
             if any(saved.get(key)!=value for key,value in scope.items()):raise ValueError('Cancellation scope differs from startup')
         if result['cancellation_signal_written'] and not result['cancellation_requested']:raise ValueError('Cancellation receipt lacks intent')
         if result['cancellation_observed'] and not result['cancellation_signal_written']:raise ValueError('Cancellation observation lacks signal receipt')
-        return {**result,**inspect_saved_scope(scope),'record_sha256':hashes}
+        observation=inspect_saved_scope(scope)
+        if guard is not None:result['owner_guard']=inspect_guard(guard)
+        return {**result,**observation,'record_sha256':hashes}
     finally:os.close(descriptor)
 
 

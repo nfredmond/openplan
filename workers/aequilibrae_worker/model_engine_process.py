@@ -75,6 +75,8 @@ class EngineProcess:
                 launch_argv=self.scope.command(argv)
                 inherited=(*inherited,self.scope.child.fileno())
                 self.identity['scope_unit']=self.scope.unit
+                self.identity['owner_guard_unit']=self.owner_guard.unit
+                self.identity['supervisor_pid']=os.getpid()
             with self._pinned() as descriptor:
                 _record(descriptor,'launch-reserved.json',self.identity)
                 if self.owner_guard is not None:

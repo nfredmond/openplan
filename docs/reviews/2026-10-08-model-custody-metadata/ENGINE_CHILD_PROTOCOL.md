@@ -522,3 +522,32 @@ absent engine scope and absent final outputs, with no native failure record.
 Database stages remain running; the proof does not silently cancel them or
 infer a completed model. The five service cases and four native cases are
 separate evidence boundaries, not a combined nationwide or scientific claim.
+
+### Retained owner-guard recovery inspection
+
+New scoped launches retain the required guard unit and supervisor PID in the
+launch identity. Fresh recovery inspection binds the private guard record to
+that launch, checks its schema, process identifiers, boot and cgroup identity,
+and observes the saved guard scope without launching or signaling. A different
+boot or a disappearing cgroup remains unassessed. A mismatched live invocation
+or directory is refused. Missing required guard records are refused. Older
+launches without a guard requirement report absent guard evidence as unassessed;
+they do not acquire a restart permission.
+
+The focused engine, channel, cancellation, supervision and recovery campaign
+passes 74 tests using the native Python 3.14 environment. The
+[ten-case controls](prototype/guard-recovery-controls.json) detect eight targeted
+faults and pass harmless/restored cases. Fresh-process audit hooks reject
+signals, network access, model launches and systemd operations other than reads.
+A [retained native inspection](prototype/retained-native-guard-inspection.json)
+observes the stopped native engine and guard twice, includes the guard record
+hash and preserves the custody files and command journal bytes. That case uses
+an older launch record with an optional guard; the live tests exercise the new
+required guard marker as well.
+
+Guard population is a point-in-time process observation. It does not establish
+why an engine stopped, validate a partial native project, check current server
+ownership, authorize abandonment, resume a model or publish outputs. The CLI
+continues to report those authorities as false and termination cause as
+unconfirmed. Arbitrary busy-native interruption, durable operator reconciliation,
+ActivitySim supervision and normal dispatch remain open.

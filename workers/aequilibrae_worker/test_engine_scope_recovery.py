@@ -44,6 +44,8 @@ class ScopeRecoveryTests(unittest.TestCase):
         self.assertEqual(result['outcome'],'scope_populated');self.assertTrue(result['scope_has_live_processes'])
         self.assertFalse(result['signal_sent']);self.assertFalse(result['model_resumed']);self.assertFalse(result['continuation_authorized'])
         self.assertIsNone(handle.process.poll())
+        self.assertTrue(result['owner_guard']['guard_has_live_processes'])
+        self.assertIn('owner-guard-started.json',result['record_sha256'])
 
     def test_lost_cancel_receipt_is_inspected_without_resend(self):
         handle=self.alive();record=engine._record
@@ -67,7 +69,9 @@ class ScopeRecoveryTests(unittest.TestCase):
         self.assertEqual(before,{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in handle.directory.glob('*.json')})
 
     def test_other_boot_is_unassessed_without_manager_query(self):
-        handle=self.alive();p=handle.directory/'scope-started.json';record=json.loads(p.read_text());record['scope']['boot_id']=str(uuid.uuid4());p.write_text(json.dumps(record))
+        handle=self.alive();boot=str(uuid.uuid4())
+        for name,key in (('scope-started.json','scope'),('owner-guard-started.json','guard')):
+            p=handle.directory/name;record=json.loads(p.read_text());record[key]['boot_id']=boot;p.write_text(json.dumps(record))
         with patch('model_engine_supervision.subprocess.run',side_effect=AssertionError('Foreign boot queried manager')):
             result=self.inspect()
         self.assertEqual(result['outcome'],'different_host_boot');self.assertIsNone(result['scope_has_live_processes'])
