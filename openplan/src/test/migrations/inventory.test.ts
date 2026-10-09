@@ -487,12 +487,14 @@ const EXPECTED = {
   // Isolated postgres catalog: 756 policies, 225 policy tables, 252 application tables.
   // 20261016000001 adds one append-only BCA table and SELECT/INSERT policies.
   // Owned isolated catalog: 758 policies, 226 policy tables, 280 application RLS tables.
-  policies: 758,
-  permissive: 507,
+  // 20261016000024 adds SELECT on existing instrument custody: +1 permissive
+  // policy and +1 table with policies. Native catalog: 759 / 508 / 227.
+  policies: 759,
+  permissive: 508,
   restrictive: 251,
   permissiveWrites: 278,
   expanded: 286,
-  tablesWithPolicies: 226,
+  tablesWithPolicies: 227,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.

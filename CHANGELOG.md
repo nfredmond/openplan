@@ -20,6 +20,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Apply `20261016000024_model_attempt_instrument_member_read.sql` before using
+retained instrument evidence in planner views and exports. Workspace members
+may read evidence only through a visible model run in the same workspace.
+Client roles cannot write instrument custody or read private command records.
+
 Apply `20261016000022_model_reaper_recovery_boundary.sql` before deploying.
 Automatic timeout now applies only to unstarted queued model work. Started or
 managed work retains its execution records for explicit recovery review.

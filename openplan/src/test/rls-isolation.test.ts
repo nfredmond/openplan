@@ -1759,6 +1759,7 @@ describe("workspace RLS isolation inventory", () => {
     ]);
     expect([...SERVICE_ONLY_TABLES]).toEqual(["billing_webhook_receipts"]);
     expect([...DEDICATED_LIVE_RLS_PROBES]).toEqual([
+      "model_attempt_instrument_custody",
       "project_bca_versions",
       "engagement_decision_request_resolutions",
       "engagement_response_decision_links",
