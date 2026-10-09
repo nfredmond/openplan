@@ -493,3 +493,43 @@ ActivitySim environment is not container evidence. Remote/rootless Docker,
 Podman, daemon/full-host failure and scientific acceptance remain separate
 unproved boundaries. File fsync is implemented; no power-loss experiment is
 claimed.
+
+
+## Runtime CLI and operator HTTP configuration connected
+
+`runtime.py` now calls the worker controller when the operator supplies
+`--container-supervision-socket` with an absolute local socket path and explicit
+container memory/task limits. The HTTP wrapper accepts the equivalent
+`ACTIVITYSIM_CONTAINER_SUPERVISION_SOCKET` operator environment variable. Request
+bodies cannot choose it. No socket or limits are inferred from a request.
+
+`container_execution.py` adapts the existing command, mount, working-directory
+and HOME mapping. It resolves the already-installed image to an immutable ID,
+retains image environment and entrypoint semantics, and refuses engine arguments
+that cannot be represented by this explicit local Docker connection. It does
+not pull missing images. The controller records live execution outside writable
+model mounts, in a sibling `<runtime-directory>.container-custody` directory.
+The existing runtime log path receives command output. Reusing either retained
+custody or an existing command log fails; `--force` refuses a runtime directory with sibling custody, preserving its linked output and logs.
+
+The actual CLI passed normal and owner-loss cases with a synthetic command.
+Normal completion waits for the detached child and records the resolved image
+and supervised mode in the runtime manifest. Killing the actual runtime process
+stops the container with exit 125, preserves its command log and leaves no
+runtime completion summary. The proof removes only its exact stopped container.
+No engine wrapper stands in for the new CLI path.
+
+All 103 ActivitySim tests pass with live host tests enabled; seven HTTP boundary
+tests pass. Nine adapter/operator faults and two live runtime faults fail their
+stated checks, with harmless/restored passes. The live controls detect dropped
+CLI socket configuration and bypassed runtime dispatch. Reports are
+`prototype/runtime-supervision-controls.json`, `prototype/runtime-live-controls.json`
+and `prototype/supervised-runtime-live.json`. Private logs and records are
+retained under `~/.local/state/openplan/runtime-controls-20261008b/`.
+
+This remains an explicit local-Linux opt-in. The legacy container path remains
+available and still has the reproduced owner-loss defect. No claim extends this
+verification to native ActivitySim, the database poller/attempt dispatcher,
+remote/rootless Docker, Podman, worker-inside-container deployment, daemon/host
+failure, scientific accuracy or human acceptance. Broader coverage is required
+before the full v1 execution obligation is satisfied.

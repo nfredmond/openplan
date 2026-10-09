@@ -1,0 +1,31 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "drop-cli-socket",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "bypass-runtime",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "sources": {
+    "runtime.py": "ce3761061d9e57bdd99acbd4960a0d87b75148eef13a997548e6f956c515cbb9",
+    "main.py": "ad4cf2346fc82b79260f9bd4916a2dc435ca11bf8905cedfed551d6c2c7fbf6e"
+  },
+  "limits": [
+    "Actual runtime CLI with synthetic command, not native ActivitySim or scientific acceptance"
+  ]
+}

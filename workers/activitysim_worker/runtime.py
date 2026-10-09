@@ -560,6 +560,9 @@ def prepare_runtime_directory(
         timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         label = _slugify(run_label or bundle_dir.name)
         path = bundle_dir / DEFAULT_RUNTIME_PARENT / f"{timestamp}-{label}"
+    custody = path.with_name(path.name + ".container-custody")
+    if custody.exists() or custody.is_symlink():
+        raise RuntimeError("Retained container custody exists; choose a new runtime directory")
     if path.exists():
         if not force:
             raise RuntimeError(f"Runtime output directory already exists: {path}")
@@ -602,8 +605,14 @@ def run_activitysim_runtime(
     host_tasks: int | None = None,
     container_memory_bytes: int | None = None,
     container_tasks: int | None = None,
+    container_supervision_socket: str | None = None,
 ) -> dict[str, Any]:
     _validate_container_limits(container_memory_bytes, container_tasks)
+    if container_supervision_socket is not None:
+        if not container_image or container_memory_bytes is None:
+            raise ValueError("Container supervision requires an image and explicit memory/task limits")
+        if not isinstance(container_supervision_socket, str) or not Path(container_supervision_socket).is_absolute():
+            raise ValueError("Container supervision requires an absolute socket path")
     if container_memory_bytes is not None and not container_image:
         raise ValueError("Container limits require a container image")
     if (host_memory_bytes is None) != (host_tasks is None):
@@ -827,26 +836,40 @@ def run_activitysim_runtime(
                                 "layered_config_dirs": [str(p) for p in layered_config_dirs],
                             }
                         (output_dir / DEFAULT_OUTPUT_SUBDIR).mkdir(parents=True, exist_ok=True)
-                        logger.log(f"Executing ActivitySim command: {' '.join(shlex.quote(part) for part in command)}")
+                        if container_supervision_socket is not None:
+                            stage.metadata["requested_container_cli_command"] = stage.metadata.pop("command")
+                            logger.log("Executing ActivitySim through supervised local Docker")
+                        else:
+                            logger.log(f"Executing ActivitySim command: {' '.join(shlex.quote(part) for part in command)}")
                         # Retain output while the command runs. Capturing pipes
                         # buffers the entire log and loses it with this owner.
-                        with run_log_path.open("wb") as run_log:
-                            if host_memory_bytes is not None:
-                                from host_supervision import run_host_command
-                                completed = run_host_command(
-                                    command, cwd=output_dir / "workdir", log=run_log,
-                                    records=stage_dir / "host_supervision",
-                                    memory_bytes=host_memory_bytes, tasks=host_tasks,
-                                )
-                                stage.metadata["host_supervision"] = "owned_linux_scope"
-                            else:
-                                completed = subprocess.run(
-                                    command,
-                                    cwd=str(output_dir / "workdir"),
-                                    stdout=run_log,
-                                    stderr=subprocess.STDOUT,
-                                    check=False,
-                                )
+                        if container_supervision_socket is not None:
+                            from container_execution import run_supervised_execution
+                            custody = output_dir.with_name(output_dir.name + ".container-custody")
+                            completed, supervision = run_supervised_execution(
+                                container_execution, socket_path=container_supervision_socket,
+                                records=custody, log_path=run_log_path,
+                            )
+                            stage.metadata.update(supervision)
+                            runtime_manifest["execution"].update(supervision)
+                        else:
+                            with run_log_path.open("wb") as run_log:
+                                if host_memory_bytes is not None:
+                                    from host_supervision import run_host_command
+                                    completed = run_host_command(
+                                        command, cwd=output_dir / "workdir", log=run_log,
+                                        records=stage_dir / "host_supervision",
+                                        memory_bytes=host_memory_bytes, tasks=host_tasks,
+                                    )
+                                    stage.metadata["host_supervision"] = "owned_linux_scope"
+                                else:
+                                    completed = subprocess.run(
+                                        command,
+                                        cwd=str(output_dir / "workdir"),
+                                        stdout=run_log,
+                                        stderr=subprocess.STDOUT,
+                                        check=False,
+                                    )
                         stage.artifacts.append({"artifact_type": "activitysim_stdout_log", "path": str(run_log_path)})
                         stage.metadata["returncode"] = completed.returncode
                         if completed.returncode == 0:

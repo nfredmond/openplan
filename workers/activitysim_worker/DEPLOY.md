@@ -71,8 +71,51 @@ Container behavior:
 - bundle and config directories are mounted read-only into the container
 - the runtime directory is mounted read-write at `/openplan/runtime`
 - the worker defaults to `--network none` and, on Unix-like hosts, `--user <uid>:<gid>` for safer local output ownership
-- use `--container-network-mode bridge` (or payload `containerNetworkMode`) when the container must install or fetch dependencies at runtime
+- use `--container-network-mode bridge` (or operator environment `ACTIVITYSIM_CONTAINER_NETWORK_MODE`) when the container must install or fetch dependencies at runtime
 - a plain image such as `python:3.11-slim` still needs an inner command that installs or already contains ActivitySim; a future dedicated image can omit that bootstrap
+
+## Supervised local Docker execution
+
+The runtime can use an explicitly selected local Docker Unix socket:
+
+```bash
+python3 workers/activitysim_worker/main.py \
+  --bundle-path "$ACTIVITYSIM_BUNDLE_PATH" \
+  --runtime-dir "$ACTIVITYSIM_RUNTIME_DIR" \
+  --activitysim-container-image "$ACTIVITYSIM_CONTAINER_IMAGE" \
+  --container-memory-bytes "$ACTIVITYSIM_CONTAINER_MEMORY_BYTES" \
+  --container-tasks "$ACTIVITYSIM_CONTAINER_TASKS" \
+  --container-supervision-socket /run/docker.sock
+```
+
+Set these variables to the prepared bundle, a fresh output directory, an already
+installed reviewed image and resource limits appropriate to that model. This
+mode does not pull images. It records the immutable image ID and preserves the
+existing container template, layered config mounts and HOME mapping. A plain
+Python image needs an explicit command template; it does not contain ActivitySim.
+The 64 MiB limits in synthetic lifecycle tests are not a native model sizing rule.
+
+This mode requires the worker on a local Linux host with user systemd, cgroup v2,
+process descriptors and socket peer PID descriptors, plus rootful Docker using
+the systemd cgroup driver. It refuses custom engine argument lists. It has not
+been verified inside the worker Docker image or with remote/rootless Docker or
+Podman. The HTTP operator can set `ACTIVITYSIM_CONTAINER_SUPERVISION_SOCKET`,
+`ACTIVITYSIM_CONTAINER_MEMORY_BYTES` and `ACTIVITYSIM_CONTAINER_TASKS`; clients
+cannot override them in JSON.
+
+Custody lives in a sibling `<runtime-directory>.container-custody` directory
+outside the model's writable mounts. Keep it with the runtime output for recovery.
+The controller retains intent, creation, bootstrap identity, command log hashes
+and confirmed exit/removal records. Existing custody and command logs are not
+reused; choose a new runtime directory after an interrupted attempt. `--force`
+refuses directories with retained sibling custody and preserves their output and logs. An interrupted run does not gain automatic retry
+or scientific acceptance from these records.
+
+Synthetic CLI checks cover normal detached completion and owner loss. Native
+ActivitySim, database dispatch and broader recovery acceptance remain open.
+Omitting the socket keeps the legacy container path, which does not stop a
+Docker workload merely because its runtime owner disappears. See the dated
+[execution evidence](../../docs/reviews/2026-10-08-model-custody-metadata/ACTIVITYSIM_CONTAINER_CUSTODY.md).
 
 ## HTTP Wrapper
 
