@@ -162,3 +162,16 @@ The archive is synthetic metadata in this test. Matching metadata is not proof t
 python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_complete.py \
   /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
 ```
+
+## Feed-pointer and truncate boundaries, October 9
+
+The [pointer prototype](pointer-prototype.sql) refuses direct pointer changes involving a managed version, including insertion with that pointer and clearing an existing adopted pointer. It is deliberately closed until an adoption command with the existing collapse-review rules is implemented. The predicate checks both the previous and proposed pointer. It leaves unrelated feed updates and unmanaged pointers under existing behavior.
+
+The prototype also revokes TRUNCATE on feeds, versions and the three derived service tables from PUBLIC, anon, authenticated and service_role. Row triggers cannot enforce a row-level managed boundary on truncation. The [runner](verify_pointer.py) checks PostgreSQL's effective privileges for all three runtime roles on all five tables; it never executes TRUNCATE. The permission changes roll back with the fixture and trigger.
+
+[Six controls](pointer-controls.json) cover baseline, a harmless comment, a missing pointer guard, a guard ignoring the old pointer, a restored service-role TRUNCATE grant, and restored behavior. Each broken control fails for the intended reason. The completed-version fixture comes from the earlier batch/completion suite. A separate already-adopted pointer fixture is synthetic schema state, not a real ingestion or validated transit dataset. The test does not exercise admission concurrent with pointer changes, managed adoption, administrator maintenance, provider credentials or external Storage permissions. Those remain separate boundaries.
+
+```bash
+python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_pointer.py \
+  /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
+```
