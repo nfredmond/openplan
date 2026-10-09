@@ -1,0 +1,201 @@
+{
+  "sourceCommit": "b1b0fc56f8e2dea07813d79496df6a67585b864d",
+  "desktop": {
+    "documentWidth": 1280,
+    "events": [
+      {
+        "type": "pointerdown",
+        "target": "/engagement",
+        "targetY": 441.8210754394531
+      },
+      {
+        "type": "pointerup",
+        "target": "/engagement",
+        "targetY": 441.8210754394531
+      },
+      {
+        "type": "click",
+        "target": "/engagement",
+        "targetY": 441.8210754394531
+      }
+    ],
+    "url": "http://127.0.0.1:3521/engagement",
+    "viewport": [
+      1280,
+      800
+    ]
+  },
+  "tablet": {
+    "documentWidth": 1024,
+    "events": [
+      {
+        "type": "pointerdown",
+        "target": "/engagement",
+        "targetY": 441.8210754394531
+      },
+      {
+        "type": "pointerup",
+        "target": "/engagement",
+        "targetY": 441.8210754394531
+      },
+      {
+        "type": "click",
+        "target": "/engagement",
+        "targetY": 441.8210754394531
+      }
+    ],
+    "url": "http://127.0.0.1:3521/engagement",
+    "viewport": [
+      1024,
+      768
+    ]
+  },
+  "mobile": {
+    "dialogOpen": false,
+    "documentWidth": 390,
+    "titles": [
+      {
+        "height": 0,
+        "margin": "0px"
+      },
+      {
+        "height": 0,
+        "margin": "0px"
+      },
+      {
+        "height": 0,
+        "margin": "0px"
+      },
+      {
+        "height": 0,
+        "margin": "0px"
+      },
+      {
+        "height": 0,
+        "margin": "0px"
+      },
+      {
+        "height": 0,
+        "margin": "0px"
+      }
+    ],
+    "url": "http://127.0.0.1:3521/engagement",
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  "harmless": {
+    "events": [
+      {
+        "type": "pointerdown",
+        "target": "BUTTON",
+        "targetY": 441.8210754394531
+      },
+      {
+        "type": "pointerup",
+        "target": "BUTTON",
+        "targetY": 441.8210754394531
+      },
+      {
+        "type": "click",
+        "target": "BUTTON",
+        "targetY": 441.8210754394531
+      },
+      {
+        "type": "pointerdown",
+        "target": "/engagement",
+        "targetY": 441.8210754394531
+      },
+      {
+        "type": "pointerup",
+        "target": "/engagement",
+        "targetY": 441.8210754394531
+      },
+      {
+        "type": "click",
+        "target": "/engagement",
+        "targetY": 441.8210754394531
+      }
+    ],
+    "url": "http://127.0.0.1:3521/engagement"
+  },
+  "broken": {
+    "events": [
+      {
+        "type": "pointerdown",
+        "target": "/engagement",
+        "targetY": 541.8211059570312
+      },
+      {
+        "type": "pointerup",
+        "target": "/models",
+        "targetY": 541.8211059570312
+      },
+      {
+        "type": "click",
+        "target": "NAV",
+        "targetY": 541.8211059570312
+      }
+    ],
+    "url": "http://127.0.0.1:3521/projects"
+  },
+  "restored": {
+    "diagnosticStyleRemaining": false,
+    "events": [
+      {
+        "type": "pointerdown",
+        "target": "/engagement",
+        "targetY": 441.8210754394531
+      },
+      {
+        "type": "pointerup",
+        "target": "/engagement",
+        "targetY": 441.8210754394531
+      },
+      {
+        "type": "click",
+        "target": "/engagement",
+        "targetY": 441.8210754394531
+      }
+    ],
+    "url": "http://127.0.0.1:3521/engagement"
+  },
+  "keyboard": "Focused Projects anchor then Enter reaches /projects.",
+  "screenshots": [
+    {
+      "name": "browser-screenshot-127-0-0-1-mv1igbzc-cd0c589e.png",
+      "sha256": "1c99ce767653f7a2ea3d75c5820851a9f7d0bd2eef497aa9470292318c734e6d"
+    },
+    {
+      "name": "browser-screenshot-127-0-0-1-mv1igy3g-375a6a49.png",
+      "sha256": "4bc5fbc1b8d61d2d086e263ebacc337990bc9710b2c2c11ac9e4611921ff6609"
+    }
+  ],
+  "console": "No new entries since this candidate opened at 22:01 UTC. Earlier controlled 503 and other errors remain in the browser history.",
+  "limits": [
+    "Synthetic acceptance, not practitioner observation.",
+    "Viewport resizing retains the desktop browser user agent.",
+    "Pointing device results cover the exercised links and viewport sizes."
+  ],
+  "identity": {
+    "unit": "openplan-short-rail-acceptance-b1b0fc56.service",
+    "pid": 1508433,
+    "cwd": "/home/nathaniel/.local/state/openplan/stable-short-rail-20261009/openplan",
+    "health": {
+      "status": "ok",
+      "service": "openplan",
+      "checkedAt": "2026-10-09T22:01:49.874Z",
+      "deployment": {
+        "commit": "b1b0fc56f8e2",
+        "version": "0.68.0"
+      },
+      "checks": {
+        "app": "ok",
+        "database": "not_checked"
+      }
+    },
+    "commit": "b1b0fc56f8e2dea07813d79496df6a67585b864d",
+    "buildLogSha256": "e27dce7fdaf12f8aa1d8435f4d27b98a663f925ff52823f81017ccd7dcccdec0"
+  }
+}
