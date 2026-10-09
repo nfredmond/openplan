@@ -1344,7 +1344,7 @@ export function ModelRunManager({
 
                 return (
                   <div key={run.id} className="module-record-row">
-                    <div className="module-record-main">
+                    <div className="module-record-main grid-cols-1">
                       <div className="module-record-kicker">
                         <StatusBadge tone={runStatus.tone}>{runStatus.label}</StatusBadge>
                         <StatusBadge tone="neutral">{labelForEngineKey(run.engine_key)}</StatusBadge>

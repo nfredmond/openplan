@@ -1,0 +1,77 @@
+{
+  "sourceCommit": "cf6256980ae4d6ba7099bbdd2f1fc6bbb2f9250e",
+  "url": "http://127.0.0.1:3520",
+  "mobile": {
+    "buttons": [
+      {
+        "height": 41.357757568359375,
+        "parent": 203,
+        "text": "Review current execution state",
+        "width": 203.362060546875,
+        "wrap": "normal"
+      },
+      {
+        "height": 39.999996185302734,
+        "parent": 203,
+        "text": "Reload saved decisions",
+        "width": 186.6055908203125,
+        "wrap": "normal"
+      },
+      {
+        "height": 41.357757568359375,
+        "parent": 203,
+        "text": "Download decision and receipt",
+        "width": 203.362060546875,
+        "wrap": "normal"
+      }
+    ],
+    "client": 229,
+    "panelWidth": 228.7284393310547,
+    "scroll": 229,
+    "scrollWidth": 390,
+    "width": 390
+  },
+  "geometryControls": {
+    "baseline": {
+      "client": 229,
+      "scroll": 229,
+      "within": true
+    },
+    "broken": {
+      "client": 229,
+      "scroll": 266,
+      "within": false
+    },
+    "harmless": {
+      "client": 229,
+      "scroll": 229,
+      "within": true
+    },
+    "restored": {
+      "client": 229,
+      "scroll": 229,
+      "within": true
+    }
+  },
+  "screenshots": {
+    "mobile": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-127-0-0-1-mv1h7zxt-09bf16fb.png",
+    "desktop": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-127-0-0-1-mv1h8g4l-dddf3602.png"
+  },
+  "desktop": {
+    "width": 1280,
+    "documentScrollWidth": 1280,
+    "recordClientWidth": 414,
+    "recordScrollWidth": 414
+  },
+  "download": {
+    "path": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-mv1h888n-2-model-recovery-3a3a78a5-64a5-4075-9268-3797736f98d4.json",
+    "bytes": 3950,
+    "sha256": "0f36a37b9ac5e3434d62fa7dec4e5ff2aea420d48fb707062e5194e751711eef",
+    "matchesOriginal": true
+  },
+  "console": {
+    "reviewFrom": "2026-10-09T21:27:00Z",
+    "newEntries": []
+  },
+  "limits": "T3 agent acceptance of synthetic retained terminal-run recovery view and downloaded receipt. Native file chooser, active worker termination, scientific and practicing-planner acceptance remain separate."
+}
