@@ -1,0 +1,36 @@
+{
+  "proof_sha256": "dc435ae194c271e9fc335d7806c1dbb338f1ad9fcb06fda7d4612a3a98199a9b",
+  "controls": [
+    {
+      "control": "normal",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "drop-registration",
+      "returncode": 1,
+      "expected_failure": "Native consumption registration missing",
+      "matched": true
+    },
+    {
+      "control": "wrong-producer",
+      "returncode": 1,
+      "expected_failure": "Named predecessor stage must be unique",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Synthetic preparation files, native stage claims, completed producer and artifact commands. No engines, normal dispatch, concurrent revocation, receipt-loss recovery or scientific acceptance."
+}

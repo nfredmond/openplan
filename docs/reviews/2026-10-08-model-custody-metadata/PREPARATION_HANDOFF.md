@@ -197,3 +197,34 @@ consumer's attempt fence, but no lease over concurrent producer revocation is
 claimed. Native end-to-end handoff, structural-audit integration, validated source
 coverage and actual engine launch ordering remain open. Normal dispatch does not
 call this new handoff yet; adding a function alone does not complete the workflow.
+
+## Native producer-to-consumer handoff, October 9
+
+The explicit consumer now has native database evidence. The new
+`prototype/verify_native_preparation_handoff.py` creates a fresh isolated clone,
+claims a preparation producer, retains and registers its synthetic inputs, and
+completes it through the managed stage command. A separately admitted assignment
+consumer then calls the actual handoff adapter over the isolated PostgREST gateway.
+Both AequilibraE and ActivitySim mappings pass. Each consumer registers one
+consumption artifact with its own attempt and the original producer identity.
+All six retained roles match their recorded hashes and sizes. Producer files
+remain unchanged; the producer stays succeeded and the consumer stays running.
+Consumption does not authorize execution or complete the assignment stage.
+
+Five control cases passed their expected outcomes: baseline, a harmless input
+folder rename, deliberately omitted consumption registration, an unrelated
+producer name, and restored baseline. The omitted registration fails the native
+artifact inventory assertion. The unrelated producer fails the named predecessor
+selector. Results and the proof hash are in
+`prototype/native-preparation-handoff-controls.json`. Private logs and database
+identities remain under `native-preparation-handoff-controls-20261009b` in the
+local OpenPlan state directory. Gateway containers are removed; database clones
+are retained. An earlier control setup tried renaming an already managed stage;
+the database correctly refused that direct update. The final control declares
+the unrelated name before claiming the producer.
+
+This supersedes only the earlier native handoff evidence gap. Inputs are authored
+fixtures with empty observations, not scientific acceptance evidence. The test
+uses explicit managed invocations, not normal dispatch. Consumer artifact reply
+loss and fresh-process recovery, concurrent producer revocation, structural-audit
+integration, source coverage, and actual engine ordering remain unproved here.
