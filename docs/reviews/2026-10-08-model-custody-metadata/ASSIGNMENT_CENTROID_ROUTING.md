@@ -49,6 +49,10 @@ accuracy and practitioner acceptance are separate evidence boundaries.
 
 ## Remaining compressed routing work
 
+Follow-up: the [native compressed routing fixture](COMPRESSED_ROUTING_FIXTURE.md)
+now compares fixed-cost routes and expanded flows for a synthetic three-centroid
+network. It does not close per-run equivalence or the remaining boundaries below.
+
 The installed solver prepares class result arrays during execution, reconstructs
 costs through `graph.set_graph`, and aggregates iteration costs through the
 result crosswalk. Checking only the pre-execution `compact_cost` would miss
