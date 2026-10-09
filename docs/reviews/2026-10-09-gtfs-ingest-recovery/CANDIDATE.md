@@ -22,9 +22,10 @@ work. Storage cleanup and database closure are still separate operations.
 - Ordered native proof preserves a completed/current version, closes a stale
   refresh once, preserves the working feed's status, and refuses late stage and
   route writes. The transaction rolls back.
-- Five native control runs cover baseline, harmless comment, disabled version
-  fence, disabled derived-write fence and restored definitions. Both targeted
-  defects fail their named assertions. Definitions are changed inside rolled
+- Ten native control runs cover baseline, harmless comment, status and freshness
+  checks, version and derived-write fences, stop/tract trigger attachment,
+  authenticated-role exclusion and restored definitions. Targeted defects fail
+  their named assertions. Definitions are changed inside rolled
   back transactions.
 - Seven HTTP adapter tests cover exact scan projection and cutoff, exact command
   payload, confirmed cleanup, declined cleanup, malformed results and RPC error.
@@ -35,9 +36,16 @@ work. Storage cleanup and database closure are still separate operations.
 
 ## Remaining verification
 
-Separate concurrent sessions must verify lock ordering and completion/cleanup
-interleavings. Add explicit stop/tract, fresh version, noncurrent ready version,
-permission and rollback cases. Exercise the actual TypeScript/PostgREST path
+Four separate-session cases now observe actual PostgreSQL lock waits and pass:
+completion wins, cleanup blocks derived writes, cleanup blocks stage writes, and
+cleanup rolls back. Six concurrency controls include harmless change and
+restoration; omitting the cleanup lock, version fence or derived-write lock fails
+an assertion. Synthetic committed fixtures remain only in the isolated clone.
+The native ordered proof also covers late stop/tract writes, fresh versions,
+noncurrent ready versions and function execution permissions. The existing
+write-policy guard and adapter pass thirteen tests together.
+
+Exercise the actual TypeScript/PostgREST path
 against the native function, and interrupted Storage cleanup. Confirm route
 behavior when a late worker hits the fence, applicable static write-policy
 inventory, upgrade/order checks and the complete relevant test gate before

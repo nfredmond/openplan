@@ -22,7 +22,14 @@ def inject(definition):
     return source.replace('BEGIN;\n', 'BEGIN;\n' + definition + '\n', 1)
 version = function('guard_gtfs_abandoned_version').replace('OLD.ingest_abandoned_at IS NOT NULL AND NEW IS DISTINCT FROM OLD', 'false')
 derived = function('guard_gtfs_abandoned_derived_write').replace('v_abandoned IS NOT NULL', 'false')
+fresh = function('reap_gtfs_feed_version').replace('v.updated_at >= p_cutoff', 'false')
+status = function('reap_gtfs_feed_version').replace("v.status NOT IN ('pending','fetching','parsing')", 'false')
 cases = [('baseline', source, None), ('harmless_comment', '-- harmless comment\n' + source, None),
+         ('omit_status_guard', inject(status), 'noncurrent ready version was reaped'),
+         ('omit_stop_trigger', inject('DROP TRIGGER gtfs_stop_abandoned_guard ON public.gtfs_stop_service_levels;'), 'late stop write accepted'),
+         ('omit_tract_trigger', inject('DROP TRIGGER gtfs_tract_abandoned_guard ON public.gtfs_tract_service;'), 'late tract write accepted'),
+         ('grant_authenticated', inject('GRANT EXECUTE ON FUNCTION public.reap_gtfs_feed_version(uuid,timestamptz) TO authenticated;'), 'cleanup privilege boundary changed'),
+         ('omit_freshness_guard', inject(fresh), 'fresh version was reaped'),
          ('omit_version_fence', inject(version), 'late stage write accepted'),
          ('omit_derived_fence', inject(derived), 'late derived write accepted'), ('restored', source, None)]
 results = []
