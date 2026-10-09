@@ -133,3 +133,19 @@ This does not establish archive retention or parser restart. No archive fields c
 python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_prepare.py \
   /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
 ```
+
+## Replacement/batch overlap, October 9
+
+The [overlap runner](verify_replacement_overlap.py) now executes the context-enabled batch and preparation commands against actual route rows in separate PostgreSQL processes. It observes the waiter blocked by the identified holder PID before allowing commit. Both orders pass:
+
+- Old batch first: that transaction writes a row, then the fixture expires its lease before commit. The replacement waits, acquires ownership, prepares and writes its own batch. The final row belongs only to the replacement. Both batch receipts and both preparation receipts remain.
+- Replacement first: that transaction claims, prepares and writes before commit. The old service-role batch waits and then receives SQLSTATE 55000. Only the replacement row and its batch receipt exist; both preparation receipts remain.
+
+Baseline, harmless-comment and restored runs cover both orders. A missing-route-cleanup variant fails the actual row/history assertion. [Results](replacement-overlap-controls.json) identify the combined SQL hash, retained synthetic fixtures, observed waits and exact final counts. Every case checks an empty command-context table. The runner removes only its UUID-named triggers from the four public tables after the clients finish, and verifies their absence. Private prototype schemas and synthetic committed fixtures remain for inspection; no pre-existing trigger is replaced.
+
+This is native database concurrency, not concurrent Node workers or HTTP transport. Claim admission uses the database-owner fixture, while the late old batch uses service_role. Expiry is a controlled fixture update. The test does not establish worker heartbeat timing, crash detection, archive recovery, end-user permissions or full ingestion. The same lifecycle and production-enrollment boundaries remain open.
+
+```bash
+python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_replacement_overlap.py \
+  /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
+```
