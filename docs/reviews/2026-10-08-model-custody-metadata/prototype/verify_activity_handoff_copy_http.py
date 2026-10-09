@@ -1,4 +1,5 @@
 """Actual database-selected ActivitySim file handoff against an owned native database clone."""
+import inspect
 import hashlib
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
@@ -52,7 +53,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
 """)
     workspace = str(uuid.UUID(workspace))
     mode=os.environ.get('OPENPLAN_HANDOFF_COPY_MODE','normal')
-    assert mode in ('normal','harmless','tampered','bypass-hash','restored')
+    assert mode in ('normal','harmless','tampered','bypass-hash','drop-provenance','restored')
     source_root=output/'screening';source_dir=source_root/'runs'/run;source_dir.mkdir(parents=True)
     os.environ['AEQ_WORK_DIR']=str(source_root)
     source_files={}
@@ -63,6 +64,9 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
         for kind in handoff.KINDS:
             artifact=str(uuid.uuid4());target.append(artifact)
             content=('synthetic '+stage+' '+kind).encode()
+            if kind=='zone_attributes':
+                content=b'GEOID,NAMELSAD,zone_id,centroid_lon,centroid_lat,area_sq_mi,total_jobs,retail_jobs,health_jobs,education_jobs,accommodation_jobs,govt_jobs,est_population,households\n06001000100,Synthetic zone,1,-121.7,38.55,2.5,400,80,40,30,20,10,3000,1200\n'
+            elif kind=='network_setup_summary':content=b'{"synthetic":true}' 
             path=source_dir/(stage+'-'+kind);path.write_bytes(content)
             if stage==producer:source_files[kind]=(path,content)
             payload=json.dumps({'id':artifact,'artifact_type':kind,'file_url':'local://'+str(path),
@@ -154,6 +158,32 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                         if mode=='tampered':
                             assert snapshot()==before,'Copy changed database records'
                             return
+                        materialize=worker._materialize_screening_dir
+                        if mode=='drop-provenance':
+                            body=inspect.getsource(materialize)
+                            anchor='"model_run_id": run_id,'
+                            assert body.count(anchor)==1
+                            scope=dict(worker.__dict__)
+                            exec(compile(body.replace(anchor,'"model_run_id": None,'),worker.__file__,'exec'),scope)
+                            materialize=scope['_materialize_screening_dir']
+                        screening=Path(materialize(run,str(destination/'skim_matrix.retained'),
+                            str(destination/'zone_attributes.retained'),str(destination/'network_setup_summary.retained'),
+                            str(destination),source_artifacts=selected,consumer_stage_id=consumer))
+                        manifest=json.loads((screening/'bundle_manifest.json').read_text())
+                        assert manifest['model_run_id']==run and manifest['consumer_stage_id']==consumer, 'Materialized handoff lost run or consumer provenance'
+                        assert [row['id'] for row in manifest['source_artifacts']]==expected_ids
+                        for entry in manifest['materialized_files']:
+                            content=(screening/entry['path']).read_bytes()
+                            assert len(content)==entry['bytes'] and hashlib.sha256(content).hexdigest()==entry['sha256']
+                        import shutil
+                        assert shutil.which('activitysim') is None,'Preflight proof requires no implicit native CLI'
+                        sys.path.insert(0,str(REPO/'scripts/modeling'))
+                        from run_behavioral_demand_prototype import run_behavioral_demand_prototype
+                        pipeline=run_behavioral_demand_prototype(screening_run_dir=str(screening),
+                            output_root=str(destination/'pipeline'),population_source='scaffold',config_package='starter')
+                        assert pipeline['pipeline_status']=='prototype_preflight_complete' and pipeline['runtime_mode']=='preflight_only'
+                        for path,content in source_files.values():assert path.read_bytes()==content
+                        results.append({'control':'joined-preflight','materialized_provenance_verified':True,'pipeline_status':pipeline['pipeline_status'],'native_model_executed':False})
                         sql(database,f"SET ROLE service_role; SELECT public.write_model_stage_attempt('{uuid.uuid4()}','{context.attempt_id}','failed','Synthetic revocation',NULL);")
                         before=snapshot()
                         try:
@@ -173,7 +203,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
             server.shutdown();thread.join(timeout=5);server.server_close()
     report={'handoff_sha256':hashlib.sha256(Path(handoff.__file__).read_bytes()).hexdigest(),'selector_sha256':hashlib.sha256(original.encode()).hexdigest(),'worker_sha256':hashlib.sha256(Path(worker.__file__).read_bytes()).hexdigest(),
             'controls':results,'http_calls':calls,'native_tables_unchanged':7,'gateway_removed':True,
-            'limits':'Actual ActivitySim adapter, fresh admitted consumer, native completed producers and three later unrelated artifacts. The consumer attempt is failed by an explicit database command before the refused read; table snapshots exclude that declared mutation. Synthetic files are copied through the actual retention adapter. No model execution, full dispatcher, RLS matrix, concurrent revocation fence or scientific acceptance.'}
+            'limits':'Actual ActivitySim adapter, fresh admitted consumer, native completed producers and three later unrelated artifacts. The consumer attempt is failed by an explicit database command before the refused read; table snapshots exclude that declared mutation. Synthetic files are retained, materialized and passed through the actual scaffold preflight pipeline. No model execution, full dispatcher, RLS matrix, concurrent revocation fence or scientific acceptance.'}
     content=json.dumps(report,indent=2)+'\n'
     (output/'activity-handoff-copy-http.json').write_text(content);(ROOT/'activity-handoff-copy-http.json').write_text(content)
     print(content)

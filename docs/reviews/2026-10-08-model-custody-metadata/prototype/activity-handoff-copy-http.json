@@ -1,7 +1,7 @@
 {
   "handoff_sha256": "570465a429cd2f941992b248dc0bb51b25cf5ab773acb8e79a0678e06f4db0ea",
   "selector_sha256": "6fc02ba2e4e5ad9e0d8df8e1541d93e427ffa9347c1f6a5cc92d1b33f9d89ce6",
-  "worker_sha256": "d838268b6fbcdb3bc10466b1fa17529dae24c040c8659204f0dd8b7247bce5b0",
+  "worker_sha256": "e42596a4ff0969484596f18ea1a598f6b12408fa6db27b4c32c33b49003f1403",
   "controls": [
     {
       "control": "baseline",
@@ -34,6 +34,12 @@
     {
       "control": "retained-network_setup_summary",
       "registered_bytes_match": true
+    },
+    {
+      "control": "joined-preflight",
+      "materialized_provenance_verified": true,
+      "pipeline_status": "prototype_preflight_complete",
+      "native_model_executed": false
     },
     {
       "control": "database-revoked-consumer",
@@ -137,5 +143,5 @@
   ],
   "native_tables_unchanged": 7,
   "gateway_removed": true,
-  "limits": "Actual ActivitySim adapter, fresh admitted consumer, native completed producers and three later unrelated artifacts. The consumer attempt is failed by an explicit database command before the refused read; table snapshots exclude that declared mutation. Synthetic files are copied through the actual retention adapter. No model execution, full dispatcher, RLS matrix, concurrent revocation fence or scientific acceptance."
+  "limits": "Actual ActivitySim adapter, fresh admitted consumer, native completed producers and three later unrelated artifacts. The consumer attempt is failed by an explicit database command before the refused read; table snapshots exclude that declared mutation. Synthetic files are retained, materialized and passed through the actual scaffold preflight pipeline. No model execution, full dispatcher, RLS matrix, concurrent revocation fence or scientific acceptance."
 }

@@ -3642,3 +3642,29 @@ check fail; restored code passes. Results are in
 `prototype/screening-reuse-controls.json` with its executable verifier.
 This verifies the local reuse boundary, not native model execution or database
 recovery. Normal managed dispatch and joined pipeline execution remain open.
+
+
+### Joined database handoff, preparation and scaffold preflight
+
+The live file-handoff procedure now continues through the actual screening
+materializer and behavioral pipeline. A synthetic zone CSV, registered setup
+record and placeholder skim travel from the declared producer through retained
+copies into the consumer attempt directory. The materialized manifest preserves
+the run, consumer and source-artifact identities; its file hashes and sizes match
+the prepared files. The actual pipeline builds the scaffold bundle and reports
+`prototype_preflight_complete` with `preflight_only`. No native model executes.
+
+Six cases cover normal, harmless, changed bytes, bypassed hash verification,
+removed provenance and restored behavior. The changed-byte case refuses before
+preparation. Hash bypass and removal of the materialized run identity fail their
+specific acceptance assertions. Valid cases preserve original source bytes.
+Results are in `prototype/activity-handoff-preflight-controls.json` and the
+updated `prototype/activity-handoff-copy-http.json`. The existing copy verifiers
+now include this continuation; earlier copy-only evidence remains dated above.
+Private records are in
+`~/.local/state/openplan/activity-handoff-preflight-controls-20261008a/`.
+
+This joins the preflight preparation path only. The synthetic skim is copied,
+not validated as a scientific matrix. Census synthesis, native model dispatch,
+output publication, terminal handling, concurrent revocation fencing and normal
+managed dispatcher activation remain separate open requirements.
