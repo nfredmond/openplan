@@ -1,0 +1,36 @@
+{
+  "sourceSha256": "7f432b9c50c745c8087a24657cc5ef1fe89d64b7d79e0ce65e9ffcbe85b0ad25",
+  "controls": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "passedTests": 6,
+      "failedTests": [],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "passedTests": 6,
+      "failedTests": [],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "case": "wrong-candidate-count",
+      "exitCode": 1,
+      "passedTests": 4,
+      "failedTests": [
+        "released migration ordering no migration has been inserted at or below a shipped high-water mark",
+        "released migration ordering new work sorts strictly after the latest release (no version collisions)"
+      ],
+      "expectedOutcomeMatched": true
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "passedTests": 6,
+      "failedTests": [],
+      "expectedOutcomeMatched": true
+    }
+  ]
+}

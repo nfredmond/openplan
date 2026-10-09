@@ -1,0 +1,46 @@
+{
+  "build": "b1b0fc56f8e2dea07813d79496df6a67585b864d",
+  "service": "openplan-short-rail-acceptance-b1b0fc56.service",
+  "invocation": "7e08e1a11fca4a9c958f8ce9726b4511",
+  "awardId": "40e597bb-1148-4e6c-8fb9-886f4ec4de2c",
+  "status": "not_started",
+  "obligationDueAt": "2026-10-01T12:00:00+00:00",
+  "notice": {
+    "document": {
+      "client": 390,
+      "scroll": 390
+    },
+    "notice": "Previous closure basis: recorded as closed on import.",
+    "panel": {
+      "client": 243,
+      "scroll": 243
+    },
+    "time": "2026-10-09T22:23:13.755Z"
+  },
+  "captures": [
+    {
+      "case": "awardDesktopForm",
+      "file": "browser-screenshot-127-0-0-1-mv1j71zk-a8180d9c.png",
+      "sha256": "ef2dea0e6cab599ab19649698d21d9aeadf691d4ef2a8c3823ff19a8c4b47b5e",
+      "newConsoleEntries": []
+    },
+    {
+      "case": "awardMobileForm",
+      "file": "browser-screenshot-127-0-0-1-mv1j7aex-9a9dafc5.png",
+      "sha256": "7109a4164f678faccf880b9047f2e5d3e44156287dec1e27d0b0d0db794b09e2",
+      "newConsoleEntries": []
+    },
+    {
+      "case": "awardMobileResult",
+      "file": "browser-screenshot-127-0-0-1-mv1j7ke5-84f32399.png",
+      "sha256": "fa6c91679fb77d82ff4a456cd3613b04ef09cc84bed01116c0b386ad56b9e4c0",
+      "newConsoleEntries": []
+    },
+    {
+      "case": "awardDesktopResult",
+      "file": "browser-screenshot-127-0-0-1-mv1j7rh5-24c4714d.png",
+      "sha256": "bd17542606705e281d7246a00d0c75e1cb16543213a4873068e6483f5d5deab7",
+      "newConsoleEntries": []
+    }
+  ]
+}

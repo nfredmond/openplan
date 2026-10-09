@@ -20,6 +20,23 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No changes after the 0.68.0 candidate are recorded here.
+
+## 0.68.0 (development candidate)
+
+This accumulated candidate includes land-use and engagement workflows, model
+recovery safeguards, GTFS failure cleanup, restore integrity and navigation
+corrections. It is not tagged or released. Final integration, populated upgrade
+and release checks remain pending. Version 1.0 and its scientific and observed
+practitioner outcomes remain unfinished.
+
+There are 399 migrations through
+`20261016000027_run_project_workspace_foreign_keys.sql`, including 26 additions
+since v0.67.0. Stop model workers, preserve a restorable backup, and apply the
+migrations in order before updating the app and workers. Migration 27 validates
+existing project relationships and takes table locks; schedule a maintenance
+window. The detailed instructions and unfinished boundaries follow.
+
 Navigation links stay in place during pointer and keyboard focus in short
 desktop windows. Group headings retain their compact spacing rather than moving
 later destinations while a click is in progress.
@@ -162,13 +179,6 @@ synthesis preparation and execution workers. It checks private paths and pins
 the chosen checkout and journal directory without installing or starting a
 service. Initial supervision evidence covers a synthetic process, not real
 worker dispatch, boot or host-loss recovery.
-
-## 0.68.0 (development candidate)
-
-This candidate collects the land-use, engagement and evidence corrections below.
-It is not tagged or released. Final combined checks remain pending. Version 1.0,
-independent nationwide scientific acceptance and observed practitioner outcomes
-remain unfinished.
 
 Project evidence now distinguishes linked engagement campaigns from retained
 report evidence. My Work preserves conflicting award and milestone deadlines
