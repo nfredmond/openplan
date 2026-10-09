@@ -56,13 +56,20 @@ class PreparationFilesTests(unittest.TestCase):
                     observation_package_path='not-opened', pre_volume_match_audit_path='not-opened',
                     validation_input_bundle_path='not-opened', comparison_basis_path='not-opened',
                     structural_input_audit_path=str(self.audit_path), link_volumes_csv=str(self.output),
-                    assessment_id='synthetic', readiness_root=str(self.root), **self.expected)
+                    assessment_id='synthetic', readiness_root=str(self.root),
+                    expected_model_run_id='synthetic-run', expected_input_bundle_sha256='1'*64,
+                    expected_comparison_basis_sha256='2'*64, **self.expected)
             if error:
                 with self.assertRaisesRegex(core.StructuralAuditRefused, error): invoke()
                 assess.assert_not_called()
             else:
                 self.assertEqual(invoke(), {'synthetic': True})
                 assess.assert_called_once()
+                context = assess.call_args.kwargs['prepared_context']
+                self.assertEqual(context.model_run_id, 'synthetic-run')
+                self.assertEqual(context.method, self.expected['expected_method'])
+                self.assertEqual(context.input_bundle_sha256, '1'*64)
+                self.assertEqual(context.comparison_basis_sha256, '2'*64)
 
     def test_valid_compressed_and_plain(self):
         self.call()

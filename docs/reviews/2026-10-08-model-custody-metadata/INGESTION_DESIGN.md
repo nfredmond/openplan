@@ -181,3 +181,29 @@ timing remain unfinished. Files can still change after verification; this is
 not a filesystem race fence. The tests do not execute an engine, native Storage
 or a scientific acceptance assessment. The four production connection steps
 above remain open.
+
+
+### Bind the evaluator to retained run and comparison identities
+
+The worker wrapper now also requires expected run ID, input-bundle hash and
+comparison-basis hash. It passes a `PreparedValidationContext` to the shared
+evaluator. The evaluator checks the exact bytes it parsed, then requires the
+basis run and method to match the context, before any model-output read. It does
+not reopen the files to obtain a later hash. The worker uses the same expected
+method for structural verification and comparison identity.
+
+Five new file-based tests pass, including changed bundle/basis hashes, another
+run or method, and invalid expectations. Each refusal records zero output reads.
+Four targeted evaluator faults and a wrong-run forwarding fault fail; harmless
+and restored controls pass. Evidence is in `prototype/prepared-context-controls.json`.
+The fourteen structural-wrapper tests, existing instrument suite and two
+input-custody tests also pass. The wrapper test replaces assessment execution
+with a sentinel; the new file tests execute the real shared evaluator.
+
+The historical study API still permits calls without this context. The worker
+wrapper requires it. No historical study was reassessed. An admitted-run
+preparation producer must still supply trustworthy expectations and establish
+that structural sources, observation matching, population, network and the
+comparison basis describe the same prepared case. Hash equality and a run label
+do not establish those scientific relationships or independent timing. Normal
+managed dispatch, native Storage and the remaining acceptance work stay open.

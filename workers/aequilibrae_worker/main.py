@@ -5363,6 +5363,9 @@ def assess_rules_v5_validation_instrument(
     structural_input_audit_path: str,
     link_volumes_csv: str,
     assessment_id: str,
+    expected_model_run_id: str,
+    expected_input_bundle_sha256: str,
+    expected_comparison_basis_sha256: str,
     expected_structural_audit_sha256: str,
     expected_method: str,
     expected_geography: dict,
@@ -5390,6 +5393,11 @@ def assess_rules_v5_validation_instrument(
         model_output_path=link_volumes_csv,
         assessment_id=assessment_id,
         readiness_root=root,
+        prepared_context=model_validation_core_v5.PreparedValidationContext(
+            model_run_id=expected_model_run_id, method=expected_method,
+            input_bundle_sha256=expected_input_bundle_sha256,
+            comparison_basis_sha256=expected_comparison_basis_sha256,
+        ),
     )
 
 

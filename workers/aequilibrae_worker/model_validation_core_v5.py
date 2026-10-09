@@ -13,6 +13,7 @@ import json
 import math
 import statistics
 from collections import Counter
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -264,6 +265,15 @@ def assess_validation(
     }
 
 
+@dataclass(frozen=True)
+class PreparedValidationContext:
+    """Expected identities supplied by retained run preparation, not input files."""
+    model_run_id: str
+    method: str
+    input_bundle_sha256: str
+    comparison_basis_sha256: str
+
+
 def assess_frozen_instrument_files(
     *,
     observation_package_path: str | Path,
@@ -274,6 +284,7 @@ def assess_frozen_instrument_files(
     assessment_id: str,
     readiness_root: str | Path,
     created_at: str | None = None,
+    prepared_context: PreparedValidationContext | None = None,
 ) -> dict[str, Any]:
     """Assess exact frozen files after every assignment-blind input passes.
 
@@ -317,6 +328,15 @@ def assess_frozen_instrument_files(
     audit = load_json(audit_path, "pre-volume match audit")
     bundle = load_json(bundle_path, "validation input bundle")
     basis = load_json(basis_path, "comparison basis")
+    if prepared_context is not None:
+        if not isinstance(prepared_context.model_run_id, str) or not prepared_context.model_run_id.strip() or prepared_context.method not in {"aequilibrae", "activitysim"}:
+            raise ContractError("prepared validation context has invalid run or method")
+        if hashlib.sha256(input_bytes[bundle_path]).hexdigest() != prepared_context.input_bundle_sha256:
+            raise ContractError("validation bundle differs from retained preparation")
+        if hashlib.sha256(input_bytes[basis_path]).hexdigest() != prepared_context.comparison_basis_sha256:
+            raise ContractError("comparison basis differs from retained preparation")
+        if basis.get("model_run_id") != prepared_context.model_run_id or basis.get("method") != prepared_context.method:
+            raise ContractError("comparison basis run or method differs from preparation")
     if bundle.get("schema") != "openplan.validation-input-bundle.v2":
         raise ContractError("rules-v5 requires a v2 validation input bundle")
     if bundle.get("model_output_bytes_read") is not False:
