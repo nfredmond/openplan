@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Migration `20261016000025_gtfs_abandonment_fence.sql` protects completed GTFS
+versions from stale cleanup and prevents abandoned attempts from resuming writes.
+Apply it before deploying the updated app and scheduled GTFS sweep. Private-file
+cleanup requests remain saved through Storage interruption and are retried by
+later sweeps. A closed attempt requires a new ingest version; existing current
+feeds remain available. This does not move long ingestion into a resumable worker
+or establish a local process timeout.
+
 Migration `20261016000015_legacy_assessment_command_receipts.sql` adds private
 assessment command receipts. Apply it before starting the updated AequilibraE
 worker. Configure `OPENPLAN_DEPLOYMENT_ID` and retain the worker's assessment

@@ -441,17 +441,7 @@ export async function markGtfsFeedVersionStage(
   versionId: string,
   stage: GtfsIngestStage
 ): Promise<boolean> {
-  // Deliberately not surfaced as a FAILURE. This is progress reporting: if it
-  // does not land, the reaper still sees a non-terminal row and the ingest
-  // still runs. Turning a bookkeeping miss into a refused ingest would trade a
-  // cosmetic problem for a real one.
-  //
-  // But "not a failure" is not the same as "not worth knowing". The row count
-  // is read and returned rather than discarded, because a zero here means the
-  // version row is GONE — reaped, or deleted under a running ingest — and a
-  // caller that wants to stop early can. Discarding it is how an UPDATE over
-  // zero rows becomes indistinguishable from success, which is the defect this
-  // repository has now found on four separate tables.
+  // A closed or unconfirmed version must not advance into more ingest work.
   const result = await service
     .from("gtfs_feed_versions")
     .update({ status: stage })
@@ -459,7 +449,7 @@ export async function markGtfsFeedVersionStage(
     .select("id")
     .maybeSingle();
 
-  return !writeMatchedNoRows(result);
+  return !result.error && !writeMatchedNoRows(result);
 }
 
 /* -------------------------------------------------------------------------- */

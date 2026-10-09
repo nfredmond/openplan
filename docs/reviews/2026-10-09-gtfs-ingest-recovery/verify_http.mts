@@ -3,11 +3,12 @@ import { createRequire } from "node:module";
 const app = process.cwd();
 const require = createRequire(app + "/package.json");
 const { createClient } = require("@supabase/supabase-js") as typeof import("../../../openplan/node_modules/@supabase/supabase-js");
-const { reapAbandonedGtfsIngests } = await import(app + "/src/lib/gtfs/persist.ts");
+const { reapAbandonedGtfsIngests, markGtfsFeedVersionStage } = await import(app + "/src/lib/gtfs/persist.ts");
 const url = process.env.OPENPLAN_PROOF_HTTP_URL!;
 const token = process.env.OPENPLAN_PROOF_HTTP_TOKEN!;
 const schema = process.env.OPENPLAN_PROOF_HTTP_SCHEMA!;
 let storageAttempts = 0;
+let nativeStageRefusals = 0;
 let acknowledgmentAttempts = 0;
 const fault = process.env.OPENPLAN_PROOF_FAILURE ?? "storage";
 assert.ok(["storage", "acknowledgment"].includes(fault));
@@ -38,7 +39,12 @@ const client = createClient(url, token, {
       }
     }
     target.pathname = target.pathname.replace(/^\/rest\/v1/, "");
-    return fetch(target, init);
+    const response = await fetch(target, init);
+    if (init?.method === "PATCH") {
+      assert.equal((await response.clone().json()).code, "55000");
+      nativeStageRefusals++;
+    }
+    return response;
   } },
 });
 const objectPath = process.env.OPENPLAN_PROOF_OBJECT_PATH;
@@ -56,6 +62,8 @@ const second = await reapAbandonedGtfsIngests(client);
 assert.equal(second.scanned, 0);
 assert.equal(second.reaped.length, 0);
 assert.equal(storageAttempts, 2);
+assert.equal(await markGtfsFeedVersionStage(client, process.env.OPENPLAN_PROOF_VERSION_ID!, "parsing"), false);
+assert.equal(nativeStageRefusals, 1);
 const third = await reapAbandonedGtfsIngests(client);
 assert.equal(third.scanned, 0);
 assert.equal(storageAttempts, 2);
@@ -64,4 +72,4 @@ if (objectPath) {
   assert.ok(missing.error);
   assert.equal(missing.error.statusCode, "404");
 }
-console.log(JSON.stringify({ second, third, storageAttempts, fault, nativeObjectUploadedAndRemoved: Boolean(objectPath), finding: "pending removal survives database closure and retries after Storage interruption", scope: objectPath ? "native TypeScript, PostgREST and private Storage; one cleanup boundary interrupted with injected 503" : "native TypeScript and PostgREST; simulated Storage" }, null, 2));
+console.log(JSON.stringify({ second, third, storageAttempts, nativeStageRefusals, fault, nativeObjectUploadedAndRemoved: Boolean(objectPath), finding: "pending removal survives database closure and retries after Storage interruption", scope: objectPath ? "native TypeScript, PostgREST and private Storage; one cleanup boundary interrupted with injected 503" : "native TypeScript and PostgREST; simulated Storage" }, null, 2));

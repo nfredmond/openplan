@@ -359,10 +359,8 @@ export function gtfsUploadObjectPath(
  * path nothing can ever clean up. Recording it immediately is what makes the
  * reaper's cleanup complete rather than best-effort.
  *
- * A miss here is NOT fatal to the ingest and is reported rather than thrown:
- * the parse can still succeed, and `writeParsedFeedVersion` writes the same
- * path again on success. What must not happen is the miss going unobserved,
- * which is how an UPDATE over zero rows becomes indistinguishable from success.
+ * A missing or refused record stops the ingest before parsing. The failure
+ * path removes the just-uploaded object rather than proceeding without custody.
  */
 async function recordUploadedObject(
   service: SupabaseClient,
@@ -383,7 +381,7 @@ async function recordUploadedObject(
     .select("id")
     .maybeSingle();
 
-  return !writeMatchedNoRows(result);
+  return !result.error && !writeMatchedNoRows(result);
 }
 
 /**
@@ -451,7 +449,9 @@ export async function runGtfsIngest(params: RunGtfsIngestParams): Promise<GtfsIn
     };
   };
 
-  await markGtfsFeedVersionStage(service, versionId, "fetching");
+  if (!(await markGtfsFeedVersionStage(service, versionId, "fetching"))) {
+    return refuse("partial_write", "The ingest could not confirm that this version is open for fetching. Start a new version to retry.", null);
+  }
 
   /* ---------------------------------------------------------------------- */
   /* The bytes                                                               */
@@ -549,7 +549,9 @@ export async function runGtfsIngest(params: RunGtfsIngestParams): Promise<GtfsIn
       // removed with the failure. `refuse` takes it as an argument for exactly
       // that reason rather than closing over a mutable variable.
       storagePath = path;
-      await recordUploadedObject(service, versionId, path, byteSize, checksumSha256);
+      if (!(await recordUploadedObject(service, versionId, path, byteSize, checksumSha256))) {
+        return refuse("partial_write", "The uploaded feed could not be linked to an open ingest version. Start a new version to retry.", path);
+      }
     }
   }
 
@@ -557,7 +559,9 @@ export async function runGtfsIngest(params: RunGtfsIngestParams): Promise<GtfsIn
   /* The parse                                                               */
   /* ---------------------------------------------------------------------- */
 
-  await markGtfsFeedVersionStage(service, versionId, "parsing");
+  if (!(await markGtfsFeedVersionStage(service, versionId, "parsing"))) {
+    return refuse("partial_write", "The ingest could not confirm that this version is open for parsing. Start a new version to retry.", storagePath);
+  }
 
   const parsed = await parseGtfsFeed(bytes, { limits });
   if (!parsed.ok) {

@@ -1,0 +1,17 @@
+{
+  "second": {
+    "scanned": 0,
+    "reaped": []
+  },
+  "third": {
+    "scanned": 0,
+    "reaped": []
+  },
+  "storageAttempts": 2,
+  "nativeStageRefusals": 1,
+  "fault": "storage",
+  "nativeObjectUploadedAndRemoved": true,
+  "finding": "pending removal survives database closure and retries after Storage interruption",
+  "scope": "native TypeScript, PostgREST and private Storage; one cleanup boundary interrupted with injected 503"
+}
+

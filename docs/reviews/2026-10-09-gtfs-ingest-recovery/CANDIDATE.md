@@ -119,3 +119,33 @@ These are small synthetic objects, not a complete parsed feed or capacity test.
 The interruptions are injected HTTP responses, not host power loss. Fresh worker
 process recovery, late-worker route behavior, final CI and the remaining M3
 worker/long-feed work remain separate. This does not establish V1 acceptance.
+
+## Closed-attempt request follow-up
+
+Inspection found that the ingest ignored stage-update failures, and the stage
+helper treated a database error as confirmed progress. Stage updates now require
+both no error and a returned row. The same rule applies when linking uploaded
+bytes to the version. A refused or unconfirmed write returns an ingest failure
+before further fetching or parsing. The existing failure path receives the
+uploaded object path when one exists.
+
+Five focused tests cover refused fetching, parsing and object records, database
+refusal and a missing stage row. Eight mutation runs include harmless change,
+restoration, ignoring each of the three refusals, and misreporting the stage or
+object database error. All targeted defects fail assertions. The failure handler
+is mocked in these tests; they do not prove its independent cleanup behavior.
+Four existing route/ingest files pass 64 tests. A separate native HTTP/Storage
+run now attempts a stage update after cleanup: PostgreSQL returns `55000` and
+the production helper returns false. `native-stage-refusal.json` records it.
+
+Scoped TypeScript and ESLint pass. Migration inventory has no duplicate or
+invalid names. The release-ordering check initially found the missing migration
+changelog entry; operator instructions now name migration 25. Release ordering,
+write-policy and GTFS claim-boundary files pass 69 tests. Old comments that
+claimed serverless deadlines prove local process death have been corrected.
+
+These checks cover separate route, orchestration and native persistence layers.
+They do not replace an identified-build browser journey. Final current-head CI
+and T3 workflow acceptance remain open before landing this visible error-path
+change. Long-running workers, actual process termination and complete M3 remain
+outside the completed evidence.
