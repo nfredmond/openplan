@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Migration `20261016000027_run_project_workspace_foreign_keys.sql` replaces
+project-lookup CHECK constraints with validated composite foreign keys for
+analysis, model and county runs and stage-gate decisions. Project links retain
+the same workspace boundary and deletion behavior. The relationships restore
+after table data, avoiding the reproduced nonempty model-run restore failure.
+Invalid existing relationships refuse the migration rather than being rewritten.
+Apply during a maintenance window because validation acquires table locks.
+
 Migration `20261016000026_gtfs_failure_closure.sql` makes normal GTFS failure
 cleanup transactional. Ready versions remain available even if a late failure
 arrives. Unfinished versions retain their failure receipt and private-object
