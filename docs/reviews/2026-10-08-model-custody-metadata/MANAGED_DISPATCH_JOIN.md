@@ -3624,3 +3624,21 @@ clone identities and the expected failing control log are under
 This joins native database selection to actual file retention with synthetic
 contents. It does not run a model, activate the normal dispatcher, fence a
 concurrent revocation, prove the full RLS matrix or change scientific claims.
+
+
+### Screening preparation preserves earlier materialized evidence
+
+Screening preparation previously deleted an existing `screening` directory
+before rebuilding it. Each attempt already receives a fresh execution directory;
+replacement could destroy prior inputs and their provenance during accidental
+reuse. Preparation now creates the screening directory exclusively and refuses
+both an existing directory and a dangling path alias before reading input files.
+Earlier materialized evidence remains intact.
+
+All 108 ActivitySim tests pass with live host checks enabled. The new regression
+checks preserve a retained manifest and a dangling alias. A harmless comment
+passes; restoring destructive deletion makes the retained-directory refusal
+check fail; restored code passes. Results are in
+`prototype/screening-reuse-controls.json` with its executable verifier.
+This verifies the local reuse boundary, not native model execution or database
+recovery. Normal managed dispatch and joined pipeline execution remain open.

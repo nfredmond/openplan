@@ -607,9 +607,9 @@ def _materialize_screening_dir(
     import shutil
 
     screening_dir = os.path.join(dest_root, "screening")
-    if os.path.exists(screening_dir):
-        shutil.rmtree(screening_dir)
-    os.makedirs(os.path.join(screening_dir, "run_output"), exist_ok=True)
+    # A fresh attempt must not replace evidence from an earlier preparation.
+    os.mkdir(screening_dir, mode=0o700)
+    os.mkdir(os.path.join(screening_dir, "run_output"), mode=0o700)
 
     zones = _adapt_zone_attributes(zone_attr_path, os.path.join(screening_dir, "package", "zone_attributes.csv"))
     shutil.copy2(skim_path, os.path.join(screening_dir, "run_output", "travel_time_skims.omx"))
