@@ -121,3 +121,45 @@ also exhausted its heap. Whole-app type checking remains unverified locally.
 Reports and assistant readers,
 source-file publication, native application freeze/download and desktop/390px
 browser acceptance remain unimplemented or unproved by this checkpoint.
+
+## October 9 report and assistant consumers
+
+`models/attempt-instrument-read.ts` now supplies a complete, stably ordered
+attempt-custody read. It uses the existing pagination helper and discards any
+prefix when a later page fails. Report resolution retains an array per cited
+run. It does not select a newest method or attempt. Generated report HTML includes
+each retained record's workspace, run, stage, attempt, method, outcome, timestamp
+and all six artifact identities and hashes. It escapes the text and allows long
+hashes to wrap. Layout and actual downloaded-report acceptance remain unproved.
+
+`get_model_run_results` uses the same reader with an explicit workspace filter.
+The response carries `available` or `read_failed` separately from the records;
+a failed lookup is never presented as an absent instrument. Historical records
+remain separate and all new attempt assessments remain inconclusive. Both the
+report-generation route and chat route pass their authenticated caller clients,
+not their separately available service clients, into these readers.
+
+Four focused suites pass 92 tests from the application package directory.
+The first invocation ran from the repository root and two existing source-file
+checks failed to locate package-relative files. Rerunning from `openplan/`
+corrected the invocation without changing those assertions. The tests exercise
+the real report reader and HTML builder, the actual assistant tool, scoped query
+projections and pagination under a two-row response cap. Focused lint passes.
+[Nine consumer controls](prototype/instrument-consumer-controls.json) retain
+harmless/restored passes and seven intended failures: omitted output hash,
+dropped method/attempt, omitted workspace, hidden read failure, wrong report
+parent, omitted report markup and hidden assistant failure.
+
+These are synthetic database-mock checks. Native authenticated REST readback,
+report download, browser navigation at desktop and 390px, supporting-source
+publication and scientific/human acceptance remain open. The previous native
+migration checks establish a separate database-policy boundary, not those paths.
+
+A scoped TypeScript check passes for `attempt-instrument-read.ts`,
+`run-citations.ts`, `html.ts`, `chat-tools.ts` and their imported dependencies.
+The temporary configuration extends the application `tsconfig.json`, includes
+`next-env.d.ts`, resolves the application's `node_modules/@types` and disables
+incremental output. The initial temporary configuration omitted that ambient
+type root and reported missing GeoJSON types; correcting the configuration
+resolved those errors. The check uses a 3 GiB Node heap within a 4 GiB no-swap
+scope. This is not a passing whole-application type check.

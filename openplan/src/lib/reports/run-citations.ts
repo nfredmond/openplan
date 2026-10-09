@@ -27,6 +27,7 @@
  * row is genuinely no longer readable.
  */
 
+import { readAttemptInstruments, type AttemptInstrument } from "@/lib/models/attempt-instrument-read";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import { titleize } from "@/lib/reports/catalog";
 import {
@@ -501,6 +502,8 @@ export async function withCitedModelRunClaimTiers<
   validationStructuralDiagnosisReadFailed: boolean;
   comparableObservationCustody: CitedComparableObservationCustody | null;
   comparableObservationCustodyReadFailed: boolean;
+  attemptInstrumentCustody: AttemptInstrument[];
+  attemptInstrumentCustodyReadFailed: boolean;
   structuralDemandCustody: CitedStructuralDemandCustody | null;
   structuralDemandCustodyReadFailed: boolean;
   distributedWorkLoadingCustody: CitedDistributedWorkLoadingCustody | null;
@@ -509,7 +512,8 @@ export async function withCitedModelRunClaimTiers<
   if (citedModelRuns.length === 0) return [];
 
   const runIds = citedModelRuns.map((run) => run.id);
-  const [evidence, assessmentResult, diagnosisResult, comparableResult, structuralDemandResult, distributedWorkLoadingResult] = await Promise.all([
+  const [attemptResult, evidence, assessmentResult, diagnosisResult, comparableResult, structuralDemandResult, distributedWorkLoadingResult] = await Promise.all([
+    readAttemptInstruments(supabase, runIds),
     loadRtpEvidenceRunDisclosures(
       supabase as unknown as RtpEvidenceSupabaseLike,
       runIds,
@@ -661,6 +665,8 @@ export async function withCitedModelRunClaimTiers<
     validationStructuralDiagnosisReadFailed: Boolean(diagnosisResult.error || diagnosisArtifactResult.error),
     comparableObservationCustody: newestComparableByRun.get(run.id) ?? null,
     comparableObservationCustodyReadFailed: Boolean(comparableResult.error),
+    attemptInstrumentCustody: attemptResult.records.filter(record => record.model_run_id === run.id),
+    attemptInstrumentCustodyReadFailed: attemptResult.readFailed,
     structuralDemandCustody: newestStructuralDemandByRun.get(run.id) ?? null,
     structuralDemandCustodyReadFailed: Boolean(structuralDemandResult.error),
     distributedWorkLoadingCustody: newestDistributedWorkLoadingByRun.get(run.id) ?? null,

@@ -1,3 +1,5 @@
+import { attemptInstrumentFixture } from "./fixtures/attempt-instruments";
+import { ATTEMPT_INSTRUMENT_PROJECTION } from "@/lib/models/attempt-instrument-read";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -81,7 +83,10 @@ function createFilteringSupabaseMock(
     const log: QueryLog = { table, filters: [], limit: null, columns: null, head: false, order: [] };
     queries.push(log);
 
+    let rangeStart = 0;
+    let rangeEnd: number | undefined;
     const chain: Record<string, unknown> = {};
+    chain.range = (from: number, to: number) => { rangeStart = from; rangeEnd = to + 1; return chain; };
     chain.select = (columns: unknown, options?: { count?: string; head?: boolean }) => {
       log.columns = String(columns ?? "");
       if (options?.head) log.head = true;
@@ -124,7 +129,7 @@ function createFilteringSupabaseMock(
           return fieldValue(row, field) === expected;
         })
       );
-      return log.limit === null ? rows : rows.slice(0, log.limit);
+      return (log.limit === null ? rows : rows.slice(0, log.limit)).slice(rangeStart, rangeEnd);
     };
     const resolve = () => {
       const error = tableErrors[table] ?? null;
@@ -349,6 +354,32 @@ function modelRunFixture() {
 
 describe("get_model_run_results", () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it("returns exact attempt records with workspace scope and no method selection", async () => {
+    const data = modelRunFixture();
+    const records = Array.from({ length: 4 }, (_, i) => attemptInstrumentFixture(RUN_ID, WORKSPACE_ID, i));
+    data.model_attempt_instrument_custody = [...records, attemptInstrumentFixture(RUN_ID, OTHER_WORKSPACE_ID, 4)];
+    const supabase = createFilteringSupabaseMock(data);
+    const { tools } = buildTools(supabase);
+    const result = await toolExecute(tools, "get_model_run_results")({ modelRunId: RUN_ID }, CALL_OPTIONS);
+    const validation = result.validation as { attemptInstrumentCustody: { status: string; records: unknown[] } };
+    expect(validation.attemptInstrumentCustody).toMatchObject({ status: "available", records });
+    const reads = supabase.queries.filter(query => query.table === "model_attempt_instrument_custody");
+    expect(reads.length).toBe(2);
+    for (const read of reads) {
+      expect(read.columns).toBe(ATTEMPT_INSTRUMENT_PROJECTION);
+      expect(read.filters).toEqual([["in:model_run_id", [RUN_ID]], ["workspace_id", WORKSPACE_ID]]);
+    }
+  });
+
+  it("reports failed attempt evidence reads separately from absent records", async () => {
+    const supabase = createFilteringSupabaseMock(modelRunFixture(), { model_attempt_instrument_custody: { message: "private backend detail" } });
+    const { tools } = buildTools(supabase);
+    const result = await toolExecute(tools, "get_model_run_results")({ modelRunId: RUN_ID }, CALL_OPTIONS);
+    const validation = result.validation as { attemptInstrumentCustody: { status: string; records: unknown[] } };
+    expect(validation.attemptInstrumentCustody).toMatchObject({ status: "read_failed", records: [] });
+    expect(JSON.stringify(result)).not.toContain("private backend detail");
+  });
 
   it("reports stored values, units, and caveat sentences verbatim, with disclosed caps", async () => {
     const supabase = createFilteringSupabaseMock(modelRunFixture());

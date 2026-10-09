@@ -1,0 +1,56 @@
+{
+  "source_sha256": {
+    "reader": "0820a2f2739ecf1201810f0af16e82635031ae88f03895de16c8eb20bf72f816",
+    "report": "490cd510d546a9ee3ae4ab15b6c0f1cd17708947a604f7c3a11df157690f8da4",
+    "html": "2b8ffc9096703a404062527724af46c8dff1d1376a8985fa8c25445751c25643",
+    "assistant": "9d677a207c30a0fc634b489498f285a3a0b4ad3d9db324960a4205a1bbf01939"
+  },
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "missing-output-hash",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "drop-method-or-attempt",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "omit-workspace",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "hide-read-failure",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "wrong-parent",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "omit-rendered-evidence",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "hide-assistant-failure",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": "Real reader, assistant and report HTML builders over synthetic database mocks. No authenticated REST, actual report download, browser layout, source completeness or scientific acceptance."
+}
