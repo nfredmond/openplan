@@ -551,3 +551,29 @@ ownership, authorize abandonment, resume a model or publish outputs. The CLI
 continues to report those authorities as false and termination cause as
 unconfirmed. Arbitrary busy-native interruption, durable operator reconciliation,
 ActivitySim supervision and normal dispatch remain open.
+
+### Native interruption joined to explicit abandonment
+
+The [operator campaign](prototype/native-operator-controls.json) joins a fresh
+native supervisor-loss case to the installed abandonment command. Each case
+creates a separate database. Installing recovery migrations preserves its
+existing native execution records. Read-only inspection binds the stopped
+engine and guard to the still-active attempt. A synthetic owner/admin decision
+retains that inspection exactly as reported evidence.
+
+The first HTTP response is dropped after commit. A fresh command-recovery
+process retries the same bytes once and retains the receipt; a second recovery
+sends nothing. The database contains one decision. Native custody files and the
+worker command journal remain byte-identical. The abandoned attempt cannot
+write progress afterward. The receipt still says process termination and
+reported evidence are unverified, with no continuation or restart authority.
+Local observation did not silently become a server-verified claim.
+
+Baseline, harmless and restored cases pass. Omitting the dropped response fails
+for the missing-loss reason. The [detailed restored result](prototype/native-operator-recovery.json)
+retains migration hashes and HTTP recovery evidence. This joins native custody,
+installed SQL and command recovery through a service-role gateway. It does not
+establish authenticated application-route, browser or practitioner acceptance
+for this active native case. It does not validate partial native files or
+provide model continuation. Earlier native and recovery campaign reports remain
+unchanged.
