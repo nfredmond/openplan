@@ -3275,3 +3275,52 @@ reconciliation and restart remain unfinished. A genuinely lost started worker
 will therefore retain its nonterminal state pending recovery rather than being
 misreported as a proven failure. The operator/browser recovery workflow remains
 open, and managed dispatch stays disabled.
+
+### October 8: explicit abandonment decision prototype
+
+`prototype/recovery-decision.sql` adds an isolated database prototype for an
+owner or administrator to abandon a run after reviewing its exact current state.
+This is a decision to stop accepting execution writes, not a claim that an OS
+process terminated. The response and retained receipt explicitly leave process
+termination, reported-evidence verification, restart and continuation unconfirmed
+or unauthorized. The database uses `cancelled` for the operator's decision; a
+future UI must expose that distinction rather than presenting physical shutdown
+as verified.
+
+The inspection command returns a jointly locked parent/stage version. The write
+command locks the same rows, checks current workspace authority and compares the
+whole reviewed state before changing anything. A changed observation requires a
+new review. Request identity binds workspace, run, actor, reason, reviewed state
+and reported evidence. Exact retries return the first receipt; changed payloads
+refuse. Receipt rows retain prior run, stage and attempt records and reject
+updates or deletion. Raw reported evidence is private and explicitly unverified.
+
+Abandonment clears active attempt references, records revocation and cancels
+unfinished stages in the same transaction as the receipt. It preserves completed
+stage content and existing KPI records. Existing attempt commands reject new
+completion and KPI writes from the abandoned worker. A failed receipt insert
+rolls back the lifecycle changes and revocations. This is compatible with
+retaining files and execution history; it neither deletes them nor grants a
+new execution start.
+
+Seven controls pass in `prototype/recovery-decision-controls.json`: baseline,
+harmless comment, omitted authority, omitted state check, omitted receipt,
+omitted revocation and restored. Each adverse case fails its targeted assertion.
+A separate committed progress write between inspection and decision invalidates
+the original state and leaves no recovery receipt or lifecycle change. The SQL
+proof also checks cross-workspace refusal, immutable receipts, exact replay,
+completed-stage/output preservation and no leaked write context.
+
+The first fixture attempted to demote a sole owner and hit the installed owner
+floor. That was a fixture failure, not acceptance evidence. The corrected fixture
+creates a separate synthetic member and leaves existing owners unchanged. All
+proof work uses an owned database clone; no production migration, application
+route, worker dispatcher or preview database changes here.
+
+Remaining integration work includes retained client requests and uncertain HTTP
+reply recovery, authenticated route actor derivation, exact agent approval or
+refusal, visible operator decisions and downloads, process cancellation joins,
+concurrency races, cross-host recovery and safe restart. A trusted service-role
+caller supplies the actor to this prototype. An application route must derive it
+from authenticated identity and never trust a client-supplied actor. The broader
+M3, ActivitySim and scientific requirements remain open.

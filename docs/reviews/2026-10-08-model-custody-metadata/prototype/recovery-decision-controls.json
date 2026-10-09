@@ -1,0 +1,48 @@
+{
+  "database": "openplan_attempt_cli_b690466e744540fabdf9882ca1b4038a",
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "detected": null
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "detected": null
+    },
+    {
+      "control": "omit-authority",
+      "returncode": 3,
+      "detected": "Unauthorized recovery accepted"
+    },
+    {
+      "control": "omit-state-check",
+      "returncode": 3,
+      "detected": "Stale recovery accepted"
+    },
+    {
+      "control": "omit-receipt",
+      "returncode": 3,
+      "detected": "Receipt failure was not exercised"
+    },
+    {
+      "control": "omit-revocation",
+      "returncode": 3,
+      "detected": "Recovery failed to revoke execution"
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "detected": null
+    }
+  ],
+  "actual_progress_after_inspection_refused": true,
+  "source_sha256": {
+    "recovery-decision.sql": "42bfb1a35f0b2c50bdfce5f7b24ce5570c67458d4d6bc3da25a0454ff6587455",
+    "recovery-decision-cases.sql": "95ce8a67c12d815128dff65f05d42f5719285685ddc74eb2d59dbd4a4f19c460",
+    "verify_recovery_decision.py": "a6659c4ca1513c4b52f0093c89a2aef33fa15c0179af54d443c7ece6a0321c60"
+  },
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/recovery-decision-20261008-verified",
+  "limits": "Prototype SQL only. Synthetic operator decisions, exact replay and revoked database writes do not prove process termination, HTTP reply recovery, API actor derivation, agent approval, restart, browser acceptance or scientific validity. No production migration or dispatcher activation."
+}

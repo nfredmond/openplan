@@ -353,3 +353,18 @@ its live verified identity. It supplies no recovery or continuation authority.
 See `prototype/native-startup-loss-controls.json` for harmless, early-release
 fault and restored controls. No database lifecycle reconciliation or model
 restart follows from an empty scope.
+
+### Explicit recovery decision prototype, October 8
+
+The database prototype in `prototype/recovery-decision.sql` separates abandonment
+of write authority from observed process termination. Its operator decision binds
+the exact reviewed parent/stage state, workspace, actor, reason and reported
+evidence. The receipt and revocation commit together; exact retries retain the
+original result. New writes from the abandoned attempt refuse. Neither that
+receipt nor an empty local scope authorizes another model execution.
+
+The command is not installed by an application migration or exposed through a
+route. Its seven controls and separate committed-progress race are recorded in
+`prototype/recovery-decision-controls.json`. HTTP recovery, authenticated actor
+derivation, agent approval, physical termination and visible workflow joins
+remain necessary before activation.
