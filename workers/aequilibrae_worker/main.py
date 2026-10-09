@@ -843,7 +843,7 @@ def sb_get_run_artifacts(run_id: str) -> list[dict]:
     return response.json()
 
 
-def select_managed_predecessor_input(artifact_type: str) -> dict:
+def select_managed_predecessor_input(artifact_type: str, *, method: str | None = None) -> dict:
     """Read the current consumer and its declared producer before file access."""
     import model_attempt_writer
     import model_predecessor_inputs
@@ -872,7 +872,7 @@ def select_managed_predecessor_input(artifact_type: str) -> dict:
         if artifacts.status_code != 200:
             raise ValueError("Predecessor artifact read did not succeed")
         selected = model_predecessor_inputs.select(
-            writer.context, response.json(), artifacts.json(), artifact_type,
+            writer.context, response.json(), artifacts.json(), artifact_type, method=method,
         )
         require_completed_artifact_producer(selected, writer.context.run_id)
         writer.require_open()
@@ -880,6 +880,50 @@ def select_managed_predecessor_input(artifact_type: str) -> dict:
     except Exception as error:
         writer.stopped = True
         raise WorkerStateWriteUnconfirmed("Predecessor input requires reconciliation") from error
+
+
+def retain_managed_validation_preparation(method: str) -> dict:
+    """Retain a named completed producer's preparation without launching an engine."""
+    from pathlib import Path
+    import model_attempt_writer
+    import model_validation_preparation
+    writer = model_attempt_writer.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Preparation handoff requires a managed invocation")
+    try:
+        writer.require_open()
+        if writer.files is None:
+            raise ValueError("Preparation handoff requires an owned consumer workspace")
+        selected = select_managed_predecessor_input("model_validation_preparation", method=method)
+        installation = hashlib.sha256(writer.context.destination.encode()).hexdigest()
+        expected = (writer.files.root / writer.context.run_id / "attempts" / installation
+                    / selected["stage_id"] / selected["attempt_id"]
+                    / ("validation_preparation_" + method) / "manifest.json")
+        if selected.get("file_url") != "local://" + str(expected) or expected.resolve(strict=True) != expected:
+            raise ValueError("Preparation reference differs from selected producer directory")
+        metadata = selected.get("metadata_json") or {}
+        if metadata.get("schema") != "openplan.validation-preparation-files.v1" or metadata.get("execution_authorized") is not False:
+            raise ValueError("Unsupported preparation artifact state")
+        source = {"manifest_path": str(expected), "manifest_sha256": selected.get("content_hash"),
+                  "manifest_size_bytes": selected.get("file_size_bytes")}
+        retained = model_validation_preparation.consume(root=writer.files.root.parent, source=source,
+            destination=writer.files.path / ("predecessor_preparation_" + method),
+            expected_context={"workspace_id": writer.context.workspace_id, "run_id": writer.context.run_id,
+                              "stage_id": selected["stage_id"], "attempt_id": selected["attempt_id"],
+                              "destination": writer.context.destination, "method": method})
+        writer.files.verify()
+        producer = {"artifact_id": selected["id"], "stage_id": selected["stage_id"],
+                    "attempt_id": selected["attempt_id"], "manifest_sha256": selected["content_hash"]}
+        writer.record_artifact({"run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+            "artifact_type": "model_validation_preparation_consumption", "file_url": "local://" + retained["manifest_path"],
+            "content_hash": retained["manifest_sha256"], "file_size_bytes": retained["manifest_size_bytes"],
+            "metadata_json": {"schema": "openplan.validation-preparation-consumption.v1", "producer": producer,
+                              "demand_method": method, "execution_authorized": False, "scientific_acceptance": "unassessed"},
+        }, logical_name="predecessor-validation-preparation-" + method)
+        return {**retained, "producer": producer}
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Preparation handoff requires reconciliation") from error
 
 
 def retain_managed_predecessor_package() -> dict:

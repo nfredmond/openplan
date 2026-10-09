@@ -84,3 +84,66 @@ def retain(*, files, method, bundle_arguments):
     files.verify()
     return {'manifest_path':str(destination/'manifest.json'),'manifest_sha256':hashlib.sha256(manifest_bytes).hexdigest(),
             'manifest_size_bytes':len(manifest_bytes)}
+
+
+def consume(*, root, source, destination, expected_context):
+    """Copy a registered producer's manifest, bundle and declared readiness bytes.
+
+    Producer completion and consumer ownership belong to the caller's native
+    reads and final artifact command. Original document bytes are never rewritten.
+    """
+    from model_validation_source_publication import _read
+    from model_validation_source_catalog import _artifact, _unique_object, _invalid_number
+    import json
+    manifest_path=Path(source['manifest_path'])
+    if not manifest_path.is_absolute() or manifest_path.name!='manifest.json':
+        raise ValueError('Explicit preparation manifest required')
+    content=_read(manifest_path,source['manifest_sha256'],source['manifest_size_bytes'])
+    manifest=json.loads(content,object_pairs_hook=_unique_object,parse_constant=_invalid_number)
+    if (manifest.get('schema')!='openplan.validation-preparation-files.v1'
+            or any(manifest.get('context',{}).get(key)!=value for key,value in expected_context.items())
+            or manifest.get('publication_state')!='retained_locally'
+            or manifest.get('execution_authorized') is not False):
+        raise ValueError('Preparation manifest scope or state differs')
+    bundle_record=manifest.get('bundle')
+    if not _artifact(bundle_record) or bundle_record['path']!='validation_input_bundle.json':
+        raise ValueError('Preparation bundle identity invalid')
+    bundle_bytes=_read(manifest_path.parent/bundle_record['path'],bundle_record['sha256'],bundle_record['bytes'])
+    bundle=json.loads(bundle_bytes,object_pairs_hook=_unique_object,parse_constant=_invalid_number)
+    if bundle.get('schema')!=instrument.INPUT_BUNDLE_SCHEMA or bundle.get('model_output_bytes_read') is not False:
+        raise ValueError('Unsupported retained preparation bundle')
+    readiness=bundle.get('readiness_inputs')
+    if not isinstance(readiness,dict) or set(readiness)!={'registry','network','observation_package','pre_volume_match_audit','assignment_profile','sources'} or not isinstance(readiness['sources'],list):
+        raise ValueError('Preparation readiness inventory invalid')
+    expected={key:value for key,value in readiness.items() if key!='sources'}
+    expected.update({'sources/'+str(index):value for index,value in enumerate(readiness['sources'])})
+    entries=manifest.get('entries')
+    if not isinstance(entries,list) or len(entries)!=len(expected):
+        raise ValueError('Preparation role inventory differs')
+    seen=set()
+    for entry in entries:
+        if not isinstance(entry,dict):raise ValueError('Preparation role invalid')
+        role=entry.get('role');record=expected.get(role)
+        if (role in seen or not _artifact(record) or entry.get('original_reference')!=record['path']
+                or entry.get('sha256')!=record['sha256'] or entry.get('bytes')!=record['bytes']
+                or entry.get('object_name')!='sha256/'+record['sha256']):
+            raise ValueError('Preparation role binding differs')
+        seen.add(role)
+    destination=Path(destination)
+    destination.mkdir(mode=0o700,exist_ok=False)
+    objects=destination/'sha256';objects.mkdir(mode=0o700)
+    for entry in entries:
+        target=objects/entry['sha256']
+        if target.exists():continue
+        model_handoff_files.copy_registered(root,expected_context['run_id'],manifest_path.parent/entry['object_name'],target,
+            sha256=entry['sha256'],size_bytes=entry['bytes'])
+    model_record_files.materialize(destination,{'validation_input_bundle.json':bundle_bytes,'producer_manifest.json':content})
+    result={'schema':'openplan.validation-preparation-consumption.v1','producer_context':manifest['context'],
+        'producer_manifest_sha256':source['manifest_sha256'],'producer_manifest_size_bytes':source['manifest_size_bytes'],
+        'entries':entries,'bundle':bundle_record,'execution_authorized':False,'scientific_acceptance':'unassessed'}
+    retained=instrument.canonical_json_bytes(result)
+    model_record_files.materialize(destination,{'manifest.json':retained})
+    return {'manifest_path':str(destination/'manifest.json'),'manifest_sha256':hashlib.sha256(retained).hexdigest(),
+            'manifest_size_bytes':len(retained),'bundle_path':str(destination/'validation_input_bundle.json'),
+            'source_paths':{entry['role']:str(destination/entry['object_name']) for entry in entries},
+            'execution_authorized':False}

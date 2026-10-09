@@ -165,3 +165,35 @@ synthetic preparation files. The fixture's empty observation package does not
 establish useful observations, adequate source coverage, scientific independence,
 structural preparation or execution ordering. No Storage publication, normal
 stage handoff or engine launch is proved by this checkpoint.
+
+## Explicit consumer handoff checkpoint
+
+The predecessor selector now supports method-specific preparation artifacts.
+Network Assignment selects AequilibraE preparation from AequilibraE Setup.
+ActivitySim Network Assignment selects ActivitySim preparation from ActivitySim
+Bundle & Preflight. Both require a unique completed earlier managed producer,
+its current attempt, and a matching artifact method. Existing package/state
+handoffs keep their existing predecessor mappings.
+
+`retain_managed_validation_preparation` reads the current consumer and registered
+producer through the bound installation. It requires the exact producer-owned
+manifest location and supported metadata. The new consumer verifies the original
+manifest and bundle hashes, run/method/attempt scope, every declared readiness
+role, unique role identities and content-addressed object names. It copies the
+verified objects into a fresh consumer directory, preserving the original bundle
+and producer manifest byte-for-byte. A separate consumption manifest and native
+artifact command retain the producer identity without relabeling it as the
+consumer's own preparation. The result remains `execution_authorized: false`.
+
+The related set has 43 passing tests, including eight file/selection cases and
+three tests of the real bound worker adapter. Eight mutation-control cases passed
+their expected outcomes. Results and source hashes are in
+`prototype/preparation-handoff-controls.json`. Source acquisition is synthetic and
+database responses are injected in these adapter tests. The existing native
+producer-registration evidence does not prove this new consumer transaction.
+
+Producer reads are point-in-time checks. Final consumption registration uses the
+consumer's attempt fence, but no lease over concurrent producer revocation is
+claimed. Native end-to-end handoff, structural-audit integration, validated source
+coverage and actual engine launch ordering remain open. Normal dispatch does not
+call this new handoff yet; adding a function alone does not complete the workflow.

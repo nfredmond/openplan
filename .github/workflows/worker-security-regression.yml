@@ -43,6 +43,8 @@ jobs:
           python -B workers/aequilibrae_worker/test_model_source_publication_recovery.py
           python -B workers/aequilibrae_worker/test_model_validation_preparation.py
           python -B workers/aequilibrae_worker/test_model_validation_preparation_writer.py
+          python -B workers/aequilibrae_worker/test_model_preparation_consumption.py
+          python -B workers/aequilibrae_worker/test_model_preparation_handoff.py
           python -B workers/aequilibrae_worker/test_immutable_upload_recovery.py
           python -B workers/aequilibrae_worker/test_activity_managed_dispatch.py
           python -B scripts/modeling/tests/test_directional_refusal.py

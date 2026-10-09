@@ -13,8 +13,8 @@ PREDECESSORS = {
 }
 
 
-def select(context, stages, artifacts, artifact_type):
-    if artifact_type not in {'model_predecessor_state', 'model_package_inputs', 'model_project_inputs', 'model_assignment_outputs', 'skim_matrix', 'zone_attributes', 'network_setup_summary'}:
+def select(context, stages, artifacts, artifact_type, *, method=None):
+    if artifact_type not in {'model_predecessor_state', 'model_package_inputs', 'model_project_inputs', 'model_assignment_outputs', 'skim_matrix', 'zone_attributes', 'network_setup_summary', 'model_validation_preparation'}:
         raise ValueError('Unsupported predecessor input kind')
     if not isinstance(stages, list) or not isinstance(artifacts, list):
         raise ValueError('Predecessor read must return row lists')
@@ -28,7 +28,16 @@ def select(context, stages, artifacts, artifact_type):
     screening = {'skim_matrix', 'zone_attributes', 'network_setup_summary'}
     if (consumer.get('stage_name') == 'ActivitySim Bundle & Preflight') != (artifact_type in screening):
         raise ValueError('Artifact kind differs from consumer handoff')
-    expected_name = PREDECESSORS.get(consumer.get('stage_name'))
+    if artifact_type == 'model_validation_preparation':
+        preparation = {
+            'Network Assignment': ('aequilibrae', 'AequilibraE Setup'),
+            'ActivitySim Network Assignment': ('activitysim', 'ActivitySim Bundle & Preflight'),
+        }.get(consumer.get('stage_name'))
+        if preparation is None or method != preparation[0]:
+            raise ValueError('Preparation method differs from assignment consumer')
+        expected_name = preparation[1]
+    else:
+        expected_name = PREDECESSORS.get(consumer.get('stage_name'))
     if expected_name is None:
         raise ValueError('Consumer has no declared predecessor handoff')
     producers = [row for row in stages if row.get('stage_name') == expected_name]
@@ -45,7 +54,9 @@ def select(context, stages, artifacts, artifact_type):
             or producer['sort_order'] >= consumer['sort_order']):
         raise ValueError('Predecessor must be a completed earlier managed stage in this run')
     matches = [row for row in artifacts if row.get('artifact_type') == artifact_type
-               and row.get('stage_id') == producer['id']]
+               and row.get('stage_id') == producer['id']
+               and (artifact_type != 'model_validation_preparation'
+                    or (row.get('metadata_json') or {}).get('demand_method') == method)]
     if len(matches) != 1:
         raise ValueError('Predecessor input artifact must be unique')
     selected = matches[0]
