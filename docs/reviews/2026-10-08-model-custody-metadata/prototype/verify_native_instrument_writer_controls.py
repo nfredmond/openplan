@@ -11,7 +11,8 @@ ROOT=HERE.parents[3]
 output=Path(os.environ['OPENPLAN_NATIVE_INSTRUMENT_CONTROLS'])
 output.mkdir(mode=0o700,parents=True,exist_ok=False)
 cases=[]
-assessed=os.environ.get('OPENPLAN_NATIVE_INSTRUMENT_CONTENT')=='assessed-fixture'
+worker_wrapper=os.environ.get('OPENPLAN_NATIVE_INSTRUMENT_CONTENT')=='worker-assessed-fixture'
+assessed=worker_wrapper or os.environ.get('OPENPLAN_NATIVE_INSTRUMENT_CONTENT')=='assessed-fixture'
 controls=('normal','harmless','drop-write','changed-output','restored') if assessed else ('normal','harmless','drop-write','restored')
 for control in controls:
     result=subprocess.run([sys.executable,'-B',str(HERE/'verify_activity_handoff_copy_http.py')],
@@ -28,6 +29,7 @@ for control in controls:
         assert report['gateway_removed'] is True
         instrument=next(c for c in report['controls'] if c['control']=='native-instrument-writer')
         assert instrument.get('synthetic_evaluator_used') is assessed
+        assert instrument.get('worker_wrapper_used') is worker_wrapper
         assert instrument['separate_methods']==2 and instrument['attempt_bound_artifacts']==12
     cases.append({'case':control,'returncode':result.returncode,'expected_behavior_observed':True})
 report={'cases':cases,'writer_sha256':hashlib.sha256((ROOT/'workers/aequilibrae_worker/model_attempt_writer.py').read_bytes()).hexdigest(),
@@ -35,7 +37,9 @@ report={'cases':cases,'writer_sha256':hashlib.sha256((ROOT/'workers/aequilibrae_
               'No real prepared instrument, scientific assessment, worker dispatch, Storage or concurrent revocation acceptance']}
 if assessed:
     report['limits']=['Native custody over nonempty synthetic evaluated files, separate method values 100 and 120', 'No real source preparation, native model assessment, general diagnosis, dispatcher or Storage acceptance']
+if worker_wrapper:
+    report['limits']=['Actual worker wrapper, evaluator and native database custody over authored synthetic files', 'No independent preparation, real network/population, native model execution, normal dispatcher, native Storage or scientific acceptance']
 content=json.dumps(report,indent=2)+'\n'
 (output/'controls.json').write_text(content)
-(HERE/('native-assessed-instrument-controls.json' if assessed else 'native-instrument-writer-controls.json')).write_text(content)
+(HERE/('native-worker-assessed-instrument-controls.json' if worker_wrapper else 'native-assessed-instrument-controls.json' if assessed else 'native-instrument-writer-controls.json')).write_text(content)
 print(content)

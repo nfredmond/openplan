@@ -9,7 +9,7 @@ sys.path.insert(0, str(ROOT / 'scripts/modeling/tests'))
 from test_validation_instrument_v2 import core, observation, audit, basis
 
 
-def prepare(directory, run, method):
+def prepare(directory, run, method, *, worker_wrapper=False):
     directory.mkdir()
     def write(name, value):
         path = directory / (name + '.json')
@@ -36,10 +36,43 @@ def prepare(directory, run, method):
         'fixture': 'Synthetic inputs; no source preparation or independent acceptance',
         'readiness_inputs': {'observation_package': {'path': package.name, 'sha256': digest(package)},
                              'pre_volume_match_audit': {'path': audit_path.name, 'sha256': digest(audit_path)}}})
-    assessment = core.assess_frozen_instrument_files(observation_package_path=package,
-        pre_volume_match_audit_path=audit_path, validation_input_bundle_path=bundle_path,
-        comparison_basis_path=basis_path, model_output_path=output, assessment_id='synthetic-' + method,
-        readiness_root=directory)
+    if worker_wrapper:
+        # This authored fixture exercises transport, not independent preparation.
+        from worker_import_for_tests import import_worker_main
+        worker = import_worker_main()
+        structural_core = worker.model_structural_input_audit
+        source = directory/'synthetic-source.bin'
+        source.write_bytes(b'Synthetic structural source; no real network or population')
+        structural = {
+            'schema': structural_core.AUDIT_SCHEMA, 'method': method,
+            'geography': {'study_geometry': 'synthetic/opaque', 'authorities': ['fixture']},
+            'frozen_before_model_output': True, 'model_output_bytes_read': False,
+            'source_hashes': {'fixture_source': structural_core.artifact(source, root=directory)},
+            'demand_distribution': {'row_column_difference': 0, 'unreachable_od_trips': 0},
+            'network_loading_readiness': {'demand_removed_as_unreachable': 0,
+                'facility_coverage': {'fixture': 1}, 'loadable_roadway_links': 1,
+                'structurally_unreachable_roadway_links': 0},
+            'external_and_through_travel': {'non_work_through_travel': 'unsupported',
+                'through_share_evidence': 'unknown'},
+        }
+        structural_path = write('structural_audit', structural)
+        bundle = json.loads(bundle_path.read_text())
+        bundle['readiness_inputs']['structural_audit'] = {'path': structural_path.name, 'sha256': digest(structural_path)}
+        write('input_bundle', bundle)
+        assessment = worker.assess_rules_v5_validation_instrument(
+            observation_package_path=str(package), pre_volume_match_audit_path=str(audit_path),
+            validation_input_bundle_path=str(bundle_path), comparison_basis_path=str(basis_path),
+            structural_input_audit_path=str(structural_path), link_volumes_csv=str(output),
+            assessment_id='synthetic-' + method, readiness_root=str(directory),
+            expected_model_run_id=run, expected_input_bundle_sha256=digest(bundle_path),
+            expected_comparison_basis_sha256=digest(basis_path),
+            expected_structural_audit_sha256=digest(structural_path), expected_method=method,
+            expected_geography=structural['geography'], expected_structural_sources=structural['source_hashes'])
+    else:
+        assessment = core.assess_frozen_instrument_files(observation_package_path=package,
+            pre_volume_match_audit_path=audit_path, validation_input_bundle_path=bundle_path,
+            comparison_basis_path=basis_path, model_output_path=output, assessment_id='synthetic-' + method,
+            readiness_root=directory)
     assert assessment['method'] == method and assessment['scientific_outcome'] == 'inconclusive'
     assert assessment['observation_results'][0]['modeled_value'] == model_value, 'Synthetic method value changed'
     assessment_path = write('assessment', assessment)

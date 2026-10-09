@@ -240,7 +240,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
         report.pop('native_tables_unchanged')
         report['limits']='Actual stage handler, native database commands and scaffold pipeline. Storage HTTP byte service is synthetic. No normal dispatcher, native model, real Storage service, concurrent revocation fence or scientific acceptance.'
         if publication=='instrument':
-            report['limits']='Native attempt-bound instrument writer and database relationships over empty synthetic artifact files. No scaffold stage execution, model, prepared instrument content, normal dispatcher, real Storage or scientific acceptance.'
+            report['limits']='Native attempt-bound instrument writer and database relationships over synthetic artifact files. The instrument control identifies whether an evaluator or worker wrapper supplied their contents. No model execution, independent preparation, normal dispatcher, real Storage or scientific acceptance.'
         if publication=='native':
             report['limits']='Actual native runtime, ingestion, demand packaging and managed writes; copied prepared development bundle with 100-household sample. Synthetic Storage byte service. No Census rebuild, normal dispatcher, full population or scientific acceptance.'
         content=json.dumps(report,indent=2)+'\n'

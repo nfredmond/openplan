@@ -15,7 +15,9 @@ ROLES=(('model_output','synthetic_output','synthetic.output'),
 def verify_instrument(writer,run,stage,output,sql,database):
     control=os.environ.get('OPENPLAN_NATIVE_INSTRUMENT_CONTROL','normal')
     assert control in ('normal','harmless','drop-write','changed-output','restored')
-    assessed=os.environ.get('OPENPLAN_NATIVE_INSTRUMENT_CONTENT')=='assessed-fixture'
+    content_mode=os.environ.get('OPENPLAN_NATIVE_INSTRUMENT_CONTENT')
+    worker_wrapper=content_mode=='worker-assessed-fixture'
+    assessed=worker_wrapper or content_mode=='assessed-fixture'
     directory=writer.workspace(output/'instrument-files',run)
     digest=hashlib.sha256(b'').hexdigest()
     results=[]
@@ -28,7 +30,7 @@ def verify_instrument(writer,run,stage,output,sql,database):
             paths=None
             if assessed:
                 from synthetic_assessed_instrument import prepare, check_bindings
-                paths=prepare(directory/method,run,method)
+                paths=prepare(directory/method,run,method,worker_wrapper=worker_wrapper)
                 if control=='changed-output':paths['model_output'].write_text('link_id,PCE_tot\na,999\n')
                 check_bindings(paths,method,run)
             payload={'demand_method':method,'scientific_outcome':'inconclusive'}
@@ -57,5 +59,5 @@ def verify_instrument(writer,run,stage,output,sql,database):
         for key,value in payload.items():assert row[key]==value
     assert sql(database,f"SELECT count(*) FROM public.model_run_artifacts WHERE stage_id='{stage}';")=='12'
     return {'control':'native-instrument-writer','separate_methods':2,'attempt_bound_artifacts':12,
-        'exact_receipts_reused':True,'scientific_outcome':'inconclusive','synthetic_evaluator_used':assessed,
+        'exact_receipts_reused':True,'scientific_outcome':'inconclusive','synthetic_evaluator_used':assessed,'worker_wrapper_used':worker_wrapper,
         'limits':('Native database relationships over synthetic evaluated files; no real source preparation, native model assessment, general diagnosis, dispatcher or Storage acceptance.' if assessed else 'Native database relationship checks over empty synthetic artifact files; no prepared instrument content, scientific assessment, normal dispatcher or Storage acceptance.')}

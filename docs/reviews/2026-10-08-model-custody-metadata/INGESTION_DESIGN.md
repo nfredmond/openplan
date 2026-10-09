@@ -227,3 +227,35 @@ including its science mutation runner. The commands ran serially in a user scope
 with MemoryMax 2 GiB, MemorySwapMax 0 and TasksMax 128. The full log is retained
 privately as `/tmp/openplan-focused-ci-full.log`. Tests and refusal criteria were
 not weakened. GitHub verification of the new commit remains a separate check.
+
+
+### Native custody after actual wrapper and evaluator execution
+
+The existing native instrument proof now has a `worker-assessed-fixture` mode.
+It calls the actual worker wrapper with retained synthetic audit/source facts
+and explicit run, method, bundle and comparison-basis expectations. The wrapper
+uses the real structural verifier and shared evaluator. The resulting nonempty
+assessment files then pass through the admitted writer and native database RPCs.
+The two method values remain separately prescribed fixture values, 100 and 120.
+
+Five fresh-clone cases pass their expected outcomes: normal, harmless naming,
+dropped custody write, changed output after assessment, and restored. Each
+success retains two method records and twelve attempt-bound artifacts, verifies
+exact receipt reuse and removes its temporary gateway. The dropped write fails
+on missing native records; changed output fails the evaluated-byte binding
+before publication. See `prototype/native-worker-assessed-instrument-controls.json`.
+The existing twelve synthetic binding controls also pass. A further normal
+native case verifies the corrected report wording after removing its outdated
+empty-file description.
+
+The campaign ran serially with a 2 GiB memory limit, zero swap and 128-task cap.
+Private evidence directories are `native-worker-assessed-instrument-20261009a`
+and `native-worker-assessed-report-20261009a` under the OpenPlan state directory.
+
+This is a software integration fixture. Its author knows the model values and
+supplies synthetic structural facts; a false output-read flag is not independent
+timing evidence. Supporting structural/source files remain local and are not
+fully published through native Storage. No engine, normal dispatcher, real
+network/population, source adequacy or scientific acceptance is established.
+The production preparation and complete artifact-publication requirements stay
+open.
