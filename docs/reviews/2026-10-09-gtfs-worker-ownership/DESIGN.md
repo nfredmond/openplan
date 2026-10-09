@@ -118,3 +118,18 @@ The runner constructs the context-enabled batch definition from the retained bat
 python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_write_fence.py \
   /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
 ```
+
+## Replacement preparation, October 9
+
+The [preparation command](prepare-prototype.sql) prevents a replacement attempt from mixing its batches with prior unfinished output. Under the version/job lock and current lease, it removes prior route, stop and tract rows using private DELETE context, records the removed counts, and marks the token prepared. A batch requires that exact prepared token. A new claim leaves the old preparation marker in place, so it cannot write until its own preparation succeeds. Retrying preparation returns the retained result without deleting newly written rows. Old batch and preparation receipts remain available as history; an expired owner cannot use them to reset its replacement.
+
+The derived guard now distinguishes INSERT from DELETE context and includes the tract table. Ordinary direct deletion still fails. The [preparation runner](verify_prepare.py) exercises a synthetic prior attempt with one route, stop and tract record, replacement, premature-write refusal, preparation, a replacement batch, preparation replay and refusal of the expired owner. It reads actual remaining rows, three batch receipts, two preparation receipts and an empty context table. All database changes roll back.
+
+[Eight controls](prepare-controls.json) cover baseline, a harmless comment, unprepared writes, missing stop cleanup, missing tract cleanup, repeated cleanup, missing owner validation and restored behavior. Every broken variant fails. The repeated-cleanup variant encounters the duplicate receipt key, demonstrating that bypassing replay breaks successful retry; the intact path separately proves the new row survives replay. The earlier six direct-write controls also pass with operation-specific context. SQL and combined assertion hashes are retained.
+
+This does not establish archive retention or parser restart. No archive fields change in this experiment, but stored-byte verification and admission recovery are not connected. Finalization, stage and artifact-custody commands, feed-pointer fencing, truncate restrictions and concurrent replacement/batch tests remain required. The synthetic tract is a cleanup fixture, not measured or computed transit coverage.
+
+```bash
+python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_prepare.py \
+  /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
+```

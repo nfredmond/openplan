@@ -1,0 +1,66 @@
+{
+  "recordedAt": "2026-10-09T15:15:19.113448+00:00",
+  "sourceSha256": "fc0a08097906dc4c8c37747b659d5b9a84805a139b212b93c7ac4f4629875bf6",
+  "batchWithContextSha256": "901255eea0489c99be82af25ff824e3388636a98a7c59bae313c3522c52d4674",
+  "fenceSha256": "d754da392218f7dbad8c2161c233df045a477d524e766e59aa09ce71d25e8cfb",
+  "ownershipSha256": "8003d889ab22b55baadf1f91b0808fde4b5f34cb7c00e90683341eeb59dbb30c",
+  "checksSha256": "1b38378ac2be787c657c7f242e2ff5c3a03da4766b1832b1e82e752cefb7bd09",
+  "cases": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "unprepared-write",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Unprepared replacement wrote batch",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "missing-stop-cleanup",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Replacement output mixed or replay deleted new rows",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "missing-tract-cleanup",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Replacement output mixed or replay deleted new rows",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "repeat-cleanup",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "duplicate key value violates unique constraint",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "missing-prepare-owner",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Expired owner reset replacement",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "restored",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    }
+  ]
+}

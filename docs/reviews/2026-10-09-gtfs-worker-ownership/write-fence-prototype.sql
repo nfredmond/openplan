@@ -4,6 +4,7 @@ CREATE TABLE ownership_probe.write_context (
  version_id uuid NOT NULL,
  token uuid NOT NULL,
  kind text NOT NULL,
+ operation text NOT NULL DEFAULT 'INSERT' CHECK(operation IN ('INSERT','DELETE')),
  PRIMARY KEY(transaction_id,version_id,kind)
 );
 ALTER TABLE ownership_probe.write_context ENABLE ROW LEVEL SECURITY;
@@ -18,11 +19,11 @@ BEGIN
  PERFORM id FROM public.gtfs_feed_versions WHERE id IN (old_version,new_version) ORDER BY id FOR UPDATE;
  SELECT EXISTS(SELECT 1 FROM ownership_probe.gtfs_execution_probe WHERE version_id IN (old_version,new_version)) INTO managed;
  IF managed THEN
-  expected_kind:=CASE TG_TABLE_NAME WHEN 'gtfs_route_service_levels' THEN 'route' WHEN 'gtfs_stop_service_levels' THEN 'stop' ELSE NULL END;
-  IF TG_OP<>'INSERT' OR expected_kind IS NULL OR NOT EXISTS(
+  expected_kind:=CASE TG_TABLE_NAME WHEN 'gtfs_route_service_levels' THEN 'route' WHEN 'gtfs_stop_service_levels' THEN 'stop' WHEN 'gtfs_tract_service' THEN 'tract' ELSE NULL END;
+  IF TG_OP='UPDATE' OR expected_kind IS NULL OR NOT EXISTS(
    SELECT 1 FROM ownership_probe.write_context c
    JOIN ownership_probe.gtfs_execution_probe j ON j.version_id=c.version_id AND j.token=c.token
-   WHERE c.transaction_id=txid_current() AND c.version_id=new_version AND c.kind=expected_kind
+   WHERE c.transaction_id=txid_current() AND c.version_id=coalesce(new_version,old_version) AND c.kind=expected_kind AND c.operation=TG_OP
     AND j.lease_until>clock_timestamp()
   ) THEN RAISE EXCEPTION 'Managed derived rows require owned batch command' USING ERRCODE='55000'; END IF;
  END IF;
@@ -33,6 +34,9 @@ REVOKE ALL ON FUNCTION ownership_probe.guard_derived_probe() FROM PUBLIC,anon,au
 CREATE TRIGGER ownership_probe_route BEFORE INSERT OR UPDATE OR DELETE ON public.gtfs_route_service_levels
  FOR EACH ROW EXECUTE FUNCTION ownership_probe.guard_derived_probe();
 CREATE TRIGGER ownership_probe_stop BEFORE INSERT OR UPDATE OR DELETE ON public.gtfs_stop_service_levels
+ FOR EACH ROW EXECUTE FUNCTION ownership_probe.guard_derived_probe();
+
+CREATE TRIGGER ownership_probe_tract BEFORE INSERT OR UPDATE OR DELETE ON public.gtfs_tract_service
  FOR EACH ROW EXECUTE FUNCTION ownership_probe.guard_derived_probe();
 
 -- No lifecycle command exists yet. Block all enrolled version updates/deletes,

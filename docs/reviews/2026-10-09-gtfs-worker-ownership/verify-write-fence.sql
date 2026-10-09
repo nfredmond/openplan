@@ -26,7 +26,7 @@ BEGIN
   RAISE EXCEPTION 'Managed row moved to legacy version';
  EXCEPTION WHEN SQLSTATE '55000' THEN NULL; END;
  BEGIN
-  INSERT INTO ownership_probe.write_context VALUES(txid_current(),v,t,'route');
+  INSERT INTO ownership_probe.write_context(transaction_id,version_id,token,kind) VALUES(txid_current(),v,t,'route');
   RAISE EXCEPTION 'Service role forged command context';
  EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN

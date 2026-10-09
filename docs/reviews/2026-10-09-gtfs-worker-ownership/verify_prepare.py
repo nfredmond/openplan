@@ -17,8 +17,10 @@ ownership = (root / 'ownership-prototype.sql').read_text()
 batch = (root / 'batch-prototype.sql').read_text()
 batch = batch.replace(" IF p_kind='route' THEN", " INSERT INTO ownership_probe.write_context(transaction_id,version_id,token,kind) VALUES(txid_current(),p_version,p_token,p_kind);\n IF p_kind='route' THEN")
 batch = batch.replace(' GET DIAGNOSTICS written=ROW_COUNT;', ' GET DIAGNOSTICS written=ROW_COUNT;\n DELETE FROM ownership_probe.write_context WHERE transaction_id=txid_current() AND version_id=p_version AND kind=p_kind;')
-source = (root / 'write-fence-prototype.sql').read_text()
-checks = (root / 'verify-batch.sql').read_text() + (root / 'verify-write-fence.sql').read_text()
+fence = (root / 'write-fence-prototype.sql').read_text()
+source = (root / 'prepare-prototype.sql').read_text()
+batch = batch.replace(" SELECT * INTO v FROM public.gtfs_feed_versions WHERE id=p_version;", " IF NOT EXISTS(SELECT 1 FROM ownership_probe.gtfs_execution_probe WHERE version_id=p_version AND prepared_token=p_token) THEN RAISE EXCEPTION 'GTFS attempt not prepared' USING ERRCODE='55000'; END IF;\n SELECT * INTO v FROM public.gtfs_feed_versions WHERE id=p_version;")
+checks = (root / 'verify-batch.sql').read_text().replace('PERFORM ownership_probe.claim_gtfs_probe(version,token);', 'PERFORM ownership_probe.claim_gtfs_probe(version,token); PERFORM ownership_probe.prepare_probe(version,token);') + (root / 'verify-prepare.sql').read_text()
 command = ['docker', 'exec', '-i', config['container'], 'psql', '-U', 'postgres',
            '-d', config['database'], '-X', '-qAt', '-v', 'ON_ERROR_STOP=1']
 
@@ -36,19 +38,28 @@ def mutate(old, new):
 cases = [
     ('baseline', source, None),
     ('harmless', source + '\n-- harmless comment\n', None),
-    ('missing-derived-fence', mutate('IF managed THEN', 'IF false THEN'),
-     'Direct managed insert accepted'),
-    ('missing-version-fence', mutate('WHERE version_id=OLD.id)', 'WHERE false)'),
-     'Direct managed stage accepted'),
-    ('forge-context', source + '\nGRANT INSERT ON ownership_probe.write_context TO service_role;\n',
-     'Service role forged command context'),
+    ('unprepared-write', source, 'Unprepared replacement wrote batch'),
+    ('missing-stop-cleanup', mutate('DELETE FROM public.gtfs_stop_service_levels WHERE feed_version_id=p_version;', 'PERFORM 1;'),
+     'Replacement output mixed or replay deleted new rows'),
+    ('missing-tract-cleanup', mutate('DELETE FROM public.gtfs_tract_service WHERE feed_version_id=p_version;', 'PERFORM 1;'),
+     'Replacement output mixed or replay deleted new rows'),
+    ('repeat-cleanup', mutate('RETURN saved.response;', 'NULL;'),
+     'duplicate key value violates unique constraint'),
+    ('missing-prepare-owner', mutate('IF ownership_probe.own_gtfs_probe(p_version,p_token) IS NOT TRUE THEN','IF false THEN'),
+     'Expired owner reset replacement'),
     ('restored', source, None),
 ]
 results = []
 for name, sql, reason in cases:
     schema = 'ownership_probe_' + uuid.uuid4().hex
-    script = ("BEGIN;\nSET LOCAL statement_timeout='15s';\n" + ownership + sql + batch + '\n'
-              + ("GRANT INSERT ON ownership_probe.write_context TO service_role;\n" if name == 'forge-context' else '') + checks + '\nROLLBACK;').replace('ownership_probe', schema)
+    case_batch = batch
+    if name == 'unprepared-write':
+        guard = " IF NOT EXISTS(SELECT 1 FROM ownership_probe.gtfs_execution_probe WHERE version_id=p_version AND prepared_token=p_token) THEN RAISE EXCEPTION 'GTFS attempt not prepared' USING ERRCODE='55000'; END IF;\n"
+        if guard not in batch:
+            raise AssertionError('Preparation guard mutation target missing')
+        case_batch = batch.replace(guard, '')
+    script = ("BEGIN;\nSET LOCAL statement_timeout='15s';\n" + ownership + fence + case_batch + sql + '\n'
+              + checks + '\nROLLBACK;').replace('ownership_probe', schema)
     result = run(script)
     if (result.returncode == 0) != (reason is None) or (reason and reason not in result.stderr):
         raise RuntimeError(name + '\n' + result.stdout + result.stderr)
@@ -62,6 +73,7 @@ for name, sql, reason in cases:
 print(json.dumps({'recordedAt': datetime.now(timezone.utc).isoformat(),
                   'sourceSha256': hashlib.sha256(source.encode()).hexdigest(),
                   'batchWithContextSha256': hashlib.sha256(batch.encode()).hexdigest(),
+                  'fenceSha256': hashlib.sha256(fence.encode()).hexdigest(),
                   'ownershipSha256': hashlib.sha256(ownership.encode()).hexdigest(),
                   'checksSha256': hashlib.sha256(checks.encode()).hexdigest(),
                   'cases': results}, indent=2))
