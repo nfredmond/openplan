@@ -13,6 +13,8 @@ import uuid
 
 from verify_created_container_identity import docker
 from container_peer_gate import pin_bootstrap_peer
+from container_identity import ContainerPlan, verify_created_container, verify_bootstrap_container
+from dataclasses import replace
 
 BOOTSTRAP = Path(__file__).with_name('container_pidfd_bootstrap.py')
 IMAGE = os.environ['OPENPLAN_CONTAINER_CUSTODY_IMAGE']
@@ -50,7 +52,16 @@ def case(root, name, victim, omit_watch=False, harmless=False):
     token = uuid.uuid4().hex
     container = None
     try:
+        image = json.loads(docker('--host', 'unix:///run/docker.sock', 'image', 'inspect', IMAGE))[0]
+        daemon_id = docker('--host', 'unix:///run/docker.sock', 'info', '--format', '{{.ID}}')
+        plan = ContainerPlan(daemon_id=daemon_id, image_id=image['Id'], request_id=token,
+            command=('-B', '/bootstrap.py', 'python', '-c', WORK_COMPLETION if victim == 3 else WORK),
+            entrypoint=('python',), environment=tuple(image['Config']['Env']),
+            user=f'{os.getuid()}:{os.getgid()}', working_dir='/work', memory_bytes=67108864,
+            tasks=16, network='none', mounts=((str(script), '/bootstrap.py', True),
+                (str(control), '/control', True), (str(output), '/work', False)))
         container = docker('--host', 'unix:///run/docker.sock', 'create', '--label', 'openplan.pidfd-proof=' + token,
+            '--label', 'openplan.execution-request=' + token, '--workdir', '/work',
             '--memory', '64m', '--memory-swap', '64m', '--pids-limit', '16', '--cpus', '.25',
             '--network', 'none', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
             '--user', f'{os.getuid()}:{os.getgid()}', '--restart', 'no',
@@ -58,10 +69,20 @@ def case(root, name, victim, omit_watch=False, harmless=False):
             '--mount', f'type=bind,src={control},dst=/control,readonly',
             '--mount', f'type=bind,src={output},dst=/work', '--entrypoint', 'python',
             IMAGE, '-B', '/bootstrap.py', 'python', '-c', WORK_COMPLETION if victim == 3 else WORK).strip()
+        initial = json.loads(docker('--host', 'unix:///run/docker.sock', 'inspect', container))[0]
+        created_identity = verify_created_container(plan, daemon_id, initial)
         docker('--host', 'unix:///run/docker.sock', 'start', container)
         connection, _ = listener.accept()
         with connection:
             observed = json.loads(docker('--host', 'unix:///run/docker.sock', 'inspect', container))[0]
+            bootstrap_identity = verify_bootstrap_container(plan, daemon_id, observed, created_identity['container_id'])
+            assert bootstrap_identity['policy_sha256'] == created_identity['policy_sha256']
+            try:
+                verify_bootstrap_container(replace(plan, command=('unplanned',)), daemon_id, observed, container)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError('Changed bootstrap command was accepted')
             pinned_peer = pin_bootstrap_peer(connection, observed, container, os.getuid())
             os.close(pinned_peer)
             # A live local connector must not receive descriptors intended for
@@ -132,7 +153,7 @@ def case(root, name, victim, omit_watch=False, harmless=False):
         return {'case': name, 'lost_process': {-1: 'owner-before-start', 0: 'owner', 1: 'controller', 2: 'bootstrap', 3: 'none', 4: 'invalid-descriptor', 5: 'missing-descriptor'}[victim],
                 'fault_omitted_watch': omit_watch, 'container_stopped': not observed['State']['Running'],
                 'expected_behavior_observed': True, 'bootstrap_peer_verified': True,
-                'unrelated_peer_refused': True, 'exit_code': observed['State']['ExitCode'],
+                'unrelated_peer_refused': True, 'creation_plan_reverified': True, 'changed_command_refused': True, 'exit_code': observed['State']['ExitCode'],
                 'container_id': container, 'bootstrap_sha256': hashlib.sha256(script.read_bytes()).hexdigest()}
     finally:
         if container:

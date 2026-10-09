@@ -11,6 +11,11 @@ cases=[('harmless',None,None,None),
  ('ignore-environment','or sorted(environment) != sorted(plan.environment)','or False','test_policy_and_identity_changes_are_refused'),
  ('ignore-mounts','if sorted(actual) != sorted(plan.mounts):','if False:','test_changed_or_additional_mount_is_refused'),
  ('allow-mutable-command','(self.command, self.entrypoint, self.environment, self.mounts)','(self.entrypoint, self.environment, self.mounts)','test_mutable_plan_and_tag_only_image_are_refused'),
+ ('ignore-bootstrap-id','if identity["container_id"] != expected_id:','if False:','test_bootstrap_rechecks_exact_id_and_configuration'),
+ ('ignore-bootstrap-command','config.get("Cmd") != list(plan.command)','False','test_bootstrap_rechecks_exact_id_and_configuration'),
+ ('ignore-bootstrap-pid','state["Pid"] <= 0','False','test_bootstrap_requires_live_private_namespace_and_restricted_privileges'),
+ ('ignore-private-namespace','host.get("PidMode") != ""','False','test_bootstrap_requires_live_private_namespace_and_restricted_privileges'),
+ ('grant-bootstrap-authority','"observed_state": "bootstrap_running",','"observed_state": "bootstrap_running", "start_authorized": True,','test_bootstrap_retains_identity_without_execution_authority'),
  ('restored',None,None,None)]
 records=[]
 try:

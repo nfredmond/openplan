@@ -362,3 +362,38 @@ They do not prove native ActivitySim, record durable production exit receipts or
 connect the database attempt. A pre-start liveness check also does not make a
 Docker start request and a host process exit one atomic operation; continued
 observation and termination are still necessary after command release.
+
+
+## Recheck the execution plan before bootstrap release
+
+The worker's `container_identity.py` now shares its immutable configuration
+verification between created containers and running bootstraps. The new
+`verify_bootstrap_container` additionally requires the exact previously created
+container ID, a running positive PID, no paused/restarting/dead state, a private
+PID namespace, no inserted init process, dropped capabilities and the configured
+no-new-privileges restriction. Its result still grants no start, signal or
+continuation authority. The created-container verifier retains its requirement
+for an unstarted container and its previous result shape.
+
+The live prototype constructs the expected plan before creation. It checks that
+plan against the created container, rechecks the same configuration after the
+bootstrap starts, and compares the policy hashes before peer verification and
+descriptor delivery. Every case also supplies a deliberately different command
+and confirms its refusal. This replaces reliance on the bootstrap PID and label
+alone for the measured startup path. The private bootstrap script remains a
+mounted file; production must retain and verify its exact bytes as part of the
+execution artifact, not assume a path proves content.
+
+All ten live interruption/completion/refusal cases pass with this verification.
+All 88 ActivitySim tests pass with live host checks enabled. Eleven identity
+source faults fail their named tests, with harmless/restored passes. The added
+controls detect a substituted bootstrap ID, ignored command, invalid PID,
+shared host PID namespace and invented start authority. Reports are
+`prototype/bootstrap-plan-live.json` and `prototype/bootstrap-plan-controls.json`.
+Private live records remain under `~/.local/state/openplan/plan-1008a/`.
+
+This connects the worker verifier to the executable prototype. The normal
+runtime still requires a controller that retains creation/startup/exit records,
+delivers the real owner's descriptors, captures logs and reconciles failures
+with database attempt ownership. Native ActivitySim and broader scientific and
+human acceptance remain unproved by these synthetic cases.

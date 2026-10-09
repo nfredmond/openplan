@@ -1,4 +1,4 @@
-"""Verify an unstarted container against a caller's retained execution plan.
+"""Verify created or running bootstrap containers against a retained plan.
 
 This module observes supplied daemon facts. It neither contacts Docker nor
 authorizes start, signaling, recovery, or reuse of a saved container identity.
@@ -55,8 +55,8 @@ class ContainerPlan:
             raise ValueError("Duplicate container mount destination")
 
 
-def verify_created_container(plan: ContainerPlan, daemon_id: str, observed: dict) -> dict:
-    """Return observed identity only after checking an unstarted container."""
+def _verify_plan(plan: ContainerPlan, daemon_id: str, observed: dict) -> dict:
+    """Check immutable execution configuration independently of process state."""
     if not isinstance(plan, ContainerPlan) or daemon_id != plan.daemon_id:
         raise ValueError("Container daemon differs from execution plan")
     if not isinstance(observed, dict):
@@ -90,9 +90,6 @@ def verify_created_container(plan: ContainerPlan, daemon_id: str, observed: dict
             or host.get("Privileged") is not False or restart.get("Name") != "no"
             or host.get("CapAdd") or host.get("Devices") or host.get("DeviceRequests")):
         raise ValueError("Container lifecycle or privilege policy differs from execution plan")
-    if (state.get("Status") != "created" or type(state.get("Pid")) is not int or state["Pid"] != 0
-            or any(state.get(key) is not False for key in ("Running", "Paused", "Restarting", "Dead"))):
-        raise ValueError("Container has started or its initial state is unconfirmed")
     mounts = observed.get("Mounts")
     if not isinstance(mounts, list):
         raise ValueError("Container mounts are missing")
@@ -111,5 +108,36 @@ def verify_created_container(plan: ContainerPlan, daemon_id: str, observed: dict
         "network": plan.network, "mounts": sorted(plan.mounts)}, sort_keys=True).encode()).hexdigest()
     return {"schema": "openplan.created-container.v1", "daemon_id": daemon_id,
             "container_id": container_id, "image_id": plan.image_id, "request_id": plan.request_id,
-            "policy_sha256": digest, "observed_state": "created", "start_authorized": False,
+            "policy_sha256": digest, "start_authorized": False,
             "signal_authorized": False, "continuation_authorized": False}
+
+
+def verify_created_container(plan: ContainerPlan, daemon_id: str, observed: dict) -> dict:
+    """Return observed identity only after checking an unstarted container."""
+    identity = _verify_plan(plan, daemon_id, observed)
+    state = observed["State"]
+    if (state.get("Status") != "created" or type(state.get("Pid")) is not int or state["Pid"] != 0
+            or any(state.get(key) is not False for key in ("Running", "Paused", "Restarting", "Dead"))):
+        raise ValueError("Container has started or its initial state is unconfirmed")
+    return {**identity, "observed_state": "created"}
+
+
+def verify_bootstrap_container(plan: ContainerPlan, daemon_id: str, observed: dict,
+                               expected_id: str) -> dict:
+    """Recheck the exact running bootstrap before any descriptor delivery.
+
+    This is evidence for a live controller, not a saved admission capability.
+    The caller still needs verified socket peer identity and original owners.
+    """
+    identity = _verify_plan(plan, daemon_id, observed)
+    if identity["container_id"] != expected_id:
+        raise ValueError("Bootstrap container differs from created identity")
+    state, host = observed["State"], observed["HostConfig"]
+    if (state.get("Status") != "running" or state.get("Running") is not True
+            or type(state.get("Pid")) is not int or state["Pid"] <= 0
+            or any(state.get(key) is not False for key in ("Paused", "Restarting", "Dead"))):
+        raise ValueError("Bootstrap process state is unconfirmed")
+    if (host.get("PidMode") != "" or (host.get("Init") is not None and host.get("Init") is not False)
+            or host.get("CapDrop") != ["ALL"] or host.get("SecurityOpt") != ["no-new-privileges"]):
+        raise ValueError("Bootstrap namespace or privilege policy differs")
+    return {**identity, "observed_state": "bootstrap_running", "bootstrap_pid": state["Pid"]}

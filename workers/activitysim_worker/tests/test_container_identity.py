@@ -6,7 +6,7 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from container_identity import ContainerPlan, verify_created_container
+from container_identity import ContainerPlan, verify_created_container, verify_bootstrap_container
 
 
 class ContainerIdentityTests(unittest.TestCase):
@@ -76,3 +76,35 @@ class ContainerIdentityTests(unittest.TestCase):
         for change in ({"mounts": (["/owned", "/input", True],)}, {"command": ["python"]}, {"image_id": "python:latest"}, {"memory_bytes": True}):
             with self.subTest(change=change), self.assertRaises(ValueError):
                 replace(self.plan, **change)
+
+    def bootstrap(self):
+        observed = copy.deepcopy(self.observed)
+        observed["State"].update(Status="running", Pid=123, Running=True)
+        observed["HostConfig"].update(PidMode="", Init=False, CapDrop=["ALL"], SecurityOpt=["no-new-privileges"])
+        return observed
+
+    def test_bootstrap_retains_identity_without_execution_authority(self):
+        observed = self.bootstrap()
+        result = verify_bootstrap_container(self.plan, self.plan.daemon_id, observed, observed["Id"])
+        self.assertEqual(result["policy_sha256"], self.inspect()["policy_sha256"])
+        self.assertEqual(result["bootstrap_pid"], 123)
+        self.assertEqual(result["observed_state"], "bootstrap_running")
+        for key in ("start_authorized", "signal_authorized", "continuation_authorized"):
+            self.assertIs(result[key], False)
+
+    def test_bootstrap_rechecks_exact_id_and_configuration(self):
+        observed = self.bootstrap()
+        with self.assertRaisesRegex(ValueError, "created identity"):
+            verify_bootstrap_container(self.plan, self.plan.daemon_id, observed, "4" * 64)
+        observed["Config"]["Cmd"] = ["unplanned"]
+        with self.assertRaisesRegex(ValueError, "command or user"):
+            verify_bootstrap_container(self.plan, self.plan.daemon_id, observed, observed["Id"])
+
+    def test_bootstrap_requires_live_private_namespace_and_restricted_privileges(self):
+        changes = [("State", "Pid", 0), ("State", "Running", False), ("State", "Paused", True),
+                   ("HostConfig", "PidMode", "host"), ("HostConfig", "Init", True),
+                   ("HostConfig", "CapDrop", []), ("HostConfig", "SecurityOpt", [])]
+        for section, key, value in changes:
+            observed = self.bootstrap(); observed[section][key] = value
+            with self.subTest(section=section, key=key), self.assertRaises(ValueError):
+                verify_bootstrap_container(self.plan, self.plan.daemon_id, observed, observed["Id"])
