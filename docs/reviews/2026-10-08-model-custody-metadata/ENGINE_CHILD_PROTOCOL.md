@@ -180,3 +180,42 @@ Unsupported hosts must expose the missing supervision capability explicitly.
 Scope startup fencing, durable identity capture, cancellation, parent-loss
 recovery, policy selection, model-native integration and output publication remain
 unimplemented. This experiment changes no dispatch or completion authorization.
+
+## Scope startup adapter, October 8
+
+`EngineProcess` now accepts explicit `ScopeLimits` for an optional Linux user
+scope. No default model resource limits or dispatch policy are selected. Hosts
+without the required systemd tools and cgroup v2 receive an explicit unavailable
+error when scoped execution is requested.
+
+A separate inherited startup socket holds a standard-library bootstrap before
+engine execution. The parent verifies the bootstrap PID and kernel membership,
+unit invocation, cgroup directory identity and configured memory/task limits.
+It writes and fsyncs `scope-started.json` under the pinned attempt directory, then
+releases the bootstrap to execute the engine. Failure to retain that record
+closes the gate and stops the writer. The existing progress descriptor survives
+the bootstrap's exec. No raw arguments, environment or credentials enter the
+scope record.
+
+Exit observation verifies the owned scope identity and refuses live descendants.
+A scope directory removed between the systemd query and filesystem read produces
+a retryable observation, not success or a stopped writer. A changed identity or
+unconfirmed scope query stops the writer. Scoped receipts still declare
+`execution_ready: false`. An observed empty scope does not register completed
+outputs or establish scientific acceptance.
+
+Eight focused tests cover startup ordering, inherited progress, detached children,
+record failure, identity replacement, the removal race, nonzero exit and policy
+availability/validation. The complete related engine suite passes 73 tests. Six
+startup controls include harmless and restored cases and detect early release,
+ignored population and ignored identity. Four full native controls run the actual
+small assignment through this adapter; baseline, harmless and restored runs
+converge with modeled transit and 20 local artifacts. Omitting the scope still
+computes, but fails its evidence check. Parent database transport is mocked in
+these scoped native cases. Reports are `prototype/scope-startup-controls.json`
+and `prototype/native-scoped-controls.json`.
+
+This supersedes the preceding experiment's missing startup gate and durable
+identity capture. Parent-loss recovery, verified scope cancellation, hostile
+cgroup migration, production resource policy, live-database scoped integration,
+completed output publication and normal dispatch activation remain open.

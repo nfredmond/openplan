@@ -1,0 +1,49 @@
+{
+  "sources_sha256": {
+    "model_engine_process.py": "d624864811b0af8eb03b9c1ca3bbaf2970a56932612bc21f35193bfd95877c72",
+    "model_engine_supervision.py": "85caf0eff4b2408dbf6038ece9fbdce1c644e44c21254b408bd99039c6ab70c3",
+    "model_engine_bootstrap.py": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a"
+  },
+  "controls": [
+    {
+      "control": "baseline",
+      "passed": true,
+      "summary": [
+        "Ran 8 tests in 2.641s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "control": "harmless",
+      "passed": true,
+      "summary": [
+        "Ran 8 tests in 2.662s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "control": "authorize-before-record",
+      "detected": "Engine ran before scope identity was retained"
+    },
+    {
+      "control": "ignore-scope-population",
+      "detected": "EngineStillRunning not raised"
+    },
+    {
+      "control": "ignore-scope-identity",
+      "detected": "ValueError not raised"
+    },
+    {
+      "control": "restored",
+      "passed": true,
+      "summary": [
+        "Ran 8 tests in 2.642s",
+        "",
+        "OK"
+      ]
+    }
+  ],
+  "limits": "Real Linux user scopes and inherited channel, mocked database transport. No parent-loss recovery, cancellation, hostile migration sandbox, full native model or output publication."
+}

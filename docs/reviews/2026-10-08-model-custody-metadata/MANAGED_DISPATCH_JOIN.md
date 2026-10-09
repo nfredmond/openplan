@@ -3023,3 +3023,24 @@ transport and disposable children with independent deadlines. No unrelated unit
 is stopped. `ENGINE_CHILD_PROTOCOL.md` records the selected next adapter boundary
 and the remaining startup, identity, cancellation and parent-loss requirements.
 This is evidence for implementation, not completed supervision or output capture.
+
+## Scoped native launch with retained identity, October 8
+
+The optional production scope adapter now keeps the engine behind a startup
+socket until its parent verifies and retains the scope identity and resource
+limits. Scoped exit checks refuse detached descendants and identity replacement.
+An observed systemd removal race is retryable. The engine cannot run when the
+scope record fails to persist. Normal dispatch remains unchanged and disabled
+for this managed foundation.
+
+The related engine suite passes 73 tests. Six startup controls detect premature
+execution and bypassed scope checks. Four native controls exercise the full
+synthetic assignment: baseline, harmless and restored cases converge with modeled
+transit and 20 output artifacts. Missing supervision fails despite successful
+computation. Native scoped tests use mocked parent database transport; the earlier
+installed-command evidence remains separate. No combined live-database scoped
+claim is made. Product direction passes with its existing dated reminders.
+
+Retained receipts remain `execution_ready: false`. Cancellation, parent-loss
+recovery, production policy, completed publication, human/browser acceptance and
+nationwide scientific acceptance are not established by these tests.

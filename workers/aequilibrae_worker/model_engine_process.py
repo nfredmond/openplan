@@ -1,7 +1,7 @@
 """Reserve one engine launch and observe its original process group exit.
 
-This is not connected to normal dispatch. It does not contain children that
-create another session or replace cross-process attempt authorization.
+This is not connected to normal dispatch. Optional owned Linux scope supervision
+tracks detached sessions but does not replace cross-process attempt authorization.
 """
 from contextlib import contextmanager
 import hashlib
@@ -27,7 +27,7 @@ def _record(descriptor, name, payload):
 
 class EngineProcess:
     """Observe only a process launched by this object, never a saved PID."""
-    def __init__(self, writer, argv, *, env, progress=False, output_name=None, count_preparer=None, transit_preparer=None):
+    def __init__(self, writer, argv, *, env, progress=False, output_name=None, count_preparer=None, transit_preparer=None, scope_limits=None):
         writer.require_open()
         if writer.files is None:
             raise ValueError('Engine launch requires an owned attempt workspace')
@@ -39,6 +39,7 @@ class EngineProcess:
         self.directory=writer.files.path/'engine_process'
         self.receipt=None
         self.progress=None
+        self.scope=None
         child_channel=None
         child_env=dict(env)
         inherited=()
@@ -60,6 +61,13 @@ class EngineProcess:
                 self.progress=ProgressParent(parent_channel,writer,output_name=output_name,count_preparer=count_preparer,transit_preparer=transit_preparer)
                 inherited=(child_channel.fileno(),)
                 child_env[CHANNEL_FD_ENV]=str(child_channel.fileno())
+            launch_argv=argv
+            if scope_limits is not None:
+                from model_engine_supervision import OwnedEngineScope
+                self.scope=OwnedEngineScope(scope_limits)
+                launch_argv=self.scope.command(argv)
+                inherited=(*inherited,self.scope.child.fileno())
+                self.identity['scope_unit']=self.scope.unit
             with self._pinned() as descriptor:
                 _record(descriptor,'launch-reserved.json',self.identity)
                 # Reservation survives spawn failure. Raw arguments and environment
@@ -69,12 +77,22 @@ class EngineProcess:
                     # Linux procfs resolves the parent's pinned directory while Popen
                     # waits for exec. No directory descriptor is inherited by the engine.
                     working_path=f'/proc/{os.getpid()}/fd/{working}'
-                    self.process=subprocess.Popen(argv,cwd=working_path,env=child_env,
+                    self.process=subprocess.Popen(launch_argv,cwd=working_path,env=child_env,
                         stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,
                         start_new_session=True,close_fds=True,pass_fds=inherited)
+            if self.scope is not None:
+                scope_identity=self.scope.verify_start(self.process.pid)
+                with self._pinned() as descriptor:
+                    _record(descriptor,'scope-started.json',{**self.identity,'scope':scope_identity})
+                self.scope.authorize()
         except BaseException:
             writer.stopped=True
             if self.progress is not None:self.progress.stop()
+            if self.scope is not None:
+                self.scope.close_gate()
+                if hasattr(self,'process'):
+                    if self.process.poll() is None:self.process.terminate()
+                    self.process.wait(timeout=10)
             raise
         finally:
             if child_channel is not None:child_channel.close()
@@ -104,11 +122,20 @@ class EngineProcess:
             pass
         else:
             raise EngineStillRunning('Engine process group still has members')
+        scope_receipt=None
+        if self.scope is not None:
+            from model_engine_supervision import ScopeStillPopulated
+            try:scope_receipt=self.scope.require_empty()
+            except ScopeStillPopulated as error:raise EngineStillRunning(str(error)) from error
+            except BaseException:
+                self.writer.stopped=True
+                raise
         try:
             self.writer.files.verify()
             receipt={**self.identity,'pid':self.process.pid,'returncode':code,
                      'observed_original_process_group_empty':True,'execution_ready':False,
                      'scientific_acceptance':'unassessed'}
+            if scope_receipt is not None:receipt['scope']=scope_receipt
             with self._pinned() as descriptor:
                 _record(descriptor,'observed-exit.json',receipt)
             self.receipt=receipt
