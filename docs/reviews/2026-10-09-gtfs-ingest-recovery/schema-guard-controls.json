@@ -1,0 +1,64 @@
+[
+  {
+    "case": "baseline",
+    "expectedPass": true,
+    "exitCode": 0,
+    "tests": [
+      "src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "src/test/the-timetable-is-not-persisted.test.ts",
+      "src/test/migrations/inventory.test.ts"
+    ]
+  },
+  {
+    "case": "harmless",
+    "expectedPass": true,
+    "exitCode": 0,
+    "tests": [
+      "src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "src/test/the-timetable-is-not-persisted.test.ts",
+      "src/test/migrations/inventory.test.ts"
+    ]
+  },
+  {
+    "case": "raw-timetable-write",
+    "expectedPass": false,
+    "exitCode": 1,
+    "tests": [
+      "src/test/the-timetable-is-not-persisted.test.ts"
+    ]
+  },
+  {
+    "case": "unaccounted-column",
+    "expectedPass": false,
+    "exitCode": 1,
+    "tests": [
+      "src/test/a-column-nothing-reads-is-a-question.test.ts"
+    ]
+  },
+  {
+    "case": "queue-holds-timetable",
+    "expectedPass": false,
+    "exitCode": 1,
+    "tests": [
+      "src/test/migrations/inventory.test.ts"
+    ]
+  },
+  {
+    "case": "queue-without-rls",
+    "expectedPass": false,
+    "exitCode": 1,
+    "tests": [
+      "src/test/migrations/inventory.test.ts"
+    ]
+  },
+  {
+    "case": "restored",
+    "expectedPass": true,
+    "exitCode": 0,
+    "tests": [
+      "src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "src/test/the-timetable-is-not-persisted.test.ts",
+      "src/test/migrations/inventory.test.ts"
+    ]
+  }
+]

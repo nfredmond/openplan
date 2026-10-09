@@ -73,6 +73,9 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "gtfs_feed_versions.ingest_abandoned_at", category: "READ_IN_SQL", reason: "The stale-ingest transaction and version/derived-row triggers read this marker to refuse writes after abandonment." },
+  { column: "gtfs_feed_versions.ingest_closed_at", category: "READ_IN_SQL", reason: "Normal failure closure and its version/derived-row triggers read this marker to prevent a closed ingest from resuming." },
+  { column: "gtfs_feed_versions.ingest_failure_receipt", category: "READ_IN_SQL", reason: "The failure-closure RPC compares the original request and returns its retained result when the exact call is retried." },
   { column: "model_assessment_command_receipts.request_payload", category: "READ_IN_SQL", reason: "record_legacy_model_assessment compares the retained request on retry and refuses changed assessment payloads." },
   { column: "model_assessment_command_receipts.response_payload", category: "READ_IN_SQL", reason: "record_legacy_model_assessment returns the original assessment and artifact rows on an exact retry." },
   { column: "model_stage_claim_receipts.request_payload", category: "READ_IN_SQL", reason: "The native command compares the original payload on retry and refuses request identity reuse with different arguments." },

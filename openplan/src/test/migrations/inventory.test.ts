@@ -542,10 +542,11 @@ const EXPECTED = {
   // Installed CLI-upgrade catalog: 299 application tables, all with RLS, and 14 views.
   // 20261016000015 adds one private assessment receipt table.
   // Isolated upgrade catalog confirms 300 application tables with RLS and 14 views.
-  relations: 314,
-  tables: 300,
+  // Migration 20261016000025 adds the private GTFS object-cleanup queue.
+  relations: 315,
+  tables: 301,
   views: 14,
-  rlsEnabledTables: 300,
+  rlsEnabledTables: 301,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -821,6 +822,13 @@ describe("policy classifiers", () => {
 });
 
 describe("migration schema inventory", () => {
+  it("keeps GTFS object cleanup limited to version, object key and queue time", () => {
+    expect(schema.columns("gtfs_ingest_storage_cleanup")).toEqual(new Set(["version_id", "storage_path", "created_at"]));
+    expect(schema.rlsEnabled("gtfs_ingest_storage_cleanup")).toBe(true);
+    expect(schema.hasColumn("gtfs_feed_versions", "ingest_abandoned_at")).toBe(true);
+    expect(schema.hasColumn("gtfs_feed_versions", "ingest_closed_at")).toBe(true);
+    expect(schema.hasColumn("gtfs_feed_versions", "ingest_failure_receipt")).toBe(true);
+  });
   it("reads every relation the migrations declare", () => {
     expect(schema.relations()).toHaveLength(EXPECTED.relations);
     expect(schema.tables()).toHaveLength(EXPECTED.tables);
