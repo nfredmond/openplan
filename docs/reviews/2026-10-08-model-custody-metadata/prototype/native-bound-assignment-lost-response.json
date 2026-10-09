@@ -1,0 +1,13 @@
+{
+  "control": "lost-response",
+  "parent_failure": "BrokenPipeError",
+  "child_failure": {
+    "error_type": "WorkerStateWriteUnconfirmed",
+    "active_project": false
+  },
+  "child_exit_code": 1,
+  "pending_commands": 0,
+  "final_outputs_absent": true,
+  "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
+  "limits": "Full synthetic native stage failure with mocked transport. Pending command copied for evidence only. No restart/replay, supervisor loss, escaped descendants or scientific acceptance."
+}

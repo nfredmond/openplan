@@ -2897,3 +2897,28 @@ fixture constructs consumed predecessor inventories directly and mocks parent
 transports. Native interruption/recovery, larger networks, calibration, cordons,
 long jobs, output publication and normal dispatcher activation remain open.
 Full V1 contract and independent scientific acceptance are unchanged.
+
+
+## Native iteration failure boundaries, October 8
+
+The full native stage fixture now injects two failures during actual solver
+iteration progress. A lost database reply yields `DeliveryUnconfirmed` in the
+parent and one pending exact command. A lost child acknowledgement occurs after
+the parent confirms the write, so it yields `BrokenPipeError` and zero pending
+commands. Both children exit with `WorkerStateWriteUnconfirmed`, leave no active
+native project and write neither final link volumes nor a successful stage
+result. Already-created intermediate matrices remain provisional.
+
+A targeted control removes the progress handler's fatal exception propagation.
+The native solver then continues despite the uncertain write, and the proof
+fails its stop assertion. The missing-mode-choice control also remains detected.
+Baseline, harmless and restored runs again converge with identical synthetic
+mode totals. The seven-case report is
+`prototype/native-bound-assignment-controls.json`; individual failure reports
+preserve the distinction between pending database delivery and lost child reply.
+
+These are mocked transport failures in a real small native assignment. The
+pending command is copied as evidence before fixture cleanup, not replayed. No
+restart recovery, supervisor loss, escaped descendants, larger-network behavior,
+calibration, cordons or scientific accuracy is established. Output publication
+and dispatcher activation remain open.

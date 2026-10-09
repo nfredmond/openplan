@@ -10,6 +10,7 @@ from shapely.geometry import Point,LineString
 from model_engine_scope import project_scope
 from model_engine_process import EngineProcess
 import model_project_inputs,model_package_inputs,model_attempt_writer as managed
+import model_command_journal as journal
 from test_project_working_copy import ProjectWorkingCopyTests
 from test_model_skip_dispatch import aeq
 from test_transit_feed_handoff import _feed_bytes
@@ -34,6 +35,10 @@ try:
   result=main.stage_assignment(sys.argv[2],sys.argv[3],str(root),setup,paths['package_directory'])
  (root/'assignment-result.json').write_text(json.dumps(result,allow_nan=False,indent=2)+'\\n')
  (root/'native-version.txt').write_text(version('aequilibrae'))
+except BaseException as error:
+ from aequilibrae.context import get_active_project
+ (root/'assignment-failure.json').write_text(json.dumps({'error_type':type(error).__name__,'active_project':get_active_project(must_exist=False) is not None}))
+ raise
 finally:client.stop()
 '''
 
@@ -42,7 +47,7 @@ def main():
     output=Path(os.environ['OPENPLAN_BOUND_ASSIGNMENT_OUTPUT']).absolute()
     output.mkdir(mode=0o700,parents=True,exist_ok=False)
     control=os.environ.get('OPENPLAN_BOUND_ASSIGNMENT_CONTROL','baseline')
-    if control not in ('baseline','harmless','disable-mode-choice'):raise ValueError('Unknown proof control')
+    if control not in ('baseline','harmless','disable-mode-choice','lost-progress','lost-response','swallow-progress-fault'):raise ValueError('Unknown proof control')
     fixture=ProjectWorkingCopyTests();fixture.setUp();handle=None
     try:
         writer=fixture.writer;writer.get=fixture.get
@@ -75,20 +80,56 @@ def main():
              'SUPABASE_URL':'http://synthetic.invalid','SUPABASE_SERVICE_ROLE_KEY':'synthetic-not-a-key',
              'MODE_SPLIT_ENABLED':'1','AEQ_CALIBRATE':'0','COUNT_VALIDATION_ENABLED':'0'}
         if control=='disable-mode-choice':env['MODE_SPLIT_ENABLED']='0'
+        parent_failure=None
+        if control in ('lost-progress','swallow-progress-fault'):
+            def lose_progress(url,**kwargs):
+                if 'Assignment iteration' in kwargs['json'].get('p_log_tail',''):
+                    raise TimeoutError('Synthetic lost database reply during native iteration')
+                return fixture.response(url,**kwargs)
+            fixture.post.side_effect=lose_progress
         body=CHILD+('\n# Harmless comment.\n' if control=='harmless' else '')
+        if control=='swallow-progress-fault':
+            body=body.replace('import main\n', "import main\noriginal_stream=main.stream_assignment_progress\ndef swallow(*args,**kwargs):\n kwargs['fatal_exceptions']=()\n return original_stream(*args,**kwargs)\nmain.stream_assignment_progress=swallow\n")
         with patch.object(writer,'read_run',return_value=row),patch.dict(os.environ,{'GTFS_PATH':str(local),'GTFS_URL':''}):
             handle=EngineProcess(writer,[sys.executable,'-B','-c',body,str(root),writer.context.run_id,writer.context.stage_id,json.dumps(setup)],env=env,
                 progress=True,output_name='run_output',count_preparer=counts,transit_preparer=transit)
             handle.progress.connection.settimeout(10)
+            if control=='lost-response':
+                send=handle.progress.send
+                def lose_ack(payload):
+                    if 'Assignment iteration' in (writer.state or {}).get('log_tail',''):
+                        raise BrokenPipeError('Synthetic lost acknowledgement during native iteration')
+                    return send(payload)
+                handle.progress.send=lose_ack
             deadline=time.monotonic()+90
             while handle.process.poll() is None:
                 if time.monotonic()>deadline:raise RuntimeError('Native assignment observation deadline exceeded')
                 ready,_,_=select.select([handle.progress.connection],[],[],0.1)
                 if not ready:continue
                 if not handle.progress.connection.recv(1,socket.MSG_PEEK):break
-                handle.progress.serve_one()
+                try:handle.progress.serve_one()
+                except Exception as error:
+                    parent_failure=type(error).__name__
+                    if control not in ('lost-progress','lost-response','swallow-progress-fault'):raise
+                    break
             code=handle.process.wait(timeout=15)
         (output/'child.log').write_text((handle.directory/'engine.log').read_text())
+        if control in ('lost-progress','lost-response','swallow-progress-fault'):
+            assert code!=0 and writer.stopped and parent_failure,'Native interruption did not stop both sides'
+            failure=json.loads((root/'assignment-failure.json').read_text())
+            assert failure=={'error_type':'WorkerStateWriteUnconfirmed','active_project':False},failure
+            assert not (root/'assignment-result.json').exists()
+            assert not (root/'run_output/link_volumes.csv').exists(),'Final assignment outputs survived uncertain iteration'
+            pending=journal.pending(fixture.directory,writer.context.destination)
+            assert len(pending)==(1 if control in ('lost-progress','swallow-progress-fault') else 0),pending
+            if pending:
+                assert 'Assignment iteration' in pending[0]['command']['arguments']['log_tail']
+                (output/'pending-command.json').write_text(json.dumps(pending[0],indent=2)+'\n')
+            report={'control':control,'parent_failure':parent_failure,'child_failure':failure,'child_exit_code':code,
+                    'pending_commands':len(pending),'final_outputs_absent':True,'worker_sha256':hashlib.sha256((WORKER/'main.py').read_bytes()).hexdigest(),
+                    'limits':'Full synthetic native stage failure with mocked transport. Pending command copied for evidence only. No restart/replay, supervisor loss, escaped descendants or scientific acceptance.'}
+            content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/('native-bound-assignment-'+control+'.json')).write_text(content)
+            print(content);return
         if code:raise AssertionError('Native child failed; inspect '+str(output/'child.log'))
         result=json.loads((root/'assignment-result.json').read_text())
         assert isinstance(result['mode_split'],dict) and result['mode_split']['transit_status']=='modeled','Expected modeled transit outcome'

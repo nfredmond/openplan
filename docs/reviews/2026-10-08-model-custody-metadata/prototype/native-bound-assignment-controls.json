@@ -1,5 +1,5 @@
 {
-  "proof_sha256": "38d6fc8dd3762736095d359f0eb3898439848491e1787f648cb5de07d7c07f01",
+  "proof_sha256": "8623309123e057abd3ce18a25e8ba0aa8028c8b4cce62bf101b6486eb1baf9e2",
   "controls": [
     {
       "control": "baseline",
@@ -26,6 +26,28 @@
       "detected": "Expected modeled transit outcome"
     },
     {
+      "control": "lost-progress",
+      "pending_commands": 1,
+      "final_outputs_absent": true,
+      "child_failure": {
+        "error_type": "WorkerStateWriteUnconfirmed",
+        "active_project": false
+      }
+    },
+    {
+      "control": "lost-response",
+      "pending_commands": 0,
+      "final_outputs_absent": true,
+      "child_failure": {
+        "error_type": "WorkerStateWriteUnconfirmed",
+        "active_project": false
+      }
+    },
+    {
+      "control": "swallow-progress-fault",
+      "detected": "Native interruption did not stop both sides"
+    },
+    {
       "control": "restored",
       "converged": true,
       "loaded_links": 1,
@@ -36,6 +58,6 @@
       "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f"
     }
   ],
-  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-bound-assignment-controls-20261008",
-  "limits": "Full synthetic native assignment; mocked parent transports and constructed predecessor inputs. Missing mode choice is a configuration fault control. No native interrupted recovery, larger networks, calibration, cordons, scientific acceptance or dispatcher activation."
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-bound-assignment-failure-controls-20261008",
+  "limits": "Full synthetic native assignment; mocked parent transports and constructed predecessor inputs. Missing mode choice is a configuration fault control. Native stopping tested, but no restart/replay, larger networks, calibration, cordons, scientific acceptance or dispatcher activation."
 }
