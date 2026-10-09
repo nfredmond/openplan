@@ -1,0 +1,189 @@
+{
+  "control": "lost-progress-harmless",
+  "scope_start": {
+    "attempt_id": "0e08b7f1-e40f-48b5-af3e-e508df697247",
+    "command_sha256": "8cdd8b026401d7518b75eb779c15e3538abc929a7942072c5be4b0296e88b724",
+    "run_id": "f3de7b62-a7f2-44bb-9992-d7817c19621a",
+    "schema": "openplan.engine-process.v1",
+    "scope": {
+      "bootstrap_pid": 277467,
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-ac7341b14c0542c8a734cfb197ef1da5.scope",
+      "cgroup_device": 30,
+      "cgroup_inode": 1547498,
+      "invocation_id": "e0a1f692b51042a5885f371c4534bd25",
+      "memory_bytes": 1073741824,
+      "schema": "openplan.engine-scope.v1",
+      "tasks": 128,
+      "unit": "openplan-engine-ac7341b14c0542c8a734cfb197ef1da5.scope"
+    },
+    "scope_unit": "openplan-engine-ac7341b14c0542c8a734cfb197ef1da5.scope",
+    "stage_id": "81d39899-c671-4a51-a8f4-0e35f2543a87"
+  },
+  "scope_empty_observation": {
+    "schema": "openplan.engine-scope.v1",
+    "unit": "openplan-engine-ac7341b14c0542c8a734cfb197ef1da5.scope",
+    "invocation_id": "e0a1f692b51042a5885f371c4534bd25",
+    "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-ac7341b14c0542c8a734cfb197ef1da5.scope",
+    "cgroup_device": 30,
+    "cgroup_inode": 1547498,
+    "bootstrap_pid": 277467,
+    "memory_bytes": 1073741824,
+    "tasks": 128,
+    "observed_scope_empty": true,
+    "scope_result": "success"
+  },
+  "native_http": {
+    "control": "lost-progress-harmless",
+    "database": "openplan_attempt_cli_d077622aba34493f9fd54b3d91790d2a",
+    "run_id": "f3de7b62-a7f2-44bb-9992-d7817c19621a",
+    "stage_id": "81d39899-c671-4a51-a8f4-0e35f2543a87",
+    "native_converged": null,
+    "modeled_transit": null,
+    "replay": {
+      "request_id": "3393051a-5941-4296-95c7-288737d23bbc",
+      "committed_reply_dropped": true,
+      "fresh_process_outcomes": [
+        {
+          "request_id": "3393051a-5941-4296-95c7-288737d23bbc",
+          "outcome": "command_receipt_retained",
+          "model_resumed": false
+        },
+        {
+          "request_id": "3393051a-5941-4296-95c7-288737d23bbc",
+          "outcome": "command_receipt_retained",
+          "model_resumed": false
+        }
+      ],
+      "http_calls_per_recovery": [
+        1,
+        0
+      ],
+      "database_state_unchanged": true,
+      "request_body_sha256": "bfdf7f7d244a47999a04bd98c8ce79214b3892ac6c97ae67f2988290c3fd0dce",
+      "model_resumed": false,
+      "limits": "Real installed SQL receipt replay from a journal backup. Original journal remains pending. No model continuation or supervisor restart."
+    },
+    "final_outputs_absent": true,
+    "registered_artifacts": [
+      "model_assignment_geometry",
+      "model_count_inputs",
+      "model_package_working_copy",
+      "model_project_working_copy",
+      "model_transit_inputs"
+    ],
+    "http_calls": [
+      {
+        "method": "POST",
+        "operation": "/rpc/claim_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "e0046d7695d731eeecb70c38381046300149a1fa53cbe0d86a0ba003a9a88cc2"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "90b34c6888616286fc8ad51516d2d670c846d134b9a779df5868584f4c829e96"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "bcf8713787eb6eeb8212163f0f13cd48303487ce06543971c5871ad0eb5496e1"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "11cc8135fed7f049df555089837221d83e4877b3726f516906720453a61aadac"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "2615cdecbeb648dd782c6c4f581c910a8412a7e5db1da648775b5234f039ca62"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "2d520b0f53239a27c6798d3a0c8577854ed36e8b5a2574bb6a70ec1c389dd468"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "15dd94f235e992ce563a0c73407c4cc2df0174f40e39bb3565dd3122c083375c"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "9fd87af6a025423806eb0a15e9dac9ae2a765d28b30c762ea07c3b3f5e535403"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "c21f3b86082dda58a52af39ab0b1b44be00967c816a9cfcf21c207939c663f77"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "e2928cf6f94948072aacba80981962f2b529e796b246ee153e6e908ad6b074af"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "bfdf7f7d244a47999a04bd98c8ce79214b3892ac6c97ae67f2988290c3fd0dce"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "bfdf7f7d244a47999a04bd98c8ce79214b3892ac6c97ae67f2988290c3fd0dce"
+      }
+    ],
+    "stage_remains_running": true,
+    "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
+    "limits": "Full small native assignment with live isolated PostgREST and installed command schema. Synthetic predecessor inventories directly constructed. Lost-commit replay is recorded when selected. No final publication, model restart, scientific acceptance or normal dispatcher activation."
+  },
+  "source_sha256": {
+    "workers/aequilibrae_worker/model_engine_process.py": "d624864811b0af8eb03b9c1ca3bbaf2970a56932612bc21f35193bfd95877c72",
+    "workers/aequilibrae_worker/model_engine_supervision.py": "85caf0eff4b2408dbf6038ece9fbdce1c644e44c21254b408bd99039c6ab70c3",
+    "workers/aequilibrae_worker/model_engine_bootstrap.py": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a",
+    "docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_native_assignment_http.py": "e4414f203e319accf878ce373af124ccfffb3b60386571d266850ec970394a09"
+  },
+  "limits": "Full small native assignment with production scope and installed isolated SQL. Receipt recovery uses a journal backup and does not resume the model. No cancellation, parent-loss recovery, final publication, scientific acceptance or normal dispatch activation."
+}

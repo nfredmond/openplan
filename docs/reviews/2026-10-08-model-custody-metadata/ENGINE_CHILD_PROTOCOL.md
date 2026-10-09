@@ -219,3 +219,14 @@ This supersedes the preceding experiment's missing startup gate and durable
 identity capture. Parent-loss recovery, verified scope cancellation, hostile
 cgroup migration, production resource policy, live-database scoped integration,
 completed output publication and normal dispatch activation remain open.
+
+## Installed-command scope join, October 8
+
+`prototype/scoped-http-controls.json` now joins the production scope adapter,
+full native synthetic assignment and actual installed SQL through isolated
+PostgREST. It verifies successful assignment and committed-progress reply loss,
+including fresh-process exact receipt recovery, unchanged database state, no
+model resumption and an empty original scope. The six controls detect omitted
+supervision even when native execution and receipt recovery otherwise work.
+This supersedes the preceding missing live-database scope join. Cancellation,
+parent-loss reconciliation, final publication and normal dispatch remain open.

@@ -3044,3 +3044,31 @@ claim is made. Product direction passes with its existing dated reminders.
 Retained receipts remain `execution_ready: false`. Cancellation, parent-loss
 recovery, production policy, completed publication, human/browser acceptance and
 nationwide scientific acceptance are not established by these tests.
+
+## Scoped native assignment with installed commands, October 8
+
+The scoped engine now passes the same full synthetic assignment against actual
+installed claims, ownership reads, artifact registration and progress writes in
+isolated cloned databases. Scope startup records and empty-scope observations
+match unit, invocation, cgroup directory identity and bootstrap PID. Baseline and
+harmless cases converge with modeled transit; the database stage remains running
+because this test does not publish or complete it.
+
+In the combined failure cases, the bridge drops a progress reply after PostgreSQL
+commits it. The native child stops before final assignment outputs, and the writer
+stays stopped. A fresh recovery process replays the original request from the
+journal backup without changing the committed database state. The next recovery
+sends nothing. The original scope is empty after interruption and recovery; this
+observation does not reopen the writer or authorize model continuation.
+
+Six controls pass: baseline, harmless, lost reply, harmless lost reply, omitted
+scope and restored lost reply. The omitted scope still allows the underlying
+native failure and receipt recovery to run, but fails `Live native scope
+supervision missing`. `prototype/scoped-http-controls.json` identifies the six
+owned databases and private evidence. Temporary PostgREST gateways close after
+each case. Source hashes and scope identities are retained in the joined reports.
+
+This closes the preceding separation between scoped execution and installed
+command tests. It does not establish cancellation, parent-loss recovery, final
+output publication, normal dispatch, realistic network performance or scientific
+acceptance. No preview database, holdout or acceptance tolerance changes.
