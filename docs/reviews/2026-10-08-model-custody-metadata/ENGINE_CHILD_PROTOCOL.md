@@ -490,3 +490,35 @@ model dispatch remains inactive, and database abandonment is unchanged.
 
 The earlier descriptor-guard prototype remains historical evidence of the
 owner-loss defect. It is not the implementation now used by `EngineProcess`.
+
+### Whole owner-service loss and native guard follow-up
+
+The [service-loss campaign](prototype/owner-service-loss-controls.json) now
+exercises the implemented owner guard from a disposable systemd service.
+Guard and engine scopes are outside that service. The test pins all three
+cgroups while live, terminates the owner service, and observes guard termination
+and an empty engine scope before checking for absent outputs. A no-loss case
+produces both engine and detached-child outputs while the owner and guard stay
+alive. A harmless source comment passes. A copied-source fault that leaves the
+guard alive after owner loss lets both children write, and the test detects it.
+The restored case passes. All owned services and scopes are observed stopped or
+empty after cleanup. Source hashes bind these results to the implementation.
+This closes the synthetic whole-service boundary left open above; it does not
+establish arbitrary interruption of native solver computation.
+
+The new native guard proof preserves the earlier channel-loss proof unchanged.
+It reuses the same native assignment, installed SQL and fresh read-only recovery
+checks, with a separate guard-specific result. Forced termination can prevent
+Python's exception handler from recording project closure. The new proof checks
+scope emptiness, absent final outputs, unchanged SQL state and command inventory,
+and unchanged retained custody through two fresh inspections. It does not infer
+a graceful close from those facts. A retained working project after a kill still
+requires reconciliation and must not be promoted to a completed model.
+
+The [native guard controls](prototype/native-guard-controls.json) passed baseline,
+harmless and restored interruption cases. Omitting supervisor termination fails
+for the declared missing-loss reason. All three interruption cases observed an
+absent engine scope and absent final outputs, with no native failure record.
+Database stages remain running; the proof does not silently cancel them or
+infer a completed model. The five service cases and four native cases are
+separate evidence boundaries, not a combined nationwide or scientific claim.
