@@ -1,0 +1,55 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    },
+    {
+      "case": "allow-swap",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_explicit_memory_has_zero_swap_and_task_limit"
+    },
+    {
+      "case": "invalid-policy",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_partial_or_invalid_limits_fail"
+    },
+    {
+      "case": "ignore-backend",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_limits_cannot_be_silently_used_for_host_execution"
+    },
+    {
+      "case": "drop-operator-limit",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_operator_selects_container_limits"
+    },
+    {
+      "case": "accept-request-limit",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_request_cannot_choose_executable_or_replace_unrelated_directory"
+    },
+    {
+      "case": "restored",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    }
+  ],
+  "source_sha256": {
+    "runtime.py": "c407043e9063f9d794a1eb7f95231f7795a50d0b003cac9a3fb045e4a8970bf8",
+    "main.py": "7d44d4839a874c4af3bdc42f55fb376ff990bb71fa41c0cb468e4e505fbe47e5"
+  },
+  "limits": [
+    "Command construction and operator/request configuration tests",
+    "Separate live container proof checks effective limits",
+    "No memory exhaustion or daemon lifecycle acceptance"
+  ]
+}

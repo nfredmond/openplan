@@ -91,6 +91,8 @@ def _parse_payload(payload: Any) -> dict[str, Any]:
         "force": False,
         "host_memory_bytes": int(os.environ["ACTIVITYSIM_HOST_MEMORY_BYTES"]) if os.getenv("ACTIVITYSIM_HOST_MEMORY_BYTES") else None,
         "host_tasks": int(os.environ["ACTIVITYSIM_HOST_TASKS"]) if os.getenv("ACTIVITYSIM_HOST_TASKS") else None,
+        "container_memory_bytes": int(os.environ["ACTIVITYSIM_CONTAINER_MEMORY_BYTES"]) if os.getenv("ACTIVITYSIM_CONTAINER_MEMORY_BYTES") else None,
+        "container_tasks": int(os.environ["ACTIVITYSIM_CONTAINER_TASKS"]) if os.getenv("ACTIVITYSIM_CONTAINER_TASKS") else None,
     }
 
 
@@ -110,6 +112,8 @@ def _run_from_payload(payload: dict[str, Any]) -> tuple[dict[str, Any], int]:
         force=payload["force"],
         host_memory_bytes=payload["host_memory_bytes"],
         host_tasks=payload["host_tasks"],
+        container_memory_bytes=payload["container_memory_bytes"],
+        container_tasks=payload["container_tasks"],
     )
     if summary["status"] == "failed":
         return summary, 500
@@ -182,6 +186,8 @@ def parse_args() -> argparse.Namespace:
         default="none",
         help="Optional container network mode. Defaults to 'none'; use 'bridge' when the container must install or fetch dependencies.",
     )
+    parser.add_argument("--container-memory-bytes", type=int, help="Container RAM cap with zero swap; requires --container-tasks")
+    parser.add_argument("--container-tasks", type=int, help="Container process limit; requires --container-memory-bytes")
     parser.add_argument("--host-memory-bytes", type=int, help="Opt in to Linux host supervision with this RAM limit; requires --host-tasks")
     parser.add_argument("--host-tasks", type=int, help="Maximum supervised host tasks; requires --host-memory-bytes")
     parser.add_argument("--run-label", help="Optional label used in the default runtime output directory")
@@ -229,6 +235,8 @@ def main() -> int:
             force=args.force,
             host_memory_bytes=args.host_memory_bytes,
             host_tasks=args.host_tasks,
+            container_memory_bytes=args.container_memory_bytes,
+            container_tasks=args.container_tasks,
         )
     except BundleContractError as exc:
         print(json.dumps({"status": "failed", "error": str(exc)}, indent=2))

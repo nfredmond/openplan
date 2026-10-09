@@ -225,6 +225,15 @@ def resolve_layered_config_dirs(config_dir: Path) -> list[Path]:
     return [stock_path]
 
 
+def _validate_container_limits(memory_bytes: int | None, tasks: int | None) -> None:
+    if (memory_bytes is None) != (tasks is None):
+        raise ValueError("Container limits require both memory and task limits")
+    if memory_bytes is not None:
+        for value in (memory_bytes, tasks):
+            if type(value) is not int or value <= 0:
+                raise ValueError("Container limits must be positive integers")
+
+
 def build_container_command(
     *,
     bundle_dir: Path,
@@ -235,7 +244,10 @@ def build_container_command(
     container_template: str | None = None,
     network_mode: str | None = "none",
     layered_config_dirs: list[Path] | None = None,
+    memory_bytes: int | None = None,
+    tasks: int | None = None,
 ) -> tuple[list[str], dict[str, Any]]:
+    _validate_container_limits(memory_bytes, tasks)
     engine = _resolve_cli_command(engine_command or [DEFAULT_CONTAINER_ENGINE])
     if not engine:
         raise RuntimeError("Container engine executable is not available")
@@ -274,6 +286,8 @@ def build_container_command(
         mounts.append({"source": str(Path(layered_dir).resolve()), "target": target, "read_only": True})
 
     command: list[str] = [*engine, "run", "--rm"]
+    if memory_bytes is not None:
+        command.extend(["--memory", str(memory_bytes), "--memory-swap", str(memory_bytes), "--pids-limit", str(tasks)])
     if network_mode:
         command.extend(["--network", network_mode])
     if hasattr(os, "getuid") and hasattr(os, "getgid"):
@@ -309,6 +323,7 @@ def build_container_command(
         "container_paths": container_mapping,
         "inner_command": inner_command,
         "network_mode": network_mode,
+        "resource_limits": {"memory_bytes": memory_bytes, "memory_plus_swap_bytes": memory_bytes, "tasks": tasks},
     }
 
 
@@ -585,7 +600,12 @@ def run_activitysim_runtime(
     force: bool = False,
     host_memory_bytes: int | None = None,
     host_tasks: int | None = None,
+    container_memory_bytes: int | None = None,
+    container_tasks: int | None = None,
 ) -> dict[str, Any]:
+    _validate_container_limits(container_memory_bytes, container_tasks)
+    if container_memory_bytes is not None and not container_image:
+        raise ValueError("Container limits require a container image")
     if (host_memory_bytes is None) != (host_tasks is None):
         raise ValueError("Host supervision requires both memory and task limits")
     if host_memory_bytes is not None:
@@ -749,11 +769,13 @@ def run_activitysim_runtime(
                                 engine_command=capability["container_engine_command"],
                                 container_template=container_template,
                                 network_mode=capability.get("container_network_mode"),
+                                memory_bytes=container_memory_bytes, tasks=container_tasks,
                                 layered_config_dirs=layered_config_dirs,
                             )
                             runtime_manifest["execution"].update(
                                 {
                                     "container_image": container_execution["image"],
+                                    "container_resource_limits": container_execution["resource_limits"],
                                     "container_engine_command": container_execution["engine_command"],
                                     "container_network_mode": container_execution["network_mode"],
                                     "container_mounts": container_execution["mounts"],
