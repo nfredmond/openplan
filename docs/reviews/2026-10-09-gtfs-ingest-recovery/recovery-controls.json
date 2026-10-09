@@ -1,0 +1,37 @@
+[
+  {
+    "case": "baseline",
+    "expectedFailure": null,
+    "returnCode": 0,
+    "stdout": "BEGIN\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 1\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\nDO\nROLLBACK\n",
+    "stderr": ""
+  },
+  {
+    "case": "harmless_comment",
+    "expectedFailure": null,
+    "returnCode": 0,
+    "stdout": "BEGIN\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 1\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\nDO\nROLLBACK\n",
+    "stderr": ""
+  },
+  {
+    "case": "omit_version_fence",
+    "expectedFailure": "late stage write accepted",
+    "returnCode": 3,
+    "stdout": "BEGIN\nCREATE FUNCTION\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 1\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\n",
+    "stderr": "ERROR:  late stage write accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 9 at RAISE\n"
+  },
+  {
+    "case": "omit_derived_fence",
+    "expectedFailure": "late derived write accepted",
+    "returnCode": 3,
+    "stdout": "BEGIN\nCREATE FUNCTION\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 1\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\n",
+    "stderr": "ERROR:  late derived write accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 14 at RAISE\n"
+  },
+  {
+    "case": "restored",
+    "expectedFailure": null,
+    "returnCode": 0,
+    "stdout": "BEGIN\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 1\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\nDO\nROLLBACK\n",
+    "stderr": ""
+  }
+]

@@ -902,20 +902,9 @@ export async function deleteVersionRows(
 }
 
 /**
- * How long an ingest may sit in a non-terminal state before it is certainly not
- * running any more.
- *
- * DERIVED FROM THE PLATFORM CEILING RATHER THAN CHOSEN. The ingest routes
- * declare `maxDuration = 300`, so no ingest can still be executing five minutes
- * after its last write; a serverless function is killed at that boundary
- * whether or not it finished. Three times that is the margin for clock skew,
- * cold starts and a platform that queued the invocation, and past it "still
- * working" is not a possible explanation — only "died without saying so" is.
- *
- * The cost of setting this too LOW is the one that matters: a live ingest
- * marked `failed` under itself, which would then write its derived rows against
- * a version the reaper had already cleaned. Too high merely leaves an honest
- * `parsing` row on a card for longer.
+ * Existing stale-ingest policy. Age is not proof that a local process stopped.
+ * Cleanup rechecks eligibility and fences subsequent database writes.
+ * Long-running ingestion still needs worker ownership and heartbeats.
  */
 export const GTFS_INGEST_ABANDONED_AFTER_MS = 15 * 60 * 1000;
 
@@ -955,16 +944,18 @@ export async function reapAbandonedGtfsIngests(
   const reaped: string[] = [];
 
   for (const row of rows) {
-    await failGtfsFeedVersion({
-      service,
-      versionId: row.id,
-      feedId: row.feed_id,
-      storagePath: row.storage_path,
-      code: "abandoned",
-      detail:
-        "This ingest stopped responding and was closed by the scheduled sweep. Nothing was stored " +
-        "from it. Bringing the feed in again is safe — it does not affect the feed currently in use.",
+    const result = await service.rpc("reap_gtfs_feed_version", {
+      p_version_id: row.id,
+      p_cutoff: cutoff,
     });
+    if (result.error || typeof result.data !== "boolean") {
+      throw new Error(`Could not close abandoned ingest: ${result.error?.message ?? "invalid cleanup result"}`);
+    }
+    if (!result.data) continue;
+    // The transaction has fenced the version before its private object is removed.
+    if (row.storage_path) {
+      await service.storage.from(GTFS_UPLOADS_BUCKET).remove([row.storage_path]);
+    }
     reaped.push(row.id);
   }
 

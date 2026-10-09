@@ -1,0 +1,32 @@
+[
+  {
+    "case": "baseline",
+    "expectedPass": true,
+    "returnCode": 0
+  },
+  {
+    "case": "harmless_comment",
+    "expectedPass": true,
+    "returnCode": 0
+  },
+  {
+    "case": "ignore_false_receipt",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "wrong_version",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "accept_invalid_shape",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "restored",
+    "expectedPass": true,
+    "returnCode": 0
+  }
+]
