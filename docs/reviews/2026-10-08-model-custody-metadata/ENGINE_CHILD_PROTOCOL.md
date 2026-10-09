@@ -577,3 +577,29 @@ establish authenticated application-route, browser or practitioner acceptance
 for this active native case. It does not validate partial native files or
 provide model continuation. Earlier native and recovery campaign reports remain
 unchanged.
+
+### Owner loss during advancing native computation
+
+The [busy native campaign](prototype/busy-native-owner-loss-controls.json) uses
+AequilibraE 1.6.2 on a synthetic grid with 14,400 nodes, 28,560 links and 2,400
+zones. It runs the actual all-or-nothing assignment with one computation core,
+a 1.5 GiB engine scope limit and no swap. The fixture wraps `one_to_all` only to
+count completed native calls; it does not replace their computations or insert
+an acknowledgement wait. Before termination, two samples show both advancing
+native-call counts and increasing process CPU ticks while completion is absent.
+
+Baseline, harmless and restored cases terminate only the owned supervisor.
+The guard then stops the engine scope, and no completion artifact appears.
+The owner-alive case completes all 2,400 native calls with positive loaded flow.
+A copied-source guard fault that stays alive after owner loss permits native
+assignment completion, and the test detects it. All owned engine and guard
+scopes are observed stopped or empty after cleanup.
+
+This extends interruption evidence beyond a paused progress acknowledgement.
+It is a bounded synthetic native kernel case, separate from the earlier small
+installed-worker and SQL recovery journey. Samples do not identify the exact
+machine instruction executing at termination. They do not validate a planning
+model, partial project reuse, ActivitySim supervision, restart, final publication
+or scientific accuracy. No production solver setting or acceptance tolerance
+changes. The no-loss pilot and full campaign remain in separate private evidence
+directories under `busy-native-owner-loss-20261008a` and `20261008b`.
