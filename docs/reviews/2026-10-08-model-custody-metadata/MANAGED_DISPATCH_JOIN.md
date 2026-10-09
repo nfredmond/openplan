@@ -3121,3 +3121,24 @@ This closes the preceding missing native-solver cancellation test. Fresh-process
 cancellation reconciliation, parent-loss recovery, database/UI cancellation
 semantics, completed output publication, scientific acceptance and normal
 dispatch remain open. The preview database and holdouts are unchanged.
+
+## Read-only inspection after uncertain cancellation, October 8
+
+A fresh CLI now checks retained claim/admission and attempt ownership before
+reading launch, scope and cancellation custody. New scopes retain boot and user
+identity. The reader refuses conflicting identities and malformed records,
+reports another boot as unassessed, and distinguishes absent startup evidence
+from an observed absent scope.
+
+The lost-receipt case retains cancellation intent but no signal receipt. Fresh
+inspection observes that the scope is absent, leaves termination cause
+unconfirmed and preserves the original records. Repeating inspection changes
+nothing and never signals or resumes the engine. This is an observation for
+reconciliation, not a persisted reconciliation decision or database status change.
+
+The full related suite passes 97 tests. Seventeen controls detect unsafe
+substitutions and attempted side effects. Tests use real disposable scopes,
+actual retained SQLite admissions and mocked database transport. Native/installed
+claim inspection, durable parent-loss reconciliation, database/UI decisions and
+normal dispatch remain open. Older records lack boot evidence and are refused
+rather than silently treated as current-host records.

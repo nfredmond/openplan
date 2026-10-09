@@ -28,6 +28,49 @@ class ScopeLimits:
             if type(value) is not int or value<=0:raise ValueError('Scope limits must be positive integers')
 
 
+def current_boot_id():
+    value=Path('/proc/sys/kernel/random/boot_id').read_text().strip()
+    if str(uuid.UUID(value))!=value:raise ValueError('Host boot identity is invalid')
+    return value
+
+
+def inspect_saved_scope(identity):
+    """Observe a saved scope without constructing a launch or signaling capability."""
+    if not isinstance(identity,dict) or identity.get('schema')!='openplan.engine-scope.v1':raise ValueError('Invalid saved scope')
+    unit=identity.get('unit','');group=identity.get('cgroup','')
+    if not re.fullmatch(r'openplan-engine-[0-9a-f]{32}\.scope',unit):raise ValueError('Invalid saved unit')
+    if not re.fullmatch(r'[0-9a-f]{32}',identity.get('invocation_id','')):raise ValueError('Invalid saved invocation')
+    for field in ('cgroup_device','cgroup_inode','bootstrap_pid','memory_bytes','tasks','supervisor_uid'):
+        value=identity.get(field)
+        if type(value) is not int or value<0 or (field!='supervisor_uid' and value==0):raise ValueError('Invalid saved scope identity')
+    if identity['supervisor_uid']!=os.getuid():raise ValueError('Saved scope belongs to another user')
+    prefix=f'/user.slice/user-{os.getuid()}.slice/user@{os.getuid()}.service/'
+    if not group.startswith(prefix) or '..' in Path(group).parts or not group.endswith('/'+unit):raise ValueError('Invalid saved cgroup')
+    boot=identity.get('boot_id')
+    if not isinstance(boot,str) or str(uuid.UUID(boot))!=boot:raise ValueError('Saved boot identity is missing or invalid')
+    if boot!=current_boot_id():return {'outcome':'different_host_boot','scope_has_live_processes':None}
+    controller=shutil.which('systemctl')
+    if not controller:raise SupervisionUnavailable('User systemd is required for scope observation')
+    result=subprocess.run([controller,'--user','show',unit,'-p','LoadState','-p','ActiveState','-p','InvocationID','-p','ControlGroup'],capture_output=True,text=True,timeout=5)
+    if result.returncode:raise SupervisionUnavailable('Saved scope could not be queried')
+    state=dict(line.split('=',1) for line in result.stdout.splitlines() if '=' in line)
+    directory=Path('/sys/fs/cgroup')/group.lstrip('/')
+    if state.get('LoadState')=='not-found' and state.get('ActiveState')=='inactive' and not directory.exists():
+        return {'outcome':'scope_absent_observed','scope_has_live_processes':False}
+    if state.get('InvocationID')!=identity['invocation_id'] or state.get('ControlGroup')!=group:raise ValueError('Saved scope identity differs from current scope')
+    try:descriptor=os.open(directory,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+    except FileNotFoundError:return {'outcome':'scope_observation_unconfirmed','scope_has_live_processes':None}
+    try:
+        info=os.fstat(descriptor)
+        if (info.st_dev,info.st_ino)!=(identity['cgroup_device'],identity['cgroup_inode']):raise ValueError('Saved cgroup directory identity differs')
+        event=os.open('cgroup.events',os.O_RDONLY|os.O_NOFOLLOW,dir_fd=descriptor)
+        with os.fdopen(event) as stream:events=dict(line.split() for line in stream)
+    finally:os.close(descriptor)
+    if events.get('populated') not in ('0','1'):raise ValueError('Scope population is unconfirmed')
+    populated=events['populated']=='1'
+    return {'outcome':'scope_populated' if populated else 'scope_empty_observed','scope_has_live_processes':populated}
+
+
 class OwnedEngineScope:
     """Hold a live startup gate until a caller durably records verified identity."""
     def __init__(self,limits):
@@ -77,7 +120,7 @@ class OwnedEngineScope:
         descriptor=os.open(directory,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
         try:info=os.fstat(descriptor)
         finally:os.close(descriptor)
-        self.identity={'schema':'openplan.engine-scope.v1','unit':self.unit,'invocation_id':state['InvocationID'],
+        self.identity={'schema':'openplan.engine-scope.v1','boot_id':current_boot_id(),'supervisor_uid':os.getuid(),'unit':self.unit,'invocation_id':state['InvocationID'],
                        'cgroup':group,'cgroup_device':info.st_dev,'cgroup_inode':info.st_ino,'bootstrap_pid':pid,
                        'memory_bytes':self.limits.memory_bytes,'tasks':self.limits.tasks}
         return dict(self.identity)

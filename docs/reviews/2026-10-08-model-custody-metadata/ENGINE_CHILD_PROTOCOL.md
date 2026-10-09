@@ -271,3 +271,44 @@ outputs remain absent. The six controls in
 fault and normal-assignment/receipt-replay regressions. This proves forced
 interruption of the small synthetic native case, not graceful checkpointing,
 reusable partial files, restart, UI cancellation or a database terminal decision.
+
+## Fresh-process custody inspection, October 8
+
+New scope startup records include the Linux boot ID and supervisor UID.
+`model_engine_recovery.py` reads a retained claimed admission, derives the attempt
+path from its deployment and identifiers, and verifies the workspace owner,
+launch, startup and optional cancellation records. It opens records through the
+attempt directory without following child symlinks, rejects hard links and
+nonprivate or oversized files, checks stable reads, and retains hashes in its
+output. The configured root remains an administrator-selected trust boundary.
+This is not a signature scheme against the same user or host administrator.
+
+The fresh CLI reports current scope population or absence only after matching
+boot, user, invocation and cgroup directory identity. Another boot is explicitly
+unassessed, and an absent startup record remains unconfirmed. Older scope records
+without boot identity are refused; they are not rewritten with today's identity.
+A missing signal receipt stays missing even if the scope is now absent. The CLI
+leaves termination cause unconfirmed, changes no files or database status, sends
+no signal, launches no model and grants no continuation authority.
+
+From the repository root, with an existing worker Python environment:
+
+```bash
+python3 -B workers/aequilibrae_worker/model_engine_recovery.py \
+  --root "$ATTEMPT_ROOT" --journal "$COMMAND_JOURNAL" \
+  --base-url "$INSTALLATION_URL" --deployment-id "$DEPLOYMENT_ID" \
+  --request-id "$CLAIM_REQUEST_ID"
+```
+
+Use the exact retained claim and installation values. No service-role key is
+required. A live server ownership check remains a separate operation. These
+observations cannot authorize a database terminal decision, new claim or resume.
+
+Fourteen tests exercise actual owned scopes and fresh CLI processes, including
+a lost cancellation receipt. The broader engine suite passes 97 tests. Seventeen
+controls detect bypassed boot, deployment, claim, record, receipt and scope checks.
+Fresh-process audit controls reject signaling or non-systemd subprocess launches.
+See `prototype/scope-recovery-controls.json`. Claim history is supplied through the
+existing real SQLite fixture with mocked database transport. Joining this reader
+to actual native-failure records and installed claims remains necessary, along
+with durable reconciliation decisions, parent-loss handling and UI recovery.

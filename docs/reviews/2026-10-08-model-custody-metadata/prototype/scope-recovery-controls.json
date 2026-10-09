@@ -1,0 +1,94 @@
+{
+  "sources_sha256": {
+    "model_engine_recovery.py": "bf74e150879ed5dd93128e2e5622890f9345b2d87dae9fecc6d95ac80cd9ac6e",
+    "model_engine_supervision.py": "2c64ca55581d772c2c7c654053ea423dc43ecd9082ffa42f292e717ff64e8cce",
+    "model_engine_process.py": "6b883105fcae3108da7cb548c7a00767b3b265be198db347b770312b61625e23",
+    "model_engine_bootstrap.py": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a"
+  },
+  "controls": [
+    {
+      "control": "baseline",
+      "passed": true,
+      "summary": [
+        "Ran 14 tests in 1.627s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "control": "harmless",
+      "passed": true,
+      "summary": [
+        "Ran 14 tests in 1.567s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "control": "ignore-boot",
+      "detected": "Foreign boot queried manager"
+    },
+    {
+      "control": "ignore-deployment",
+      "detected": "ValueError not raised"
+    },
+    {
+      "control": "ignore-claim",
+      "detected": "ValueError not raised"
+    },
+    {
+      "control": "allow-hardlink",
+      "detected": "ValueError not raised"
+    },
+    {
+      "control": "follow-symlink",
+      "detected": "OSError not raised"
+    },
+    {
+      "control": "false-signal",
+      "detected": "ValueError not raised"
+    },
+    {
+      "control": "false-empty",
+      "detected": "ValueError not raised"
+    },
+    {
+      "control": "nonobject-startup",
+      "detected": "AttributeError"
+    },
+    {
+      "control": "nonobject-cancellation",
+      "detected": "AttributeError"
+    },
+    {
+      "control": "ignore-current-identity",
+      "detected": "ValueError not raised"
+    },
+    {
+      "control": "ignore-directory",
+      "detected": "ValueError not raised"
+    },
+    {
+      "control": "missing-startup-as-absent",
+      "detected": "scope_startup_unconfirmed"
+    },
+    {
+      "control": "attempt-signal",
+      "detected": "Recovery attempted a side effect"
+    },
+    {
+      "control": "attempt-launch",
+      "detected": "Recovery attempted model launch"
+    },
+    {
+      "control": "restored",
+      "passed": true,
+      "summary": [
+        "Ran 14 tests in 1.645s",
+        "",
+        "OK"
+      ]
+    }
+  ],
+  "limits": "Real owned scopes and records, fresh-process read-only CLI and audit controls. Mocked database claim history; no live ownership check, persistent reconciliation write, model resume, parent-loss recovery workflow or UI integration."
+}
