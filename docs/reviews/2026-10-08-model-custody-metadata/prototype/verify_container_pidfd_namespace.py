@@ -23,6 +23,14 @@ Path('/work/started').touch()
 while not Path('/work/release').exists():time.sleep(.03)
 """
 
+WORK_COMPLETION = 'import subprocess,sys;from pathlib import Path;subprocess.Popen([sys.executable,\'-c\',"import time;from pathlib import Path;Path(\'/work/child-heartbeat\').touch()\\nwhile not Path(\'/work/release\').exists():time.sleep(.03)\\nPath(\'/work/child-completed\').touch()"],start_new_session=True);Path(\'/work/parent-completed\').touch()'
+
+
+def container_logs(container):
+    result = subprocess.run(['docker', '--host', 'unix:///run/docker.sock', 'logs', container],
+                            capture_output=True, text=True, check=True)
+    return result.stdout + result.stderr
+
 
 def case(root, name, victim, omit_watch=False, harmless=False):
     root.mkdir(mode=0o700)
@@ -49,7 +57,7 @@ def case(root, name, victim, omit_watch=False, harmless=False):
             '--mount', f'type=bind,src={script},dst=/bootstrap.py,readonly',
             '--mount', f'type=bind,src={control},dst=/control,readonly',
             '--mount', f'type=bind,src={output},dst=/work', '--entrypoint', 'python',
-            IMAGE, '-B', '/bootstrap.py', 'python', '-c', WORK).strip()
+            IMAGE, '-B', '/bootstrap.py', 'python', '-c', WORK_COMPLETION if victim == 3 else WORK).strip()
         docker('--host', 'unix:///run/docker.sock', 'start', container)
         connection, _ = listener.accept()
         with connection:
@@ -71,26 +79,45 @@ def case(root, name, victim, omit_watch=False, harmless=False):
             if victim == -1:
                 signal.pidfd_send_signal(descriptors[0], signal.SIGKILL)
                 processes[0].wait(timeout=3)
-            connection.sendmsg([b'G'], [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array('i', descriptors))])
+            send_descriptors = descriptors[:1] if victim == 5 else descriptors
+            invalid = os.open('/dev/null', os.O_RDONLY) if victim == 4 else None
+            try:
+                if invalid is not None:
+                    send_descriptors = [invalid, descriptors[1]]
+                connection.sendmsg([b'G'], [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array('i', send_descriptors))])
+            finally:
+                if invalid is not None:
+                    os.close(invalid)
         deadline = time.monotonic() + 8
-        while victim != -1 and not (output / 'child-heartbeat').exists():
+        while victim not in (-1, 4, 5) and not (output / 'child-heartbeat').exists():
             if time.monotonic() > deadline:
-                raise AssertionError(docker('--host', 'unix:///run/docker.sock', 'logs', container))
+                raise AssertionError('Workload did not reach child readiness: ' + container_logs(container))
             time.sleep(.03)
         if victim in (0, 1):
             signal.pidfd_send_signal(descriptors[victim], signal.SIGKILL)
             processes[victim].wait(timeout=3)
         elif victim == 2:
             docker('--host', 'unix:///run/docker.sock', 'kill', container)
+        if victim == 3:
+            time.sleep(.15)
+            observed = json.loads(docker('--host', 'unix:///run/docker.sock', 'inspect', container))[0]
+            assert observed['State']['Running'], 'Detached child killed before release'
+            assert (output / 'parent-completed').exists() and not (output / 'child-completed').exists()
+            (output / 'release').touch()
         deadline = time.monotonic() + 3
         while True:
             observed = json.loads(docker('--host', 'unix:///run/docker.sock', 'inspect', container))[0]
             if not observed['State']['Running'] or time.monotonic() > deadline:
                 break
             time.sleep(.05)
-        if victim == -1:
-            assert observed['State']['Status'] == 'exited' and observed['State']['ExitCode'] == 1
+        if victim in (-1, 4, 5):
+            assert observed['State']['Status'] == 'exited' and observed['State']['ExitCode'] == 1, 'Startup rejection did not exit with refusal'
             assert not (output / 'started').exists() and not (output / 'child-heartbeat').exists()
+            reason = {-1: 'Owner or controller already exited', 4: 'Non-process descriptor refused', 5: 'Two original live process descriptors required'}[victim]
+            assert reason in container_logs(container), 'Wrong startup refusal reason'
+        elif victim == 3:
+            assert observed['State']['Status'] == 'exited' and observed['State']['Pid'] == 0
+            assert observed['State']['ExitCode'] == 0 and (output / 'child-completed').exists()
         elif omit_watch:
             assert observed['State']['Running'], 'Broken watchdog unexpectedly stopped workload'
             before = (output / 'child-heartbeat').read_text()
@@ -102,7 +129,7 @@ def case(root, name, victim, omit_watch=False, harmless=False):
             before = (output / 'child-heartbeat').read_bytes()
             time.sleep(.1)
             assert (output / 'child-heartbeat').read_bytes() == before
-        return {'case': name, 'lost_process': {-1: 'owner-before-start', 0: 'owner', 1: 'controller', 2: 'bootstrap'}[victim],
+        return {'case': name, 'lost_process': {-1: 'owner-before-start', 0: 'owner', 1: 'controller', 2: 'bootstrap', 3: 'none', 4: 'invalid-descriptor', 5: 'missing-descriptor'}[victim],
                 'fault_omitted_watch': omit_watch, 'container_stopped': not observed['State']['Running'],
                 'expected_behavior_observed': True, 'bootstrap_peer_verified': True,
                 'unrelated_peer_refused': True, 'exit_code': observed['State']['ExitCode'],
@@ -128,7 +155,10 @@ if __name__ == '__main__':
     results = []
     for name, victim, broken, harmless in [('owner-loss',0,False,False), ('controller-loss',1,False,False),
         ('owner-before-start',-1,False,False), ('bootstrap-loss',2,False,False),
+        ('detached-completion',3,False,False), ('invalid-descriptor',4,False,False), ('missing-descriptor',5,False,False),
         ('harmless',0,False,True), ('omitted-watch',0,True,False), ('restored',0,False,False)]:
+        if os.environ.get('OPENPLAN_PROOF_CASE') and name != os.environ['OPENPLAN_PROOF_CASE']:
+            continue
         result = case(root / name, name, victim, broken, harmless)
         results.append(result)
         (root / name / 'result.json').write_text(json.dumps(result, indent=2) + '\n')

@@ -30,12 +30,23 @@ def run():
         raise ValueError('Owner or controller already exited')
     child = subprocess.Popen(sys.argv[1:], close_fds=True)
     channel.close()
-    while child.poll() is None:
+    command_code = None
+    while True:
         if poller.poll(20):
             # Exiting PID 1 makes the kernel terminate every remaining process
             # in this private namespace, including detached descendants.
             os._exit(125)
-    return child.returncode
+        try:
+            exited, status = os.waitpid(-1, os.WNOHANG)
+        except ChildProcessError:
+            if command_code is None:
+                raise RuntimeError('Original command exit status was not observed')
+            return command_code if command_code >= 0 else 128 - command_code
+        if exited == child.pid:
+            command_code = os.waitstatus_to_exitcode(status)
+            child.returncode = command_code
+        # PID 1 adopts detached descendants. Continue observing the owner and
+        # reaping until the kernel confirms no child processes remain.
 
 
 if __name__ == '__main__':

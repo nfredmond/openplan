@@ -321,3 +321,44 @@ retained immutable creation plan and a live owner/controller, retain the startup
 and exit records, and integrate the database attempt. Malformed descriptor,
 normal completion, detached-child completion and native ActivitySim tests remain
 required before connecting this prototype to normal execution.
+
+
+## Detached completion and descriptor refusal correction
+
+A live normal-completion check exposed a defect in the experimental bootstrap.
+The original command spawned a detached child and exited. The old bootstrap
+then exited, causing the kernel to terminate that child before its readiness or
+completion marker. The parent-completed marker existed. This reproduced failure
+is retained under `~/.local/state/openplan/cb-1008a/`; it was a prototype defect,
+not a regression in the unmodified normal execution path.
+
+The bootstrap now reaps all children, including adopted detached descendants,
+while continuing to observe both original process descriptors. It returns only
+when the kernel reports no children remain and the original command's exit
+status has been observed. In the live check, the container remains running after
+the original command exits. The proof explicitly releases the detached child;
+the child writes its completion marker, and only then does the container exit
+with status zero. This demonstrates waiting for this process tree, not model
+output correctness or every application-specific child failure policy.
+
+Ten live cases pass with restored source: owner loss, controller loss, owner
+loss before startup, bootstrap loss, detached completion, a non-process
+descriptor, a missing descriptor, harmless source, deliberately omitted watchdog
+and restored behavior. Invalid or missing descriptors refuse before workload
+markers appear, with their specific refusal messages. A proof-helper defect
+initially omitted Docker's stderr when checking those messages; the helper now
+captures both streams. The corrected checks pass.
+
+Four source faults fail for the intended reason: early completion, ignored dead
+owner, ignored descriptor kind and ignored descriptor count. Harmless and
+restored campaigns pass. Each campaign uses disposable containers; all are
+removed after its checks. Reports are `prototype/container-completion.json` and
+`prototype/container-completion-controls.json`. The new control runner is
+`prototype/verify_container_completion_controls.py`. Private control files and
+logs are retained at `~/.local/state/openplan/completion-controls-20261008b/`.
+
+These tests retain the existing synthetic-work and local Linux/systemd boundary.
+They do not prove native ActivitySim, record durable production exit receipts or
+connect the database attempt. A pre-start liveness check also does not make a
+Docker start request and a host process exit one atomic operation; continued
+observation and termination are still necessary after command release.
