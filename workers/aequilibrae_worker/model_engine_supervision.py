@@ -91,12 +91,12 @@ class OwnedEngineScope:
             self.owner_guard.require_alive()
             binding=['--property=BindsTo='+self.owner_guard.unit,'--property=After='+self.owner_guard.unit,'--property=KillSignal=SIGKILL']
         return [self.runner,'--user','--scope','--quiet','--expand-environment=no','--unit='+self.unit,
-                '--property=MemoryMax='+str(self.limits.memory_bytes),'--property=TasksMax='+str(self.limits.tasks),*binding,'--',
+                '--property=MemoryMax='+str(self.limits.memory_bytes),'--property=MemorySwapMax=0','--property=TasksMax='+str(self.limits.tasks),*binding,'--',
                 sys.executable,'-B',str(Path(__file__).with_name('model_engine_bootstrap.py')),str(self.child.fileno()),*argv]
 
     def state(self):
         result=subprocess.run([self.controller,'--user','show',self.unit,'-p','LoadState','-p','ActiveState','-p','InvocationID',
-                               '-p','ControlGroup','-p','MemoryMax','-p','TasksMax','-p','Result','-p','BindsTo','-p','After','-p','KillSignal'],capture_output=True,text=True,timeout=5)
+                               '-p','ControlGroup','-p','MemoryMax','-p','MemorySwapMax','-p','TasksMax','-p','Result','-p','BindsTo','-p','After','-p','KillSignal'],capture_output=True,text=True,timeout=5)
         if result.returncode:raise SupervisionUnavailable('Owned user scope could not be queried')
         return dict(line.split('=',1) for line in result.stdout.splitlines() if '=' in line)
 
@@ -119,7 +119,7 @@ class OwnedEngineScope:
             raise ValueError('Scope cgroup identity differs')
         if ready['cgroup']!='0::'+group+'\n' or Path(f'/proc/{pid}/cgroup').read_text()!=ready['cgroup']:
             raise ValueError('Bootstrap is outside the owned scope')
-        if state.get('MemoryMax')!=str(self.limits.memory_bytes) or state.get('TasksMax')!=str(self.limits.tasks):
+        if state.get('MemoryMax')!=str(self.limits.memory_bytes) or state.get('MemorySwapMax')!='0' or state.get('TasksMax')!=str(self.limits.tasks):
             raise ValueError('Scope resource policy differs')
         if self.owner_guard is not None:
             self.owner_guard.require_alive()

@@ -113,6 +113,22 @@ Path('started').write_text(receipt['scope']['invocation_id'])
             with self.assertRaisesRegex(ValueError,'scope identity changed'):handle.confirm_exit()
         self.assertTrue(self.writer.stopped);self.assertFalse((handle.directory/'observed-exit.json').exists())
 
+    def test_live_scope_disables_swap(self):
+        handle=self.start("import time;time.sleep(.5)")
+        self.assertEqual(handle.scope.state()['MemorySwapMax'],'0')
+        self.finish(handle)
+
+    def test_unlimited_swap_refuses_engine_before_authorization(self):
+        self.prepared()
+        original=OwnedEngineScope.state
+        def wrong_policy(scope):
+            return {**original(scope),'MemorySwapMax':'infinity'}
+        with patch.object(OwnedEngineScope,'state',wrong_policy):
+            with self.assertRaisesRegex(ValueError,'resource policy differs'):
+                engine.EngineProcess(self.writer,[sys.executable,'-B','-c',"from pathlib import Path;Path('forbidden-swap-engine').touch()"],env=dict(os.environ),scope_limits=ScopeLimits(128*1024*1024,16))
+        self.assertFalse((self.writer.files.path/'forbidden-swap-engine').exists())
+        self.assertTrue(self.writer.stopped)
+
     def test_owner_death_stops_independent_guard(self):
         with tempfile.TemporaryDirectory() as root:
             record=Path(root)/'guard.json'

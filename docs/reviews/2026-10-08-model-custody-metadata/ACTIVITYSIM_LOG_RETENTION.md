@@ -46,3 +46,19 @@ Managed dispatch, recovery authorization, real ActivitySim execution under owner
 loss, independently validated outputs for every published use, and practitioner
 acceptance remain unfinished. This change alters no solver, coefficients,
 observations, acceptance thresholds, or scientific claim tiers.
+
+## Host supervision prerequisite: zero swap
+
+Reviewing the shared supervisor found that engine scopes set RAM and task limits
+but omitted a swap limit. The owner guard already requested zero swap. Engine
+scopes now request `MemorySwapMax=0`, query that property, and refuse execution
+before authorization when it differs. This prerequisite does not connect the
+supervisor to ActivitySim or extend its control to daemon-owned containers.
+
+All 13 supervision tests passed with live Linux user scopes enabled. New tests
+observe zero swap on a live scope and refuse an injected unlimited-swap response
+before command authorization. `prototype/verify_scope_swap_controls.py` records
+harmless and restored passes and detects two faults: unlimited swap requested,
+and policy verification bypassed. The results and source hash are retained in
+`prototype/scope-swap-controls.json`. These checks use small synthetic commands;
+they do not exhaust memory or establish native-model or scientific acceptance.
