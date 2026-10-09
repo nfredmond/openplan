@@ -19,6 +19,7 @@ cases=[('baseline',None,None),('harmless',None,None),
 ('missing-startup-as-absent','test_missing_startup_record_does_not_infer_execution','scope_startup_unconfirmed'),
 ('attempt-signal','test_fresh_process_observes_live_scope_without_signaling','Recovery attempted a side effect'),
 ('attempt-launch','test_fresh_process_observes_live_scope_without_signaling','Recovery attempted model launch'),
+('attempt-manager-mutation','test_fresh_process_observes_live_scope_without_signaling','Recovery attempted manager mutation'),
 ('restored',None,None)]
 for case,test,expected in cases:
     with tempfile.TemporaryDirectory(prefix='openplan-recovery-control-') as temporary:
@@ -38,6 +39,7 @@ for case,test,expected in cases:
           'ignore-current-identity':('model_engine_supervision.py',"if state.get('InvocationID')!=identity['invocation_id'] or state.get('ControlGroup')!=group:","if False:"),
           'ignore-directory':('model_engine_supervision.py',"if (info.st_dev,info.st_ino)!=(identity['cgroup_device'],identity['cgroup_inode']):","if False:"),
           'attempt-signal':('model_engine_supervision.py',"    controller=shutil.which('systemctl')","    os.kill(os.getpid(),0)\n    controller=shutil.which('systemctl')"),
+          'attempt-manager-mutation':('model_engine_supervision.py',"[controller,'--user','show',unit","[controller,'--user','stop',unit"),
           'attempt-launch':('model_engine_supervision.py',"    controller=shutil.which('systemctl')","    subprocess.run([sys.executable,'-c','pass'],check=True)\n    controller=shutil.which('systemctl')")}
         if case in changes:
             name,old,new=changes[case];assert candidate[name].count(old)==1,(case,'Mutation anchor differs');candidate[name]=candidate[name].replace(old,new)

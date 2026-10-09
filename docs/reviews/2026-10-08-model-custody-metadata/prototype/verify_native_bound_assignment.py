@@ -10,6 +10,7 @@ from aequilibrae import Project
 from shapely.geometry import Point,LineString
 from model_engine_scope import project_scope
 from model_engine_process import EngineProcess,EngineStillRunning
+from model_engine_supervision import ScopeStillPopulated
 import model_project_inputs,model_package_inputs,model_attempt_writer as managed
 import model_command_journal as journal
 from test_project_working_copy import ProjectWorkingCopyTests
@@ -109,7 +110,7 @@ def main():
                 def cancel_before_ack(payload):
                     if 'Assignment iteration' in (writer.state or {}).get('log_tail',''):
                         fixture.before_native_cancel()
-                        handle.cancel()
+                        fixture.cancel_engine(handle)
                         raise NativeCancellationRequested('Owned native iteration cancellation')
                     return send(payload)
                 handle.progress.send=cancel_before_ack
@@ -130,16 +131,25 @@ def main():
             assert code!=0 and writer.stopped and parent_failure=='NativeCancellationRequested','Native cancellation did not stop engine'
             assert not (root/'assignment-result.json').exists() and not (root/'run_output/link_volumes.csv').exists(),'Native cancellation published final outputs'
             deadline=time.monotonic()+5
+            receipt_lost=getattr(fixture,'cancel_receipt_loss',False)
+            if receipt_lost:
+                assert handle.cancellation_requested and handle.cancellation is None,'Native cancellation receipt loss was not preserved'
+                cancelled=None
             while True:
-                try:cancelled=handle.confirm_cancelled();break
-                except EngineStillRunning:
+                try:
+                    if receipt_lost:handle.scope.require_empty()
+                    else:cancelled=handle.confirm_cancelled()
+                    break
+                except (EngineStillRunning,ScopeStillPopulated):
                     if time.monotonic()>deadline:raise
                     time.sleep(.02)
-            assert cancelled['termination_observed'] and cancelled['execution_ready'] is False
+            if cancelled is not None:assert cancelled['termination_observed'] and cancelled['execution_ready'] is False
             assert not journal.pending(fixture.directory,writer.context.destination)
+            inspection=fixture.inspect_native_cancel(handle)
             database=fixture.after_native_cancel()
+            assert not (root/'assignment-result.json').exists() and not (root/'run_output/link_volumes.csv').exists()
             report={'control':'cancel-progress','live_parent_transport':getattr(fixture,'live_transport',False),
-                    'child_exit_code':code,'cancellation':cancelled,'database_observation':database,'final_outputs_absent':True,
+                    'child_exit_code':code,'cancellation':cancelled,'cancellation_receipt_lost':receipt_lost,'engine_inspection':inspection,'database_observation':database,'final_outputs_absent':True,
                     'worker_sha256':hashlib.sha256((WORKER/'main.py').read_bytes()).hexdigest(),
                     'limits':'Forced native cancellation at a confirmed iteration before child acknowledgement. Partial files are not authorized for reuse. No database cancellation decision, recovery, UI workflow or scientific acceptance.'}
             content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/'native-bound-assignment-cancel-progress.json').write_text(content)

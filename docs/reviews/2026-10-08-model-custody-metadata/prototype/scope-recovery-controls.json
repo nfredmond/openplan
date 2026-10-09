@@ -10,7 +10,7 @@
       "control": "baseline",
       "passed": true,
       "summary": [
-        "Ran 14 tests in 1.627s",
+        "Ran 14 tests in 1.659s",
         "",
         "OK"
       ]
@@ -19,7 +19,7 @@
       "control": "harmless",
       "passed": true,
       "summary": [
-        "Ran 14 tests in 1.567s",
+        "Ran 14 tests in 1.593s",
         "",
         "OK"
       ]
@@ -81,10 +81,14 @@
       "detected": "Recovery attempted model launch"
     },
     {
+      "control": "attempt-manager-mutation",
+      "detected": "Recovery attempted manager mutation"
+    },
+    {
       "control": "restored",
       "passed": true,
       "summary": [
-        "Ran 14 tests in 1.645s",
+        "Ran 14 tests in 1.588s",
         "",
         "OK"
       ]

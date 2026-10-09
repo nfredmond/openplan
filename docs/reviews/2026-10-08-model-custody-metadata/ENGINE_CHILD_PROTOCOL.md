@@ -312,3 +312,16 @@ See `prototype/scope-recovery-controls.json`. Claim history is supplied through 
 existing real SQLite fixture with mocked database transport. Joining this reader
 to actual native-failure records and installed claims remains necessary, along
 with durable reconciliation decisions, parent-loss handling and UI recovery.
+
+## Native cancellation inspection join, October 8
+
+The inspector passes against actual native cancellation files and an installed
+claim, both with a confirmed signal receipt and with that receipt deliberately
+lost after signaling. Repeated fresh inspections preserve records, command
+inventory and database state and make no database transport calls. They retain
+scope absence as an observation while leaving the termination cause unconfirmed.
+Five native controls pass in `prototype/native-inspection-controls.json`.
+The inspection audit now permits only `systemctl --user show`, and an attempted
+manager mutation is detected within 18 inspection controls. This closes the
+preceding native-record join; it does not persist a reconciliation decision or
+restore execution authority.

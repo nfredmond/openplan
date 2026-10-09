@@ -3142,3 +3142,31 @@ actual retained SQLite admissions and mocked database transport. Native/installe
 claim inspection, durable parent-loss reconciliation, database/UI decisions and
 normal dispatch remain open. Older records lack boot evidence and are refused
 rather than silently treated as current-host records.
+
+## Fresh inspection of native cancellation custody, October 8
+
+The fresh-process inspector now reads the actual native assignment's installed
+claim, SQLite admission, workspace marker and scope/cancellation records. The
+combined test deliberately loses the local signal receipt after the kernel signal
+write. The native child terminates and the scope empties, but the missing receipt
+remains missing. Two fresh inspections report scope absence with an unconfirmed
+termination cause and no continuation authority.
+
+Inspection preserves every retained engine JSON record and the full command
+inventory. It makes no HTTP calls, changes no installed database rows and leaves
+final assignment outputs absent. No service-role key is supplied to the inspector.
+The confirmed-cancellation case separately verifies that the reader recognizes
+both retained signal and observed-termination records without rewriting them.
+
+Five native controls pass: lost receipt, harmless lost receipt, omitted receipt
+loss, restored lost receipt and confirmed cancellation. Omitting receipt loss
+fails `Native cancellation receipt loss was not preserved`. The source hashes,
+private evidence and five owned database identities are retained in
+`prototype/native-inspection-controls.json`. The independent inspection suite
+now has 18 passing controls, including an attempted mutating systemd command that
+the fresh-process audit rejects before execution.
+
+This closes the missing native/installed-claim inspection join. It remains a
+read-only observation, not a durable reconciliation decision, recovered writer,
+database cancellation decision, restart or parent-loss workflow. Model restart,
+UI recovery, output publication and scientific acceptance remain open.

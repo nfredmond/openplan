@@ -13,6 +13,7 @@ from pathlib import Path
 def audit(event,args):
  if event in ('os.kill','os.killpg','socket.connect'):raise RuntimeError('Recovery attempted a side effect')
  if event=='subprocess.Popen' and Path(args[0]).name!='systemctl':raise RuntimeError('Recovery attempted model launch')
+ if event=='subprocess.Popen' and args[1][1:3]!=['--user','show']:raise RuntimeError('Recovery attempted manager mutation')
 sys.addaudithook(audit)
 sys.argv=['model_engine_recovery',*sys.argv[1:]]
 runpy.run_module('model_engine_recovery',run_name='__main__')
