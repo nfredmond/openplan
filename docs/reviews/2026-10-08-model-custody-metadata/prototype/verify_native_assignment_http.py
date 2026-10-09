@@ -15,7 +15,7 @@ if source['container']!='supabase_db_openplan-restore-target-2026091050' or not 
 output=Path(os.environ['OPENPLAN_NATIVE_ASSIGNMENT_HTTP_OUTPUT']).absolute()
 output.mkdir(mode=0o700,parents=True,exist_ok=False)
 control=os.environ.get('OPENPLAN_NATIVE_ASSIGNMENT_HTTP_CONTROL','baseline')
-if control not in ('baseline','harmless','omit-geometry-registration','lost-progress','lost-progress-harmless','omit-disconnect','cancel-progress','cancel-progress-harmless','omit-cancellation','cancel-receipt-loss','cancel-receipt-loss-harmless','omit-receipt-loss'):raise ValueError('Unknown native HTTP control')
+if control not in ('baseline','harmless','omit-geometry-registration','lost-progress','lost-progress-harmless','omit-disconnect','cancel-progress','cancel-progress-harmless','omit-cancellation','cancel-receipt-loss','cancel-receipt-loss-harmless','omit-receipt-loss','parent-loss','parent-loss-harmless','omit-parent-loss','swallow-parent-loss'):raise ValueError('Unknown native HTTP control')
 def sql(database,statement):
     result=subprocess.run(['docker','exec','-i',source['container'],'psql','-X','-qAt','-U','postgres','-d',database,'-v','ON_ERROR_STOP=1'],input=statement,text=True,capture_output=True,timeout=30)
     if result.returncode:raise RuntimeError(result.stderr)
@@ -64,6 +64,10 @@ with gateway('public',database=database) as connection:
         cancel_on_iteration=control in ('cancel-progress','cancel-progress-harmless','omit-cancellation','cancel-receipt-loss','cancel-receipt-loss-harmless','omit-receipt-loss')
         cancel_receipt_loss=control in ('cancel-receipt-loss','cancel-receipt-loss-harmless','omit-receipt-loss')
         omit_cancellation=control=='omit-cancellation'
+        @staticmethod
+        def external_config():
+            return {'journal':str(output/'journal'),'run_id':run,'stage_id':stage,'workspace_id':workspace,
+                    'base_url':base,'deployment_id':database},key
         def cancel_engine(self,handle):
             if not self.cancel_receipt_loss or control=='omit-receipt-loss':return handle.cancel()
             import model_engine_process as engine
@@ -180,7 +184,7 @@ with gateway('public',database=database) as connection:
         artifacts=json.loads(sql(database,f"SELECT coalesce(json_agg(artifact_type ORDER BY artifact_type),'[]') FROM public.model_run_artifacts WHERE run_id='{run}';"))
         assert set(artifacts)=={'model_project_working_copy','model_package_working_copy','model_count_inputs','model_transit_inputs','model_assignment_geometry'},'Installed input registration differs'
         assert all(call['status']==200 for call in calls),calls
-        report={'control':control,'database':database,'run_id':run,'stage_id':stage,'native_converged':result.get('convergence',{}).get('converged'),'modeled_transit':result.get('mode_split',{}).get('transit_status'),'replay':result.get('replay'),'final_outputs_absent':result.get('final_outputs_absent'),'cancellation':result.get('cancellation'),'cancellation_receipt_lost':result.get('cancellation_receipt_lost'),'engine_inspection':result.get('engine_inspection'),'database_observation':result.get('database_observation'),
+        report={'control':control,'database':database,'run_id':run,'stage_id':stage,'native_converged':result.get('convergence',{}).get('converged'),'modeled_transit':result.get('mode_split',{}).get('transit_status'),'replay':result.get('replay'),'final_outputs_absent':result.get('final_outputs_absent'),'cancellation':result.get('cancellation'),'cancellation_receipt_lost':result.get('cancellation_receipt_lost'),'engine_inspection':result.get('engine_inspection'),'parent_loss':result.get('parent_loss'),'database_observation':result.get('database_observation'),
                 'registered_artifacts':artifacts,'http_calls':calls,'stage_remains_running':True,'worker_sha256':result['worker_sha256'],
                 'limits':'Full small native assignment with live isolated PostgREST and installed command schema. Synthetic predecessor inventories directly constructed. Lost-commit replay is recorded when selected. No final publication, model restart, scientific acceptance or normal dispatcher activation.'}
         content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(native.ROOT/('native-assignment-http-'+control+'.json')).write_text(content);print(content)

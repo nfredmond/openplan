@@ -1,0 +1,189 @@
+{
+  "control": "parent-loss-harmless",
+  "native_http": {
+    "control": "parent-loss-harmless",
+    "database": "openplan_attempt_cli_9f234866ec5e49bca7bb9f962dba2c06",
+    "run_id": "a4613d11-d941-40b4-9235-4f64de09e0c2",
+    "stage_id": "66373f4b-6675-48aa-83c7-80accd22e149",
+    "native_converged": null,
+    "modeled_transit": null,
+    "replay": null,
+    "final_outputs_absent": true,
+    "cancellation": null,
+    "cancellation_receipt_lost": null,
+    "engine_inspection": null,
+    "parent_loss": {
+      "supervisor_exit_code": -9,
+      "scope_observation": {
+        "outcome": "scope_absent_observed",
+        "scope_has_live_processes": false
+      },
+      "native_failure": {
+        "error_type": "WorkerStateWriteUnconfirmed",
+        "active_project": false
+      },
+      "fresh_inspections": [
+        {
+          "attempt_id": "f0d4c3f8-29fa-4d80-b331-6ee5140730dd",
+          "cancellation_observed": false,
+          "cancellation_requested": false,
+          "cancellation_signal_written": false,
+          "continuation_authorized": false,
+          "database_status_changed": false,
+          "model_resumed": false,
+          "outcome": "scope_absent_observed",
+          "record_sha256": {
+            "attempt_owner.json": "eb4151bc2d16f5a72ae1ebccdcd1b7009618736da633d5b59f38059dff365933",
+            "launch-reserved.json": "de17e0e7a3d741d2521b11985f9858a79931d89f7a0e221fd905dd0923508c23",
+            "scope-started.json": "59b7d07fa2c77bdadd61118f26d506c6dbdff1156a00f3d10ce3dfb5546fc550"
+          },
+          "run_id": "a4613d11-d941-40b4-9235-4f64de09e0c2",
+          "scope_has_live_processes": false,
+          "server_ownership_checked": false,
+          "signal_sent": false,
+          "stage_id": "66373f4b-6675-48aa-83c7-80accd22e149",
+          "termination_cause": "unconfirmed"
+        },
+        {
+          "attempt_id": "f0d4c3f8-29fa-4d80-b331-6ee5140730dd",
+          "cancellation_observed": false,
+          "cancellation_requested": false,
+          "cancellation_signal_written": false,
+          "continuation_authorized": false,
+          "database_status_changed": false,
+          "model_resumed": false,
+          "outcome": "scope_absent_observed",
+          "record_sha256": {
+            "attempt_owner.json": "eb4151bc2d16f5a72ae1ebccdcd1b7009618736da633d5b59f38059dff365933",
+            "launch-reserved.json": "de17e0e7a3d741d2521b11985f9858a79931d89f7a0e221fd905dd0923508c23",
+            "scope-started.json": "59b7d07fa2c77bdadd61118f26d506c6dbdff1156a00f3d10ce3dfb5546fc550"
+          },
+          "run_id": "a4613d11-d941-40b4-9235-4f64de09e0c2",
+          "scope_has_live_processes": false,
+          "server_ownership_checked": false,
+          "signal_sent": false,
+          "stage_id": "66373f4b-6675-48aa-83c7-80accd22e149",
+          "termination_cause": "unconfirmed"
+        }
+      ],
+      "records_unchanged": true,
+      "command_inventory_unchanged": true,
+      "database_state_unchanged": true,
+      "final_outputs_absent": true
+    },
+    "database_observation": null,
+    "registered_artifacts": [
+      "model_assignment_geometry",
+      "model_count_inputs",
+      "model_package_working_copy",
+      "model_project_working_copy",
+      "model_transit_inputs"
+    ],
+    "http_calls": [
+      {
+        "method": "POST",
+        "operation": "/rpc/claim_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "67c5e19d998ed90a88983372ffa0ffa5557fb53f3b3b4b5bd276ccb5ba8aa899"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "6c5fc04c2a0b0057a3df953b49498d6dd9335b7422c6766967d1ea7ad5ed725e"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "0dd73e2418ec8e23d3f9b7f0c9c0e7e259f4be1c36cd7c65f007826073475c32"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "2d346e3f75df7c0784f6797fe74dcad3b44dce92f6d92cb127d1674fa5b1c91d"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "b63d95c48a2578d25b5b5dc25b9576046ea74b764791cda2a29ef875c6aae626"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "eeba86c865859ebe7a023d1a4a6f2f5010ddd4f30f196cf7be913c377c83594f"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "e4b273fccb6580ac0be34f15827004e0e58eb890d30f5b5f4d22b236b8f44b80"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "8dfb51e8c654f21e44fbf49f8a67ef2aa928da8046592e19237917232d9fd371"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "5c0783562425b35a071b76c632e6c24093d10440baf873f6d48c76e19351c512"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "c574a53210826a9ed658fa1e70d8ed0020aeea1b9caab864fd4a0e5161455a3b"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "2ea2c9bcc79c76542a9baa8e6e88720c3ab8573ffe6e651906262ad0fba697f6"
+      }
+    ],
+    "stage_remains_running": true,
+    "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
+    "limits": "Full small native assignment with live isolated PostgREST and installed command schema. Synthetic predecessor inventories directly constructed. Lost-commit replay is recorded when selected. No final publication, model restart, scientific acceptance or normal dispatcher activation."
+  },
+  "proof_sha256": {
+    "verify_native_parent_supervisor.py": "54ce6909bcd8382ecddec7c0e9ad4eb1bbe66a205addbdf3c5192d39d26f9464",
+    "verify_native_assignment_http.py": "871cff85b1d35413877423f5a538e4175e1415a4df8f9bb99b449b1fc158b9eb"
+  },
+  "limits": "Actual supervisor SIGKILL at one confirmed native iteration before acknowledgement. Child closes native project after channel loss; gateway remains in outer process. No general parent-loss detection during computation, restart, durable reconciliation, UI decision, publication or scientific acceptance."
+}

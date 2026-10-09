@@ -325,3 +325,19 @@ The inspection audit now permits only `systemctl --user show`, and an attempted
 manager mutation is detected within 18 inspection controls. This closes the
 preceding native-record join; it does not persist a reconciliation decision or
 restore execution authority.
+
+## Supervisor-loss iteration boundary, October 8
+
+The actual supervising Python process is now terminated after an installed
+progress write and before acknowledging the native child. The child closes its
+native project and exits on channel loss. Its scope empties, no final assignment
+files appear, and fresh inspections preserve the absence of cancellation and
+successful-exit receipts. Database rows and command inventory remain unchanged.
+
+`prototype/native-parent-loss-controls.json` retains five cases, including
+omitted parent loss and an injected swallowed channel error. The latter produces
+final local outputs and is detected. Gateway lifetime belongs to the outer test
+process, so terminating the supervisor does not orphan its test database gateway.
+This establishes loss handling at one confirmed iteration. It does not establish
+continuous parent-loss detection, pre-startup failure handling, durable recovery
+or authority to resume or publish a model.

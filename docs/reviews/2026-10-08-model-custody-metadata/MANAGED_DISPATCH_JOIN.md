@@ -3170,3 +3170,34 @@ This closes the missing native/installed-claim inspection join. It remains a
 read-only observation, not a durable reconciliation decision, recovered writer,
 database cancellation decision, restart or parent-loss workflow. Model restart,
 UI recovery, output publication and scientific acceptance remain open.
+
+## Actual native supervisor loss, October 8
+
+The fixture now runs the supervising worker in a separate owned process while
+keeping the installed database gateway in the outer test process. At a confirmed
+native iteration, the supervisor withholds its acknowledgement and records a
+readiness marker. The outer process sends SIGKILL only to that supervisor's live
+process handle. The native child detects the lost channel, raises
+`WorkerStateWriteUnconfirmed`, closes its active project and exits. Its scope
+empties, and final assignment outputs are absent.
+
+No cancellation or successful-exit receipt is fabricated after parent loss.
+Fresh read-only inspections observe scope absence with all cancellation flags
+false and no continuation authority. The installed run, stage, attempt, artifact
+and KPI rows, execution-start count and retained command inventory remain
+unchanged. The stage remains running pending an actual reconciliation decision.
+The outer owner closes the temporary PostgREST gateway after each case.
+
+Five controls pass in `prototype/native-parent-loss-controls.json`: baseline,
+harmless, omitted supervisor loss, swallowed channel-loss failure and restored.
+The no-loss case completes native assignment and then fails the required-parent-
+loss assertion. The swallowed-error case produces final local files and fails the
+output-absence assertion. Those local files are not database publication or stage
+success evidence. Baseline, harmless and restored cases stop before those files.
+
+This is one actual process-loss boundary, not general liveness monitoring during
+an arbitrary native computation. Parent loss before admission/startup, other
+interruption points, durable reconciliation, restart, UI decisions and full M3/V1
+acceptance remain open. Product direction passes with existing dated reminders.
+PR #170's GitHub checks pass; its visual acceptance remains open because T3 page
+capture still fails after reopening the preview. No alternative browser is used.
