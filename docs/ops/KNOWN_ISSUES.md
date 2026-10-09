@@ -501,3 +501,7 @@ Source-to-response/decision links, reviewed synthesis exports and optional compl
 ## September 30 context CLI release, v0.66.0
 
 The [context CLI release](../reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_PUBLICATION.md) adds execution of all context frames and dependent scheduling with retained originals across interruption. Final exact-commit checks pass and the release is published. Staff generation and explicit machine-draft import remain unfinished. The command requires an existing native resource authorization; retaining all scheduled responses does not establish a valid interpretation. Unknown dispatches remain unobserved and stop dependent successors. The pending reminder constraint remains unchanged.
+
+## Nonempty model-run restore ordering, October 9, 2026
+
+A native custom-format dump of the synthetic recovery acceptance database fails during default `pg_restore`: `model_runs_project_workspace_match` checks for a project before that project's table data has loaded. The failed single-transaction restore rolls back. Explicitly loading the projects data entry first permits this fixture to restore with its constraint intact, and original-column comparisons cover 339 tables and 966 rows. This is an acceptance setup workaround, not a general recovery repair. M3 must cover these cross-table checks in the maintained restore procedure. See [integration evidence](../reviews/2026-10-09-recovery-integration/VERIFICATION.md).
