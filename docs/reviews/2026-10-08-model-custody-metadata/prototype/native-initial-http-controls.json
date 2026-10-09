@@ -1,0 +1,58 @@
+{
+  "source_sha256": {
+    "verify_native_assignment_http.py": "54fddf80a35e79d791ec01d3a4905b753fb8d34754059b99b7969c0daf681f17",
+    "verify_native_bound_assignment.py": "3c55a558b2f62a4a58dc64c77264ea05e093ca9897f4ed09cd53a05e20f44162",
+    "verify_native_initial_input_recovery.py": "9f44cd2be9eb5b163e4f52b6719b2d108ce84958ad9bb5914c07ddf519a6fb40"
+  },
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "lost-initial-input",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "lost-initial-input-harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "omit-initial-disconnect",
+      "returncode": 1,
+      "expected_failure": "Native input reply loss did not stop assignment",
+      "matched": true
+    },
+    {
+      "control": "wrong-initial-request",
+      "returncode": 1,
+      "expected_failure": "Initial input receipt recovery failed",
+      "matched": true
+    },
+    {
+      "control": "existing-progress-loss",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Native AequilibraE and isolated database transactions over synthetic inputs. No ActivitySim behavioral execution, independent preparation, calibration, scientific acceptance or normal dispatch."
+}

@@ -363,3 +363,31 @@ commit and lost-reply recovery for this new artifact, linkage to observation and
 structural preparation, calibration coverage and a complete normal-dispatch
 journey remain open. Existing native recovery evidence for preparation-consumption
 artifacts does not establish those new transaction cases automatically.
+
+## Native initial-input transaction and recovery, October 9
+
+The full synthetic AequilibraE child now has database-backed evidence for the
+initial-input command. The isolated PostgREST bridge closes the connection only
+after the database commits that artifact. The parent stops; the child closes its
+project and exits without entering `TrafficAssignment.execute`, as checked by an
+execution-entry probe. No link-volume or assignment-result file is published.
+
+A separate process recovers the exact request through the existing CLI. The
+original committed receipt matches the retained result. Seven native table
+snapshots, local computation admissions and every retained attempt file remain
+unchanged. The writer stays stopped and refuses completion. This recovery does
+not re-enter the child or authorize another assignment.
+
+Eight native HTTP controls pass their expected outcomes: baseline, harmless
+baseline, input reply loss, harmless reply loss, omitted disconnect, wrong recovery
+request, the existing progress-reply-loss case, and restored input reply loss.
+The omitted disconnect is detected because execution is no longer stopped. The
+wrong request cannot recover the pending artifact. See
+`prototype/native-initial-http-controls.json`; private evidence is retained under
+`native-initial-http-controls-20261009a` in local OpenPlan state. Each case uses a
+fresh database clone and removes its owned gateway afterward.
+
+This establishes the AequilibraE transaction boundary over synthetic inputs.
+ActivitySim behavioral execution, observation/structural preparation linkage,
+calibration coverage, scientific independence and full normal dispatch remain
+open. No result here is nationwide model acceptance.

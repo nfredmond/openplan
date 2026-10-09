@@ -1,12 +1,20 @@
 {
-  "control": "baseline",
-  "database": "openplan_attempt_cli_9aabbbe9da1a48358c339b3ca2c5ba6d",
-  "run_id": "aa9453fd-79ed-41b4-bb1d-e24d724bccd3",
-  "stage_id": "1f8a1408-dbde-4855-8d26-d132e67497bf",
-  "native_converged": true,
-  "modeled_transit": "modeled",
-  "replay": null,
-  "final_outputs_absent": null,
+  "control": "lost-initial-input",
+  "database": "openplan_attempt_cli_e31004c676f148188c6812290fd93b29",
+  "run_id": "4866afad-eab7-4cc4-91d7-a7dd85189e2f",
+  "stage_id": "9a435c62-9ef6-42cc-a68b-27248f8c8997",
+  "native_converged": null,
+  "modeled_transit": null,
+  "replay": {
+    "original_receipt_recovered": true,
+    "fresh_process": true,
+    "native_tables_unchanged": 7,
+    "execution_admissions_unchanged": true,
+    "files_unchanged": true,
+    "writer_stopped": true,
+    "model_resumed": false
+  },
+  "final_outputs_absent": true,
   "cancellation": null,
   "cancellation_receipt_lost": null,
   "engine_inspection": null,
@@ -25,7 +33,7 @@
       "method": "POST",
       "operation": "/rpc/claim_model_stage_attempt",
       "status": 200,
-      "body_sha256": "db946c52dab59e96bf57e286e510f15215083deab9268a4cba1bc1e360f72dee"
+      "body_sha256": "56b0b699493e15ac74f45943ec9efd2c6a679852963da258662df0190813ae07"
     },
     {
       "method": "GET",
@@ -37,13 +45,13 @@
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "e73f1bbba3ae298bd352609803b7b94721892fc94ec57c5019961a43202d17c0"
+      "body_sha256": "7cba2f1e3aee40b291f1fee8ba836afe5f3ea4f25b6e056dbe2feea95b458dc1"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "bd7b662f9ba1bbde1929d20ae798b33d41f86647317218c32909418939a834dd"
+      "body_sha256": "b7962bac083be02b1da70538b33a7aac72a7856a2d01c72ae55fbbb161e5aca9"
     },
     {
       "method": "GET",
@@ -61,7 +69,7 @@
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "c207d85f2062ea0604fd6d67907346f6143cf4b6ba273e230ebe3daefc889a2e"
+      "body_sha256": "a91e4bd84b81b3b8e1ee9779a65b455238966638d2d099e8ecbbfac5a8493bf2"
     },
     {
       "method": "GET",
@@ -73,19 +81,19 @@
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "5b10aa9842311eeaa5e198dd3c80b1359e4844120761f3e30f7d84cf3f4860ba"
+      "body_sha256": "0f8425be9e981e37f44ce8389631c5d0e585bc3bde4bec28a47ec8be6120cc22"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "f9e6f768812f1f0691469696d05116996ace3e6a05c88b6ff38f6bba7fbfa376"
+      "body_sha256": "3f7b069de672562470652734ca006899cae0f370691fc7922fba78bfae7e5036"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "a81aa5e7310edc4181e8eef6219378d4b60d7e50bef04600f582e37c1513b7e2"
+      "body_sha256": "5b05e5bbc75b1c854f12b24eba6a4c102d198987a50a5da39d7532acc3045fc8"
     },
     {
       "method": "GET",
@@ -97,19 +105,19 @@
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "5827376d64a7c0aeb3db42037cc8b570030932d117bf3b16a434adaeb9a7dc1c"
+      "body_sha256": "24903325085150fa40465a494acde081d1b31305c6bcc4bac603eb384a84a5a2"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "b0da198e3a06a455b2ae66dd2392ff98746b945727641276864a064ed16332f7"
+      "body_sha256": "e39ba545b4adce67fd0cec2d2d14144de85bbd5d09607272c901471e6d6b566f"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "5c5df67b5c10fbdc9c2d35bc434714d95efcb9191f1819c61f4cc135e86a8326"
+      "body_sha256": "f527a6a5ed3ccdd8fdb0da65c0879aae16f76a08eceacb013e7c865dfc0bc575"
     },
     {
       "method": "GET",
@@ -121,13 +129,13 @@
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "5ce67154b22fa683a56c0d9a8a77d7cd02660572cf868d170a845d46ca55f0e9"
+      "body_sha256": "2195e4b72f67d713afcca02ae68ebc3fcae1d878a9b86ee6cc2998cc02c617f8"
     },
     {
       "method": "POST",
-      "operation": "/rpc/write_model_stage_attempt",
+      "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "536d31a2d2fefc418a648e0111c8dc628db4ec1b26e9d94cbf4d06513f986cde"
+      "body_sha256": "2195e4b72f67d713afcca02ae68ebc3fcae1d878a9b86ee6cc2998cc02c617f8"
     }
   ],
   "stage_remains_running": true,

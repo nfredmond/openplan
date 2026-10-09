@@ -49,7 +49,7 @@ def main():
     output=Path(os.environ['OPENPLAN_BOUND_ASSIGNMENT_OUTPUT']).absolute()
     output.mkdir(mode=0o700,parents=True,exist_ok=False)
     control=os.environ.get('OPENPLAN_BOUND_ASSIGNMENT_CONTROL','baseline')
-    if control not in ('baseline','harmless','disable-mode-choice','lost-progress','lost-response','swallow-progress-fault','omit-initial-input-registration'):raise ValueError('Unknown proof control')
+    if control not in ('baseline','harmless','disable-mode-choice','lost-progress','lost-response','swallow-progress-fault','omit-initial-input-registration','lost-initial-input'):raise ValueError('Unknown proof control')
     fixture=ProjectWorkingCopyTests();fixture.setUp();handle=None
     try:
         writer=fixture.writer;writer.get=fixture.get
@@ -131,7 +131,7 @@ def main():
                 try:handle.progress.serve_one()
                 except Exception as error:
                     parent_failure=type(error).__name__
-                    if control not in ('lost-progress','lost-response','swallow-progress-fault') and not getattr(fixture,'cancel_on_iteration',False):raise
+                    if control not in ('lost-progress','lost-response','swallow-progress-fault','lost-initial-input') and not getattr(fixture,'cancel_on_iteration',False):raise
                     break
             code=handle.process.wait(timeout=15)
         (output/'child.log').write_text((handle.directory/'engine.log').read_text())
@@ -161,6 +161,23 @@ def main():
                     'worker_sha256':hashlib.sha256((WORKER/'main.py').read_bytes()).hexdigest(),
                     'limits':'Forced native cancellation at a confirmed iteration before child acknowledgement. Partial files are not authorized for reuse. No database cancellation decision, recovery, UI workflow or scientific acceptance.'}
             content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/'native-bound-assignment-cancel-progress.json').write_text(content)
+            print(content);return
+        if control=='lost-initial-input':
+            assert code!=0 and writer.stopped and parent_failure, 'Native input reply loss did not stop assignment'
+            failure=json.loads((root/'assignment-failure.json').read_text())
+            assert failure['active_project'] is False
+            assert not (root/'assignment-execute-entered').exists(), 'Native assignment executed after uncertain input registration'
+            assert not (root/'run_output/link_volumes.csv').exists()
+            assert not (root/'assignment-result.json').exists()
+            pending=journal.pending(fixture.directory,writer.context.destination)
+            assert len(pending)==1 and pending[0]['command']['operation']=='write_model_attempt_artifact'
+            assert pending[0]['command']['arguments']['payload']['artifact_type']=='model_initial_assignment_inputs'
+            recovery=fixture.replay_initial_failure(writer,pending[0],output)
+            report={'control':control,'live_parent_transport':getattr(fixture,'live_transport',False),
+                    'worker_sha256':hashlib.sha256((WORKER/'main.py').read_bytes()).hexdigest(),
+                    'replay':recovery,'final_outputs_absent':True,'execute_entered':False,
+                    'limits':'Native child stopped before initial execute after committed input artifact reply loss. No model continuation or scientific acceptance.'}
+            content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content)
             print(content);return
         if control in ('lost-progress','lost-response','swallow-progress-fault'):
             assert code!=0 and writer.stopped and parent_failure,'Native interruption did not stop both sides'

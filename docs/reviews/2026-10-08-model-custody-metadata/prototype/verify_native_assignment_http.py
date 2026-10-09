@@ -15,7 +15,7 @@ if source['container']!='supabase_db_openplan-restore-target-2026091050' or not 
 output=Path(os.environ['OPENPLAN_NATIVE_ASSIGNMENT_HTTP_OUTPUT']).absolute()
 output.mkdir(mode=0o700,parents=True,exist_ok=False)
 control=os.environ.get('OPENPLAN_NATIVE_ASSIGNMENT_HTTP_CONTROL','baseline')
-if control not in ('baseline','harmless','omit-geometry-registration','lost-progress','lost-progress-harmless','omit-disconnect','cancel-progress','cancel-progress-harmless','omit-cancellation','cancel-receipt-loss','cancel-receipt-loss-harmless','omit-receipt-loss','parent-loss','parent-loss-harmless','omit-parent-loss','swallow-parent-loss','startup-before','startup-before-harmless','startup-after','startup-early'):raise ValueError('Unknown native HTTP control')
+if control not in ('baseline','harmless','omit-geometry-registration','lost-progress','lost-progress-harmless','omit-disconnect','cancel-progress','cancel-progress-harmless','omit-cancellation','cancel-receipt-loss','cancel-receipt-loss-harmless','omit-receipt-loss','parent-loss','parent-loss-harmless','omit-parent-loss','swallow-parent-loss','startup-before','startup-before-harmless','startup-after','startup-early','lost-initial-input','lost-initial-input-harmless','omit-initial-disconnect','wrong-initial-request'):raise ValueError('Unknown native HTTP control')
 def sql(database,statement):
     result=subprocess.run(['docker','exec','-i',source['container'],'psql','-X','-qAt','-U','postgres','-d',database,'-v','ON_ERROR_STOP=1'],input=statement,text=True,capture_output=True,timeout=30)
     if result.returncode:raise RuntimeError(result.stderr)
@@ -32,6 +32,7 @@ INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order,log_t
 SELECT workspace_id FROM public.model_runs WHERE id='{run}';""")
 workspace=str(uuid.UUID(workspace));calls=[];dropped=[]
 lost_control=control in ('lost-progress','lost-progress-harmless','omit-disconnect')
+initial_loss=control in ('lost-initial-input','lost-initial-input-harmless','omit-initial-disconnect','wrong-initial-request')
 with gateway('public',database=database) as connection:
     key=connection['service_token']
     class Bridge(BaseHTTPRequestHandler):
@@ -53,6 +54,11 @@ with gateway('public',database=database) as connection:
                 self.connection.shutdown(socket.SHUT_RDWR)
                 self.connection.close()
                 return
+            if initial_loss and control!='omit-initial-disconnect' and not dropped and path=='/rpc/write_model_attempt_artifact' and payload.get('p_payload',{}).get('artifact_type')=='model_initial_assignment_inputs':
+                assert status==200,'Initial input write did not commit'
+                dropped.append({'request':payload,'receipt':json.loads(content)})
+                self.close_connection=True
+                self.connection.shutdown(socket.SHUT_RDWR);self.connection.close();return
             self.send_response(status);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(content)));self.end_headers();self.wfile.write(content)
         def do_GET(self):self.forward('GET')
         def do_POST(self):self.forward('POST')
@@ -136,6 +142,9 @@ with gateway('public',database=database) as connection:
                     if payload['artifact_type']=='model_assignment_geometry':return None
                     return record_artifact(payload,**kwargs)
                 self.writer.record_artifact=omit_geometry
+        def replay_initial_failure(self,writer,pending,native_output):
+            from verify_native_initial_input_recovery import verify
+            return verify(writer,pending,native_output,sql,database,base,key,dropped,control)
         def replay_native_failure(self,snapshot,iteration,native_output):
             request=str(uuid.UUID(iteration['command']['request_id']))
             assert len(dropped)==1 and dropped[0]['p_request_id']==request,'Committed reply loss missing'
@@ -174,8 +183,18 @@ with gateway('public',database=database) as connection:
     try:
         native.ProjectWorkingCopyTests=LiveFixture
         os.environ['OPENPLAN_BOUND_ASSIGNMENT_OUTPUT']=str(output/'native')
-        os.environ['OPENPLAN_BOUND_ASSIGNMENT_CONTROL']='lost-progress' if lost_control else ('harmless' if control=='harmless' else 'baseline')
+        os.environ['OPENPLAN_BOUND_ASSIGNMENT_CONTROL']='lost-initial-input' if initial_loss else ('lost-progress' if lost_control else ('harmless' if control=='harmless' else 'baseline'))
         if control in ('lost-progress-harmless','cancel-progress-harmless','cancel-receipt-loss-harmless'):native.CHILD+='\n# Harmless native child comment.\n'
+        if initial_loss:
+            native.CHILD=native.CHILD.replace('import main\n', '''import main
+from aequilibrae.paths import TrafficAssignment
+execute=TrafficAssignment.execute
+def observed_execute(self,*args,**kwargs):
+ (Path(sys.argv[1])/'assignment-execute-entered').write_text('entered')
+ return execute(self,*args,**kwargs)
+TrafficAssignment.execute=observed_execute
+''')
+            if control=='lost-initial-input-harmless':native.CHILD+='\n# Harmless child comment.\n'
         native.main()
         result=json.loads((output/'native/result.json').read_text())
         assert result['live_parent_transport'] is True
@@ -183,7 +202,7 @@ with gateway('public',database=database) as connection:
         assert state['status']=='running' and state['attempt_managed'] is True
         artifacts=json.loads(sql(database,f"SELECT coalesce(json_agg(artifact_type ORDER BY artifact_type),'[]') FROM public.model_run_artifacts WHERE run_id='{run}';"))
         expected_artifacts={'model_project_working_copy','model_package_working_copy'}
-        if not control.startswith('startup-'):expected_artifacts.update({'model_count_inputs','model_transit_inputs','model_assignment_geometry'})
+        if not control.startswith('startup-'):expected_artifacts.update({'model_count_inputs','model_transit_inputs','model_assignment_geometry','model_initial_assignment_inputs'})
         assert set(artifacts)==expected_artifacts,'Installed input registration differs'
         assert all(call['status']==200 for call in calls),calls
         report={'control':control,'database':database,'run_id':run,'stage_id':stage,'native_converged':result.get('convergence',{}).get('converged'),'modeled_transit':result.get('mode_split',{}).get('transit_status'),'replay':result.get('replay'),'final_outputs_absent':result.get('final_outputs_absent'),'cancellation':result.get('cancellation'),'cancellation_receipt_lost':result.get('cancellation_receipt_lost'),'engine_inspection':result.get('engine_inspection'),'parent_loss':result.get('parent_loss'),'database_observation':result.get('database_observation'),
