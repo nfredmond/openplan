@@ -44,6 +44,8 @@ pointer to AGENTS.md, not a second rulebook.
 - [Team commissioning](../openplan/docs/FIRST_DEPLOYMENT.md): what an independent
   operator must establish before real team use.
 - [Runbook](../openplan/docs/ops/RUNBOOK.md): diagnosis and recovery boundaries.
+- [v0.68 upgrade and recovery](../openplan/docs/ops/V068_UPGRADE.md): migration
+  order, stopped workers, retained model decisions and GTFS cleanup limits.
 - [Installed OpenCode project task](reviews/2026-09-10-opencode-native-spike/VERIFICATION.md): bounded native transport, exact retries, private history and release evidence.
 - [Private engagement decision links](ops/ENGAGEMENT_DECISION_LINKS.md): reviewed source connections, retained corrections and interrupted-request recovery.
 - [OWP reporting-period guide](ops/OWP_REPORTING.md): agency time, source costs, private valuations and corrected internal management reports.

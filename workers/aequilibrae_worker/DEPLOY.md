@@ -285,9 +285,14 @@ stage starts or convert historical enrollment into new work.
 
 Follow [local recovery inspection](LOCAL.md#execution-retention-and-recovery)
 and [backup and restore](../../openplan/docs/ops/BACKUP_AND_RESTORE.md#model-worker-recovery-records).
-Historical reconciliation decisions and full stage continuation remain
+With migration `20261016000023_model_recovery_decisions.sql`, an owner or
+administrator can review nonterminal work and record an abandonment decision
+through the model's recovery panel. It preserves the original state and revokes
+write authority without confirming process termination or authorizing restart.
+Historical reconciliation for continuation and full stage resume remain
 unfinished. Do not change enrollment rows, clear journals or generate replacement
-request IDs to get past that boundary.
+request IDs to get past that boundary. Follow the
+[v0.68 upgrade and recovery instructions](../../openplan/docs/ops/V068_UPGRADE.md).
 
 ## Inventory retained delivery records
 
