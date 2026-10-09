@@ -259,3 +259,41 @@ fully published through native Storage. No engine, normal dispatcher, real
 network/population, source adequacy or scientific acceptance is established.
 The production preparation and complete artifact-publication requirements stay
 open.
+
+
+### Native private Storage upload evidence
+
+The actual `upload_immutable_validation_json` helper now has an isolated native
+Storage proof. Each case clones the owned installed proof database, starts the
+installed Storage API v1.67.20 image with a fresh object directory, and creates
+a private `run-artifacts` bucket in that clone. A prefix-only local HTTP proxy
+translates the worker's `/storage/v1` URL to the standalone Storage service. It
+forwards real requests and responses; it does not simulate object storage.
+
+Normal, harmless JSON whitespace and restored cases upload and download exact
+bytes. A second valid upload to the same object is refused with HTTP 400, code
+`KeyAlreadyExists`, error `Duplicate`; the original bytes remain unchanged.
+An unauthenticated request to the authenticated object route is refused. The
+targeted control changes `x-upsert` to true at transport and fails because the
+second upload replaces the object. See `prototype/native-validation-storage-controls.json`.
+
+Two setup assertions were corrected from measured responses: a missing bucket
+uses a response `statusCode` of 404 even when the HTTP status differs, and the
+collision code is `KeyAlreadyExists`, with `Duplicate` in the error field. The
+initial diagnostic evidence remains retained, followed by all four controls.
+The private directories start with `native-validation-storage-20261009` and
+`native-validation-storage-controls-20261009a` in the OpenPlan state directory.
+All seven database clones are accounted for. Temporary Storage containers and
+credential files are removed; the isolated databases and object directories
+remain. The service cap is 512 MiB with no swap, and the controller cap is 1 GiB
+with no swap. No existing object store or preview database was used for writes.
+
+This proves the upload helper against native private Storage, not a joined
+Storage-to-custody transaction. It does not verify the full user-role RLS matrix,
+lost-acknowledgement recovery, complete source publication, operator recovery
+or scientific acceptance. Those remain open.
+
+T3 capture was retried separately: screenshot capture still fails, recording
+start times out and recording stop fails. PR #170 retains all eight passing
+GitHub checks, but its visible model-creation and recovery changes still lack
+completed visual acceptance. This Storage evidence does not remove that hold.
