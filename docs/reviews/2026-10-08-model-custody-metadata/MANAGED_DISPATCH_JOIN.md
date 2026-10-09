@@ -3365,3 +3365,49 @@ operator UI or agent approval connection. Tests use an explicit synthetic
 operator and private service credential; credentials are not retained in the
 journal or evidence reports. Physical termination, safe restart, cross-host
 recovery, ActivitySim supervision and scientific acceptance remain separate.
+
+### October 8: installed recovery command and authenticated route
+
+Migration `20261016000023_model_recovery_decisions.sql` now installs the tested
+recovery command. The mirrored SQL proof source must match the migration exactly.
+Its reviewed state includes `model_id`; the route and database therefore bind
+that relationship as well as workspace, run, parent/stage versions and attempts.
+The populated-clone proof applies migrations 22 and 23 and confirms unchanged
+pre-existing run, stage, attempt, KPI, artifact and execution-start row digests.
+It then reruns the seven decision controls and four HTTP recovery controls. No
+application or preview database is upgraded by this proof.
+
+`GET /api/models/[modelId]/runs/[modelRunId]/recovery` authenticates the session,
+checks model write access and owner/admin membership, and reads the exact scoped
+worker run before creating a privileged client. It returns a checked inspection
+without process-termination or continuation authority. `POST` takes an explicit
+abandonment decision, reviewed state, reason, evidence and retained request ID.
+The actor comes from the authenticated session; the workspace comes from the
+model. Unknown body fields, including supplied actor/workspace identifiers,
+refuse. Canonical request UUIDs prevent an accepted uppercase UUID from becoming
+an unrecoverable receipt mismatch after PostgreSQL normalization.
+
+The route refuses explicit Planner Agent execution or approval headers. No
+registered action currently authorizes recovery, and launch approval cannot be
+borrowed for this decision. This is an executable refusal, not agent approval
+support. Manual decisions still receive current SQL membership and state checks.
+A changed review returns conflict. An uncertain transport or mismatched receipt
+returns `recovery_unconfirmed` and directs the caller to reuse the saved request;
+it never reports that no write occurred. Responses do not expose private database
+errors, and successful inspection/receipt responses disable caching.
+
+The route suite passes 23 tests with exact run projections and filters asserted.
+Seven route controls detect omitted owner/admin checks, agent refusal, model
+scope and receipt matching, with harmless and restored passes. The command
+validator's five controls and installed SQL/HTTP controls pass with model-bound
+state. Targeted ESLint, focused TypeScript checking of the changed route/helper/
+test and their imports, and the 395-file migration inventory pass.
+
+Full-project TypeScript checking remains unverified: the 2 GB heap run exited
+134, and a separate 4 GB heap run inside a 5 GB scope also exhausted its heap.
+The second run disabled core dumps. Neither failure counts as a pass; the focused
+check does not replace full-project release validation. The previous private
+preview remains unchanged. Real session-cookie journeys, operator controls,
+saved browser requests, actual T3 rendering and downloadable decisions remain
+open. Process termination, model restart, ActivitySim supervision and scientific
+acceptance are still separate requirements. Normal managed dispatch remains off.

@@ -379,3 +379,13 @@ uses the local receipt. Neither retry changes execution state or authorizes a
 restart. `prototype/recovery-http-controls.json` records four controls, including
 omission of the disconnect. The service-side actor and approval boundaries remain
 unconnected; this proof does not grant an agent permission to abandon real work.
+
+### Authenticated operator endpoint, October 8
+
+Migration 23 installs explicit abandonment receipts. The recovery GET/POST route
+binds model, run and workspace, derives the actor from the authenticated session,
+and requires owner/admin membership. SQL rechecks the complete reviewed state and
+current membership. Explicit Planner Agent headers refuse until recovery has its
+own approved action. Missing replies remain unconfirmed and require the same
+saved request. Mocked route controls and installed SQL/HTTP controls pass, but
+real session-cookie, browser and operator-control journeys remain unproved.

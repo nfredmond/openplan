@@ -27,9 +27,9 @@ def validate(command):
     if not isinstance(args['reason'],str) or not args['reason'].strip() or len(args['reason'])>2000:raise ValueError('Recovery reason required')
     if not isinstance(args['evidence'],dict) or len(journal.canonical(args['evidence']).encode('utf-8'))>65536:raise ValueError('Recovery evidence must be a bounded object')
     state=args['expected_state']
-    if not isinstance(state,dict) or set(state)!={'run_id','workspace_id','status','updated_at','attempt_managed','stages'}:raise ValueError('Exact reviewed state required')
+    if not isinstance(state,dict) or set(state)!={'run_id','workspace_id','model_id','status','updated_at','attempt_managed','stages'}:raise ValueError('Exact reviewed state required')
     if state['run_id']!=args['run_id'] or state['workspace_id']!=args['workspace_id'] or state['status'] not in ('queued','running') or type(state['attempt_managed']) is not bool:raise ValueError('Reviewed run scope or state differs')
-    timestamp(state['updated_at'])
+    identity(state['model_id']);timestamp(state['updated_at'])
     if not isinstance(state['stages'],list) or not state['stages']:raise ValueError('Reviewed stage set required')
     seen=set()
     for stage in state['stages']:

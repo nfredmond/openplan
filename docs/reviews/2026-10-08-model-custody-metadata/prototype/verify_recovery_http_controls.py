@@ -16,5 +16,5 @@ for case,control in [('baseline','baseline'),('harmless','harmless'),('omit-disc
         records.append({'control':case,'result':json.loads((output/case/'result.json').read_text())})
 worker=ROOT.parents[3]/'workers/aequilibrae_worker'
 report={'controls':records,'evidence_directory':str(output),'source_sha256':{str(p.relative_to(ROOT.parents[3])):hashlib.sha256(p.read_bytes()).hexdigest() for p in [ROOT/'recovery-decision.sql',ROOT/'verify_recovery_decision_http.py',worker/'model_command_client.py',worker/'model_recovery_decision_command.py']},
- 'limits':'Actual PostgREST and SQL receipts with synthetic operator identity. Application actor derivation, agent approval, visible recovery, cancellation and restart remain unconnected.'}
+ 'limits':'Actual PostgREST and SQL receipts with synthetic operator identity. This direct-service proof does not exercise application actor derivation, agent approval, visible recovery, cancellation or restart.'}
 content=json.dumps(report,indent=2)+'\n';(ROOT/'recovery-http-controls.json').write_text(content);(output/'result.json').write_text(content);print(content)

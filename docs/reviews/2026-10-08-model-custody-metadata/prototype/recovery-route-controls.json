@@ -1,0 +1,43 @@
+{
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "detected": null
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "detected": null
+    },
+    {
+      "control": "omit-role",
+      "returncode": 1,
+      "detected": "refuses member recovery"
+    },
+    {
+      "control": "omit-agent-refusal",
+      "returncode": 1,
+      "detected": "refuses agent header"
+    },
+    {
+      "control": "omit-model-scope",
+      "returncode": 1,
+      "detected": "refuses reviewed state with different model_id"
+    },
+    {
+      "control": "omit-receipt",
+      "returncode": 1,
+      "detected": "keeps changed receipt"
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "detected": null
+    }
+  ],
+  "route_sha256": "4b3b0399911e6d4741c1b553db123c394e588e64af167519cdfef0f56c3317ed",
+  "test_sha256": "95b9c4b4924e255cdd04c8b571845350b32d783789a89e788b549662d7f8fd2d",
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/recovery-route-controls-20261008",
+  "limits": "Mocked route/session/RPC tests, with exact read projection assertions. SQL and HTTP command behavior have separate proofs. This does not establish real session cookies, browser controls, deployed configuration, physical termination or agent approval."
+}

@@ -13,7 +13,16 @@ if sql('postgres',f"SELECT count(*) FROM pg_stat_activity WHERE datname='{source
 database='openplan_attempt_cli_'+uuid.uuid4().hex
 sql('postgres',f'CREATE DATABASE {database} TEMPLATE {source["database"]};')
 (output/'candidate.json').write_text(json.dumps({'container':source['container'],'database':database}))
-fixed=(ROOT/'recovery-decision.sql').read_text();sql(database,fixed)
+fixed=(ROOT/'recovery-decision.sql').read_text()
+migration=ROOT.parents[3]/'openplan/supabase/migrations/20261016000023_model_recovery_decisions.sql'
+assert migration.read_text()==fixed,'Installed recovery migration differs from proof source'
+def existing_execution_digest():
+    return sql(database,"SELECT md5(jsonb_build_object('runs',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM public.model_runs r),'stages',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM public.model_run_stages s),'attempts',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_stage_attempts a),'kpis',(SELECT jsonb_agg(to_jsonb(k) ORDER BY id) FROM public.model_run_kpis k),'artifacts',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_run_artifacts a),'starts',(SELECT jsonb_agg(to_jsonb(x) ORDER BY stage_id) FROM public.model_stage_execution_starts x))::text);").stdout.strip()
+existing=existing_execution_digest()
+predecessor=migration.with_name('20261016000022_model_reaper_recovery_boundary.sql')
+sql(database,predecessor.read_text())
+sql(database,migration.read_text())
+assert existing_execution_digest()==existing,'Recovery upgrade changed existing execution records'
 function=fixed[fixed.index('CREATE OR REPLACE FUNCTION public.abandon_model_run_execution'):].removesuffix('COMMIT;\n')
 cases=(ROOT/'recovery-decision-cases.sql').read_text().replace('FIXTURE',str(uuid.UUID(source['fixture_run'])))
 authority="IF NOT EXISTS(SELECT 1 FROM public.workspace_members WHERE workspace_id=p_workspace_id AND user_id=p_actor_id AND role IN('owner','admin') FOR SHARE NOWAIT) THEN"
@@ -50,5 +59,5 @@ assert stale.returncode!=0 and 'Model recovery state changed' in stale.stderr
 assert json.loads(sql(database,f"SET ROLE service_role; SELECT public.inspect_model_run_recovery('{workspace}','{r}','{actor}');").stdout)==fresh
 assert sql(database,f"SELECT count(*) FROM public.model_run_recovery_receipts WHERE request_id='{request}';").stdout.strip()=='0'
 (output/'inter-transaction-stale.log').write_text(stale.stderr)
-report={'database':database,'controls':records,'actual_progress_after_inspection_refused':True,'source_sha256':{name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in ('recovery-decision.sql','recovery-decision-cases.sql','verify_recovery_decision.py')},'evidence_directory':str(output),'limits':'Prototype SQL only. Synthetic operator decisions, exact replay and revoked database writes do not prove process termination, HTTP reply recovery, API actor derivation, agent approval, restart, browser acceptance or scientific validity. No production migration or dispatcher activation.'}
+report={'database':database,'controls':records,'actual_progress_after_inspection_refused':True,'existing_execution_rows_unchanged_on_upgrade':True,'predecessor_sha256':hashlib.sha256(predecessor.read_bytes()).hexdigest(),'migration_sha256':hashlib.sha256(migration.read_bytes()).hexdigest(),'source_sha256':{name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in ('recovery-decision.sql','recovery-decision-cases.sql','verify_recovery_decision.py')},'evidence_directory':str(output),'limits':'Migration SQL installed in an isolated clone. Synthetic operator decisions, exact replay and revoked database writes do not prove process termination, HTTP reply recovery, API actor derivation, agent approval, restart, browser acceptance or scientific validity. No normal dispatcher activation.'}
 content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/'recovery-decision-controls.json').write_text(content);print(content)

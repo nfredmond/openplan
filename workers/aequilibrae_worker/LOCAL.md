@@ -283,3 +283,10 @@ nonterminal pending that decision. Do not reset its stages or delete retained
 files to force a restart. Durable reconciliation and restart are still under
 development. The proof is in
 `docs/reviews/2026-10-08-model-custody-metadata/MANAGED_DISPATCH_JOIN.md`.
+
+Migration `20261016000023_model_recovery_decisions.sql` adds explicit operator
+abandonment receipts. The model run recovery API requires an authenticated
+workspace owner or administrator and an exact reviewed state. It cancels database
+execution authority without proving that an OS process stopped or authorizing a
+restart. The model run UI and its saved-request recovery controls are still under
+development. Explicit Planner Agent recovery requests currently refuse.

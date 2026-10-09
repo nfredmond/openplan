@@ -4,15 +4,15 @@
       "control": "baseline",
       "result": {
         "control": "baseline",
-        "database": "openplan_attempt_cli_f78ea2bc41a4497a8f6e60479d2018c0",
+        "database": "openplan_attempt_cli_dff775b8ab3e4f119800dcab786da905",
         "http_requests": [
           {
             "status": 200,
-            "sha256": "fea10629ebb444ef7e51573b030b39d42694f7f2b794a8c6dfb8fdaf32654581"
+            "sha256": "2ef40609df8f02649d03f4dbd49f5b0a25164f340e62f53e1ab503fbd1d97920"
           },
           {
             "status": 200,
-            "sha256": "fea10629ebb444ef7e51573b030b39d42694f7f2b794a8c6dfb8fdaf32654581"
+            "sha256": "2ef40609df8f02649d03f4dbd49f5b0a25164f340e62f53e1ab503fbd1d97920"
           }
         ],
         "recovery_request_counts": [
@@ -21,20 +21,20 @@
         ],
         "fresh_cli": [
           {
-            "request_id": "b836c1d7-f05f-403f-bd6c-6b6c37b84a6f",
+            "request_id": "28d8e8f5-094d-45f1-bc29-5ba791846c66",
             "outcome": "command_receipt_retained",
             "model_resumed": false
           },
           {
-            "request_id": "b836c1d7-f05f-403f-bd6c-6b6c37b84a6f",
+            "request_id": "28d8e8f5-094d-45f1-bc29-5ba791846c66",
             "outcome": "command_receipt_retained",
             "model_resumed": false
           }
         ],
         "database_unchanged_after_retry": true,
         "execution_starts_preserved": true,
-        "command_sha256": "39cd1fe8431036ab4a55aa274580d517a8f63d487afc6698c459ada54c3f58b8",
-        "receipt_sha256": "033b44153bd53fb95f0dc6c6d48d8e61fc49bdd4a0bbeac93412afef59ebc621",
+        "command_sha256": "2e35d3a7e0711c0afe5e4acdc8534ee9470fc97ef90fcbed2e9e23fc9e4405b4",
+        "receipt_sha256": "eb70b1d642acd5a1e281f4d14a1a60f12ea99db9ef40f0357fc111d500f0634d",
         "limits": "Synthetic operator through a service-role gateway, SQL commit followed by socket loss and fresh CLI recovery. No authenticated application route, human approval UI, physical process termination, restart or scientific acceptance."
       }
     },
@@ -42,15 +42,15 @@
       "control": "harmless",
       "result": {
         "control": "harmless",
-        "database": "openplan_attempt_cli_34ee77c8aac84820924ef43c305b484d",
+        "database": "openplan_attempt_cli_ef6e192da8a44dccafbc930b044b4891",
         "http_requests": [
           {
             "status": 200,
-            "sha256": "02ca33ac547c8b261f4cf17b865d67b506db5e801663fb7357a1a0a705393124"
+            "sha256": "c6567a76a2f98f19cc36459255d79effdd7958cd7665e6d50639bd4b9073ea4c"
           },
           {
             "status": 200,
-            "sha256": "02ca33ac547c8b261f4cf17b865d67b506db5e801663fb7357a1a0a705393124"
+            "sha256": "c6567a76a2f98f19cc36459255d79effdd7958cd7665e6d50639bd4b9073ea4c"
           }
         ],
         "recovery_request_counts": [
@@ -59,20 +59,20 @@
         ],
         "fresh_cli": [
           {
-            "request_id": "3ca36ed7-ecfc-4f49-a663-286984e7ad12",
+            "request_id": "83096278-bb6f-4144-99bb-e6e393217376",
             "outcome": "command_receipt_retained",
             "model_resumed": false
           },
           {
-            "request_id": "3ca36ed7-ecfc-4f49-a663-286984e7ad12",
+            "request_id": "83096278-bb6f-4144-99bb-e6e393217376",
             "outcome": "command_receipt_retained",
             "model_resumed": false
           }
         ],
         "database_unchanged_after_retry": true,
         "execution_starts_preserved": true,
-        "command_sha256": "cf5cb8f3923b8e5a02cd137e8b437fffbac3cfc96325dbb4198ba97d1059f47f",
-        "receipt_sha256": "47217bc4b983c541581ed5aaf075c7a4cc642b54296ad896c0d9792131ebc08c",
+        "command_sha256": "687f7de1e8098641df58412e19ddcc74c67b782445aae0b75273fcc881833a84",
+        "receipt_sha256": "4b4432f0540bb76e75e43dfbdfbacf4f7b13d5c9be9e6d2f2147c6fb1840a1ae",
         "limits": "Synthetic operator through a service-role gateway, SQL commit followed by socket loss and fresh CLI recovery. No authenticated application route, human approval UI, physical process termination, restart or scientific acceptance."
       }
     },
@@ -84,15 +84,15 @@
       "control": "restored",
       "result": {
         "control": "baseline",
-        "database": "openplan_attempt_cli_3c685deb648f46b0bf58dd4d30b9f498",
+        "database": "openplan_attempt_cli_6a2eca4ca3e045978e85f7229121c6f6",
         "http_requests": [
           {
             "status": 200,
-            "sha256": "5b570c987ac914d6f06b63a5a486ba7ca508ed6d6a5e07e982d372d9f36a02b4"
+            "sha256": "b9dcd824cb7d407ba05950961150fa9320bda08676e8d2465b73e8320a137a94"
           },
           {
             "status": 200,
-            "sha256": "5b570c987ac914d6f06b63a5a486ba7ca508ed6d6a5e07e982d372d9f36a02b4"
+            "sha256": "b9dcd824cb7d407ba05950961150fa9320bda08676e8d2465b73e8320a137a94"
           }
         ],
         "recovery_request_counts": [
@@ -101,30 +101,30 @@
         ],
         "fresh_cli": [
           {
-            "request_id": "ec5fc4c5-f2b2-47e0-85d6-a9e17de8bf33",
+            "request_id": "5240edf0-4941-4b04-92b3-c701d91fdbf5",
             "outcome": "command_receipt_retained",
             "model_resumed": false
           },
           {
-            "request_id": "ec5fc4c5-f2b2-47e0-85d6-a9e17de8bf33",
+            "request_id": "5240edf0-4941-4b04-92b3-c701d91fdbf5",
             "outcome": "command_receipt_retained",
             "model_resumed": false
           }
         ],
         "database_unchanged_after_retry": true,
         "execution_starts_preserved": true,
-        "command_sha256": "dd9dda8d910ce7379ae4c83078b0100df46d73f7ae683fd73b8d96884257e752",
-        "receipt_sha256": "986f61283c252b915f5931e317389ba50ba0b738556d1111987296bc941c8734",
+        "command_sha256": "fdf9b30e34689439dbd8471278066db0100a348257ea28683fb8fe93debafe5a",
+        "receipt_sha256": "ca04fa6acebd01a102a57795e2b61ecb99b83a21431807d77344f7280d7e24ef",
         "limits": "Synthetic operator through a service-role gateway, SQL commit followed by socket loss and fresh CLI recovery. No authenticated application route, human approval UI, physical process termination, restart or scientific acceptance."
       }
     }
   ],
-  "evidence_directory": "/home/nathaniel/.local/state/openplan/recovery-http-controls-20261008-final",
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/recovery-http-controls-20261008-upgrade",
   "source_sha256": {
-    "docs/reviews/2026-10-08-model-custody-metadata/prototype/recovery-decision.sql": "a6916a4768a536dbd5c20fa81e97fa61d3f0fe4b507c35515c77eacac69e5a4c",
+    "docs/reviews/2026-10-08-model-custody-metadata/prototype/recovery-decision.sql": "3a8da545fb864e35e6798a070301da929093bbcca51aaadf1335f6ee2dc4ace9",
     "docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_recovery_decision_http.py": "55cd4f0bfd207b5b868103352def48b0eaa88ba1c483606b1aaad469602c7fab",
     "workers/aequilibrae_worker/model_command_client.py": "ea121468e361b0e4e7751842497928ea3bc41cf836b10f0e4177de9b0b612c37",
-    "workers/aequilibrae_worker/model_recovery_decision_command.py": "015f69eb92e6b27d52cd5114054cefb8d44a92919997e38c77322e0318635c9d"
+    "workers/aequilibrae_worker/model_recovery_decision_command.py": "b8f09b6162b49dadd9bee171018ecf7ace8e4e717fb435a7bb22ee243c9c117e"
   },
-  "limits": "Actual PostgREST and SQL receipts with synthetic operator identity. Application actor derivation, agent approval, visible recovery, cancellation and restart remain unconnected."
+  "limits": "Actual PostgREST and SQL receipts with synthetic operator identity. This direct-service proof does not exercise application actor derivation, agent approval, visible recovery, cancellation or restart."
 }

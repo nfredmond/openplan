@@ -15,7 +15,7 @@ BASE='http://127.0.0.1:9'
 def command():
     return {'request_id':IDS[0],'destination':client.destination(BASE,'synthetic-recovery'),'operation':'abandon_model_run_execution',
       'arguments':{'workspace_id':IDS[1],'run_id':IDS[2],'actor_id':IDS[3],'reason':'Explicit synthetic abandonment','evidence':{'scope':'unconfirmed'},
-      'expected_state':{'workspace_id':IDS[1],'run_id':IDS[2],'status':'running','updated_at':STAMP,'attempt_managed':True,
+      'expected_state':{'model_id':IDS[0],'workspace_id':IDS[1],'run_id':IDS[2],'status':'running','updated_at':STAMP,'attempt_managed':True,
        'stages':[{'id':IDS[4],'status':'running','updated_at':STAMP,'active_attempt_id':IDS[5],'attempt_managed':True}]}}}
 
 def receipt(c):
