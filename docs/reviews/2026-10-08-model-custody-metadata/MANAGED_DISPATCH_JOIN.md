@@ -3862,3 +3862,28 @@ writer method. Normal dispatch remains disabled. The prepared instrument,
 actual artifact registration, native ingestion and worker call site must still
 be connected without changing historical assessment meanings or scientific
 claim tiers.
+
+
+### Native instrument writer relationship checks
+
+The new writer method now has a native database campaign. Each fresh admitted
+attempt registers six distinct synthetic artifacts for AequilibraE and six
+for ActivitySim, then records one instrument per method through the actual
+HTTP command path. Returned receipts match the native records, including
+workspace, run, stage, attempt, artifact IDs, hashes and `inconclusive` outcome.
+Calling the same retained name again returns the same checked receipt.
+
+The fixture files contain empty bytes with their actual SHA-256 and size. Their
+schema and method metadata exercise database relationships; their contents are
+not a prepared instrument and do not represent a scientific assessment. The
+normal, harmless-name and restored cases retain two instrument records and 12
+attempt-bound artifacts. A missing-write fault returns no receipt and must fail
+the native record-count assertion. Production files are unchanged by that fault.
+
+`prototype/verify_native_instrument_writer_controls.py` runs the cases serially
+against isolated clones and removes its temporary gateways. Its report is
+`prototype/native-instrument-writer-controls.json`. This closes the earlier
+new-writer-to-native-relationship gap for these fixtures. Preparing real source,
+geography, network, population, observation and matching evidence before model
+output access remains open, as do normal dispatcher integration, native
+concurrency, real Storage and scientific acceptance.

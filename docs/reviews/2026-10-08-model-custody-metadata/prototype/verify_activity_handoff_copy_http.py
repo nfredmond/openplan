@@ -106,7 +106,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                     else:
                         status,content=(200,storage[object_key]) if object_key in storage else (404,b'{}')
                     self.send_response(status);self.send_header('Content-Length',str(len(content)));self.end_headers();self.wfile.write(content);return
-                allowed=(method=='GET' and (path.startswith('/model_run_stages?') or path.startswith('/model_run_artifacts?'))) or (method=='POST' and (path=='/rpc/claim_model_stage_attempt' or (publication and path in ('/rpc/write_model_stage_attempt','/rpc/write_model_attempt_artifact','/rpc/write_model_attempt_kpi'))))
+                allowed=(method=='GET' and (path.startswith('/model_run_stages?') or path.startswith('/model_run_artifacts?'))) or (method=='POST' and (path=='/rpc/claim_model_stage_attempt' or (publication and path in ('/rpc/write_model_stage_attempt','/rpc/write_model_attempt_artifact','/rpc/write_model_attempt_kpi','/rpc/record_model_attempt_instrument'))))
                 if not allowed or self.headers.get('Authorization')!='Bearer '+key:
                     self.send_error(403);return
                 body=self.rfile.read(int(self.headers.get('Content-Length','0')))
@@ -232,6 +232,8 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
     if publication:
         report.pop('native_tables_unchanged')
         report['limits']='Actual stage handler, native database commands and scaffold pipeline. Storage HTTP byte service is synthetic. No normal dispatcher, native model, real Storage service, concurrent revocation fence or scientific acceptance.'
+        if publication=='instrument':
+            report['limits']='Native attempt-bound instrument writer and database relationships over empty synthetic artifact files. No scaffold stage execution, model, prepared instrument content, normal dispatcher, real Storage or scientific acceptance.'
         if publication=='native':
             report['limits']='Actual native runtime, ingestion, demand packaging and managed writes; copied prepared development bundle with 100-household sample. Synthetic Storage byte service. No Census rebuild, normal dispatcher, full population or scientific acceptance.'
         content=json.dumps(report,indent=2)+'\n'

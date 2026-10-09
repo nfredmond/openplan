@@ -8,6 +8,9 @@ from unittest.mock import patch
 
 
 def verify_stage(worker, writer, run, stage, base, key, output, storage, sql, database, control):
+    if control=='instrument':
+        from verify_native_instrument_writer import verify_instrument
+        return verify_instrument(writer,run,stage,output,sql,database)
     if control=='native':
         from verify_activity_native_publication import verify_native
         return verify_native(worker,writer,run,stage,base,key,output,storage,sql,database)
