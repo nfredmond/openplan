@@ -1,0 +1,54 @@
+{
+  "cases": [
+    {
+      "control": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "drop-registration",
+      "returncode": 1,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "wrong-reference",
+      "returncode": 1,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "omit-object",
+      "returncode": 1,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "lost-reply",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "lost-reply-wrong-request",
+      "returncode": 1,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    }
+  ],
+  "proof_sha256": "23f4225164486c765a18e3807d9823ec70c3ed3393f3550009069d2db36e557b",
+  "limits": "Joined native source sets and exact final-registration receipt recovery over synthetic files. No joined source-object interruption, normal dispatch, independent preparation, browser, human or scientific acceptance."
+}

@@ -385,3 +385,37 @@ and interruption recovery. Neither the standalone native TUS proof nor the
 standalone local manifest registration proof establishes that joined result.
 Normal dispatch and user-facing download acceptance remain open. Primary JSON
 documents are parsed in memory; large source objects transfer in bounded chunks.
+
+## Joined native source-set acceptance, October 9
+
+The source-set publisher and admitted writer now pass a joined native proof against
+Storage v1.67.20 and PostgREST in the same isolated database. Both methods use one
+admitted attempt. Each retains 23 semantic roles, publishes 15 unique source objects
+and one unchanged manifest, then registers a separate remote artifact. The proof
+checks all four local/remote artifact rows and downloads all 32 remote objects.
+It verifies object sizes/hashes, the original manifest bytes, method/attempt/workspace
+identity and manifest-last creation order.
+
+Eight [native cases](prototype/native-source-set-controls.json) behave as expected:
+normal, harmless binding reordering, omitted remote registration, wrong registered
+URI, omitted source object, lost final registration reply, wrong recovery request
+and restored behavior. The four faulty cases fail their named assertions. Each
+case removes its owned 512 MiB Storage container; the PostgREST context also removes
+its gateway. Private candidates and logs remain under
+`~/.local/state/openplan/native-source-set-controls-20261009a/`. The initial standalone
+run is retained under `native-source-set-publication-20261009a`.
+
+For the lost-reply case, the ActivitySim remote-manifest artifact transaction commits
+before the transport raises an error. The writer stops and refuses completion. A
+separate process invokes the existing command-recovery CLI with the exact pending
+request. It retrieves the same receipt without changing seven native table snapshots,
+including Storage object metadata, and without reopening the writer. An unrelated
+request ID fails recovery. Local source records remain separate and unchanged.
+
+The proof uses complete authored source fixtures, not independent scientific data.
+It does not run either model, admit normal dispatcher work, exercise browser downloads
+or establish human acceptance. The standalone native TUS proof covers interruption
+inside one object; this joined proof covers final artifact registration uncertainty.
+An operator workflow for reconciling a stopped whole-source publication before its
+final artifact command exists remains unfinished. It must preserve the original
+publication intent and claim ownership without silently resuming model execution.

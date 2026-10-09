@@ -82,6 +82,13 @@ def main():
             assert bucket.status_code in (200,201), 'Private bucket creation failed'
         else:
             assert bucket.status_code == 200 and bucket.json()['public'] is False, 'Expected private bucket: HTTP '+str(bucket.status_code)+' code '+str(bucket_error.get('code'))+' statusCode '+str(bucket_error.get('statusCode'))
+        if os.environ.get('OPENPLAN_NATIVE_SOURCE_SET') == '1':
+            from verify_native_source_set_publication import verify
+            report = verify(native, token, output, sql, database, source['fixture_run'])
+            report.update(database=database, storage_image=inspected['Config']['Image'])
+            (output/'result.json').write_text(json.dumps(report,indent=2)+'\n')
+            print(json.dumps(report,indent=2))
+            return
         if os.environ.get('OPENPLAN_NATIVE_TUS_PROOF') == '1':
             from verify_native_resumable_storage import verify
             report = verify(native, token, output)
@@ -255,7 +262,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{instrument_run}';
         if server is not None: server.shutdown(); server.server_close(); thread.join(timeout=5)
         if created: docker('rm','-f',name)
         if env_file.exists(): env_file.unlink()
-        if created and os.environ.get('OPENPLAN_NATIVE_TUS_PROOF') == '1':
+        if created and (os.environ.get('OPENPLAN_NATIVE_TUS_PROOF') == '1' or os.environ.get('OPENPLAN_NATIVE_SOURCE_SET') == '1'):
             check = subprocess.run(['docker','inspect',name],capture_output=True,timeout=15)
             assert check.returncode != 0, 'Owned TUS proof container remains'
             (output/'cleanup.json').write_text(json.dumps({'storage_container_removed':True})+'\n')
