@@ -2867,3 +2867,33 @@ channel cases remain separate evidence. Full native `stage_assignment` with all
 adapters together is the next execution boundary; it is not established by this
 checkpoint. Dispatcher activation, real interruption recovery, browser review
 and scientific acceptance remain open.
+
+
+## Full native bound assignment, October 8
+
+The complete `stage_assignment` function now runs in a reserved child with all
+current parent adapters together. The synthetic fixture uses AequilibraE 1.6.2,
+two centroid nodes, one bidirectional link, a 220-person-trip OD matrix and a
+scheduled GTFS archive. Project and package working copies pass through the
+actual writer preparation methods. Parent callbacks register count, feed and
+geometry inputs and confirm progress through the command journal. An audit hook
+rejects child network connections. Run reads and database transport are mocked.
+
+Baseline, harmless-comment and restored runs converge in two iterations with
+one loaded link. Each writes 20 output files and returns 173 auto, four transit
+and 43 active trips. A control that disables mode choice fails the expected
+modeled-transit assertion. The report stores worker/helper hashes and output
+hashes; native files remain in the evidence directory recorded in
+`prototype/native-bound-assignment-controls.json`. The exit receipt explicitly
+retains `execution_ready: false`.
+
+The first fixture attempt failed because its predecessor-test read stub did not
+provide the active stage row needed for progress. The fixture was corrected to
+use its existing ownership row. No production ownership guard was relaxed. The
+initial successful run is preserved separately from the controlled runs.
+
+This proves synthetic full-stage integration, not scientific accuracy. The
+fixture constructs consumed predecessor inventories directly and mocks parent
+transports. Native interruption/recovery, larger networks, calibration, cordons,
+long jobs, output publication and normal dispatcher activation remain open.
+Full V1 contract and independent scientific acceptance are unchanged.
