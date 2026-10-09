@@ -75,3 +75,49 @@ source archive. The reader change alone cannot close that requirement.
 Normal dispatcher enrollment, independent model acceptance for each published
 use, nationwide evidence and practicing-planner acceptance also remain open.
 This decision does not reduce the V1 contract or authorize a release.
+
+## October 9 read and project-export implementation
+
+Migration 24 adds SELECT for authenticated callers under workspace membership
+and visible same-workspace parent-run policies. It changes no retained rows and
+grants no direct writes, service-role table reads or receipt reads. The Supabase
+CLI created the migration; its filename was placed after migration 23 in this
+repository's existing October 16 migration sequence. The inventory check reports
+396 migrations, with no duplicate timestamps, empty files or invalid filenames.
+The design follows the distinction between grants and row policies in the
+[Supabase RLS documentation](https://supabase.com/docs/guides/database/postgres/row-level-security).
+
+Generated project modeling evidence now includes `attemptInstrumentCustody` as
+an additive collection. The collection preserves both methods, repeated attempts,
+all six artifact identities and hashes, and inconclusive outcomes. It is included
+in the revision hash and has its own evidence descriptors. Historical comparable
+records remain separate. Failed reads abort export generation.
+
+The two focused export and route suites pass 16 tests. The expanded pagination
+fixture asserts the new query's complete projection and exact workspace/run
+filters, retains seven records with both methods and repeated attempts, detects
+a changed output hash in the revision token and refuses a later-page outage.
+[Eight export controls](prototype/instrument-export-controls.json) include
+harmless and restored passes and six targeted failures. These are generated-file
+checks with a mocked database, not a native authenticated freeze or download.
+
+[Sixteen native access controls](prototype/instrument-member-read-controls.json)
+run over ten populated custody rows in a fresh clone. They cover a new viewer,
+an owner in another workspace, membership removal, parent-run hiding, prohibited
+reads and actual direct-write refusal. Five transactional policy/grant faults
+fail for their intended reasons; harmless and restored controls pass. All custody
+rows remain unchanged. Postgres role/JWT-sub settings are explicit, but real Auth
+issuance and PostgREST access are not exercised by this script.
+
+Private candidate records under `instrument-member-read-20261009a` through `e`
+account for five isolated databases. The first run used the last owner as the
+removal fixture and correctly hit the unrelated last-owner protection. Later
+runs use a fresh viewer; the final run also creates a separate-workspace owner.
+No source database, browser acceptance stack or running server was changed.
+
+Focused lint passes. The first whole-app TypeScript check exhausted Node's
+default heap. One retry with a 3 GiB Node heap inside a 4 GiB, no-swap scope
+also exhausted its heap. Whole-app type checking remains unverified locally.
+Reports and assistant readers,
+source-file publication, native application freeze/download and desktop/390px
+browser acceptance remain unimplemented or unproved by this checkpoint.

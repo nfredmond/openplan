@@ -1,0 +1,88 @@
+{
+  "migration_sha256": "8a7058b66fb3cb5562c773393a1a0acd2a1e05f471a57289cf5af5adffc1a47a",
+  "retained_records": 10,
+  "custody_unchanged": true,
+  "cases": [
+    {
+      "case": "normal",
+      "expected_failure": null,
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "expected_failure": null,
+      "passed": true
+    },
+    {
+      "case": "removed-membership",
+      "expected_failure": null,
+      "passed": true
+    },
+    {
+      "case": "hidden-parent",
+      "expected_failure": null,
+      "passed": true
+    },
+    {
+      "case": "fault-open-policy",
+      "expected_failure": "outsider rows exposed",
+      "passed": true
+    },
+    {
+      "case": "fault-deny-member",
+      "expected_failure": "member records missing",
+      "passed": true
+    },
+    {
+      "case": "fault-write-grant",
+      "expected_failure": "direct write exposed",
+      "passed": true
+    },
+    {
+      "case": "fault-receipt-grant",
+      "expected_failure": "receipt exposed",
+      "passed": true
+    },
+    {
+      "case": "fault-no-parent",
+      "expected_failure": "hidden parent rows exposed",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "expected_failure": null,
+      "passed": true
+    },
+    {
+      "case": "anonymous-read",
+      "expected_failure": "permission denied for table",
+      "passed": true
+    },
+    {
+      "case": "service-direct-read",
+      "expected_failure": "permission denied for table",
+      "passed": true
+    },
+    {
+      "case": "member-receipt-read",
+      "expected_failure": "permission denied for table",
+      "passed": true
+    },
+    {
+      "case": "member-insert",
+      "expected_failure": "permission denied for table",
+      "passed": true
+    },
+    {
+      "case": "member-update",
+      "expected_failure": "permission denied for table",
+      "passed": true
+    },
+    {
+      "case": "member-delete",
+      "expected_failure": "permission denied for table",
+      "passed": true
+    }
+  ],
+  "limits": "Native Postgres roles and JWT sub settings on synthetic retained records. No Auth token issuance, REST, application exports, browser, source completeness or scientific acceptance."
+}
