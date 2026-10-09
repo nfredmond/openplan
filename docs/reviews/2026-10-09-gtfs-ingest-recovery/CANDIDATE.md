@@ -22,15 +22,16 @@ work. Storage cleanup and database closure are still separate operations.
 - Ordered native proof preserves a completed/current version, closes a stale
   refresh once, preserves the working feed's status, and refuses late stage and
   route writes. The transaction rolls back.
-- Ten native control runs cover baseline, harmless comment, status and freshness
+- Eleven native control runs cover baseline, harmless comment, status and freshness
   checks, version and derived-write fences, stop/tract trigger attachment,
   authenticated-role exclusion and restored definitions. Targeted defects fail
   their named assertions. Definitions are changed inside rolled
   back transactions.
-- Seven HTTP adapter tests cover exact scan projection and cutoff, exact command
+- Thirteen HTTP adapter tests cover exact scan projection and cutoff, exact command
   payload, confirmed cleanup, declined cleanup, malformed results and RPC error.
-  Six mutation runs cover baseline, harmless edit, ignored refusal, wrong version,
-  malformed-result acceptance and restored source. Targeted defects fail assertions.
+  Ten mutation runs cover baseline, harmless edit, ignored refusal, wrong version,
+  malformed-result acceptance, ignored Storage/acknowledgment errors, skipped
+  pending cleanup, malformed acknowledgments and restored source. Targeted defects fail assertions.
 - Three existing GTFS files pass 86 tests, with 11 live tests skipped. Scoped
   ESLint passes. These skipped tests do not establish live application acceptance.
 
@@ -55,3 +56,40 @@ from these bounded controls.
 The older counterexample remains historical evidence. Its raw statements do not
 call the new function; use `verify-recovery.sql` and
 `verify_recovery_controls.py` for the candidate behavior.
+
+## Durable private-file cleanup follow-up
+
+The first actual TypeScript/PostgREST check reproduced an additional interruption
+problem: a Storage error was ignored after database closure, and the next sweep
+never retried it. `http-interruption-counterexample.json` retains that result.
+
+The cleanup transaction now writes a service-role-only pending object record.
+That record survives version deletion and process loss. A sweep also processes
+pending objects when it finds no stale versions. It acknowledges removal only
+after Storage succeeds. Storage failure or acknowledgment failure surfaces an
+error and leaves the record available for retry. No public role can read or
+change pending paths.
+
+`verify_http.py` creates fresh synthetic records and a restricted schema in an
+explicit owned clone, then uses the production TypeScript through PostgREST.
+`http-recovery-result.json` records an injected Storage 503, a subsequent retry
+with no stale versions, and a final empty pass. Database calls are native;
+Storage responses are simulated. The gateway is loopback-only and removed after
+the proof. This does not prove an actual Storage object's removal, full-catalog
+PostgREST capacity or browser operation. The native ordered proof checks atomic
+pending-record insertion; omitting it fails its named assertion. Adapter checks
+also cover lost cleanup acknowledgment and retry.
+
+The write-policy guard initially rejected an acknowledgment delete without a
+returned row. The candidate now requests the deleted version ID and validates
+its identity and cardinality. An empty result is explicitly permitted when a
+concurrent sweep has acknowledged the same request. Adapter tests reject null,
+wrong-ID and duplicate acknowledgments; removing this guard fails a mutation
+control. The existing write-policy guard passes after the correction.
+
+The complete amended migration also applies to a fresh clone containing one
+promoted synthetic feed, one version, one route row and one stop row. Exact
+before/after JSON comparison preserves every existing value, excluding only the
+new nullable abandonment field, which remains null. `upgrade-result.json`
+records that narrow upgrade and the migration digest. It is not a representative
+agency-volume upgrade or proof of every intervening migration combination.

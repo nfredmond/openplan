@@ -952,11 +952,31 @@ export async function reapAbandonedGtfsIngests(
       throw new Error(`Could not close abandoned ingest: ${result.error?.message ?? "invalid cleanup result"}`);
     }
     if (!result.data) continue;
-    // The transaction has fenced the version before its private object is removed.
-    if (row.storage_path) {
-      await service.storage.from(GTFS_UPLOADS_BUCKET).remove([row.storage_path]);
-    }
     reaped.push(row.id);
+  }
+
+  // Pending removals survive process loss and Storage errors after database closure.
+  const cleanup = await service
+    .from("gtfs_ingest_storage_cleanup")
+    .select("version_id, storage_path")
+    .order("created_at", { ascending: true })
+    .limit(200);
+  if (cleanup.error) throw new Error(`Could not read pending GTFS object cleanup: ${cleanup.error.message}`);
+  for (const object of cleanup.data ?? []) {
+    const removed = await service.storage.from(GTFS_UPLOADS_BUCKET).remove([object.storage_path]);
+    if (removed.error) throw new Error(`Could not remove abandoned GTFS object: ${removed.error.message}`);
+    const acknowledged = await service
+      .from("gtfs_ingest_storage_cleanup")
+      .delete()
+      .eq("version_id", object.version_id)
+      .eq("storage_path", object.storage_path)
+      .select("version_id");
+    if (acknowledged.error) throw new Error(`Could not acknowledge GTFS object cleanup: ${acknowledged.error.message}`);
+    // Zero means another sweep already acknowledged the same immutable request.
+    if (!Array.isArray(acknowledged.data) || acknowledged.data.length > 1 ||
+      acknowledged.data.some((receipt) => receipt.version_id !== object.version_id)) {
+      throw new Error("Invalid GTFS object cleanup acknowledgment");
+    }
   }
 
   return { scanned: rows.length, reaped };

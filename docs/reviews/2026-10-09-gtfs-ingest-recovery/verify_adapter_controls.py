@@ -11,6 +11,10 @@ cases = [('baseline', original, True), ('harmless_comment', original+'\n// harml
          ('ignore_false_receipt', original.replace('    if (!result.data) continue;', '    // receipt ignored'), False),
          ('wrong_version', original.replace('p_version_id: row.id,', 'p_version_id: "wrong",'), False),
          ('accept_invalid_shape', original.replace('result.error || typeof result.data !== "boolean"', 'result.error'), False),
+         ('ignore_storage_error', original.replace('if (removed.error) throw', 'if (false) throw'), False),
+         ('ignore_ack_error', original.replace('if (acknowledged.error) throw', 'if (false) throw'), False),
+         ('skip_pending_cleanup', original.replace('for (const object of cleanup.data ?? [])', 'for (const object of [])'), False),
+         ('ignore_ack_shape', original.replace('if (!Array.isArray(acknowledged.data) || acknowledged.data.length > 1 ||\n      acknowledged.data.some((receipt) => receipt.version_id !== object.version_id))', 'if (false)'), False),
          ('restored', original, True)]
 results = []
 try:

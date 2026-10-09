@@ -1,0 +1,14 @@
+{
+  "migration": "20261016000025",
+  "populatedSyntheticFeed": true,
+  "existingRowsUnchanged": true,
+  "counts": {
+    "feeds": 1,
+    "versions": 1,
+    "routes": 1,
+    "stops": 1
+  },
+  "newAbandonmentField": "t",
+  "migrationSha256": "3a71dc51831ca384d1f4dab35ae19ed24adb68b0f1b9312fa9d6609255e4ea8a",
+  "comparison": "Exact JSON equality across feed, version (excluding the new nullable column), route and stop rows before and after applying the full migration"
+}

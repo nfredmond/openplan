@@ -25,6 +25,26 @@
     "returnCode": 1
   },
   {
+    "case": "ignore_storage_error",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "ignore_ack_error",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "skip_pending_cleanup",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "ignore_ack_shape",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
     "case": "restored",
     "expectedPass": true,
     "returnCode": 0

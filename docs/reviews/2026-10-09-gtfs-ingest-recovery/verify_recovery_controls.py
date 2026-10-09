@@ -24,7 +24,9 @@ version = function('guard_gtfs_abandoned_version').replace('OLD.ingest_abandoned
 derived = function('guard_gtfs_abandoned_derived_write').replace('v_abandoned IS NOT NULL', 'false')
 fresh = function('reap_gtfs_feed_version').replace('v.updated_at >= p_cutoff', 'false')
 status = function('reap_gtfs_feed_version').replace("v.status NOT IN ('pending','fetching','parsing')", 'false')
+queue = function('reap_gtfs_feed_version').replace('IF v.storage_path IS NOT NULL THEN', 'IF false THEN')
 cases = [('baseline', source, None), ('harmless_comment', '-- harmless comment\n' + source, None),
+         ('omit_pending_cleanup', inject(queue), 'pending object cleanup not retained'),
          ('omit_status_guard', inject(status), 'noncurrent ready version was reaped'),
          ('omit_stop_trigger', inject('DROP TRIGGER gtfs_stop_abandoned_guard ON public.gtfs_stop_service_levels;'), 'late stop write accepted'),
          ('omit_tract_trigger', inject('DROP TRIGGER gtfs_tract_abandoned_guard ON public.gtfs_tract_service;'), 'late tract write accepted'),

@@ -16,12 +16,14 @@ BEGIN
  IF (SELECT count(*) FROM gtfs_route_service_levels WHERE feed_version_id='33333333-3333-4333-8333-333333333333')<>1 THEN
  RAISE EXCEPTION 'completed route rows changed'; END IF;
 END $proof$;
-INSERT INTO gtfs_feed_versions(id,workspace_id,feed_id,source_kind,status,updated_at)
-VALUES('44444444-4444-4444-8444-444444444444','11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222','upload','parsing',now()-interval '20 minutes');
+INSERT INTO gtfs_feed_versions(id,workspace_id,feed_id,source_kind,status,updated_at,storage_path)
+VALUES('44444444-4444-4444-8444-444444444444','11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222','upload','parsing',now()-interval '20 minutes','synthetic/pending.zip');
 DO $proof$
 BEGIN
  IF NOT reap_gtfs_feed_version('44444444-4444-4444-8444-444444444444',now()-interval '15 minutes') THEN
  RAISE EXCEPTION 'stale version not reaped'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM gtfs_ingest_storage_cleanup WHERE version_id='44444444-4444-4444-8444-444444444444' AND storage_path='synthetic/pending.zip') THEN
+ RAISE EXCEPTION 'pending object cleanup not retained'; END IF;
  IF reap_gtfs_feed_version('44444444-4444-4444-8444-444444444444',now()-interval '15 minutes') THEN
  RAISE EXCEPTION 'repeat cleanup claimed success'; END IF;
  BEGIN

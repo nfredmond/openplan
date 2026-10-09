@@ -1,5 +1,14 @@
 -- Serialize stale cleanup with completion and prevent abandoned attempts resuming.
 BEGIN;
+-- Keep pending object removal even if the version is subsequently deleted.
+CREATE TABLE public.gtfs_ingest_storage_cleanup (
+  version_id uuid PRIMARY KEY,
+  storage_path text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT clock_timestamp()
+);
+ALTER TABLE public.gtfs_ingest_storage_cleanup ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.gtfs_ingest_storage_cleanup FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT, DELETE ON public.gtfs_ingest_storage_cleanup TO service_role;
 ALTER TABLE public.gtfs_feed_versions ADD COLUMN ingest_abandoned_at timestamptz;
 
 CREATE FUNCTION public.guard_gtfs_abandoned_version() RETURNS trigger
@@ -45,6 +54,10 @@ BEGIN
   PERFORM 1 FROM public.gtfs_feeds WHERE id=v.feed_id FOR UPDATE;
   IF EXISTS(SELECT 1 FROM public.gtfs_feeds WHERE id=v.feed_id AND current_version_id=v.id) THEN
     RETURN false;
+  END IF;
+  IF v.storage_path IS NOT NULL THEN
+    INSERT INTO public.gtfs_ingest_storage_cleanup(version_id,storage_path)
+    VALUES(v.id,v.storage_path);
   END IF;
   DELETE FROM public.gtfs_route_service_levels WHERE feed_version_id=v.id;
   DELETE FROM public.gtfs_stop_service_levels WHERE feed_version_id=v.id;
