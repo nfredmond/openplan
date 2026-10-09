@@ -85,5 +85,17 @@ def retain_and_execute(assignment, *, directory, context, profile, network_state
         try:os.fsync(descriptor)
         finally:os.close(descriptor)
     receipt={'manifest_path':str(destination/'manifest.json'),**{key:value for key,value in _digest(destination/'manifest.json').items() if key!='path'},'scope':'initial_assignment_only'}
+    import model_engine_binding
+    import model_attempt_writer
+    engine = model_engine_binding.current()
+    writer = model_attempt_writer.current()
+    if engine is not None:
+        engine.register_initial_inputs(receipt)
+    elif writer is not None:
+        import model_assignment_input_publication
+        confirmed = model_assignment_input_publication.register(writer, destination.parent)
+        if confirmed != receipt:
+            writer.stopped = True
+            raise ValueError('Writer confirmed different initial assignment inputs')
     assignment.execute()
     return receipt

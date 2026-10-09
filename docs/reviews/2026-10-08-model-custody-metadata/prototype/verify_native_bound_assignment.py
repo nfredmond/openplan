@@ -49,10 +49,18 @@ def main():
     output=Path(os.environ['OPENPLAN_BOUND_ASSIGNMENT_OUTPUT']).absolute()
     output.mkdir(mode=0o700,parents=True,exist_ok=False)
     control=os.environ.get('OPENPLAN_BOUND_ASSIGNMENT_CONTROL','baseline')
-    if control not in ('baseline','harmless','disable-mode-choice','lost-progress','lost-response','swallow-progress-fault'):raise ValueError('Unknown proof control')
+    if control not in ('baseline','harmless','disable-mode-choice','lost-progress','lost-response','swallow-progress-fault','omit-initial-input-registration'):raise ValueError('Unknown proof control')
     fixture=ProjectWorkingCopyTests();fixture.setUp();handle=None
     try:
         writer=fixture.writer;writer.get=fixture.get
+        if not getattr(fixture,'live_transport',False):
+            fixture.get.return_value.json.return_value[0]['stage_name']='Network Assignment'
+        if control=='omit-initial-input-registration':
+            original_artifact=writer.record_artifact
+            def omit_initial(payload,**kwargs):
+                if payload.get('artifact_type')=='model_initial_assignment_inputs':return None
+                return original_artifact(payload,**kwargs)
+            writer.record_artifact=omit_initial
         root=writer.workspace(output/'runs',writer.context.run_id)
         source=root/'source_project'
         with project_scope(Project,str(source),create=True) as project:
@@ -193,12 +201,17 @@ def main():
         assert result['mode_split']['transit_los']['feed_origin']=='operator_path'
         assert result['loaded_links']>0 and result['convergence']['converged'],result
         assert Path(result['counts_path']).is_relative_to(root/'run_output/child_count_inputs')
+        initial=[item for item in journal.read_existing(writer.directory,writer.context.destination,include_resolved=True)
+                 if item['command']['operation']=='write_model_attempt_artifact'
+                 and item['command']['arguments']['payload'].get('artifact_type')=='model_initial_assignment_inputs']
+        assert len(initial)==1 and initial[0]['resolved'], 'Native assignment initial input registration missing'
+        assert initial[0]['command']['arguments']['payload']['content_hash']==result['initial_assignment_inputs']['sha256']
         receipt=handle.confirm_exit();assert receipt['execution_ready'] is False
         artifacts={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (root/'run_output').rglob('*') if p.is_file()}
         assert 'run_output/link_volumes.csv' in artifacts
         report={'control':control,'live_parent_transport':getattr(fixture,'live_transport',False),'worker_sha256':hashlib.sha256((WORKER/'main.py').read_bytes()).hexdigest(),'source_sha256':{name:hashlib.sha256((WORKER/name).read_bytes()).hexdigest() for name in ('model_engine_binding.py','model_engine_channel.py','model_engine_process.py','model_transit_execution.py','model_geometry_inputs.py','model_count_inputs.py')},
                 'engine_version':(root/'native-version.txt').read_text(),
-                'convergence':result['convergence'],'loaded_links':result['loaded_links'],'mode_split':result['mode_split'],'artifacts':artifacts,'exit_receipt':receipt,
+                'convergence':result['convergence'],'loaded_links':result['loaded_links'],'mode_split':result['mode_split'],'artifacts':artifacts,'exit_receipt':receipt,'initial_input_registration_confirmed':True,
                 'limits':'Full native stage_assignment with two synthetic centroid nodes and one link. Parent transport mode is recorded explicitly. Directly constructed consumed predecessor fixtures, no calibration/cordons. No interruption recovery, scientific validity, normal dispatcher or release acceptance.'}
         content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/('native-bound-assignment-'+('live-' if getattr(fixture,'live_transport',False) else '')+control+'.json')).write_text(content)
         print(json.dumps({'output':str(output),'engine_version':report['engine_version'],'converged':result['convergence']['converged'],'loaded_links':result['loaded_links'],'artifact_count':len(artifacts)}))

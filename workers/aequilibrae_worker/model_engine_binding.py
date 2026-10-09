@@ -70,6 +70,13 @@ class EngineBinding:
         if self.output_directory is None or str(Path(out_dir).absolute()) != self.output_directory:
             raise ValueError('Input preparation requires parent-created outputs')
 
+    def register_initial_inputs(self, receipt):
+        self.require_outputs(Path(receipt['manifest_path']).parent.parent)
+        confirmed = self.client.register_initial_inputs()
+        if confirmed != receipt:
+            raise ValueError('Parent confirmed different initial assignment inputs')
+        return confirmed
+
     def prepare_counts(self, out_dir, path_override, record_override):
         self.require_outputs(out_dir)
         if path_override is not None or record_override is not None:

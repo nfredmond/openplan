@@ -121,6 +121,9 @@ class ProgressClient(Channel):
     def create_outputs(self):
         return self._request('create_outputs', {}, result=True)
 
+    def register_initial_inputs(self):
+        return self._request('register_initial_inputs', {}, result=True)
+
 
 class ProgressParent(Channel):
     def __init__(self, connection, writer, *, output_name=None, count_preparer=None, transit_preparer=None):
@@ -133,6 +136,7 @@ class ProgressParent(Channel):
         self.output_directory = None
         self.output_identity = None
         self.count_preparation_started = False
+        self.initial_inputs_started = False
 
     def serve_one(self):
         """Run on the writer's owning thread; never accept a child-supplied identity."""
@@ -144,7 +148,7 @@ class ProgressParent(Channel):
             if (set(request) != fields
                     or type(request['version']) is not int or request['version'] != VERSION
                     or type(request['sequence']) is not int or request['sequence'] != self.sequence
-                    or operation not in ('progress', 'read_run', 'read_paths', 'create_outputs', 'prepare_counts', 'prepare_selected_transit', 'prepare_transit')):
+                    or operation not in ('progress', 'read_run', 'read_paths', 'create_outputs', 'prepare_counts', 'prepare_selected_transit', 'prepare_transit', 'register_initial_inputs')):
                 raise ChannelStopped('Engine request is outside the allowed protocol')
             if operation == 'progress':
                 if not isinstance(request['log_tail'], str) or len(request['log_tail']) > 20000:
@@ -164,6 +168,14 @@ class ProgressParent(Channel):
                 self.output_directory = response['result']['output_directory']
                 info = os.stat(self.output_directory, follow_symlinks=False)
                 self.output_identity = (info.st_dev, info.st_ino)
+            elif operation == 'register_initial_inputs':
+                if self.initial_inputs_started or self.output_directory is None:
+                    raise ChannelStopped('Initial input registration requires fresh parent-created outputs')
+                self.initial_inputs_started = True
+                self._verify_output_directory()
+                import model_assignment_input_publication
+                response['result'] = model_assignment_input_publication.register(self.writer, self.output_directory)
+                self._verify_output_directory()
             elif operation == 'prepare_counts':
                 if self.count_preparation_started:
                     raise ChannelStopped('Count preparation was already requested')

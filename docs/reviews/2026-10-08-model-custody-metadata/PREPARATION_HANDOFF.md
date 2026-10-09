@@ -326,3 +326,40 @@ observation independence or a complete normal-dispatch journey. Database artifac
 registration and the link to the consumed observation/structural preparation are
 still missing. The network record identifies solver-visible state; this change
 does not add a complete downloadable graph snapshot or a concurrent-mutation lease.
+
+## Parent registration before initial assignment, October 9
+
+Managed execution now registers the initial-input manifest before the solver
+starts. The child sends a no-argument `register_initial_inputs` request over its
+existing ordered channel. The parent uses its own previously created output
+directory and verifies its identity. It reads only the fixed manifest and four
+named arrays, rejects aliases and non-regular/shared-link files, verifies exact
+hashes and sizes, and checks that run/stage and unassessed claims match the
+snapshot contract. A current owned-stage read verifies the method-specific
+assignment stage name. The attempt artifact command then registers
+`model_initial_assignment_inputs` using the fixed `initial-assignment-inputs`
+logical name. Native attempt fencing remains the final write boundary.
+
+The parent acknowledges only after retaining the artifact receipt. The child
+compares the acknowledgement to its exact local snapshot before calling execute.
+A missing or different acknowledgement prevents assignment. The parent refuses
+a duplicate registration request on the channel. Directly bound managed calls
+use the same registration helper; legacy calls without either binding retain
+local files only. No scientific claim is promoted by this record.
+
+Sixty related tests pass, including six new registration/channel cases. Eight
+publication mutation controls, seven existing snapshot controls and four native
+registration controls pass their expected outcomes. The native AequilibraE 1.6.2
+proof checks that exactly one resolved initial-input command exists in the parent
+journal and matches the assignment result. Deliberately skipping that command
+fails the proof even though the synthetic solver completes. Native readback still
+matches both class matrices to OMX exports. Reports are in
+`prototype/assignment-publication-controls.json` and
+`prototype/native-initial-registration-controls.json`; private native evidence is
+under `native-initial-registration-controls-20261009a` in local OpenPlan state.
+
+Database responses are injected in this native-engine proof. Actual database
+commit and lost-reply recovery for this new artifact, linkage to observation and
+structural preparation, calibration coverage and a complete normal-dispatch
+journey remain open. Existing native recovery evidence for preparation-consumption
+artifacts does not establish those new transaction cases automatically.
