@@ -2680,3 +2680,32 @@ trusted parent inputs in these checks; their derivation from owned package data
 still needs integration. General-origin child requests and coverage outcomes,
 hard download deadlines, native registration recovery, full assignment execution
 and scientific acceptance remain unfinished. Normal managed dispatch stays off.
+
+### Coverage outcomes without false local-feed absence
+
+Inspection found that the normal assignment branch labeled an operator/bundled
+archive's coverage miss `no_local_feed` and stated that no GTFS feed covers the
+study area. One archive cannot establish that claim. The branch now uses shared
+`transit_coverage_refusal`: loaded-archive misses are `feed_unavailable`, with
+separate reasons for selected-feed misses and catalog-unavailable fallback misses.
+The existing completed-discovery/no-match path remains `no_local_feed`.
+
+`skim_prepared_transit` applies the same origin-aware coverage decision to retained
+inputs and delegates covered feeds to the existing numerical implementation with
+explicit settings. A miss returns no skim; a covered feed retains its origin and
+catalog metadata. Unknown origins refuse rather than acquiring a coverage claim.
+No demand, observation, tolerance or numerical fitting changes.
+
+Five new tests cover all six loaded origins, distinct refusal reasons, covered
+skims, unknown origins and execution of the actual normal-assignment miss branch
+extracted from its AST. The warning-enabled transit suite passes 49 tests. All 25
+discovery and 51 transit-handoff checks also pass. Five faults fail for restored
+false absence, erased catalog failure, skipped coverage, a covered feed mislabeled
+unavailable and accepted unknown origin; baseline, harmless and restored controls
+pass. See `prototype/transit-coverage-controls.json`.
+
+The normal branch's status/log correction is tested at its executable branch,
+not through the full model run or rendered evidence panel. Browser acceptance
+remains open. General child-channel coverage, centroid custody, native registration
+recovery, full assignment, provider containment and scientific acceptance remain
+unfinished. Normal managed dispatch is still disabled.

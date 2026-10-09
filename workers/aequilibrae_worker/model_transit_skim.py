@@ -154,3 +154,36 @@ def skim_prepared_feed_version(los, prepared_meta: dict, lons, lats, *,
         f"{meta['service_period'] or 'not stated in the feed calendar'}.\n"
     )
     return meta, skim, log
+
+
+def transit_coverage_refusal(feed_origin: str) -> dict:
+    """A loaded archive's miss establishes nothing about other local feeds."""
+    if feed_origin == 'workspace_feed_version':
+        reason = 'selected_feed_has_no_stops_in_study_area'
+        message = 'The selected feed has no served stops in this study area. No other feed was substituted.'
+    elif feed_origin == 'bundled_after_catalog_unavailable':
+        reason = 'feed_catalog_unavailable'
+        message = 'The bundled fallback has no served stops in this study area. The catalog was unavailable, so local feed coverage remains unknown.'
+    elif feed_origin in ('operator_url', 'operator_path', 'discovered_catalog', 'bundled_default'):
+        reason = 'feed_has_no_stops_in_study_area'
+        message = 'The loaded feed has no served stops in this study area. This does not establish whether another local feed is available.'
+    else:
+        raise ValueError('Unknown retained transit feed origin')
+    return {'transit_status': 'feed_unavailable', 'no_feed_reason': reason, 'log': message + '\n'}
+
+
+def skim_prepared_transit(los, prepared_meta: dict, lons, lats, *, settings, deadline=None):
+    """Apply coverage and compute using the retained feed decision and settings."""
+    meta = dict(prepared_meta)
+    origin = meta['feed_origin']
+    refusal = transit_coverage_refusal(origin)
+    gtfs_skim.check_deadline(deadline, 'checking the retained transit feed')
+    if not gtfs_skim.feed_covers(los, lons, lats, buffer_miles=settings.access_miles):
+        meta['no_feed_reason'] = refusal['no_feed_reason']
+        return {'transit_status': refusal['transit_status'], 'metadata': meta,
+                'skim': None, 'log': refusal['log']}
+    # This shared numerical path preserves ingest dates when present and includes
+    # parser/frequency disclosures. Coverage has already been checked above.
+    meta, skim, log = skim_prepared_feed_version(los, meta, lons, lats,
+                                                settings=settings, deadline=deadline, feed_origin=origin)
+    return {'transit_status': 'modeled', 'metadata': meta, 'skim': skim, 'log': log}

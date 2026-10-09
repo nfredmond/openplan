@@ -107,7 +107,7 @@ import mode_choice
 import gtfs_skim
 from model_transit_skim import (
     _transit_feed_summary, _feed_expiry_log_note,
-    _INGEST_AUTHORITATIVE_FEED_KEYS, skim_prepared_feed_version,
+    _INGEST_AUTHORITATIVE_FEED_KEYS, skim_prepared_feed_version, transit_coverage_refusal,
 )
 import count_validation
 import model_validation_core
@@ -4560,27 +4560,10 @@ def stage_assignment(
                             # The feed loaded but none of its stops fall within the study
                             # area — skimming it would report a misleading transit_status
                             # of "modeled" with a 0 share.
-                            if feed_plan.fallback_after_catalog_failure:
-                                # The bundled feed was standing in for a catalog we could
-                                # not read, so its miss says only that IT is the wrong
-                                # feed. Nothing was established about this area, and
-                                # calling that "no local feed" would state a coverage
-                                # fact nobody checked.
-                                transit_status = "feed_unavailable"
-                                transit_los_meta["no_feed_reason"] = "feed_catalog_unavailable"
-                                log += (
-                                    "The bundled fallback feed has no stops in this study area, and the "
-                                    "feed catalog could not be reached — so whether a feed covers this "
-                                    "study area is UNKNOWN, not an absence of local service.\n"
-                                )
-                            else:
-                                transit_status = "no_local_feed"
-                                transit_los_meta["no_feed_reason"] = "feed_has_no_stops_in_study_area"
-                                log += (
-                                    "No GTFS feed covers this study area; transit not modeled "
-                                    "(transit share 0 — NOT 'no transit demand'). Provide a local feed "
-                                    "via GTFS_PATH/GTFS_URL to model transit for this area.\n"
-                                )
+                            refusal = transit_coverage_refusal(feed_origin)
+                            transit_status = refusal["transit_status"]
+                            transit_los_meta["no_feed_reason"] = refusal["no_feed_reason"]
+                            log += refusal["log"]
                         else:
                             transit_skim = gtfs_skim.transit_skim(los, lons, lats, deadline=transit_deadline)
                             transit_los_meta.update(_transit_feed_summary(los))
