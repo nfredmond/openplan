@@ -41,6 +41,7 @@ class EngineProcess:
         self.receipt=None
         self.progress=None
         self.scope=None
+        self.owner_guard=None
         self.cancellation_requested=False
         self.cancellation=None
         self.cancelled_receipt=None
@@ -68,12 +69,16 @@ class EngineProcess:
             launch_argv=argv
             if scope_limits is not None:
                 from model_engine_supervision import OwnedEngineScope
-                self.scope=OwnedEngineScope(scope_limits)
+                from model_engine_owner_guard import OwnerGuard
+                self.owner_guard=OwnerGuard()
+                self.scope=OwnedEngineScope(scope_limits,owner_guard=self.owner_guard)
                 launch_argv=self.scope.command(argv)
                 inherited=(*inherited,self.scope.child.fileno())
                 self.identity['scope_unit']=self.scope.unit
             with self._pinned() as descriptor:
                 _record(descriptor,'launch-reserved.json',self.identity)
+                if self.owner_guard is not None:
+                    _record(descriptor,'owner-guard-started.json',{**self.identity,'guard':self.owner_guard.identity})
                 # Reservation survives spawn failure. Raw arguments and environment
                 # are not written to the receipt; child output belongs in a private log.
                 file=os.open('engine.log',os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600,dir_fd=descriptor)
@@ -97,6 +102,7 @@ class EngineProcess:
                 if hasattr(self,'process'):
                     if self.process.poll() is None:self.process.terminate()
                     self.process.wait(timeout=10)
+            if self.owner_guard is not None:self.owner_guard.stop()
             raise
         finally:
             if child_channel is not None:child_channel.close()
@@ -149,6 +155,7 @@ class EngineProcess:
                  'execution_ready':False,'database_status_changed':False}
         with self._pinned() as descriptor:_record(descriptor,'cancellation-observed.json',receipt)
         self.cancelled_receipt=receipt
+        if self.owner_guard is not None:self.owner_guard.stop()
         return dict(receipt)
 
     def confirm_exit(self):
@@ -172,8 +179,10 @@ class EngineProcess:
             except ScopeStillPopulated as error:raise EngineStillRunning(str(error)) from error
             except BaseException:
                 self.writer.stopped=True
+                if self.owner_guard is not None:self.owner_guard.stop()
                 raise
         try:
+            if self.owner_guard is not None:self.owner_guard.require_alive()
             self.writer.files.verify()
             receipt={**self.identity,'pid':self.process.pid,'returncode':code,
                      'observed_original_process_group_empty':True,'execution_ready':False,
@@ -184,8 +193,10 @@ class EngineProcess:
             self.receipt=receipt
         except BaseException:
             self.writer.stopped=True
+            if self.owner_guard is not None:self.owner_guard.stop()
             raise
         if self.progress is not None:self.progress.stop()
+        if self.owner_guard is not None:self.owner_guard.stop()
         if code!=0:
             self.writer.stopped=True
             raise RuntimeError('Engine exited unsuccessfully; retained files require reconciliation')

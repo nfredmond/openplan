@@ -73,25 +73,30 @@ def inspect_saved_scope(identity):
 
 class OwnedEngineScope:
     """Hold a live startup gate until a caller durably records verified identity."""
-    def __init__(self,limits):
+    def __init__(self,limits,owner_guard=None):
         if not isinstance(limits,ScopeLimits):raise ValueError('Explicit ScopeLimits required')
         self.runner=shutil.which('systemd-run');self.controller=shutil.which('systemctl')
         if sys.platform!='linux' or not self.runner or not self.controller or not Path('/sys/fs/cgroup/cgroup.controllers').is_file():
             raise SupervisionUnavailable('Linux user systemd and cgroup v2 are required')
         self.limits=limits
+        self.owner_guard=owner_guard
         self.unit='openplan-engine-'+uuid.uuid4().hex+'.scope'
         self.parent,self.child=socket.socketpair()
         self.parent.settimeout(10)
         self.identity=None
 
     def command(self,argv):
+        binding=[]
+        if self.owner_guard is not None:
+            self.owner_guard.require_alive()
+            binding=['--property=BindsTo='+self.owner_guard.unit,'--property=After='+self.owner_guard.unit,'--property=KillSignal=SIGKILL']
         return [self.runner,'--user','--scope','--quiet','--expand-environment=no','--unit='+self.unit,
-                '--property=MemoryMax='+str(self.limits.memory_bytes),'--property=TasksMax='+str(self.limits.tasks),'--',
+                '--property=MemoryMax='+str(self.limits.memory_bytes),'--property=TasksMax='+str(self.limits.tasks),*binding,'--',
                 sys.executable,'-B',str(Path(__file__).with_name('model_engine_bootstrap.py')),str(self.child.fileno()),*argv]
 
     def state(self):
         result=subprocess.run([self.controller,'--user','show',self.unit,'-p','LoadState','-p','ActiveState','-p','InvocationID',
-                               '-p','ControlGroup','-p','MemoryMax','-p','TasksMax','-p','Result'],capture_output=True,text=True,timeout=5)
+                               '-p','ControlGroup','-p','MemoryMax','-p','TasksMax','-p','Result','-p','BindsTo','-p','After','-p','KillSignal'],capture_output=True,text=True,timeout=5)
         if result.returncode:raise SupervisionUnavailable('Owned user scope could not be queried')
         return dict(line.split('=',1) for line in result.stdout.splitlines() if '=' in line)
 
@@ -116,6 +121,11 @@ class OwnedEngineScope:
             raise ValueError('Bootstrap is outside the owned scope')
         if state.get('MemoryMax')!=str(self.limits.memory_bytes) or state.get('TasksMax')!=str(self.limits.tasks):
             raise ValueError('Scope resource policy differs')
+        if self.owner_guard is not None:
+            self.owner_guard.require_alive()
+            if (self.owner_guard.unit not in state.get('BindsTo','').split() or self.owner_guard.unit not in state.get('After','').split()
+                    or state.get('KillSignal')!='9'):
+                raise ValueError('Engine owner guard binding differs')
         directory=Path('/sys/fs/cgroup')/group.lstrip('/')
         descriptor=os.open(directory,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
         try:info=os.fstat(descriptor)
@@ -127,6 +137,7 @@ class OwnedEngineScope:
 
     def authorize(self):
         if self.identity is None:raise ValueError('Scope identity is not verified')
+        if self.owner_guard is not None:self.owner_guard.require_alive()
         self.parent.sendall(b'G')
         self.parent.close()
 

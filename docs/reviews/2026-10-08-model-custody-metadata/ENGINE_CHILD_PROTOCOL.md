@@ -459,3 +459,34 @@ An empty scope alone cannot prove clean output files. Preserve incomplete files,
 reconcile command receipts and inspect them before any new execution decision.
 Normal managed dispatch remains off. No live-worker recovery claim follows from
 this candidate's successful synthetic process checks.
+
+### Independent owner guard, October 8 follow-up
+
+Scoped `EngineProcess` startup now creates a separate user systemd guard scope.
+The guard observes the original owner through a process descriptor and a stop
+pipe. Engine startup requires a live guard and verified `BindsTo`, `After` and
+`KillSignal=SIGKILL` properties. A retained `owner-guard-started.json` records
+identity before the engine starts. Losing the guard stops the engine scope,
+including detached descendants. Normal completion retains the guard until the
+whole engine scope is empty. Guard loss refuses an exit receipt.
+
+The installed Python 3.14 worker environment passed 39 engine scope, process,
+channel and supervision tests, including 11 policy/live supervision tests.
+A separate ten-case live cancellation suite also passed.
+The lightweight Python 3.11 environment lacks `os.pidfd_open` and correctly
+refuses scoped startup; it cannot establish this Linux lifecycle evidence.
+The initial system Python test attempt lacked pandas and ran no test cases.
+
+[Control results](prototype/owner-guard-controls.json) record a passing harmless
+mutation, detection of missing binding, missing retained guard identity and
+missing completion guard check, followed by passing restored tests. The
+[runner](prototype/verify_owner_guard_controls.py) restores exact source bytes
+between serial cases. Tests use synthetic child processes, real user scopes and
+live process termination. They prove neither native model correctness nor
+scientific acceptance. Tests separately exercise owner death and guard death;
+a complete owner-service termination and the native busy-engine case remain
+required. Recovery readers do not yet consume the new guard record. Normal
+model dispatch remains inactive, and database abandonment is unchanged.
+
+The earlier descriptor-guard prototype remains historical evidence of the
+owner-loss defect. It is not the implementation now used by `EngineProcess`.

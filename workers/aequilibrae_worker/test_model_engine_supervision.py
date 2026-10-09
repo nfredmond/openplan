@@ -1,5 +1,5 @@
 """Opt-in live user-scope checks; portable policy checks always run."""
-import json,os,sys,time
+import json,os,sys,time,subprocess,tempfile
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -34,6 +34,7 @@ class LiveEngineScopeTests(unittest.TestCase):
                 time.sleep(.02)
             if handle.progress is not None:handle.progress.stop()
             handle.scope.close_gate()
+            if handle.owner_guard is not None:handle.owner_guard.stop()
         self.addCleanup(cleanup);return handle
     def finish(self,handle):
         self.assertEqual(handle.process.wait(timeout=10),0);deadline=time.monotonic()+5
@@ -49,10 +50,15 @@ from pathlib import Path
 from model_engine_channel import inherited_progress_client
 receipt=json.loads(Path('engine_process/scope-started.json').read_text())
 assert receipt['scope']['bootstrap_pid']>0
+guard=json.loads(Path('engine_process/owner-guard-started.json').read_text())
+assert guard['guard']['schema']=='openplan.owner-guard.v1'
+assert guard['guard']['owner_pid']>0
 client=inherited_progress_client();client.progress('Scope identity retained before engine');client.stop()
 Path('started').write_text(receipt['scope']['invocation_id'])
 """
-        handle=self.start(body,progress=True);handle.progress.connection.settimeout(5);handle.progress.serve_one()
+        handle=self.start(body,progress=True)
+        self.assertTrue((handle.directory/'owner-guard-started.json').is_file(),'Owner guard identity not retained')
+        handle.progress.connection.settimeout(5);handle.progress.serve_one()
         receipt=self.finish(handle)
         self.assertTrue(receipt['scope']['observed_scope_empty']);self.assertIs(receipt['execution_ready'],False)
         self.assertEqual((self.writer.files.path/'started').read_text(),receipt['scope']['invocation_id'])
@@ -106,5 +112,61 @@ Path('started').write_text(receipt['scope']['invocation_id'])
         with patch.object(handle.scope,'state',return_value=changed):
             with self.assertRaisesRegex(ValueError,'scope identity changed'):handle.confirm_exit()
         self.assertTrue(self.writer.stopped);self.assertFalse((handle.directory/'observed-exit.json').exists())
+
+    def test_owner_death_stops_independent_guard(self):
+        with tempfile.TemporaryDirectory() as root:
+            record=Path(root)/'guard.json'
+            body="from model_engine_owner_guard import OwnerGuard;import json,sys,time;from pathlib import Path;g=OwnerGuard();Path(sys.argv[1]).write_text(json.dumps(g.identity));time.sleep(30)"
+            owner=subprocess.Popen([sys.executable,'-B','-c',body,str(record)],env=dict(os.environ,PYTHONPATH=str(Path(__file__).parent)))
+            try:
+                deadline=time.monotonic()+5
+                while not record.exists():
+                    if owner.poll() is not None:self.fail('Owner failed before guard startup')
+                    if time.monotonic()>deadline:self.fail('Guard startup timed out')
+                    time.sleep(.02)
+                identity=json.loads(record.read_text())
+                owner.kill();owner.wait(timeout=5)
+                deadline=time.monotonic()+5
+                while True:
+                    state=subprocess.run(['systemctl','--user','show',identity['unit'],'-p','ActiveState','--value'],capture_output=True,text=True,check=True).stdout.strip()
+                    if state in ('inactive','failed'):break
+                    if time.monotonic()>deadline:self.fail('Guard survived owner death')
+                    time.sleep(.02)
+            finally:
+                if owner.poll() is None:owner.kill()
+                owner.wait(timeout=5)
+
+    def test_guard_loss_stops_busy_engine_and_detached_descendant(self):
+        from model_engine_owner_guard import OwnerGuardUnavailable
+        descendant="import time;from pathlib import Path;Path('guard-child-ready').touch();time.sleep(30)"
+        body=f"import subprocess,sys,time;subprocess.Popen([sys.executable,'-B','-c',{descendant!r}],start_new_session=True);time.sleep(30)"
+        handle=self.start(body)
+        deadline=time.monotonic()+5
+        while not (self.writer.files.path/'guard-child-ready').exists():
+            if time.monotonic()>deadline:self.fail('Detached child did not start')
+            time.sleep(.02)
+        self.assertTrue(handle.owner_guard.process.poll() is None)
+        handle.owner_guard.process.kill()
+        handle.owner_guard.process.wait(timeout=5)
+        self.assertEqual(handle.process.wait(timeout=5),-9)
+        deadline=time.monotonic()+5
+        while handle.scope.state()['ActiveState'] not in ('inactive','failed'):
+            if time.monotonic()>deadline:self.fail('Engine scope survived guard loss')
+            time.sleep(.02)
+        self.assertTrue(handle.scope.require_empty()['observed_scope_empty'])
+        with self.assertRaises(OwnerGuardUnavailable):handle.confirm_exit()
+        self.assertTrue(self.writer.stopped)
+        self.assertFalse((handle.directory/'observed-exit.json').exists())
+
+    def test_live_guard_remains_until_detached_work_finishes(self):
+        descendant="import time;from pathlib import Path;Path('ready').touch();end=time.monotonic()+15\nwhile not Path('release').exists() and time.monotonic()<end:time.sleep(.02)"
+        body=f"import subprocess,sys;subprocess.Popen([sys.executable,'-B','-c',{descendant!r}],start_new_session=True)"
+        handle=self.start(body)
+        handle.process.wait(timeout=5)
+        with self.assertRaises(engine.EngineStillRunning):handle.confirm_exit()
+        handle.owner_guard.require_alive()
+        (self.writer.files.path/'release').touch()
+        self.finish(handle)
+        self.assertIsNotNone(handle.owner_guard.process.poll())
 
 if __name__=='__main__':unittest.main()
