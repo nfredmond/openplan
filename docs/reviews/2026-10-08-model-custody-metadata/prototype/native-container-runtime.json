@@ -1,0 +1,61 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "owner_lost": true,
+      "native_step_observed": "school_location",
+      "trips": null,
+      "runtime_cli_supervised": true,
+      "command_log_retained": true,
+      "normal_completion_observed": false,
+      "owned_container_removed": true,
+      "scientific_acceptance": "unassessed"
+    },
+    {
+      "case": "harmless",
+      "owner_lost": true,
+      "native_step_observed": "school_location",
+      "trips": null,
+      "runtime_cli_supervised": true,
+      "command_log_retained": true,
+      "normal_completion_observed": false,
+      "owned_container_removed": true,
+      "scientific_acceptance": "unassessed"
+    },
+    {
+      "case": "owner-alive",
+      "owner_lost": false,
+      "native_step_observed": "school_location",
+      "trips": 779,
+      "runtime_cli_supervised": true,
+      "command_log_retained": true,
+      "normal_completion_observed": true,
+      "owned_container_removed": true,
+      "scientific_acceptance": "unassessed"
+    },
+    {
+      "case": "restored",
+      "owner_lost": true,
+      "native_step_observed": "school_location",
+      "trips": null,
+      "runtime_cli_supervised": true,
+      "command_log_retained": true,
+      "normal_completion_observed": false,
+      "owned_container_removed": true,
+      "scientific_acceptance": "unassessed"
+    }
+  ],
+  "development_source_unchanged": true,
+  "source_bundle_sha256": "4b914da7e522e8d2c24947bdfb371b6c37c8cf4cd9fab2dc7e26173c0d09e66f",
+  "image_id": "sha256:472ad0ab51bbea22ca5816941a7b9bc04375efc577ef2f164e2f4db46368f676",
+  "sources": {
+    "runtime.py": "ce3761061d9e57bdd99acbd4960a0d87b75148eef13a997548e6f956c515cbb9",
+    "main.py": "ad4cf2346fc82b79260f9bd4916a2dc435ca11bf8905cedfed551d6c2c7fbf6e",
+    "container_execution.py": "91c106e5186991590038b0b988c179195b9f7dac695a6cfc6f3fc655a867c202"
+  },
+  "limits": [
+    "100-household copy of development bundle, coefficients unchanged",
+    "Native step logged before interruption, exact instruction not identified",
+    "No holdout exposure, accuracy validation, database dispatch or restart acceptance"
+  ]
+}

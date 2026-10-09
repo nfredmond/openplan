@@ -584,3 +584,38 @@ private records are under `~/.local/state/openplan/pipeline-live-controls-202610
 This uses a synthetic bundle and command. It proves neither native ActivitySim
 behavior nor live database dispatch, managed attempt publication or scientific
 acceptance. Database integration remains a separate open boundary.
+
+
+## Native ActivitySim container execution
+
+ActivitySim 1.5.1 completed a sampled development run through the supervised
+runtime container path. The proof copied the Broomfield County, Colorado (08014)
+development bundle and changed only its household sample from all households to
+100. Source-bundle hashes matched before and after the four serial cases.
+Stock configuration remained read-only; no acceptance holdout was opened.
+
+Baseline, harmless run-label and restored interruption cases reached the logged
+`school_location` step before the proof killed its runtime owner. Each container
+then exited with code 125. Logs survived; no runtime completion summary or final
+trip file appeared. The owner-alive control completed and produced 779 trip rows.
+Each exact owned container was removed after terminal-state verification.
+The runtime applied a 1.5 GiB memory limit, zero swap and a 32-task limit, with
+numerical thread settings of one. The completed process reported 583.6 MB
+high-water RSS, which is not total-container memory or a sizing recommendation.
+
+The private proof image installs the repository's pinned execution requirements.
+The reused base contained an incompatible AequilibraE package, removed only from
+this private ActivitySim image before `pip check` passed. The first native attempt
+failed because the image retained the installer's Python entrypoint. The corrected
+image uses `/usr/bin/env`; the failed attempt remains in
+`~/.local/state/openplan/native-container-20261008a/`. Successful records and
+installation logs are in `native-container-20261008b/` under the same parent.
+`prototype/native-container-image.json` retains the image ID and package versions;
+`prototype/native-container-runtime.json` retains cases and source hashes.
+
+This supersedes the absence of any native-container case stated above. It does
+not prove full-population capacity, scientific accuracy, native interruption at
+a particular machine instruction, database dispatch, restart, full-host/daemon
+recovery or human acceptance. The identical 779-row count in the earlier host
+case does not establish numerical equivalence, especially with different
+transitive package versions. The proof image is not a production release image.

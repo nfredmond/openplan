@@ -20,8 +20,9 @@ client are killed. Automatic removal happens after container exit, not on
 owner loss. The explicit `--container-supervision-socket` local Linux mode now
 passes synthetic runtime CLI owner-loss and detached-completion checks, with
 retained daemon/container identity and logs. The legacy path still has this
-defect. Native ActivitySim, database dispatch, remote/rootless/Podman and
-host/daemon recovery remain unverified. The separate opt-in host supervisor
+defect. One 100-household native ActivitySim development-container case now
+passes completion and owner-loss checks. Full-population capacity, database
+dispatch, remote/rootless/Podman and host/daemon recovery remain unverified. The separate opt-in host supervisor
 does not cover daemon-owned containers.
 
 ## M2d.3 reimbursement, v0.47.0 engineering release
