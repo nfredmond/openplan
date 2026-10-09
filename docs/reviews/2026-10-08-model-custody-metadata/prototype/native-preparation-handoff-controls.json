@@ -1,5 +1,6 @@
 {
-  "proof_sha256": "dc435ae194c271e9fc335d7806c1dbb338f1ad9fcb06fda7d4612a3a98199a9b",
+  "proof_sha256": "28b674aded6c1eb7a41d157acdaccd51fcbb1213641715e94bbe9138568547fb",
+  "recovery_sha256": "dbf6e2cb70138019e0910300d150b85cbd9dbe34fe94eacbc97746cf7bf69f64",
   "controls": [
     {
       "control": "normal",
@@ -30,7 +31,37 @@
       "returncode": 0,
       "expected_failure": null,
       "matched": true
+    },
+    {
+      "control": "lost-reply",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "lost-reply-harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "lost-reply-wrong-request",
+      "returncode": 1,
+      "expected_failure": "Fresh consumer receipt recovery failed",
+      "matched": true
+    },
+    {
+      "control": "lost-reply-bypass-stop",
+      "returncode": 1,
+      "expected_failure": "Recovered consumer writer accepted completion",
+      "matched": true
+    },
+    {
+      "control": "lost-reply-restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
     }
   ],
-  "limits": "Synthetic preparation files, native stage claims, completed producer and artifact commands. No engines, normal dispatch, concurrent revocation, receipt-loss recovery or scientific acceptance."
+  "limits": "Synthetic preparation files, native stage claims, completed producer and artifact commands. No engines, normal dispatch, concurrent revocation or scientific acceptance. Receipt recovery uses a separate process and verifies unchanged native state, files and computation admissions."
 }

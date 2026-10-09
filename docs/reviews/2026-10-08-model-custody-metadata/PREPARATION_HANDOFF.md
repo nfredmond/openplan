@@ -228,3 +228,33 @@ fixtures with empty observations, not scientific acceptance evidence. The test
 uses explicit managed invocations, not normal dispatch. Consumer artifact reply
 loss and fresh-process recovery, concurrent producer revocation, structural-audit
 integration, source coverage, and actual engine ordering remain unproved here.
+
+## Consumer artifact reply-loss recovery, October 9
+
+The native handoff proof now also loses the response after the database commits
+the consumer artifact. The actual adapter stops the writer and leaves exactly
+one pending artifact request. A fresh Python process runs the existing recovery
+CLI with that saved request ID and installation. It recovers the original receipt
+without invoking the handoff or admitting another computation.
+
+For both methods, the proof compares all seven relevant native table snapshots,
+the local execution-admission rows, and every retained run file before and after
+recovery. All remain unchanged. The pending request becomes resolved with the
+exact original transaction receipt. The old writer remains stopped and refuses
+stage completion after recovery. The proof reconstructs file references only to
+compare the retained consumption manifest against native rows; it does not pass
+an execution continuation back to the worker.
+
+The control runner includes a harmless input-folder rename, an unknown recovery
+request, and a deliberately bypassed stopped-writer guard. The unknown request
+cannot recover the pending artifact; the guard bypass is caught when it permits
+completion. These tests cover response loss after commit, not operating-system
+process termination, database service restart or concurrent producer revocation.
+Normal dispatch, structural binding, engine ordering, source adequacy and
+independent scientific acceptance remain open.
+
+All ten handoff/recovery controls passed their expected outcomes. The current
+`prototype/native-preparation-handoff-controls.json` records both verifier hashes.
+Private evidence is retained under
+`native-preparation-handoff-controls-20261009c` in the local OpenPlan state folder.
+The earlier five-case report remains in Git history.

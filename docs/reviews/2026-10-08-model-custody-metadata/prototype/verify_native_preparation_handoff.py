@@ -31,7 +31,7 @@ def main():
     if source['container'] != 'supabase_db_openplan-restore-target-2026091050' or not re.fullmatch(r'openplan_retention_upgrade_[0-9a-f]{32}', source['database']):
         raise ValueError('Owned proof source required')
     control = os.environ.get('OPENPLAN_PREPARATION_HANDOFF_CONTROL', 'normal')
-    assert control in ('normal', 'harmless', 'drop-registration', 'wrong-producer', 'restored')
+    assert control in ('normal', 'harmless', 'drop-registration', 'wrong-producer', 'restored', 'lost-reply', 'lost-reply-harmless', 'lost-reply-wrong-request', 'lost-reply-bypass-stop', 'lost-reply-restored')
     database = 'openplan_attempt_cli_' + uuid.uuid4().hex
     def sql(db, body):
         result = subprocess.run(['docker','exec','-i',source['container'],'psql','-X','-qAt','-U','postgres','-d',db,'-v','ON_ERROR_STOP=1'], input=body, text=True, capture_output=True, timeout=30)
@@ -67,7 +67,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
             producer_attempt=[]
             def prepare(context):
                 writer=managed.AttemptWriter(directory,context,base_url=base,deployment_id=database,service_key=key,post=post,get=get)
-                inputs=writer.workspace(runs,run)/('renamed-inputs' if control=='harmless' else 'inputs')
+                inputs=writer.workspace(runs,run)/('renamed-inputs' if control in ('harmless','lost-reply-harmless') else 'inputs')
                 fixture=source_fixtures.SourceRecordsTests();fixture.setUp()
                 try:
                     shutil.copytree(fixture.root,inputs)
@@ -85,7 +85,11 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                 writer.workspace(runs,run)
                 if control=='drop-registration':writer.record_artifact=lambda *args,**kwargs:None
                 with managed.bind(writer):
-                    result=worker.retain_managed_validation_preparation(method)
+                    if control.startswith('lost-reply'):
+                        from verify_native_preparation_recovery import verify
+                        result=verify(worker,writer,method,output,sql,database,base,key,control)
+                    else:
+                        result=worker.retain_managed_validation_preparation(method)
                 assert result['execution_authorized'] is False
                 assert result['producer']['attempt_id']==producer_attempt[0]!=context.attempt_id
                 assert len(result['source_paths'])==6
@@ -105,7 +109,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                 assert all(path.read_bytes()==content for path,content in producer_bytes.items()), 'Producer bytes changed'
                 states=json.loads(sql(database,f"SELECT jsonb_object_agg(id,status) FROM public.model_run_stages WHERE run_id='{run}';"))
                 assert states=={producer:'succeeded',consumer:'running'}, 'Preparation consumption changed stage status'
-                results.append({'method':method,'roles':6,'producer_completed':True,'separate_consumer_attempt':True,'consumer_registered':True,'producer_bytes_unchanged':True,'execution_authorized':False})
+                results.append({'method':method,'roles':6,'producer_completed':True,'separate_consumer_attempt':True,'consumer_registered':True,'producer_bytes_unchanged':True,'execution_authorized':False,**({'recovery':result['recovery']} if 'recovery' in result else {})})
             invocation.invoke_new_attempt(directory,run_id=run,stage_id=consumer,worker_id='preparation-consumer-proof',workspace_id=workspace,base_url=base,deployment_id=database,service_key=key,handler=consume,post=post,get=get)
     report={'control':control,'results':results,'gateway_removed':True,'worker_sha256':hashlib.sha256(Path(worker.__file__).read_bytes()).hexdigest(),'limits':'Synthetic inputs and explicit managed invocation. No normal dispatcher, engine execution, structural preparation, source completeness, scientific acceptance or browser evidence.'}
     (output/'result.json').write_text(json.dumps(report,indent=2)+'\n')
