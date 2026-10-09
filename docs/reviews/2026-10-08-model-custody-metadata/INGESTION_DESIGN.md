@@ -398,3 +398,41 @@ population inputs, publication of supporting source files, normal dispatcher
 integration, the full RLS matrix or scientific acceptance. Lost custody-reply
 recovery has separate native database evidence but has not yet been exercised
 with this joined native Storage path.
+
+
+### Recover lost instrument replies with native Storage retained
+
+The joined proof now loses the HTTP reply after the native instrument RPC
+commits. It tests each method separately. AequilibraE reply loss leaves six
+registered/uploaded files and one instrument record; ActivitySim reply loss
+occurs after the AequilibraE record has completed, leaving twelve files and two
+records. In both cases the writer stops, preserves one exact pending request
+and refuses later stage completion.
+
+A fresh process invokes the actual recovery CLI with the saved request identity.
+Its local adapter removes only the standalone PostgREST URL prefix. Recovery
+retains the exact committed response without changing nine observed tables,
+including instrument receipts and Storage object metadata. Native object
+readback still matches every registered URI, hash and size. Receipt recovery
+does not reopen the writer or resume computation.
+
+Ten cases pass their expected outcomes: normal, harmless, bypassed stop guard,
+wrong recovery request and restored, for each method. Bypassing the stop guard
+fails the later-completion refusal check. A wrong request is refused by the CLI.
+See `prototype/native-instrument-recovery-controls.json` and the private
+`native-instrument-recovery-controls-20261009b` directory. All ten candidates
+are recorded; temporary services and credential files are removed. The proof
+PostgREST helper now caps swap at its 128 MiB memory limit and caps tasks at 128.
+
+The first campaign exposed a harness error: the child called the CLI's `main`
+without preserving its return code. The CLI correctly emitted `request_refused`,
+but the wrapper exited zero. The corrected wrapper uses `SystemExit(main(...))`
+and checks the refusal output. The diagnostic and initial campaign remain
+retained in `native-instrument-recovery-20261009a` and
+`native-instrument-recovery-controls-20261009a`; the final campaign uses fresh
+clones rather than rewriting them.
+
+This verifies joined native publication and exact receipt recovery for authored
+software fixtures. Independent preparation, real network/population evidence,
+publication of all supporting sources, normal dispatcher integration, the full
+RLS matrix, practitioner observation and scientific acceptance remain open.

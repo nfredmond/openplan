@@ -214,13 +214,19 @@ SELECT workspace_id FROM public.model_runs WHERE id='{instrument_run}';
                 def handler(context):
                     writer = managed.AttemptWriter(directory,context,base_url=base,deployment_id=database,service_key=key,post=post,get=get)
                     with managed.bind(writer):
-                        results.append(verify_instrument(writer,instrument_run,stage,output,sql,database,upload=upload))
+                        def publish():
+                            return verify_instrument(writer,instrument_run,stage,output,sql,database,upload=upload)
+                        if os.environ.get('OPENPLAN_INSTRUMENT_REPLY_LOSS') == '1':
+                            from verify_native_instrument_recovery import verify
+                            results.append(verify(writer,publish,output=output,sql=sql,database=database,base=base,key=key))
+                        else:
+                            results.append(publish())
                 invocation.invoke_new_attempt(directory,run_id=instrument_run,stage_id=stage,
                     worker_id='native-storage-custody-proof',workspace_id=workspace,base_url=base,
                     deployment_id=database,service_key=key,handler=handler,post=post,get=get)
                 assert len(results)==1 and results[0]['native_storage_uploaded'], 'Native custody callback did not complete'
                 rows = json.loads(sql(database, f"SELECT jsonb_agg(jsonb_build_object('file_url',file_url,'content_hash',content_hash,'size',file_size_bytes)) FROM public.model_run_artifacts WHERE run_id='{instrument_run}';"))
-                assert len(rows)==len(expected_objects)==12, 'Storage artifact inventory differs'
+                assert len(rows)==len(expected_objects)==results[0]['attempt_bound_artifacts'], 'Storage artifact inventory differs'
                 for row in rows:
                     content = expected_objects[row['file_url']]
                     response = requests.get(native+'/object/authenticated/'+row['file_url'].removeprefix('storage://'),headers=headers,timeout=10)

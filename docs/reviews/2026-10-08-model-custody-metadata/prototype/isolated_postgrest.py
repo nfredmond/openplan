@@ -51,7 +51,7 @@ def gateway(schema, *, database=None, subjects=()):
         settings['PGRST_DB_URI'] = urlunsplit(uri._replace(path='/' + database))
     name = 'openplan-postgrest-proof-' + uuid.uuid4().hex
     command = ['docker', 'run', '--detach', '--rm', '--name', name, '--network', networks[0],
-               '--publish', '127.0.0.1::3000', '--memory', '128m', '--cpus', '0.5']
+               '--publish', '127.0.0.1::3000', '--memory', '128m', '--memory-swap', '128m', '--pids-limit', '128', '--cpus', '0.5']
     for key in settings:
         command.extend(['--env', key])
     # Values travel in the child environment, not command arguments or output.
