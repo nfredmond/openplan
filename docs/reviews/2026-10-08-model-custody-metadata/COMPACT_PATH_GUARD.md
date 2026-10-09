@@ -54,6 +54,10 @@ private OpenPlan state directory. Source and engine hashes remain in the reports
 
 ## Remaining boundaries
 
+The [excluded-path counterexample](EXCLUDED_PATH_COUNTEREXAMPLE.md) rejects a
+later candidate that would incorrectly stop valid partly one-way chains. That
+candidate remains research evidence; production exclusion claims stay unassessed.
+
 The two-centroid managed native fixture uses injected parent database responses.
 The three-centroid comparison exercises native cost aggregation and flow
 expansion at fixed costs, not full equilibrium iterations. No new database,
