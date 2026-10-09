@@ -120,5 +120,14 @@ class NetworkGraphTests(unittest.TestCase):
             'directed_and_compact_centroid_indices':'matched'})
         self.assertEqual(record['compressed_routing_equivalence'],'unassessed')
 
+    def test_malformed_persisted_factors_stop_before_snapshot_or_execution(self):
+        from assignment_settings import AssignmentSettingsError
+        for value in (None,False,0,'',[]):
+            self.settings['road_class_factors']=value
+            with self.subTest(value=value),self.assertRaisesRegex(AssignmentSettingsError,'Persisted.*object'):
+                snapshot.retain_and_execute(self.engine,directory=self.path,context={},profile=self.profile,
+                    network_state={},network_settings=self.settings,network_database=self.database)
+            self.engine.execute.assert_not_called();self.assertFalse(self.path.exists())
+
 
 if __name__=='__main__':unittest.main()

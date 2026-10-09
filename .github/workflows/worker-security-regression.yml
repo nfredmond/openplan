@@ -36,6 +36,7 @@ jobs:
           python -B workers/aequilibrae_worker/test_assignment_live_profile.py
           python -B workers/aequilibrae_worker/test_assignment_network_source.py
           python -B workers/aequilibrae_worker/test_assignment_network_graph.py
+          python -B workers/aequilibrae_worker/test_network_settings.py
           python -B workers/aequilibrae_worker/test_assignment_input_publication.py
           python -B workers/aequilibrae_worker/test_assignment_preparation_link.py
           python -B scripts/modeling/tests/test_validation_prepared_context.py

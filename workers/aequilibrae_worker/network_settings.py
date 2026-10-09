@@ -4,8 +4,13 @@ from assignment_settings import AssignmentSettingsError
 
 
 def assignment_network_settings(road_class_factors=None):
+    # None selects the builder's baseline default; persisted records are stricter.
+    if road_class_factors is None:
+        road_class_factors={}
+    if not isinstance(road_class_factors,dict):
+        raise AssignmentSettingsError('Network calibration factors must be an object')
     factors={}
-    for road_class,raw_factor in (road_class_factors or {}).items():
+    for road_class,raw_factor in road_class_factors.items():
         if isinstance(raw_factor,bool):
             raise AssignmentSettingsError('Network calibration factors cannot be boolean')
         try: factor=float(raw_factor)
@@ -25,6 +30,8 @@ def canonical_network_settings(settings):
         raise AssignmentSettingsError('Network settings are missing')
     if set(settings)!={'schema_version','road_class_factors','application','excludes'}:
         raise AssignmentSettingsError('Network settings fields do not match the v1 schema')
+    if not isinstance(settings['road_class_factors'],dict):
+        raise AssignmentSettingsError('Persisted network calibration factors must be an object')
     canonical=assignment_network_settings(settings.get('road_class_factors'))
     if settings.get('schema_version')!=canonical['schema_version']:
         raise AssignmentSettingsError('Unsupported network-settings schema')
