@@ -43,12 +43,25 @@
       "storage_container_removed": true
     },
     {
+      "control": "source-interruption",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "source-wrong-claim",
+      "returncode": 1,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
       "control": "restored",
       "returncode": 0,
       "expected_behavior_observed": true,
       "storage_container_removed": true
     }
   ],
-  "proof_sha256": "23f4225164486c765a18e3807d9823ec70c3ed3393f3550009069d2db36e557b",
-  "limits": "Joined native source sets and exact final-registration receipt recovery over synthetic files. No joined source-object interruption, normal dispatch, independent preparation, browser, human or scientific acceptance."
+  "proof_sha256": "dc5eb22a2d0b3b245980fc45fe9b01c300a9b05ed9287cc24aa459545a9b661c",
+  "recovery_proof_sha256": "433c9f20ba1d8bc3bdf233f579c313cbae2a54f6b8317f7d8a2e37190e6f2cf1",
+  "limits": "Joined native source sets and exact final-registration receipt recovery over synthetic files. Fresh-process recovery between verified source objects; no joined mid-object interruption or process kill, normal dispatch, independent preparation, browser, human or scientific acceptance."
 }

@@ -20,9 +20,13 @@ import model_validation_source_publication as publication
 from test_model_validation_source_writer import BoundSourceTests
 
 
+class SourceInterruption(RuntimeError):
+    pass
+
+
 def verify(native, token, output, sql, database, fixture_run):
     control = os.environ.get('OPENPLAN_SOURCE_SET_CONTROL', 'normal')
-    assert control in ('normal','harmless','drop-registration','wrong-reference','omit-object','lost-reply','lost-reply-wrong-request','restored')
+    assert control in ('normal','harmless','drop-registration','wrong-reference','omit-object','lost-reply','lost-reply-wrong-request','source-interruption','source-wrong-claim','restored')
     fixture_run = str(uuid.UUID(fixture_run))
     run, stage = str(uuid.uuid4()), str(uuid.uuid4())
     workspace = str(uuid.UUID(sql(database, f"""
@@ -42,13 +46,17 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
             metadata = dict(part.split(' ',1) for part in kwargs['headers']['Upload-Metadata'].split(','))
             order.append(base64.b64decode(metadata['objectName']).decode())
         return original_request(method, native+url.removeprefix(native+'/storage/v1'), **kwargs)
-    omitted = []
+    omitted, interrupted = [], []
     original_upload = publication.upload_file
     def upload(**kwargs):
         if control == 'omit-object' and '/sha256/' in kwargs['object_path'] and not omitted:
             omitted.append(kwargs['object_path'])
             return 'storage://' + kwargs['bucket'] + '/' + kwargs['object_path']
-        return original_upload(**kwargs)
+        result = original_upload(**kwargs)
+        if control.startswith('source-') and '/validation-sources/activitysim/' in kwargs['object_path'] and not interrupted:
+            interrupted.append(kwargs['object_path'])
+            raise SourceInterruption('Synthetic interruption after a verified source object')
+        return result
     with gateway('public', database=database) as connection:
         def adapt(method, url, **kwargs):
             assert url.startswith(native+'/rest/v1/'), 'Unexpected source custody destination'
@@ -83,6 +91,13 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                     retained = writer.retain_validation_sources(**args)
                     try:
                         published = writer.publish_validation_sources(method=method)
+                    except SourceInterruption:
+                        assert control.startswith('source-') and writer.stopped and len(interrupted)==1
+                        assert journal.pending(directory,context.destination)==[], 'Unexpected prepared artifact command'
+                        from verify_native_source_reconciliation import recover_sources
+                        published, recovered_order = recover_sources(writer, native, token, connection, database, output, sql,
+                            wrong_claim=control=='source-wrong-claim')
+                        order.extend(recovered_order)
                     except client.DeliveryUnconfirmed:
                         assert control.startswith('lost-reply') and writer.stopped and len(lost)==1
                         pending = journal.pending(directory,context.destination)
@@ -126,7 +141,8 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
     return {'control':control,'methods':2,'native_artifacts':4,'roles_per_method':23,
             'native_objects_verified':object_count,'unchanged_manifests':True,'manifest_last':True,
             'postgrest_gateway_removed':True,'fresh_process_receipt_recovered':bool(lost),
-            'limits':'Joined native TUS and admitted artifact commands over synthetic source sets. No source-object interruption within this joined proof, normal dispatch, independent preparation, human or scientific acceptance.'}
+            'fresh_process_source_recovered':bool(interrupted),
+            'limits':'Joined native TUS and admitted artifact commands over synthetic source sets. Source recovery interrupts between verified objects, not mid-object or a process kill. No normal dispatch, independent preparation, human or scientific acceptance.'}
 
 
 def recover(writer, command, committed, base, connection, database, output, sql, *, wrong_request):

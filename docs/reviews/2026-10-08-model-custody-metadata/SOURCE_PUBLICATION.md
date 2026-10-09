@@ -476,3 +476,37 @@ identifies that wrong boundary explicitly. Product refusal behavior was unchange
 Native whole-source reconciliation and a fresh-process invocation of this new CLI
 remain unverified. The prior native final-command receipt proof does not cover this
 new earlier recovery boundary.
+
+## Native whole-source recovery checkpoint, October 9
+
+The earlier fresh-process CLI boundary now has a native proof. The admitted writer
+retains both authored method catalogs and publishes AequilibraE normally. During
+ActivitySim publication, the proof raises an interruption after the first source
+object has passed native readback, before the remaining objects or final artifact
+command exist. The original writer stops and refuses a stage-completion write.
+
+A new Python process invokes `model_source_publication_recovery.main` with the
+original claim, journal, root and installation identity. Request adapters route
+Storage and PostgREST prefixes to the isolated native services; they do not replace
+responses. Credentials enter the child through standard input and the CLI credential
+environment. The child resumes the saved set, uploads the manifest last and records
+the original artifact slot. Stage, run, attempt and stage-receipt table snapshots,
+plus local execution-admission rows, remain unchanged. The original writer stays
+stopped and its command journal has no unresolved command.
+
+The joined proof downloads all 32 objects across the two methods, verifies each
+hash and size, compares both manifests with their original retained bytes, and
+checks four native artifact records. The source sets each declare 23 roles. These
+are authored synthetic fixtures, not scientific observations or independent model
+acceptance. This proof interrupts between verified objects. It does not establish
+mid-object recovery within the joined workflow, termination of the original process,
+a restarted Storage service, normal dispatcher integration, browser downloads or
+human acceptance. The separate native TUS proof remains the evidence for mid-object
+process interruption.
+
+All ten native control cases passed their expected outcomes, including source
+interruption and a wrong-claim CLI case, alongside the prior harmless, missing-object, missing-registration,
+wrong-reference and final-receipt cases. Its results and source hashes are retained
+in `prototype/native-source-set-controls.json`. Each case owns an isolated database
+clone and capped Storage/PostgREST containers; cleanup records verify removal of
+its service containers while preserving database evidence.
