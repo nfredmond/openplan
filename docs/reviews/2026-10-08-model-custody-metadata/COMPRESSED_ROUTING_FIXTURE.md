@@ -1,5 +1,9 @@
 # Native compressed routing fixture, October 9, 2026
 
+Follow-up: the [retained compact path guard](COMPACT_PATH_GUARD.md) now checks
+each retained source chain and compact adjacency before initial assignment.
+The fixture also invokes that guard; excluded-link equivalence remains open.
+
 The installed AequilibraE 1.6.2 compressed all-or-nothing assignment matches an
 independent source-graph route calculation on a synthetic three-centroid network.
 The fixture exercises chains, a branch, a dead end, mode exclusion, directional

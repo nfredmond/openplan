@@ -36,6 +36,10 @@ class SnapshotTests(unittest.TestCase):
             item.graph.nodes_to_indices=np.full(901,-1,dtype=np.int64)
             item.graph.nodes_to_indices[[100,900]]=[0,1]
             item.graph.compact_nodes_to_indices=item.graph.nodes_to_indices.copy()
+            item.graph.graph['__compressed_id__']=np.array([0,1])
+            item.graph.compact_graph={'id':np.array([0,1]),'a_node':np.array([0,1]),'b_node':np.array([1,0])}
+            item.graph.compact_num_nodes=2;item.graph.compact_num_links=2
+            item.graph.compact_fs=np.array([0,1,2])
         settings=dict(algorithm='bfw',rgap_target=self.profile['target_gap'],max_iter=self.profile['max_iterations'],cores=1,
             time_field='travel_time',vdf=SimpleNamespace(function='BPR'),vdf_parameters=[np.array([.15,.15]),np.array([4.,4.])],
             capacity=np.array([1000.,2000.]),free_flow_tt=np.array([5.,6.]))

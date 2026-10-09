@@ -7,9 +7,13 @@ import hashlib
 import heapq
 import json
 import os
+import sys
 from pathlib import Path
 from importlib.metadata import version
 from importlib.util import find_spec
+
+sys.path.insert(0,str(Path(__file__).resolve().parents[4]/'workers/aequilibrae_worker'))
+from model_assignment_compact_graph import verify as verify_compact
 
 import numpy as np
 import pandas as pd
@@ -65,6 +69,7 @@ def run(control):
     graph.set_graph('travel_time');graph.set_skimming(['travel_time'])
     graph.set_blocked_centroid_flows(control not in ('allow-through','unblocked-baseline'))
     assert graph.compact_num_links<graph.num_links, 'Fixture did not exercise compression'
+    compact_record=verify_compact(graph)
     matrix=AequilibraeMatrix();matrix.create_empty(zones=3,matrix_names=['demand'],memory_only=True)
     matrix.index[:]=CENTROIDS;matrix.matrix['demand'][:]=DEMAND
     matrix.computational_view(['demand'])
@@ -92,7 +97,7 @@ def run(control):
         assert np.array_equal(actual_costs,expected_costs), 'Native skim differs from independent source routes'
         assert actual==expected_flows, 'Expanded native flows differ from independent source routes'
         return {'control':control,'directed_links':graph.num_links,'compact_links':graph.compact_num_links,
-                'costs':actual_costs.tolist(),'flows':{f'{lid}:{direction}':value for (lid,direction),value in actual.items()},
+                'compact_path_verification':compact_record,'costs':actual_costs.tolist(),'flows':{f'{lid}:{direction}':value for (lid,direction),value in actual.items()},
                 'routes':routes}
     finally:
         matrix.close()

@@ -47,6 +47,8 @@ class NetworkGraphTests(unittest.TestCase):
         for item in self.engine.classes:
             item.graph.graph['modes'][:]='w'
             item.graph.graph['a_node'][:]=0;item.graph.graph['b_node'][:]=0
+            item.graph.compact_graph['a_node'][:]=0;item.graph.compact_graph['b_node'][:]=0
+            item.graph.compact_fs=np.array([0,2,2])
         self.assertEqual(self.call()[1]['status'],'matched')
         self.engine.classes[0].graph.graph['b_node'][0]=1
         with self.assertRaisesRegex(ValueError,'recorded transformations'):self.call()
@@ -58,6 +60,10 @@ class NetworkGraphTests(unittest.TestCase):
             self.sql('UPDATE links SET direction='+str(direction))
             for item in self.engine.classes:
                 item.graph.graph={key:value[[index]] for key,value in item.graph.graph.items()}
+                item.graph.graph['__compressed_id__'][:]=0
+                item.graph.compact_graph={'id':np.array([0]),'a_node':np.array([index]),'b_node':np.array([1-index])}
+                item.graph.compact_num_links=1
+                item.graph.compact_fs=np.array([0,1-index,1])
             self.assertTrue(all(row['directed_link_count']==1 for row in self.call()[1]['graphs']))
 
     def test_unexplained_numeric_or_topology_changes_refuse(self):
@@ -81,7 +87,13 @@ class NetworkGraphTests(unittest.TestCase):
             self.engine=copy.deepcopy(original)
             for item in self.engine.classes:
                 item.graph.graph={key:value[indices] for key,value in item.graph.graph.items()}
-                if len(indices)>2:item.graph.graph['link_id'][-1]=10
+                if len(indices)>2:
+                    item.graph.graph['link_id'][-1]=10
+                    # Keep the invented edge structurally valid in the compact
+                    # graph so this case isolates the source inventory guard.
+                    item.graph.graph['__compressed_id__']=np.array([0,1,2])
+                    item.graph.compact_graph={'id':np.array([0,1,2]),'a_node':np.array([0,1,1]),'b_node':np.array([1,0,0])}
+                    item.graph.compact_num_links=3;item.graph.compact_fs=np.array([0,1,3])
             with self.assertRaisesRegex(ValueError,'graph (differs|adds|omits)'):self.call()
 
     def test_drift_stops_snapshot_and_execution_even_when_live_arrays_agree(self):

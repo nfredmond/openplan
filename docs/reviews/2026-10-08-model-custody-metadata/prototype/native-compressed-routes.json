@@ -6,12 +6,21 @@
     "aequilibrae.paths.results.assignment_results": "158547189d50bd6e2251d9a4467640db483e967527007eaa6e60a4fcadb2ef3f",
     "aequilibrae.paths.cython.AoN": "a96ad1ef6fa0a38f03ac67496e75147b607d4d677a3f52ecac863f686003d374"
   },
-  "source_sha256": "aca8ed410537795ad420d200b3d19e9b335341103296b8581c99278540094b53",
+  "source_sha256": "3317ee50365a1be6049e19019c34cd92f6e82430a19c3ca4718235a61980a0ce",
   "controls": [
     {
       "control": "baseline",
       "directed_links": 20,
       "compact_links": 12,
+      "compact_path_verification": {
+        "scope": "retained_compact_source_paths",
+        "status": "matched",
+        "compact_link_count": 12,
+        "source_path_sha256": "5aaeb7e34ad3b0b6d9c8626586fe1a7d2321667549c8f5416cec4eec38d674ac",
+        "excluded_direction_count": 4,
+        "excluded_direction_equivalence": "unassessed",
+        "runtime_cost_and_flow_equivalence": "unassessed"
+      },
       "costs": [
         [
           0.0,
@@ -125,6 +134,15 @@
       "control": "row-order",
       "directed_links": 20,
       "compact_links": 12,
+      "compact_path_verification": {
+        "scope": "retained_compact_source_paths",
+        "status": "matched",
+        "compact_link_count": 12,
+        "source_path_sha256": "5aaeb7e34ad3b0b6d9c8626586fe1a7d2321667549c8f5416cec4eec38d674ac",
+        "excluded_direction_count": 4,
+        "excluded_direction_equivalence": "unassessed",
+        "runtime_cost_and_flow_equivalence": "unassessed"
+      },
       "costs": [
         [
           0.0,
@@ -238,6 +256,15 @@
       "control": "unblocked-baseline",
       "directed_links": 20,
       "compact_links": 12,
+      "compact_path_verification": {
+        "scope": "retained_compact_source_paths",
+        "status": "matched",
+        "compact_link_count": 12,
+        "source_path_sha256": "5aaeb7e34ad3b0b6d9c8626586fe1a7d2321667549c8f5416cec4eec38d674ac",
+        "excluded_direction_count": 4,
+        "excluded_direction_equivalence": "unassessed",
+        "runtime_cost_and_flow_equivalence": "unassessed"
+      },
       "costs": [
         [
           0.0,
@@ -383,6 +410,15 @@
       "control": "restored",
       "directed_links": 20,
       "compact_links": 12,
+      "compact_path_verification": {
+        "scope": "retained_compact_source_paths",
+        "status": "matched",
+        "compact_link_count": 12,
+        "source_path_sha256": "5aaeb7e34ad3b0b6d9c8626586fe1a7d2321667549c8f5416cec4eec38d674ac",
+        "excluded_direction_count": 4,
+        "excluded_direction_equivalence": "unassessed",
+        "runtime_cost_and_flow_equivalence": "unassessed"
+      },
       "costs": [
         [
           0.0,

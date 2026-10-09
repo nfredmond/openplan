@@ -16,6 +16,8 @@ mutations['skip-graph']=mutations['graph-drift']
 mutations['centroid-through']='result.classes[0].graph.set_blocked_centroid_flows(False)'
 mutations['compact-centroid']='result.classes[0].graph.compact_nodes_to_indices[result.classes[0].graph.centroids[0]] = 1'
 mutations['skip-centroid-policy']=mutations['centroid-through']
+mutations['compact-edge']="result.classes[0].graph.compact_graph.loc[0,'b_node'] = 0"
+mutations['skip-compact']=mutations['compact-edge']
 assert control in ('baseline','harmless','restored','recorded-factor',*mutations)
 injection = '''
 from aequilibrae.paths import TrafficAssignment
@@ -37,6 +39,8 @@ if control == 'skip-graph':
     injection += '\nimport model_assignment_network_graph,model_assignment_network_source\nmodel_assignment_network_graph.verify = lambda assignment,database,settings: (model_assignment_network_source.identity(database), {})\n'
 if control == 'skip-centroid-policy':
     injection += '\nimport model_assignment_network_graph\nmodel_assignment_network_graph._verify_centroids = lambda graph: None\n'
+if control == 'skip-compact':
+    injection += '\nimport model_assignment_compact_graph\nmodel_assignment_compact_graph.verify = lambda graph: {}\n'
 if control == 'recorded-factor':
     injection += '''
 original_stage=main.stage_assignment
@@ -64,7 +68,8 @@ if control in mutations:
                 'vdf-drift':'VDF parameter values differ', 'capacity-drift':'network field values differ',
                 'graph-drift':'source and recorded transformations','skip-graph':'source and recorded transformations',
                 'centroid-through':'must block through-centroid','compact-centroid':'centroid node mapping differs',
-                'skip-centroid-policy':'must block through-centroid'}[control]
+                'skip-centroid-policy':'must block through-centroid',
+                'compact-edge':'Compact routing chain crosses a centroid','skip-compact':'Compact routing chain crosses a centroid'}[control]
     assert expected in log, 'Native child failed for an unrelated reason'
     failures = list(output.rglob('assignment-failure.json'))
     assert len(failures) == 1
@@ -84,6 +89,7 @@ else:
     assert graph_record['status']=='matched'
     assert graph_record['scope']=='directed_source_links_with_road_class_factors'
     assert graph_record['centroid_policy']=={'block_through_flows':True,'directed_and_compact_centroid_indices':'matched'}
+    assert all(item['compact_paths']['status']=='matched' for item in graph_record['graphs'])
     assert len(list(output.rglob('live-profile-execute-entered'))) == 1
 report = {'control':control,'native_engine':'AequilibraE 1.6.2','refused_before_execution':failed,
     'source_sha256':hashlib.sha256((proof.WORKER/'model_assignment_live_profile.py').read_bytes()).hexdigest(),

@@ -110,11 +110,13 @@ def verify(assignment,database,settings):
 
     source=identity(database,observe=observe)
     records=[]
+    from model_assignment_compact_graph import verify as verify_compact
     for record in graphs:
         if record['position']!=len(record['order']):raise ValueError('Assignment graph adds directions absent from source')
         if record['remaining_nodes']:raise ValueError('Assignment graph node map contains nodes absent from source')
         records.append({'mode':record['graph'].mode,'directed_link_count':record['position'],
-                        'directed_links_sha256':record['digest'].hexdigest()})
+                        'directed_links_sha256':record['digest'].hexdigest(),
+                        'compact_paths':verify_compact(record['graph'])})
     payload=json.dumps(settings,sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False).encode()
     return source,{'scope':'directed_source_links_with_road_class_factors','status':'matched',
                    'source_sha256':source['sha256'],'network_settings_sha256':hashlib.sha256(payload).hexdigest(),

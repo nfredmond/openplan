@@ -73,6 +73,18 @@
       "matched": true
     },
     {
+      "control": "compact-edge",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "skip-compact",
+      "returncode": 1,
+      "expected_failure": "Native solver drift was not refused",
+      "matched": true
+    },
+    {
       "control": "restored",
       "returncode": 0,
       "expected_failure": null,
