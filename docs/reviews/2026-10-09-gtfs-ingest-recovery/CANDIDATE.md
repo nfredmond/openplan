@@ -93,3 +93,29 @@ before/after JSON comparison preserves every existing value, excluding only the
 new nullable abandonment field, which remains null. `upgrade-result.json`
 records that narrow upgrade and the migration digest. It is not a representative
 agency-volume upgrade or proof of every intervening migration combination.
+
+## Native private Storage follow-up
+
+The new native Storage controls supersede the simulated-only object-removal
+boundary above. A resource-limited Storage service uses the same owned database
+clone as the PostgREST proof and its own temporary file directory. The copy had
+no GTFS bucket: the initial check stopped, then the harness created and verified
+a private test bucket through Storage's API. No shared bucket was used.
+
+The production TypeScript uploads synthetic bytes, downloads and compares them,
+then closes the stale ingest. One control injects a 503 before object deletion;
+another interrupts the database acknowledgment after real object removal. Both
+recover from the retained cleanup request. Repeating deletion of the missing
+object succeeds, the acknowledgment clears, and a final sweep performs no
+removal. A native authenticated download confirms the object is absent.
+
+Six runs cover baseline, harmless source change, acknowledgment interruption,
+omitted object removal, ignored acknowledgment error and restored source. The
+two targeted defects fail assertions. `native-storage-controls.json` retains
+the outcomes. Each run removes its owned Storage and PostgREST containers; no
+service is left running. Source mutations restore in `finally`.
+
+These are small synthetic objects, not a complete parsed feed or capacity test.
+The interruptions are injected HTTP responses, not host power loss. Fresh worker
+process recovery, late-worker route behavior, final CI and the remaining M3
+worker/long-feed work remain separate. This does not establish V1 acceptance.
