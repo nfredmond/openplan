@@ -344,3 +344,44 @@ publication. Publisher integration must still retain one state per object, bind
 the original manifest, publish the manifest last and register the verified remote
 reference through the admitted writer. Independent preparation and scientific
 acceptance remain open.
+
+## Source-set publisher and admitted registration, October 9
+
+`model_validation_source_publication.publish` now checks the retained manifest's
+hash and expected context, reads its five primary documents, and rebuilds the
+catalog from those exact bytes and explicit bindings. It compares the rebuilt
+catalog to the retained one, preserving every role and preparation/execution
+phase. It rechecks compressed logical bytes and refuses changed object names,
+duplicate roles, conflicting sizes and missing declared dependencies.
+
+The publisher saves an immutable destination intent under a publication lock.
+Each unique stored object has its own resumable upload state. Object names include
+the run, attempt, method and original manifest hash. Each call rechecks remote
+bytes through the existing uploader. The unchanged manifest uploads last, only
+after every object returns verified. Its original `retained_locally` statement
+remains part of the original bytes; the returned publication receipt separately
+states `remote_verified`. Relative object names continue to resolve beneath the
+remote manifest directory.
+
+`AttemptWriter.publish_validation_sources` accepts only sources whose local
+registration this invocation acknowledged. It records a separate
+`model_validation_source_publication` artifact under a fixed method-specific
+logical name, preserving the earlier local artifact. Both records bind the same
+manifest hash. Upload or registration uncertainty stops the writer. A lost remote
+registration reply leaves the exact artifact command pending. Upload reconciliation
+must not reopen that stopped invocation or silently resume model execution.
+
+Seven publisher and four admitted-publication tests pass with actual source files,
+resumable client and command journal, a synthetic TUS peer and injected database
+receipts. The full related set has 81 passing tests. Nine
+[publication controls](prototype/source-publication-controls.json) catch altered
+manifest hashes, catalog phases, omitted source objects, manifest-first ordering,
+writer-stop bypass and wrong remote artifact type/hash. The seven existing source
+writer controls also pass after narrowing their mutation scope to the retention
+method, which now has a publication method immediately after it.
+
+The complete source-set path still needs joined native Storage/database evidence
+and interruption recovery. Neither the standalone native TUS proof nor the
+standalone local manifest registration proof establishes that joined result.
+Normal dispatch and user-facing download acceptance remain open. Primary JSON
+documents are parsed in memory; large source objects transfer in bounded chunks.

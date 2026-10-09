@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[4]
 source = ROOT / 'workers/aequilibrae_worker/model_attempt_writer.py'
 original = source.read_text()
 start = original.index('    def retain_validation_sources(')
-end = original.index('    def retain_package(', start)
+end = original.index('    def publish_validation_sources(', start)
 section = original[start:end]
 mutations = [
     ('stop-on-failure', '            self.stopped = True', '            self.stopped = False'),

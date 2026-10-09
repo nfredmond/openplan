@@ -37,6 +37,8 @@ jobs:
           python -B workers/aequilibrae_worker/test_model_validation_source_writer.py
           python -B workers/aequilibrae_worker/test_model_storage_readback.py
           python -B workers/aequilibrae_worker/test_model_storage_resumable.py
+          python -B workers/aequilibrae_worker/test_model_validation_source_publication.py
+          python -B workers/aequilibrae_worker/test_model_validation_publication_writer.py
           python -B workers/aequilibrae_worker/test_immutable_upload_recovery.py
           python -B workers/aequilibrae_worker/test_activity_managed_dispatch.py
           python -B scripts/modeling/tests/test_directional_refusal.py

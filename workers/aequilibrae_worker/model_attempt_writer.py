@@ -47,6 +47,7 @@ class AttemptWriter:
         self.stopped = False
         self.state = None
         self.files = None
+        self._retained_validation_sources = {}
         self._working_project = None
         self._working_package = None
         self._working_outputs = None
@@ -228,7 +229,39 @@ class AttemptWriter:
                                   'context': context, 'publication_state': 'retained_locally',
                                   'scientific_acceptance': 'unassessed'},
             }, logical_name='validation-sources-' + method)
+            self._retained_validation_sources[method] = dict(retained)
             return retained
+        except BaseException:
+            self.stopped = True
+            raise
+
+    def publish_validation_sources(self, *, method):
+        """Publish this invocation's acknowledged source manifest and record its URI."""
+        import model_validation_source_publication
+        self.require_open()
+        try:
+            retained = self._retained_validation_sources.get(method)
+            if retained is None or self.files is None:
+                raise ValueError('Acknowledged local source retention required')
+            self.files.verify()
+            context = {'workspace_id': self.context.workspace_id, 'model_run_id': self.context.run_id,
+                       'stage_id': self.context.stage_id, 'attempt_id': self.context.attempt_id,
+                       'method': method}
+            published = model_validation_source_publication.publish(
+                retained=retained, expected_context=context,
+                state_dir=self.files.path / ('source_publication_' + method),
+                base_url=self.base_url, service_key=self.service_key)
+            self.files.verify()
+            self.record_artifact({
+                'run_id': self.context.run_id, 'stage_id': self.context.stage_id,
+                'artifact_type': 'model_validation_source_publication',
+                'file_url': published['manifest_uri'], 'file_size_bytes': published['manifest_size_bytes'],
+                'content_hash': published['manifest_sha256'],
+                'metadata_json': {'schema': 'openplan.validation-source-catalog.v1', 'context': context,
+                                  'publication_state': 'remote_verified', 'object_count': published['object_count'],
+                                  'role_count': published['role_count'], 'scientific_acceptance': 'unassessed'},
+            }, logical_name='validation-source-publication-' + method)
+            return published
         except BaseException:
             self.stopped = True
             raise
