@@ -1,0 +1,30 @@
+{
+  "cases": [
+    {
+      "case": "old-test-delayed-effect",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "fixed-test-delayed-effect",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "never-ready",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "test_sha256": "b264b898b1a9d1dc8fff5b5b11ab966f6ca0542595f35f3b540d65d8bc019745",
+  "component_unchanged_sha256": "8df4b460285be3d2eeebf05b20fddfa5c23b54b8638e5100d63e88c50acf662e",
+  "limits": [
+    "Focused DOM test; delayed effect is a timing control, not reproduction of the full CI scheduler",
+    "Full shuffled suite and real browser acceptance remain separate"
+  ]
+}

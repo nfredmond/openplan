@@ -150,7 +150,8 @@ describe("whole-source theme inputs", () => {
     fireEvent.click(screen.getByRole("button", { name: "Choose context for themes" }));
     await screen.findByText(/25 selected among 25 loaded/); expect(onReadyChange).not.toHaveBeenCalledWith(true);
     fireEvent.click(screen.getByRole("button", { name: "Load more contributions" }));
-    await screen.findByText(/Every source contribution has a saved context choice/); expect(onReadyChange).toHaveBeenLastCalledWith(true);
+    await screen.findByText(/Every source contribution has a saved context choice/);
+    await waitFor(() => expect(onReadyChange).toHaveBeenLastCalledWith(true));
     expect(posts()).toHaveLength(0); view.unmount(); expect(onReadyChange).toHaveBeenLastCalledWith(false);
   });
   it("keeps an unchosen contribution distinct from an empty source", async () => {
