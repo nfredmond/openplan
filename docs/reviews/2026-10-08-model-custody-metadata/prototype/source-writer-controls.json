@@ -1,0 +1,41 @@
+{
+  "source_sha256": "ff4cd2e6b1f2206a58f2d99648e40ec76d9d18cebf0688f8733c1e36ef0364b4",
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "stop-on-failure",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "owned-attempt",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "artifact-type",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "method-metadata",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "publication-claim",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": "Real local files and retained commands with injected HTTP. No native registration or recovery, Storage publication, normal dispatch or scientific acceptance."
+}

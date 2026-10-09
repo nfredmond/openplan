@@ -182,3 +182,24 @@ boundaries against another process with the same user's unrestricted access.
 Next, bind this helper to the admitted attempt writer and register the manifest
 through its retained command. Then implement bounded, resumable object publication
 and native recovery proof before adding consumer download claims.
+
+## Admitted writer checkpoint, October 9
+
+`AttemptWriter.retain_validation_sources` now binds the manifest to its admitted
+workspace, run, stage and attempt. It accepts an explicit supported method,
+requires source paths within the verified attempt workspace, and records the
+manifest through `write_model_attempt_artifact` under a fixed method-specific
+logical name. It verifies workspace ownership before retention and before
+registration. A retention or registration failure stops the writer. A lost reply
+leaves the exact pending command and local manifest available for reconciliation.
+The method argument remains a producer assertion, not evidence that the engine ran.
+
+Five bound-writer tests cover both methods, exact manifest registration, foreign
+source refusal, changed bytes, context mismatch and lost replies. Together with
+the existing writer, output, package, catalog and source-file suites, 50 tests pass
+in the Python 3.11 worker environment. Seven
+[writer control cases](prototype/source-writer-controls.json) detect changes to
+failure handling, attempt containment, artifact type, method metadata and publication
+status; harmless and restored runs pass. HTTP receipts remain injected in these
+checks. Native registration and fresh-process recovery for this new artifact,
+normal-dispatch wiring and bounded Storage publication still require evidence.

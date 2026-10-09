@@ -194,6 +194,45 @@ class AttemptWriter:
             self.stopped = True
             raise
 
+    def retain_validation_sources(self, *, method, catalog_arguments, source_paths):
+        """Register verified local sources under this admitted attempt's fixed slot.
+
+        Method is an explicit producer assertion, not engine execution evidence.
+        Native publication and scientific acceptance require separate checks.
+        """
+        import model_validation_source_files
+        self.require_open()
+        try:
+            if method not in ('aequilibrae', 'activitysim'):
+                raise ValueError('Unsupported validation source method')
+            if self.files is None or self.files.root.name != 'runs':
+                raise ValueError('Validation source retention requires the owned runs workspace')
+            self.files.verify()
+            if any(not Path(path).resolve(strict=True).is_relative_to(self.files.path)
+                   for path in source_paths.values()):
+                raise ValueError('Validation source must belong to the owned attempt')
+            context = {'workspace_id': self.context.workspace_id, 'model_run_id': self.context.run_id,
+                       'stage_id': self.context.stage_id, 'attempt_id': self.context.attempt_id,
+                       'method': method}
+            retained = model_validation_source_files.retain(
+                root=self.files.root.parent,
+                destination=self.files.path / ('validation_sources_' + method),
+                expected_context=context, source_paths=source_paths, catalog_arguments=catalog_arguments)
+            self.files.verify()
+            self.record_artifact({
+                'run_id': self.context.run_id, 'stage_id': self.context.stage_id,
+                'artifact_type': 'model_validation_sources',
+                'file_url': 'local://' + retained['manifest_path'],
+                'file_size_bytes': retained['manifest_size_bytes'], 'content_hash': retained['manifest_sha256'],
+                'metadata_json': {'schema': 'openplan.validation-source-catalog.v1',
+                                  'context': context, 'publication_state': 'retained_locally',
+                                  'scientific_acceptance': 'unassessed'},
+            }, logical_name='validation-sources-' + method)
+            return retained
+        except BaseException:
+            self.stopped = True
+            raise
+
     def retain_package(self, directory):
         """Retain this attempt's completed package before a successor can copy it."""
         import model_package_inputs
