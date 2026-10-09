@@ -391,3 +391,48 @@ Full no-emit TypeScript validation passes for this checkpoint: 5,006 files,
 56.25 seconds and 4,854,956 KB reported compiler memory under the 7 GB scope.
 No fresh production build or rendered catalog journey is claimed for these
 latest changes; the identified port 3517 preview remains at 276e2627.
+
+
+## Catalog preview and downloaded-copy recovery, October 8
+
+A new detached checkout at 532c0f81f43432f0be91ad2a8c2ee3d85a08f9d6
+builds successfully: webpack 51 seconds, TypeScript 65 seconds and 137 static
+pages with two workers. Its loopback service on port 3518 reports that commit;
+the process working directory matches. Earlier preview checkouts stay unchanged.
+T3 navigation between the list and saved model at 1280 by 800 and 390 by 844
+shows one saved model run separately from zero linked analysis runs. The detail
+page says zero of three stages finished and three cancelled, retains the refusal
+explanation and offers no relaunch button. Document scroll width matches each
+viewport. Snapshot capture still fails; these are DOM and geometry observations,
+not visual acceptance or a complete console review.
+
+The original recovery download is found in T3's userdata/browser-artifacts
+folder. Earlier checks of the desktop Downloads folder did not establish that
+the export failed. The actual 3,950-byte JSON file has SHA-256
+`0f36a37b9ac5e3434d62fa7dec4e5ff2aea420d48fb707062e5194e751711eef`
+and equals the original retained browser record. This supersedes the missing-file
+boundary for that specific downloaded artifact.
+
+The port 3518 origin begins with no retained local recovery records. Its restore
+control consumes the actual file bytes through in-page File/DataTransfer. After
+review and Restore decision copy, the local record is pending with a null receipt.
+A temporary pass-through fetch observer records no recovery request during
+restoration. Explicit Retry saved decision sends one POST and receives 200. The
+confirmed result equals the downloaded record after object-key normalization;
+a direct JSON string comparison first differed only because key order changed.
+The observer is restored afterward. A full page reload preserves confirmation.
+The database still has exactly one recovery receipt, a cancelled managed parent
+and three cancelled managed stages without active attempts.
+
+This proves a usable downloaded artifact and authenticated recovery into a fresh
+browser origin. It does not prove the native file chooser or physical pointer
+operation, since T3 uses DOM click and File/DataTransfer. No active numerical
+worker is interrupted or restarted. The original termination and scientific
+claim limits remain false/unassessed. Sanitized observations and service identity
+are in `prototype/catalog-browser-recovery-verification.json`.
+
+Older QA job 113650869042 at cf2381247 finishes with the same four schema-related
+failures as shuffled job 113650869041, with 20,205 passing and 1,588 skipped tests.
+No additional failed test is reported there. Verification for 532c0f81f remains
+separate: four fast checks pass while QA, shuffled tests, live RLS and restore
+are still running at this checkpoint.
