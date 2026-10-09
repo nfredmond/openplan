@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 
 def verify_stage(worker, writer, run, stage, base, key, output, storage, sql, database, control):
-    assert control in ('normal', 'harmless', 'drop-kpi', 'drop-artifact', 'drop-terminal', 'restored', 'lost-reply', 'lost-reply-harmless', 'lost-reply-bypass-stop', 'lost-reply-restored')
+    assert control in ('normal', 'harmless', 'drop-kpi', 'drop-artifact', 'drop-terminal', 'restored', 'lost-reply', 'lost-reply-harmless', 'lost-reply-bypass-stop', 'lost-reply-restored', 'lost-reply-wrong-request')
     assert shutil.which('activitysim') is None, 'No implicit native CLI allowed'
     assert not any(value for name,value in os.environ.items() if name.startswith('ACTIVITYSIM_')), 'Proof requires unconfigured execution environment'
     corridor={'type':'Polygon','coordinates':[[[-121.71,38.54],[-121.69,38.54],[-121.69,38.56],[-121.71,38.56],[-121.71,38.54]]]}

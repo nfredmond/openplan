@@ -13,8 +13,10 @@ output.mkdir(mode=0o700,parents=True,exist_ok=False)
 faults={'drop-kpi':'Stage KPI inventory differs','drop-artifact':'Stage evidence registration differs','drop-terminal':'Managed terminal transaction did not complete run'}
 uncertainty=os.environ.get('OPENPLAN_STAGE_PUBLICATION_UNCERTAINTY')=='1'
 controls=('normal','harmless',*faults,'restored')
+boundary=os.environ.get('OPENPLAN_PUBLICATION_LOSS_BOUNDARY','artifact')
 if uncertainty:
-    faults={'lost-reply-bypass-stop':'Stopped writer accepted later terminal write'}
+    faults=({'lost-reply-wrong-request':'Fresh recovery process failed'} if boundary=='terminal'
+            else {'lost-reply-bypass-stop':'Stopped writer accepted later terminal write'})
     controls=('lost-reply','lost-reply-harmless',*faults,'lost-reply-restored')
 cases=[]
 for control in controls:
@@ -29,9 +31,9 @@ for control in controls:
         report=json.loads((output/control/'activity-stage-publication.json').read_text())
         assert report['gateway_removed'] is True
     cases.append({'control':control,'returncode':result.returncode,'expected_behavior_observed':True})
-report={'cases':cases,'worker_sha256':hashlib.sha256((REPO/'workers/activitysim_worker/supabase_poll.py').read_bytes()).hexdigest(),
+report={'boundary':boundary if uncertainty else None,'cases':cases,'worker_sha256':hashlib.sha256((REPO/'workers/activitysim_worker/supabase_poll.py').read_bytes()).hexdigest(),
     'limits':['Actual scaffold stage handler with native managed database commands','Storage byte service is synthetic; no real Storage acceptance','No normal dispatcher, native engine execution, concurrent revocation fence or scientific acceptance']}
 content=json.dumps(report,indent=2)+'\n'
 (output/'controls.json').write_text(content)
-(HERE/('activity-publication-uncertainty-controls.json' if uncertainty else 'activity-stage-publication-controls.json')).write_text(content)
+(HERE/('activity-publication-'+boundary+'-uncertainty-controls.json' if uncertainty else 'activity-stage-publication-controls.json')).write_text(content)
 print(content)

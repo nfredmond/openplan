@@ -3724,3 +3724,34 @@ This covers reply loss after the first artifact commit. It does not cover every
 progress, KPI or terminal boundary, process loss during native computation,
 real Storage recovery, normal dispatch or scientific acceptance. The earlier
 full-handler recovery gap is narrowed by this case, not closed in full.
+
+
+### Representative progress, KPI and terminal reply-loss boundaries
+
+The same campaign now selects `artifact`, `progress`, `kpi` or `terminal` with
+`OPENPLAN_PUBLICATION_LOSS_BOUNDARY`. These cases lose the reply after a native
+commit at the first progress write, evidence artifact write, first KPI write or
+final success write. The actual scaffold handler supplies the progress and
+output writes; the terminal case uses the actual managed adapter after the
+handler returns. This still does not invoke the normal dispatcher.
+
+Each case checks the precise committed output count. Progress loss leaves no
+artifacts or KPIs. Artifact loss leaves one artifact and no KPIs. First-KPI loss
+leaves one artifact and one KPI. Terminal loss leaves one artifact, four KPIs
+and succeeded stage and parent records. The original writer refuses later
+writes in every case, including when success already committed.
+
+Fresh-process recovery must retain the exact native response and leave eight
+native table snapshots unchanged, including KPI receipts. It resolves command
+uncertainty without resuming execution. Normal, harmless-comment and restored
+cases run for each boundary. The progress, artifact and KPI fault controls
+bypass the stopped-writer guard and must fail the terminal-refusal assertion.
+The terminal fault selects a different recovery request and must fail recovery.
+Reports use `activity-publication-<boundary>-uncertainty-controls.json` in the
+prototype directory. The earlier artifact-only report remains historical.
+
+These are representative command boundaries, not every possible interruption.
+They do not establish recovery during file construction, native computation,
+Storage transport, each individual progress/KPI write, process or host failure,
+normal dispatcher entry or scientific acceptance. Native execution and the
+normal dispatcher still require the remaining lifecycle integration.
