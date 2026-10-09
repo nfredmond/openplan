@@ -105,3 +105,16 @@ This is a command prototype, not managed ingestion. The existing service role ca
 python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_batch.py \
   /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
 ```
+
+## Direct-write fencing experiment, October 9
+
+The [write-fence prototype](write-fence-prototype.sql) adds transaction-scoped command context and guards to the real route, stop and version tables, within rollback transactions only. An enrolled version is one present in the private execution prototype table. The batch runner installs a context immediately before its derived insert and removes it before recording the receipt. The trigger checks the current transaction, version, kind, token and unexpired lease. Public API roles cannot write the context table. Managed updates and deletes are refused because this prototype has no command authorizing them yet.
+
+The [fence runner](verify_write_fence.py) executes the earlier real-table batch suite plus direct service-role attempts. It refuses a route insert, route update, stop delete, transfer to an unmanaged version, forged context, stage update, legacy failure closure, legacy stale reaping and version deletion. It checks unchanged managed rows/status and an empty context table. An unmanaged version still supports ordinary insert/update/delete and stage changes. Baseline, harmless-comment and restored runs pass. Removing the derived guard, removing the version guard and granting context insertion each fail at their intended assertions. [Results](write-fence-controls.json) record hashes of the guard, context-enabled batch, ownership implementation and combined assertions.
+
+The runner constructs the context-enabled batch definition from the retained batch SQL; that original file remains the prior experiment. All new triggers, context tables and fixtures roll back. These checks establish command fencing for the tested statements, not production enrollment. Tract rows, feed-current pointers, lifecycle commands, truncate privileges, replacement cleanup, role revocation, HTTP and concurrent command context still need review and proof. No finalization or promotion command exists here. The prototype must not enroll application versions until those paths work coherently.
+
+```bash
+python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_write_fence.py \
+  /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
+```
