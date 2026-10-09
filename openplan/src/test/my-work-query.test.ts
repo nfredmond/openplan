@@ -215,9 +215,14 @@ describe("my work — the union read", () => {
   });
 
   it("blocks a project on its LATEST gate decision, not on any hold ever recorded", async () => {
-    const { result } = await load();
+    const { result, selects } = await load();
     const blocks = groupMyWorkItemsByBlock(result.items);
 
+    // Both project foreign keys exist after the restore correction. The fake
+    // does not resolve schema ambiguity, so assert the actual query projection.
+    expect(selects.stage_gate_decisions).toBe(
+      "id, project_id, gate_id, decision, rationale, decided_at, projects!stage_gate_decisions_project_id_fkey!inner(id, name)"
+    );
     expect(idsOf(blocks.blocked_projects)).toEqual(["g-hold-p1"]);
     expect(blocks.blocked_projects[0].title).toBe("Corridor Rehabilitation");
     // P2's programming gate was held in July and passed in August.
