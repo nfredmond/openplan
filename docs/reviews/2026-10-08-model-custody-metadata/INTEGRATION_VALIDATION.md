@@ -117,3 +117,42 @@ and keyword defaults and adds a harmless adapter survivor. The original failure
 is not counted as successful fault detection. Actual foreign-destination faults
 again fail the stated refusal assertion. No scientific gate, tolerance or holdout
 changes, and the frozen preview and database remain untouched.
+
+## Separate recovery acceptance database
+
+The detached worktree
+`/home/nathaniel/.local/state/openplan/recovery-acceptance-3cfaae4e` identifies
+pushed commit `3cfaae4ea88b8d81ecf9fa443131670957ef4648`. It has no tracked
+changes. It is an acceptance checkout, not a new unpublished development branch.
+The prior preview remains on its original checkout and service invocation.
+
+`prepare_recovery_acceptance_database.py` creates
+`openplan_attempt_cli_be567f0764bd46ab97bdb99e51c1502f` from the explicitly selected,
+idle migration21 proof template. The installed Supabase CLI applies migrations
+22 and 23 and reapplies them without changing the inventories of 33 existing
+model tables. The source retains its original inventories and migration21
+history. The target records migration23. Installed catalog checks show recovery
+RPC execution privileges `false:false:true` for anon, authenticated and
+service_role. No reset, source upgrade or application write occurs.
+
+`prototype/recovery-acceptance-database.json` records the checkout, database,
+source, script hash and row inventories. Private CLI logs and the resumable
+candidate metadata are in
+`/home/nathaniel/.local/state/openplan/recovery-acceptance-3cfaae4e-state`.
+Five preflight controls include a harmless survivor and faults for omitted
+source and checkout ownership checks. They exercise the exact preflight code
+before any external command; they do not substitute for the live migration and
+catalog evidence.
+
+This prepares the database only. The isolated authentication service, configured
+application build, actual session cookies and recovery browser journey remain
+open. Storage and other service workflows are not covered by this preparation.
+The existing preview database is not the acceptance target.
+
+The current Supabase changelog was checked before configuration work. The
+installed PostgreSQL image and services were inspected without printing their
+secrets; this preparation does not upgrade those images. Any new auth setup
+must account for the documented
+[API_EXTERNAL_URL auth path change](https://supabase.com/changelog/47093-self-hosted-supabase-api-external-url-to-include-auth-v1).
+The CLI operation follows the installed help and
+[migration command documentation](https://supabase.com/docs/reference/cli/supabase-migration-up).
