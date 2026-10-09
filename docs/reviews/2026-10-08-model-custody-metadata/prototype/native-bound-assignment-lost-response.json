@@ -1,8 +1,9 @@
 {
   "control": "lost-response",
+  "live_parent_transport": false,
   "parent_failure": "BrokenPipeError",
   "replay": {
-    "request_sha256": "88b368423e784896e50af1ad79f8385dab0c20547dbc2696f1da65d476b9efed",
+    "request_sha256": "34f95d6b29fca1ceb4b48c4d2ecba8b75b069d29cc155bbdd2857540bc274e4b",
     "initially_resolved": true,
     "successful_posts": 0,
     "wrong_receipt_detected": false,
@@ -20,5 +21,5 @@
   "pending_commands": 0,
   "final_outputs_absent": true,
   "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
-  "limits": "Full synthetic native stage failure with mocked transport. Fresh-process exact command replay tested on snapshot with mocked RPC. No live database replay, model restart, supervisor loss, escaped descendants or scientific acceptance."
+  "limits": "Full synthetic native stage failure. Parent transport and replay evidence are recorded explicitly. Journal recovery uses a backup; original journal remains pending. No model restart, supervisor loss, escaped descendants or scientific acceptance."
 }

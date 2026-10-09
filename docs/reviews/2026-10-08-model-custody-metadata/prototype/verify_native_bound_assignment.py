@@ -82,7 +82,7 @@ def main():
              'MODE_SPLIT_ENABLED':'1','AEQ_CALIBRATE':'0','COUNT_VALIDATION_ENABLED':'0'}
         if control=='disable-mode-choice':env['MODE_SPLIT_ENABLED']='0'
         parent_failure=None
-        if control in ('lost-progress','swallow-progress-fault'):
+        if control in ('lost-progress','swallow-progress-fault') and not getattr(fixture,'handles_progress_loss',False):
             def lose_progress(url,**kwargs):
                 if 'Assignment iteration' in kwargs['json'].get('p_log_tail',''):
                     raise TimeoutError('Synthetic lost database reply during native iteration')
@@ -136,14 +136,17 @@ def main():
             config={'journal':str(snapshot),'base_url':writer.base_url,'deployment_id':writer.deployment_id,
                     'request_id':iteration['command']['request_id'],'report':str(output/'replay-result.json')}
             config_path=output/'replay-config.json';config_path.write_text(json.dumps(config))
-            replay=subprocess.run([sys.executable,'-B',str(ROOT/'verify_native_command_replay.py'),str(config_path)],capture_output=True,text=True,timeout=30)
-            (output/'replay.log').write_text(replay.stdout+replay.stderr)
-            assert replay.returncode==0,'Fresh native command replay failed: '+replay.stderr
-            replay_result=json.loads((output/'replay-result.json').read_text())
+            if hasattr(fixture,'replay_native_failure'):
+                replay_result=fixture.replay_native_failure(snapshot,iteration,output)
+            else:
+                replay=subprocess.run([sys.executable,'-B',str(ROOT/'verify_native_command_replay.py'),str(config_path)],capture_output=True,text=True,timeout=30)
+                (output/'replay.log').write_text(replay.stdout+replay.stderr)
+                assert replay.returncode==0,'Fresh native command replay failed: '+replay.stderr
+                replay_result=json.loads((output/'replay-result.json').read_text())
             assert not (root/'assignment-result.json').exists() and not (root/'run_output/link_volumes.csv').exists()
-            report={'control':control,'parent_failure':parent_failure,'replay':replay_result,'child_failure':failure,'child_exit_code':code,
+            report={'control':control,'live_parent_transport':getattr(fixture,'live_transport',False),'parent_failure':parent_failure,'replay':replay_result,'child_failure':failure,'child_exit_code':code,
                     'pending_commands':len(pending),'final_outputs_absent':True,'worker_sha256':hashlib.sha256((WORKER/'main.py').read_bytes()).hexdigest(),
-                    'limits':'Full synthetic native stage failure with mocked transport. Fresh-process exact command replay tested on snapshot with mocked RPC. No live database replay, model restart, supervisor loss, escaped descendants or scientific acceptance.'}
+                    'limits':'Full synthetic native stage failure. Parent transport and replay evidence are recorded explicitly. Journal recovery uses a backup; original journal remains pending. No model restart, supervisor loss, escaped descendants or scientific acceptance.'}
             content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/('native-bound-assignment-'+('live-' if getattr(fixture,'live_transport',False) else '')+control+'.json')).write_text(content)
             print(content);return
         if code:raise AssertionError('Native child failed; inspect '+str(output/'child.log'))

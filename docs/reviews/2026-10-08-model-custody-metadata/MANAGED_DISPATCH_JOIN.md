@@ -2969,3 +2969,41 @@ establish real predecessor selection in this joined test, lost-commit replay,
 final publication, model restart, larger-network behavior or scientific accuracy.
 Next join the native iteration-disconnect case to installed-command replay.
 Normal dispatcher activation and full V1 acceptance remain open.
+
+## Native iteration reply loss with installed SQL, October 8
+
+The full native assignment fixture now joins iteration failure to the installed
+command schema. Its HTTP bridge forwards the progress write to PostgREST, waits
+for success, then closes the connection before returning the reply. The parent
+reports `DeliveryUnconfirmed`. The child exits with
+`WorkerStateWriteUnconfirmed`, closes its active native project, and produces
+neither the final assignment result nor `link_volumes.csv`.
+
+The test backs up the unresolved SQLite journal and starts the actual recovery
+CLI in a fresh process. Recovery sends the original request ID and identical
+HTTP payload. PostgreSQL returns its existing receipt. Complete run, stage,
+attempt and artifact rows, execution-start count and the selected receipt remain
+identical before and after recovery. There is one attempt and one execution
+start. A second fresh recovery uses the retained journal receipt without making
+an HTTP call. Both CLI responses explicitly report `model_resumed: false`.
+
+`prototype/native-http-replay-controls.json` records baseline, harmless-comment,
+missing-disconnect and restored cases. The missing disconnect reaches the
+expected failure, `Native interruption did not stop both sides`. The other
+three cases retain the committed receipt without changing database state and
+leave final assignment outputs absent. Each case uses an identified disposable
+database cloned from the owned installed-schema fixture. The preview database
+is not a write target. Temporary PostgREST gateways close after each case.
+
+This supersedes the preceding live proof's missing lost-commit join. It does not
+establish model continuation, supervisor recovery, escaped-process containment,
+final output publication, realistic network performance or scientific validity.
+The original journal remains pending; recovery uses a backup to preserve the
+failure evidence. The command receipt alone grants no authority to resume the
+model. Normal dispatcher activation, browser acceptance and full V1 acceptance
+remain open.
+
+The seven existing native assignment controls also pass after adding the live
+replay hook, including lost child acknowledgement and swallowed progress faults.
+The product-direction check passes with its existing dated review reminders;
+this bounded evidence update does not renew those reviews.

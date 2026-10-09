@@ -1,5 +1,6 @@
 {
   "control": "harmless",
+  "live_parent_transport": false,
   "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
   "source_sha256": {
     "model_engine_binding.py": "b4787d2e94e3b1a5bf04c3b1f784b6045033d744eda7dfbf6a522f899ed769f6",
@@ -85,7 +86,7 @@
       "discovery_error": null,
       "fallback_after_catalog_failure": false,
       "feed_checksum_sha256": "fb679fb4b835fd1e1b4bd1eb1b9d52adcfde62d3ea3b0048bcfdfe2dfb0cebfd",
-      "feed_expiry_evaluated_at": "2026-10-09T00:33:47.073825+00:00",
+      "feed_expiry_evaluated_at": "2026-10-09T00:43:21.149332+00:00",
       "feed_origin": "operator_path",
       "feed_schedule_expired": false,
       "feed_service_end_date": "2026-12-31",
@@ -112,25 +113,25 @@
     }
   },
   "artifacts": {
-    "run_output/external_demand.omx": "6ff43ce2ac4fe01ca292d61af42bde5ce5e4ff94b0d3205c167cacd63d3cc6f9",
-    "run_output/resident_demand.omx": "fc6d7ace045c715ee183db99937aab7896ea4d1b2d0a248eaaef59da32504205",
+    "run_output/external_demand.omx": "4da1263ef1fb645b3f2325b4b4397e1ef46c6afb3890b05c21c74fa31745b0a6",
+    "run_output/resident_demand.omx": "b417e57a85aec1bebde3b601b8111ad1b42ac1968ac3351e6b89be38e2d62aff",
     "run_output/demand.aem": "3dcb59d398c12e21df3bfc7c95c969348775a439f92251ea3e15e23593ac1e21",
-    "run_output/travel_time_skims.omx": "feb6fc1e8e72424bc2e78e9275333c7955a636a9c6ae9f68eba08d702eb2cdfd",
+    "run_output/travel_time_skims.omx": "0e02f327651bde3f124b0f1fefa8e5e58499730635438804a85a24f0e5be799e",
     "run_output/link_volumes.csv": "0363855364f05c3dac0f1ff9153babde381745f177472e6b7854353be1cf883d",
     "run_output/resident_demand.aem": "6d7d472fab7c5cc996a97a871887fcb17fb48bfbd3491c0493d3dbb749bc48ed",
-    "run_output/demand.omx": "002b6692ae0b21d8473d844f5e7806259fb37be64815a38fbd36b9bb112c1dc2",
+    "run_output/demand.omx": "bae4ca1f8425effa9b3c02e0ce5202f53e57350be84d4df9d534005a7e87c2a7",
     "run_output/external_demand.aem": "8120aec0542cfadc988280d7d2c25f08ddc3e9289e242f8f209bc3cf7a7dc677",
-    "run_output/transit_inputs/manifest.json": "2bdb1433f18c40a7b998e5875b5204955cdb5c93c0bc412150b0e3c9e382efc2",
-    "run_output/child_count_inputs/manifest.json": "844bd2068b2da07cf962ca80997e89f116b770035bb639f2862d218920304fca",
-    "run_output/geometry_inputs/manifest.json": "798a395cb60bc4859aaeb4ff5a4892ba9727a8bb9f49488a2da1c8a44e1d0756",
-    "run_output/count_inputs/manifest.json": "5359a494af5f6c8aa7b3dba2f2665fb821958ce5eb1fce6d8d8dd445bb9fd610",
+    "run_output/transit_inputs/manifest.json": "1777d1377c259e86f93811f1c63d10189d692155d4f265567c4057486074d2f8",
+    "run_output/child_count_inputs/manifest.json": "f2eb24952557020188ca99164a7469f4eac334ceb45ebd527f9b05edbe42cd4b",
+    "run_output/geometry_inputs/manifest.json": "256e69e720c87591b2bb66fb0ce3c6718ce64d7d82baea20acc6e5fe3b955309",
+    "run_output/count_inputs/manifest.json": "c6881b922bbe70cde4811d3292b336b1a8ab26c87604e3da1cf5abf6234fb57f",
     "run_output/geometry_inputs/files/geometry.json": "823edb36e6e7518a16c7b3cfc7dc4cd2612bd1d7b3285aa1701bd4ad191e61e8",
-    "run_output/assignment_transit/geometry/manifest.json": "616bce7f9fb939e9a38fd3dc930c7c3588c6d6c5f2e3a3da1a0e8f72fffeeb67",
-    "run_output/assignment_transit/transit/manifest.json": "09983cd31c460f88ea8ba4e43bdc1e330610239e8120f88bc82d5e328d911138",
-    "run_output/assignment_transit/transit/files/transit.json": "b0410fe930c87c76efc740114a58536ce0920dcad4aafbcf3f2b1ef3b5daf73d",
+    "run_output/assignment_transit/geometry/manifest.json": "3fe892c6c6c83cd41d1e5f9f4c66dd71d28248ef4628c554745607c252c16aff",
+    "run_output/assignment_transit/transit/manifest.json": "9cae929c256f99caa2edc4a886042b2fa45b1731fee655070bdfabc9f4c5014d",
+    "run_output/assignment_transit/transit/files/transit.json": "37dd0bba778c2302df8a25ee51d47d395e71ab72beaeb23a34b1cb75086687a1",
     "run_output/assignment_transit/transit/files/feed.zip": "fb679fb4b835fd1e1b4bd1eb1b9d52adcfde62d3ea3b0048bcfdfe2dfb0cebfd",
     "run_output/assignment_transit/geometry/files/geometry.json": "823edb36e6e7518a16c7b3cfc7dc4cd2612bd1d7b3285aa1701bd4ad191e61e8",
-    "run_output/transit_inputs/files/transit.json": "b0410fe930c87c76efc740114a58536ce0920dcad4aafbcf3f2b1ef3b5daf73d",
+    "run_output/transit_inputs/files/transit.json": "37dd0bba778c2302df8a25ee51d47d395e71ab72beaeb23a34b1cb75086687a1",
     "run_output/transit_inputs/files/feed.zip": "fb679fb4b835fd1e1b4bd1eb1b9d52adcfde62d3ea3b0048bcfdfe2dfb0cebfd"
   },
   "exit_receipt": {
@@ -138,12 +139,12 @@
     "run_id": "00000002-1111-4111-8111-111111111111",
     "stage_id": "00000003-1111-4111-8111-111111111111",
     "attempt_id": "00000004-1111-4111-8111-111111111111",
-    "command_sha256": "75c3eda2213d7640e85a60a8e6cdb07648bb26464644a70bf12acb9efc4cf7e6",
-    "pid": 26138,
+    "command_sha256": "b65326df8b1918682bbca22d0e64240c58725f18a8affd64255a3f00b29d32a5",
+    "pid": 137099,
     "returncode": 0,
     "observed_original_process_group_empty": true,
     "execution_ready": false,
     "scientific_acceptance": "unassessed"
   },
-  "limits": "Full native stage_assignment with two synthetic centroid nodes and one link; mocked parent run/database transport, directly constructed consumed predecessor fixtures, no calibration/cordons. No interruption recovery, scientific validity, normal dispatcher or release acceptance."
+  "limits": "Full native stage_assignment with two synthetic centroid nodes and one link. Parent transport mode is recorded explicitly. Directly constructed consumed predecessor fixtures, no calibration/cordons. No interruption recovery, scientific validity, normal dispatcher or release acceptance."
 }

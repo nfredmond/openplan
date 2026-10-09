@@ -1,6 +1,6 @@
 """Full native assignment with actual claims, reads and writes in a cloned database."""
 from http.server import BaseHTTPRequestHandler,HTTPServer
-import json,os,re,subprocess,threading,uuid
+import hashlib,json,os,re,socket,subprocess,sys,threading,uuid
 from pathlib import Path
 import requests
 from isolated_postgrest import gateway
@@ -14,7 +14,7 @@ if source['container']!='supabase_db_openplan-restore-target-2026091050' or not 
 output=Path(os.environ['OPENPLAN_NATIVE_ASSIGNMENT_HTTP_OUTPUT']).absolute()
 output.mkdir(mode=0o700,parents=True,exist_ok=False)
 control=os.environ.get('OPENPLAN_NATIVE_ASSIGNMENT_HTTP_CONTROL','baseline')
-if control not in ('baseline','harmless','omit-geometry-registration'):raise ValueError('Unknown native HTTP control')
+if control not in ('baseline','harmless','omit-geometry-registration','lost-progress','lost-progress-harmless','omit-disconnect'):raise ValueError('Unknown native HTTP control')
 def sql(database,statement):
     result=subprocess.run(['docker','exec','-i',source['container'],'psql','-X','-qAt','-U','postgres','-d',database,'-v','ON_ERROR_STOP=1'],input=statement,text=True,capture_output=True,timeout=30)
     if result.returncode:raise RuntimeError(result.stderr)
@@ -29,7 +29,8 @@ workspace=sql(database,f"""INSERT INTO public.model_runs(id,workspace_id,model_i
 SELECT '{run}',workspace_id,model_id,'aequilibrae','queued','Synthetic full native assignment HTTP',created_by FROM public.model_runs WHERE id='{fixture}';
 INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order,log_tail) VALUES('{stage}','{run}','Network Assignment','queued',1,'Synthetic native assignment');
 SELECT workspace_id FROM public.model_runs WHERE id='{run}';""")
-workspace=str(uuid.UUID(workspace));calls=[]
+workspace=str(uuid.UUID(workspace));calls=[];dropped=[]
+lost_control=control in ('lost-progress','lost-progress-harmless','omit-disconnect')
 with gateway('public',database=database) as connection:
     key=connection['service_token']
     class Bridge(BaseHTTPRequestHandler):
@@ -42,7 +43,15 @@ with gateway('public',database=database) as connection:
             body=self.rfile.read(int(self.headers.get('Content-Length','0'))) if method=='POST' else None
             with requests.request(method,connection['url']+path,data=body,headers={'Authorization':'Bearer '+key,'Content-Type':'application/json'},timeout=15,allow_redirects=False) as response:
                 status,content=response.status_code,response.content
-            calls.append({'method':method,'operation':path.split('?')[0],'status':status})
+            calls.append({'method':method,'operation':path.split('?')[0],'status':status,'body_sha256':hashlib.sha256(body).hexdigest() if body else None})
+            payload=json.loads(body) if body else {}
+            if lost_control and control!='omit-disconnect' and not dropped and path=='/rpc/write_model_stage_attempt' and 'Assignment iteration' in payload.get('p_log_tail',''):
+                assert status==200,'Progress write did not commit'
+                dropped.append(payload)
+                self.close_connection=True
+                self.connection.shutdown(socket.SHUT_RDWR)
+                self.connection.close()
+                return
             self.send_response(status);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(content)));self.end_headers();self.wfile.write(content)
         def do_GET(self):self.forward('GET')
         def do_POST(self):self.forward('POST')
@@ -50,6 +59,7 @@ with gateway('public',database=database) as connection:
     base=f'http://127.0.0.1:{server.server_port}'
     class LiveFixture:
         live_transport=True
+        handles_progress_loss=True
         def setUp(self):
             self.directory=output/'journal';self.get=requests.get
             self.artifact={name:str(uuid.uuid4()) for name in ('id','stage_id','attempt_id')}
@@ -63,11 +73,46 @@ with gateway('public',database=database) as connection:
                     if payload['artifact_type']=='model_assignment_geometry':return None
                     return record_artifact(payload,**kwargs)
                 self.writer.record_artifact=omit_geometry
+        def replay_native_failure(self,snapshot,iteration,native_output):
+            request=str(uuid.UUID(iteration['command']['request_id']))
+            assert len(dropped)==1 and dropped[0]['p_request_id']==request,'Committed reply loss missing'
+            def state():
+                return sql(database,f"""SELECT jsonb_build_object(
+'parent',(SELECT to_jsonb(r) FROM public.model_runs r WHERE id='{run}'),
+'stage',(SELECT to_jsonb(s) FROM public.model_run_stages s WHERE id='{stage}'),
+'attempts',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_stage_attempts a WHERE run_id='{run}'),
+'starts',(SELECT count(*) FROM public.model_stage_execution_starts WHERE run_id='{run}'),
+'artifacts',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_run_artifacts a WHERE run_id='{run}'),
+'receipt',(SELECT response_payload FROM public.model_stage_write_receipts WHERE request_id='{request}'));""")
+            before=state();observed=json.loads(before)
+            assert observed['receipt'] is not None and len(observed['attempts'])==1 and observed['starts']==1
+            assert 'Assignment iteration' in observed['stage']['log_tail']
+            command=[sys.executable,'-B',str(native.WORKER/'model_command_recovery.py'),'--journal',str(snapshot),'--base-url',base,'--deployment-id',database,'--request-id',request]
+            outcomes=[];counts=[]
+            for number in range(2):
+                count=len(calls)
+                recovered=subprocess.run(command,env=dict(os.environ,SUPABASE_SERVICE_ROLE_KEY=key),capture_output=True,text=True,timeout=30)
+                assert recovered.returncode==0,'Live recovery CLI failed: '+recovered.stderr
+                outcome=json.loads(recovered.stdout)
+                assert outcome=={'request_id':request,'outcome':'command_receipt_retained','model_resumed':False},outcome
+                assert state()==before,'Replay changed committed database state'
+                counts.append(len(calls)-count);outcomes.append(outcome)
+            assert counts==[1,0],'Replay transport count differs'
+            digest=hashlib.sha256(json.dumps(dropped[0],allow_nan=False).encode()).hexdigest()
+            # Requests serializes the same original command on both processes.
+            matching=[call for call in calls if call['body_sha256']==digest]
+            assert len(matching)==2,'Replay changed original HTTP payload'
+            report={'request_id':request,'committed_reply_dropped':True,'fresh_process_outcomes':outcomes,'http_calls_per_recovery':counts,
+                    'database_state_unchanged':True,'request_body_sha256':digest,'model_resumed':False,
+                    'limits':'Real installed SQL receipt replay from a journal backup. Original journal remains pending. No model continuation or supervisor restart.'}
+            (native_output/'replay-result.json').write_text(json.dumps(report,indent=2)+'\n')
+            return report
         def doCleanups(self):pass
     try:
         native.ProjectWorkingCopyTests=LiveFixture
         os.environ['OPENPLAN_BOUND_ASSIGNMENT_OUTPUT']=str(output/'native')
-        os.environ['OPENPLAN_BOUND_ASSIGNMENT_CONTROL']='harmless' if control=='harmless' else 'baseline'
+        os.environ['OPENPLAN_BOUND_ASSIGNMENT_CONTROL']='lost-progress' if lost_control else ('harmless' if control=='harmless' else 'baseline')
+        if control=='lost-progress-harmless':native.CHILD+='\n# Harmless native child comment.\n'
         native.main()
         result=json.loads((output/'native/result.json').read_text())
         assert result['live_parent_transport'] is True
@@ -76,9 +121,9 @@ with gateway('public',database=database) as connection:
         artifacts=json.loads(sql(database,f"SELECT coalesce(json_agg(artifact_type ORDER BY artifact_type),'[]') FROM public.model_run_artifacts WHERE run_id='{run}';"))
         assert set(artifacts)=={'model_project_working_copy','model_package_working_copy','model_count_inputs','model_transit_inputs','model_assignment_geometry'},'Installed input registration differs'
         assert all(call['status']==200 for call in calls),calls
-        report={'control':control,'database':database,'run_id':run,'stage_id':stage,'native_converged':result['convergence']['converged'],'modeled_transit':result['mode_split']['transit_status'],
+        report={'control':control,'database':database,'run_id':run,'stage_id':stage,'native_converged':result.get('convergence',{}).get('converged'),'modeled_transit':result.get('mode_split',{}).get('transit_status'),'replay':result.get('replay'),'final_outputs_absent':result.get('final_outputs_absent'),
                 'registered_artifacts':artifacts,'http_calls':calls,'stage_remains_running':True,'worker_sha256':result['worker_sha256'],
-                'limits':'Full small native assignment with live isolated PostgREST and installed command schema. Synthetic predecessor inventories directly constructed. No lost-commit replay, final publication, model restart, scientific acceptance or normal dispatcher activation.'}
+                'limits':'Full small native assignment with live isolated PostgREST and installed command schema. Synthetic predecessor inventories directly constructed. Lost-commit replay is recorded when selected. No final publication, model restart, scientific acceptance or normal dispatcher activation.'}
         content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(native.ROOT/('native-assignment-http-'+control+'.json')).write_text(content);print(content)
     finally:
         server.shutdown();server.server_close();thread.join(timeout=5)
