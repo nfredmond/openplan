@@ -81,6 +81,7 @@ function modelsTabHref(filters: ModelsPageFilters, status: string | null): strin
 type ModelRow = {
   id: string;
   workspace_id: string;
+  model_runs?: Array<{ count?: unknown }> | null;
   project_id: string | null;
   scenario_set_id: string | null;
   title: string;
@@ -174,7 +175,7 @@ export default async function ModelsPage({
     supabase
       .from("models")
       .select(
-        "id, workspace_id, project_id, scenario_set_id, title, model_family, status, config_version, owner_label, horizon_label, assumptions_summary, input_summary, output_summary, summary, last_validated_at, last_run_recorded_at, created_at, updated_at, projects(id, name), scenario_sets(id, title)"
+        "id, workspace_id, project_id, scenario_set_id, title, model_family, status, config_version, owner_label, horizon_label, assumptions_summary, input_summary, output_summary, summary, last_validated_at, last_run_recorded_at, created_at, updated_at, projects(id, name), scenario_sets(id, title), model_runs(count)"
       )
       .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
@@ -279,6 +280,10 @@ export default async function ModelsPage({
 
   const modelsInScope = ((modelsData ?? []) as ModelRow[])
     .map((model) => {
+      const savedCount = Array.isArray(model.model_runs) && model.model_runs.length === 1
+        ? model.model_runs[0]?.count : null;
+      const modelRunCount = typeof savedCount === "number" && Number.isSafeInteger(savedCount) && savedCount >= 0
+        ? savedCount : null;
       const project = Array.isArray(model.projects) ? model.projects[0] ?? null : model.projects ?? null;
       const scenarioSet = Array.isArray(model.scenario_sets) ? model.scenario_sets[0] ?? null : model.scenario_sets ?? null;
       const links = linksByModel.get(model.id) ?? [];
@@ -309,6 +314,7 @@ export default async function ModelsPage({
             }
           : null,
         ...workspaceSummary,
+        modelRunCount,
       };
     })
     .filter((model) => (activeFilters.projectId ? model.project_id === activeFilters.projectId : true))
@@ -702,7 +708,12 @@ export default async function ModelsPage({
                     and "Missing: Scenario basis" are not facts about this
                     record — they are the shape of the failure. */}
                 <p className="mt-1.5 text-label text-muted-foreground">
-                  {model.project?.name ?? "No project"} · {model.config_version ? `Config ${model.config_version}` : "Config pending"} · {linksReadFailed ? "Readiness and links unavailable" : `${model.readiness.ready ? "Ready" : `${model.readiness.missingCheckCount} gap${model.readiness.missingCheckCount === 1 ? "" : "s"}`} · ${model.linkageCounts.reports} reports · ${model.linkageCounts.runs} runs`}
+                  {model.project?.name ?? "No project"} · {model.config_version ? `Config ${model.config_version}` : "Config pending"} · {linksReadFailed ? "Readiness and links unavailable" : `${model.readiness.ready ? "Ready" : `${model.readiness.missingCheckCount} gap${model.readiness.missingCheckCount === 1 ? "" : "s"}`} · ${model.linkageCounts.reports} linked reports · ${model.linkageCounts.runs} linked analysis runs`}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {model.modelRunCount === null
+                    ? "Saved model run count unavailable"
+                    : `${model.modelRunCount} saved model ${model.modelRunCount === 1 ? "run" : "runs"}`}
                 </p>
                 {linksReadFailed ? (
                   <p className="mt-1 text-label text-amber-700 dark:text-amber-300">

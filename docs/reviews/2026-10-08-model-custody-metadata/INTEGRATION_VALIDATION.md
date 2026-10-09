@@ -336,3 +336,58 @@ The model list also shows zero runs while the detail page shows one stored run.
 The list currently renders `linkageCounts.runs`, not a direct model-run count.
 Whether this is a mislabeled linked-analysis count or a missing count join remains
 to be resolved. Preserve this observed mismatch in the next workflow review.
+
+
+## Model catalog counts and CI reconciliation, October 8
+
+The model list's run count comes from model_links entries pointing to analysis
+runs, not from model_runs. The saved abandoned execution therefore appears as
+zero runs on the list and one run on its detail page. The list now requests
+`model_runs(count)` with the workspace-scoped model query and shows saved model
+runs separately from explicitly labeled linked analysis runs. Missing, malformed
+or negative aggregates remain unavailable; a verified zero remains zero.
+
+Before changing the query, a real password-authenticated request to the isolated
+PostgREST gateway returns exactly one aggregate row for the synthetic model:
+`model_runs: [{count: 1}]`. The owner session reads its workspace, using the anon
+API key plus its access token, not service-role authorization. No credentials
+are retained in this report. The six related page suites pass 82 tests, including
+projection and workspace-filter assertions; targeted lint passes. The original
+parameterized malformed-count cases spread array rows into arguments, so they
+were corrected to pass each whole aggregate value before the final run.
+
+GitHub shuffled job 113650869041 at cf2381247 finishes with four failures across
+three suites, 20,205 passing tests and 1,588 skipped tests. Its failures concern
+schema bookkeeping and missing upgrade notes, not a demonstrated order-dependent
+behavior. Migration 23 adds a private recovery receipt table; a read-only native
+catalog query in the isolated acceptance database confirms 306 application base
+tables, all with RLS, and 14 application views. The inventory now records that
+count. Unreleased notes name migrations 22 and 23 and distinguish abandonment of
+write authority from termination and restart.
+
+Unread-column records now name the three prior-state snapshots as write-only,
+the retained blocker column as audit-only, and both response payload readers in
+SQL. Twelve stale entries leave the name-based ratchet because current source
+names request_payload, attempt_managed and active_attempt_id. That lexical check
+cannot establish table-specific reads: request_payload is shared across receipt
+tables. No new human-facing snapshot reader is claimed. The three affected
+migration and unread-column suites pass 41 tests locally. Full GitHub QA, live
+isolation and restore results remain separate checks.
+
+
+The nine-case catalog/schema control campaign passes baseline, harmless and
+restored runs and detects six targeted faults: missing aggregate projection,
+invented zero, counting links as executions, an untracked relation, an unread
+column and an omitted upgrade note. All source mutations are restored in finally
+blocks; migration SQL is never applied during this source-guard campaign.
+`prototype/catalog-schema-controls.json` records hashes and failure markers.
+The reproducible runner is `prototype/verify_catalog_schema_controls.py`.
+These tests do not establish browser layout or whole-suite CI. An initial lint
+invocation from the repository root could not find the app configuration;
+rerunning inside openplan passes. Product-direction checks pass with the existing
+registry-age and version reminders, without revising dates or acceptance claims.
+
+Full no-emit TypeScript validation passes for this checkpoint: 5,006 files,
+56.25 seconds and 4,854,956 KB reported compiler memory under the 7 GB scope.
+No fresh production build or rendered catalog journey is claimed for these
+latest changes; the identified port 3517 preview remains at 276e2627.

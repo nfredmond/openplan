@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Apply `20261016000022_model_reaper_recovery_boundary.sql` before deploying.
+Automatic timeout now applies only to unstarted queued model work. Started or
+managed work retains its execution records for explicit recovery review.
+
+Apply `20261016000023_model_recovery_decisions.sql` for owner/admin abandonment
+review and exact retry receipts. Abandonment revokes database write authority;
+it does not verify process termination or authorize restart. Recovery decisions
+retain the original execution snapshots. Normal managed dispatch remains off.
+
 Count-source summaries distinguish acquisition history from current file
 availability. Missing or unreadable files cannot retain an available label or
 report zero eligible rows as though those rows were measured.

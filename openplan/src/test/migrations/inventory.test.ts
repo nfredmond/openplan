@@ -548,10 +548,11 @@ const EXPECTED = {
   // Two private execution-retention tables; neither grants direct client policies.
   // 20261016000020 adds private immutable skip receipts with no client policies.
   // Installed clone confirms 305 application RLS tables and 14 application views.
-  relations: 319,
-  tables: 305,
+  // Migration 23 adds private recovery receipts. Installed clone: 306 RLS tables and 14 views.
+  relations: 320,
+  tables: 306,
   views: 14,
-  rlsEnabledTables: 305,
+  rlsEnabledTables: 306,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
