@@ -21,7 +21,7 @@ if str(WORKER_DIR) not in sys.path:
 from build_activitysim_input_bundle import build_activitysim_input_bundle
 from extract_activitysim_behavioral_kpis import extract_activitysim_behavioral_kpis
 from ingest_activitysim_runtime_outputs import ingest_activitysim_runtime_outputs
-from runtime import run_activitysim_runtime
+from runtime import run_activitysim_runtime, require_no_host_custody
 
 PIPELINE_MANIFEST_NAME = "behavioral_demand_prototype_manifest.json"
 DEFAULT_OUTPUT_ROOT_NAME = "behavioral_demand_prototype"
@@ -287,6 +287,7 @@ def run_behavioral_demand_prototype(
     custody = resolved_output_root / "runtime.container-custody"
     if custody.exists() or custody.is_symlink():
         raise RuntimeError("Retained container custody exists; choose a new pipeline output root")
+    require_no_host_custody(resolved_output_root / "runtime")
     if resolved_output_root.exists():
         if not force:
             raise RuntimeError(f"Output root already exists: {resolved_output_root}")

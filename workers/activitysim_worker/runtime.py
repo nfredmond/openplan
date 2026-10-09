@@ -547,6 +547,13 @@ def detect_activitysim_capability(
     return capability
 
 
+def require_no_host_custody(path: Path) -> None:
+    """Preserve host launch records even when the containing runtime is replaced."""
+    for records in path.glob("stages/*/host_supervision"):
+        if records.exists() or records.is_symlink():
+            raise RuntimeError("Retained host custody exists; choose a new runtime directory")
+
+
 def prepare_runtime_directory(
     *,
     bundle_dir: Path,
@@ -563,6 +570,7 @@ def prepare_runtime_directory(
     custody = path.with_name(path.name + ".container-custody")
     if custody.exists() or custody.is_symlink():
         raise RuntimeError("Retained container custody exists; choose a new runtime directory")
+    require_no_host_custody(path)
     if path.exists():
         if not force:
             raise RuntimeError(f"Runtime output directory already exists: {path}")

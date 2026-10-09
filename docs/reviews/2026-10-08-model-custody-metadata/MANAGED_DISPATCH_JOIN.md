@@ -3755,3 +3755,37 @@ They do not establish recovery during file construction, native computation,
 Storage transport, each individual progress/KPI write, process or host failure,
 normal dispatcher entry or scientific acceptance. Native execution and the
 normal dispatcher still require the remaining lifecycle integration.
+
+
+### Preserve host supervision records during forced replacement
+
+The native-path review found that container records prevented forced replacement,
+but host records lived inside the runtime tree and could be deleted by either
+`prepare_runtime_directory(..., force=True)` or the pipeline's parent-directory
+replacement. The existing guard covered only `runtime.container-custody`.
+
+Both entry points now call `require_no_host_custody` before replacement. It
+checks retained `stages/*/host_supervision` entries, including dangling links,
+and requires a new runtime directory when records exist. This preserves the
+host launch identity and adjacent command log; it does not interpret a retained
+record as proof that the process is still running or has exited.
+
+Two tests exercise both entry points with record directories and dangling
+aliases, then compare the retained record and log bytes. The controls in
+`prototype/verify_host_record_preservation_controls.py` remove each entry-point
+guard separately and omit the dangling-link check. All three faults fail the
+intended preservation test. Harmless comments and restored sources pass.
+`prototype/host-record-preservation-controls.json` records the source hashes.
+
+These are filesystem replacement tests. They do not establish protection
+against concurrent filesystem replacement, recover a native process, change
+managed dispatch, or establish scientific acceptance.
+
+
+Validation: all 110 ActivitySim worker tests pass in the dedicated ActivitySim
+Python environment with the owned live-scope tests enabled. The five existing
+behavioral pipeline tests also pass. The first full-suite attempt used the
+AequilibraE environment, which lacks Flask: two host CLI readiness checks timed
+out before the CLI could import. Direct CLI invocation confirmed the missing
+module. That failed run is retained alongside the successful rerun; no timeout
+was widened and no failure assertion was removed.
