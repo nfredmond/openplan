@@ -3493,3 +3493,24 @@ unchanged ten route controls have retained evidence. Focused TypeScript and
 changed-file ESLint pass. A read-only TypeScript configuration inventory finds
 3,509 root files, with no nested worktree in that root list. This does not explain
 or resolve the prior whole-project heap failures; full validation remains open.
+
+### October 8: full compiler validation and stacked CI
+
+[Integration validation](INTEGRATION_VALIDATION.md) records a successful full
+TypeScript check with the repository's existing 6 GB heap allowance. Earlier
+2 GB and 4 GB failures remain historical failed attempts. The first production
+build also passes webpack and Next's generated type check, then fails because
+23 page-data workers exceed the bounded task limit. Its lower-concurrency retry
+is separate evidence.
+
+The same review finds that the main QA, RLS and worker-security workflows exclude
+PRs targeting intermediate branches. Their PR triggers now cover every base,
+with a native source guard and harmless/missing/main-only controls. GitHub must
+still execute those checks on the pushed head. This does not change the pending
+browser, operational or scientific requirements.
+
+The lower-concurrency production build subsequently passes, including Next's
+generated types, all 137 static pages and build tracing. The exact resource
+settings and placeholder-environment boundary are in the linked validation
+record. This supersedes the open full-type/build boundary for application
+commit `6aa6b5447`; it does not establish browser or whole-release acceptance.

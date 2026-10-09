@@ -2,8 +2,8 @@ name: Worker security and cancellation
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  # Stacked PRs need the same checks before their base reaches main.
+  pull_request: {}
 permissions:
   contents: read
 jobs:
