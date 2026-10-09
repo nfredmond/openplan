@@ -140,3 +140,43 @@ profile, network settings and calibration controls. Do not inherit scientific
 settings accidentally through a different process environment. This extends the
 implementation detail of the existing extraction decision; it creates no new
 product queue and changes no v1 scope or scientific acceptance requirement.
+
+## Detached-descendant scope experiment, October 8
+
+The live Linux experiment at worker revision `d687969da` uses the existing
+`EngineProcess` launch and inherited progress channel inside a uniquely named
+user scope. A descendant calls `setsid` and remains alive after the leader exits.
+The original process group is empty, so the current helper can record its limited
+exit receipt. That receipt still has `execution_ready: false`. The owned scope
+remains active with `cgroup.events` reporting `populated 1`. Leader and descendant
+report the same cgroup, and the descendant reports its own session and group.
+The scope disappears after the descendant exits. The probe limits memory to
+128 MiB and tasks to 16; those are test limits, not selected model defaults.
+
+The inherited file descriptor remains usable through `systemd-run --user --scope`.
+This makes an owned scope a feasible Linux backend for the existing channel.
+Baseline, harmless-comment and restored cases pass. Replacing the population
+check with the original process-group check fails at the intended assertion.
+See `prototype/engine-scope-controls.json`. Initial fixture setup used an obsolete
+predecessor-read stub and failed ownership validation before engine work; restoring
+the current invocation read stub allowed the actual scope experiment to proceed.
+
+Kernel documentation defines cgroup inheritance and the recursive `populated`
+field. It also permits process migration. Therefore, this experiment establishes
+detection of `setsid` descendants, not a sandbox against same-user migration or
+privileged code. Source: [Linux cgroup v2 documentation](https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html),
+“Processes” and “[Un]populated Notification,” checked October 8, 2026.
+
+The production adapter must hold the engine behind a startup acknowledgement
+until the parent records the generated scope name, invocation identity, cgroup
+identity and resource policy in the owned launch reservation. The actual engine
+must not run before that record. Reconciliation must use those identities rather
+than a saved PID or an unverified unit name. Completion must inspect the owned
+scope, detect replacement, reject live descendants and retain a failed or
+uncertain scope outcome. Cancellation may target only that verified owned scope.
+Parent failure must not imply model success or authorize a second execution.
+Unsupported hosts must expose the missing supervision capability explicitly.
+
+Scope startup fencing, durable identity capture, cancellation, parent-loss
+recovery, policy selection, model-native integration and output publication remain
+unimplemented. This experiment changes no dispatch or completion authorization.

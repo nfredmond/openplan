@@ -1,62 +1,32 @@
 {
-  "scope_sha256": "faeda72e06e00f80c961fc93c5caad26e4874b214f1326a835365bc41d5d2599",
-  "worker_sha256": "ecfc74cc050a7744c6a1e563e802787d04223cc209e6124e5a86fcb2253237f9",
+  "proof_sha256": "85643e2f202ccbb9f58e10da9031e16b9f887bc55b6eded018c4c54c0f3d62e3",
   "controls": [
     {
       "control": "baseline",
-      "exit_code": 0,
-      "targeted_test": null
+      "unit": "openplan-engine-probe-0ba302c77c0f4842941b162b02d18b01.scope",
+      "progress_channel_confirmed": true,
+      "completion_refused_while_descendant_live": true,
+      "scope_removed_after_descendant_exit": true
     },
     {
       "control": "harmless",
-      "exit_code": 0,
-      "targeted_test": null
+      "unit": "openplan-engine-probe-8e8685ab159346f8a460ea75ae868b75.scope",
+      "progress_channel_confirmed": true,
+      "completion_refused_while_descendant_live": true,
+      "scope_removed_after_descendant_exit": true
     },
     {
-      "control": "omit-close",
-      "exit_code": 1,
-      "targeted_test": "test_actual_assignment_closes_after_graph_failure"
-    },
-    {
-      "control": "ignore-interruption",
-      "exit_code": 1,
-      "targeted_test": "test_interrupt_closes_and_preserves_exception"
-    },
-    {
-      "control": "ignore-managed-stop",
-      "exit_code": 1,
-      "targeted_test": "test_partial_open_closes_and_stops_managed_writer"
-    },
-    {
-      "control": "swallow-close-error",
-      "exit_code": 1,
-      "targeted_test": "test_cleanup_failure_propagates_with_original_error"
-    },
-    {
-      "control": "omit-project-log-close",
-      "exit_code": 1,
-      "targeted_test": "test_project_log_closes_without_touching_unrelated_handler"
-    },
-    {
-      "control": "omit-matrix-cleanup",
-      "exit_code": 1,
-      "targeted_test": "test_matrices_close_once_in_reverse_order"
-    },
-    {
-      "control": "duplicate-matrix-cleanup",
-      "exit_code": 1,
-      "targeted_test": "test_matrices_close_once_in_reverse_order"
-    },
-    {
-      "control": "ignore-matrix-failure-stop",
-      "exit_code": 1,
-      "targeted_test": "test_matrix_close_failure_does_not_skip_remaining_cleanup"
+      "control": "process-group-only",
+      "detected": "Detached descendant escaped completion check"
     },
     {
       "control": "restored",
-      "exit_code": 0,
-      "targeted_test": null
+      "unit": "openplan-engine-probe-b78e1e8693e4482da767a5c1908b7fb8.scope",
+      "progress_channel_confirmed": true,
+      "completion_refused_while_descendant_live": true,
+      "scope_removed_after_descendant_exit": true
     }
   ],
-  "limits": "Actual setup and assignment entry points with injected project failures. Verifies close is attempted and errors remain visible, not that native handles all close or that scientific output is valid."
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/engine-scope-controls-20261008",
+  "limits": "Real Linux scope feasibility, mocked database transport. No production startup fence, parent-loss recovery, sandbox, output capture or dispatch activation."
 }

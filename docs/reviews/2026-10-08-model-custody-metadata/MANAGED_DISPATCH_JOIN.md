@@ -3007,3 +3007,19 @@ The seven existing native assignment controls also pass after adding the live
 replay hook, including lost child acknowledgement and swallowed progress faults.
 The product-direction check passes with its existing dated review reminders;
 this bounded evidence update does not renew those reviews.
+
+## Owned scope feasibility before output capture, October 8
+
+A real detached descendant confirms why the existing process-group exit receipt
+cannot authorize completed-output capture. The leader exits and its original
+group empties while the owned Linux scope remains populated. The current receipt
+correctly retains `execution_ready: false`. A uniquely named user scope also
+preserves the inherited progress channel. Its configured test memory and task
+limits are observed, and it disappears after the descendant exits.
+
+Four controls pass, including a process-group-only fault detected while the
+separate-session descendant remains alive. The experiment uses mocked database
+transport and disposable children with independent deadlines. No unrelated unit
+is stopped. `ENGINE_CHILD_PROTOCOL.md` records the selected next adapter boundary
+and the remaining startup, identity, cancellation and parent-loss requirements.
+This is evidence for implementation, not completed supervision or output capture.
