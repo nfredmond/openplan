@@ -60,3 +60,18 @@ Do not persist a raw stop-time table or expand the claim tier of schedule-derive
 Use the existing independent test stacks. Resource limits apply to the worker and its child processes; keep heavy tests serial on this host. Each new guard needs a harmless control and a targeted failure. Separate SQL, HTTP, process-restart, supervisor and browser evidence. Do not substitute one for another.
 
 The next implementation experiment is a rollback-only ownership state machine against an isolated database. It must prove retained claim identity, expiry/replacement and old-token refusal before any route starts queuing work. A prototype remains unshipped until the actual ingestion writes, storage and UI use those boundaries.
+
+## Ownership experiment, October 9
+
+The isolated SQL prototype now passes its baseline, harmless-comment and restored runs. Six deliberately broken variants fail at the intended assertions: null claim receipt, token rebound to another version, expired claim revived, old token renewing a replacement, terminal version renewed, and output written without ownership. The retained [results](ownership-controls.json) identify the exact SQL and assertion hashes.
+
+The first experiment could not run because PostgreSQL refuses a temporary-table foreign key to a permanent table. The corrected runner creates a unique private schema inside one transaction. Foreign keys reference freshly inserted synthetic versions. Each run rolls back, including its fixtures, and a separate connection confirms that its schema no longer exists. No migration or application route changes here.
+
+The checks demonstrate same-transaction replay, live-lease refusal, simulated expiry, replacement and guarded synthetic output. They run as the database owner. They do not prove role isolation, simultaneous claim contention, a committed receipt recovered after process loss, actual derived writes, storage recovery, supervisor heartbeat or browser operation. Expiry uses a controlled lease update rather than waiting for a worker to die. The next experiment must test concurrent transactions and committed claim recovery before connecting the production writer.
+
+Reproduce against the owned proof database described by its private configuration file:
+
+```bash
+python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_ownership.py \
+  /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
+```
