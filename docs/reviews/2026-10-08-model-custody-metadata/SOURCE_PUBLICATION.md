@@ -107,3 +107,45 @@ unresolved declared roles, followed by streamed publication and recovery using
 that same catalog. This is a dependency order within S1, not a replacement for
 the roadmap. Normal worker enrollment, independent preparation, scientific
 acceptance and the full V1 contract remain open.
+
+## October 9 declared-dependency catalog implementation
+
+`workers/aequilibrae_worker/model_validation_source_catalog.py` now builds the
+prepublication catalog from exact document bytes, their retained hash/size
+records, a caller-supplied run/attempt context and explicit role bindings.
+It handles the five instrument documents, nested readiness artifacts, registry
+and observation source members, match-audit network/registry/matcher references,
+stored/logical structural sources and comparison-basis execution dependencies.
+A measurement's `exact_record_sha256` remains a logical record digest; it is not
+mistaken for a source-file hash. Compressed sources retain separate stored and
+logical identities. Run-summary coefficient bindings retain execution phase.
+
+The builder checks primary document bytes before parsing, refuses unsupported
+schemas, duplicate JSON keys and nonfinite constants, and preserves all missing
+binding diagnostics. Unknown, unsupported and unavailable binding statuses cannot
+become an available record. Explicit role bindings must agree with declared
+paths, hashes and byte counts. Parent-run/method mismatches and direct declared
+preparation/output path aliases are refused. Stable role ordering and object
+names permit identical bytes to share an eventual object without collapsing
+method/attempt context or distinct semantic roles. Inputs are not mutated.
+
+Nine tests pass under the lightweight Python 3.11 worker environment and local
+Python. The fixture supplies actual in-memory source bytes for its declared
+roles and resolves 23 catalog entries. It is authored software-integrity data,
+not a prepared scientific study. The suite is included in focused worker CI.
+[Twelve controls](prototype/source-catalog-controls.json) retain harmless and
+restored passes plus ten expected faulty-implementation failures. The first
+phase fault changed every execution record and triggered the output-alias guard;
+the retained control targets the run-summary phase specifically, which fails
+the intended phase assertion. Production code was restored after every campaign.
+
+The builder explicitly returns `stored_source_bytes_verified: false`,
+`publication_state: not_published`, and unassessed preparation independence and
+scientific acceptance. Source bindings are producer-supplied metadata. This
+step does not read those source files, resolve filesystem aliases, authorize
+native custody, prove every scientifically necessary source was declared, or
+publish/recover an archive. It is not yet called by normal worker dispatch.
+Next, the owned-file copier and streaming publisher must consume this catalog,
+verify exact stored/logical bytes and retained authority, and preserve its roles
+through publication and recovery. The earlier archive and acceptance requirements
+remain binding.
