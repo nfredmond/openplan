@@ -1,0 +1,49 @@
+{
+  "migrationHashes": {
+    "20261016000022_model_reaper_recovery_boundary.sql": "e94693fec4f95abda27fc627e2c3bf6888a60c19129fa313b72b5741c286b192",
+    "20261016000023_model_recovery_decisions.sql": "3a8da545fb864e35e6798a070301da929093bbcca51aaadf1335f6ee2dc4ace9",
+    "20261016000024_model_attempt_instrument_member_read.sql": "8a7058b66fb3cb5562c773393a1a0acd2a1e05f471a57289cf5af5adffc1a47a"
+  },
+  "cases": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "inventory": {
+        "tables": 307,
+        "views": 14,
+        "rlsTables": 307
+      },
+      "rolledBack": true
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "inventory": {
+        "tables": 307,
+        "views": 14,
+        "rlsTables": 307
+      },
+      "rolledBack": true
+    },
+    {
+      "case": "missing-rls",
+      "expectedPass": false,
+      "inventory": {
+        "tables": 307,
+        "views": 14,
+        "rlsTables": 306
+      },
+      "rolledBack": true
+    },
+    {
+      "case": "restored",
+      "expectedPass": true,
+      "inventory": {
+        "tables": 307,
+        "views": 14,
+        "rlsTables": 307
+      },
+      "rolledBack": true
+    }
+  ]
+}
