@@ -1,0 +1,44 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "bypass-stopped-writer",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "ignore-workspace",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "identity-follows-payload",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "continue-after-uncertainty",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "unnamed-slot",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "source_sha256": "56ceaa5e2865b0836b1849384e46d03cd6bfe8858899f81ce0f2a549462f7619",
+  "limits": [
+    "Real local journals, synthetic HTTP responses",
+    "No prepared-file verification, native database artifact relationships, normal dispatch or scientific acceptance"
+  ]
+}

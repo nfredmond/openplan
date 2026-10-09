@@ -494,6 +494,33 @@ class AttemptWriter:
         return self._record_output('write_model_attempt_kpi', payload,
                                    workspace_id=workspace_id, stage_id=stage_id)
 
+    def record_instrument(self, payload: dict, *, logical_name: str, workspace_id=None):
+        """Retain an explicitly named instrument without preparing or grading it.
+
+        The caller must retain this name before delivery. Changing artifact
+        references under that name is not a new request or a recovery strategy.
+        Native ingestion still verifies artifact ownership and relationships.
+        """
+        self.require_open()
+        ctx = self.context
+        try:
+            if workspace_id is not None and workspace_id != ctx.workspace_id:
+                raise ValueError('Managed instrument crosses workspace scope')
+            if not isinstance(logical_name, str) or not logical_name.strip():
+                raise ValueError('Managed instrument requires a retained logical name')
+            payload = json.loads(journal.canonical(payload))
+            operation = 'record_model_attempt_instrument'
+            identity = journal.canonical({'destination': ctx.destination, 'operation': operation, 'name': logical_name})
+            command = {'request_id': str(uuid.uuid5(uuid.UUID(ctx.attempt_id), identity)),
+                       'destination': ctx.destination, 'operation': operation,
+                       'arguments': {'workspace_id': ctx.workspace_id, 'run_id': ctx.run_id,
+                                     'stage_id': ctx.stage_id, 'attempt_id': ctx.attempt_id, 'payload': payload}}
+            return client.deliver(self.directory, command, base_url=self.base_url,
+                deployment_id=self.deployment_id, service_key=self.service_key, post=self.post)
+        except BaseException:
+            self.stopped = True
+            raise
+
     def _record_output(self, operation, payload, *, workspace_id=None, stage_id=None, logical_name=None):
         """Bind an immutable output slot to this attempt, never to its contents."""
         self.require_open()

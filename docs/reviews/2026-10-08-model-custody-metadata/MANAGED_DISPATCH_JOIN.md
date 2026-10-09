@@ -3828,3 +3828,37 @@ Census reconstruction, full-population capacity, native-process interruption
 through this complete handler, human use and scientific acceptance remain
 open. The earlier native execution-to-publication gap is narrowed to this
 prepared development case; it is not closed for normal operation.
+
+
+### Attempt-bound instrument writer, October 9
+
+The dispatcher audit confirms an unresolved scientific-write connection.
+`sb_record_retained_modeling_validation_assessment` still prepares
+`record_legacy_model_assessment`. Migration 15 refuses that operation when the
+parent is managed: `Managed assessment requires attempt-bound ingestion`.
+Enabling claims without replacing this connection would stop AequilibraE at
+assessment publication. Do not bypass the database refusal or invent the six
+instrument artifacts required by the successor operation.
+
+`AttemptWriter.record_instrument` now delivers the existing successor command
+through the invocation's journal. Workspace, run, stage and attempt come from
+the admitted context. A caller-supplied retained logical name determines the
+request identity independently of the payload. Changed content under the same
+name is refused, including after a receipt resolves. The existing client and
+native command keep each demand method separate and permit only `inconclusive`.
+A stopped writer cannot reuse this method even for an already-resolved receipt.
+
+Seven tests cover exact scope and RPC arguments, method separation, receipt
+reuse, changed payload refusal, reply uncertainty, foreign workspace refusal,
+missing names, stopped writers and attempted claim promotion. The controls in
+`prototype/verify_instrument_writer_controls.py` separately remove the stopped,
+workspace and name checks, make identity follow content, and omit the stopped
+state after uncertainty. Each must fail its named test for the expected reason;
+harmless comments and restored code pass.
+
+These tests use real local journals and synthetic HTTP responses. They do not
+verify preparation files or native artifact relationships through this new
+writer method. Normal dispatch remains disabled. The prepared instrument,
+actual artifact registration, native ingestion and worker call site must still
+be connected without changing historical assessment meanings or scientific
+claim tiers.
