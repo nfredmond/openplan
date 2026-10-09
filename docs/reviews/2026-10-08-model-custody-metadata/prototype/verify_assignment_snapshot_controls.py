@@ -9,7 +9,7 @@ checks=[
  ('early-execute','    classes=list(assignment.classes)','    assignment.execute()\n    classes=list(assignment.classes)','test_complete_exact_inputs_exist_before_execute','FileNotFoundError'),
  ('reuse-directory','destination.mkdir(mode=0o700,exist_ok=False)','destination.mkdir(mode=0o700,exist_ok=True)','test_partial_directory_is_not_adopted','FileExistsError not raised'),
  ('skip-readback','if restored.dtype!=array.dtype or not np.array_equal(restored,array):','if False:','test_corrupt_saved_array_prevents_execute','ValueError not raised'),
- ('changed-settings',"if any(actual[key]!=profile[key] for key in actual):",'if False:','test_changed_settings_or_pce_never_execute','ValueError not raised'),
+ ('changed-settings','live_profile = verify(assignment, profile)','live_profile = {}','test_changed_settings_or_pce_never_execute','ValueError not raised'),
  ('changed-graph','if not np.array_equal(index,np.asarray(item.graph.centroids)):','if False:','test_graph_centroid_mismatch_never_executes','ValueError not raised'),
  ('restored',None,None,None,None),
 ]

@@ -34,6 +34,8 @@ def verify(writer, method, consumption, sql, database):
         if control in ('mismatch', 'skip-comparison'): current['target_gap'] /= 2
         fixture.engine.rgap_target = current['target_gap']
         fixture.engine.max_iter = current['max_iterations']
+        fixture.engine.assignment.rgap_target = current['target_gap']
+        fixture.engine.assignment.max_iter = current['max_iterations']
         output = writer.files.path / 'run_output'; output.mkdir()
         def execute():
             with managed.bind(writer):

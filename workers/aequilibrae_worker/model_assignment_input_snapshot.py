@@ -48,13 +48,13 @@ def retain_and_execute(assignment, *, directory, context, profile, network_state
         if float(item.pce)!=profile['class_pce']:
             raise ValueError('Assignment class PCE differs from profile')
         records.append((item,index,values))
-    actual={'target_gap':assignment.rgap_target,'max_iterations':assignment.max_iter,'cores':assignment.cores}
-    if any(actual[key]!=profile[key] for key in actual):
-        raise ValueError('Assignment settings differ from profile')
+    from model_assignment_live_profile import verify
+    live_profile = verify(assignment, profile)
     # Validate all JSON before creating files. Non-finite metadata is not a
     # usable substitute for explicit unavailable evidence.
     metadata=json.loads(json.dumps({'context':context,'profile':profile,
-        'network_state':network_state,'network_settings':network_settings},allow_nan=False))
+        'network_state':network_state,'network_settings':network_settings,
+        'live_profile_verification':live_profile},allow_nan=False))
     destination=Path(directory)
     destination.mkdir(mode=0o700,exist_ok=False)
     entries=[]

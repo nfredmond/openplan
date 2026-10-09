@@ -1,0 +1,47 @@
+{
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "target-drift",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "vdf-drift",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "capacity-drift",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "skip-guard",
+      "returncode": 1,
+      "expected_failure": "Native solver drift was not refused",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Native AequilibraE 1.6.2 fixture with injected parent database responses. Drift controls inspect stopped child output and absence of execution marker, initial manifest and final volumes. No scientific acceptance."
+}

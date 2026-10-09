@@ -99,3 +99,7 @@ was running and the remaining checks were queued at inspection. Those results do
 not establish this new checkpoint's CI status. The next modeling boundary is to
 verify the full declared profile against live solver configuration and bind the
 prepared network and documented demand transformations.
+
+The later [live profile checkpoint](LIVE_ASSIGNMENT_PROFILE.md) checks those
+declared profile fields against the wrapper and internal solver. Its evidence
+does not close prepared-network or demand-transformation equivalence.

@@ -96,6 +96,7 @@ class PreparationLinkTests(unittest.TestCase):
     def test_changed_profile_stops_before_solver_even_when_engine_matches_it(self):
         self.profile['target_gap'] /= 2
         self.engine.rgap_target = self.profile['target_gap']
+        self.engine.assignment.rgap_target = self.profile['target_gap']
         with self.assertRaisesRegex(ValueError, 'Prepared assignment profile differs'): self.execute()
         self.engine.execute.assert_not_called(); self.post.assert_not_called()
         self.assertTrue(self.writer.stopped)

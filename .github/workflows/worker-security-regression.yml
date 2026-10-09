@@ -33,6 +33,7 @@ jobs:
           python -B scripts/modeling/tests/test_structural_preparation_files.py
           python -B workers/aequilibrae_worker/test_structural_zone_identity.py
           python -B workers/aequilibrae_worker/test_assignment_input_snapshot.py
+          python -B workers/aequilibrae_worker/test_assignment_live_profile.py
           python -B workers/aequilibrae_worker/test_assignment_input_publication.py
           python -B workers/aequilibrae_worker/test_assignment_preparation_link.py
           python -B scripts/modeling/tests/test_validation_prepared_context.py
