@@ -239,6 +239,8 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
     if publication:
         report.pop('native_tables_unchanged')
         report['limits']='Actual stage handler, native database commands and scaffold pipeline. Storage HTTP byte service is synthetic. No normal dispatcher, native model, real Storage service, concurrent revocation fence or scientific acceptance.'
+        if publication=='source-registration':
+            report['limits']='Native source artifact registration and fresh-process receipt recovery over synthetic local source files. No Storage upload, independent preparation, normal dispatcher, model execution or scientific acceptance.'
         if publication=='instrument':
             report['limits']='Native attempt-bound instrument writer and database relationships over synthetic artifact files. The instrument control identifies whether an evaluator or worker wrapper supplied their contents. No model execution, independent preparation, normal dispatcher, real Storage or scientific acceptance.'
         if publication=='native':

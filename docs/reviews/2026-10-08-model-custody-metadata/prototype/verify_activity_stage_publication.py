@@ -8,6 +8,9 @@ from unittest.mock import patch
 
 
 def verify_stage(worker, writer, run, stage, base, key, output, storage, sql, database, control):
+    if control=='source-registration':
+        from verify_native_source_registration import verify
+        return verify(writer,output,sql,database,base,key)
     if control=='instrument':
         from verify_native_instrument_writer import verify_instrument
         return verify_instrument(writer,run,stage,output,sql,database)

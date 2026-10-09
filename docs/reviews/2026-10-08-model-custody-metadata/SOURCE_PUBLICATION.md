@@ -203,3 +203,40 @@ failure handling, attempt containment, artifact type, method metadata and public
 status; harmless and restored runs pass. HTTP receipts remain injected in these
 checks. Native registration and fresh-process recovery for this new artifact,
 normal-dispatch wiring and bounded Storage publication still require evidence.
+
+## Native registration and reply-loss recovery, October 9
+
+The admitted source writer now has native database evidence over synthetic files.
+The existing isolated handoff harness creates a fresh owned database clone for
+each case, admits its consumer attempt, and calls `retain_validation_sources`.
+The proof checks the saved artifact row against the exact manifest bytes, its
+attempt and workspace context, and each of the 23 local source roles. The two
+methods retain separate artifacts under one parent run.
+
+The transport wrapper lets the native artifact transaction commit, then raises a
+lost-reply error before the writer receives its receipt. A separate Python process
+runs the existing recovery CLI with the retained request ID. It obtains the exact
+committed receipt, clears the pending journal entry and reports no model resume.
+Six native table snapshots remain identical across recovery. The original writer
+stays stopped and refuses later completion.
+
+Seven [native cases](prototype/native-source-registration-controls.json) pass:
+normal recovery for each method, harmless input-directory variation, three
+expected failures and a restored run. Omitting registration, using an unrelated
+request ID and bypassing the stopped writer each fail the stated assertion.
+Each local API container is removed by the existing gateway cleanup. Retained
+candidate metadata and logs live under
+`~/.local/state/openplan/native-source-registration-controls-20261009a/`.
+
+The first two standalone setup attempts, retained under
+`native-source-registration-20261009a` and `native-source-registration-20261009b`,
+failed because the new test wrapper called the writer's unset HTTP override.
+The corrected wrapper uses the same default HTTP client as normal delivery.
+The standalone `native-source-registration-20261009c` run and the subsequent
+seven control clones pass. No product behavior or assertion was relaxed.
+
+This proves native metadata registration and exact receipt recovery for local
+synthetic source files. It does not prove Storage upload, source-authority quality,
+independent preparation, normal model dispatch, scientific accuracy or human
+acceptance. The next implementation remains bounded, resumable object publication
+with immutable readback and manifest-last completion.
