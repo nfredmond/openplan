@@ -1,0 +1,52 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "ignore-requested-run",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "omit-projection",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "ignore-revoked-attempt",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "bypass-adapter",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "swallow-read-refusal",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "allow-missing-configuration",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "sources": {
+    "workers/aequilibrae_worker/model_attempt_writer.py": "b94cf9513ea38daa6333a6f0567b6656b945cfe690dc3582bb3bb7441f4fa50b",
+    "workers/activitysim_worker/supabase_poll.py": "dbfc0921ea5c828b24daa294c233f4fb68b3e6ef0538c065c3a3fbaa03b058d6"
+  },
+  "limits": [
+    "Actual ActivitySim adapter and invocation journal; mocked HTTP with exact query projection",
+    "Read-time ownership snapshot, not a lease or live database dispatch acceptance"
+  ]
+}

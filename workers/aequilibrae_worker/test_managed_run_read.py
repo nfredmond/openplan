@@ -5,10 +5,12 @@ from unittest.mock import patch
 import model_attempt_writer as managed
 import model_command_client as client
 import test_model_attempt_writer as fixtures
-from test_model_skip_dispatch import aeq
+from test_model_skip_dispatch import aeq, activity
 
 
 class RunReadTests(unittest.TestCase):
+    worker = aeq
+    read_error = aeq.WorkerStateWriteUnconfirmed
     setUp=fixtures.WriterTests.setUp
     response=fixtures.WriterTests.response
 
@@ -21,8 +23,8 @@ class RunReadTests(unittest.TestCase):
     def test_actual_worker_uses_owned_projection_without_legacy_read(self):
         row=self.configure()
         expected={key:copy.deepcopy(row['model_runs'][key]) for key in ('id','workspace_id',*managed.RUN_CONFIGURATION_FIELDS)}
-        with managed.bind(self.writer),patch.object(aeq.requests,'get',side_effect=AssertionError('Legacy read')):
-            actual=aeq.sb_get_run(self.writer.context.run_id)
+        with managed.bind(self.writer),patch.object(self.worker.requests,'get',side_effect=AssertionError('Legacy read')):
+            actual=self.worker.sb_get_run(self.writer.context.run_id)
         self.assertEqual(actual,expected)
         self.get.assert_called_once()
         self.assertEqual(self.get.call_args.kwargs['params'],{
@@ -40,8 +42,8 @@ class RunReadTests(unittest.TestCase):
 
     def test_revoked_attempt_refuses_actual_worker_without_fallback(self):
         row=self.configure();row['active_attempt_id']='foreign-attempt'
-        with managed.bind(self.writer),patch.object(aeq.requests,'get',side_effect=AssertionError('Legacy fallback')):
-            with self.assertRaises(aeq.WorkerStateWriteUnconfirmed):aeq.sb_get_run(self.writer.context.run_id)
+        with managed.bind(self.writer),patch.object(self.worker.requests,'get',side_effect=AssertionError('Legacy fallback')):
+            with self.assertRaises(self.read_error):self.worker.sb_get_run(self.writer.context.run_id)
         self.assertTrue(self.writer.stopped)
         self.get.return_value.close.assert_called_once()
 
@@ -49,6 +51,11 @@ class RunReadTests(unittest.TestCase):
         self.configure()
         with self.assertRaisesRegex(ValueError,'crosses invocation'):self.writer.read_run('foreign-run')
         self.get.assert_not_called();self.assertTrue(self.writer.stopped)
+
+
+class ActivityRunReadTests(RunReadTests):
+    worker = activity
+    read_error = activity.WorkerStateReadUnconfirmed
 
 
 if __name__=='__main__':unittest.main()

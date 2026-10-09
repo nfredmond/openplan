@@ -328,6 +328,13 @@ def sb_post_artifact(payload: dict) -> None:
 
 
 def sb_get_run(run_id: str) -> dict:
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.read_run(run_id)
+        except Exception as error:
+            raise WorkerStateReadUnconfirmed("Managed run read requires reconciliation; no legacy read fallback") from error
     url = (
         f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}"
         "&select=id,workspace_id,corridor_geojson,query_text,engine_key,run_title,input_snapshot_json"

@@ -3526,3 +3526,25 @@ cases pass with the installed engine, and 42 fault controls pass. The detailed
 CI failure, repaired keyword-default mutation instrument and limits are recorded
 in [integration validation](INTEGRATION_VALIDATION.md). Remote new-head results
 remain separate; the existing browser preview is unchanged.
+
+
+### ActivitySim configuration reads use the bound attempt
+
+The ActivitySim adapter previously routed writes through a bound attempt writer
+but still loaded run configuration through the legacy GET. It now uses the
+writer's existing checked read when bound. That read confirms the active attempt,
+stage, run and workspace, requires running state and explicitly projects every
+configuration field. Refusal raises `WorkerStateReadUnconfirmed`; it does not
+fall back to the legacy query. Unbound legacy behavior remains unchanged.
+
+Eight shared run-read tests and all 106 ActivitySim tests pass. The ActivitySim
+checks use the actual adapter and invocation journal with mocked HTTP and exact
+query projection assertions. Six deliberate faults detect bypassed ownership,
+missing projection, missing configuration, revoked attempts, adapter bypass and
+swallowed refusal. Harmless and restored controls pass. See
+`prototype/activity-run-read-controls.json` and its executable verifier.
+
+This is a read-time ownership check, not a lease or a live RLS/dispatch result.
+Normal managed dispatch is still disabled. Artifact reads, execution integration,
+publication and terminal-state handling require their complete joined evidence
+before activation. Scientific and browser acceptance remain separate.
