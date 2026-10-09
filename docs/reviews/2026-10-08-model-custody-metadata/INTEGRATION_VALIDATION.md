@@ -201,3 +201,69 @@ providers, worker termination and scientific acceptance remain outside this
 result. The setup follows the current [Auth configuration documentation](https://supabase.com/docs/guides/self-hosting/auth/config)
 and the auth URL change linked above. The services remain local acceptance
 infrastructure, not a production deployment.
+
+## Configured application and queued-run recovery journey
+
+The separate loopback gateway on port 29831 routes Auth and REST to the owned
+acceptance services. Its key check rejects missing API keys; REST rejects an
+invalid session token. Password sign-in, an unrelated user's empty model read,
+and the application-origin CORS preflight pass. Storage returns 404 because this
+bounded setup does not configure it. The gateway uses the pinned local Kong
+image, one worker, a 256 MB limit and a 0.5 CPU limit. The original gateway is
+unchanged. See `prototype/recovery-gateway-verification.json`.
+
+The frozen acceptance checkout at `3cfaae4ea88b8d81ecf9fa443131670957ef4648`
+builds with its actual local Supabase configuration. Webpack completes in 50
+seconds, TypeScript in 63 seconds, and all 137 static pages complete using two
+workers. The build exits 0 under the previously recorded 7 GB memory limit,
+zero scope swap and 256-task limit. The app serves on port 3516 under its own
+2 GB service limit. Process cwd and `/api/health` identify the frozen checkout
+and commit. `prototype/recovery-configured-app-verification.json` records this
+initial service invocation. Adding the existing local Census credential later
+restarts only this owned service; the final invocation is in the journey summary.
+No public build variable changes and no external AI provider is configured.
+
+T3 follows the landing-page sign-in link, submits the synthetic account and
+loads its owner dashboard. The signup trigger creates the workspace. Project
+and model creation use their application forms, not SQL fixture inserts. The
+first worker launch refuses because the project has no study area. A synthetic
+110-byte GeoJSON boundary passes through the project's upload handler and save
+operation. Reloading the model inherits that saved geometry. The second launch
+refuses because the isolated database has no Census tracts. Both refusals leave
+zero runs for this model. See `prototype/recovery-project-model-journey.json`.
+
+The authenticated Census ingestion endpoint then fetches genuine Nevada County
+tract geometry and ACS demographics using the existing local Census credential.
+The first attempt fails when the isolated PostgREST container exceeds its 128 MB
+limit and exits 137 with `OOMKilled=true`. The database contains zero tract rows
+afterward. The retained container receives a 512 MB limit with no swap and
+restarts only after that terminal state is verified. The same ingestion request
+then stores 26 tracts with no unmatched records. This is source ingestion, not
+model calibration or scientific acceptance. The failure remains recorded in
+`prototype/recovery-rest-ingest-memory-failure.json`.
+
+With coverage present, the application queues the synthetic model run with three
+unstarted stages. No worker is started or pointed at this database. The owner
+reviews its execution state, writes a reason, acknowledges the termination
+limit and saves the abandonment decision. The app shows the retained receipt;
+a full page reload preserves it. The database contains exactly one receipt
+matching the browser copy, the parent is cancelled and managed, and all three
+stages are cancelled and managed without active attempts. A direct service-role
+stage update is refused with `Managed model stage requires an attempt command`.
+An authenticated exact retry returns the same receipt, a changed payload under
+the same request identity returns 409, and a mismatched expected account returns
+403. No extra receipt appears. The record retains false values for termination
+verification, continuation authorization, model resume and evidence verification.
+See `prototype/recovery-journey-summary.json`.
+
+This remains partial browser acceptance. T3 pointer clicks sometimes report
+success without activating controls. Native DOM clicks through T3 evaluate do
+activate them; form typing uses T3 type, and file selection uses an in-page File
+and DataTransfer. These prove application handlers and authenticated routes, not
+physical pointer behavior or the native file chooser. The download button is
+invoked, but no resulting file is found in Downloads, so usable downloaded
+artifacts remain unverified. The 390-by-844 resize times out; T3 then reports no
+connected preview host. No mobile screenshot, final viewport measurement or
+complete browser-console review is obtained. No alternate browser is used.
+Physical termination, running-child interruption, restart, scientific acceptance
+and practitioner observation remain open.

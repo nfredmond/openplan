@@ -1,0 +1,25 @@
+{
+  "application_head": "3cfaae4ea88b8d81ecf9fa443131670957ef4648",
+  "tab": "tab_16",
+  "url": "http://127.0.0.1:3516/models/b9c7bf75-726d-4d1e-ad55-497a51a22e87",
+  "workspace_id": "7e181f02-ac35-459c-a6e4-99ad23639c6a",
+  "project_id": "a50206d1-3c52-437a-8eed-450763ec49b9",
+  "model_id": "b9c7bf75-726d-4d1e-ad55-497a51a22e87",
+  "workflow": [
+    "Created synthetic project through two-step project form",
+    "Created draft travel-demand model through four-step model form",
+    "First launch refused because project study area was absent",
+    "Uploaded a 110-byte synthetic GeoJSON polygon through boundary input and saved study area",
+    "Reloaded model page; inherited project geometry matched uploaded polygon",
+    "Second launch refused because exact-area Census tract coverage was unavailable"
+  ],
+  "interaction_boundary": "T3 preview tools only. Pointer clicks repeatedly reported success without control activation. Used native DOM clicks through preview_evaluate and preview_type; file input received an in-page File through DataTransfer. These are application-handler checks, not physical pointer, file chooser or visual acceptance.",
+  "database_readback": {
+    "project_exists": true,
+    "model_exists": true,
+    "new_model_run_count": 0,
+    "census_tract_count": 0
+  },
+  "last_error": "No tract intersects the exact launched area, and this custom or multi-state boundary has no complete loaded-coverage registry.",
+  "limits": "No worker run enqueued, recovery command not exercised. Do not bypass geography readiness or manufacture census rows. Screenshots and console review remain unavailable."
+}

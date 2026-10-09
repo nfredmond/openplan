@@ -1,0 +1,10 @@
+{
+  "container": "openplan-recovery-acceptance-rest-89dfa2a2066e",
+  "id": "fe35c678fecefe8b251d641720676e55c220bd27090c3c6ec70fc9658f21f388",
+  "old_memory_bytes": 134217728,
+  "exit_code": 137,
+  "oom_killed": true,
+  "tract_rows_after_failure": 0,
+  "new_memory_bytes": 536870912,
+  "swap_bytes": 0
+}
