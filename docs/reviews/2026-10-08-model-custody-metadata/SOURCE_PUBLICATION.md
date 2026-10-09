@@ -240,3 +240,31 @@ synthetic source files. It does not prove Storage upload, source-authority quali
 independent preparation, normal model dispatch, scientific accuracy or human
 acceptance. The next implementation remains bounded, resumable object publication
 with immutable readback and manifest-last completion.
+
+## Bounded object readback checkpoint, October 9
+
+The next publisher needs a bounded verifier before it can acknowledge objects.
+`model_storage_readback.verify_object` reads stored response bytes in chunks no
+larger than 1 MiB, checks the exact expected size and SHA-256, and closes responses
+on success and failure. It requests identity encoding and refuses an encoded
+response, so an HTTP library cannot silently decompress a stored gzip artifact.
+It refuses redirects, unexpected status, excess bytes, truncation and interrupted
+raw streams. HTTP 404 returns explicit absence; permission and transport failures
+remain unconfirmed. The caller must not turn an unconfirmed read into permission
+to replace an object. Object path components are encoded and traversal segments
+are refused before transport.
+
+Eight tests cover bounded raw reads and a real loopback HTTP server. Nine
+[control cases](prototype/storage-readback-controls.json) include harmless and
+restored runs; weakened hash, size, status, absence, encoding, redirect and streaming
+behavior fail. These checks do not yet cover native Storage or a large model file.
+The helper is not wired into a resumable publisher yet, and existing byte-buffer
+upload callers retain their previous implementation.
+
+Current [Supabase standard upload guidance](https://supabase.com/docs/guides/storage/uploads/standard-uploads)
+recommends the [TUS resumable protocol](https://supabase.com/docs/guides/storage/uploads/resumable-uploads)
+for files over 6 MB. Use retained upload identity and server-confirmed offsets for
+large source files, with immutable object names and this exact readback before
+marking an object complete. A streamed single POST alone would not provide
+byte-offset recovery after interruption. Native TUS configuration and restart
+behavior still need verification against the isolated local Storage service.
