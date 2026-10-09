@@ -66,7 +66,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
             content=('synthetic '+stage+' '+kind).encode()
             if kind=='zone_attributes':
                 content=b'GEOID,NAMELSAD,zone_id,centroid_lon,centroid_lat,area_sq_mi,total_jobs,retail_jobs,health_jobs,education_jobs,accommodation_jobs,govt_jobs,est_population,households\n06001000100,Synthetic zone,1,-121.7,38.55,2.5,400,80,40,30,20,10,3000,1200\n'
-            elif kind=='network_setup_summary':content=b'{"synthetic":true}' 
+            elif kind=='network_setup_summary':content=b'{"synthetic":true}'
             path=source_dir/(stage+'-'+kind);path.write_bytes(content)
             if stage==producer:source_files[kind]=(path,content)
             payload=json.dumps({'id':artifact,'artifact_type':kind,'file_url':'local://'+str(path),
