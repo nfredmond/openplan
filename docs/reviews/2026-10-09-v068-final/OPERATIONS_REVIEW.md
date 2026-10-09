@@ -33,3 +33,21 @@ passes. No new test is warranted for this prose-only change. This is source and
 evidence reconciliation, not another installation rehearsal. The populated
 upgrade, full-archive restore and current-head CI remain separate evidence;
 complete clean-machine agency commissioning remains unfinished.
+
+## Accumulated changelog reconciliation
+
+The candidate changelog now links the upgrade guide and distinguishes execution
+enrollment from the still-disabled managed-attempt dispatcher. Stale statements
+that no application database was upgraded and that all recovery browser evidence
+remained pending are replaced with links to the dated, bounded evidence. The
+original reports remain unchanged. Older release sections remain byte-identical.
+The candidate heading and unpublished status remain until final release checks
+succeed. No scientific grade, jurisdiction coverage or complete recovery claim
+is advanced.
+
+The reconciled changelog passes the six existing release-ordering tests. The
+115 local file links across the full changelog, upgrade guide and this report
+resolve; this check does not validate remote URLs or Markdown fragment anchors.
+The historical changelog from v0.67.0 onward is byte-identical. Product direction
+checking passes with the existing age and intervening-change reminders. No
+tests or guards are changed.
