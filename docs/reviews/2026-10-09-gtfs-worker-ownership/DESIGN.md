@@ -175,3 +175,13 @@ The prototype also revokes TRUNCATE on feeds, versions and the three derived ser
 python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_pointer.py \
   /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
 ```
+
+## Application archive reader, October 9
+
+`openplan/src/lib/gtfs/retained-archive.ts` adds a bounded reader for the exact private archive recorded for one workspace, feed and version. It validates canonical UUID scope, the existing object-key convention, a positive safe byte count and SHA-256 before I/O. It uses the installed Storage SDK's streaming download, checks every chunk against the declared size, and compares final size and hash. The helper accepts no publisher URL. It uses existing deployment archive/time limits, propagates cancellation and separately bounds stalled reads. It does not authorize the caller or establish lease ownership; the future worker must do both.
+
+Eleven tests use the installed Supabase client with a controlled fetch transport. They cover exact object selection, wrong paths, declared oversize, altered/truncated/oversized bytes, missing objects, cancellation and a stalled-body deadline. Seven source controls pass or fail as intended: baseline, harmless comment, removed checksum comparison, removed path check, removed declared-size cap, wrong timeout classification and restored source. [Results](archive-reader-controls.json) identify the source hash. Scoped TypeScript and ESLint pass.
+
+The SDK source in the installed dependency exposes `download(...).asStream()`. Its documented cancellation option is the third download argument; see the [official download reference](https://supabase.com/docs/reference/javascript/file-buckets-download). Existing model artifact reads use a scoped but fully buffered download, which does not supply this bounded stream/hash contract. The new helper uses the existing GTFS bucket and limits rather than changing the model reader or public-feed fetch policy.
+
+This is application code but remains unconnected to import routes and workers. The controlled transport is not live Storage authorization, real publisher ZIP parsing, recovery after worker exit, or proof of memory bounds at the maximum feed size. Native Storage and worker integration are still required before claiming retained-byte recovery works end to end.
