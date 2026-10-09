@@ -445,3 +445,38 @@ attempt-specific custody. Its table currently denies application reads. Reports
 also keep one historical comparable record per parent run, which cannot retain
 both methods and multiple attempts. Read authorization, complete exports and
 method-specific citations require implementation before claiming this handoff.
+
+## Preparation producer custody review, October 9
+
+The native publication/recovery work does not supply independent preparation.
+The current development producer remains
+`scripts/modeling/prepare_development_validation_instruments.py`. It reads a
+registered network seed and resolved boundary, acquires observation sources,
+builds an observation package and matches before opening model output. It is a
+development-study producer, not the generic admitted-run preparation interface.
+Its v1 observation/match records also cannot simply be relabeled as the v2 records
+required by the complete source catalog.
+
+Review found a reproducible preservation defect: `prepare_all` reused its output
+root, and `_copy_exact` overwrote a changed network copy. A second invocation could
+therefore replace prior preparation evidence. The producer now requires an unused
+output root before acquisition. Existing complete or partial roots cause an
+explicit refusal. The network-copy helper reuses identical bytes, refuses changed
+bytes and uses exclusive creation for new destinations. No historical study files
+were changed. Operators must select a new output root for a new attempt; this
+change does not add partial-preparation resume.
+
+Four filesystem tests and 13 existing instrument tests pass. Five mutation-control
+cases establish that a harmless buffer-size change passes, while network overwrite,
+output-root reuse and following a dangling target fail. The first output-root
+mutation produced a mock-serialization error; the fixture now returns a serializable
+record so the missing early refusal triggers the intended assertion. Results are
+in `prototype/preparation-no-overwrite-controls.json`.
+
+These tests mock acquisition. They do not establish source quality, independent
+acceptance timing, comprehensive filesystem race resistance or power-loss recovery.
+The next preparation connection still needs a run- and method-bound record made
+before output access, exact structural/source identities, explicit readiness and
+an immutable handoff to execution. The existing development freeze remains useful
+source code and evidence, not authorization to enable managed dispatch or promote
+a scientific claim.

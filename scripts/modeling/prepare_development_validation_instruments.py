@@ -39,9 +39,15 @@ def parse_args() -> argparse.Namespace:
 
 def _copy_exact(source: Path, target: Path) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
-    if target.is_file() and instrument.sha256_file(target) == instrument.sha256_file(source):
-        return
-    shutil.copyfile(source, target)
+    if target.is_file():
+        if instrument.sha256_file(target) == instrument.sha256_file(source):
+            return
+        raise instrument.InstrumentError(f"Existing preparation source differs: {target}")
+    try:
+        with source.open("rb") as reader, target.open("xb") as writer:
+            shutil.copyfileobj(reader, writer, length=1024 * 1024)
+    except FileExistsError as exc:
+        raise instrument.InstrumentError(f"Preparation target already exists: {target}") from exc
 
 
 def _county_source_path(seed_run: Path) -> Path:
@@ -206,7 +212,11 @@ def prepare_all(
     if selected and len(selected_counties) != len(selected):
         known = {str(item["geography_id"]) for item in registry["counties"]}
         raise instrument.InstrumentError(f"Unregistered geography selection: {sorted(selected - known)}")
-    output_root.mkdir(parents=True, exist_ok=True)
+    # A rerun must not replace a prior freeze or its partially collected evidence.
+    try:
+        output_root.mkdir(parents=True, exist_ok=False)
+    except FileExistsError as exc:
+        raise instrument.InstrumentError("Preparation output already exists; use a new output root") from exc
     counties = [
         prepare_one(repo_root, output_root, registry_path, item, created_at=timestamp)
         for item in selected_counties

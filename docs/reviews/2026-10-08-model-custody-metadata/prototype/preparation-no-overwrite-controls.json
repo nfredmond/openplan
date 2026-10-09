@@ -1,0 +1,31 @@
+{
+  "source_sha256": "c08a5b60c7bb0b9d34e47f22eaac27dc0bd4ba190101ba546972d5620efbaa22",
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "overwrite-network",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "reuse-output",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "follow-dangling-target",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": "Real temporary files and mocked source acquisition. Does not establish independent scientific preparation, full filesystem race resistance or crash recovery."
+}
