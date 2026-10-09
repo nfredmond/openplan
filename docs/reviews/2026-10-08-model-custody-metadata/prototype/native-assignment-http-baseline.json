@@ -1,8 +1,8 @@
 {
   "control": "baseline",
-  "database": "openplan_attempt_cli_9aabbbe9da1a48358c339b3ca2c5ba6d",
-  "run_id": "aa9453fd-79ed-41b4-bb1d-e24d724bccd3",
-  "stage_id": "1f8a1408-dbde-4855-8d26-d132e67497bf",
+  "database": "openplan_attempt_cli_d65b3ef8f42742dbb4b9d2383a57d324",
+  "run_id": "794cc886-29f8-40dc-b5bc-624dbee4bf64",
+  "stage_id": "fe38374f-e2af-499c-9f3f-843426a27de7",
   "native_converged": true,
   "modeled_transit": "modeled",
   "replay": null,
@@ -25,7 +25,7 @@
       "method": "POST",
       "operation": "/rpc/claim_model_stage_attempt",
       "status": 200,
-      "body_sha256": "db946c52dab59e96bf57e286e510f15215083deab9268a4cba1bc1e360f72dee"
+      "body_sha256": "8f6adb2c7e53d3250a686f465b52163fa19890172c9b87d3264630c41ecbd8dc"
     },
     {
       "method": "GET",
@@ -37,13 +37,13 @@
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "e73f1bbba3ae298bd352609803b7b94721892fc94ec57c5019961a43202d17c0"
+      "body_sha256": "e96f6fb8b13e5cf716ed21f4253056739ace23bb37c57ce0c630166669c0c382"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "bd7b662f9ba1bbde1929d20ae798b33d41f86647317218c32909418939a834dd"
+      "body_sha256": "67917ba830d46c71f74c7034b159d4d0714c9b0166b34d99e6572c63702b09e6"
     },
     {
       "method": "GET",
@@ -61,7 +61,7 @@
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "c207d85f2062ea0604fd6d67907346f6143cf4b6ba273e230ebe3daefc889a2e"
+      "body_sha256": "7401a38d8f53832202b34266259e7358c948479846babc979cb6885c5909537f"
     },
     {
       "method": "GET",
@@ -73,19 +73,19 @@
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "5b10aa9842311eeaa5e198dd3c80b1359e4844120761f3e30f7d84cf3f4860ba"
+      "body_sha256": "6355db3b17b87930cd3ef8cd40ae77da2b527cba5b23875102a8f4aa0649cb2b"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "f9e6f768812f1f0691469696d05116996ace3e6a05c88b6ff38f6bba7fbfa376"
+      "body_sha256": "152cd9f64d1da497912654259b9be131982c970f6d7c7e598b7de0391378239f"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "a81aa5e7310edc4181e8eef6219378d4b60d7e50bef04600f582e37c1513b7e2"
+      "body_sha256": "7a96e14e50eafecc52a88727a0e289011a9afa317d2c414fd6dc144f206de1d6"
     },
     {
       "method": "GET",
@@ -97,19 +97,19 @@
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "5827376d64a7c0aeb3db42037cc8b570030932d117bf3b16a434adaeb9a7dc1c"
+      "body_sha256": "dc44c8a12cf75005827c7fe7f9be98e51211140483fc9b6f43aaee05815b98d3"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "b0da198e3a06a455b2ae66dd2392ff98746b945727641276864a064ed16332f7"
+      "body_sha256": "7f42407f9b43a8aa44469e11eadb945e4121c2937f8504984989961b57166985"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "5c5df67b5c10fbdc9c2d35bc434714d95efcb9191f1819c61f4cc135e86a8326"
+      "body_sha256": "d15793b01288c6284a2679f4fc002593ba25cf65513bdcbc1a8c0c5c3cbfdd1b"
     },
     {
       "method": "GET",
@@ -121,13 +121,13 @@
       "method": "POST",
       "operation": "/rpc/write_model_attempt_artifact",
       "status": 200,
-      "body_sha256": "5ce67154b22fa683a56c0d9a8a77d7cd02660572cf868d170a845d46ca55f0e9"
+      "body_sha256": "95e31dc5d06f52f981c200030673035274d9929709676d3a19b67a3444b5daaa"
     },
     {
       "method": "POST",
       "operation": "/rpc/write_model_stage_attempt",
       "status": 200,
-      "body_sha256": "536d31a2d2fefc418a648e0111c8dc628db4ec1b26e9d94cbf4d06513f986cde"
+      "body_sha256": "30da6d14653084db492bb1869a334d00eca50ce042e4b7b8c39fa9637eab0e04"
     }
   ],
   "stage_remains_running": true,

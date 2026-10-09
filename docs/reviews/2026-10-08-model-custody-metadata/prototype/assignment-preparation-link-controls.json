@@ -1,0 +1,69 @@
+{
+  "source_sha256": {
+    "model_assignment_preparation_link.py": "b1019fa5314c1d64ddd5df076844f1ce9d5c71eb250d0266bb1361b776e50b4e",
+    "model_assignment_input_publication.py": "e05429ffab15c5d511db8dd2bd83ed0efa0234e9d76690503a3eb5e2cd321163"
+  },
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "omit-link",
+      "returncode": 1,
+      "expected_failure": "AssertionError",
+      "matched": true
+    },
+    {
+      "control": "changed-source",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "changed-manifest",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "wrong-method",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "duplicate",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "unchecked-receipt",
+      "returncode": 1,
+      "expected_failure": "DeliveryUnconfirmed not raised",
+      "matched": true
+    },
+    {
+      "control": "foreign-attempt",
+      "returncode": 1,
+      "expected_failure": "DeliveryUnconfirmed",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Real files and command journals; injected database responses and synthetic solver. Custody does not prove solver-input equivalence or scientific acceptance."
+}

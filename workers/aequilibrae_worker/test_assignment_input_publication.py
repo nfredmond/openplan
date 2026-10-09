@@ -38,6 +38,8 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual(payload['content_hash'],record['sha256'])
         self.assertEqual(self.post.call_args.kwargs['json']['p_attempt_id'],self.writer.context.attempt_id)
         self.assertEqual(payload['metadata_json']['scientific_acceptance'],'unassessed')
+        self.assertEqual(payload['metadata_json']['preparation_link'],
+                         {'status':'not_retained','solver_input_equivalence':'unassessed'})
         self.assertIn('stage_name',self.get.call_args.kwargs['params']['select'])
         self.assertEqual(self.get.call_args.kwargs['params']['id'],'eq.'+self.writer.context.stage_id)
 
