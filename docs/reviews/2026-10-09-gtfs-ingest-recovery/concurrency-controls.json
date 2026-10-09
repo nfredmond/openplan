@@ -1,0 +1,32 @@
+[
+  {
+    "case": "baseline",
+    "expectedPass": true,
+    "returnCode": 0
+  },
+  {
+    "case": "harmless_comment",
+    "expectedPass": true,
+    "returnCode": 0
+  },
+  {
+    "case": "omit_cleanup_lock",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "omit_version_fence",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "omit_derived_lock",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "restored",
+    "expectedPass": true,
+    "returnCode": 0
+  }
+]

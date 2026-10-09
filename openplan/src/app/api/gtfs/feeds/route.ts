@@ -29,11 +29,10 @@ import { selectGtfsCaveats } from "@/lib/gtfs/caveats";
  * departure in it and writes tens of thousands of derived rows. The measured
  * shape of that work is in `persist.ts` — Sacramento Regional Transit's real
  * feed derives 18,141 stop rows from a 2.7 MB archive, and a large agency is
- * several times that. `maxDuration = 300` is the platform ceiling this lane is
- * designed around, and `GTFS_INGEST_ABANDONED_AFTER_MS` is derived FROM it, so
- * the two must not drift: lowering this without lowering that leaves genuinely
- * dead ingests sitting on a card for longer than necessary, and raising it
- * without raising that lets the reaper close an ingest that is still running.
+ * several times that. `maxDuration = 300` declares the request budget for hosts
+ * that enforce it. Local Node operation does not establish a process deadline.
+ * The stale-ingest sweep uses its separate age policy and fences database writes
+ * when closing an attempt. Long ingestion still needs resumable worker execution.
  *
  * ================================ WHY `workspace_id` IS FILTERED EXPLICITLY
  *

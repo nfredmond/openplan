@@ -1,0 +1,10 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "openplan_attempt_cli_6f9ac02409884be888c0833872cbb36b",
+  "workspace": "5cc1c90a-d11f-4f1a-ac85-f77f6d6ea015",
+  "schema": "http_recovery_f4a42c00b2554fb2a095caa8cd887ae3",
+  "exitCode": 0,
+  "checkoutCommit": "9898d257c5e517e68378819539850ba3943f9db0",
+  "gatewayImage": "public.ecr.aws/supabase/postgrest:v14.15",
+  "scope": "Production partial-write refusal after committed BART derived rows, then native normal closure; isolated database."
+}

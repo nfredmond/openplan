@@ -632,7 +632,7 @@ liveDescribe("persisting a feed against a real database", () => {
     expect(current).toBe(firstVersionId);
   });
 
-  it("clears a failed ingest's derived rows and leaves the working feed's card alone", async () => {
+  it("preserves a finalized refresh when a late failure arrives", async () => {
     const begun = await beginGtfsFeedVersion({
       service,
       workspaceId,
@@ -663,9 +663,9 @@ liveDescribe("persisting a feed against a real database", () => {
         `|| '|' || (SELECT status FROM public.gtfs_feed_versions WHERE id = '${begun.versionId}') ` +
         `|| '|' || (SELECT status FROM public.gtfs_feeds WHERE id = '${feedId}')`
     );
-    // The feed's own card still says ready, because the version IN USE is still
-    // ready. A failed refresh does not break a working feed.
-    expect(after).toBe("0|failed|ready");
+    // Both the current feed and the finalized refresh remain ready. A late
+    // failure cannot discard a complete version waiting for adoption.
+    expect(after).toBe(`${before}|ready|ready`);
   });
 
   it("deletes derived rows only for the version it was given", async () => {

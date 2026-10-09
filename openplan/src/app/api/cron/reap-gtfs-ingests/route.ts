@@ -17,9 +17,9 @@ export const dynamic = "force-dynamic";
  * bookkeeping would be a Data Hub card stuck on "parsing" forever, which reads
  * to a planner as "OpenPlan is still working on it" and never stops.
  *
- * It reaps nothing that could still be running — see
- * `GTFS_INGEST_ABANDONED_AFTER_MS`, which is derived from the ingest routes'
- * own `maxDuration` rather than picked.
+ * Age alone does not prove a local process stopped. Cleanup rechecks eligibility
+ * under a database lock and prevents abandoned attempts from resuming writes.
+ * Pending private-file removals survive interruption and retry in later sweeps.
  *
  * AUTH. `Authorization: Bearer <CRON_SECRET>`, compared with
  * `timingSafeSecretEquals`. The older `reap-model-runs` route compares the

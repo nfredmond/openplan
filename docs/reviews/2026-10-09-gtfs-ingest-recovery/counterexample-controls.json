@@ -1,0 +1,30 @@
+[
+  {
+    "case": "baseline",
+    "expectedPass": true,
+    "returnCode": 0,
+    "stdout": "BEGIN\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 1\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDELETE 1\nDELETE 1\nUPDATE 1\n{\"stopRows\": 0, \"isCurrent\": true, \"routeRows\": 0, \"feedStatus\": \"ready\", \"versionStatus\": \"failed\", \"pointerMatches\": true}\nDO\nROLLBACK\n",
+    "stderr": ""
+  },
+  {
+    "case": "harmless_comment",
+    "expectedPass": true,
+    "returnCode": 0,
+    "stdout": "BEGIN\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 1\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDELETE 1\nDELETE 1\nUPDATE 1\n{\"stopRows\": 0, \"isCurrent\": true, \"routeRows\": 0, \"feedStatus\": \"ready\", \"versionStatus\": \"failed\", \"pointerMatches\": true}\nDO\nROLLBACK\n",
+    "stderr": ""
+  },
+  {
+    "case": "omit_route_deletion",
+    "expectedPass": false,
+    "returnCode": 3,
+    "stdout": "BEGIN\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 1\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDELETE 1\nUPDATE 1\n{\"stopRows\": 0, \"isCurrent\": true, \"routeRows\": 1, \"feedStatus\": \"ready\", \"versionStatus\": \"failed\", \"pointerMatches\": true}\n",
+    "stderr": "ERROR:  stale sweep counterexample did not reproduce\nCONTEXT:  PL/pgSQL function inline_code_block line 9 at RAISE\n"
+  },
+  {
+    "case": "restored",
+    "expectedPass": true,
+    "returnCode": 0,
+    "stdout": "BEGIN\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 1\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDELETE 1\nDELETE 1\nUPDATE 1\n{\"stopRows\": 0, \"isCurrent\": true, \"routeRows\": 0, \"feedStatus\": \"ready\", \"versionStatus\": \"failed\", \"pointerMatches\": true}\nDO\nROLLBACK\n",
+    "stderr": ""
+  }
+]

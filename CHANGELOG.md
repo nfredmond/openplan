@@ -20,6 +20,20 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Migration `20261016000026_gtfs_failure_closure.sql` makes normal GTFS failure
+cleanup transactional. Ready versions remain available even if a late failure
+arrives. Unfinished versions retain their failure receipt and private-object
+cleanup request; the scheduled sweep retries object removal. Apply migrations
+25 and 26 before the updated app. This does not provide resumable worker execution.
+
+Migration `20261016000025_gtfs_abandonment_fence.sql` protects completed GTFS
+versions from stale cleanup and prevents abandoned attempts from resuming writes.
+Apply it before deploying the updated app and scheduled GTFS sweep. Private-file
+cleanup requests remain saved through Storage interruption and are retried by
+later sweeps. A closed attempt requires a new ingest version; existing current
+feeds remain available. This does not move long ingestion into a resumable worker
+or establish a local process timeout.
+
 Apply `20261016000024_model_attempt_instrument_member_read.sql` before using
 retained instrument evidence in planner views and exports. Workspace members
 may read evidence only through a visible model run in the same workspace.

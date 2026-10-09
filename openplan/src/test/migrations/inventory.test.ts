@@ -551,10 +551,11 @@ const EXPECTED = {
   // 20261016000020 adds private immutable skip receipts with no client policies.
   // Installed clone confirms 305 application RLS tables and 14 application views.
   // Migration 23 adds private recovery receipts. Installed clone: 306 RLS tables and 14 views.
-  relations: 320,
-  tables: 306,
+  // Migration 25 adds the private GTFS object-cleanup queue. Combined catalog requires live verification.
+  relations: 321,
+  tables: 307,
   views: 14,
-  rlsEnabledTables: 306,
+  rlsEnabledTables: 307,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -830,6 +831,13 @@ describe("policy classifiers", () => {
 });
 
 describe("migration schema inventory", () => {
+  it("keeps GTFS object cleanup limited to version, object key and queue time", () => {
+    expect(schema.columns("gtfs_ingest_storage_cleanup")).toEqual(new Set(["version_id", "storage_path", "created_at"]));
+    expect(schema.rlsEnabled("gtfs_ingest_storage_cleanup")).toBe(true);
+    expect(schema.hasColumn("gtfs_feed_versions", "ingest_abandoned_at")).toBe(true);
+    expect(schema.hasColumn("gtfs_feed_versions", "ingest_closed_at")).toBe(true);
+    expect(schema.hasColumn("gtfs_feed_versions", "ingest_failure_receipt")).toBe(true);
+  });
   it("reads every relation the migrations declare", () => {
     expect(schema.relations()).toHaveLength(EXPECTED.relations);
     expect(schema.tables()).toHaveLength(EXPECTED.tables);

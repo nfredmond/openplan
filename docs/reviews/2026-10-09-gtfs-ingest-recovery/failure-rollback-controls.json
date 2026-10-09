@@ -1,0 +1,32 @@
+[
+  {
+    "case": "baseline",
+    "expectedPass": true,
+    "exitCode": 0,
+    "reason": null
+  },
+  {
+    "case": "harmless",
+    "expectedPass": true,
+    "exitCode": 0,
+    "reason": null
+  },
+  {
+    "case": "omit-object-scope",
+    "expectedPass": false,
+    "exitCode": 3,
+    "reason": "invalid object path accepted"
+  },
+  {
+    "case": "omit-injected-refusal",
+    "expectedPass": false,
+    "exitCode": 3,
+    "reason": "final update refusal not exercised"
+  },
+  {
+    "case": "restored",
+    "expectedPass": true,
+    "exitCode": 0,
+    "reason": null
+  }
+]

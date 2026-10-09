@@ -1,0 +1,8 @@
+{
+  "parentCommit": "ae6be06c1",
+  "files": {
+    "openplan/src/lib/gtfs/persist.ts": "770ceee3068965f70309b7064aa1a701df2af0526d8ec4331638b264590979a7",
+    "openplan/supabase/migrations/20261016000026_gtfs_failure_closure.sql": "071fb54e121b81c6c7069c2821c610741c800b9159c390f860b3b38b23b99201"
+  },
+  "scope": "Candidate working source measured before commit; SQL migration applied only to isolated HTTP proof database."
+}

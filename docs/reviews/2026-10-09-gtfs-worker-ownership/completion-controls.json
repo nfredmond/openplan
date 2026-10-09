@@ -1,0 +1,67 @@
+{
+  "recordedAt": "2026-10-09T15:22:18.061416+00:00",
+  "sourceSha256": "2d80a130569e78182ab695d5100e46bd46ae7e1cacec74c99b8418dbb133c46b",
+  "batchWithContextSha256": "901255eea0489c99be82af25ff824e3388636a98a7c59bae313c3522c52d4674",
+  "preparationSha256": "fc0a08097906dc4c8c37747b659d5b9a84805a139b212b93c7ac4f4629875bf6",
+  "fenceSha256": "d754da392218f7dbad8c2161c233df045a477d524e766e59aa09ce71d25e8cfb",
+  "ownershipSha256": "8003d889ab22b55baadf1f91b0808fde4b5f34cb7c00e90683341eeb59dbb30c",
+  "checksSha256": "9fe9886e33cb789b54436a1658c3ca65bad77ba5cffd9e32269e16a6cb556b10",
+  "cases": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "missing-manifest-check",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Incomplete manifest accepted",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "changed-replay",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Changed completion replay accepted",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "missing-count-check",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Mismatched stored rows accepted",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "missing-archive-check",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Changed archive accepted",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "public-completion",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Authenticated completion accepted",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "restored",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    }
+  ]
+}
