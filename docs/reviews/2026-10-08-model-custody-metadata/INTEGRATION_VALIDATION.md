@@ -436,3 +436,21 @@ failures as shuffled job 113650869041, with 20,205 passing and 1,588 skipped tes
 No additional failed test is reported there. Verification for 532c0f81f remains
 separate: four fast checks pass while QA, shuffled tests, live RLS and restore
 are still running at this checkpoint.
+
+## Busy-engine owner-loss evidence, October 8
+
+The live disposable-process campaign reproduces a failure of the current startup
+scope to stop busy work after supervisor loss. Both the engine and a detached
+descendant write after the supervisor is killed, without a progress callback.
+A separately hosted descriptor-based guard stops that exact scope after owner
+exit. The live-owner control completes normally; harmless and restored cases
+pass; omitted and early signals fail for the declared reasons. All seven owned
+scopes are observed empty after cleanup. The report and executable proof are
+`prototype/busy-owner-loss-controls.json` and `prototype/verify_busy_owner_loss.py`.
+
+This campaign changes no production worker code, database, model coefficients or
+scientific claims. It provides the missing reproducible lifecycle case and tests
+a candidate mechanism. The production guard's lifetime, startup handshake,
+self-failure, native interrupted files and restart decision remain unproved.
+The design boundary is recorded in ENGINE_CHILD_PROTOCOL.md. No full worker-suite
+rerun is claimed for an unchanged worker; source hashes identify the code used.

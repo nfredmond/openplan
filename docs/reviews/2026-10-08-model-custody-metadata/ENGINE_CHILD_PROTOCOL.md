@@ -407,3 +407,55 @@ recover authority. An acknowledged unreadable copy is archived and read back
 before replacement; archives remain downloadable. No original download means
 missing bytes remain unresolved. Browser storage is not a transactional server
 journal, and this path does not terminate or restart an engine.
+
+### Busy-engine owner loss, October 8
+
+`prototype/verify_busy_owner_loss.py` reproduces the gap beyond a progress
+callback. The actual OwnedEngineScope and startup bootstrap admit a disposable
+Python engine and a detached descendant. After the proof kills their owning
+supervisor, both processes remain live and write synthetic files when released.
+No progress channel call occurs between owner loss and those writes. The earlier
+iteration-boundary proof therefore does not establish continuous owner-loss
+protection. This is an execution-lifecycle defect, not a scientific residual or
+a reason to change acceptance thresholds.
+
+A candidate guard watches a process descriptor opened while the exact owning
+Popen process is alive. It receives an already-opened cgroup.kill descriptor
+whose directory device and inode match the verified live scope. It never
+reconstructs signaling authority from a saved PID or unit name. Owner exit makes
+the process descriptor readable; the candidate signals the pinned cgroup and an
+independent observer confirms that the engine and detached descendant are gone.
+The candidate is deliberately outside the target scope in this experiment.
+This proves the descriptor mechanism, not a production lifetime arrangement.
+
+Seven cases retain the distinction: unguarded continuation, valid work with the
+owner alive, guarded owner loss, a harmless comment, omitted signaling, early
+signaling and restored behavior. The two broken cases fail for surviving scope
+and premature termination respectively. All seven owned scopes are checked empty
+after cleanup. The proof uses no database or native numerical model, and grants
+no restart or publication authority.
+
+The mechanism follows Python's process-descriptor and descriptor-transfer APIs
+and the kernel's cgroup kill interface. The latter kills processes throughout
+the selected cgroup tree, including detached sessions. Sources checked October 8:
+[Python os.pidfd_open](https://docs.python.org/3/library/os.html#os.pidfd_open),
+[Python descriptor transfer](https://docs.python.org/3/library/socket.html#socket.send_fds),
+and [Linux cgroup v2](https://docs.kernel.org/admin-guide/cgroup-v2.html).
+
+The production connection must retain the existing startup boundary. The parent
+must pin signaling authority after verifying the scope and retaining its startup
+record, then pass the live descriptors over the private bootstrap channel. Engine
+authorization must wait for confirmed guard readiness. The guard must survive
+loss of the owning service, without allowing an owner crash to take the guard
+with it. Its normal exit must also account for detached descendants. Placing it
+inside the engine scope requires proof that it neither prevents scope completion
+indefinitely nor exits while descendants still need supervision. Loss of the
+guard itself remains a separate failure case.
+
+Those lifetime and startup tests must precede production activation. Native
+assignment interruption must then be rechecked: forced whole-scope termination
+can prevent a Python finally block from closing a project or recording failure.
+An empty scope alone cannot prove clean output files. Preserve incomplete files,
+reconcile command receipts and inspect them before any new execution decision.
+Normal managed dispatch remains off. No live-worker recovery claim follows from
+this candidate's successful synthetic process checks.

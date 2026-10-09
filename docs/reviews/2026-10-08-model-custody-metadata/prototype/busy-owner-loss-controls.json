@@ -1,0 +1,54 @@
+{
+  "cases": [
+    {
+      "mode": "unguarded",
+      "owner_exit": -9,
+      "engine_wrote_after_owner_loss": true,
+      "detached_descendant_wrote_after_owner_loss": true
+    },
+    {
+      "mode": "owner-alive",
+      "owner_remained_alive": true,
+      "engine_output_present": true,
+      "detached_output_present": true,
+      "guard_stopped_without_signal": true
+    },
+    {
+      "mode": "guarded",
+      "owner_exit": -9,
+      "scope_empty_observed": true,
+      "engine_output_absent": true,
+      "detached_output_absent": true
+    },
+    {
+      "mode": "harmless",
+      "owner_exit": -9,
+      "scope_empty_observed": true,
+      "engine_output_absent": true,
+      "detached_output_absent": true
+    },
+    {
+      "mode": "omit-signal",
+      "fault_detected": "Live scope survives owner loss"
+    },
+    {
+      "mode": "early-signal",
+      "fault_detected": "Guard stopped work while owner was alive"
+    },
+    {
+      "mode": "restored",
+      "owner_exit": -9,
+      "scope_empty_observed": true,
+      "engine_output_absent": true,
+      "detached_output_absent": true
+    }
+  ],
+  "owned_scopes_empty_after_cleanup": 7,
+  "source_sha256": "01f11d1440d86bd7c20c092466a1185087d6562301da7ad27b9fadfed9231ffd",
+  "worker_sha256": {
+    "model_engine_supervision.py": "2c64ca55581d772c2c7c654053ea423dc43ecd9082ffa42f292e717ff64e8cce",
+    "model_engine_bootstrap.py": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a"
+  },
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/busy-owner-loss-20261008c",
+  "limits": "Real disposable Python processes, scope and detached descendant. No native model, database, production guard wiring, guard-failure recovery, termination receipt or restart acceptance."
+}
