@@ -3789,3 +3789,42 @@ AequilibraE environment, which lacks Flask: two host CLI readiness checks timed
 out before the CLI could import. Direct CLI invocation confirmed the missing
 module. That failed run is retained alongside the successful rerun; no timeout
 was widened and no failure assertion was removed.
+
+
+### Native ActivitySim output publication through the managed handler
+
+The native campaign joins the actual stage handler to ActivitySim 1.5.1,
+pipeline ingestion, demand-package conversion and managed database writes. It
+copies the existing Broomfield development bundle, changes only the copied
+household sample setting from zero to 100, and uses the previously retained
+local container image and unchanged stock coefficients. The original bundle
+inventory remains unchanged. No scientific holdout is opened.
+
+This test substitutes the bundle-builder boundary with that prepared copy. It
+does not prove a fresh Census build. The input handoff uses copied development
+zone attributes and screening skims; its setup fixture is explicitly an excerpt
+of the development screening manifest's network entry. Study geometry is the
+recorded development bounding box supplied to the handler. These choices are
+integration fixtures, not a new accepted planning study or a geography resolver
+test.
+
+The initial native run produces 779 trip rows. The handler registers four
+artifacts: the evidence packet, demand manifest, demand matrix and demand zones.
+Each record identifies the actual producing attempt and matches the output's
+size and SHA-256. Eight KPIs are retained. A managed terminal command completes
+the stage and parent; the runtime retains its container removal receipt. The
+native log includes coerced departure choices during trip scheduling, which
+remain an unresolved model limitation. Row counts and completion do not prove
+scientific accuracy.
+
+`prototype/verify_activity_native_publication_controls.py` runs the normal,
+harmless-run-label and restored cases. A fourth case drops demand-matrix
+registration in memory and must fail the artifact-inventory assertion before
+completion. The original worker file is unchanged. The report is
+`prototype/activity-native-publication-controls.json`.
+
+Storage remains a synthetic HTTP byte service. Normal poll/push dispatch,
+Census reconstruction, full-population capacity, native-process interruption
+through this complete handler, human use and scientific acceptance remain
+open. The earlier native execution-to-publication gap is narrowed to this
+prepared development case; it is not closed for normal operation.

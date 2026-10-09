@@ -8,6 +8,9 @@ from unittest.mock import patch
 
 
 def verify_stage(worker, writer, run, stage, base, key, output, storage, sql, database, control):
+    if control=='native':
+        from verify_activity_native_publication import verify_native
+        return verify_native(worker,writer,run,stage,base,key,output,storage,sql,database)
     assert control in ('normal', 'harmless', 'drop-kpi', 'drop-artifact', 'drop-terminal', 'restored', 'lost-reply', 'lost-reply-harmless', 'lost-reply-bypass-stop', 'lost-reply-restored', 'lost-reply-wrong-request')
     assert shutil.which('activitysim') is None, 'No implicit native CLI allowed'
     assert not any(value for name,value in os.environ.items() if name.startswith('ACTIVITYSIM_')), 'Proof requires unconfigured execution environment'

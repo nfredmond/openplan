@@ -57,6 +57,13 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
     source_root=output/'screening';source_dir=source_root/'runs'/run;source_dir.mkdir(parents=True)
     os.environ['AEQ_WORK_DIR']=str(source_root)
     source_files={}
+    native_files=None
+    if os.environ.get('OPENPLAN_STAGE_PUBLICATION_CONTROL')=='native':
+        native_root=Path('/home/nathaniel/code/openplan/data/screening-runs/study-08014-base')
+        original_manifest=json.loads((native_root/'bundle_manifest.json').read_text())
+        native_files={'zone_attributes':(native_root/'package/zone_attributes.csv').read_bytes(),
+            'skim_matrix':(native_root/'run_output/travel_time_skims.omx').read_bytes(),
+            'network_setup_summary':json.dumps({'network':original_manifest['network'],'source':'development screening bundle manifest; network excerpt for integration fixture'}).encode()}
     expected_ids=[]; unrelated_ids=[]
     for stage, target in ((producer,expected_ids),(unrelated,unrelated_ids)):
         receipt = json.loads(sql(database,f"SET ROLE service_role; SELECT public.claim_model_stage_attempt('{uuid.uuid4()}','{stage}','native-activity-handoff');"))
@@ -67,6 +74,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
             if kind=='zone_attributes':
                 content=b'GEOID,NAMELSAD,zone_id,centroid_lon,centroid_lat,area_sq_mi,total_jobs,retail_jobs,health_jobs,education_jobs,accommodation_jobs,govt_jobs,est_population,households\n06001000100,Synthetic zone,1,-121.7,38.55,2.5,400,80,40,30,20,10,3000,1200\n'
             elif kind=='network_setup_summary':content=b'{"synthetic":true}'
+            if native_files is not None:content=native_files[kind]
             path=source_dir/(stage+'-'+kind);path.write_bytes(content)
             if stage==producer:source_files[kind]=(path,content)
             payload=json.dumps({'id':artifact,'artifact_type':kind,'file_url':'local://'+str(path),
@@ -224,6 +232,8 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
     if publication:
         report.pop('native_tables_unchanged')
         report['limits']='Actual stage handler, native database commands and scaffold pipeline. Storage HTTP byte service is synthetic. No normal dispatcher, native model, real Storage service, concurrent revocation fence or scientific acceptance.'
+        if publication=='native':
+            report['limits']='Actual native runtime, ingestion, demand packaging and managed writes; copied prepared development bundle with 100-household sample. Synthetic Storage byte service. No Census rebuild, normal dispatcher, full population or scientific acceptance.'
         content=json.dumps(report,indent=2)+'\n'
         (output/'activity-stage-publication.json').write_text(content)
         print(content)
