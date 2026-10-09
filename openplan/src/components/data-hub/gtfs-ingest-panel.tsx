@@ -800,7 +800,7 @@ export function GtfsIngestPanel({
   }, [registry]);
 
   return (
-    <article className="module-section-surface" data-testid="gtfs-ingest-panel">
+    <article className="module-section-surface [overflow-wrap:anywhere]" data-testid="gtfs-ingest-panel">
       <div className="module-section-header">
         <div className="module-section-heading">
           <p className="module-section-label">Transit feeds (GTFS)</p>
@@ -986,7 +986,7 @@ export function GtfsIngestPanel({
                           type="file"
                           accept=".zip,application/zip"
                           aria-label={`Newer GTFS archive for ${(feed.agency_name ?? "").trim() || "this feed"}`}
-                          className="block text-sm"
+                          className="block w-full min-w-0 max-w-full text-sm"
                           onChange={(event) => {
                             const chosen = event.target.files?.[0] ?? null;
                             setNewArchive(chosen ? { feedId: feed.id, file: chosen } : null);
@@ -1219,7 +1219,7 @@ export function GtfsIngestPanel({
             type="file"
             accept=".zip,application/zip"
             aria-label="GTFS archive"
-            className="block text-sm"
+            className="block w-full min-w-0 max-w-full text-sm"
             onChange={(event) => setFile(event.target.files?.[0] ?? null)}
           />
           <label className="block text-sm">

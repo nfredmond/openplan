@@ -20,6 +20,9 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+GTFS failure messages wrap long source details and file controls fit their panel
+on narrow screens, keeping the current feed and failed-attempt history readable.
+
 Model recovery controls now wrap within narrow run cards. Review, restore, retry
 and download actions remain inside the card at a 390-pixel viewport.
 
