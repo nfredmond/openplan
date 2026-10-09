@@ -156,3 +156,48 @@ must account for the documented
 [API_EXTERNAL_URL auth path change](https://supabase.com/changelog/47093-self-hosted-supabase-api-external-url-to-include-auth-v1).
 The CLI operation follows the installed help and
 [migration command documentation](https://supabase.com/docs/reference/cli/supabase-migration-up).
+
+## Isolated Auth and REST acceptance services
+
+The acceptance clone now has separate, bounded GoTrue and PostgREST containers.
+They use the existing pinned images, a new signing secret, loopback-only published
+ports, 0.5 CPU each, and memory limits of 256 MB and 128 MB respectively. The
+private service manifest retains exact container IDs and credentials under
+`recovery-acceptance-3cfaae4e-state/services-private.json`. Do not rerun the
+one-time setup script over that manifest. Inspect the retained services first.
+The original preview and its database remain separate.
+
+The first Auth startup failed. The proof template contains a current Auth schema
+but zero rows in `auth.schema_migrations`. GoTrue replayed 55 old migrations,
+then failed because an old OAuth migration expected the removed `client_id`
+column. That replay also dropped the empty identities primary key and changed
+the flow-state table comment. This is a fixture preparation defect, not a passing
+Auth migration or a product recovery result.
+
+Schema-only dumps establish that the original proof template's Auth schema and
+the running source's Auth schema match. The clone's primary key and comment were
+restored, then its entire normalized Auth schema matched that source too. Only
+after that comparison, the source's 77 version-only migration records were copied
+additively to the clone. No Auth user records were copied. The comparison removes
+pg_dump random restriction markers and comments and excludes ownership and
+grants. `prototype/recovery-auth-history-repair.json` records the hashes and
+boundary. Initial local repair attempts using `postgres` and peer authentication
+failed without changing the schema; the successful repair uses the Auth owner
+through its existing password-authenticated connection, with credentials kept
+out of command arguments and output.
+
+The retained Auth container then starts successfully. Real HTTP checks create a
+synthetic user through the admin endpoint, sign in with a password, retrieve the
+same user, refresh the session and reject a wrong password. PostgREST returns the
+one fixture model to the service role and no models to that unrelated user.
+After these checks, all 33 model table row inventories still match the baseline
+in both source and target. `prototype/recovery-services-verification.json` records
+service identities and results. These checks exercise real authentication and
+one workspace read boundary, not every RLS policy.
+
+The shared API gateway, configured application build, app session cookies and
+recovery browser journey remain pending. Storage, outbound email, other identity
+providers, worker termination and scientific acceptance remain outside this
+result. The setup follows the current [Auth configuration documentation](https://supabase.com/docs/guides/self-hosting/auth/config)
+and the auth URL change linked above. The services remain local acceptance
+infrastructure, not a production deployment.

@@ -1,0 +1,34 @@
+{
+  "database": "openplan_attempt_cli_be567f0764bd46ab97bdb99e51c1502f",
+  "containers": {
+    "rest": {
+      "name": "openplan-recovery-acceptance-rest-89dfa2a2066e",
+      "image": "public.ecr.aws/supabase/postgrest:v14.15",
+      "status": "ready",
+      "id": "fe35c678fecefe8b251d641720676e55c220bd27090c3c6ec70fc9658f21f388",
+      "url": "http://127.0.0.1:33013"
+    },
+    "auth": {
+      "name": "openplan-recovery-acceptance-auth-611202dde530",
+      "image": "public.ecr.aws/supabase/gotrue:v2.194.0",
+      "status": "ready",
+      "id": "dcf9906584e2eaeddefead80c2759f93e2553917e2006cb0b4396d7f92cbfd30",
+      "url": "http://127.0.0.1:33015"
+    }
+  },
+  "auth_user_id": "69fd86d7-2fb7-4a62-8c5d-e4d7e868043c",
+  "checks": {
+    "password_sign_in": true,
+    "get_user": true,
+    "wrong_password_refused": true,
+    "refresh_session": true,
+    "service_model_rows": 1,
+    "unrelated_user_model_rows": 0
+  },
+  "limits": "Direct HTTP checks against real GoTrue and PostgREST. No gateway, app cookie session, browser journey, storage, worker termination or scientific acceptance.",
+  "model_table_inventory_after_auth": {
+    "tables": 33,
+    "target_unchanged": true,
+    "source_unchanged": true
+  }
+}
