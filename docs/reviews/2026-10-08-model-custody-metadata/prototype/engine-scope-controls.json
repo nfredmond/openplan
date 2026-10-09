@@ -1,6 +1,6 @@
 {
   "scope_sha256": "faeda72e06e00f80c961fc93c5caad26e4874b214f1326a835365bc41d5d2599",
-  "worker_sha256": "ecfc74cc050a7744c6a1e563e802787d04223cc209e6124e5a86fcb2253237f9",
+  "worker_sha256": "892cadd344b07b8e92f5f8c4e9688d8d1043b07cdaa7e3626b7e6e8ed573a4e1",
   "controls": [
     {
       "control": "baseline",

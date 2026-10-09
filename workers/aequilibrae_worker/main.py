@@ -4301,10 +4301,6 @@ def stage_assignment(
     expected_network_state_record: dict | None = None,
     expected_network_state_digest: str | None = None,
 ) -> dict:
-    from aequilibrae import Project
-    from aequilibrae.matrix import AequilibraeMatrix
-    from aequilibrae.paths import TrafficAssignment, TrafficClass, NetworkSkimming
-
     proj_dir = project_work_directory(work_dir)
     pkg_dir = package_work_directory(work_dir, pkg_dir)
     out_dir = create_assignment_output_directory(work_dir, output_dir_name)
@@ -4387,6 +4383,11 @@ def stage_assignment(
     log += ("Selected count inputs retained before assignment.\n" if count_inputs["counts_status"] == "retained"
             else "Selected count inputs are unavailable; no substitute was selected during retention.\n")
     sb_patch_stage(stage_id, {"log_tail": log})
+
+    # Validate retained paths and count inputs before loading native engine code.
+    from aequilibrae import Project
+    from aequilibrae.matrix import AequilibraeMatrix
+    from aequilibrae.paths import TrafficAssignment, TrafficClass, NetworkSkimming
 
     from model_engine_scope import project_scope, matrix_scope
     with project_scope(Project, proj_dir) as project, matrix_scope() as own_matrix:

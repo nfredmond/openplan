@@ -1,6 +1,6 @@
 {
-  "source_sha256": "e2c386e1888613071241d9b441edfee853df8e14a7fcc3aeb29f4581ef7c6f7f",
-  "worker_sha256": "5f4083ca2cf378d1b4a9e0532b09c6fa5220a7b7fb22de1fda3d6009449e38c7",
+  "source_sha256": "5b0b5b2af6b09907a8d43ad1e9d9ca0f9e9807ecbf82b55ccc9b977fd894e594",
+  "worker_sha256": "892cadd344b07b8e92f5f8c4e9688d8d1043b07cdaa7e3626b7e6e8ed573a4e1",
   "controls": [
     {
       "control": "baseline",
@@ -9,6 +9,11 @@
     },
     {
       "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless-adapter",
       "exit_code": 0,
       "targeted_test": null
     },

@@ -83,3 +83,37 @@ pending changes at build time are CI workflow triggers, their native test and
 this documentation. Full TypeScript and production build validation now pass;
 T3 visual acceptance, real session journeys, complete QA/worker/RLS/upgrade
 checks on the integrated head and the full V1 requirements remain separate.
+
+## Lightweight worker CI failure and correction
+
+After the trigger fix, GitHub starts all eight checks for `1238cc111`. The worker
+job `113640743703` in run `37874778506` fails at
+`test_actual_assignment_refuses_existing_outputs_before_run_read`: the assignment
+entry imports `Project` before reaching its output-ownership refusal. CI does
+not install AequilibraE, while the previous local environment does. The failed
+job log, retrieved through the job-log API while the overall run remains active,
+identifies the import failure; it is not a scientific or numerical failure.
+
+Assignment now validates retained paths, exclusive output creation and selected
+count inputs before importing native engine classes. Tests that exercise project
+open/close failures use an explicit scoped runtime double. It restores the prior
+modules even after interruption and raises if a matrix, assignment, traffic
+class or skimming constructor is reached. The existing module-load stub stays
+minimal, and no native numerical implementation is replaced in production.
+
+A separate Python 3.11.15 environment installs the workflow's lightweight
+packages and confirms AequilibraE is absent. All 127 top-level worker test scripts
+pass serially in 88.07 seconds. The report is
+`prototype/lightweight-worker-suite.json`; per-suite logs remain in the private
+`worker-ci-lightweight-20261008/run-1` evidence directory. Forty focused unit
+cases also pass in the existing Python 3.14 environment with AequilibraE installed.
+Those cases still inject project failures; this is not native solver acceptance.
+
+Forty-two controls pass across unit-import restoration, output directory custody,
+project cleanup, count consumption and count retention. The retention runner
+initially reports an instrument error: reconstructed adapter functions lose their
+keyword defaults and fail before the intended fault. It now preserves positional
+and keyword defaults and adds a harmless adapter survivor. The original failure
+is not counted as successful fault detection. Actual foreign-destination faults
+again fail the stated refusal assertion. No scientific gate, tolerance or holdout
+changes, and the frozen preview and database remain untouched.

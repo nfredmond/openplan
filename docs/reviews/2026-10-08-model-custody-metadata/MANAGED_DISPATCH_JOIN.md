@@ -3514,3 +3514,15 @@ generated types, all 137 static pages and build tracing. The exact resource
 settings and placeholder-environment boundary are in the linked validation
 record. This supersedes the open full-type/build boundary for application
 commit `6aa6b5447`; it does not establish browser or whole-release acceptance.
+
+### October 8: worker CI environment parity
+
+The newly enabled stacked-PR worker job exposes an early native import that hides
+an output guard in the lightweight environment. Assignment now checks retained
+paths, output ownership and count inputs before native imports. Explicit scoped
+project doubles support the pre-computation tests without installing or faking a
+numerical solver. All 127 worker scripts pass without AequilibraE, 40 focused unit
+cases pass with the installed engine, and 42 fault controls pass. The detailed
+CI failure, repaired keyword-default mutation instrument and limits are recorded
+in [integration validation](INTEGRATION_VALIDATION.md). Remote new-head results
+remain separate; the existing browser preview is unchanged.

@@ -116,7 +116,7 @@ class CountRetentionTests(unittest.TestCase):
         self.assertFalse((self.target / 'manifest.json').exists())
 
     def test_actual_assignment_retains_inputs_before_opening_engine_project(self):
-        import aequilibrae
+        from worker_import_for_tests import mock_engine_runtime
         output = self.root / 'run' / 'run_output'
         source = self.source
         class StopBeforeEngine(Exception):
@@ -129,7 +129,7 @@ class CountRetentionTests(unittest.TestCase):
             def close(self):
                 pass
         self_test = self
-        with patch.object(aequilibrae, 'Project', Project), patch.object(aeq, 'sb_get_run', return_value={}), patch.object(
+        with mock_engine_runtime(Project), patch.object(aeq, 'sb_get_run', return_value={}), patch.object(
             aeq, 'auto_ingest_counts', return_value=str(self.source)), patch.object(aeq, 'sb_patch_stage'):
             with self.assertRaises(StopBeforeEngine):
                 aeq.stage_assignment(IDS[1], IDS[2], str(self.root / 'run'),

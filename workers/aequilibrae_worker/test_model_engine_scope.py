@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import Mock,patch
 import model_engine_scope as scope
 from test_model_skip_dispatch import aeq
+from worker_import_for_tests import mock_engine_runtime
 
 
 class EngineScopeTests(unittest.TestCase):
@@ -40,17 +41,15 @@ class EngineScopeTests(unittest.TestCase):
         self.assertTrue(writer.stopped)
 
     def test_actual_setup_closes_after_download_failure(self):
-        import aequilibrae
         project=Mock();project.network.create_from_osm.side_effect=ValueError('synthetic download failure')
-        with tempfile.TemporaryDirectory() as temp,patch.object(aequilibrae,'Project',return_value=project),patch.object(aeq,'sb_patch_stage'):
+        with tempfile.TemporaryDirectory() as temp,mock_engine_runtime(Mock(return_value=project)),patch.object(aeq,'sb_patch_stage'):
             with self.assertRaisesRegex(ValueError,'synthetic download failure'):
                 aeq.stage_setup('run','stage',temp,(-122,38,-121,39),str(Path(temp)/'package'))
         project.close.assert_called_once_with()
 
     def test_actual_assignment_closes_after_graph_failure(self):
-        import aequilibrae
         project=Mock();project.network.build_graphs.side_effect=ValueError('synthetic graph failure')
-        with tempfile.TemporaryDirectory() as temp,patch.object(aequilibrae,'Project',return_value=project),patch.object(aeq,'sb_patch_stage'),patch.object(aeq,'sb_get_run',return_value={}),patch.object(aeq,'retain_assignment_counts',return_value={'counts_path':'/synthetic/counts.csv','counts_status':'unavailable'}):
+        with tempfile.TemporaryDirectory() as temp,mock_engine_runtime(Mock(return_value=project)),patch.object(aeq,'sb_patch_stage'),patch.object(aeq,'sb_get_run',return_value={}),patch.object(aeq,'retain_assignment_counts',return_value={'counts_path':'/synthetic/counts.csv','counts_status':'unavailable'}):
             with self.assertRaisesRegex(ValueError,'synthetic graph failure'):
                 aeq.stage_assignment('run','stage',temp,{'centroid_map':{}},str(Path(temp)/'package'),counts_path_override='/synthetic/counts.csv')
         project.open.assert_called_once();project.close.assert_called_once_with()

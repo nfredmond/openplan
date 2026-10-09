@@ -69,9 +69,11 @@ class ConsumptionTests(unittest.TestCase):
 
     def test_assignment_verifies_before_engine_open(self):
         from test_model_skip_dispatch import aeq
-        import aequilibrae
+        from worker_import_for_tests import mock_engine_runtime
+        from unittest.mock import Mock
         Path(self.record['counts_path']).write_bytes(b'changed counts')
-        with patch.object(aequilibrae, 'Project', side_effect=AssertionError('Engine entered before count verification')) as project, patch.object(aeq, 'sb_get_run', return_value={}), patch.object(aeq, 'sb_patch_stage'):
+        project = Mock(side_effect=AssertionError('Engine entered before count verification'))
+        with mock_engine_runtime(project), patch.object(aeq, 'sb_get_run', return_value={}), patch.object(aeq, 'sb_patch_stage'):
             with self.assertRaisesRegex(ValueError, 'bytes differ'):
                 aeq.stage_assignment('run', 'stage', str(self.root / 'run'),
                     {'centroid_map': {1: 1}, 'bbox': (-122, 38, -120, 40)}, 'unused',

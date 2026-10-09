@@ -21,6 +21,7 @@ def main():
             raise AssertionError('Count-retention mutation anchor changed')
         return body.replace(old, new)
     cases = [('baseline', source, None, None), ('harmless', source + '\n# Harmless comment.\n', None, None),
+        ('harmless-adapter', source, adapter + '\n# Harmless adapter comment.\n', None),
         ('return-external-source', change(source, "'counts_path': str(destination / 'counts.csv')", "'counts_path': str(source)"), None,
          'CountRetentionTests.test_original_bytes_and_sidecars_survive_source_changes'),
         ('follow-source-symlink', change(source, 'FLAGS = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK', 'FLAGS = os.O_RDONLY | os.O_NONBLOCK'), None,
@@ -47,7 +48,10 @@ import test_model_count_inputs as tests
 if sys.argv[3]:
  namespace=dict(tests.aeq.__dict__)
  exec(compile(open(sys.argv[3]).read(),'<count-adapter-control>','exec'),namespace)
- tests.aeq.retain_assignment_counts=FunctionType(namespace['retain_assignment_counts'].__code__,tests.aeq.__dict__)
+ compiled=namespace['retain_assignment_counts']
+ replacement=FunctionType(compiled.__code__,tests.aeq.__dict__,argdefs=compiled.__defaults__)
+ replacement.__kwdefaults__=compiled.__kwdefaults__
+ tests.aeq.retain_assignment_counts=replacement
 name='test_model_count_inputs'+('.'+sys.argv[2] if sys.argv[2] else '')
 result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromName(name))
 sys.exit(0 if result.wasSuccessful() else 1)
