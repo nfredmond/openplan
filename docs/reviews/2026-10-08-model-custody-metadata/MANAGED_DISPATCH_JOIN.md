@@ -2709,3 +2709,24 @@ not through the full model run or rendered evidence panel. Browser acceptance
 remains open. General child-channel coverage, centroid custody, native registration
 recovery, full assignment, provider containment and scientific acceptance remain
 unfinished. Normal managed dispatch is still disabled.
+
+
+## Ordered package geometry checkpoint, October 8
+
+The assignment and parent preparation now share a reader for zone coordinates
+and areas from `zone_attributes.csv`. It orders zones by internal centroid node,
+checks a stable private regular file, and returns the source byte hash and size.
+Identifiers must be integers. Duplicate mappings, missing rows, nonfinite values,
+out-of-range longitude or latitude, and negative areas refuse preparation.
+The parent helper checks the owned working package before and after reading.
+
+Seven focused tests and the related 60-test transit/package suite pass. Four
+fault controls detect reversed order, rounded identifiers, invalid coordinates,
+and duplicate centroid nodes; baseline, harmless comment and restored controls
+pass. See `prototype/zone-geometry-controls.json` and its verifier.
+
+These fixtures establish ordered reads from an owned mutable package. They do
+not establish original producer CSV authority, registered geometry transfer,
+child request integration, full native assignment, or scientific acceptance.
+The dispatcher remains disabled. Next, bind the shared geometry to general
+transit preparation and carry its exact identity into child consumption.

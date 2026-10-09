@@ -52,6 +52,7 @@ from model_validation_receipts import (
 )
 import numpy as np
 import pandas as pd
+from model_zone_geometry import assignment_zone_order, read_assignment_geometry
 from network_ids import renumber_nodes
 from shapely.geometry import box, shape
 from dotenv import load_dotenv
@@ -2390,6 +2391,24 @@ def prepare_managed_selected_transit_for_engine(out_dir: str) -> dict:
 
 
 
+def managed_assignment_zone_geometry(setup_result: dict) -> dict:
+    """Read geometry from this attempt's confirmed working package."""
+    import model_attempt_writer as managed
+    writer = managed.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Assignment geometry requires a bound parent writer")
+    try:
+        writer.require_open()
+        package = writer.package_directory(writer.files.path)
+        geometry = read_assignment_geometry(package, assignment_zone_order(setup_result["centroid_map"]))
+        writer.package_directory(writer.files.path)
+        writer.require_open()
+        return geometry
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Assignment geometry requires reconciliation") from error
+
+
 def resolve_transit_feed_plan(run_row, lons, lats):
     """Use the existing feed precedence and actual centroid extent for discovery."""
     env_url, env_path = os.getenv("GTFS_URL"), os.getenv("GTFS_PATH")
@@ -4400,7 +4419,7 @@ def stage_assignment(
 
         od_full = pd.read_csv(os.path.join(pkg_dir, "od_trip_matrix.csv"), index_col=0)
         remap_inv = {v: k for k, v in centroid_map.items()}
-        ordered_zone_ids = [int(remap_inv[c]) for c in centroids_sorted]
+        ordered_zone_ids = assignment_zone_order(centroid_map)
         od_array = np.zeros((n_zones, n_zones))
         for i, ci in enumerate(centroids_sorted):
             for j, cj in enumerate(centroids_sorted):
@@ -4441,13 +4460,10 @@ def stage_assignment(
         )
         if should_apply_trip_based_mode_split(demand_is_vehicle):
             try:
-                zattr_mc = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
-                zattr_mc["zone_id"] = zattr_mc["zone_id"].astype(int)
-                zattr_mc = zattr_mc.set_index("zone_id", drop=False)
-                zc = zattr_mc.loc[ordered_zone_ids, ["centroid_lon", "centroid_lat", "area_sq_mi"]]
-                lons = zc["centroid_lon"].to_numpy(dtype=float)
-                lats = zc["centroid_lat"].to_numpy(dtype=float)
-                areas = zc["area_sq_mi"].to_numpy(dtype=float)
+                zone_geometry = read_assignment_geometry(pkg_dir, ordered_zone_ids)
+                lons = np.asarray(zone_geometry["lons"], dtype=float)
+                lats = np.asarray(zone_geometry["lats"], dtype=float)
+                areas = np.asarray(zone_geometry["areas_sq_mi"], dtype=float)
                 dist_miles = np.zeros((n_zones, n_zones))
                 for i in range(n_zones):
                     for j in range(n_zones):
