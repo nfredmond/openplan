@@ -112,3 +112,45 @@ reply, bind startup to a live owner, and verify termination after owner/controll
 loss. Namespace/security-profile policy and remote/rootless variants also need
 explicit coverage before claiming complete daemon custody. No saved verifier
 result is a capability to start, stop or recreate a container.
+
+## Private creation-intent checkpoint
+
+`container_creation.py` retains an immutable plan and endpoint fingerprint in a
+new private directory outside the plan's writable bind mounts. It fsyncs the
+parent directory, intent, request reservation and verified creation record.
+Files use exclusive creation and mode 0600; the directory uses 0700. A live
+object pins directory identity and checks the intent hash before reservation and
+receipt retention. Replaced directories, changed intent and unverified container
+facts are refused. The creation record retains no start or continuation authority.
+
+The helper permits one creation reservation in that directory. It refuses a
+second reservation and refuses to reopen existing records as a new creation.
+A missing creation receipt therefore remains unresolved; the helper does not
+retry Docker, infer that creation failed, or reconstruct a live execution owner.
+This is local retention, not a distributed admission or a complete controller.
+A caller could still choose a different directory; database ownership and
+controller integration must prevent that from becoming a duplicate execution.
+
+The live Docker proof created two unstarted containers after retaining their
+intents and reservations. One reply was verified and recorded; the other reply
+was deliberately left unrecorded. Both cases refused repeat reservations and a
+fresh open of their existing custody directory. Neither container command ran,
+and both containers were removed. The test did not inject a network disconnect
+or kill the controller during creation. Its endpoint fingerprint records declared
+context metadata; it does not authenticate or freeze a future connection.
+
+All 71 ActivitySim tests pass with live host tests enabled. Six source faults
+are detected, with harmless/restored passes: repeated reservation allowed,
+custody inside a writable mount, changed intent ignored, directory replacement
+ignored, unverified container accepted and false start authority. The runners
+and reports are `prototype/verify_container_creation_controls.py`,
+`prototype/container-creation-controls.json`,
+`prototype/verify_container_creation_custody.py`, and
+`prototype/container-creation-custody.json`. Private live evidence remains under
+`~/.local/state/openplan/activitysim-container-creation-20261008a/`.
+
+Normal execution still uses its existing container path. This retention helper
+has no transport or startup method. Independently supervised creation, lost-reply
+reconciliation, live-owner startup, owner/controller-loss termination and
+server-side continuation remain required before connecting a supervised
+container path.
