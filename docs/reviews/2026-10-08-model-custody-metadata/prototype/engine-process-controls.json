@@ -1,0 +1,56 @@
+{
+  "source_sha256": "c8b0d8363a7b4ca7d3ed16eede852ba01bdd28b44c3417c074b527cf366e3871",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-nonzero",
+      "exit_code": 1,
+      "targeted_test": "test_nonzero_exit_is_retained_and_stops_writer"
+    },
+    {
+      "control": "ignore-group",
+      "exit_code": 1,
+      "targeted_test": "test_group_members_prevent_completion"
+    },
+    {
+      "control": "erase-attempt",
+      "exit_code": 1,
+      "targeted_test": "test_completed_child_records_original_identity"
+    },
+    {
+      "control": "adopt-reservation-directory",
+      "exit_code": 1,
+      "targeted_test": "test_existing_reservation_never_launches_again"
+    },
+    {
+      "control": "ignore-directory-identity",
+      "exit_code": 1,
+      "targeted_test": "test_replaced_record_directory_refuses_exit"
+    },
+    {
+      "control": "follow-record-symlink",
+      "exit_code": 1,
+      "targeted_test": "test_symlink_record_directory_refuses_exit"
+    },
+    {
+      "control": "resolve-replaced-working-path",
+      "exit_code": 1,
+      "targeted_test": "test_child_uses_pinned_directory_after_path_replacement"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real disposable subprocesses, mocked group-member probe and managed registration fixtures. No restored supervisor, escaped descendants, native engine child protocol, output-capture authorization or normal dispatch."
+}

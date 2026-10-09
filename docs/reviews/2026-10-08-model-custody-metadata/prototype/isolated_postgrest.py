@@ -30,7 +30,9 @@ def token(secret, role, subject=None):
 
 
 @contextmanager
-def gateway(schema, *, database=None, subjects=()):
+def gateway(schema, *, database=None, subjects=(), max_rows=None):
+    if max_rows is not None and (type(max_rows) is not int or not 1 <= max_rows <= 1000):
+        raise ValueError("Proof row cap must be an integer between 1 and 1000")
     if database is not None and not re.fullmatch(r'openplan_(?:attempt_(?:upgrade|cli)|assessment_upgrade)_[0-9a-f]{32}', database):
         raise ValueError('Only owned attempt proof databases may be exposed')
     if not (schema == 'public' and database is not None) and not re.fullmatch('http_recovery_[0-9a-f]{32}', schema):
@@ -46,12 +48,14 @@ def gateway(schema, *, database=None, subjects=()):
                 'PGRST_DB_CONFIG': 'false', 'PGRST_DB_EXTRA_SEARCH_PATH': '',
                 'PGRST_DB_POOL': '1', 'PGRST_DB_ANON_ROLE': 'anon',
                 'PGRST_JWT_SECRET': secret, 'PGRST_SERVER_PORT': '3000', 'PGRST_LOG_LEVEL': 'crit'}
+    if max_rows is not None:
+        settings['PGRST_DB_MAX_ROWS'] = str(max_rows)
     if database is not None:
         uri = urlsplit(settings['PGRST_DB_URI'])
         settings['PGRST_DB_URI'] = urlunsplit(uri._replace(path='/' + database))
     name = 'openplan-postgrest-proof-' + uuid.uuid4().hex
     command = ['docker', 'run', '--detach', '--rm', '--name', name, '--network', networks[0],
-               '--publish', '127.0.0.1::3000', '--memory', '128m', '--cpus', '0.5']
+               '--publish', '127.0.0.1::3000', '--memory', '128m', '--memory-swap', '128m', '--pids-limit', '128', '--cpus', '0.5']
     for key in settings:
         command.extend(['--env', key])
     # Values travel in the child environment, not command arguments or output.

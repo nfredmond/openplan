@@ -1,0 +1,34 @@
+{
+  "cases": [
+    {
+      "case": "normal",
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "harmless",
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "open-policy",
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "deny-member",
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "no-parent",
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "write-grant",
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "receipt-grant",
+      "expected_behavior_observed": true
+    }
+  ],
+  "fixture_sha256": "f0071fb58cdb02d39da502bce67c9b1d423f07c6a95d8aa5e1598b4cd7dab4e1",
+  "limits": "Exact SQL fixture and seven policy/grant variants executed through psql on an isolated native clone. Vitest stack-resolution wrapper and full RLS/restore suite await CI. No Auth token, REST, browser or scientific claim."
+}

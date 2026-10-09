@@ -25,7 +25,7 @@ class HttpSecurityTests(unittest.TestCase):
         self.runtimes.mkdir()
         self.env = patch.dict(os.environ, {"OPENPLAN_ACTIVITYSIM_BUNDLE_ROOT": str(self.root),
             "OPENPLAN_ACTIVITYSIM_RUNTIME_ROOT": str(self.runtimes), "ACTIVITYSIM_CLI": "",
-            "ACTIVITYSIM_CLI_TEMPLATE": "", "ACTIVITYSIM_CONTAINER_IMAGE": "", "ACTIVITYSIM_CONFIG_DIR": ""}, clear=False)
+            "ACTIVITYSIM_CONTAINER_MEMORY_BYTES": "", "ACTIVITYSIM_CONTAINER_TASKS": "", "ACTIVITYSIM_HOST_MEMORY_BYTES": "", "ACTIVITYSIM_HOST_TASKS": "", "ACTIVITYSIM_CLI_TEMPLATE": "", "ACTIVITYSIM_CONTAINER_IMAGE": "", "ACTIVITYSIM_CONFIG_DIR": ""}, clear=False)
         self.env.start()
         self.token = patch.object(worker, "WORKER_TOKEN", "synthetic-token")
         self.token.start()
@@ -61,7 +61,7 @@ class HttpSecurityTests(unittest.TestCase):
         marker = victim / "keep.txt"; marker.write_text("synthetic")
         for key, value in {"force": True, "runtimeOutputDir": str(victim), "configDir": str(self.root),
             "activitysimCli": sys.executable, "activitysimCliTemplate": "false", "activitysimContainerImage": "image",
-            "containerEngineCli": "false", "activitysimContainerCliTemplate": "false", "containerNetworkMode": "host"}.items():
+            "containerSupervisionSocket": "/untrusted.sock", "container_supervision_socket": "/untrusted.sock", "containerMemoryBytes": 1, "containerTasks": 1, "container_memory_bytes": 1, "container_tasks": 1, "hostMemoryBytes": 1, "hostTasks": 1, "host_memory_bytes": 1, "host_tasks": 1, "containerEngineCli": "false", "activitysimContainerCliTemplate": "false", "containerNetworkMode": "host"}.items():
             with self.subTest(key=key), patch.object(worker, "run_activitysim_runtime") as runtime:
                 response = self.post({"bundlePath": str(self.bundle), key: value})
                 self.assertEqual(response.status_code, 400)
@@ -78,10 +78,19 @@ class HttpSecurityTests(unittest.TestCase):
                     runtime.assert_not_called()
 
     def test_operator_selects_execution_and_http_never_forces(self):
-        with patch.dict(os.environ, {"ACTIVITYSIM_CLI": sys.executable}), patch.object(worker, "run_activitysim_runtime", return_value={"status": "blocked"}) as runtime:
+        with patch.dict(os.environ, {"ACTIVITYSIM_CLI": sys.executable, "ACTIVITYSIM_HOST_MEMORY_BYTES": "134217728", "ACTIVITYSIM_HOST_TASKS": "16"}), patch.object(worker, "run_activitysim_runtime", return_value={"status": "blocked"}) as runtime:
             self.assertEqual(self.post({"bundlePath": str(self.bundle)}).status_code, 200)
             self.assertEqual(runtime.call_args.kwargs["cli_command"], [sys.executable])
             self.assertFalse(runtime.call_args.kwargs["force"])
+            self.assertEqual(runtime.call_args.kwargs["host_memory_bytes"], 134217728)
+            self.assertEqual(runtime.call_args.kwargs["host_tasks"], 16)
+
+    def test_operator_selects_container_limits(self):
+        with patch.dict(os.environ, {"ACTIVITYSIM_CONTAINER_IMAGE": "synthetic", "ACTIVITYSIM_CONTAINER_MEMORY_BYTES": "67108864", "ACTIVITYSIM_CONTAINER_TASKS": "16", "ACTIVITYSIM_CONTAINER_SUPERVISION_SOCKET": "/run/docker.sock"}), patch.object(worker, "run_activitysim_runtime", return_value={"status": "blocked"}) as runtime:
+            self.assertEqual(self.post({"bundlePath": str(self.bundle)}).status_code, 200)
+            self.assertEqual(runtime.call_args.kwargs["container_memory_bytes"], 67108864)
+            self.assertEqual(runtime.call_args.kwargs["container_tasks"], 16)
+            self.assertEqual(runtime.call_args.kwargs["container_supervision_socket"], "/run/docker.sock")
 
     def test_startup_preflight_refuses_missing_token_and_accepts_owned_configuration(self):
         env = {**os.environ, "OPENPLAN_ACTIVITYSIM_WORKER_TOKEN": ""}

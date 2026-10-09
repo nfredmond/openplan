@@ -1,0 +1,47 @@
+{
+  "source_sha256": "a98fe84a9a59b52b009eb5a1c3e91607e45ad2cf937edf8481156cc705765b07",
+  "worker_sha256": "255841353236c8a03859616dbbb6981ea6d677cfb98a33e0ac8e529fcc58b7cf",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-foreign-path",
+      "exit_code": 1,
+      "targeted_test": "ManagedProjectHandoffTests.test_foreign_manifest_is_refused_before_file_copy"
+    },
+    {
+      "control": "ignore-database-checks",
+      "exit_code": 1,
+      "targeted_test": "ManagedProjectHandoffTests.test_contradictory_database_checks_stop_registration"
+    },
+    {
+      "control": "ignore-readiness",
+      "exit_code": 1,
+      "targeted_test": "ManagedProjectHandoffTests.test_promoted_readiness_refused_before_copy"
+    },
+    {
+      "control": "erase-producer-attempt",
+      "exit_code": 1,
+      "targeted_test": "ManagedProjectHandoffTests.test_selected_project_is_copied_and_consumer_provenance_registered"
+    },
+    {
+      "control": "register-as-producer-output",
+      "exit_code": 1,
+      "targeted_test": "ManagedProjectHandoffTests.test_selected_project_is_copied_and_consumer_provenance_registered"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual selected-project join and independent local files, mocked transport. No native joined recovery, complete state mapping, closure enforcement, normal dispatch or scientific acceptance."
+}

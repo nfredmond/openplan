@@ -1,0 +1,110 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "native_step_observed": "school_location",
+      "resource_state_at_interruption": "MemoryPeak=262881280\nMemoryMax=1610612736\nMemorySwapMax=0\n",
+      "scope": {
+        "boot_id": "0cf1ffb2-ff1b-4594-8142-a154d04d9889",
+        "bootstrap_pid": 2733225,
+        "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-47723d046b304560970a143d3c75ead3.scope",
+        "cgroup_device": 30,
+        "cgroup_inode": 1625180,
+        "invocation_id": "23f0bea4ea034aadbd9384116ffe3f88",
+        "memory_bytes": 1610612736,
+        "schema": "openplan.engine-scope.v1",
+        "supervisor_uid": 1000,
+        "tasks": 32,
+        "unit": "openplan-engine-47723d046b304560970a143d3c75ead3.scope"
+      },
+      "settings_sha256": "f115964cc14c84605020b929c9a52aa7a4e654bbf143a6ad49150852fa0aff13",
+      "owner_terminated": true,
+      "scope_empty": true,
+      "completion_absent": true,
+      "retained_log_bytes": 15523
+    },
+    {
+      "case": "harmless",
+      "native_step_observed": "school_location",
+      "resource_state_at_interruption": "MemoryPeak=265793536\nMemoryMax=1610612736\nMemorySwapMax=0\n",
+      "scope": {
+        "boot_id": "0cf1ffb2-ff1b-4594-8142-a154d04d9889",
+        "bootstrap_pid": 2734138,
+        "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-0568f66833dc4a98bfa3cad2e049d055.scope",
+        "cgroup_device": 30,
+        "cgroup_inode": 1625369,
+        "invocation_id": "31fc954191bb4055836b616708c3ab2c",
+        "memory_bytes": 1610612736,
+        "schema": "openplan.engine-scope.v1",
+        "supervisor_uid": 1000,
+        "tasks": 32,
+        "unit": "openplan-engine-0568f66833dc4a98bfa3cad2e049d055.scope"
+      },
+      "settings_sha256": "f115964cc14c84605020b929c9a52aa7a4e654bbf143a6ad49150852fa0aff13",
+      "owner_terminated": true,
+      "scope_empty": true,
+      "completion_absent": true,
+      "retained_log_bytes": 15524
+    },
+    {
+      "case": "omit-owner-loss",
+      "native_step_observed": "school_location",
+      "resource_state_at_interruption": "MemoryPeak=266170368\nMemoryMax=1610612736\nMemorySwapMax=0\n",
+      "scope": {
+        "boot_id": "0cf1ffb2-ff1b-4594-8142-a154d04d9889",
+        "bootstrap_pid": 2734903,
+        "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-19c750dacb6d48f2b7f23ebb9875b8fd.scope",
+        "cgroup_device": 30,
+        "cgroup_inode": 1625471,
+        "invocation_id": "339dea74a0984aa9821205d8d39183ca",
+        "memory_bytes": 1610612736,
+        "schema": "openplan.engine-scope.v1",
+        "supervisor_uid": 1000,
+        "tasks": 32,
+        "unit": "openplan-engine-19c750dacb6d48f2b7f23ebb9875b8fd.scope"
+      },
+      "settings_sha256": "f115964cc14c84605020b929c9a52aa7a4e654bbf143a6ad49150852fa0aff13",
+      "fault_detected": "Omitted owner loss permits native completion",
+      "trips": 779,
+      "owner_terminated": false,
+      "scope_empty": true,
+      "completion_absent": false
+    },
+    {
+      "case": "restored",
+      "native_step_observed": "school_location",
+      "resource_state_at_interruption": "MemoryPeak=328511488\nMemoryMax=1610612736\nMemorySwapMax=0\n",
+      "scope": {
+        "boot_id": "0cf1ffb2-ff1b-4594-8142-a154d04d9889",
+        "bootstrap_pid": 2742252,
+        "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-43ae2d30d8b7417db314d6e7d044aadf.scope",
+        "cgroup_device": 30,
+        "cgroup_inode": 1625711,
+        "invocation_id": "527502cdc8d740849b2282a71b44c745",
+        "memory_bytes": 1610612736,
+        "schema": "openplan.engine-scope.v1",
+        "supervisor_uid": 1000,
+        "tasks": 32,
+        "unit": "openplan-engine-43ae2d30d8b7417db314d6e7d044aadf.scope"
+      },
+      "settings_sha256": "f115964cc14c84605020b929c9a52aa7a4e654bbf143a6ad49150852fa0aff13",
+      "owner_terminated": true,
+      "scope_empty": true,
+      "completion_absent": true,
+      "retained_log_bytes": 15524
+    }
+  ],
+  "development_source_unchanged": true,
+  "source_bundle_sha256": "4b914da7e522e8d2c24947bdfb371b6c37c8cf4cd9fab2dc7e26173c0d09e66f",
+  "worker_sha256": {
+    "main.py": "f481626db37605db70482d472c244580421d559cba9784d8308cd0ac6600fd40",
+    "runtime.py": "1f950d6e04f83a0e5aecb6768294c1c4c9f98418165ab46fdba1cd37688dfee0",
+    "host_supervision.py": "630ecdae4d9f1e4fcf578c0c6729192d3508b79fd8e774c86f8742c1dcbdba18"
+  },
+  "limits": [
+    "100-household copy of development bundle; stock coefficients unchanged",
+    "Native step logged before owner loss; exact instruction at kill is not identified",
+    "No holdout exposure, accuracy validation, container custody or database continuation acceptance"
+  ]
+}
+

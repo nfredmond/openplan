@@ -1,0 +1,36 @@
+{
+  "channel_sha256": "1f79080b177ef6805a08113d7d9d326d78bee8a1b22cb5139507bd2c1d355392",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "allow-child-name",
+      "exit_code": 1,
+      "targeted_test": "test_child_cannot_select_an_output_name"
+    },
+    {
+      "control": "ignore-unconfigured-destination",
+      "exit_code": 1,
+      "targeted_test": "test_unconfigured_destination_refused"
+    },
+    {
+      "control": "adopt-existing-output",
+      "exit_code": 1,
+      "targeted_test": "test_repeated_creation_preserves_existing_bytes_and_stops"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Reserved real child, sockets and private output directories; mocked claim/HTTP. Parent chooses a supported directory name; no stage-name policy, completed-output publication, solver or containment evidence."
+}

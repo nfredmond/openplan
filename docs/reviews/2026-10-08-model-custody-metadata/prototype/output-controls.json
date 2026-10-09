@@ -1,0 +1,36 @@
+{
+  "source_sha256": "f9e2b22506b835a798591f4dcd3601be869eaa3ff441fe6d875f8af8c908cb12",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "mutable-output-identity",
+      "exit_code": 1,
+      "targeted_test": "test_changed_named_artifact_bytes_do_not_create_another_request"
+    },
+    {
+      "control": "null-to-zero-replacement",
+      "exit_code": 1,
+      "targeted_test": "test_null_kpi_cannot_be_replaced_with_zero"
+    },
+    {
+      "control": "ignore-workspace",
+      "exit_code": 1,
+      "targeted_test": "test_foreign_workspace_refuses_without_transport"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real journals and both bound worker output adapters; injected HTTP. No native output HTTP, normal managed claim dispatch, filesystem or scientific acceptance."
+}

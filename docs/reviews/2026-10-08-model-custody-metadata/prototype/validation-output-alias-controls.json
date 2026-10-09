@@ -1,0 +1,25 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "bypass-refusal",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "source_sha256": "5f187fcc6d9a7984af81128155fc9be34956a0d195faadbb06618e03ee96684c",
+  "limits": [
+    "Synthetic files only",
+    "Metadata checks do not fence concurrent filesystem replacement",
+    "No prepared scientific instrument or native model acceptance"
+  ]
+}

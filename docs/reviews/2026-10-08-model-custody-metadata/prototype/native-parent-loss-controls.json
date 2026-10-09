@@ -1,0 +1,219 @@
+{
+  "proof_sha256": {
+    "verify_native_parent_loss.py": "77729f7ddbfcf4d523cbad780a67bc847ecd4d36055cc2056c01e9513417f047",
+    "verify_native_parent_supervisor.py": "d1fcae06ca0b5afff4cb73e86bb0f58b141739a4dd34d56ba498553026fd9ac2",
+    "verify_native_assignment_http.py": "2bbffccb6c5073f5c8f2d89b62eaf055ca082f89a6a4b4831ad305fbb6c641be"
+  },
+  "controls": [
+    {
+      "control": "baseline",
+      "database": "openplan_attempt_cli_9f31662f652e4fd8b91193073db21047",
+      "parent_loss": {
+        "interruption_point": "iteration",
+        "engine_body_started": null,
+        "supervisor_exit_code": -9,
+        "scope_observation": {
+          "outcome": "scope_absent_observed",
+          "scope_has_live_processes": false
+        },
+        "native_failure": {
+          "error_type": "WorkerStateWriteUnconfirmed",
+          "active_project": false
+        },
+        "fresh_inspections": [
+          {
+            "attempt_id": "b38c4906-c44c-4a82-bc02-b24046ff5eb4",
+            "cancellation_observed": false,
+            "cancellation_requested": false,
+            "cancellation_signal_written": false,
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_absent_observed",
+            "record_sha256": {
+              "attempt_owner.json": "e98f188ebdfa90654b8f80efd3ed417600bde3d9332e0718bc2a04281df8cb7c",
+              "launch-reserved.json": "c56ab87539c6d2ccfb989d50fe5f65517cebbfbea4cc443d0fd8c0b8c0b02255",
+              "scope-started.json": "36356cd23765df7729272c6a40e3d978e3b61769e41a757b3095bb9ab51d607e"
+            },
+            "run_id": "daff98ef-c8d4-4bb3-b945-9c276a65e3b8",
+            "scope_has_live_processes": false,
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "c9991058-e808-47f3-8a1b-c035ee716f02",
+            "termination_cause": "unconfirmed"
+          },
+          {
+            "attempt_id": "b38c4906-c44c-4a82-bc02-b24046ff5eb4",
+            "cancellation_observed": false,
+            "cancellation_requested": false,
+            "cancellation_signal_written": false,
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_absent_observed",
+            "record_sha256": {
+              "attempt_owner.json": "e98f188ebdfa90654b8f80efd3ed417600bde3d9332e0718bc2a04281df8cb7c",
+              "launch-reserved.json": "c56ab87539c6d2ccfb989d50fe5f65517cebbfbea4cc443d0fd8c0b8c0b02255",
+              "scope-started.json": "36356cd23765df7729272c6a40e3d978e3b61769e41a757b3095bb9ab51d607e"
+            },
+            "run_id": "daff98ef-c8d4-4bb3-b945-9c276a65e3b8",
+            "scope_has_live_processes": false,
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "c9991058-e808-47f3-8a1b-c035ee716f02",
+            "termination_cause": "unconfirmed"
+          }
+        ],
+        "records_unchanged": true,
+        "command_inventory_unchanged": true,
+        "database_state_unchanged": true,
+        "final_outputs_absent": true
+      },
+      "stage_remains_running": true
+    },
+    {
+      "control": "harmless",
+      "database": "openplan_attempt_cli_51fd9e3c01514dbaaa6dcf735d3ae61e",
+      "parent_loss": {
+        "interruption_point": "iteration",
+        "engine_body_started": null,
+        "supervisor_exit_code": -9,
+        "scope_observation": {
+          "outcome": "scope_absent_observed",
+          "scope_has_live_processes": false
+        },
+        "native_failure": {
+          "error_type": "WorkerStateWriteUnconfirmed",
+          "active_project": false
+        },
+        "fresh_inspections": [
+          {
+            "attempt_id": "8a22bfc7-8148-44f2-92e9-88eb20ced5d2",
+            "cancellation_observed": false,
+            "cancellation_requested": false,
+            "cancellation_signal_written": false,
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_absent_observed",
+            "record_sha256": {
+              "attempt_owner.json": "2e8bdd697ef3276b0e52599972fdef2d83aa870a9bf300f9eb8f5fc8fa072aea",
+              "launch-reserved.json": "bace41bcaa5c0e1d157116104e7ad20c7399de911e8fc4738e4009d30bdae77f",
+              "scope-started.json": "ffb33a34dd41bdc9ef7390079ae279f3928ae2e7729e9e749bdc86967f11cb44"
+            },
+            "run_id": "d89e3a34-1468-45fb-a220-b1e5dd486cca",
+            "scope_has_live_processes": false,
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "adbc1670-5722-47b3-9df3-c03ecb248426",
+            "termination_cause": "unconfirmed"
+          },
+          {
+            "attempt_id": "8a22bfc7-8148-44f2-92e9-88eb20ced5d2",
+            "cancellation_observed": false,
+            "cancellation_requested": false,
+            "cancellation_signal_written": false,
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_absent_observed",
+            "record_sha256": {
+              "attempt_owner.json": "2e8bdd697ef3276b0e52599972fdef2d83aa870a9bf300f9eb8f5fc8fa072aea",
+              "launch-reserved.json": "bace41bcaa5c0e1d157116104e7ad20c7399de911e8fc4738e4009d30bdae77f",
+              "scope-started.json": "ffb33a34dd41bdc9ef7390079ae279f3928ae2e7729e9e749bdc86967f11cb44"
+            },
+            "run_id": "d89e3a34-1468-45fb-a220-b1e5dd486cca",
+            "scope_has_live_processes": false,
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "adbc1670-5722-47b3-9df3-c03ecb248426",
+            "termination_cause": "unconfirmed"
+          }
+        ],
+        "records_unchanged": true,
+        "command_inventory_unchanged": true,
+        "database_state_unchanged": true,
+        "final_outputs_absent": true
+      },
+      "stage_remains_running": true
+    },
+    {
+      "control": "omit-parent-loss",
+      "database": "openplan_attempt_cli_a8d3554eb7374a14a89aa78d497f4c20",
+      "detected": "Native supervisor loss was not observed"
+    },
+    {
+      "control": "swallow-parent-loss",
+      "database": "openplan_attempt_cli_b0f56c33e0e14675b84030f2ff9502d9",
+      "detected": "Native child published outputs after supervisor loss"
+    },
+    {
+      "control": "restored",
+      "database": "openplan_attempt_cli_1b7501eb9331450db1164a715102f6c0",
+      "parent_loss": {
+        "interruption_point": "iteration",
+        "engine_body_started": null,
+        "supervisor_exit_code": -9,
+        "scope_observation": {
+          "outcome": "scope_absent_observed",
+          "scope_has_live_processes": false
+        },
+        "native_failure": {
+          "error_type": "WorkerStateWriteUnconfirmed",
+          "active_project": false
+        },
+        "fresh_inspections": [
+          {
+            "attempt_id": "a8d03bc2-fa9f-4fc7-ac91-e9b753f262d5",
+            "cancellation_observed": false,
+            "cancellation_requested": false,
+            "cancellation_signal_written": false,
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_absent_observed",
+            "record_sha256": {
+              "attempt_owner.json": "7dce458a0f73d161866c66cc70831d6189e82ee2789e9c500228228bdde5219d",
+              "launch-reserved.json": "6ca3790c94027bad90e06615e2956e0489da00ef1f590edfed5ca86c63c0b1cb",
+              "scope-started.json": "6a38674ebf9d962e515557be4d9a8843b1184523ba9eed4c27f3bb2c5101436b"
+            },
+            "run_id": "0fc8f561-761b-4c47-8513-80e3fcf59b03",
+            "scope_has_live_processes": false,
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "8f06e65a-dc5d-4d04-975b-77a7fccb9833",
+            "termination_cause": "unconfirmed"
+          },
+          {
+            "attempt_id": "a8d03bc2-fa9f-4fc7-ac91-e9b753f262d5",
+            "cancellation_observed": false,
+            "cancellation_requested": false,
+            "cancellation_signal_written": false,
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_absent_observed",
+            "record_sha256": {
+              "attempt_owner.json": "7dce458a0f73d161866c66cc70831d6189e82ee2789e9c500228228bdde5219d",
+              "launch-reserved.json": "6ca3790c94027bad90e06615e2956e0489da00ef1f590edfed5ca86c63c0b1cb",
+              "scope-started.json": "6a38674ebf9d962e515557be4d9a8843b1184523ba9eed4c27f3bb2c5101436b"
+            },
+            "run_id": "0fc8f561-761b-4c47-8513-80e3fcf59b03",
+            "scope_has_live_processes": false,
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "8f06e65a-dc5d-4d04-975b-77a7fccb9833",
+            "termination_cause": "unconfirmed"
+          }
+        ],
+        "records_unchanged": true,
+        "command_inventory_unchanged": true,
+        "database_state_unchanged": true,
+        "final_outputs_absent": true
+      },
+      "stage_remains_running": true
+    }
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-parent-loss-controls-20261008-startup-regression",
+  "limits": "Actual parent SIGKILL and native channel-loss handling at a confirmed iteration, installed SQL and fresh inspection. No general parent-loss supervision during computation, durable reconciliation, restart, UI workflow, publication or scientific acceptance."
+}

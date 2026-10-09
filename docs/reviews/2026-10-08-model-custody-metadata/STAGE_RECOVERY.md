@@ -1,0 +1,611 @@
+# Retained stage preparation
+
+October 8, 2026. This continues roadmap M3/S1 after the assessment delivery
+checkpoint. The V1 contract and scientific acceptance requirements remain intact.
+
+The sections below record successive checkpoints. Later sections supersede
+earlier descriptions of what is connected; they preserve the original evidence.
+
+## Remaining restart problem
+
+`stage_artifacts` currently generates a new model-output UUID and performs
+multiple artifact and KPI writes before assessment custody. Recovering one
+assessment receipt does not make replaying that stage safe. Its original output
+identity, source bytes and settings must remain available, and each earlier
+write needs its own retained request and checked receipt.
+
+## Preparation component
+
+`model_stage_preparation.prepare` uses the existing private SQLite journal's
+WAL/FULL connection and adds a separate `stage_preparations` table. The primary
+key binds deployment, run and stage. Within one immediate transaction, first
+preparation saves canonical source-file facts, input settings and a generated
+output UUID. Repeated exact preparation returns the saved UUID. Changed inputs
+are refused rather than assigned a new output identity. Returned values are
+detached from the caller's objects. Invalid or corrupted UUIDs and malformed
+source byte identities are refused.
+
+The component accepts caller-supplied size/hash facts. It does not read or verify
+files, establish current stage ownership, authorize replay, fence another worker
+or acknowledge a database artifact. It is not yet called by the normal stage.
+Stage replay must also account for cancellation, retained artifact/KPI writes,
+assessment records, publication and terminal updates before it is enabled.
+
+## Verification
+
+Five tests pass. They cover exact repeat and changed settings, changed source
+facts, distinct deployment scope, four independent Python processes using the
+same journal, invalid inputs and a corrupted saved identity. The process test
+proves matching results under concurrent launch; it does not observe a database
+lock wait or simulate power loss. SQLite durability settings are reused from the
+existing journal, not independently re-proved here.
+
+Baseline, harmless and restored controls pass. Omitting input comparison,
+generating another UUID on retry, omitting deployment scope, accepting a corrupt
+saved UUID and accepting a boolean byte size each fail their targeted tests.
+Private results are in
+`model-command-client-20261008-proof/stage-preparation-controls.json`.
+
+This work owns `work/model-stage-recovery-20261008`. PR #164's assessment checkout
+remains unchanged while its full QA gate runs at `f5ebdf56`. The new preparation
+component does not change scientific outputs or claim tiers.
+
+## Reading actual source files
+
+`prepare_files` now computes SHA-256 and byte size from actual regular files
+before saving preparation. It streams one MiB chunks and compares descriptor
+and path identity, size and modification metadata before and after reading.
+It refuses in-place mutation and path replacement observed during that read.
+A nonblocking descriptor allows nonregular sources such as FIFOs to be refused
+without waiting for a writer. Missing or refused sources do not create a journal.
+
+Three file tests pass, alongside the five preparation tests. They verify exact
+hash and size, harmless access-time changes, changed retained contents,
+in-place mutation during hashing, path replacement and missing/nonregular files.
+Baseline, harmless and restored controls pass. Removing the mutation check,
+removing the regular-file check or returning a false digest each fails its
+intended assertion. Private evidence is
+`model-command-client-20261008-proof/stage-file-controls.json`.
+
+This is a per-file read check. It does not freeze files after closing them,
+produce a simultaneous snapshot of several files or establish that caller
+scientific gates authorize reading output bytes. Those gates must precede this
+helper. A later consumer must recheck the saved byte identity or use an immutable
+copy. The normal stage still does not call this preparation component.
+
+## Primary output connection
+
+The normal artifact stage now prepares its primary output identity from measured
+link-volume and network database files, plus the supplied setup, assignment and
+package inputs. It retains this preparation under
+`<work_dir>/stage-journals/<stage_id>/model-commands.sqlite3` before computing
+stage outputs. Repeating exact preparation reuses the primary output UUID.
+Changed preparation inputs propagate `WorkerStateWriteUnconfirmed`.
+
+Before registering the primary link-volume row, the stage checks its actual
+registration hash and size against the saved facts and checks run, stage and
+artifact type. It then uses the prepared UUID. Other artifact identities and
+KPI writes are unchanged and do not become safe to replay through this change.
+The local source reference is not converted into immutable Storage custody.
+
+Three tests pass. They execute the actual `stage_artifacts` preparation prefix
+and its registration branch with temporary source files. Engine/profile helpers
+are mocked, and the network fixture is synthetic bytes, not a runnable model.
+The tests prove stable identity, refusal of changed sources and binding at the
+actual primary registration branch. Harmless and restored controls pass. New
+UUID generation, missing byte binding, missing scope binding and bypassing the
+registration helper each fail a targeted assertion. Results are retained in
+`model-command-client-20261008-proof/primary-output-controls.json`.
+
+Full worker regression passed at `46d64d13`: 74 suites passed, none failed or
+skipped. The owned `openplan-stage-preparation-workers-20261008.service` finished
+on October 8 at 06:47 Pacific, with a 177.3 MiB peak under its 1 GiB limit.
+The complete stage, server write recovery, restart ownership and scientific
+acceptance remain open.
+
+
+## Artifact write recovery candidate
+
+The uninstalled `prototype/legacy-artifact-command.sql` candidate gives a
+prepared legacy artifact one transaction for its row and recovery receipt.
+Exact retries return the original response. Changed requests using the same
+artifact identity are refused. An existing legacy row can be adopted only when
+its complete submitted fields match and it has no managed attempt identity.
+New registration checks workspace, stage, unmanaged ownership and stopped runs.
+An exact historical retry remains readable after a run stops.
+
+Rollback-only checks in the named isolated proof database pass. They cover new
+registration, exact retry, conflicting requests, exact existing-row adoption,
+receipt-insert failure rollback, stopped runs, workspace/stage mismatch, managed
+runs and private receipt privileges. Baseline, harmless and restored candidates
+pass. Six deliberate faults fail their intended assertions: changed-request
+acceptance, wrong retry response, mismatched row adoption, stopped-run bypass,
+workspace bypass and direct receipt insertion privilege. The verifier confirms
+that the candidate function and table are absent after rollback. Private results
+are in `model-command-client-20261008-proof/legacy-artifact-command/`.
+
+This candidate is not installed or connected to a worker. These checks do not
+yet cover all input guards, independent-session contention, HTTP role boundaries
+or a lost response through the retained client. Those checks precede migration
+and adoption. Existing direct legacy writes remain mutable. A saved response is
+historical evidence, not proof of current ownership or Storage byte existence.
+The ordinary primary artifact POST still needs this recovery integration.
+
+
+## Artifact input and contention checks
+
+Additional native input cases reject unexpected fields, noncanonical UUIDs,
+blank URLs, nonobject metadata, string byte sizes and noncanonical hashes.
+Invalid requests leave no artifact or receipt. Disabling each of the four
+input guard blocks fails its stated assertion; harmless and restored controls
+pass alongside the earlier six faults. These controls cover guard blocks,
+not every possible malformed JSON value or each individual predicate.
+Private results are in `legacy-artifact-input-controls/` under the proof root.
+
+`prototype/verify_legacy_artifact_contention.py` uses independent PostgreSQL
+service-role sessions and observes actual lock waits. It verifies simultaneous
+exact retries, conflicting requests, stale-run cleanup committing first and
+artifact registration committing first. The first two retain one artifact and
+one receipt. Cleanup committing first refuses the new artifact and leaves
+neither row. Registration committing first preserves its historical receipt
+after cleanup marks the run failed. Each scenario passes with baseline, harmless
+and restored candidates. Three fault controls detect changed-request acceptance,
+a wrong retry receipt and registration after cleanup.
+
+All 15 contention cases passed. Candidate objects were removed after the proof;
+synthetic fixture rows remain in the isolated database. Evidence is retained in
+`model-command-client-20261008-proof/legacy-artifact-contention/`. This does not
+prove HTTP lost-response recovery, actual worker integration, immutable Storage
+bytes, full stage replay or scientific acceptance. The candidate remains
+uninstalled in application databases.
+
+
+## Artifact HTTP permissions
+
+The temporary candidate now has real PostgREST evidence in the named isolated
+proof database. The service role registers the artifact and receives the exact
+same row on retry. A workspace member and an unrelated authenticated user both
+receive 403 from the command. Anonymous and unsigned callers receive 401.
+The member can read the synthetic run through ordinary RLS while the outsider
+sees no run, establishing the fixture's membership distinction. Denied command
+calls create no artifact. Direct receipt-table reads are refused for every
+tested role, including the service role.
+
+Baseline, harmless SQL comment and restored candidates pass. In each run, an
+intentional EXECUTE grant to authenticated users lets the outsider retrieve the
+existing synthetic receipt. Revoking that grant restores 403. This control shows
+that the permission check detects real exposure rather than a missing route.
+The command and private table are removed afterward; the temporary gateway also
+exits. Synthetic artifact and user fixtures remain in the isolated database.
+
+The first invocation refused to start because the explicit disposable-container
+selection was missing. Supplying the named proof container resolved that refusal.
+No application database was selected. Evidence lives under
+`model-command-client-20261008-proof/legacy-artifact-http`, with `-harmless` and
+`-restored` companion directories. The executable check is
+`prototype/verify_legacy_artifact_http_permissions.py`.
+
+This proves HTTP access boundaries and exact service retries against a temporary
+candidate. It does not prove a lost response through the retained worker client,
+normal-stage adoption, Storage bytes, full restart recovery or model validity.
+
+
+## Retained artifact client
+
+The retained-command client now recognizes `record_legacy_model_artifact`.
+Preparation keys the command by deployment and the previously prepared artifact
+UUID. A changed payload cannot obtain a different request identity for that
+artifact, even after the original request resolves. Requests retain workspace,
+run, stage and all eight artifact fields. The client requires the matching
+returned fields and an explicit null attempt identity before resolving the
+journal. Canonical JSON comparison preserves distinctions such as boolean versus
+integer metadata. The existing recovery command can inspect and retry this saved
+operation without resuming a model stage.
+
+Four new focused tests pass. They cover stable identity, conflicting saved
+requests, journal retention before transport, uncertain delivery, exact recovery,
+cached responses, changed receipt fields and invalid requests before transport.
+All 18 tests across artifact, assessment preparation/delivery and publication
+client modules pass. Baseline, harmless and restored controls pass; bypassed
+scope validation, bypassed receipt matching, payload-derived request identity
+and bypassed size validation each fail a targeted assertion. Private results are
+`model-command-client-20261008-proof/legacy-artifact-client-controls.json`.
+
+An initial test command used the wrong relative file path and did not create the
+test file. Correcting the working-directory-relative path resolved it. The first
+scope mutation reached transport and produced an error rather than the intended
+assertion. The invalid-command test now records the exception and explicitly
+asserts that transport was never called; the restored and adverse controls pass.
+
+Transport is mocked in these tests. Native committed-write response loss and
+fresh-process recovery remain unproved for this artifact operation. The normal
+primary artifact registration still uses its existing writer, and the database
+candidate remains outside application migrations. Full worker regression after
+this client addition remains pending.
+
+
+## Native artifact response-loss recovery
+
+`prototype/verify_legacy_artifact_recovery_cli.py` now passes against the actual
+retained client and a temporary PostgREST gateway in the named isolated database.
+A loopback bridge forwards the first request, waits for the database's successful
+reply, then closes the TCP connection without returning that reply to the client.
+The client leaves one exact request pending. A fresh recovery CLI process lists
+and retries it. A second CLI process uses the retained response without sending
+a request. The original client also reuses that response.
+
+The proof observes exactly two identical HTTP request bodies, one artifact row
+and one command receipt. The local resolved response equals the database receipt.
+Baseline, harmless and restored runs pass. Swallowing the transport uncertainty
+and returning an empty cached receipt each fail their specific assertions.
+Private evidence is retained under
+`model-command-client-20261008-proof/legacy-artifact-native-cli/` and the
+`legacy-artifact-native-*` control directories and JSON record. Candidate schema
+objects, the temporary gateway and the loopback bridge are removed afterward.
+Synthetic database rows and local recovery journals remain for inspection.
+
+This is committed-write response-loss evidence for the retained artifact client.
+The normal stage does not call this operation yet. Application migration, normal
+registration adoption, remaining artifact/KPI side effects, complete restart
+ownership, Storage byte custody and scientific acceptance remain open.
+
+
+## Artifact migration and upgrade
+
+The candidate is now additive migration
+`20261016000016_legacy_artifact_command_receipts.sql`. The CLI generated the
+initial migration file; its timestamp was moved above the repository's existing
+future-dated migration 15 so upgrade ordering stays explicit. No application
+database or running worker was upgraded. The migration inventory passes with
+388 files. Rollback checks against the actual migration pass with baseline,
+harmless, restored and ten fault variants.
+
+`prototype/verify_legacy_artifact_upgrade.py` clones the isolated assessment
+upgrade database at migration 15 and applies the new migration through the CLI
+twice. It confirms one history entry, no fabricated artifact receipts and exact
+preservation of nine tables, including the prior assessment receipt table. The
+baseline contains 111 runs, 52 stages, 243 artifacts, 20 KPIs, 59 claim decisions,
+19 validation results, one v2 instrument, 45 assessments and one assessment
+receipt. Installed rollback cases pass and leave those rows unchanged. Harmless
+and restored upgrade controls pass. An injected existing-run rewrite fails the
+row-preservation assertion. All proof clones remain available for inspection.
+
+The advisor comparison adds no WARN or ERROR findings. Its two new INFO findings
+are the deliberately policy-free private receipt table and its unused new
+foreign-key index. RLS and revoked direct table privileges remain intentional;
+the service-only command owns the transaction. This is a scoped comparison, not
+a clean bill for the database's 1,502 preexisting findings.
+
+Evidence is retained under the proof root in `legacy-artifact-cli-upgrade/`,
+`legacy-artifact-upgrade-controls/`, `legacy-artifact-migration-controls/` and
+`legacy-artifact-migration-advisors/`. The migration SHA-256 is
+`8cb6a78d9f66cf6573ad3f28d34865e40649c4d4b5a451364ed6f368e176bb9b`.
+Normal worker adoption and its regression checks remain next.
+
+
+## Normal primary artifact delivery
+
+The normal link-volume registration branch now calls
+`sb_record_retained_primary_artifact` after checking the prepared byte identity.
+The helper retains the exact request in the existing stage journal, uses the
+service-only recovery command and propagates `WorkerStateWriteUnconfirmed` on
+unconfirmed delivery. It does not fall back to a direct insert. Local and
+deployment instructions now require migration 16 before starting this version.
+Other artifact types keep their existing writer.
+
+The actual registration-branch test verifies the retained helper call and that
+changed source bytes prevent delivery. An unconfirmed helper result propagates.
+Harmless and restored source variants pass; bypassing the normal retained call
+fails the writer assertion. The native TCP-loss proof now enters the actual
+worker helper. Baseline, harmless and restored runs pass with one artifact and
+one receipt after two identical POSTs. Swallowing transport uncertainty and
+returning an incorrect cached receipt still fail their intended assertions.
+
+Evidence is in `legacy-artifact-worker-native-cli/`,
+`legacy-artifact-native-controls.json` and `primary-delivery-branch-controls.json`
+under the private proof root. These tests use synthetic output metadata. They do
+not execute a scientific assignment or prove all normal-stage side effects safe
+to replay. Full worker regression for this connection remains pending.
+
+
+## Worker regression and remaining side effects
+
+The first full regression at `80c6e134` passed 74 suites and failed the command
+mutation suite. Its temporary source inventory omitted the newly imported
+`model_legacy_artifact_command.py`, so subprocesses failed before exercising
+their intended assertions. The inventory now includes that dependency and the
+artifact client tests. Four artifact mutation controls also run in this maintained
+suite. All eight mutation tests pass, including harmless source controls.
+
+The corrected full regression passes all 75 worker suites, with none failed or
+not run. `openplan-primary-delivery-workers-fixed-20261008.service` completed
+on October 8 at 07:09:42 Pacific, invocation
+`3dda63ee19f84b28b25b9a4d50ef5344`, at a 172.1 MiB peak under the 1 GiB limit.
+The checkout stayed unchanged throughout that run.
+
+A read-through of the current `stage_artifacts` confirms the remaining M3/S1
+recovery obligations. The stage constructs a new assessment directory and writes
+its computed records before registration. Reentry must load the original
+assessment identity and frozen payloads instead of computing another assessment.
+Five optional nonprimary outputs in the registration loop still use direct
+inserts. The evidence packet and optional zone attributes also use direct
+inserts, followed by a variable set of KPI writes and GeoJSON publication.
+These operations need retained identities and checked delivery or explicit
+reconciliation before restart is enabled. The evidence packet includes a
+creation timestamp, so recomputing it is not an exact retry.
+
+This is an implementation dependency within roadmap M3/S1, not a replacement
+queue or reduced v1 contract. Recovering the primary receipt alone neither
+reexecutes scientific assessment nor establishes current stage ownership.
+
+
+## Artifact release bookkeeping
+
+The branch now includes the assessment branch's `3a87fa2a` inventory and operator
+notice corrections through an ordinary merge. Migration 16 is also named in the
+Unreleased changelog with its worker upgrade prerequisites and replay limits.
+The isolated installed catalog confirms 301 application tables, all with RLS,
+and 14 application views after excluding PostGIS extension relations. The schema
+inventory matches those counts. The unread-column ledger documents the artifact
+identity lookup and the exact request/response reads inside the database command.
+
+The first focused run identified the artifact identity column as another SQL-only
+reader; documenting its actual lookup resolved the failure. All 41 tests across
+the column, schema and release-ordering suites then pass. Harmless and restored
+migration controls pass; removing RLS and adding an undocumented synthetic column
+each fail the expected assertion. Evidence is in
+`model-command-client-20261008-proof/artifact-inventory-controls.json`.
+
+This checkout now has its own dependency installation. The bounded `npm ci`
+completed successfully, and a native in-memory SQLite query passed afterward.
+The assessment checkout stays unchanged while its second full QA runs. Full
+application QA for the artifact branch remains pending and will run serially
+after that job. No release or scientific acceptance follows from these checks.
+
+
+## Computed-record checkpoint component
+
+`model_stage_computation.compute_once` retains a named computation against its
+deployment, run, stage and canonical inputs in the existing private SQLite
+journal. It commits a start marker before invoking the caller's computation. A
+completed exact retry returns the original detached JSON object after checking
+its digest. Changed inputs are refused. A prior start without a saved result
+requires reconciliation and never calls the computation again automatically.
+Result retention also checks that the original input record remains unchanged
+and unresolved.
+
+Six focused tests pass. They cover detached results, saved-result reuse in a
+fresh process, changed inputs, separate deployments, abrupt process exit inside
+the computation, changed saved bytes, changed checkpoint state before saving and
+invalid inputs/results. Baseline, harmless and restored controls pass. Five faults
+fail their intended assertions: accepting changed inputs, recomputing after an
+interrupted start, ignoring the saved digest, recomputing an already saved result
+and bypassing the final checkpoint comparison. Private evidence is
+`model-command-client-20261008-proof/stage-computation-controls.json`.
+
+The component is not yet connected to model assessment. The caller must bind
+complete input identities, establish current ownership and enforce scientific
+access gates before computation. The component does not validate scientific
+meaning or make a live filesystem snapshot. Its digest detects changed saved
+bytes, not an actor who can rewrite both bytes and digest. SQLite process-loss
+behavior here does not prove host power-loss recovery. A computation that started
+but never saved remains unresolved; no automatic reset or rerun is provided.
+Full worker regression after adding this component remains pending.
+
+
+## Retained legacy rules-v4 records
+
+The normal rules-v4 builder now uses the computed-record checkpoint for both
+assignment and behavioral-demand record construction. Its inputs include the
+legacy diagnostic bundle, source hashes, workspace, output artifact identity,
+scenario role and the full comparison-basis settings. The operation name includes
+the output artifact type so the two engine paths remain separate. New basis and
+assessment identities and the frozen timestamp are generated only inside the
+first computation. Exact retries return the original three records; changed
+inputs or an unresolved prior computation propagate `WorkerStateWriteUnconfirmed`.
+The existing rules-v5 instrument evaluator and its access gates are unchanged.
+
+Three focused tests of the actual builder pass. They prove exact detached reuse,
+continued inconclusive treatment of legacy diagnostics, changed-byte/scenario
+refusal before assessment, and no second assessment after a failed first call.
+Harmless and restored controls pass; bypassing the checkpoint or omitting the
+input binding each fails a targeted assertion. Private control evidence is
+`model-command-client-20261008-proof/retained-v4-controls.json`.
+
+Full worker regression passes all 77 suites, with none failed or not run. The
+owned `openplan-retained-v4-workers-20261008.service` completed at 07:22:28 Pacific
+on October 8, invocation `a34e7dcccbac4aff98457fd88bd9c122`, with a 181.6 MiB peak
+under the 1 GiB limit. The checkout remained unchanged during that run.
+
+This retains legacy record construction, not the entire preceding model or count
+validation execution. Existing assessment directories still refuse overwrite;
+recovery must verify and materialize original bytes without creating replacement
+records. ActivitySim output registration and remaining stage writes also need
+reconciliation. No whole-stage replay, independent acceptance, current ownership
+or scientific claim promotion is established by this checkpoint.
+
+
+## Local retained-record materialization component
+
+`model_record_files.materialize` accepts named retained JSON byte strings. It
+writes each missing file through a private temporary file, flushes its bytes,
+and links it into place without replacing an existing target. Existing targets
+must be regular nonsymlink files with exactly matching bytes and stable identity
+during verification. Exact retries preserve existing inodes. A missing member
+of the record set can be created without replacing its matching peers. The
+directory is flushed after successful materialization.
+
+Six focused tests pass: exact retry, missing-file repair, changed/partial target
+refusal, symlink/FIFO refusal, interruption before target publication, competing
+changed target refusal and invalid filename handling. Baseline, harmless and
+restored controls pass. Ignoring existing-byte verification and replacing
+existing files each fail a targeted assertion. Private results are
+`model-command-client-20261008-proof/record-file-controls.json`.
+
+This component is not yet connected to record persistence. The shared rules-v4
+persistence helper and assignment-stage failure handler still rewrite local
+assessment JSON after generic failures. Integration must preserve the original
+bytes and keep failure status outside those records, with tests at both actual
+callers. A call can leave a subset of complete files if a later file fails; this
+is not a multi-file transaction. Tests do not prove power-loss durability or
+protection against an actor who can replace the caller-owned parent directory.
+A crash can leave an unreferenced temporary file; no partial target is published.
+
+
+## Normal record file recovery
+
+Both rules-v4 record writers now call `materialize_validation_records`, which
+encodes the original records and uses nonoverwriting materialization. Exact local
+files are reused, missing files are restored, and conflicting files stop with
+`WorkerStateWriteUnconfirmed` before upload. Both generic failure handlers now
+keep failure status in the returned in-memory state and preserve the original
+assessment file bytes. They still remove stale acknowledged receipt identities.
+
+The actual shared writer and assignment materialization statement pass retry,
+missing-file and conflicting-file tests. Both actual custody blocks preserve
+bytes on generic failures as well as uncertain delivery. Harmless and restored
+controls pass. Reintroducing either failure rewrite fails the corresponding
+byte-preservation assertion. Private evidence is
+`model-command-client-20261008-proof/record-caller-controls.json`.
+
+All 78 worker suites pass, with none failed or not run. The owned
+`openplan-record-recovery-workers-20261008.service` completed at 07:27:42 Pacific
+on October 8, invocation `07e506a11bee4ebea7a62c079883d412`, with a 175.3 MiB peak
+under its 1 GiB limit. No files changed during that regression. Whole-stage
+replay still requires the remaining output writes and current ownership checks.
+
+
+## Named secondary artifact delivery
+
+The five secondary outputs in the normal registration loop now use retained
+commands: calibrated link volumes, accepted network calibration, demand matrix,
+travel-time skims and network setup summary. `prepare_named` derives a stable
+artifact identity from deployment, run, stage and logical filename. The payload
+is not part of that identity, so changed bytes or metadata must reconcile the
+original request rather than silently create another artifact. The shared worker
+helper is now named `sb_record_retained_artifact` and accepts either the prepared
+primary identity or a logical secondary name.
+
+The actual registration branch passes exact-repeat checks for all five outputs:
+one request each, distinct identities, and changed-byte refusal. The maintained
+mutation suite includes a payload-derived-name fault, and restoring the direct
+insert in the actual branch fails its targeted test. Harmless and restored
+controls pass. Native `--named` response-loss proof enters the normal helper,
+commits through PostgREST, drops the first TCP reply, and recovers from a fresh
+CLI process. Exactly two identical POSTs leave one artifact and one receipt;
+subsequent cached reuse sends no request. Private results are in
+`named-artifact-worker-native-cli/` and `named-artifact-branch-controls.json`
+under the proof root.
+
+All 78 worker suites pass. `openplan-named-artifact-workers-20261008.service`
+completed at 07:32:51 Pacific, invocation `dbcbc90a8efb431fb0b05a52cc4890d2`, with
+a 173.3 MiB peak under its 1 GiB limit. No checkout edits occurred during the run.
+Evidence-packet and zone-attribute registration, KPI writes, GeoJSON publication
+and ActivitySim output registration remain separate recovery obligations. Older
+artifacts with unrelated random identities are not silently adopted. No unsafe
+whole-stage replay is enabled by this change.
+
+## Zone-attribute registration recovery
+
+The normal zone-attribute registration now uses the retained artifact command
+with logical name `zone_attributes.csv`. Its actual branch test verifies the
+file reference, byte count and digest, one delivery for exact repeats, and
+refusal of changed bytes before another request. Harmless and restored controls
+pass; restoring direct insertion fails the expected delivery-count assertion.
+Private control output is `zone-artifact-controls.json` under the proof root.
+
+All 78 worker suites pass with no checkout edits during regression. Unit
+`openplan-zone-artifact-workers-20261008.service`, invocation
+`7e21c7596e1a447a9d14763e79df6d5c`, completed at 07:40:08 Pacific on October 8,
+with a 175.5 MiB peak under a 1 GiB cap. This branch test uses mocked HTTP and
+inherits the separately tested retained-command gateway behavior. It does not
+prove immutable custody of the local file or permit whole-stage replay.
+Evidence-packet retention, KPI delivery, GeoJSON publication, ActivitySim output
+registration and restart ownership remain open.
+
+## Retained evidence packet
+
+The assignment stage now creates its readable packet after custody, retaining
+its timestamp and canonical bytes through the existing computation checkpoint.
+The complete evidence object binds that checkpoint. Exact repeats reuse the
+original packet; changed evidence requires reconciliation. Immutable local
+materialization repairs a missing file but refuses an altered file. The earlier
+pre-custody write is removed, and registration uses the named retained command.
+
+The test executes the actual packet publication block with mocked HTTP and
+Storage. It checks timestamp reuse, unchanged bytes and inode, missing-file
+repair, changed-evidence refusal, changed-local-file refusal and one delivery
+across exact retries. Harmless and restored controls pass. Removing input
+binding or restoring direct insertion fails its targeted assertion. Results are
+in `packet-artifact-controls.json` under the private proof root.
+
+All 78 worker suites pass. Unit
+`openplan-packet-artifact-workers-20261008.service`, invocation
+`8dc6597485074bbb91b49acec2371b94`, completed at 07:42:43 Pacific on October 8,
+with a 169.7 MiB peak under a 1 GiB cap. No checkout edits occurred during the
+regression. Existing packets with different bytes require reconciliation rather
+than overwrite. A changed Storage-versus-local reference also refuses command
+reuse. This does not establish Storage durability, scientific acceptance or
+whole-stage replay. KPI writes, GeoJSON publication, ActivitySim output delivery
+and current restart ownership remain open.
+
+## GeoJSON registration receipt
+
+The existing volume-map publisher now receives explicit workspace scope from
+its normal caller and registers `volumes.geojson` through the retained artifact
+command. The existing Storage byte verification remains. An exact repeat makes
+no second registration request; an uncertain registration response propagates.
+The updated publisher test exercises both cases through the real command client,
+with mocked geometry queries and HTTP. It verifies the generated byte digest and
+feature count. A harmless source comment and restored code pass; replacing the
+retained writer with direct insertion fails the publisher assertion. Private
+control output is `geojson-artifact-controls.json` under the proof root.
+
+All 78 worker suites pass, including 38 push-trigger checks. Unit
+`openplan-geojson-artifact-workers-20261008.service`, invocation
+`74a22730d7eb478181b2738edd815223`, completed at 07:45:49 Pacific on October 8,
+with a 196 MiB peak under a 1 GiB cap. No checkout edits occurred during the run.
+This retains registration, not the geometry computation or local GeoJSON file.
+The publisher still regenerates that file before registering; changed output
+cannot replace its original retained command. Native spatial computation,
+Storage durability, KPI delivery, ActivitySim output delivery and current
+restart ownership remain separate boundaries. Whole-stage replay stays disabled.
+
+## Separate ActivitySim output registration
+
+The ActivitySim assignment dispatcher now reads the run's workspace before
+registering its output through the retained named command. Its returned artifact
+identity still feeds both assessment preparation and custody. The logical slot
+and artifact type remain separate from trip-based link volumes. No model outputs
+are averaged or promoted to independent acceptance.
+
+The dispatcher fixture now exercises the actual retained client and RPC envelope.
+Its existing harmless, restored and invented-identity controls pass. A new test
+executes the actual registration statement, verifies exact receipt reuse, checks
+behavioral provenance, and refuses changed output bytes before another request.
+Restoring direct insertion fails that test; harmless and restored controls pass.
+The first fixture run failed because its HTTP placeholder was not loopback; the
+fixture now uses loopback without weakening deployment URL validation.
+
+All 78 worker suites pass, including 27 ActivitySim handoff checks. Unit
+`openplan-activitysim-artifact-workers-20261008.service`, invocation
+`6d913662f69c4cecad6f2b057407331b`, completed at 07:49:09 Pacific on October 8,
+with a 175.2 MiB peak under a 1 GiB cap and no checkout edits during regression.
+Private controls are in `activitysim-artifact-controls.json`. These tests mock
+the scientific assignment and HTTP; they do not prove ActivitySim accuracy or
+whole-stage recovery. KPI delivery, agreement output registration, retained
+geometry computation and current restart ownership remain open.
+
+## Full local application QA, October 8
+
+Exact commit `7c4e992ed304387a97e313854b17f6879dea221b` passed `npm run qa:gate`
+under `openplan-stage-qa-7c4e992e.service`, invocation
+`bb4b619443084a66b7e62369a906b4a0`. The run finished at 08:23:57 Pacific with
+20,095 tests passing and 1,580 skipped across 1,512 passing and 95 skipped files.
+Lint, dead-code checks, provider checks, dependency audit and the production
+webpack build passed. The audit reports zero vulnerabilities. Peak memory was
+6.6 GiB under a 7 GiB cap. The checkout stayed unchanged during the run.
+
+Live database isolation was not opted into this local run. GitHub checks,
+complete worker recovery, T3 visual acceptance and scientific acceptance remain
+separate obligations. This result does not authorize replay of a full stage.

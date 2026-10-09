@@ -1,0 +1,53 @@
+{
+  "source_sha256": "ba83af73aa5b49771c82d6d734aebbc4914931b0a2a905ca724f64e4cce78d21",
+  "writer_sha256": "0f0578eaf53de349af74efa27206fb570acf041282f12fa7e3afef42f7016911",
+  "recovery_sha256": "f87f0038a3bc732391c2d585484f3380f5b696133312f57337e778ef0629bb88",
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "manifest-hash",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "catalog-phase",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "omit-source-objects",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "manifest-first",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "writer-stop",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "artifact-type",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "artifact-hash",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": "Actual publication/client/journal code with a synthetic TUS peer and injected database receipts. No joined native source-set publication, normal dispatch or scientific acceptance."
+}

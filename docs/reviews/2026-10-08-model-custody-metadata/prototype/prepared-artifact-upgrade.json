@@ -1,0 +1,11 @@
+{
+  "source_version": "20261016000020",
+  "status": "migration applied and reapplied; retained rows and installed cases passed",
+  "migration_sha256": "8093fd595bddd7369d800d5c7ecd2f9508d24e0100108762f7fe1b3ddd06f1ac",
+  "source_unchanged": true,
+  "advisor_exit_code": 0,
+  "limits": "Owned populated clone and actual CLI; no normal dispatcher, application database, browser, scientific or full-host restore proof.",
+  "compared_table_count": 33,
+  "rows_and_content_checksums_unchanged": true,
+  "installed_cases_passed": true
+}

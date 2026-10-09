@@ -1,0 +1,46 @@
+{
+  "source_sha256": "fa651726026d374ff14b2dac168571efc963cc15b8d22579b4ca7db76748a72e",
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "drop-method",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "collapse-attempts",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "missing-output-hash",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "stale-revision",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "ignore-page-failure",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "wrong-workspace",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": "Synthetic generated-file tests with asserted query projections and filters. Native RLS, authenticated HTTP freeze, downloaded archives and browser acceptance require separate checks."
+}

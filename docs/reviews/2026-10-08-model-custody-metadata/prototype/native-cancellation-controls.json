@@ -1,0 +1,173 @@
+{
+  "proof_sha256": {
+    "verify_scoped_http_assignment.py": "78edaa9a8221645b6d4b4191243828305d43acb44e47710c0577e4963df665f6",
+    "verify_native_assignment_http.py": "9b061170fb2c9151f30be5503ddd7c31bc2f0899e17ff8aa85bbae3bd490d0db",
+    "verify_native_bound_assignment.py": "fdb95ed2c8824d1c176310038e27c15736c2f3b66c14d48c419eda90f294daeb"
+  },
+  "controls": [
+    {
+      "control": "baseline",
+      "database": "openplan_attempt_cli_3e24ddcc72df4e96b1010f66567068e4",
+      "scope_empty": true,
+      "cancellation": {
+        "schema": "openplan.engine-process.v1",
+        "run_id": "fa39116e-6593-4852-a320-a1ce76f871a8",
+        "stage_id": "ba7b284f-5513-4cac-8718-61d00b0273d2",
+        "attempt_id": "b6b0c815-90fc-4628-9e9c-fe42d1133b4e",
+        "command_sha256": "875ad7612ae049821c609561c439e9b4ebf4c918c028c7629a34349ca7cc4ca5",
+        "scope_unit": "openplan-engine-36420b312d3f4239be0bdf26d9e8c19a.scope",
+        "scope": {
+          "schema": "openplan.engine-scope.v1",
+          "unit": "openplan-engine-36420b312d3f4239be0bdf26d9e8c19a.scope",
+          "invocation_id": "d5ca80697f1148e3bd58eb196bfe22c6",
+          "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-36420b312d3f4239be0bdf26d9e8c19a.scope",
+          "cgroup_device": 30,
+          "cgroup_inode": 1553645,
+          "bootstrap_pid": 366338,
+          "memory_bytes": 1073741824,
+          "tasks": 128,
+          "observed_scope_empty": true,
+          "scope_result": "success"
+        },
+        "returncode": -9,
+        "termination_observed": true,
+        "execution_ready": false,
+        "database_status_changed": false
+      },
+      "database_observation": {
+        "database_state_unchanged": true,
+        "one_attempt_and_execution_start": true,
+        "stage_status": "running"
+      },
+      "native_converged": null,
+      "replay": null,
+      "final_outputs_absent": true
+    },
+    {
+      "control": "harmless",
+      "database": "openplan_attempt_cli_d3fd1d43a9b04ef9b2dcca3fd525fb6a",
+      "scope_empty": true,
+      "cancellation": {
+        "schema": "openplan.engine-process.v1",
+        "run_id": "4a97a000-4d99-438b-86eb-c001dfc03939",
+        "stage_id": "f68c79db-16b0-400a-80fb-5615907fa7a1",
+        "attempt_id": "397602e0-67d4-467f-a3c9-e72ad9ef3f2f",
+        "command_sha256": "9f84be3ba4b7f1c84e96e187299637eee08f5e2b60d8314629111827cc91b106",
+        "scope_unit": "openplan-engine-aaa9c0e9a83d426480d75ce662e945ea.scope",
+        "scope": {
+          "schema": "openplan.engine-scope.v1",
+          "unit": "openplan-engine-aaa9c0e9a83d426480d75ce662e945ea.scope",
+          "invocation_id": "80387d859f3e4b2cb77d6d497471a2c1",
+          "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-aaa9c0e9a83d426480d75ce662e945ea.scope",
+          "cgroup_device": 30,
+          "cgroup_inode": 1553783,
+          "bootstrap_pid": 367977,
+          "memory_bytes": 1073741824,
+          "tasks": 128,
+          "observed_scope_empty": true,
+          "scope_result": "success"
+        },
+        "returncode": -9,
+        "termination_observed": true,
+        "execution_ready": false,
+        "database_status_changed": false
+      },
+      "database_observation": {
+        "database_state_unchanged": true,
+        "one_attempt_and_execution_start": true,
+        "stage_status": "running"
+      },
+      "native_converged": null,
+      "replay": null,
+      "final_outputs_absent": true
+    },
+    {
+      "control": "omit-cancellation",
+      "database": "openplan_attempt_cli_4b1c5602d91d4c15b7ce80a6ee1f67aa",
+      "detected": "Native cancellation did not stop engine"
+    },
+    {
+      "control": "restored",
+      "database": "openplan_attempt_cli_0d278cc33fe34b7eb9ed168f0c17cab7",
+      "scope_empty": true,
+      "cancellation": {
+        "schema": "openplan.engine-process.v1",
+        "run_id": "5f74654f-91ae-4f48-9c3b-8904aa328ed9",
+        "stage_id": "ad9c119c-24a9-494b-9b9d-a806c5a1c0d5",
+        "attempt_id": "0a1341fc-9039-491c-9149-7321fe75e03e",
+        "command_sha256": "9af74e130fa6117ad2a3075375f8dc31d0e20ed3e10c079ec11d11821607211b",
+        "scope_unit": "openplan-engine-ee83777db31842608ee05d6d4d6ab894.scope",
+        "scope": {
+          "schema": "openplan.engine-scope.v1",
+          "unit": "openplan-engine-ee83777db31842608ee05d6d4d6ab894.scope",
+          "invocation_id": "f901ecae12cc4554b5802b0d4388b849",
+          "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-ee83777db31842608ee05d6d4d6ab894.scope",
+          "cgroup_device": 30,
+          "cgroup_inode": 1554059,
+          "bootstrap_pid": 371070,
+          "memory_bytes": 1073741824,
+          "tasks": 128,
+          "observed_scope_empty": true,
+          "scope_result": "success"
+        },
+        "returncode": -9,
+        "termination_observed": true,
+        "execution_ready": false,
+        "database_status_changed": false
+      },
+      "database_observation": {
+        "database_state_unchanged": true,
+        "one_attempt_and_execution_start": true,
+        "stage_status": "running"
+      },
+      "native_converged": null,
+      "replay": null,
+      "final_outputs_absent": true
+    },
+    {
+      "control": "normal-assignment",
+      "database": "openplan_attempt_cli_bc0785b28cfb442c9c8198315cb45c55",
+      "scope_empty": true,
+      "cancellation": null,
+      "database_observation": null,
+      "native_converged": true,
+      "replay": null,
+      "final_outputs_absent": null
+    },
+    {
+      "control": "receipt-replay",
+      "database": "openplan_attempt_cli_061bd02887cf485b9bb62105494c0ffd",
+      "scope_empty": true,
+      "cancellation": null,
+      "database_observation": null,
+      "native_converged": null,
+      "replay": {
+        "request_id": "aa26babf-137f-4215-ba50-3aaf2db354f6",
+        "committed_reply_dropped": true,
+        "fresh_process_outcomes": [
+          {
+            "request_id": "aa26babf-137f-4215-ba50-3aaf2db354f6",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          },
+          {
+            "request_id": "aa26babf-137f-4215-ba50-3aaf2db354f6",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          }
+        ],
+        "http_calls_per_recovery": [
+          1,
+          0
+        ],
+        "database_state_unchanged": true,
+        "request_body_sha256": "bbd607a7a7f0ecc4344f5b336166a1f666455e5260f3b78f7a7bd49f9c850ff4",
+        "model_resumed": false,
+        "limits": "Real installed SQL receipt replay from a journal backup. Original journal remains pending. No model continuation or supervisor restart."
+      },
+      "final_outputs_absent": true
+    }
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-cancellation-controls-20261008",
+  "limits": "Real small native assignment, Linux scope and isolated installed SQL. Forced cancellation at a confirmed iteration before acknowledgement. No fresh cancellation reconciliation, parent-loss recovery, UI/database cancellation decision, output publication, scientific acceptance or normal dispatch."
+}

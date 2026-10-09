@@ -1,0 +1,57 @@
+{
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "targeted_test": null,
+      "failure_marker": null
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "targeted_test": null,
+      "failure_marker": null
+    },
+    {
+      "control": "offer-retained",
+      "returncode": 1,
+      "targeted_test": "withholds relaunch for retained custody",
+      "failure_marker": "to be null"
+    },
+    {
+      "control": "ignore-custody",
+      "returncode": 1,
+      "targeted_test": "preserves retained custody",
+      "failure_marker": "expected"
+    },
+    {
+      "control": "hide-eligible-reset",
+      "returncode": 1,
+      "targeted_test": "names the worker that accepted",
+      "failure_marker": "Unable to find"
+    },
+    {
+      "control": "wrong-custody-scope",
+      "returncode": 1,
+      "targeted_test": "carries scoped historical status",
+      "failure_marker": "expected"
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "targeted_test": null,
+      "failure_marker": null
+    }
+  ],
+  "sha256": {
+    "src/lib/models/recovery-status.ts": "079f3c36470c04386447245a4179c5a849963bf194b96ea54e4038e60130c844",
+    "src/components/models/model-run-evidence-panel.tsx": "07047695e49f4cbc7d8cad535f82c23c212b8a379d473736002d35c630448971",
+    "src/lib/models/recovery-status-server.ts": "c083721f6d7f58138a56417a4f5b79503b2eace06a7e1741bde7ca4eee97f055",
+    "src/test/model-recovery-status.test.ts": "435ebe283e6006fd4204203497017f95989f37a6f4eb1ec5d8a60e0722f342b3",
+    "src/test/model-recovery-status-controls.test.tsx": "b1d207ab9f3707e127a8ba707082b560d5c0642d2c77883ee4580167314e5a0e",
+    "src/test/a-relaunched-run-says-whether-it-will-fare-better.test.tsx": "1043477c221acadb0e28fad80b912667fb8933d10895ac4f9632ae8625530531",
+    "src/test/model-recovery-page.test.tsx": "c101b0b02ef8be999b8750d507053039d4f626c4259ed9ced0f092a1e9311eac"
+  },
+  "evidence_directory": "/tmp/openplan-relaunch-controls-20261008c",
+  "limits": "DOM component and mocked HTTP tests. These do not prove rendered desktop or mobile layout, real cookies, database behavior, physical worker termination, restart or practitioner acceptance."
+}

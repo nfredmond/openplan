@@ -202,6 +202,7 @@ def test_immutable_validation_upload_failure_is_not_recorded_as_local_custody():
     import tempfile
 
     real_post = main.requests.post
+    real_get = main.requests.get
 
     class FailedUpload:
         status_code = 503
@@ -209,6 +210,7 @@ def test_immutable_validation_upload_failure_is_not_recorded_as_local_custody():
 
     try:
         main.requests.post = lambda *args, **kwargs: FailedUpload()
+        main.requests.get = lambda *args, **kwargs: FailedUpload()
         with tempfile.NamedTemporaryFile() as artifact:
             try:
                 main.upload_immutable_validation_json("run-1", "assessment-1", artifact.name)
@@ -218,6 +220,7 @@ def test_immutable_validation_upload_failure_is_not_recorded_as_local_custody():
                 raise AssertionError("a failed immutable upload was accepted as custody")
     finally:
         main.requests.post = real_post
+        main.requests.get = real_get
 
 
 if __name__ == "__main__":

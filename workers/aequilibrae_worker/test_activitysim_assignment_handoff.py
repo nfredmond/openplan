@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """The behavioral assignment consumes one intact, hash-verified local package."""
 import hashlib
+import ast
 import inspect
 import json
 import os
@@ -390,10 +391,12 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
         retained_artifact_id = "22222222-2222-4222-8222-222222222222"
 
         def retained_artifact_response(url, **kwargs):
-            assert url.endswith("/rest/v1/model_run_artifacts")
-            return mock.Mock(status_code=201, json=mock.Mock(return_value=[{
-                **kwargs["json"], "id": retained_artifact_id,
-            }]))
+            nonlocal retained_artifact_id
+            assert url.endswith("/rest/v1/rpc/record_legacy_model_artifact")
+            retained_artifact_id = kwargs["json"]["p_payload"]["id"]
+            return mock.Mock(status_code=200, json=mock.Mock(return_value={
+                **kwargs["json"]["p_payload"], "attempt_id": None,
+            }))
 
         def assignment(*args, **kwargs):
             calls.append((args, kwargs))
@@ -427,6 +430,8 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
         completion = mock.Mock(status_code=200)
         completion.json.return_value = []
         with (
+            mock.patch.dict(main.os.environ, {"OPENPLAN_DEPLOYMENT_ID": "synthetic"}),
+            mock.patch.object(main, "SUPABASE_URL", "http://127.0.0.1:54321"),
             mock.patch.object(main, "RUN_WORK_ROOT", str(work_root)),
             mock.patch.object(main, "sb_claim_stage", return_value=True),
             mock.patch.object(main, "sb_patch_stage") as patch_stage,
@@ -434,7 +439,7 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
             mock.patch.object(main.requests, "post", side_effect=retained_artifact_response) as post_artifact,
             mock.patch.object(main, "build_rules_v4_validation_records", return_value=({}, {}, {"assessment_id": "synthetic-assessment"})) as build_assessment,
             mock.patch.object(main, "persist_rules_v4_validation_records", return_value={"scientific_outcome": "inconclusive", "validation_evidence_write": "recorded"}) as persist_assessment,
-            mock.patch.object(main, "sb_post_kpi") as post_kpi,
+            mock.patch.object(main, "sb_record_retained_kpi") as post_kpi,
             mock.patch.object(main, "activitysim_assignment_package", return_value="/activitysim/package"),
             mock.patch.object(main, "stage_assignment", side_effect=assignment),
             mock.patch.object(main, "compute_daily_vmt", return_value=456.789),
@@ -444,14 +449,14 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
             mock.patch.object(
                 main,
                 "sb_get_run",
-                return_value={"workspace_id": "workspace-1"},
+                return_value={"workspace_id": "33333333-3333-4333-8333-333333333333"},
             ),
             mock.patch.object(main, "write_model_run_modeling_evidence") as write_evidence,
             mock.patch.object(main.requests, "get", return_value=completion),
         ):
             assert main.process_stage(
                 {
-                    "id": "stage-5",
+                    "id": "44444444-4444-4444-8444-444444444444",
                     "run_id": run_id,
                     "stage_name": "ActivitySim Network Assignment",
                 }
@@ -472,8 +477,8 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
             "network_state_digest"
         ]
         assert kwargs["assignment_profile_override"] == first_profile
-        payload = post_artifact.call_args.kwargs["json"]
-        assert "id" not in payload, "assignment must let artifact registration return its retained identity"
+        payload = post_artifact.call_args.kwargs["json"]["p_payload"]
+        assert payload["id"] == retained_artifact_id
         assert build_assessment.call_args.kwargs["model_output_artifact_id"] == retained_artifact_id, "assessment used an invented artifact identity"
         assert persist_assessment.call_args.kwargs["model_output_artifact_id"] == retained_artifact_id, "custody used an invented artifact identity"
         assert payload["artifact_type"] == "activitysim_link_volumes"
@@ -499,7 +504,7 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
         assert validate.call_count == 1
         write_evidence.assert_called_once_with(
             run_id,
-            "workspace-1",
+            "33333333-3333-4333-8333-333333333333",
             activitysim_validation,
             track="behavioral_demand",
         )
@@ -586,10 +591,10 @@ def test_uncalibrated_assignment_handoff_reuses_the_canonical_baseline_digest():
             mock.patch.object(main, "sb_claim_stage", return_value=True),
             mock.patch.object(main, "sb_patch_stage") as patch_stage,
             mock.patch.object(main, "sb_patch_run"),
-            mock.patch.object(main, "sb_post_artifact", return_value={"id": "22222222-2222-4222-8222-222222222222"}) as post_artifact,
+            mock.patch.object(main, "sb_record_retained_artifact", return_value={"id": "22222222-2222-4222-8222-222222222222"}) as post_artifact,
             mock.patch.object(main, "build_rules_v4_validation_records", return_value=({}, {}, {"assessment_id": "synthetic-assessment"})),
             mock.patch.object(main, "persist_rules_v4_validation_records", return_value={"scientific_outcome": "inconclusive", "validation_evidence_write": "recorded"}),
-            mock.patch.object(main, "sb_post_kpi"),
+            mock.patch.object(main, "sb_record_retained_kpi"),
             mock.patch.object(main, "sb_get_run", return_value={"workspace_id": "workspace-1"}),
             mock.patch.object(main, "_run_count_validation", return_value=None),
             mock.patch.object(main, "write_model_run_modeling_evidence"),
@@ -730,6 +735,7 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
                 "verified_latest_local_artifact",
                 side_effect=["/trip-based.csv", "/activity-based.csv"],
             ) as verified_artifact,
+            mock.patch.object(main, "sb_get_run", return_value={"workspace_id":"synthetic-workspace"}),
             mock.patch.object(main, "register_agreement_artifact") as register,
             mock.patch.object(
                 main,
@@ -737,6 +743,7 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
                 side_effect=lambda _work, path, **_kwargs: path,
             ) as write_geometry,
             mock.patch.object(main.requests, "get", return_value=completion),
+            mock.patch.object(main, "retain_agreement_comparison", side_effect=lambda _run, _stage, _work, *, compare, **kwargs: compare(**kwargs)) as retained_comparison,
             mock.patch.dict("sys.modules", {"compare_behavioral_demand_outputs": fake_module}),
         ):
             assert main.process_stage(
@@ -747,6 +754,7 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
                 }
             )
 
+        assert retained_comparison.call_count == 1
         call = comparator_calls[0]
         assert call["first_csv"] == "/trip-based.csv"
         assert call["second_csv"] == "/activity-based.csv"
@@ -765,6 +773,8 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
         assert "retained_network.geojson" in call["loaded_links_geojson"]
         assert write_geometry.call_count == 1
         assert register.call_count == 3
+        assert all(call.kwargs["workspace_id"] == "synthetic-workspace" for call in register.call_args_list), "agreement workspace scope lost"
+        assert all(call.kwargs["journal_dir"] == str(run_dir / "stage-journals" / "stage-6") for call in register.call_args_list), "agreement journal scope lost"
         assert all(
             call.kwargs["network_settings_digest"] == settings_digest
             for call in register.call_args_list
@@ -839,6 +849,7 @@ def test_uncalibrated_agreement_compares_both_canonical_baseline_digests():
                 "verified_latest_local_artifact",
                 side_effect=["/trip.csv", "/activitysim.csv"],
             ),
+            mock.patch.object(main, "sb_get_run", return_value={"workspace_id":"synthetic-workspace"}),
             mock.patch.object(main, "register_agreement_artifact"),
             mock.patch.object(
                 main,
@@ -846,6 +857,7 @@ def test_uncalibrated_agreement_compares_both_canonical_baseline_digests():
                 side_effect=lambda _work, path, **_kwargs: path,
             ),
             mock.patch.object(main.requests, "get", return_value=completion),
+            mock.patch.object(main, "retain_agreement_comparison", side_effect=lambda _run, _stage, _work, *, compare, **kwargs: compare(**kwargs)) as retained_comparison,
             mock.patch.dict("sys.modules", {"compare_behavioral_demand_outputs": fake_module}),
         ):
             assert main.process_stage(
@@ -856,6 +868,7 @@ def test_uncalibrated_agreement_compares_both_canonical_baseline_digests():
                 }
             )
 
+        assert retained_comparison.call_count == 1
         call = comparator_calls[0]
         assert call["first_network_settings_digest"] == baseline_digest
         assert call["second_network_settings_digest"] == baseline_digest
@@ -1073,7 +1086,7 @@ def test_agreement_artifact_registration_carries_both_full_convergence_records()
             with (
                 mock.patch.object(main.requests, "post", return_value=response) as upload,
                 mock.patch.object(main.requests, "get", return_value=mock.Mock(status_code=404 if mode == "missing" else 200, content=b"changed" if mode == "changed" else path.read_bytes())),
-                mock.patch.object(main, "sb_post_artifact") as register,
+                mock.patch.object(main, "sb_record_retained_artifact") as register,
             ):
                 main.register_agreement_artifact(
                     "run",
@@ -1081,6 +1094,7 @@ def test_agreement_artifact_registration_carries_both_full_convergence_records()
                     "demand_model_agreement",
                     str(path),
                     "application/json",
+                    workspace_id="synthetic-workspace", journal_dir=str(Path(tmp)/"journal"),
                     first_assignment_convergence=first["convergence"],
                     second_assignment_convergence=second["convergence"],
                     assignment_profile=first["convergence"]["assignment_profile"],
@@ -1096,6 +1110,7 @@ def test_agreement_artifact_registration_carries_both_full_convergence_records()
                     network_state_record=first["network_state_record"],
                     network_state_digest=first["network_state_digest"],
                 )
+            assert register.call_args.kwargs == {"workspace_id":"synthetic-workspace","journal_dir":str(Path(tmp)/"journal"),"logical_name":"demand_model_agreement"}
             row = register.call_args.args[0]
             metadata = row["metadata_json"]
             assert row["content_hash"] == hashlib.sha256(path.read_bytes()).hexdigest()
@@ -1116,19 +1131,84 @@ def test_agreement_artifact_registration_carries_both_full_convergence_records()
             assert metadata["is_average"] is False
 
 
+PRODUCER_RUN = "00000001-1111-4111-8111-111111111111"
+PRODUCER_STAGE = "00000002-1111-4111-8111-111111111111"
+PRODUCER_ATTEMPT = "00000003-1111-4111-8111-111111111111"
+
+
+def completed_producer_fields():
+    return {"id": "00000004-1111-4111-8111-111111111111", "run_id": PRODUCER_RUN,
+            "stage_id": PRODUCER_STAGE, "attempt_id": PRODUCER_ATTEMPT,
+            "model_run_stages": {"id": PRODUCER_STAGE, "run_id": PRODUCER_RUN,
+                "status": "succeeded", "attempt_managed": True,
+                "active_attempt_id": PRODUCER_ATTEMPT}}
+
+
+def test_agreement_artifact_query_projects_producer_identity():
+    response = mock.Mock(status_code=200)
+    response.json.return_value = []
+    with mock.patch.object(main.requests, "get", return_value=response) as get:
+        assert main.sb_get_run_artifacts(PRODUCER_RUN) == []
+    url = get.call_args.args[0]
+    assert "run_id=eq." + PRODUCER_RUN in url
+    assert "select=id,run_id,stage_id,attempt_id," in url
+    assert "file_url,file_size_bytes,content_hash" in url
+    assert "model_run_stages(id,run_id,status,attempt_managed,active_attempt_id)" in url
+
+
+def test_agreement_refuses_unconfirmed_producer_before_file_access():
+    base = completed_producer_fields()
+    cases = []
+    for field, value in (("status", "running"), ("status", "failed"),
+                         ("active_attempt_id", PRODUCER_STAGE), ("attempt_managed", None),
+                         ("run_id", PRODUCER_STAGE), ("id", PRODUCER_RUN)):
+        cases.append({**base, "model_run_stages": {**base["model_run_stages"], field: value}})
+    cases.extend([{**base, "run_id": PRODUCER_STAGE}, {**base, "attempt_id": None},
+                  {**base, "model_run_stages": None},
+                  {**base, "model_run_stages": {**base["model_run_stages"], "attempt_managed": False}}])
+    for row in cases:
+        with mock.patch.object(main, "sb_get_run_artifacts", return_value=[{**row, "artifact_type": "link_volumes"}]), mock.patch.object(main.os.path, "isfile") as access:
+            try:
+                main.verified_latest_local_artifact(PRODUCER_RUN, "link_volumes", retained_directory="/unread",
+                    expected_assignment_profile={}, expected_assignment_profile_payload_json="",
+                    expected_assignment_profile_digest="", expected_network_settings={},
+                    expected_network_settings_payload_json="", expected_network_settings_digest="",
+                    expected_network_state_record={}, expected_network_state_digest="")
+            except RuntimeError as error:
+                assert "confirmed completed producer" in str(error), str(error)
+            else:
+                raise AssertionError("Unconfirmed artifact producer accepted")
+            access.assert_not_called()
+
+
+def test_agreement_accepts_explicit_completed_legacy_producer():
+    row = completed_producer_fields()
+    row["attempt_id"] = None
+    row["model_run_stages"].update(attempt_managed=False, active_attempt_id=None)
+    main.require_completed_artifact_producer(row, PRODUCER_RUN)
+
+
 def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / "link_volumes.csv"
+    with tempfile.TemporaryDirectory() as tmp, mock.patch.object(main, "RUN_WORK_ROOT", "unused"):
+        main.RUN_WORK_ROOT = tmp
+        run_dir = Path(tmp) / "runs" / PRODUCER_RUN
+        run_dir.mkdir(parents=True)
+        consumer = run_dir / "consumer"
+        consumer.mkdir()
+        path = run_dir / "link_volumes.csv"
         path.write_text("link_id,PCE_tot\n1,10\n")
         identity = identity_record(0.0004)
         metadata = main.assignment_artifact_metadata(identity, "link_volumes.csv")
         row = {
+            **completed_producer_fields(),
             "artifact_type": "link_volumes",
             "file_url": f"local://{path}",
             "content_hash": hashlib.sha256(path.read_bytes()).hexdigest(),
             "metadata_json": metadata,
+            "file_size_bytes": path.stat().st_size,
         }
         kwargs = {
+            "retained_directory": str(consumer),
             "expected_assignment_profile": metadata["assignment_profile"],
             "expected_assignment_profile_payload_json": metadata[
                 "assignment_profile_payload_json"
@@ -1143,14 +1223,27 @@ def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
             "expected_network_state_digest": metadata["network_state_digest"],
         }
         with mock.patch.object(main, "sb_get_run_artifacts", return_value=[row]):
-            assert main.verified_latest_local_artifact(
-                "run", "link_volumes", **kwargs
-            ) == str(path)
+            retained = Path(main.verified_latest_local_artifact(
+                PRODUCER_RUN, "link_volumes", **kwargs
+            ))
+            assert retained == consumer / "agreement-input-link_volumes.csv"
+            original = path.read_bytes()
+            assert retained.read_bytes() == original
+            assert retained.stat().st_ino != path.stat().st_ino
+            path.write_bytes(b"changed producer")
+            assert retained.read_bytes() == original
+            path.write_bytes(original)
+            try:
+                main.verified_latest_local_artifact(PRODUCER_RUN, "link_volumes", **kwargs)
+            except RuntimeError as error:
+                assert "file retention" in str(error)
+            else:
+                raise AssertionError("Existing agreement input was overwritten")
 
         truncated = {**row, "content_hash": row["content_hash"][:16]}
         with mock.patch.object(main, "sb_get_run_artifacts", return_value=[truncated]):
             try:
-                main.verified_latest_local_artifact("run", "link_volumes", **kwargs)
+                main.verified_latest_local_artifact(PRODUCER_RUN, "link_volumes", **kwargs)
             except RuntimeError as error:
                 assert "content-hash" in str(error)
             else:
@@ -1166,11 +1259,23 @@ def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
             return_value=[{**row, "metadata_json": tampered_metadata}],
         ):
             try:
-                main.verified_latest_local_artifact("run", "link_volumes", **kwargs)
+                main.verified_latest_local_artifact(PRODUCER_RUN, "link_volumes", **kwargs)
             except main.AssignmentSettingsError:
                 pass
             else:
                 raise AssertionError("tampered assignment-state metadata was accepted")
+
+
+def assert_pre_execution_network_guard(source):
+    calls=[node for node in ast.walk(ast.parse(source)) if isinstance(node,ast.Call)]
+    guards=[node for node in calls if isinstance(node.func,ast.Name) and node.func.id=='require_expected_network_state']
+    entries=[node for node in calls if isinstance(node.func,ast.Attribute)
+             and isinstance(node.func.value,ast.Name) and node.func.value.id=='model_assignment_input_snapshot'
+             and node.func.attr=='retain_and_execute']
+    assert len(guards)==len(entries)==1, 'Expected one network guard and retained execution entry'
+    assert guards[0].lineno < entries[0].lineno, 'Network guard must precede retained execution'
+    assert not any(isinstance(node.func,ast.Attribute) and isinstance(node.func.value,ast.Name)
+                   and node.func.value.id=='assig' and node.func.attr=='execute' for node in calls), 'Direct assignment bypasses retained execution'
 
 
 def test_stage5_network_state_mismatch_is_guarded_before_execute():
@@ -1193,7 +1298,7 @@ def test_stage5_network_state_mismatch_is_guarded_before_execute():
         raise AssertionError("a changed Stage-5 retained network was accepted")
 
     source = inspect.getsource(main.stage_assignment)
-    assert source.index("require_expected_network_state(") < source.index("assig.execute()")
+    assert_pre_execution_network_guard(source)
 
 
 def test_agreement_geometry_excludes_connectors_and_binds_exact_roadway_count():
@@ -1254,7 +1359,25 @@ def test_agreement_geometry_excludes_connectors_and_binds_exact_roadway_count():
                 network_state_record=state,
                 network_state_digest=state_digest,
             )
-        payload = json.loads(output.read_text())
+        original_bytes = output.read_bytes()
+        original_inode = output.stat().st_ino
+        with (
+            mock.patch.object(main, "retained_network_manifest", return_value=manifest),
+            mock.patch.object(main.sqlite3, "connect", return_value=GeometryConnection()),
+        ):
+            main.write_agreement_network_geojson(str(work_dir), str(output),
+                network_state_record=state, network_state_digest=state_digest)
+            assert output.stat().st_ino == original_inode
+            output.write_bytes(b"altered retained geometry")
+            try:
+                main.write_agreement_network_geojson(str(work_dir), str(output),
+                    network_state_record=state, network_state_digest=state_digest)
+            except main.WorkerStateWriteUnconfirmed:
+                pass
+            else:
+                raise AssertionError("altered agreement geometry was overwritten")
+            assert output.read_bytes() == b"altered retained geometry"
+        payload = json.loads(original_bytes)
         assert [feature["properties"]["link_id"] for feature in payload["features"]] == roadway_ids
         assert payload["metadata"]["source_feature_count"] == 2
         assert payload["metadata"]["retained_network_manifest"] == manifest

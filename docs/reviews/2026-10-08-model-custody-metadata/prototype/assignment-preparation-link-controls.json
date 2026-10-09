@@ -1,0 +1,87 @@
+{
+  "source_sha256": {
+    "model_assignment_preparation_link.py": "54a9a1780e68c4fee1fd455c3e960e62b6cf0b37a37cb93baffe6b32fbc3eee3",
+    "model_assignment_input_publication.py": "3fee7e7597d5eef1dbc7d095913211f5010db3c9414bee3a77dc19aeca13ad99"
+  },
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "omit-link",
+      "returncode": 1,
+      "expected_failure": "AssertionError",
+      "matched": true
+    },
+    {
+      "control": "changed-source",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "changed-manifest",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "wrong-method",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "duplicate",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "unchecked-receipt",
+      "returncode": 1,
+      "expected_failure": "DeliveryUnconfirmed not raised",
+      "matched": true
+    },
+    {
+      "control": "foreign-attempt",
+      "returncode": 1,
+      "expected_failure": "DeliveryUnconfirmed",
+      "matched": true
+    },
+    {
+      "control": "profile-mismatch",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "incomplete-prepared-profile",
+      "returncode": 1,
+      "expected_failure": "ValueError: Prepared assignment profile differs",
+      "matched": true
+    },
+    {
+      "control": "network-mismatch",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Real files and command journals; injected database responses and synthetic solver. Custody does not prove solver-input equivalence or scientific acceptance."
+}

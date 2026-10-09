@@ -1,0 +1,41 @@
+{
+  "module_sha256": "b4787d2e94e3b1a5bf04c3b1f784b6045033d744eda7dfbf6a522f899ed769f6",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "borrow-parent-counts",
+      "exit_code": 1,
+      "targeted_test": "test_parent_counts_are_independently_verified_and_copied"
+    },
+    {
+      "control": "reaccept-changed-counts",
+      "exit_code": 1,
+      "targeted_test": "test_changed_parent_counts_stop_without_acquisition"
+    },
+    {
+      "control": "accept-child-count-override",
+      "exit_code": 1,
+      "targeted_test": "test_child_override_refused_before_request"
+    },
+    {
+      "control": "accept-child-transit-override",
+      "exit_code": 1,
+      "targeted_test": "test_transit_requires_parent_outputs_and_no_child_override"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual worker adapters with a fake parent client. No real child native assignment, count/transit integration, process containment or scientific acceptance."
+}

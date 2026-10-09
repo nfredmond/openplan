@@ -1,0 +1,27 @@
+[
+  {
+    "case": "harmless",
+    "exit": 0,
+    "expected": 0
+  },
+  {
+    "case": "foreign_file",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "case": "redirected_run",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "case": "download_bypass",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "case": "restored",
+    "exit": 0,
+    "expected": 0
+  }
+]

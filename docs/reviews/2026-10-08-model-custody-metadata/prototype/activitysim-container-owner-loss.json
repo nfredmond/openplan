@@ -1,0 +1,36 @@
+{
+  "cases": [
+    {
+      "case": "owner-alive",
+      "container_completed": true,
+      "runtime_completion_present": true,
+      "container_survived_owner_and_client": false,
+      "container_removed": true,
+      "image": "sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36",
+      "memory_bytes": 67108864,
+      "memory_plus_swap_bytes": 67108864,
+      "pids_limit": 16,
+      "network": "none"
+    },
+    {
+      "case": "owner-and-client-killed",
+      "container_completed": true,
+      "runtime_completion_present": false,
+      "container_survived_owner_and_client": true,
+      "container_removed": true,
+      "image": "sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36",
+      "memory_bytes": 67108864,
+      "memory_plus_swap_bytes": 67108864,
+      "pids_limit": 16,
+      "network": "none"
+    }
+  ],
+  "runtime_sha256": "c407043e9063f9d794a1eb7f95231f7795a50d0b003cac9a3fb045e4a8970bf8",
+  "limits": [
+    "Synthetic Python workload through actual ActivitySim container path",
+    "Production CLI supplies memory and task limits; proof wrapper adds external ID retention and CPU restriction",
+    "Demonstrates current lifecycle gap, not a passing supervised-container implementation",
+    "No native ActivitySim, database, scientific or human acceptance"
+  ]
+}
+

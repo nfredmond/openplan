@@ -1,0 +1,45 @@
+{
+  "transport_identity": {
+    "transport": "linux-unix",
+    "socket_path": "/run/docker.sock",
+    "peer": {
+      "pid": 1,
+      "uid": 0,
+      "gid": 0
+    },
+    "daemon_id": "a5df36da-6fd2-45f2-845c-588953f33834",
+    "api_version": "1.51"
+  },
+  "endpoint_sha256": "ed70c52f8ec10bc414d6562a89ea803d18099d51075983764352eb69bc203fc3",
+  "created_identity": {
+    "schema": "openplan.created-container.v1",
+    "daemon_id": "a5df36da-6fd2-45f2-845c-588953f33834",
+    "container_id": "f6c49b363341eedc783a7a2f7d1c89c4724a243714b67b9a72bad4830b440f6a",
+    "image_id": "sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36",
+    "request_id": "7e5c44bbdb8a4750b15621c9133dae1e",
+    "policy_sha256": "796ed314c26d4856bc22d8ace96cadcf71993058ef5772cf16dfa6f3534d18af",
+    "observed_state": "created",
+    "start_authorized": false,
+    "signal_authorized": false,
+    "continuation_authorized": false
+  },
+  "all_four_records_retained": true,
+  "repeat_create_refused": true,
+  "exactly_one_matching_container": true,
+  "command_not_started": true,
+  "record_sha256": {
+    "create-response.json": "1842f06b14f3392313f22655500a732ca9eb95ad041c5f1a5f089e149380ad97",
+    "create-requested.json": "3e7650e3d9fab57ed88caad1cdc5151a3ece83e84c59870ec812bd659e21dd0c",
+    "created.json": "765929afd3a299179024988cbe6eb2daa4f008208db7f9853c1c9553f2515f5a",
+    "intent.json": "2bbf98e6efd549b3833f426138281f2fc4c00dd4f9d6b7f702cf3ca204874229"
+  },
+  "source_sha256": "56b3c0eb4c4b5b1817256ccac2181ee8ad0acf37e75a4f003a7788aab0b15ed9",
+  "limits": [
+    "Live local Docker creation only",
+    "No automatic reconnect or retry",
+    "No independent controller, startup or owner-loss termination"
+  ],
+  "owned_created_container_removed": true,
+  "closed_transport_refused": true
+}
+

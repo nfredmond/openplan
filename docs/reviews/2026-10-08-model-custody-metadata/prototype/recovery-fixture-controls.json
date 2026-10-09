@@ -1,0 +1,31 @@
+{
+  "test_sha256": "65e85cb587fe530da2d9ededa3acf8c7a64bb3d26b622cc0c1f003fcf01ce3db",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "unclosed_warning": false
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "unclosed_warning": false
+    },
+    {
+      "control": "omit-close",
+      "exit_code": 0,
+      "unclosed_warning": true
+    },
+    {
+      "control": "omit-corruption",
+      "exit_code": 1,
+      "unclosed_warning": false
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "unclosed_warning": false
+    }
+  ],
+  "limits": "Recovery fixture connection closure and retained corruption assertion. Does not prove every engine connection closes."
+}

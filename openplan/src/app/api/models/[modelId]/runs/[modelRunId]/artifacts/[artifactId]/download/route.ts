@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
@@ -7,6 +6,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
 import {
   parseStorageRef,
+  readContainedLocalArtifact,
   resolveContainedLocalPath,
   resolveRunWorkDir,
   workerLocalRoot,
@@ -181,7 +181,7 @@ export async function GET(req: NextRequest, context: RouteContext): Promise<Next
   }
 
   try {
-    const payload = await readFile(localPath);
+    const payload = await readContainedLocalArtifact(localPath, resolveRunWorkDir(localRoot, parsedParams.data.modelRunId));
     const basename = path.basename(localPath);
     const contentType = CONTENT_TYPES[path.extname(basename).toLowerCase()] ?? "application/octet-stream";
     return new NextResponse(new Uint8Array(payload), {

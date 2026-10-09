@@ -1,0 +1,47 @@
+{
+  "source_sha256": "76e51c8b88571dcfe42d6fe6ea9f6e2fa10ce7ca3e632451ebba9a72b4059421",
+  "worker_sha256": "64b9eb1149e2ab3b75bff79cc17c44a2dbef7faefff5afe98d88d5dbf0ff3f09",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-foreign-reference",
+      "exit_code": 1,
+      "targeted_test": "ManagedStateTests.test_foreign_path_refused_before_copy"
+    },
+    {
+      "control": "ignore-copy-change",
+      "exit_code": 1,
+      "targeted_test": "ManagedStateTests.test_copy_changed_before_decode_is_refused"
+    },
+    {
+      "control": "ignore-duplicate-keys",
+      "exit_code": 1,
+      "targeted_test": "ManagedStateTests.test_duplicate_keys_refused"
+    },
+    {
+      "control": "accept-nonfinite-state",
+      "exit_code": 1,
+      "targeted_test": "ManagedStateTests.test_nonfinite_state_refused"
+    },
+    {
+      "control": "erase-producer-provenance",
+      "exit_code": 1,
+      "targeted_test": "ManagedStateTests.test_preserves_original_bytes_and_paths_with_provenance"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual selected-state helper and independent local files; mocked HTTP. No native joined recovery, execution-state mapping, project transfer, normal dispatch or scientific acceptance."
+}

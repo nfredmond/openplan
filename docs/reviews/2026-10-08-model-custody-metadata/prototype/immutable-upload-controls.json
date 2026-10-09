@@ -1,0 +1,34 @@
+{
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "ignore-bytes",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "ignore-status",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "legacy-failed-read-accepted",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    }
+  ],
+  "source_sha256": "8e3ae84d86a817e7bd871665213933eb3f0a1bbda5fdf085a0e73436b620a5eb",
+  "limits": [
+    "Mock HTTP failure controls complement the separate native Storage campaign",
+    "No transaction custody, full user RLS matrix, process restart or scientific acceptance"
+  ]
+}

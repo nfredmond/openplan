@@ -180,5 +180,57 @@ class AttachingToTheEngine(unittest.TestCase):
             logger.setLevel(logging.NOTSET)
 
 
+class CustodyFailures(unittest.TestCase):
+    class Unconfirmed(RuntimeError):
+        pass
+
+    def test_fatal_callback_error_propagates(self):
+        error=self.Unconfirmed('Unconfirmed stage write')
+        def fail(_line):raise error
+        handler=AssignmentProgress(fail,fatal_exceptions=(self.Unconfirmed,))
+        with self.assertRaises(self.Unconfirmed) as caught:
+            handler.emit(record('1,0.5,1.0'))
+        self.assertIs(caught.exception,error)
+
+    def test_fatal_flush_restores_logger_and_detaches(self):
+        logger=logging.getLogger('aequilibrae.custody-test')
+        previous=logger.level
+        before=list(logger.handlers)
+        logger.setLevel(logging.WARNING)
+        calls=[]
+        def fail_second(line):
+            calls.append(line)
+            if len(calls)==2:raise self.Unconfirmed('Unconfirmed final write')
+        try:
+            with self.assertRaises(self.Unconfirmed):
+                with stream_assignment_progress(fail_second,logger_name=logger.name,
+                        now=lambda:1000,fatal_exceptions=(self.Unconfirmed,)):
+                    logger.info('1,0.5,1.0')
+                    logger.info('2,0.4,0.9')
+            self.assertEqual(logger.handlers,before)
+            self.assertEqual(logger.level,logging.WARNING)
+        finally:logger.setLevel(previous)
+
+    def test_actual_assignment_context_propagates_unconfirmed_write(self):
+        import ast
+        from types import SimpleNamespace
+        from test_model_skip_dispatch import aeq
+        source=ast.parse(Path(aeq.__file__).read_text())
+        stage=next(n for n in source.body if isinstance(n,ast.FunctionDef) and n.name=='stage_assignment')
+        call=next(n for n in ast.walk(stage) if isinstance(n,ast.Call)
+                  and isinstance(n.func,ast.Name) and n.func.id=='stream_assignment_progress')
+        logger=logging.getLogger('aequilibrae.actual-project-test')
+        self.addCleanup(setattr,logger,'propagate',logger.propagate)
+        logger.propagate=False
+        failure=aeq.WorkerStateWriteUnconfirmed('Synthetic lost progress receipt')
+        def emit(_line):raise failure
+        context=eval(compile(ast.Expression(call),'main.py','eval'),vars(aeq),
+                     {'_emit_progress':emit,'assig':SimpleNamespace(rgap_target=0.001,max_iter=10),
+                      'project':SimpleNamespace(logger=logging.getLogger('aequilibrae.actual-project-test'))})
+        with self.assertRaises(aeq.WorkerStateWriteUnconfirmed) as caught:
+            with context:logging.getLogger('aequilibrae.actual-project-test').info('1,0.5,1.0')
+        self.assertIs(caught.exception,failure)
+
+
 if __name__ == "__main__":
     unittest.main()

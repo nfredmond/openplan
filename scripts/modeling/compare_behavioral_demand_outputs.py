@@ -747,9 +747,18 @@ def compare_link_volume_runs(
     first_network_state_digest: str | None = None,
     second_network_state_record: dict[str, Any] | None = None,
     second_network_state_digest: str | None = None,
+    source_path_labels: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     """Compare two assignments of the same network from different demand models."""
     from corridor_agreement import DEFAULT_MINIMUM_VOLUME, build_agreement_map
+
+    # Retained callers read verified private copies but cite original locations.
+    # These labels do not replace byte verification by the caller.
+    if source_path_labels is not None and (
+        set(source_path_labels) != {"first", "second"}
+        or any(not isinstance(value, str) or not value.strip() for value in source_path_labels.values())
+    ):
+        raise ValueError("Both original source path labels are required")
 
     first_path = Path(first_csv).expanduser().resolve()
     second_path = Path(second_csv).expanduser().resolve()
@@ -858,7 +867,7 @@ def compare_link_volume_runs(
         ),
         noise_floor=read_noise_floor(noise_floor_json),
     )
-    agreement["sources"] = {"first": str(first_path), "second": str(second_path)}
+    agreement["sources"] = dict(source_path_labels) if source_path_labels is not None else {"first": str(first_path), "second": str(second_path)}
     agreement["generated_at_utc"] = _utc_now()
 
     json_path = resolved_output_dir / AGREEMENT_JSON_NAME

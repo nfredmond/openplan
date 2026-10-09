@@ -1,0 +1,66 @@
+{
+  "source_sha256": "8541f91774058935641185ef12c577c66ca898ac8c7f8acea83485025552c0bf",
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "skip-comparison",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "ignore-factor",
+      "returncode": 1,
+      "expected_failure": "ValueError: Assignment graph differs",
+      "matched": true
+    },
+    {
+      "control": "ignore-mode",
+      "returncode": 1,
+      "expected_failure": "ValueError: Assignment graph differs",
+      "matched": true
+    },
+    {
+      "control": "no-reverse-swap",
+      "returncode": 1,
+      "expected_failure": "ValueError: Assignment graph differs",
+      "matched": true
+    },
+    {
+      "control": "extra-directions",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "absent-nodes",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "skip-centroid-policy",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Real SQLite with synthetic graph objects. Does not establish compressed routing equivalence, demand transformations or scientific acceptance."
+}

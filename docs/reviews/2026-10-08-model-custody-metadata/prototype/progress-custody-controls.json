@@ -1,0 +1,42 @@
+{
+  "progress_sha256": "467a9cb727465aa9e7a22038ffa8c0f4547ec0158bb257ae0dc589894c5dc958",
+  "worker_sha256": "07120c33ab53b167dd2f4ba816a3aae348aea627b639b75e331dd9aee9debb7b",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "swallow-custody-error",
+      "exit_code": 1,
+      "targeted_test": "test_fatal_callback_error_propagates"
+    },
+    {
+      "control": "omit-level-restoration",
+      "exit_code": 1,
+      "targeted_test": "test_fatal_flush_restores_logger_and_detaches"
+    },
+    {
+      "control": "omit-worker-fatal-policy",
+      "exit_code": 1,
+      "targeted_test": "test_actual_assignment_context_propagates_unconfirmed_write"
+    },
+    {
+      "control": "wrong-worker-logger",
+      "exit_code": 1,
+      "targeted_test": "test_actual_assignment_context_propagates_unconfirmed_write"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real Python logger callbacks and extracted actual assignment context expression; synthetic write failure, no native solver abort or database transport acceptance."
+}

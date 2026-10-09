@@ -1,0 +1,114 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "repeated_inspections_equal": true,
+      "record_bytes_unchanged": true,
+      "inspection": {
+        "completion_record_present": false,
+        "continuation_authorized": false,
+        "database_status_changed": false,
+        "model_resumed": false,
+        "outcome": "scope_absent_observed",
+        "owner_guard": {
+          "guard_has_live_processes": false,
+          "outcome": "guard_absent_observed"
+        },
+        "record_sha256": {
+          "launch-reserved.json": "46118460b7a9ae6ec3aa2aa559e3e773cbbcacb90aa92e96eecdb2be84978264",
+          "scope-started.json": "961911c243cec083001c54e2af1a72c6eddfbf9942160c4f6489d3fc3aa0c818"
+        },
+        "reported_returncode": null,
+        "scientific_acceptance": "unassessed",
+        "scope_has_live_processes": false,
+        "server_ownership_checked": false,
+        "signal_sent": false,
+        "termination_cause": "unconfirmed"
+      }
+    },
+    {
+      "case": "harmless",
+      "repeated_inspections_equal": true,
+      "record_bytes_unchanged": true,
+      "inspection": {
+        "completion_record_present": false,
+        "continuation_authorized": false,
+        "database_status_changed": false,
+        "model_resumed": false,
+        "outcome": "scope_absent_observed",
+        "owner_guard": {
+          "guard_has_live_processes": false,
+          "outcome": "guard_absent_observed"
+        },
+        "record_sha256": {
+          "launch-reserved.json": "27c504936b48c453947b1eb4571822c2433ad29125ba710db496613496ef1088",
+          "scope-started.json": "9833e7945137da4cb832e696d846008d26868926c80f67373760c7b5703a6b14"
+        },
+        "reported_returncode": null,
+        "scientific_acceptance": "unassessed",
+        "scope_has_live_processes": false,
+        "server_ownership_checked": false,
+        "signal_sent": false,
+        "termination_cause": "unconfirmed"
+      }
+    },
+    {
+      "case": "omit-owner-loss",
+      "repeated_inspections_equal": true,
+      "record_bytes_unchanged": true,
+      "inspection": {
+        "completion_record_present": true,
+        "continuation_authorized": false,
+        "database_status_changed": false,
+        "model_resumed": false,
+        "outcome": "scope_absent_observed",
+        "owner_guard": {
+          "guard_has_live_processes": false,
+          "outcome": "guard_absent_observed"
+        },
+        "record_sha256": {
+          "launch-reserved.json": "34773533e9a962be454cf3350e8f0a122f839d77295f2c9e8fcf8511a32c186d",
+          "observed-exit.json": "cc0b97bde5ebf2e47bf3373b332065e8416902680c1293997e778474cd5f777e",
+          "scope-started.json": "c549a8123ef6bcbc68eca8b47394cf6b7950ba0fb77776b5f71891025bfa79a4"
+        },
+        "reported_returncode": 0,
+        "scientific_acceptance": "unassessed",
+        "scope_has_live_processes": false,
+        "server_ownership_checked": false,
+        "signal_sent": false,
+        "termination_cause": "unconfirmed"
+      }
+    },
+    {
+      "case": "restored",
+      "repeated_inspections_equal": true,
+      "record_bytes_unchanged": true,
+      "inspection": {
+        "completion_record_present": false,
+        "continuation_authorized": false,
+        "database_status_changed": false,
+        "model_resumed": false,
+        "outcome": "scope_absent_observed",
+        "owner_guard": {
+          "guard_has_live_processes": false,
+          "outcome": "guard_absent_observed"
+        },
+        "record_sha256": {
+          "launch-reserved.json": "d6949d6712c012f0e7b207c902dbcf7dd1dfc9253aeeb0786b9f91f2749a4f60",
+          "scope-started.json": "433c6dbb35000e61d93c211306af883275f778db35b331e9f36d14373009f368"
+        },
+        "reported_returncode": null,
+        "scientific_acceptance": "unassessed",
+        "scope_has_live_processes": false,
+        "server_ownership_checked": false,
+        "signal_sent": false,
+        "termination_cause": "unconfirmed"
+      }
+    }
+  ],
+  "inspector_sha256": "0996765230894df2513853917048d73f98fcce05546e386f55ae88c6cefc27cf",
+  "limits": [
+    "Retained native scopes observed absent on the same host boot",
+    "No termination-cause inference, restart, signaling, database authority or scientific acceptance"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "baseline": {
+    "schema": "openplan.created-container.v1",
+    "daemon_id": "a5df36da-6fd2-45f2-845c-588953f33834",
+    "container_id": "e84d23ca4bd2d4e320f4d39097227a882f21f1a3af078b4777346408bd8371dd",
+    "image_id": "sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36",
+    "request_id": "fc22161876794b579488983ccb4f176e",
+    "policy_sha256": "a7ee467afc9adae7ce296c9e5e2d422b9c1491d12a481456ec2089fa2c762b42",
+    "observed_state": "created",
+    "start_authorized": false,
+    "signal_authorized": false,
+    "continuation_authorized": false
+  },
+  "changed_live_swap_policy_refused": true,
+  "restored_identity_equal": true,
+  "command_never_started": true,
+  "source_sha256": "03bb4ea50ad6ad3e8d3233f58ca356a911a7f264c81ffddcf29bbb02a27d74be",
+  "limits": [
+    "Created local Docker container only",
+    "No controller, start, owner-loss cleanup or saved-identity authority"
+  ],
+  "owned_created_container_removed": true
+}
+

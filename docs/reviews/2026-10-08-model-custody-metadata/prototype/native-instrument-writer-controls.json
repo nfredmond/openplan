@@ -1,0 +1,29 @@
+{
+  "cases": [
+    {
+      "case": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "drop-write",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "writer_sha256": "56ceaa5e2865b0836b1849384e46d03cd6bfe8858899f81ce0f2a549462f7619",
+  "limits": [
+    "Native database instrument relationships and exact receipt reuse over empty synthetic files",
+    "No real prepared instrument, scientific assessment, worker dispatch, Storage or concurrent revocation acceptance"
+  ]
+}

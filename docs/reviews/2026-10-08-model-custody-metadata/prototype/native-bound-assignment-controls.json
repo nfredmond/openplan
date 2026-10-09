@@ -1,0 +1,86 @@
+{
+  "replay_proof_sha256": "4f6b0eef751dc96599405e1f5f4d128f874e76790325d2bde1cc4e67e1fad692",
+  "proof_sha256": "c1d21fb6e273c82e618ccc31c04a25431a3445168efb43191987c1e639b66234",
+  "controls": [
+    {
+      "control": "baseline",
+      "converged": true,
+      "loaded_links": 1,
+      "auto_trips": 173,
+      "transit_trips": 4,
+      "active_trips": 43,
+      "artifact_count": 20,
+      "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f"
+    },
+    {
+      "control": "harmless",
+      "converged": true,
+      "loaded_links": 1,
+      "auto_trips": 173,
+      "transit_trips": 4,
+      "active_trips": 43,
+      "artifact_count": 20,
+      "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f"
+    },
+    {
+      "control": "disable-mode-choice",
+      "detected": "Expected modeled transit outcome"
+    },
+    {
+      "control": "lost-progress",
+      "pending_commands": 1,
+      "final_outputs_absent": true,
+      "child_failure": {
+        "error_type": "WorkerStateWriteUnconfirmed",
+        "active_project": false
+      },
+      "replay": {
+        "request_sha256": "fd05e6591854682f5b7b8c0d844dbfd799dd702e06b6c3978d2fa6fd98519fc2",
+        "initially_resolved": false,
+        "successful_posts": 1,
+        "wrong_receipt_detected": true,
+        "wrong_deployment_refused": true,
+        "command_inventory_unchanged": true,
+        "pending_after": 0,
+        "model_resumed": false,
+        "limits": "Fresh recovery process and native-failure journal snapshot; mocked RPC receipts. No live database replay, model restart, ownership lease or execution authorization."
+      }
+    },
+    {
+      "control": "lost-response",
+      "pending_commands": 0,
+      "final_outputs_absent": true,
+      "child_failure": {
+        "error_type": "WorkerStateWriteUnconfirmed",
+        "active_project": false
+      },
+      "replay": {
+        "request_sha256": "34f95d6b29fca1ceb4b48c4d2ecba8b75b069d29cc155bbdd2857540bc274e4b",
+        "initially_resolved": true,
+        "successful_posts": 0,
+        "wrong_receipt_detected": false,
+        "wrong_deployment_refused": true,
+        "command_inventory_unchanged": true,
+        "pending_after": 0,
+        "model_resumed": false,
+        "limits": "Fresh recovery process and native-failure journal snapshot; mocked RPC receipts. No live database replay, model restart, ownership lease or execution authorization."
+      }
+    },
+    {
+      "control": "swallow-progress-fault",
+      "detected": "Native interruption did not stop both sides"
+    },
+    {
+      "control": "restored",
+      "converged": true,
+      "loaded_links": 1,
+      "auto_trips": 173,
+      "transit_trips": 4,
+      "active_trips": 43,
+      "artifact_count": 20,
+      "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f"
+    }
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-bound-live-hook-controls-20261008",
+  "limits": "Full synthetic native assignment; mocked parent transports and constructed predecessor inputs. Missing mode choice is a configuration fault control. Native stopping and fresh-process command replay on snapshots tested with mocked RPC; no live database replay, model restart, larger networks, calibration, cordons, scientific acceptance or dispatcher activation."
+}

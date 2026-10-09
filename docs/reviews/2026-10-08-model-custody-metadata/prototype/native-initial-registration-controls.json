@@ -1,0 +1,26 @@
+{
+  "proof_sha256": "81ea1e76c3fdb4e7f166530cd8fe0d585c557e3e54a5c6ad2822887c157a9ee3",
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "matched": true
+    },
+    {
+      "control": "omit-registration",
+      "returncode": 1,
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "matched": true
+    }
+  ],
+  "limits": "AequilibraE 1.6.2, two synthetic centroids and one link, real child-parent sockets and journals, injected database responses. No native database commit, independent preparation or scientific acceptance."
+}

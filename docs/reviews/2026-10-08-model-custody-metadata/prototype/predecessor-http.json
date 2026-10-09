@@ -1,0 +1,80 @@
+{
+  "selector_sha256": "04571940f929358c4aefee225bc633aa687e65d0ef8076e9f6fa8bf0ab171368",
+  "worker_sha256": "5ec1e4701f7a5cc78a2f25f3061c6554eae991f72d85d8e1293364d3412ac0ac",
+  "controls": [
+    {
+      "control": "baseline",
+      "selected_declared_producer": true
+    },
+    {
+      "control": "harmless",
+      "selected_declared_producer": true
+    },
+    {
+      "control": "wrong-predecessor-name",
+      "selected_declared_producer": false
+    },
+    {
+      "control": "restored",
+      "selected_declared_producer": true
+    },
+    {
+      "control": "wrong-consumer-attempt",
+      "refused": true,
+      "writer_stopped": true
+    }
+  ],
+  "http_calls": [
+    {
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    }
+  ],
+  "native_tables_unchanged": 7,
+  "gateway_removed": true,
+  "limits": "Actual bound adapter, fresh admitted consumer, native completed producers and a later unrelated artifact. Wrong consumer context is injected locally. No file reads, transfer, full dispatcher, RLS matrix, revocation fence or scientific acceptance."
+}

@@ -1,0 +1,56 @@
+{
+  "source_sha256": "c48785f62cbb87040a7e6a4d49ec21279f2238768f4347c366c8c74568336fe2",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "erase-existing-log",
+      "exit_code": 1,
+      "targeted_test": "test_partial_progress_and_failure_preserve_last_confirmed_log"
+    },
+    {
+      "control": "omit-log-projection",
+      "exit_code": 1,
+      "targeted_test": "test_partial_progress_and_failure_preserve_last_confirmed_log"
+    },
+    {
+      "control": "allow-missing-log",
+      "exit_code": 1,
+      "targeted_test": "test_missing_existing_log_refuses_without_a_write"
+    },
+    {
+      "control": "ignore-pending-command",
+      "exit_code": 1,
+      "targeted_test": "test_existing_pending_command_stops_new_write"
+    },
+    {
+      "control": "ignore-terminal-stop",
+      "exit_code": 1,
+      "targeted_test": "test_completion_uses_database_receipt_time_without_parent_patch"
+    },
+    {
+      "control": "cross-stage-patch",
+      "exit_code": 1,
+      "targeted_test": "test_wrong_stage_or_unsupported_patch_refuses_before_transport"
+    },
+    {
+      "control": "cross-thread-writer",
+      "exit_code": 1,
+      "targeted_test": "test_binding_is_scoped_and_both_worker_adapters_use_command"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real journals and both bound worker stage adapters; injected HTTP. No native database, normal managed claim dispatch, output or filesystem ownership acceptance."
+}

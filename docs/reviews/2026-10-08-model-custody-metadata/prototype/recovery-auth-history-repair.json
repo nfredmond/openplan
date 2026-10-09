@@ -1,0 +1,11 @@
+{
+  "database": "openplan_attempt_cli_be567f0764bd46ab97bdb99e51c1502f",
+  "auth_schema_sha256": "c92fa28aac7acef99883299f67eaecaec5f605acce4cb98b71092c9ba67dfc2c",
+  "source_and_fixture_schema_equal": true,
+  "target_schema_equal_after_repair": true,
+  "history_rows_before": 55,
+  "history_rows_after": 77,
+  "source_history_sha256": "f6a8dafdb9f2922c736564fae7a7e4ba99f0f0bf06ded905452a1f42f65e1deb",
+  "repair": "Restore empty identities primary key and flow_state comment changed by failed old migration replay; copy version-only Auth ledger after full schema equality. No auth user data copied.",
+  "limits": "Schema comparison excludes ownership, grants, pg_dump comments and random restriction markers. Does not prove live login or browser use."
+}

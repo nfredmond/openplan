@@ -1,0 +1,37 @@
+{
+  "observation": {
+    "schema": "openplan.container-creation-observation.v1",
+    "daemon_id": "a5df36da-6fd2-45f2-845c-588953f33834",
+    "endpoint_sha256": "ed70c52f8ec10bc414d6562a89ea803d18099d51075983764352eb69bc203fc3",
+    "request_id": "3477ebb99652444098f3b77d61c98228",
+    "start_authorized": false,
+    "signal_authorized": false,
+    "continuation_authorized": false,
+    "retry_authorized": false,
+    "outcome": "verified_unstarted",
+    "identity": {
+      "schema": "openplan.created-container.v1",
+      "daemon_id": "a5df36da-6fd2-45f2-845c-588953f33834",
+      "container_id": "3b6979801e91b86c100315f1da8c250e7c5a9050aabb455a5036a50fc2fe7fdd",
+      "image_id": "sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36",
+      "request_id": "3477ebb99652444098f3b77d61c98228",
+      "policy_sha256": "fa780a33883051d20db2c1a24f4479ec6054c99c81e3a9cf9a731b5d20c51d4a",
+      "observed_state": "created",
+      "start_authorized": false,
+      "signal_authorized": false,
+      "continuation_authorized": false
+    }
+  },
+  "actual_create_reply_discarded": true,
+  "creation_requests": 1,
+  "records_unchanged": true,
+  "command_not_started": true,
+  "source_sha256": "fd28806bfac2f1b9f05bdd8992fd5f148d7e41ffd977a1a14a7d3fe344a97654",
+  "limits": [
+    "Private Unix proxy discards reply after actual daemon creation",
+    "Read-only observation uses a new explicit connection to the same daemon",
+    "No controller, startup, owner-loss termination or scientific acceptance"
+  ],
+  "owned_unstarted_container_removed": true
+}
+

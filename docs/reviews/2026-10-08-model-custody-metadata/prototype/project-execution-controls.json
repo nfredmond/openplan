@@ -1,0 +1,37 @@
+{
+  "writer_sha256": "f79c8f4a4a9df994e2e637c03feae13e7d20c0ff07c8db093d4f75dfc7215c6a",
+  "worker_sha256": "69949926398d7bd5ab07398489ac7df085e52f6f2be89cfb1d7b2c8da57b4ef1",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "legacy-assignment-fallback",
+      "exit_code": 1,
+      "targeted_test": "test_actual_assignment_uses_confirmed_copy_before_computation"
+    },
+    {
+      "control": "ignore-other-attempt",
+      "exit_code": 1,
+      "targeted_test": "test_other_attempt_path_refused"
+    },
+    {
+      "control": "ignore-directory-replacement",
+      "exit_code": 1,
+      "targeted_test": "test_replaced_working_directory_refused"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual assignment entry and output preparation, stopped before computation; mocked registration. No engine execution, closure enforcement, complete input mapping, normal dispatch or scientific acceptance."
+}

@@ -1,0 +1,62 @@
+{
+  "count_inputs_sha256": "e2c386e1888613071241d9b441edfee853df8e14a7fcc3aeb29f4581ef7c6f7f",
+  "worker_sha256": "5f4083ca2cf378d1b4a9e0532b09c6fa5220a7b7fb22de1fda3d6009449e38c7",
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "count_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 6,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "count_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 6,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "wrong-manifest-hash",
+      "expected_failure": "Native count manifest differs from retained bytes"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "count_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 6,
+        "gateway_removed": true
+      }
+    }
+  ],
+  "limits": "Actual bound count-retention helper, native files and installed artifact command with fresh CLI recovery. No full assignment, package/project transfer, normal managed dispatch or scientific acceptance."
+}

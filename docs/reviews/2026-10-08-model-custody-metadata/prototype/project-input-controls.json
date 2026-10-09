@@ -1,0 +1,41 @@
+{
+  "source_sha256": "a98fe84a9a59b52b009eb5a1c3e91607e45ad2cf937edf8481156cc705765b07",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-sidecars",
+      "exit_code": 1,
+      "targeted_test": "test_committed_wal_not_silently_omitted"
+    },
+    {
+      "control": "ignore-integrity",
+      "exit_code": 1,
+      "targeted_test": "test_integrity_failure_refused"
+    },
+    {
+      "control": "ignore-consumer-inventory",
+      "exit_code": 1,
+      "targeted_test": "test_registered_database_tamper_refused"
+    },
+    {
+      "control": "ignore-secondary-database",
+      "exit_code": 1,
+      "targeted_test": "test_secondary_database_checked"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real SQLite copy tests and injected integrity failure. No native engine, multi-database transaction, producer authority, dispatcher or scientific acceptance."
+}

@@ -1,0 +1,38 @@
+{
+  "cases": [
+    {
+      "case": "created-reply-retained",
+      "intent_and_request_retained_before_create": true,
+      "command_not_started": true,
+      "created_record_present": true,
+      "repeat_create_refused": true,
+      "existing_directory_reopen_refused": true,
+      "record_sha256": {
+        "create-requested.json": "9b111d4a67c9ae47119ce4c662e2efdc48cbf1830133865fa41c105cd87b44db",
+        "created.json": "045efc58bdad96650d607df589e3a0fc82d13a1fbc3f0453a6410838966514f4",
+        "intent.json": "c9db395257616c3f7d574749cb6134cba610d34959173262bb834218a0f1ac8a"
+      }
+    },
+    {
+      "case": "create-reply-unretained",
+      "intent_and_request_retained_before_create": true,
+      "command_not_started": true,
+      "created_record_present": false,
+      "repeat_create_refused": true,
+      "existing_directory_reopen_refused": true,
+      "record_sha256": {
+        "create-requested.json": "62612aac69588894d25b9a4215ce3b87a9cabdc5c1642c190ca0b4d3dd5b3e24",
+        "intent.json": "6b6585c3d18fb7a1bd80d5ab2d56aeb179fa4dbecfb8a4e8bb001050c5686420"
+      }
+    }
+  ],
+  "owned_created_containers_removed": true,
+  "source_sha256": "8424da321334c0ad238ceb18397caf15452c48f3fc42cc7e2d26338f9fb59a5c",
+  "limits": [
+    "Create reply deliberately not recorded after a successful local create",
+    "No lost network response or controller crash injected",
+    "Endpoint fingerprint does not freeze or authenticate future transport",
+    "No startup, owner-loss termination, restart or database continuation authority"
+  ]
+}
+

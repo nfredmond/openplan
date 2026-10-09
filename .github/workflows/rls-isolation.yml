@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  # Stacked PRs need the same checks before their base reaches main.
+  pull_request: {}
   schedule:
     - cron: "23 10 * * *"
 

@@ -1,0 +1,72 @@
+[
+  {
+    "control": "baseline",
+    "result": {
+      "queued_blocked_skipped": true,
+      "stale_blocker_refused": true,
+      "running_and_terminal_targets_preserved": true,
+      "exact_retry": true,
+      "changed_request_scope_and_order_refused": true,
+      "no_new_attempt_or_execution_start": true,
+      "parent_unchanged": true,
+      "permissions_checked": true,
+      "actual_role_invocations": true,
+      "managed_failure_and_reaper_preserved": true,
+      "receipt_failure_atomic_and_retryable": true,
+      "rolled_back": true
+    },
+    "retention_cases": true
+  },
+  {
+    "control": "harmless",
+    "result": {
+      "queued_blocked_skipped": true,
+      "stale_blocker_refused": true,
+      "running_and_terminal_targets_preserved": true,
+      "exact_retry": true,
+      "changed_request_scope_and_order_refused": true,
+      "no_new_attempt_or_execution_start": true,
+      "parent_unchanged": true,
+      "permissions_checked": true,
+      "actual_role_invocations": true,
+      "managed_failure_and_reaper_preserved": true,
+      "receipt_failure_atomic_and_retryable": true,
+      "rolled_back": true
+    },
+    "retention_cases": true
+  },
+  {
+    "control": "omit-successful-skips",
+    "expected_failure": "Skip retention state differs"
+  },
+  {
+    "control": "freeze-noops",
+    "expected_failure": "Skip retention state differs"
+  },
+  {
+    "control": "allow-rewrite",
+    "expected_failure": "Skip receipt rewrite accepted"
+  },
+  {
+    "control": "allow-delete",
+    "expected_failure": "Skip receipt deletion accepted"
+  },
+  {
+    "control": "restored",
+    "result": {
+      "queued_blocked_skipped": true,
+      "stale_blocker_refused": true,
+      "running_and_terminal_targets_preserved": true,
+      "exact_retry": true,
+      "changed_request_scope_and_order_refused": true,
+      "no_new_attempt_or_execution_start": true,
+      "parent_unchanged": true,
+      "permissions_checked": true,
+      "actual_role_invocations": true,
+      "managed_failure_and_reaper_preserved": true,
+      "receipt_failure_atomic_and_retryable": true,
+      "rolled_back": true
+    },
+    "retention_cases": true
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "module_sha256": "76b59bbf74a337ba127f81d8dae9ded73397ea7052708d9c3ce2c05b86dd04ff",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "mutate-input-meta",
+      "exit_code": 1,
+      "targeted_test": "test_prepared_feed_skim.PreparedFeedTests.test_prepared_skim_preserves_input_and_ingest_facts_without_loading"
+    },
+    {
+      "control": "overwrite-ingest",
+      "exit_code": 1,
+      "targeted_test": "test_prepared_feed_skim.PreparedFeedTests.test_prepared_skim_preserves_input_and_ingest_facts_without_loading"
+    },
+    {
+      "control": "skip-coverage",
+      "exit_code": 1,
+      "targeted_test": "test_prepared_feed_skim.PreparedFeedTests.test_prepared_feed_outside_area_keeps_selected_feed_refusal"
+    },
+    {
+      "control": "credential-import",
+      "exit_code": 1,
+      "targeted_test": "test_transit_skim_module.TransitModuleTests.test_fresh_process_skims_without_worker_or_transport_import"
+    },
+    {
+      "control": "omit-expiry-call",
+      "exit_code": 1,
+      "targeted_test": "expiry-guard"
+    },
+    {
+      "control": "wrong-worker-export",
+      "exit_code": 1,
+      "targeted_test": "test_transit_skim_module.TransitModuleTests.test_worker_exports_the_shared_numerical_implementation"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Synthetic real GTFS parsing/skimming, mocked parent source reads, clean child imports blocked for main/dotenv/requests with socket-connect audit. Not OS sandboxing, all-transitive no-egress, explicit setting transfer, retained archive handoff or scientific acceptance."
+}

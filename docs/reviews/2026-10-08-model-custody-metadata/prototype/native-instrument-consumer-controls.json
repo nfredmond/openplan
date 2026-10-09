@@ -1,0 +1,106 @@
+{
+  "cases": [
+    {
+      "mode": "normal",
+      "passed": true,
+      "nativePageOffsets": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        0,
+        0
+      ],
+      "expectedRecords": 10
+    },
+    {
+      "mode": "harmless",
+      "passed": true,
+      "nativePageOffsets": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        0,
+        0
+      ],
+      "expectedRecords": 10
+    },
+    {
+      "case": "wrong-member",
+      "expected_failure": "member custody differs",
+      "passed": true
+    },
+    {
+      "mode": "page-loss",
+      "passed": true,
+      "nativePageOffsets": [
+        0,
+        2,
+        2,
+        2,
+        2,
+        0,
+        2,
+        2,
+        2,
+        2
+      ],
+      "expectedRecords": 10
+    },
+    {
+      "case": "omitted-native-cap",
+      "expected_failure": "native two-row cap not exercised",
+      "passed": true
+    },
+    {
+      "mode": "normal",
+      "passed": true,
+      "nativePageOffsets": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        0,
+        0
+      ],
+      "expectedRecords": 10
+    },
+    {
+      "mode": "withdrawn",
+      "passed": true,
+      "nativePageOffsets": [
+        0
+      ],
+      "expectedRecords": 10
+    }
+  ],
+  "invalid_row_caps_refused": 5,
+  "retained_custody_unchanged": true,
+  "typescript_sha256": "13c5aff190898ca724af4fdfb9a24221679a70b48cbea18aab7e3842054f933f",
+  "limits": "Real Supabase client, application reader/report resolver and native PostgREST with locally signed test JWTs. No Auth sign-in, application freeze/download, browser rendering, source completeness or scientific acceptance."
+}

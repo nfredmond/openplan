@@ -2,8 +2,8 @@ name: Worker security and cancellation
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  # Stacked PRs need the same checks before their base reaches main.
+  pull_request: {}
 permissions:
   contents: read
 jobs:
@@ -15,7 +15,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install flask requests python-dotenv shapely
+      # Wrapper tests import the worker, matching the lightweight worker CI dependencies.
+      - run: pip install flask requests python-dotenv shapely "numpy<2.1" pandas
       - name: HTTP, runtime, process-tree and directional regressions
         run: |
           python -B workers/activitysim_worker/test_http_security.py
@@ -23,6 +24,38 @@ jobs:
           python -B workers/county_onramp_worker/tests/test_main.py
           python -B workers/county_onramp_worker/tests/test_process_cancellation.py
           python -B scripts/modeling/tests/test_validation_instrument_v2.py
+          python -B scripts/modeling/tests/test_validation_output_alias.py
+          python -B scripts/modeling/tests/test_validation_input_custody.py
+          python -B scripts/modeling/tests/test_validation_source_records.py
+          python -B scripts/modeling/tests/test_validation_bundle_identity.py
+          python -B scripts/modeling/tests/test_validation_readiness_records.py
+          python -B scripts/modeling/tests/test_validation_output_identity.py
+          python -B scripts/modeling/tests/test_structural_preparation_files.py
+          python -B workers/aequilibrae_worker/test_structural_zone_identity.py
+          python -B workers/aequilibrae_worker/test_assignment_input_snapshot.py
+          python -B workers/aequilibrae_worker/test_assignment_live_profile.py
+          python -B workers/aequilibrae_worker/test_assignment_network_source.py
+          python -B workers/aequilibrae_worker/test_assignment_network_graph.py
+          python -B workers/aequilibrae_worker/test_assignment_compact_graph.py
+          python -B workers/aequilibrae_worker/test_network_settings.py
+          python -B workers/aequilibrae_worker/test_assignment_input_publication.py
+          python -B workers/aequilibrae_worker/test_assignment_preparation_link.py
+          python -B scripts/modeling/tests/test_validation_prepared_context.py
+          python -B scripts/modeling/tests/test_preparation_no_overwrite.py
+          python -B workers/aequilibrae_worker/test_model_validation_source_catalog.py
+          python -B workers/aequilibrae_worker/test_model_validation_source_files.py
+          python -B workers/aequilibrae_worker/test_model_validation_source_writer.py
+          python -B workers/aequilibrae_worker/test_model_storage_readback.py
+          python -B workers/aequilibrae_worker/test_model_storage_resumable.py
+          python -B workers/aequilibrae_worker/test_model_validation_source_publication.py
+          python -B workers/aequilibrae_worker/test_model_validation_publication_writer.py
+          python -B workers/aequilibrae_worker/test_model_source_publication_recovery.py
+          python -B workers/aequilibrae_worker/test_model_validation_preparation.py
+          python -B workers/aequilibrae_worker/test_model_validation_preparation_writer.py
+          python -B workers/aequilibrae_worker/test_model_preparation_consumption.py
+          python -B workers/aequilibrae_worker/test_model_preparation_handoff.py
+          python -B workers/aequilibrae_worker/test_immutable_upload_recovery.py
+          python -B workers/aequilibrae_worker/test_activity_managed_dispatch.py
           python -B scripts/modeling/tests/test_directional_refusal.py
       - name: Harmless controls and targeted fault checks
         run: python -B workers/science_regression_mutations.py

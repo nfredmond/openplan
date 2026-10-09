@@ -1,0 +1,42 @@
+[
+  {
+    "case": "baseline",
+    "exit": 0,
+    "expected_failed_test": null
+  },
+  {
+    "case": "harmless",
+    "exit": 0,
+    "expected_failed_test": null
+  },
+  {
+    "case": "omit-resolved",
+    "exit": 1,
+    "expected_failed_test": "test_local_inventory"
+  },
+  {
+    "case": "skip-receipt-validation",
+    "exit": 1,
+    "expected_failed_test": "test_corrupt_receipt"
+  },
+  {
+    "case": "skip-row-identity",
+    "exit": 1,
+    "expected_failed_test": "test_request_key_mismatch"
+  },
+  {
+    "case": "mislabel-pending",
+    "exit": 1,
+    "expected_failed_test": "test_local_inventory"
+  },
+  {
+    "case": "claim-server-check",
+    "exit": 1,
+    "expected_failed_test": "test_cli_without_credentials"
+  },
+  {
+    "case": "restored",
+    "exit": 0,
+    "expected_failed_test": null
+  }
+]

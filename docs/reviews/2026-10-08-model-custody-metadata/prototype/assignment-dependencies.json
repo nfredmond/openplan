@@ -1,0 +1,1103 @@
+{
+  "source": "workers/aequilibrae_worker/main.py",
+  "sha256": "eade17ceda9800acc4eb0eb0f3c27f29220db11fe6fdad127d454a750429e9a7",
+  "root": "stage_assignment",
+  "reachable_main_functions": 45,
+  "functions": {
+    "_compact_json": {
+      "lines": [
+        3563,
+        3570
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "json"
+      ],
+      "attribute_calls": [
+        "json.dumps"
+      ],
+      "imports": []
+    },
+    "_confirmed_state_patch": {
+      "lines": [
+        578,
+        610
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "HEADERS",
+        "SUPABASE_URL",
+        "WorkerStateWriteUnconfirmed",
+        "datetime",
+        "requests"
+      ],
+      "attribute_calls": [
+        "actual.replace",
+        "datetime.fromisoformat",
+        "expected.replace",
+        "field.endswith",
+        "payload.items",
+        "requests.patch",
+        "response.json",
+        "rows[0].get"
+      ],
+      "imports": []
+    },
+    "_feed_expiry_log_note": {
+      "lines": [
+        2191,
+        2207
+      ],
+      "local_function_references": [],
+      "other_global_references": [],
+      "attribute_calls": [
+        "meta.get"
+      ],
+      "imports": []
+    },
+    "_feed_version_agency_name": {
+      "lines": [
+        2210,
+        2228
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "HEADERS",
+        "SUPABASE_URL",
+        "gtfs_skim",
+        "requests"
+      ],
+      "attribute_calls": [
+        "(rows[0] or {}).get",
+        "gtfs_skim.is_uuid",
+        "requests.get",
+        "res.json"
+      ],
+      "imports": []
+    },
+    "_finite_float_hex": {
+      "lines": [
+        3709,
+        3718
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "np"
+      ],
+      "attribute_calls": [
+        "np.isfinite",
+        "number.hex"
+      ],
+      "imports": []
+    },
+    "_float_array_identity": {
+      "lines": [
+        3721,
+        3724
+      ],
+      "local_function_references": [
+        "_finite_float_hex",
+        "_payload_digest"
+      ],
+      "other_global_references": [
+        "np"
+      ],
+      "attribute_calls": [
+        "array.reshape",
+        "np.asarray"
+      ],
+      "imports": []
+    },
+    "_is_sha256": {
+      "lines": [
+        3577,
+        3578
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "re"
+      ],
+      "attribute_calls": [
+        "re.fullmatch"
+      ],
+      "imports": []
+    },
+    "_match_counts": {
+      "lines": [
+        3070,
+        3085
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "count_validation"
+      ],
+      "attribute_calls": [
+        "count_validation.match_station",
+        "out.append",
+        "vol_by_id.get"
+      ],
+      "imports": []
+    },
+    "_payload_digest": {
+      "lines": [
+        3573,
+        3574
+      ],
+      "local_function_references": [
+        "_compact_json"
+      ],
+      "other_global_references": [
+        "hashlib"
+      ],
+      "attribute_calls": [
+        "_compact_json(value).encode",
+        "hashlib.sha256",
+        "hashlib.sha256(_compact_json(value).encode('utf-8')).hexdigest"
+      ],
+      "imports": []
+    },
+    "_run_calibration": {
+      "lines": [
+        3169,
+        3455
+      ],
+      "local_function_references": [
+        "_match_counts",
+        "_run_demand_nudge",
+        "_volumes_by_link",
+        "assignment_network_settings",
+        "assignment_network_state",
+        "network_settings_digest",
+        "network_settings_payload_json",
+        "validated_network_state"
+      ],
+      "other_global_references": [
+        "AssignmentSettingsError",
+        "CALIBRATION_DEMAND_ENABLED",
+        "CALIBRATION_MAX_ITER",
+        "CALIBRATION_MIN_IMPROVEMENT",
+        "SPATIALITE_PATH",
+        "assignment_convergence_record",
+        "assignment_iteration_count",
+        "build_traffic_assignment",
+        "calibration",
+        "canonical_convergence_record",
+        "json",
+        "os",
+        "pd",
+        "sqlite3"
+      ],
+      "attribute_calls": [
+        "(link_class == cls).to_numpy",
+        "_csv.DictReader",
+        "_np.asarray",
+        "a.execute",
+        "a.results",
+        "accepted_state.get",
+        "base_cap.copy",
+        "base_tt.copy",
+        "best_df.attrs.get",
+        "best_df.to_csv",
+        "cal_od_df.to_csv",
+        "calibration.class_adjustment_factors",
+        "calibration.compose_factors",
+        "calibration.evaluate",
+        "calibration.evaluate_calibration_step",
+        "calibration.split_holdout",
+        "cum.items",
+        "db.close",
+        "db.enable_load_extension",
+        "db.execute",
+        "db.execute(\"SELECT link_id, COALESCE(name,''), COALESCE(link_type,''), X(Centroid(geometry)), Y(Centroid(geometry)) FROM links WHERE name IS NOT NULL AND name != '' AND link_type != 'centroid_connector'\").fetchall",
+        "db.load_extension",
+        "graph.graph['capacity'].to_numpy",
+        "graph.graph['capacity'].to_numpy(dtype=float).copy",
+        "graph.graph['link_id'].map",
+        "graph.graph['travel_time'].to_numpy",
+        "graph.graph['travel_time'].to_numpy(dtype=float).copy",
+        "graph.set_graph",
+        "json.dump",
+        "next_network_settings['road_class_factors'].items",
+        "os.path.basename",
+        "os.path.exists",
+        "os.path.join",
+        "pd.read_csv",
+        "pd.read_csv(src, index_col=0).astype",
+        "rc.set_select_links",
+        "s.get",
+        "sqlite3.connect"
+      ],
+      "imports": [
+        "from aequilibrae.paths import TrafficAssignment, TrafficClass",
+        "import csv as _csv",
+        "import numpy as _np"
+      ]
+    },
+    "_run_demand_nudge": {
+      "lines": [
+        3088,
+        3166
+      ],
+      "local_function_references": [
+        "_match_counts",
+        "_volumes_by_link"
+      ],
+      "other_global_references": [
+        "CALIBRATION_DEMAND_MAX_ITER",
+        "CALIBRATION_MIN_IMPROVEMENT",
+        "calibration"
+      ],
+      "attribute_calls": [
+        "'_'.join",
+        "calibration.demand_nudge_multipliers",
+        "calibration.evaluate",
+        "calibration.evaluate_calibration_step",
+        "cur_od.copy",
+        "cur_od[internal].copy",
+        "cur_vol.get",
+        "m.get",
+        "meta.items",
+        "np.array",
+        "np.asarray",
+        "np.ix_",
+        "str(m.get('station_id') or '').split"
+      ],
+      "imports": [
+        "import numpy as np"
+      ]
+    },
+    "_strict_link_id": {
+      "lines": [
+        3581,
+        3584
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "np"
+      ],
+      "attribute_calls": [],
+      "imports": []
+    },
+    "_transit_feed_summary": {
+      "lines": [
+        2120,
+        2178
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "datetime",
+        "gtfs_skim",
+        "timezone"
+      ],
+      "attribute_calls": [
+        "datetime.now",
+        "datetime.now(timezone.utc).isoformat",
+        "gtfs_skim.iso_service_date",
+        "gtfs_skim.schedule_expired"
+      ],
+      "imports": []
+    },
+    "_volumes_by_link": {
+      "lines": [
+        3057,
+        3067
+      ],
+      "local_function_references": [],
+      "other_global_references": [],
+      "attribute_calls": [
+        "results_df['PCE_tot'].items"
+      ],
+      "imports": []
+    },
+    "_write_auto_od_matrix": {
+      "lines": [
+        3039,
+        3054
+      ],
+      "local_function_references": [],
+      "other_global_references": [],
+      "attribute_calls": [
+        "auto_df.to_csv",
+        "od_full.copy"
+      ],
+      "imports": []
+    },
+    "apply_persisted_network_settings": {
+      "lines": [
+        4071,
+        4113
+      ],
+      "local_function_references": [
+        "canonical_network_settings"
+      ],
+      "other_global_references": [
+        "np",
+        "os",
+        "sqlite3"
+      ],
+      "attribute_calls": [
+        "(link_class == road_class).to_numpy",
+        "clean.items",
+        "connection.close",
+        "connection.execute",
+        "factors.items",
+        "graph.graph['capacity'].to_numpy",
+        "graph.graph['capacity'].to_numpy(dtype=float).copy",
+        "graph.graph['link_id'].map",
+        "graph.graph['travel_time'].to_numpy",
+        "graph.graph['travel_time'].to_numpy(dtype=float).copy",
+        "graph.set_graph",
+        "mask.sum",
+        "np.isfinite",
+        "os.path.join",
+        "sqlite3.connect"
+      ],
+      "imports": []
+    },
+    "assignment_network_settings": {
+      "lines": [
+        3466,
+        3487
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "AssignmentSettingsError",
+        "np"
+      ],
+      "attribute_calls": [
+        "(road_class_factors or {}).items",
+        "factors.items",
+        "np.isfinite"
+      ],
+      "imports": []
+    },
+    "assignment_network_state": {
+      "lines": [
+        3727,
+        3862
+      ],
+      "local_function_references": [
+        "_finite_float_hex",
+        "_float_array_identity",
+        "_is_sha256",
+        "_payload_digest",
+        "_strict_link_id",
+        "assignment_network_state_digest",
+        "retained_network_manifest"
+      ],
+      "other_global_references": [
+        "AssignmentSettingsError",
+        "np"
+      ],
+      "attribute_calls": [
+        "frame[name].to_numpy",
+        "graph.default_types",
+        "graph_link_ids.add",
+        "np.asarray",
+        "np.dtype",
+        "np.isposinf",
+        "rows.append"
+      ],
+      "imports": []
+    },
+    "assignment_network_state_digest": {
+      "lines": [
+        3865,
+        3867
+      ],
+      "local_function_references": [
+        "_compact_json",
+        "canonical_assignment_network_state"
+      ],
+      "other_global_references": [
+        "hashlib"
+      ],
+      "attribute_calls": [
+        "_compact_json(canonical).encode",
+        "hashlib.sha256",
+        "hashlib.sha256(_compact_json(canonical).encode('utf-8')).hexdigest"
+      ],
+      "imports": []
+    },
+    "auto_ingest_counts": {
+      "lines": [
+        299,
+        420
+      ],
+      "local_function_references": [
+        "resolve_observed_count_source_plan"
+      ],
+      "other_global_references": [
+        "COUNT_AUTO_INGEST",
+        "__file__",
+        "json",
+        "os",
+        "pd",
+        "sys"
+      ],
+      "attribute_calls": [
+        "(os.getenv('TMAS_2024_ROOT') or '').strip",
+        "(run_row or {}).get",
+        "(sidecar or {}).get",
+        "attempts.append",
+        "available_csvs.append",
+        "combined.drop_duplicates",
+        "combined.to_csv",
+        "json.dump",
+        "json.load",
+        "os.getenv",
+        "os.makedirs",
+        "os.path.abspath",
+        "os.path.dirname",
+        "os.path.exists",
+        "os.path.join",
+        "os.path.normpath",
+        "pd.concat",
+        "pd.read_csv",
+        "source_id.removeprefix",
+        "source_id.removeprefix('us-state-').upper",
+        "source_id.startswith",
+        "source_plan.get",
+        "str(getattr(res, 'stderr', '')).strip",
+        "subprocess.run"
+      ],
+      "imports": [
+        "import subprocess"
+      ]
+    },
+    "canonical_assignment_network_state": {
+      "lines": [
+        3870,
+        3933
+      ],
+      "local_function_references": [
+        "_is_sha256",
+        "canonical_retained_network_manifest"
+      ],
+      "other_global_references": [
+        "AssignmentSettingsError",
+        "_NETWORK_STATE_KEYS",
+        "np"
+      ],
+      "attribute_calls": [
+        "float.fromhex",
+        "np.isfinite",
+        "parsed_penalty.hex",
+        "record.get"
+      ],
+      "imports": []
+    },
+    "canonical_network_settings": {
+      "lines": [
+        3490,
+        3504
+      ],
+      "local_function_references": [
+        "assignment_network_settings"
+      ],
+      "other_global_references": [
+        "AssignmentSettingsError"
+      ],
+      "attribute_calls": [
+        "settings.get"
+      ],
+      "imports": []
+    },
+    "canonical_retained_network_manifest": {
+      "lines": [
+        3642,
+        3679
+      ],
+      "local_function_references": [
+        "_is_sha256"
+      ],
+      "other_global_references": [
+        "AssignmentSettingsError",
+        "_RETAINED_MANIFEST_KEYS"
+      ],
+      "attribute_calls": [
+        "manifest.get"
+      ],
+      "imports": []
+    },
+    "create_assignment_output_directory": {
+      "lines": [
+        7012,
+        7023
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "WorkerStateWriteUnconfirmed",
+        "os"
+      ],
+      "attribute_calls": [
+        "model_attempt_writer.current",
+        "os.makedirs",
+        "os.path.join",
+        "writer.create_assignment_outputs"
+      ],
+      "imports": [
+        "import model_attempt_writer"
+      ]
+    },
+    "download_selected_feed_bytes": {
+      "lines": [
+        2280,
+        2347
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "GTFS_UPLOADS_BUCKET",
+        "SUPABASE_KEY",
+        "SUPABASE_URL",
+        "gtfs_skim",
+        "hashlib",
+        "requests"
+      ],
+      "attribute_calls": [
+        "(row.get('checksum_sha256') or '').strip",
+        "(row.get('checksum_sha256') or '').strip().lower",
+        "gtfs_skim.SelectedFeedError",
+        "hashlib.sha256",
+        "hashlib.sha256(raw).hexdigest",
+        "requests.get",
+        "row.get",
+        "storage_path.startswith",
+        "storage_path.strip"
+      ],
+      "imports": []
+    },
+    "load_selected_feed_version": {
+      "lines": [
+        2350,
+        2406
+      ],
+      "local_function_references": [
+        "_feed_version_agency_name",
+        "download_selected_feed_bytes",
+        "resolve_selected_feed_version"
+      ],
+      "other_global_references": [
+        "datetime",
+        "gtfs_skim",
+        "timezone"
+      ],
+      "attribute_calls": [
+        "(row.get('checksum_sha256') or '').strip",
+        "(row.get('checksum_sha256') or '').strip().lower",
+        "datetime.now",
+        "datetime.now(timezone.utc).isoformat",
+        "gtfs_skim.SelectedFeedError",
+        "gtfs_skim.load_feed",
+        "gtfs_skim.schedule_expired",
+        "row.get"
+      ],
+      "imports": []
+    },
+    "network_settings_digest": {
+      "lines": [
+        3518,
+        3526
+      ],
+      "local_function_references": [
+        "network_settings_payload_json"
+      ],
+      "other_global_references": [
+        "AssignmentSettingsError",
+        "hashlib"
+      ],
+      "attribute_calls": [
+        "hashlib.sha256",
+        "hashlib.sha256(payload.encode('utf-8')).hexdigest",
+        "payload.encode"
+      ],
+      "imports": []
+    },
+    "network_settings_payload_json": {
+      "lines": [
+        3507,
+        3515
+      ],
+      "local_function_references": [
+        "canonical_network_settings"
+      ],
+      "other_global_references": [
+        "json"
+      ],
+      "attribute_calls": [
+        "json.dumps"
+      ],
+      "imports": []
+    },
+    "package_work_directory": {
+      "lines": [
+        6984,
+        6997
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "WorkerStateWriteUnconfirmed"
+      ],
+      "attribute_calls": [
+        "model_attempt_writer.current",
+        "writer.package_directory"
+      ],
+      "imports": [
+        "import model_attempt_writer"
+      ]
+    },
+    "prepare_assignment_count_inputs": {
+      "lines": [
+        4147,
+        4170
+      ],
+      "local_function_references": [
+        "auto_ingest_counts",
+        "retain_assignment_counts"
+      ],
+      "other_global_references": [
+        "VALIDATION_COUNTS_PATH",
+        "os"
+      ],
+      "attribute_calls": [
+        "count_inputs_override.get",
+        "os.path.dirname",
+        "setup_result.get"
+      ],
+      "imports": []
+    },
+    "project_work_directory": {
+      "lines": [
+        7000,
+        7009
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "WorkerStateWriteUnconfirmed",
+        "os"
+      ],
+      "attribute_calls": [
+        "model_attempt_writer.current",
+        "os.path.join",
+        "writer.project_directory"
+      ],
+      "imports": [
+        "import model_attempt_writer"
+      ]
+    },
+    "require_expected_network_state": {
+      "lines": [
+        3958,
+        3983
+      ],
+      "local_function_references": [
+        "validated_network_state"
+      ],
+      "other_global_references": [
+        "AssignmentSettingsError"
+      ],
+      "attribute_calls": [
+        "expected[0].get"
+      ],
+      "imports": []
+    },
+    "resolve_calibration_enabled": {
+      "lines": [
+        1886,
+        1900
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "CALIBRATION_ENABLED"
+      ],
+      "attribute_calls": [
+        "(run_row or {}).get",
+        "snapshot.get"
+      ],
+      "imports": []
+    },
+    "resolve_observed_count_source_plan": {
+      "lines": [
+        232,
+        296
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "__file__",
+        "os",
+        "sys"
+      ],
+      "attribute_calls": [
+        "(run_row or {}).get",
+        "_count_sources.observed_count_sources_for_regions",
+        "geography.get",
+        "item.get",
+        "os.path.abspath",
+        "os.path.dirname",
+        "os.path.join",
+        "os.path.normpath",
+        "snapshot.get",
+        "sys.path.insert"
+      ],
+      "imports": [
+        "import count_sources as _count_sources"
+      ]
+    },
+    "resolve_selected_feed_version": {
+      "lines": [
+        2231,
+        2277
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "HEADERS",
+        "SUPABASE_URL",
+        "_GTFS_VERSION_SELECT",
+        "gtfs_skim",
+        "requests"
+      ],
+      "attribute_calls": [
+        "gtfs_skim.SelectedFeedError",
+        "requests.get",
+        "res.json",
+        "row.get"
+      ],
+      "imports": []
+    },
+    "retain_assignment_counts": {
+      "lines": [
+        4116,
+        4144
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "WorkerStateWriteUnconfirmed"
+      ],
+      "attribute_calls": [
+        "Path(out_dir).resolve",
+        "Path(out_dir).resolve(strict=True).is_relative_to",
+        "model_attempt_writer.current",
+        "model_count_inputs.consume",
+        "model_count_inputs.retain",
+        "writer.files.verify",
+        "writer.record_artifact",
+        "writer.require_open"
+      ],
+      "imports": [
+        "from pathlib import Path",
+        "import model_attempt_writer",
+        "import model_count_inputs"
+      ]
+    },
+    "retained_network_manifest": {
+      "lines": [
+        3587,
+        3624
+      ],
+      "local_function_references": [
+        "_payload_digest",
+        "_strict_link_id"
+      ],
+      "other_global_references": [
+        "os",
+        "sqlite3"
+      ],
+      "attribute_calls": [
+        "connection.close",
+        "connection.execute",
+        "connection.execute(\"SELECT link_id, COALESCE(link_type, '') FROM links\").fetchall",
+        "os.path.join",
+        "roles.items",
+        "sqlite3.connect",
+        "str(raw_link_type or '').strip",
+        "str(raw_link_type or '').strip().lower"
+      ],
+      "imports": []
+    },
+    "sb_get_run": {
+      "lines": [
+        1812,
+        1827
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "HEADERS",
+        "SUPABASE_URL",
+        "WorkerStateWriteUnconfirmed",
+        "requests"
+      ],
+      "attribute_calls": [
+        "model_attempt_writer.current",
+        "requests.get",
+        "res.json",
+        "writer.read_run"
+      ],
+      "imports": [
+        "import model_attempt_writer"
+      ]
+    },
+    "sb_patch_stage": {
+      "lines": [
+        613,
+        621
+      ],
+      "local_function_references": [
+        "_confirmed_state_patch"
+      ],
+      "other_global_references": [
+        "WorkerStateWriteUnconfirmed"
+      ],
+      "attribute_calls": [
+        "model_attempt_writer.current",
+        "writer.patch_stage"
+      ],
+      "imports": [
+        "import model_attempt_writer"
+      ]
+    },
+    "should_apply_trip_based_mode_split": {
+      "lines": [
+        3459,
+        3463
+      ],
+      "local_function_references": [],
+      "other_global_references": [],
+      "attribute_calls": [],
+      "imports": []
+    },
+    "should_run_calibration": {
+      "lines": [
+        2715,
+        2721
+      ],
+      "local_function_references": [],
+      "other_global_references": [
+        "COUNT_VALIDATION_ENABLED",
+        "os"
+      ],
+      "attribute_calls": [
+        "os.path.exists"
+      ],
+      "imports": []
+    },
+    "skim_selected_feed_version": {
+      "lines": [
+        2498,
+        2568
+      ],
+      "local_function_references": [
+        "_feed_expiry_log_note",
+        "_transit_feed_summary",
+        "load_selected_feed_version"
+      ],
+      "other_global_references": [
+        "_INGEST_AUTHORITATIVE_FEED_KEYS",
+        "gtfs_skim"
+      ],
+      "attribute_calls": [
+        "gtfs_skim.SelectedFeedError",
+        "gtfs_skim.check_deadline",
+        "gtfs_skim.feed_covers",
+        "gtfs_skim.transit_skim",
+        "meta.get",
+        "meta.update"
+      ],
+      "imports": []
+    },
+    "stage_assignment": {
+      "lines": [
+        4202,
+        5050
+      ],
+      "local_function_references": [
+        "_feed_expiry_log_note",
+        "_run_calibration",
+        "_transit_feed_summary",
+        "_write_auto_od_matrix",
+        "apply_persisted_network_settings",
+        "assignment_network_settings",
+        "assignment_network_state",
+        "create_assignment_output_directory",
+        "network_settings_digest",
+        "network_settings_payload_json",
+        "package_work_directory",
+        "prepare_assignment_count_inputs",
+        "project_work_directory",
+        "require_expected_network_state",
+        "resolve_calibration_enabled",
+        "sb_get_run",
+        "sb_patch_stage",
+        "should_apply_trip_based_mode_split",
+        "should_run_calibration",
+        "skim_selected_feed_version",
+        "validated_network_settings_record"
+      ],
+      "other_global_references": [
+        "AEQ_CORES",
+        "AssignmentSettingsError",
+        "COUNT_VALIDATION_ENABLED",
+        "GTFS_DISCOVER",
+        "PASSTHROUGH_SHARE",
+        "SPATIALITE_PATH",
+        "WorkerStateWriteUnconfirmed",
+        "assignment_convergence_record",
+        "assignment_iteration_count",
+        "assignment_profile_digest",
+        "assignment_profile_payload_json",
+        "build_cordon_injections",
+        "build_traffic_assignment",
+        "convergence",
+        "gtfs_skim",
+        "haversine_miles",
+        "intrazonal_miles",
+        "mode_choice",
+        "np",
+        "os",
+        "pair_passthrough_cordons",
+        "pd",
+        "resolve_assignment_profile",
+        "scenario_adjustment",
+        "select_link",
+        "sqlite3",
+        "stream_assignment_progress",
+        "validated_assignment_profile"
+      ],
+      "attribute_calls": [
+        "(results_df['PCE_tot'] > 0).sum",
+        "(setup_result.get('cordon_map') or {}).items",
+        "_conn_db.close",
+        "_conn_db.execute",
+        "_csv.DictReader",
+        "_screenlines.items",
+        "_sl_db.close",
+        "_sl_db.enable_load_extension",
+        "_sl_db.execute",
+        "_sl_db.execute(\"SELECT link_id, COALESCE(name,''), COALESCE(link_type,''), X(Centroid(geometry)), Y(Centroid(geometry)) FROM links WHERE name IS NOT NULL AND name != '' AND link_type != 'centroid_connector'\").fetchall",
+        "_sl_db.load_extension",
+        "assig.execute",
+        "assig.results",
+        "assignment_profile['algorithm'].upper",
+        "centroid_map.items",
+        "centroid_map.values",
+        "convergence.routed_effective_circuity",
+        "cordon_map.values",
+        "external_class.set_select_links",
+        "external_od.sum",
+        "finite.sum",
+        "g.get",
+        "graph.network['link_id'].isin",
+        "graph.prepare_graph",
+        "graph.set_blocked_centroid_flows",
+        "graph.set_graph",
+        "graph.set_skimming",
+        "gtfs_skim.check_deadline",
+        "gtfs_skim.discover_feed",
+        "gtfs_skim.feed_covers",
+        "gtfs_skim.load_feed",
+        "gtfs_skim.parse_feed_selection",
+        "gtfs_skim.plan_feed",
+        "gtfs_skim.stage_deadline",
+        "gtfs_skim.transit_skim",
+        "is_cordon.sum",
+        "lats.max",
+        "lats.min",
+        "lons.max",
+        "lons.min",
+        "m.computational_view",
+        "m.create_empty",
+        "mat.computational_view",
+        "mat.create_empty",
+        "mat.export",
+        "mode_choice.split_matrix",
+        "np.array",
+        "np.asarray",
+        "np.fill_diagonal",
+        "np.isfinite",
+        "np.ix_",
+        "np.max",
+        "np.mean",
+        "np.where",
+        "np.zeros",
+        "od_array.sum",
+        "os.getenv",
+        "os.path.exists",
+        "os.path.join",
+        "os.remove",
+        "partners.get",
+        "pd.read_csv",
+        "project.network.build_graphs",
+        "resident_class.set_select_links",
+        "resident_od.sum",
+        "results_df.to_csv",
+        "run_row.get",
+        "scenario_adjustment.apply_assigned_auto_trip_adjustment",
+        "scenario_adjustment.resolve_assigned_auto_trip_adjustment",
+        "screenlines_out.append",
+        "select_link.link_attribution",
+        "select_link.select_link_screenlines",
+        "select_link_sets.values",
+        "setup_result.get",
+        "skim_mat.export",
+        "skimming.execute",
+        "skimming.set_cores",
+        "sqlite3.connect",
+        "transit_los_meta.get",
+        "transit_los_meta.update",
+        "zattr.loc[ordered_zone_ids, ['est_population', 'total_jobs']].reset_index",
+        "zattr.set_index",
+        "zattr['zone_id'].astype",
+        "zattr_cd.set_index",
+        "zattr_cd['zone_id'].astype",
+        "zattr_mc.set_index",
+        "zattr_mc['zone_id'].astype",
+        "zc['area_sq_mi'].to_numpy",
+        "zc['centroid_lat'].to_numpy",
+        "zc['centroid_lon'].to_numpy",
+        "zc_cd['centroid_lat'].to_numpy",
+        "zc_cd['centroid_lon'].to_numpy"
+      ],
+      "imports": [
+        "from aequilibrae import Project",
+        "from aequilibrae.matrix import AequilibraeMatrix",
+        "from aequilibrae.paths import TrafficAssignment, TrafficClass, NetworkSkimming",
+        "from model_engine_scope import project_scope, matrix_scope",
+        "import csv as _csv"
+      ]
+    },
+    "validated_network_settings_record": {
+      "lines": [
+        3529,
+        3548
+      ],
+      "local_function_references": [
+        "canonical_network_settings",
+        "network_settings_digest",
+        "network_settings_payload_json"
+      ],
+      "other_global_references": [
+        "AssignmentSettingsError",
+        "json"
+      ],
+      "attribute_calls": [
+        "json.loads"
+      ],
+      "imports": []
+    },
+    "validated_network_state": {
+      "lines": [
+        3936,
+        3941
+      ],
+      "local_function_references": [
+        "assignment_network_state_digest",
+        "canonical_assignment_network_state"
+      ],
+      "other_global_references": [
+        "AssignmentSettingsError"
+      ],
+      "attribute_calls": [],
+      "imports": []
+    }
+  },
+  "limits": "Static symbol references in main.py only. Includes branches whether exercised or not. Imported module internals, native extensions, dynamic calls, filesystem and network behavior require separate inspection and runtime evidence. Does not prove credential isolation, containment, no-egress, or scientific acceptance."
+}

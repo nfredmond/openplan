@@ -1,0 +1,51 @@
+{
+  "database": "openplan_attempt_cli_6a2eca4ca3e045978e85f7229121c6f6",
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "detected": null
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "detected": null
+    },
+    {
+      "control": "omit-authority",
+      "returncode": 3,
+      "detected": "Unauthorized recovery accepted"
+    },
+    {
+      "control": "omit-state-check",
+      "returncode": 3,
+      "detected": "Stale recovery accepted"
+    },
+    {
+      "control": "omit-receipt",
+      "returncode": 3,
+      "detected": "Receipt failure was not exercised"
+    },
+    {
+      "control": "omit-revocation",
+      "returncode": 3,
+      "detected": "Recovery failed to revoke execution"
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "detected": null
+    }
+  ],
+  "actual_progress_after_inspection_refused": true,
+  "existing_execution_rows_unchanged_on_upgrade": true,
+  "predecessor_sha256": "e94693fec4f95abda27fc627e2c3bf6888a60c19129fa313b72b5741c286b192",
+  "migration_sha256": "3a8da545fb864e35e6798a070301da929093bbcca51aaadf1335f6ee2dc4ace9",
+  "source_sha256": {
+    "recovery-decision.sql": "3a8da545fb864e35e6798a070301da929093bbcca51aaadf1335f6ee2dc4ace9",
+    "recovery-decision-cases.sql": "95ce8a67c12d815128dff65f05d42f5719285685ddc74eb2d59dbd4a4f19c460",
+    "verify_recovery_decision.py": "86040c393fd8ae703e382712f21eb0e8b0563009e3f7e466dfa998aec328be9b"
+  },
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/recovery-http-controls-20261008-upgrade/restored/database-proof",
+  "limits": "Migration SQL installed in an isolated clone. Synthetic operator decisions, exact replay and revoked database writes do not prove process termination, HTTP reply recovery, API actor derivation, agent approval, restart, browser acceptance or scientific validity. No normal dispatcher activation."
+}

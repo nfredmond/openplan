@@ -1,0 +1,62 @@
+{
+  "cases": [
+    {
+      "case": "owner-loss",
+      "lost_process": "owner",
+      "fault_omitted_watch": false,
+      "container_stopped": true,
+      "expected_behavior_observed": true,
+      "exit_code": 125,
+      "container_id": "994f1060c7aaf0e71ec622941b865c62a4c03a070ea3ea58f7acc806778922c9",
+      "bootstrap_sha256": "7ed4e2e35b3b4a9c3684aa746165a31dad964831b88a6792b749793035c6e4e3"
+    },
+    {
+      "case": "controller-loss",
+      "lost_process": "controller",
+      "fault_omitted_watch": false,
+      "container_stopped": true,
+      "expected_behavior_observed": true,
+      "exit_code": 125,
+      "container_id": "67af8dfde0806f4b49bbd2ea4f4da84d6624ed4ec540aedae563c8b09042ed6a",
+      "bootstrap_sha256": "7ed4e2e35b3b4a9c3684aa746165a31dad964831b88a6792b749793035c6e4e3"
+    },
+    {
+      "case": "harmless",
+      "lost_process": "owner",
+      "fault_omitted_watch": false,
+      "container_stopped": true,
+      "expected_behavior_observed": true,
+      "exit_code": 125,
+      "container_id": "2c38b846d9abbb2c3a7f701f232972f7066a4c7c38825358274dd014b3cde20b",
+      "bootstrap_sha256": "054888e7866ca8e96c9bf38445df9810a209dcc031f4db40106dd8c6dc9b10b0"
+    },
+    {
+      "case": "omitted-watch",
+      "lost_process": "owner",
+      "fault_omitted_watch": true,
+      "container_stopped": false,
+      "expected_behavior_observed": true,
+      "exit_code": 0,
+      "container_id": "612d28f1c6b8c71bebf96cf207165318ce3ffcb8004c7c03d878973925ff1243",
+      "bootstrap_sha256": "ee7da8625c0df780a65fadd2634751f89c1fe80fcc782cd4c811fb0443493b22"
+    },
+    {
+      "case": "restored",
+      "lost_process": "owner",
+      "fault_omitted_watch": false,
+      "container_stopped": true,
+      "expected_behavior_observed": true,
+      "exit_code": 125,
+      "container_id": "ffab2013ddd22ec06b54f1e696226bead1a955fd7acb4331f04bf90ddfa95171",
+      "bootstrap_sha256": "7ed4e2e35b3b4a9c3684aa746165a31dad964831b88a6792b749793035c6e4e3"
+    }
+  ],
+  "all_owned_containers_removed": true,
+  "source_sha256": "7ed4e2e35b3b4a9c3684aa746165a31dad964831b88a6792b749793035c6e4e3",
+  "limits": [
+    "Synthetic Python work with a detached child in a private Docker PID namespace",
+    "Prototype descriptor delivery is performed by the proof process",
+    "No production startup handshake, peer authentication, database admission or native ActivitySim evidence"
+  ]
+}
+

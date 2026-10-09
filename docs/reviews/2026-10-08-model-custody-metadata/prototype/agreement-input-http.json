@@ -1,0 +1,104 @@
+{
+  "source_sha256": "96d175c5306239c7fb9b469bb27c23cf400dad969ee9c0bc85bc580ef0901a75",
+  "cases": [
+    {
+      "control": "baseline",
+      "mode": "managed_completed",
+      "accepted": true
+    },
+    {
+      "control": "baseline",
+      "mode": "managed_running",
+      "accepted": false
+    },
+    {
+      "control": "baseline",
+      "mode": "managed_failed",
+      "accepted": false
+    },
+    {
+      "control": "baseline",
+      "mode": "legacy_completed",
+      "accepted": true
+    },
+    {
+      "control": "harmless",
+      "mode": "managed_completed",
+      "accepted": true
+    },
+    {
+      "control": "harmless",
+      "mode": "managed_running",
+      "accepted": false
+    },
+    {
+      "control": "harmless",
+      "mode": "managed_failed",
+      "accepted": false
+    },
+    {
+      "control": "harmless",
+      "mode": "legacy_completed",
+      "accepted": true
+    },
+    {
+      "control": "ignore-completion",
+      "mode": "managed_completed",
+      "accepted": true
+    },
+    {
+      "control": "ignore-completion",
+      "mode": "managed_running",
+      "accepted": true
+    },
+    {
+      "control": "ignore-completion",
+      "mode": "managed_failed",
+      "accepted": false
+    },
+    {
+      "control": "ignore-completion",
+      "mode": "legacy_completed",
+      "accepted": true
+    },
+    {
+      "control": "restored",
+      "mode": "managed_completed",
+      "accepted": true
+    },
+    {
+      "control": "restored",
+      "mode": "managed_running",
+      "accepted": false
+    },
+    {
+      "control": "restored",
+      "mode": "managed_failed",
+      "accepted": false
+    },
+    {
+      "control": "restored",
+      "mode": "legacy_completed",
+      "accepted": true
+    }
+  ],
+  "http_read_count": 17,
+  "http_statuses": [
+    200
+  ],
+  "anonymous_status": 200,
+  "authenticated_reads": [
+    {
+      "role": "member",
+      "status": 200,
+      "row_count": 1
+    },
+    {
+      "role": "outsider",
+      "status": 200,
+      "row_count": 0
+    }
+  ],
+  "native_record_checksums_unchanged": true,
+  "limits": "Installed owned clone, actual normal worker read, native files and member versus nonmember read cases. No exhaustive RLS matrix, concurrent revocation fencing, complete dispatch or scientific acceptance."
+}

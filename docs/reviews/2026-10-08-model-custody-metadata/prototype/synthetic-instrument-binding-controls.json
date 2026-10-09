@@ -1,0 +1,55 @@
+{
+  "cases": [
+    {
+      "control": "normal",
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "harmless",
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "wrong-run",
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "wrong-method",
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "promoted-outcome",
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "changed-comparison-output",
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "changed-comparison",
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "changed-diagnosis",
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "changed-input-bundle",
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "changed-match-audit",
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "changed-output",
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": [
+    "Synthetic fixture bindings only; not a general preparation validator or source acceptance"
+  ]
+}

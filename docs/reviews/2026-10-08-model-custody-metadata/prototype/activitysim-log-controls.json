@@ -1,0 +1,52 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "detected": null,
+      "verified": true
+    },
+    {
+      "case": "buffer-output",
+      "returncode": 1,
+      "detected": "test_command_log_survives_runtime_owner_loss",
+      "verified": true
+    },
+    {
+      "case": "drop-stderr",
+      "returncode": 1,
+      "detected": "test_command_log_survives_runtime_owner_loss",
+      "verified": true
+    },
+    {
+      "case": "read-whole-log",
+      "returncode": 1,
+      "detected": "Reading a tail allocated the whole log",
+      "verified": true
+    },
+    {
+      "case": "invalid-limit",
+      "returncode": 1,
+      "detected": "ValueError not raised",
+      "verified": true
+    },
+    {
+      "case": "wrong-tail",
+      "returncode": 1,
+      "detected": "test_tail_preserves_unicode_and_empty_file_behavior",
+      "verified": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "detected": null,
+      "verified": true
+    }
+  ],
+  "runtime_sha256": "2d19ed9d3d8ce2cd67831485b788895485be71c911315526787fc72396b06803",
+  "limits": [
+    "Synthetic CLI through real runtime; container CLI mocked",
+    "Python allocation measurement excludes kernel cache and other processes",
+    "Log retention does not establish process termination, managed dispatch or scientific acceptance"
+  ]
+}

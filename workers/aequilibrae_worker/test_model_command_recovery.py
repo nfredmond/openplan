@@ -1,5 +1,6 @@
 """Operator recovery uses selected saved commands, never reconstructed payloads."""
 import copy
+from contextlib import closing
 import json
 import os
 from pathlib import Path
@@ -8,7 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import model_command_recovery as recovery
 import model_command_client as client
 import model_command_journal as journal
@@ -62,11 +63,21 @@ class RecoveryTests(unittest.TestCase):
     def test_corrupted_request_identity_cannot_dispatch_another_command(self):
         journal.prepare(self.directory, self.cmd)
         changed = copy.deepcopy(self.cmd); changed['request_id'] = IDS[4]
-        with sqlite3.connect(self.directory / 'model-commands.sqlite3') as connection:
+        with closing(sqlite3.connect(self.directory / 'model-commands.sqlite3')) as connection, connection:
             connection.execute('UPDATE commands SET request_json=?', (json.dumps(changed),))
-        post = Mock()
+        post = Mock(return_value=Mock(status_code=200, json=Mock(return_value=receipt(self.cmd))))
         with self.assertRaisesRegex(ValueError, 'does not match'):
             self.recover(post)
+        post.assert_not_called()
+
+    def test_corrupted_request_identity_from_reader_cannot_dispatch(self):
+        # The recovery boundary must also reject a mismatched reader result.
+        changed = copy.deepcopy(self.cmd)
+        changed['request_id'] = IDS[4]
+        post = Mock()
+        with patch.object(journal, 'read_existing', return_value=[{'command': changed, 'resolved': False, 'response': None}]):
+            with self.assertRaisesRegex(ValueError, 'does not match'):
+                self.recover(post)
         post.assert_not_called()
 
     def test_listing_and_cached_cli_do_not_print_payloads_or_need_credentials(self):

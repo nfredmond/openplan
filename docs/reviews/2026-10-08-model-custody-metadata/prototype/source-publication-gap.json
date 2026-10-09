@@ -1,0 +1,33 @@
+{
+  "source": "native-storage-custody-controls-20261009a/normal synthetic fixture",
+  "source_head": "4a3feef8739f90275e816a3dc4888a64ab0676eb",
+  "results": [
+    {
+      "method": "activitysim",
+      "basis_sha256": "bbb53a3a59f132210cf2812e9af539b53679a9e35d460d9ed10f1bd212d311a9",
+      "local_file_count": 9,
+      "unresolved_in_fixture_directory": [
+        "run_summary",
+        "conservation",
+        "assignment_profile",
+        "assignment_settings",
+        "coefficient_package",
+        "network"
+      ]
+    },
+    {
+      "method": "aequilibrae",
+      "basis_sha256": "340d80377f848c7bcc3187449172ffcb8eee8a9f76933cf8b303dfbe073cf3dd",
+      "local_file_count": 9,
+      "unresolved_in_fixture_directory": [
+        "run_summary",
+        "conservation",
+        "assignment_profile",
+        "assignment_settings",
+        "coefficient_package",
+        "network"
+      ]
+    }
+  ],
+  "limits": "Read-only comparison of six explicitly identified basis dependencies against each authored fixture directory. Not a repository-wide missing-file search, complete recursive dependency inventory or scientific assessment. No source data changed."
+}

@@ -1,0 +1,48 @@
+{
+  "source_sha256": "1b0119bb66415a05f8a845088d75c7db20b4ee71aaa48298bb9f8f8a628e2ae6",
+  "worker_sha256": "e28362799b7f3bd0ab690d74a53ef7ead3e1e2ebab11821baf86169d5d2fa592",
+  "writer_sha256": "ddcabc6fce43235c8c728d3b46678f712d6e84256c5d7ab5add64f37ea37d3a4",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-foreign-path",
+      "exit_code": 1,
+      "targeted_test": "OutputHandoffTests.test_foreign_output_reference_refused"
+    },
+    {
+      "control": "ignore-producer-bytes",
+      "exit_code": 1,
+      "targeted_test": "OutputHandoffTests.test_changed_nested_count_record_refuses_consumption"
+    },
+    {
+      "control": "erase-producer-attempt",
+      "exit_code": 1,
+      "targeted_test": "OutputHandoffTests.test_selected_outputs_preserve_all_files_and_provenance"
+    },
+    {
+      "control": "register-as-producer-output",
+      "exit_code": 1,
+      "targeted_test": "OutputHandoffTests.test_selected_outputs_preserve_all_files_and_provenance"
+    },
+    {
+      "control": "ignore-capture-ownership",
+      "exit_code": 1,
+      "targeted_test": "OutputHandoffTests.test_foreign_capture_source_refused"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual selected assignment-output join with byte-preserved count metadata and synthetic skim bytes; mocked transport. No native receipt recovery, engine file-format validation, output working paths, full dispatch or scientific acceptance."
+}

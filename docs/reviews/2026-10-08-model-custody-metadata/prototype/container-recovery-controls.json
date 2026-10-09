@@ -1,0 +1,124 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    },
+    {
+      "case": "reopen-handshake",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_connection_close_during_handshake_is_not_reopened"
+    },
+    {
+      "case": "reconnect-after-drop",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_dropped_create_reply_never_reconnects_or_repeats_create"
+    },
+    {
+      "case": "substitute-inspected-id",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_inspection_cannot_substitute_another_container_id"
+    },
+    {
+      "case": "ignore-endpoint",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_other_endpoint_refuses_before_create_reservation"
+    },
+    {
+      "case": "reserve-after-send",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_create_retains_intent_response_and_verified_identity"
+    },
+    {
+      "case": "send-swap-allowance",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_create_retains_intent_response_and_verified_identity"
+    },
+    {
+      "case": "ignore-peer-user",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_other_user_peer_is_refused"
+    },
+    {
+      "case": "ignore-api-range",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_unsupported_api_is_refused"
+    },
+    {
+      "case": "ignore-http-status",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_unexpected_http_status_is_refused"
+    },
+    {
+      "case": "ignore-response-size",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_valid_json_over_response_limit_is_refused"
+    },
+    {
+      "case": "ignore-create-warning",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_creation_warning_remains_unverified"
+    },
+    {
+      "case": "ignore-recovery-daemon",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_recovery_refuses_changed_daemon_before_listing"
+    },
+    {
+      "case": "grant-retry",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_absence_and_ambiguity_do_not_authorize_retry"
+    },
+    {
+      "case": "ignore-recovery-identity",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_recovery_rechecks_full_inspection_and_exact_id"
+    },
+    {
+      "case": "ignore-recovery-policy",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_recovery_rechecks_full_inspection_and_exact_id"
+    },
+    {
+      "case": "omit-stopped-containers",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_lost_reply_can_be_observed_without_repeating_creation"
+    },
+    {
+      "case": "ignore-recovery-ambiguity",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_absence_and_ambiguity_do_not_authorize_retry"
+    },
+    {
+      "case": "restored",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    }
+  ],
+  "source_sha256": "fd28806bfac2f1b9f05bdd8992fd5f148d7e41ffd977a1a14a7d3fe344a97654",
+  "limits": [
+    "Actual Unix HTTP socket with synthetic Docker messages and response loss",
+    "Separate live Docker proof covers creation and identity",
+    "No independent controller, startup or owner-loss cleanup"
+  ]
+}

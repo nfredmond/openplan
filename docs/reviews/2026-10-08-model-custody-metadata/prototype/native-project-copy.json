@@ -1,0 +1,41 @@
+{
+  "aequilibrae_version": "1.6.2",
+  "source_sha256": "a98fe84a9a59b52b009eb5a1c3e91607e45ad2cf937edf8481156cc705765b07",
+  "copied_files": 5,
+  "native_nodes": [
+    [
+      1,
+      1,
+      "POINT(-121 38)"
+    ],
+    [
+      2,
+      1,
+      "POINT(-120.99 38)"
+    ]
+  ],
+  "native_links": [
+    [
+      1,
+      1,
+      2,
+      "c",
+      "LINESTRING(-121 38, -120.99 38)"
+    ]
+  ],
+  "databases": {
+    "project_database.sqlite": {
+      "integrity": "ok",
+      "sha256": "be6bb51893205c6e895854cc0fffb603ee8b3d675c87c1496e32c585effe7bb7",
+      "size_bytes": 6397952
+    },
+    "public_transport.sqlite": {
+      "integrity": "ok",
+      "sha256": "2d8d90eabfc57fad06adaf9eb656d5c939000a7463cd6e4837200d0122e1042f",
+      "size_bytes": 6483968
+    }
+  },
+  "source_unchanged": true,
+  "consumer_bytes_equal_before_open": true,
+  "limits": "Synthetic two-node one-link project with native spatial records and reopen. No assignment, multi-database transaction, managed registration, interrupted engine closure, normal dispatch or scientific acceptance."
+}

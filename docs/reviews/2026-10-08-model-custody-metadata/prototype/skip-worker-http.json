@@ -1,0 +1,177 @@
+{
+  "workers": [
+    {
+      "worker": "aequilibrae",
+      "control": "baseline",
+      "result": {
+        "cases": [
+          {
+            "outcome": "skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          },
+          {
+            "outcome": "not_skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          }
+        ],
+        "http_calls": 8,
+        "rpc_calls": 4,
+        "worker_read_calls": 4,
+        "gateway_removed": true,
+        "worker": "main"
+      }
+    },
+    {
+      "worker": "aequilibrae",
+      "control": "harmless",
+      "result": {
+        "cases": [
+          {
+            "outcome": "skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          },
+          {
+            "outcome": "not_skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          }
+        ],
+        "http_calls": 8,
+        "rpc_calls": 4,
+        "worker_read_calls": 4,
+        "gateway_removed": true,
+        "worker": "main"
+      }
+    },
+    {
+      "worker": "aequilibrae",
+      "control": "missing-version",
+      "expected_failure": "Worker did not retain one command journal"
+    },
+    {
+      "worker": "aequilibrae",
+      "control": "restored",
+      "result": {
+        "cases": [
+          {
+            "outcome": "skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          },
+          {
+            "outcome": "not_skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          }
+        ],
+        "http_calls": 8,
+        "rpc_calls": 4,
+        "worker_read_calls": 4,
+        "gateway_removed": true,
+        "worker": "main"
+      }
+    },
+    {
+      "worker": "activitysim",
+      "control": "baseline",
+      "result": {
+        "cases": [
+          {
+            "outcome": "skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          },
+          {
+            "outcome": "not_skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          }
+        ],
+        "http_calls": 8,
+        "rpc_calls": 4,
+        "worker_read_calls": 4,
+        "gateway_removed": true,
+        "worker": "supabase_poll"
+      }
+    },
+    {
+      "worker": "activitysim",
+      "control": "harmless",
+      "result": {
+        "cases": [
+          {
+            "outcome": "skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          },
+          {
+            "outcome": "not_skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          }
+        ],
+        "http_calls": 8,
+        "rpc_calls": 4,
+        "worker_read_calls": 4,
+        "gateway_removed": true,
+        "worker": "supabase_poll"
+      }
+    },
+    {
+      "worker": "activitysim",
+      "control": "missing-version",
+      "expected_failure": "Worker did not retain one command journal"
+    },
+    {
+      "worker": "activitysim",
+      "control": "restored",
+      "result": {
+        "cases": [
+          {
+            "outcome": "skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          },
+          {
+            "outcome": "not_skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          }
+        ],
+        "http_calls": 8,
+        "rpc_calls": 4,
+        "worker_read_calls": 4,
+        "gateway_removed": true,
+        "worker": "supabase_poll"
+      }
+    }
+  ],
+  "limits": "Actual mark_stage_skipped functions, predecessor/run HTTP reads, installed migration20, committed lost replies and fresh CLI recovery. Stage input read from native SQL. Not a complete poll/push loop, engine execution, whole-run restart or scientific acceptance."
+}

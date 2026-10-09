@@ -1,0 +1,26 @@
+[
+  {
+    "case": "baseline",
+    "exit": 0,
+    "expected": 0,
+    "diagnostic": ""
+  },
+  {
+    "case": "harmless",
+    "exit": 0,
+    "expected": 0,
+    "diagnostic": ""
+  },
+  {
+    "case": "missing_fk",
+    "exit": 3,
+    "expected": 3,
+    "diagnostic": "ERROR:  Workspace deletion lost enrolled model run\nCONTEXT:  PL/pgSQL function inline_code_block line 14 at RAISE"
+  },
+  {
+    "case": "restored",
+    "exit": 0,
+    "expected": 0,
+    "diagnostic": ""
+  }
+]

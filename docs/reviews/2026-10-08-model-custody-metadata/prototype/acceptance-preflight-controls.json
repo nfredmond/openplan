@@ -1,0 +1,26 @@
+{
+  "script_sha256": "cc0a5a1723701130cebee6c3e98451f64f9ac8bee74f85024fbd6f2bbff9e27b",
+  "controls": [
+    {
+      "control": "baseline",
+      "expected_failure": null
+    },
+    {
+      "control": "harmless",
+      "expected_failure": null
+    },
+    {
+      "control": "omit-template-ownership",
+      "expected_failure": "Foreign source accepted"
+    },
+    {
+      "control": "omit-checkout-ownership",
+      "expected_failure": "Foreign checkout accepted"
+    },
+    {
+      "control": "restored",
+      "expected_failure": null
+    }
+  ],
+  "limits": "Exact source preflight before any external command. Does not prove Git ownership, idle sessions, migrations, row preservation, RPC authority or a browser journey; those require live evidence."
+}

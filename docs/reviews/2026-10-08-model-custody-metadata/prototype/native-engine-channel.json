@@ -1,0 +1,120 @@
+{
+  "source_hashes": {
+    "model_engine_process.py": "c8b0d8363a7b4ca7d3ed16eede852ba01bdd28b44c3417c074b527cf366e3871",
+    "model_engine_channel.py": "baf4191d07ae1fad81eed0ee696b5b2b2b404c82610622c9ba9da174c3b0b59b",
+    "assignment_progress.py": "467a9cb727465aa9e7a22038ffa8c0f4547ec0158bb257ae0dc589894c5dc958",
+    "main.py": "0f33fa10e01f9911da0b96749c76226eba37d6252b3838f67886144651ca6011"
+  },
+  "controls": [
+    {
+      "control": "baseline",
+      "confirmed_commands": 2,
+      "exit_code": 0,
+      "native": {
+        "engine_version": "1.6.2",
+        "observed": [
+          {
+            "line": "Assignment warning: Cost field with wrong type. Converting to float64",
+            "on_invocation_thread": true
+          },
+          {
+            "line": "Assignment iteration 2 of at most 3,000 \u2014 relative gap 0, target 0.0005, step 0",
+            "on_invocation_thread": true
+          }
+        ],
+        "original_error_propagated": false,
+        "execute_returned": true,
+        "project_descriptors_after_exit": []
+      }
+    },
+    {
+      "control": "harmless",
+      "confirmed_commands": 2,
+      "exit_code": 0,
+      "native": {
+        "engine_version": "1.6.2",
+        "observed": [
+          {
+            "line": "Assignment warning: Cost field with wrong type. Converting to float64",
+            "on_invocation_thread": true
+          },
+          {
+            "line": "Assignment iteration 2 of at most 3,000 \u2014 relative gap 0, target 0.0005, step 0",
+            "on_invocation_thread": true
+          }
+        ],
+        "original_error_propagated": false,
+        "execute_returned": true,
+        "project_descriptors_after_exit": []
+      }
+    },
+    {
+      "control": "lost-write",
+      "pending_commands": 1,
+      "writer_stopped": true,
+      "native": {
+        "engine_version": "1.6.2",
+        "observed": [
+          {
+            "line": "Assignment warning: Cost field with wrong type. Converting to float64",
+            "on_invocation_thread": true
+          },
+          {
+            "line": "Assignment iteration 2 of at most 3,000 \u2014 relative gap 0, target 0.0005, step 0",
+            "on_invocation_thread": true
+          }
+        ],
+        "original_error_propagated": true,
+        "execute_returned": false,
+        "project_descriptors_after_exit": []
+      }
+    },
+    {
+      "control": "lost-response",
+      "pending_commands": 0,
+      "writer_stopped": true,
+      "native": {
+        "engine_version": "1.6.2",
+        "observed": [
+          {
+            "line": "Assignment warning: Cost field with wrong type. Converting to float64",
+            "on_invocation_thread": true
+          },
+          {
+            "line": "Assignment iteration 2 of at most 3,000 \u2014 relative gap 0, target 0.0005, step 0",
+            "on_invocation_thread": true
+          }
+        ],
+        "original_error_propagated": true,
+        "execute_returned": false,
+        "project_descriptors_after_exit": []
+      }
+    },
+    {
+      "control": "false-ack",
+      "detected": "Native progress was acknowledged without its exact database command"
+    },
+    {
+      "control": "restored",
+      "confirmed_commands": 2,
+      "exit_code": 0,
+      "native": {
+        "engine_version": "1.6.2",
+        "observed": [
+          {
+            "line": "Assignment warning: Cost field with wrong type. Converting to float64",
+            "on_invocation_thread": true
+          },
+          {
+            "line": "Assignment iteration 2 of at most 3,000 \u2014 relative gap 0, target 0.0005, step 0",
+            "on_invocation_thread": true
+          }
+        ],
+        "original_error_propagated": false,
+        "execute_returned": true,
+        "project_descriptors_after_exit": []
+      }
+    }
+  ],
+  "limits": "Native tiny-network solver, reserved subprocess, inherited progress channel and real parent command journal. HTTP and claimed ownership are fixtures; lost-write case is a transport timeout, not proof of server commit. No full stage input/result protocol, native database recovery, detached descendants or scientific acceptance."
+}

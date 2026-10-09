@@ -1,0 +1,50 @@
+{
+  "source_sha256": {
+    "model_validation_preparation.py": "2e585c50371f2aefd7b6c764b8f41fef059073c737c4ae41ae14f363b598848e",
+    "model_predecessor_inputs.py": "8ff02d1a42df1d9869a6ad7c9288ea7d28feaf00a398ac6511d5ee1fde7775e8",
+    "main.py": "a8fb426c1dbf0c6b285179545715c4245400c7c1d5394dbfc159ef4cccb735c1"
+  },
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "wrong-scope",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "missing-role",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "method-filter",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "consumer-method",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "registration",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "stop",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": "Actual local files and bound worker adapter with injected database responses. No native handoff, engine launch ordering, complete source coverage or scientific acceptance."
+}

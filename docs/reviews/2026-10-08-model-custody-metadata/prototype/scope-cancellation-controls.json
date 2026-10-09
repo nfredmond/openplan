@@ -1,0 +1,73 @@
+{
+  "sources_sha256": {
+    "model_engine_process.py": "6b883105fcae3108da7cb548c7a00767b3b265be198db347b770312b61625e23",
+    "model_engine_supervision.py": "9255be6b1e12139ed0dcb270858e3bd5a2b5f74a95bc8352e4d8ce88a77bac8d",
+    "model_engine_bootstrap.py": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a"
+  },
+  "controls": [
+    {
+      "control": "baseline",
+      "passed": true,
+      "summary": [
+        "Ran 10 tests in 1.174s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "control": "harmless",
+      "passed": true,
+      "summary": [
+        "Ran 10 tests in 1.178s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "control": "signal-before-intent",
+      "detected": "Engine signaled before cancellation record"
+    },
+    {
+      "control": "ignore-invocation",
+      "detected": "ValueError not raised"
+    },
+    {
+      "control": "ignore-directory",
+      "detected": "ValueError not raised"
+    },
+    {
+      "control": "ignore-thread",
+      "detected": "ValueError not raised"
+    },
+    {
+      "control": "resend-uncertain",
+      "detected": "Uncertain cancellation resent"
+    },
+    {
+      "control": "omit-signal",
+      "detected": "timed out after"
+    },
+    {
+      "control": "ignore-unrequested",
+      "detected": "signal has not been confirmed"
+    },
+    {
+      "control": "ignore-unscoped",
+      "detected": "AttributeError"
+    },
+    {
+      "control": "ignore-observed-exit",
+      "detected": "exit was already observed"
+    },
+    {
+      "control": "restored",
+      "passed": true,
+      "summary": [
+        "Ran 10 tests in 1.140s",
+        "",
+        "OK"
+      ]
+    }
+  ],
+  "limits": "Actual owned disposable Linux scopes. Mocked database transport; cancellation records remain local, not a model-stage status decision. No parent-loss recovery, native solver cancellation, UI cancellation or normal dispatch activation."
+}

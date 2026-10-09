@@ -1,0 +1,13 @@
+{
+  "control": "restored",
+  "native_engine_version": "1.6.2",
+  "classes_checked": [
+    "resident",
+    "external"
+  ],
+  "matrix_exports_equal_retained_inputs": true,
+  "network_state_and_settings_match_result": true,
+  "manifest_sha256": "6fbad544c1a2091a3549127478383f3f0e1778ecf2197cb6482bc18a9aadea52",
+  "source_sha256": "36278a567507620a6b3bf3ca81a599cff208d7f55e6e777c1a7e84aad633ca35",
+  "limits": "Two-centroid, one-link synthetic initial assignment using injected parent database responses. No calibration, preparation registration, normal dispatch or scientific acceptance."
+}

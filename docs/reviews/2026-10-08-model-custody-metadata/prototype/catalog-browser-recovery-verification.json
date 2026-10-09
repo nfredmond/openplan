@@ -1,0 +1,94 @@
+{
+  "commit": "532c0f81f43432f0be91ad2a8c2ee3d85a08f9d6",
+  "checkout": "/home/nathaniel/.local/state/openplan/catalog-acceptance-532c0f81",
+  "unit": "openplan-catalog-acceptance-532c0f81.service",
+  "invocation": "d1779c36986b4221b5c1603e2515da3a",
+  "pid": 2084354,
+  "url": "http://127.0.0.1:3518",
+  "build": {
+    "webpack_seconds": 51,
+    "typescript_seconds": 65,
+    "static_pages": 137,
+    "page_workers": 2,
+    "memory_limit": "7G",
+    "swap_limit": 0
+  },
+  "catalog_desktop": {
+    "card": "DraftTravel Demand ModelRecovery acceptance AequilibraE recordUpdated 10/8/2026, 8:05:37 PMSynthetic record for testing retained recovery decisions. No computed model result or scientific validation.Recovery acceptance fixture · Config pending · 6 gaps · 0 linked reports · 0 linked analysis runs1 saved model runMissing: Scenario basis, Config version, Operator, Input provenance, Output traceability, Validation checkpoint.",
+    "height": 800,
+    "scrollWidth": 1280,
+    "url": "http://127.0.0.1:3518/models",
+    "width": 1280
+  },
+  "catalog_mobile": {
+    "cards": [
+      {
+        "text": "DraftTravel Demand ModelRecovery acceptance AequilibraE recordUpdated 10/8/2026, 8:05:37 PMSynthetic record for testing retained recovery decisions. No computed model result or scientific validation.Recovery acceptance fixture · Config pending · 6 gaps · 0 linked reports · 0 linked analysis runs1 saved model runMissing: Scenario basis, Config version, Operator, Input provenance, Output traceability, Validation checkpoint.",
+        "visible": true
+      }
+    ],
+    "height": 844,
+    "scrollWidth": 390,
+    "url": "http://127.0.0.1:3518/models",
+    "width": 390
+  },
+  "detail_mobile": {
+    "details": [
+      "Advanced: edit raw corridor GeoJSON",
+      "Review execution recovery",
+      "What screening-grade means for this run"
+    ],
+    "inputs": [
+      {
+        "accept": "application/json,.json",
+        "id": "_r_0_"
+      }
+    ],
+    "relaunchButtons": 0,
+    "retainedRefusal": true,
+    "scrollWidth": 390,
+    "stageSummary": true,
+    "url": "http://127.0.0.1:3518/models/b9c7bf75-726d-4d1e-ad55-497a51a22e87",
+    "width": 390
+  },
+  "download": {
+    "path": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-download-mv0dvuh9-1q-model-recovery-3a3a78a5-64a5-4075-9268-3797736f98d4.json",
+    "bytes": 3950,
+    "sha256": "0f36a37b9ac5e3434d62fa7dec4e5ff2aea420d48fb707062e5194e751711eef",
+    "matches_original_saved_record": true
+  },
+  "restore": {
+    "initial_local_records": 0,
+    "after_import": {
+      "calls": [],
+      "pendingText": true,
+      "records": [
+        {
+          "phase": "pending",
+          "receipt": null,
+          "requestId": "3a3a78a5-64a5-4075-9268-3797736f98d4"
+        }
+      ]
+    },
+    "after_retry": {
+      "calls": [
+        {
+          "method": "POST",
+          "status": 200,
+          "url": "/api/models/b9c7bf75-726d-4d1e-ad55-497a51a22e87/runs/80ef9d23-b1d4-424f-97df-771ff898b61d/recovery"
+        }
+      ],
+      "phase": "confirmed",
+      "matches_original_record": true
+    },
+    "after_reload": "confirmed",
+    "database": {
+      "receipt_count": 1,
+      "parent": "cancelled",
+      "stages": 3,
+      "stage_status": "cancelled",
+      "active_attempt_ids": null
+    }
+  },
+  "limits": "T3 DOM navigation and in-page File/DataTransfer, not physical pointer or native file chooser. Snapshot failed on preview-f07599c0933f53222dd8b3633c13d8cf. No complete console review, active worker interruption, restart or practitioner/scientific acceptance."
+}

@@ -1,0 +1,58 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    },
+    {
+      "case": "allow-repeat",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_intent_and_reservation_survive_missing_reply_without_retry"
+    },
+    {
+      "case": "writable-custody",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_custody_inside_writable_mount_is_refused"
+    },
+    {
+      "case": "ignore-intent-change",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_changed_intent_refuses_create_and_receipt"
+    },
+    {
+      "case": "ignore-directory-change",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_replaced_directory_refuses_receipt"
+    },
+    {
+      "case": "accept-unverified-container",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_wrong_container_is_not_retained_as_created"
+    },
+    {
+      "case": "invent-start-authority",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_verified_creation_is_recorded_once_without_start_authority"
+    },
+    {
+      "case": "restored",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    }
+  ],
+  "source_sha256": "8424da321334c0ad238ceb18397caf15452c48f3fc42cc7e2d26338f9fb59a5c",
+  "limits": [
+    "Private synthetic creation records",
+    "Separate local Docker proof covers actual created containers",
+    "No network reply loss, controller crash, startup or owner-loss termination"
+  ]
+}

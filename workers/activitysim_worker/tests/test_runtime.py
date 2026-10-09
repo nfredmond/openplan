@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import json
 import shlex
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import BinaryIO
 from unittest import mock
 
 WORKER_DIR = Path(__file__).resolve().parents[1]
@@ -247,11 +249,13 @@ class ActivitySimRuntimeTests(unittest.TestCase):
             )
         )
 
-        def fake_run(command: list[str], cwd: str, capture_output: bool, text: bool, check: bool):
+        def fake_run(command: list[str], cwd: str, stdout: BinaryIO, stderr: int, check: bool):
             output_dir = Path(cwd).parent / "output"
             output_dir.mkdir(parents=True, exist_ok=True)
             (output_dir / "final_trips.csv").write_text("trip_id\n1\n")
-            return mock.Mock(returncode=0, stdout="container run complete\n", stderr="")
+            self.assertEqual(stderr, subprocess.STDOUT)
+            stdout.write(b"container run complete\n")
+            return mock.Mock(returncode=0)
 
         with (
             mock.patch("runtime.shutil.which", return_value="/usr/bin/docker"),

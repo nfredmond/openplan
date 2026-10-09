@@ -1,0 +1,62 @@
+{
+  "package_inputs_sha256": "74d4acbc5121a0b8196a51a5d60db36b7607fd0cb41709c84beea99ed3f21376",
+  "worker_sha256": "74d7f8eac1a523c50a596690e228409a0b1b1f6153f08af6a133785006f52007",
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "package_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 8,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "package_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 8,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "wrong-manifest-hash",
+      "expected_failure": "Native package manifest differs from retained bytes"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "package_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 8,
+        "gateway_removed": true
+      }
+    }
+  ],
+  "limits": "Actual selected-package handoff from completed native producer through owned consumer registration, native files and installed artifact command with fresh CLI recovery. No consumer mapping, project transfer, normal managed dispatch or scientific acceptance."
+}

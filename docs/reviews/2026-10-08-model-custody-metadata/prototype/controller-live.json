@@ -1,0 +1,39 @@
+{
+  "cases": [
+    {
+      "owner_lost": false,
+      "command_log_retained": true,
+      "detached_completion_handled": true,
+      "exit_record_retained": true,
+      "expected_behavior_observed": true
+    },
+    {
+      "owner_lost": true,
+      "command_log_retained": true,
+      "detached_completion_handled": true,
+      "exit_record_retained": false,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "changed-artifact",
+      "startup_refused": true,
+      "workload_not_started": true
+    },
+    {
+      "case": "wrong-peer",
+      "startup_refused": true,
+      "workload_not_started": true
+    }
+  ],
+  "all_owned_containers_removed": true,
+  "sources": {
+    "container_supervision.py": "9bc74bb284b4c3ef9c2f59e4702edc2d4f101671830a023058380374c1b9b9c0",
+    "container_bootstrap.py": "aef5b4906fd91369386e5c0513aafadfd6c4fe6a89c3b5c047b3f521d0b9a84f",
+    "container_peer.py": "06f4eab78d47d4b466abe02c9348e8cab3a3388a9491a74beff8c792252e75a9",
+    "container_transport.py": "f8ae803b5d91feed48fce2095baa24474c5f7c0ee02a5e88201a5b32a6b151dd"
+  },
+  "limits": [
+    "Actual worker controller with synthetic Python command and detached child",
+    "No runtime.py dispatch, native ActivitySim, database admission or scientific acceptance"
+  ]
+}

@@ -1,3 +1,4 @@
+import type { AttemptInstrument } from "@/lib/models/attempt-instrument-read";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
 import {
@@ -138,6 +139,8 @@ export type ReportCitedModelRun = {
     diagnosisSha256: string;
   } | null;
   comparableObservationCustodyReadFailed?: boolean;
+  attemptInstrumentCustody?: AttemptInstrument[];
+  attemptInstrumentCustodyReadFailed?: boolean;
   structuralDemandCustody?: {
     outcome: "inconclusive";
     method: "aequilibrae" | "activitysim";
@@ -526,6 +529,18 @@ function citedModelRunClaimTierLine(run: ReportCitedModelRun): string | null {
     : modelingClaimStatusLabel(null);
 }
 
+/** Preserve the exact method and attempt instead of choosing a newest parent-run result. */
+function attemptInstrumentMarkup(run: ReportCitedModelRun): string {
+  if (run.attemptInstrumentCustodyReadFailed) return '<p class="meta">Attempt-specific validation evidence could not be read. This is not evidence that no assessment exists.</p>';
+  if (run.attemptInstrumentCustody === undefined) return '';
+  if (run.attemptInstrumentCustody.length === 0) return '<p class="meta">No attempt-specific validation evidence is attached to this run.</p>';
+  return '<p class="meta">Retained method-specific evidence follows. Every assessment remains inconclusive; custody does not establish model accuracy or select an accepted attempt.</p>' + run.attemptInstrumentCustody.map(record => {
+    const artifacts = (["model_output", "input_bundle", "match_audit", "comparison_basis", "assessment", "diagnosis"] as const)
+      .map(role => `${role}: artifact ${record[`${role}_artifact_id`]}, SHA-256 ${record[`${role}_sha256`]}.`).join(" ");
+    return `<p class="meta" style="overflow-wrap:anywhere">${esc(`${record.demand_method}: ${record.scientific_outcome}. Custody ${record.id}; workspace ${record.workspace_id}; run ${record.model_run_id}; stage ${record.stage_id}; attempt ${record.attempt_id}; recorded ${record.created_at}. ${artifacts}`)}</p>`;
+  }).join('');
+}
+
 function citedModelRunMarkup(run: ReportCitedModelRun): string {
   const runMode = getManagedRunModeDefinition(run.engine_key);
   const kpiLine = compactModelRunKpiLine(run.result_summary_json);
@@ -578,6 +593,7 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
     <p class="meta">${esc(assessmentLine)}</p>
     <p class="meta">${esc(diagnosisLine)}</p>
     <p class="meta">${esc(comparableLine)}</p>
+    ${attemptInstrumentMarkup(run)}
     <p class="meta">${esc(structuralDemandLine)}</p>
     <p class="meta">${esc(distributedWorkLoadingLine)}</p>
     <p class="meta">${esc(runMode.caveatSummary)}</p>

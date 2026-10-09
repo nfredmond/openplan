@@ -13,6 +13,7 @@ import json
 import math
 import statistics
 from collections import Counter
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -264,6 +265,15 @@ def assess_validation(
     }
 
 
+@dataclass(frozen=True)
+class PreparedValidationContext:
+    """Expected identities supplied by retained run preparation, not input files."""
+    model_run_id: str
+    method: str
+    input_bundle_sha256: str
+    comparison_basis_sha256: str
+
+
 def assess_frozen_instrument_files(
     *,
     observation_package_path: str | Path,
@@ -274,11 +284,12 @@ def assess_frozen_instrument_files(
     assessment_id: str,
     readiness_root: str | Path,
     created_at: str | None = None,
+    prepared_context: PreparedValidationContext | None = None,
 ) -> dict[str, Any]:
     """Assess exact frozen files after every assignment-blind input passes.
 
-    The controlled study runner and the normal local worker both call this
-    boundary. Model-output bytes are not opened until the package, match audit,
+    The controlled study runner calls this boundary. The worker exposes a
+    wrapper, but its normal dispatch connection remains unfinished. Model-output bytes are not opened until the package, match audit,
     input bundle, comparison basis, and every bundle readiness artifact have
     passed their exact-hash checks.
     """
@@ -289,9 +300,26 @@ def assess_frozen_instrument_files(
     output_path = Path(model_output_path)
     root = Path(readiness_root)
 
+    def refuse_output_alias(path: Path) -> None:
+        # Identity checks read metadata only. A readiness hash must never open
+        # the output through a different filename before preparation is checked.
+        same_path = path.resolve() == output_path.resolve()
+        try:
+            same_file = path.samefile(output_path)
+        except FileNotFoundError:
+            same_file = False
+        if same_path or same_file:
+            raise ContractError("readiness input aliases model output")
+
+    for input_path in (package_path, audit_path, bundle_path, basis_path):
+        refuse_output_alias(input_path)
+
+    input_bytes: dict[Path, bytes] = {}
+
     def load_json(path: Path, label: str) -> dict[str, Any]:
-        with path.open(encoding="utf-8") as handle:
-            value = json.load(handle)
+        payload = path.read_bytes()
+        input_bytes[path] = payload
+        value = json.loads(payload)
         if not isinstance(value, dict):
             raise ContractError(f"{label} must be a JSON object")
         return value
@@ -300,6 +328,15 @@ def assess_frozen_instrument_files(
     audit = load_json(audit_path, "pre-volume match audit")
     bundle = load_json(bundle_path, "validation input bundle")
     basis = load_json(basis_path, "comparison basis")
+    if prepared_context is not None:
+        if not isinstance(prepared_context.model_run_id, str) or not prepared_context.model_run_id.strip() or prepared_context.method not in {"aequilibrae", "activitysim"}:
+            raise ContractError("prepared validation context has invalid run or method")
+        if hashlib.sha256(input_bytes[bundle_path]).hexdigest() != prepared_context.input_bundle_sha256:
+            raise ContractError("validation bundle differs from retained preparation")
+        if hashlib.sha256(input_bytes[basis_path]).hexdigest() != prepared_context.comparison_basis_sha256:
+            raise ContractError("comparison basis differs from retained preparation")
+        if basis.get("model_run_id") != prepared_context.model_run_id or basis.get("method") != prepared_context.method:
+            raise ContractError("comparison basis run or method differs from preparation")
     if bundle.get("schema") != "openplan.validation-input-bundle.v2":
         raise ContractError("rules-v5 requires a v2 validation input bundle")
     if bundle.get("model_output_bytes_read") is not False:
@@ -310,13 +347,17 @@ def assess_frozen_instrument_files(
         raise ContractError("validation input bundle omitted readiness inputs")
 
     def records(value: Any) -> list[Mapping[str, Any]]:
-        if isinstance(value, Mapping) and "path" in value and "sha256" in value:
-            return [value]
         if isinstance(value, Mapping):
+            if any(key in value for key in ("path", "sha256", "bytes")):
+                if "path" not in value or "sha256" not in value:
+                    raise ContractError("readiness artifact omitted its exact path or hash")
+                return [value]
+            if not value:
+                raise ContractError("readiness input contains an empty record")
             return [item for child in value.values() for item in records(child)]
         if isinstance(value, list):
             return [item for child in value for item in records(child)]
-        return []
+        raise ContractError("readiness input must contain artifact records")
 
     readiness_records = records(readiness)
     if not readiness_records:
@@ -326,20 +367,25 @@ def assess_frozen_instrument_files(
         relative = record.get("path")
         if not _hash(expected) or not isinstance(relative, str) or not relative:
             raise ContractError("readiness artifact omitted its exact path or hash")
+        if "bytes" in record and (type(record["bytes"]) is not int or record["bytes"] < 0):
+            raise ContractError("readiness artifact has an invalid byte size")
         candidate = Path(relative)
         resolved = candidate if candidate.is_absolute() else root / candidate
+        refuse_output_alias(resolved)
         try:
             payload = resolved.read_bytes()
         except OSError as exc:
             raise ContractError(f"readiness artifact is unavailable: {relative}") from exc
+        if "bytes" in record and len(payload) != record["bytes"]:
+            raise ContractError(f"frozen readiness artifact size changed: {relative}")
         if hashlib.sha256(payload).hexdigest() != expected:
             raise ContractError(f"frozen readiness artifact changed: {relative}")
 
     expected_package = (readiness.get("observation_package") or {}).get("sha256")
     expected_audit = (readiness.get("pre_volume_match_audit") or {}).get("sha256")
-    if hashlib.sha256(package_path.read_bytes()).hexdigest() != expected_package:
+    if hashlib.sha256(input_bytes[package_path]).hexdigest() != expected_package:
         raise ContractError("frozen observation package bytes changed")
-    if hashlib.sha256(audit_path.read_bytes()).hexdigest() != expected_audit:
+    if hashlib.sha256(input_bytes[audit_path]).hexdigest() != expected_audit:
         raise ContractError("frozen pre-volume match audit bytes changed")
     validate_inputs(package.get("observations") or [], audit, basis)
 
@@ -350,21 +396,30 @@ def assess_frozen_instrument_files(
         raise ContractError("model-output bytes differ from the frozen comparison basis")
     reader = csv.DictReader(io.StringIO(output_bytes.decode("utf-8")))
     fields = reader.fieldnames or []
+    if len(fields) != len(set(fields)):
+        raise ContractError("rules-v5 model output has duplicate column names")
     volume_field = next(
         (field for field in ("PCE_tot", "demand_tot", "volume", "loaded_volume") if field in fields),
         None,
     )
     if volume_field is None or "link_id" not in fields:
         raise ContractError("rules-v5 model output has no supported link-volume fields")
-    volumes = {str(row["link_id"]): float(row[volume_field]) for row in reader}
+    volumes: dict[str, float] = {}
+    for row in reader:
+        identifier = row["link_id"]
+        if not isinstance(identifier, str) or not identifier.strip():
+            raise ContractError("rules-v5 model output has an empty link identity")
+        if identifier in volumes:
+            raise ContractError("rules-v5 model output repeats a link identity")
+        volumes[identifier] = float(row[volume_field])
     return assess_validation(
         package["observations"],
         audit,
         basis,
         volumes,
         assessment_id=assessment_id,
-        input_bundle_sha256=hashlib.sha256(bundle_path.read_bytes()).hexdigest(),
-        match_audit_sha256=hashlib.sha256(audit_path.read_bytes()).hexdigest(),
+        input_bundle_sha256=hashlib.sha256(input_bytes[bundle_path]).hexdigest(),
+        match_audit_sha256=hashlib.sha256(input_bytes[audit_path]).hexdigest(),
         created_at=created_at,
     )
 
