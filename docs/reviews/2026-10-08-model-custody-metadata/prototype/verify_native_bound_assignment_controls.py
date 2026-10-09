@@ -18,7 +18,7 @@ for case in ('baseline','harmless','disable-mode-choice','lost-progress','lost-r
     elif case in ('lost-progress','lost-response'):
         if result.returncode:raise AssertionError(case+': '+result.stderr)
         native=json.loads((output/case/'result.json').read_text())
-        records.append({'control':case,'pending_commands':native['pending_commands'],'final_outputs_absent':native['final_outputs_absent'],'child_failure':native['child_failure']})
+        records.append({'control':case,'pending_commands':native['pending_commands'],'final_outputs_absent':native['final_outputs_absent'],'child_failure':native['child_failure'],'replay':native['replay']})
     else:
         if result.returncode:raise AssertionError(case+': '+result.stderr)
         native=json.loads((output/case/'result.json').read_text())
@@ -29,7 +29,7 @@ for case in ('baseline','harmless','disable-mode-choice','lost-progress','lost-r
 expected={key:value for key,value in records[0].items() if key!='control'}
 for row in (records[1],records[-1]):
     assert {key:value for key,value in row.items() if key!='control'}==expected,'Harmless/restored native results changed'
-report={'proof_sha256':hashlib.sha256((ROOT/'verify_native_bound_assignment.py').read_bytes()).hexdigest(),
+report={'replay_proof_sha256':hashlib.sha256((ROOT/'verify_native_command_replay.py').read_bytes()).hexdigest(),'proof_sha256':hashlib.sha256((ROOT/'verify_native_bound_assignment.py').read_bytes()).hexdigest(),
         'controls':records,'evidence_directory':str(output),
-        'limits':'Full synthetic native assignment; mocked parent transports and constructed predecessor inputs. Missing mode choice is a configuration fault control. Native stopping tested, but no restart/replay, larger networks, calibration, cordons, scientific acceptance or dispatcher activation.'}
+        'limits':'Full synthetic native assignment; mocked parent transports and constructed predecessor inputs. Missing mode choice is a configuration fault control. Native stopping and fresh-process command replay on snapshots tested with mocked RPC; no live database replay, model restart, larger networks, calibration, cordons, scientific acceptance or dispatcher activation.'}
 content=json.dumps(report,indent=2)+'\n';(ROOT/'native-bound-assignment-controls.json').write_text(content);(output/'result.json').write_text(content);print(content)

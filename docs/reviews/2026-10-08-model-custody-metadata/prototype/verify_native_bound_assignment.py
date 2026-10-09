@@ -1,5 +1,6 @@
 """Run the complete assignment stage in a reserved child with synthetic inputs."""
-import hashlib,json,os,select,socket,sys,time
+import hashlib,json,os,select,socket,sqlite3,subprocess,sys,time
+from contextlib import closing
 from pathlib import Path
 from unittest.mock import patch
 ROOT=Path(__file__).resolve().parent
@@ -125,9 +126,23 @@ def main():
             if pending:
                 assert 'Assignment iteration' in pending[0]['command']['arguments']['log_tail']
                 (output/'pending-command.json').write_text(json.dumps(pending[0],indent=2)+'\n')
-            report={'control':control,'parent_failure':parent_failure,'child_failure':failure,'child_exit_code':code,
+            snapshot=output/'recovery-journal';snapshot.mkdir(mode=0o700)
+            with closing(sqlite3.connect(fixture.directory/'model-commands.sqlite3')) as source_db, closing(sqlite3.connect(snapshot/'model-commands.sqlite3')) as destination_db:
+                source_db.backup(destination_db)
+            os.chmod(snapshot/'model-commands.sqlite3',0o600)
+            commands=journal.read_existing(snapshot,writer.context.destination,include_resolved=True)
+            iteration=next(row for row in reversed(commands) if row['command']['operation']=='write_model_stage_attempt' and 'Assignment iteration' in row['command']['arguments']['log_tail'])
+            config={'journal':str(snapshot),'base_url':writer.base_url,'deployment_id':writer.deployment_id,
+                    'request_id':iteration['command']['request_id'],'report':str(output/'replay-result.json')}
+            config_path=output/'replay-config.json';config_path.write_text(json.dumps(config))
+            replay=subprocess.run([sys.executable,'-B',str(ROOT/'verify_native_command_replay.py'),str(config_path)],capture_output=True,text=True,timeout=30)
+            (output/'replay.log').write_text(replay.stdout+replay.stderr)
+            assert replay.returncode==0,'Fresh native command replay failed: '+replay.stderr
+            replay_result=json.loads((output/'replay-result.json').read_text())
+            assert not (root/'assignment-result.json').exists() and not (root/'run_output/link_volumes.csv').exists()
+            report={'control':control,'parent_failure':parent_failure,'replay':replay_result,'child_failure':failure,'child_exit_code':code,
                     'pending_commands':len(pending),'final_outputs_absent':True,'worker_sha256':hashlib.sha256((WORKER/'main.py').read_bytes()).hexdigest(),
-                    'limits':'Full synthetic native stage failure with mocked transport. Pending command copied for evidence only. No restart/replay, supervisor loss, escaped descendants or scientific acceptance.'}
+                    'limits':'Full synthetic native stage failure with mocked transport. Fresh-process exact command replay tested on snapshot with mocked RPC. No live database replay, model restart, supervisor loss, escaped descendants or scientific acceptance.'}
             content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/('native-bound-assignment-'+control+'.json')).write_text(content)
             print(content);return
         if code:raise AssertionError('Native child failed; inspect '+str(output/'child.log'))

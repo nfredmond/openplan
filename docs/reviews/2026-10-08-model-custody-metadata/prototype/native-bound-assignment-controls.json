@@ -1,5 +1,6 @@
 {
-  "proof_sha256": "8623309123e057abd3ce18a25e8ba0aa8028c8b4cce62bf101b6486eb1baf9e2",
+  "replay_proof_sha256": "4f6b0eef751dc96599405e1f5f4d128f874e76790325d2bde1cc4e67e1fad692",
+  "proof_sha256": "db5c9d5796f3715866878ffd21add861ec5f483e110ad3f7ac91be9edf65f7c2",
   "controls": [
     {
       "control": "baseline",
@@ -32,6 +33,17 @@
       "child_failure": {
         "error_type": "WorkerStateWriteUnconfirmed",
         "active_project": false
+      },
+      "replay": {
+        "request_sha256": "a380fc7cc00e14c71e74b8c427bc1e9175ffb19c3d75d01f9ce72ae278537fd3",
+        "initially_resolved": false,
+        "successful_posts": 1,
+        "wrong_receipt_detected": true,
+        "wrong_deployment_refused": true,
+        "command_inventory_unchanged": true,
+        "pending_after": 0,
+        "model_resumed": false,
+        "limits": "Fresh recovery process and native-failure journal snapshot; mocked RPC receipts. No live database replay, model restart, ownership lease or execution authorization."
       }
     },
     {
@@ -41,6 +53,17 @@
       "child_failure": {
         "error_type": "WorkerStateWriteUnconfirmed",
         "active_project": false
+      },
+      "replay": {
+        "request_sha256": "88b368423e784896e50af1ad79f8385dab0c20547dbc2696f1da65d476b9efed",
+        "initially_resolved": true,
+        "successful_posts": 0,
+        "wrong_receipt_detected": false,
+        "wrong_deployment_refused": true,
+        "command_inventory_unchanged": true,
+        "pending_after": 0,
+        "model_resumed": false,
+        "limits": "Fresh recovery process and native-failure journal snapshot; mocked RPC receipts. No live database replay, model restart, ownership lease or execution authorization."
       }
     },
     {
@@ -58,6 +81,6 @@
       "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f"
     }
   ],
-  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-bound-assignment-failure-controls-20261008",
-  "limits": "Full synthetic native assignment; mocked parent transports and constructed predecessor inputs. Missing mode choice is a configuration fault control. Native stopping tested, but no restart/replay, larger networks, calibration, cordons, scientific acceptance or dispatcher activation."
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-bound-assignment-replay-controls-20261008",
+  "limits": "Full synthetic native assignment; mocked parent transports and constructed predecessor inputs. Missing mode choice is a configuration fault control. Native stopping and fresh-process command replay on snapshots tested with mocked RPC; no live database replay, model restart, larger networks, calibration, cordons, scientific acceptance or dispatcher activation."
 }

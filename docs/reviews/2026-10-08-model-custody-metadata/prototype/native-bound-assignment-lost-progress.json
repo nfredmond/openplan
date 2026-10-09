@@ -1,6 +1,17 @@
 {
   "control": "lost-progress",
   "parent_failure": "DeliveryUnconfirmed",
+  "replay": {
+    "request_sha256": "a380fc7cc00e14c71e74b8c427bc1e9175ffb19c3d75d01f9ce72ae278537fd3",
+    "initially_resolved": false,
+    "successful_posts": 1,
+    "wrong_receipt_detected": true,
+    "wrong_deployment_refused": true,
+    "command_inventory_unchanged": true,
+    "pending_after": 0,
+    "model_resumed": false,
+    "limits": "Fresh recovery process and native-failure journal snapshot; mocked RPC receipts. No live database replay, model restart, ownership lease or execution authorization."
+  },
   "child_failure": {
     "error_type": "WorkerStateWriteUnconfirmed",
     "active_project": false
@@ -9,5 +20,5 @@
   "pending_commands": 1,
   "final_outputs_absent": true,
   "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
-  "limits": "Full synthetic native stage failure with mocked transport. Pending command copied for evidence only. No restart/replay, supervisor loss, escaped descendants or scientific acceptance."
+  "limits": "Full synthetic native stage failure with mocked transport. Fresh-process exact command replay tested on snapshot with mocked RPC. No live database replay, model restart, supervisor loss, escaped descendants or scientific acceptance."
 }

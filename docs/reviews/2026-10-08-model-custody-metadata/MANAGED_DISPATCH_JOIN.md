@@ -2922,3 +2922,26 @@ pending command is copied as evidence before fixture cleanup, not replayed. No
 restart recovery, supervisor loss, escaped descendants, larger-network behavior,
 calibration, cordons or scientific accuracy is established. Output publication
 and dispatcher activation remain open.
+
+
+## Fresh-process replay after native failure, October 8
+
+Each full-stage native failure fixture now snapshots its actual SQLite command
+journal before cleanup. A separate Python process reads that snapshot and calls
+the existing recovery adapter with the saved request ID. It verifies the exact
+original RPC arguments and unchanged command inventory. A pending iteration
+write sends once and retains the checked receipt; a second recovery uses that
+receipt without sending. The lost-child-acknowledgement case sends zero times
+because the parent had already retained its receipt.
+
+A wrong-attempt receipt is refused and leaves the pending command unresolved.
+A foreign deployment is refused before transport. The recovery process imports
+neither the worker nor AequilibraE, and final assignment outputs remain absent.
+The full seven-case native control suite passes again, including missing mode
+choice and swallowed progress faults. Six existing command recovery tests pass.
+Reports include the replay verifier hash and each saved request hash.
+
+The replay uses real native-failure journal snapshots with mocked RPC responses.
+It does not test live database idempotency or resume a model. Ownership after
+replay, interrupted computation recovery, supervisor loss, output publication,
+scientific acceptance and normal dispatcher activation remain open.
