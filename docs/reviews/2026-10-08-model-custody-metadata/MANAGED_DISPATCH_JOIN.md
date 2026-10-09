@@ -2645,3 +2645,38 @@ operator, discovered and bundled inputs and preserve their distinct coverage and
 catalog-failure outcomes before joining them to the child channel. Full assignment
 execution and scientific acceptance remain open. GitHub run 37862059125 remains
 in progress on live polling.
+
+### Parent preparation across transit feed origins
+
+`resolve_transit_feed_plan` now holds the existing selection/discovery join and is
+used by the normal assignment path and the new parent adapter. It preserves the
+actual centroid extent, selected-feed precedence, operator override behavior and
+catalog-failure policy. The parent reads the owned run, resolves the plan, obtains
+the selected/operator/discovered/bundled archive and confirms the same retained
+artifact format. Shared output validation and registration helpers also serve
+the selected-only adapter.
+
+Retained metadata includes feed origin, operator displacement, catalog error and
+bundled-fallback disclosure. A catalog answer with no covering feed returns
+`no_local_feed` without loading a bundle. A selected-feed failure never substitutes
+another origin. Ordinary acquisition/parse failures remain distinct from uncertain
+custody; registration sits outside the ordinary-feed error handler. The parent
+checks the caller-supplied deadline after preparation. Coverage remains a later
+numerical decision and is not inferred from successful retention.
+
+Ten origin tests cover operator path/URL, discovered extent, disabled discovery,
+catalog failure, catalog no-match, selected precedence/refusal, deadline and lost
+registration. The warning-enabled transit suite passes 44 tests, and all 25
+existing discovery checks and 51 handoff checks pass. The handoff source guard
+initially rejected the helper's renamed local selection expression; the extracted
+helper now preserves the existing expression and variable names without weakening
+the guard. Six injected faults fail for omitted registration, wrong extent,
+lost fallback disclosure, ignored selection, substituted no-match and lost deadline.
+Baseline, harmless and restored controls pass. See
+`prototype/transit-origin-controls.json`.
+
+Catalog/download/database transports remain mocked. Coordinates and deadline are
+trusted parent inputs in these checks; their derivation from owned package data
+still needs integration. General-origin child requests and coverage outcomes,
+hard download deadlines, native registration recovery, full assignment execution
+and scientific acceptance remain unfinished. Normal managed dispatch stays off.

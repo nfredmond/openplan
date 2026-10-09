@@ -2326,11 +2326,10 @@ def load_selected_feed_version(feed_version_id: str, run_workspace_id: str | Non
     return los, meta
 
 
-def retain_managed_selected_transit(out_dir: str) -> dict:
-    """Prepare this owned run's selected feed and confirm its retained artifact."""
+def _owned_transit_writer(out_dir):
+    """Validate the bound attempt before any source acquisition."""
     from pathlib import Path
     import model_attempt_writer as managed
-    import model_transit_inputs
     writer = managed.current()
     if writer is None:
         raise WorkerStateWriteUnconfirmed("Transit retention requires a bound parent writer")
@@ -2342,15 +2341,12 @@ def retain_managed_selected_transit(out_dir: str) -> dict:
     except Exception as error:
         writer.stopped = True
         raise WorkerStateWriteUnconfirmed("Transit destination requires reconciliation") from error
-    run_row = writer.read_run(writer.context.run_id)
-    selection = gtfs_skim.parse_feed_selection(run_row)
-    if selection is None or selection.status != "selected":
-        raise gtfs_skim.SelectedFeedError(
-            selection.no_feed_reason if selection is not None else "selected_feed_not_selected",
-            "This preparation requires the run's selected feed; no substitute was acquired.",
-        )
-    raw, los, meta = _prepare_selected_feed_version(selection.feed_version_id, writer.context.workspace_id)
-    metadata = {**meta, "source_url": los.source_url, "source_name": los.source_name}
+    return writer
+
+
+def _confirm_managed_transit_bundle(writer, out_dir, raw, metadata):
+    from pathlib import Path
+    import model_transit_inputs
     try:
         writer.require_open()
         retained = model_transit_inputs.retain(raw, metadata, gtfs_skim.skim_settings(),
@@ -2368,12 +2364,84 @@ def retain_managed_selected_transit(out_dir: str) -> dict:
         raise WorkerStateWriteUnconfirmed("Transit retention requires reconciliation") from error
 
 
+
+def retain_managed_selected_transit(out_dir: str) -> dict:
+    """Prepare this owned run's selected feed and confirm its retained artifact."""
+    writer = _owned_transit_writer(out_dir)
+    run_row = writer.read_run(writer.context.run_id)
+    selection = gtfs_skim.parse_feed_selection(run_row)
+    if selection is None or selection.status != "selected":
+        raise gtfs_skim.SelectedFeedError(
+            selection.no_feed_reason if selection is not None else "selected_feed_not_selected",
+            "This preparation requires the run's selected feed; no substitute was acquired.",
+        )
+    raw, los, meta = _prepare_selected_feed_version(selection.feed_version_id, writer.context.workspace_id)
+    metadata = {**meta, "source_url": los.source_url, "source_name": los.source_name}
+    return _confirm_managed_transit_bundle(writer, out_dir, raw, metadata)
+
+
 def prepare_managed_selected_transit_for_engine(out_dir: str) -> dict:
     """Keep ordinary selected-feed refusal distinct from uncertain custody."""
     try:
         record = retain_managed_selected_transit(out_dir)
     except gtfs_skim.SelectedFeedError as error:
         return {"status": "unavailable", "no_feed_reason": error.no_feed_reason}
+    return {"status": "retained", "record": record}
+
+
+
+def resolve_transit_feed_plan(run_row, lons, lats):
+    """Use the existing feed precedence and actual centroid extent for discovery."""
+    env_url, env_path = os.getenv("GTFS_URL"), os.getenv("GTFS_PATH")
+    feed_selection = gtfs_skim.parse_feed_selection(run_row)
+    explicit_feed = bool(env_path or env_url)
+    discovering = GTFS_DISCOVER and not explicit_feed and feed_selection is None
+    discovery = None
+    if discovering:
+        study_bbox = (float(lons.min()), float(lats.min()), float(lons.max()), float(lats.max()))
+        discovery = gtfs_skim.discover_feed(study_bbox)
+    return gtfs_skim.plan_feed(discovery, discovering=discovering, env_url=env_url,
+                               env_path=env_path, selection=feed_selection,), discovery
+
+
+def prepare_managed_transit_for_engine(out_dir: str, *, lons, lats, deadline) -> dict:
+    """Retain the owned run's selected, operator, discovered or bundled archive.
+
+    Coordinates and deadline come from trusted parent preparation, not a child
+    request. Coverage remains a later numerical decision against these inputs.
+    """
+    writer = _owned_transit_writer(out_dir)
+    run_row = writer.read_run(writer.context.run_id)
+    plan, _discovery = resolve_transit_feed_plan(run_row, lons, lats)
+    provenance = {
+        "feed_origin": plan.origin,
+        "fallback_after_catalog_failure": plan.fallback_after_catalog_failure,
+        "operator_env_overridden": plan.operator_env_overridden,
+        "selection_reason": (plan.selection_reason or "")[:300] or None,
+        "discovery_error": (plan.discovery_error or "")[:300] or None,
+    }
+    if not plan.load:
+        return {"status": "unavailable", "transit_status": plan.status,
+                "metadata": {**provenance, "no_feed_reason": plan.no_feed_reason}}
+    try:
+        if plan.feed_version_id:
+            raw, los, metadata = _prepare_selected_feed_version(plan.feed_version_id, writer.context.workspace_id)
+        else:
+            raw, source_url, source_name = gtfs_skim.acquire_feed_archive(url=plan.url)
+            los = gtfs_skim.load_feed(raw=raw, source_url=source_url, source_name=source_name)
+            metadata = _transit_feed_summary(los)
+            metadata["feed_checksum_sha256"] = hashlib.sha256(raw).hexdigest()
+        gtfs_skim.check_deadline(deadline, "preparing the retained transit archive")
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except Exception as error:
+        reason = (error.no_feed_reason if isinstance(error, gtfs_skim.SelectedFeedError) else
+                  "feed_publishes_frequencies_only" if isinstance(error, gtfs_skim.GtfsFrequencyOnly) else
+                  "transit_skim_timed_out" if isinstance(error, gtfs_skim.GtfsTimeout) else "feed_load_failed")
+        return {"status": "unavailable", "transit_status": "feed_unavailable",
+                "metadata": {**provenance, "no_feed_reason": reason}}
+    metadata = {**metadata, **provenance, "source_url": los.source_url, "source_name": los.source_name}
+    record = _confirm_managed_transit_bundle(writer, out_dir, raw, metadata)
     return {"status": "retained", "record": record}
 
 
@@ -4411,30 +4479,9 @@ def stage_assignment(
                     # this. It never changes a modeled number, only converts an
                     # open-ended stall into a named refusal.
                     transit_deadline = gtfs_skim.stage_deadline()
-                    discovery = None
-                    env_url = os.getenv("GTFS_URL")
-                    env_path = os.getenv("GTFS_PATH")
-                    explicit_feed = bool(env_path or env_url)
-                    # The run's OWN choice of feed, if the planner made one. It
-                    # outranks the operator's env feed and the catalog both — see
-                    # gtfs_skim.plan_feed for why a per-run act beats a
-                    # deployment-wide default — so discovery is not even attempted
-                    # when one is present, rather than attempted and then discarded.
-                    feed_selection = gtfs_skim.parse_feed_selection(run_row)
-                    discovering = GTFS_DISCOVER and not explicit_feed and feed_selection is None
-                    if discovering:
-                        study_bbox = (float(lons.min()), float(lats.min()), float(lons.max()), float(lats.max()))
-                        discovery = gtfs_skim.discover_feed(study_bbox)
-                        if discovery.url:
-                            log += f"GTFS discovery selected a feed covering this study area: {discovery.url}\n"
-
-                    # WHICH feed this run tries, and what it may say when it has none.
-                    # The decision itself lives in gtfs_skim.plan_feed so it is unit
-                    # testable — main.py cannot be imported by the stdlib worker suites.
-                    feed_plan = gtfs_skim.plan_feed(
-                        discovery, discovering=discovering, env_url=env_url, env_path=env_path,
-                        selection=feed_selection,
-                    )
+                    feed_plan, discovery = resolve_transit_feed_plan(run_row, lons, lats)
+                    if discovery is not None and discovery.url:
+                        log += f"GTFS discovery selected a feed covering this study area: {discovery.url}\n"
                     feed_origin = feed_plan.origin
                     transit_los_meta = {"feed_origin": feed_origin}
                     if feed_plan.operator_env_overridden:
