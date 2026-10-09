@@ -23,6 +23,7 @@ jobs:
           python -B workers/county_onramp_worker/tests/test_main.py
           python -B workers/county_onramp_worker/tests/test_process_cancellation.py
           python -B scripts/modeling/tests/test_validation_instrument_v2.py
+          python -B scripts/modeling/tests/test_validation_output_alias.py
           python -B scripts/modeling/tests/test_directional_refusal.py
       - name: Harmless controls and targeted fault checks
         run: python -B workers/science_regression_mutations.py

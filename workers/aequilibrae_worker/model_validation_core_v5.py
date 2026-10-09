@@ -277,8 +277,8 @@ def assess_frozen_instrument_files(
 ) -> dict[str, Any]:
     """Assess exact frozen files after every assignment-blind input passes.
 
-    The controlled study runner and the normal local worker both call this
-    boundary. Model-output bytes are not opened until the package, match audit,
+    The controlled study runner calls this boundary. The worker exposes a
+    wrapper, but its normal dispatch connection remains unfinished. Model-output bytes are not opened until the package, match audit,
     input bundle, comparison basis, and every bundle readiness artifact have
     passed their exact-hash checks.
     """
@@ -288,6 +288,20 @@ def assess_frozen_instrument_files(
     basis_path = Path(comparison_basis_path)
     output_path = Path(model_output_path)
     root = Path(readiness_root)
+
+    def refuse_output_alias(path: Path) -> None:
+        # Identity checks read metadata only. A readiness hash must never open
+        # the output through a different filename before preparation is checked.
+        same_path = path.resolve() == output_path.resolve()
+        try:
+            same_file = path.samefile(output_path)
+        except FileNotFoundError:
+            same_file = False
+        if same_path or same_file:
+            raise ContractError("readiness input aliases model output")
+
+    for input_path in (package_path, audit_path, bundle_path, basis_path):
+        refuse_output_alias(input_path)
 
     def load_json(path: Path, label: str) -> dict[str, Any]:
         with path.open(encoding="utf-8") as handle:
@@ -328,6 +342,7 @@ def assess_frozen_instrument_files(
             raise ContractError("readiness artifact omitted its exact path or hash")
         candidate = Path(relative)
         resolved = candidate if candidate.is_absolute() else root / candidate
+        refuse_output_alias(resolved)
         try:
             payload = resolved.read_bytes()
         except OSError as exc:

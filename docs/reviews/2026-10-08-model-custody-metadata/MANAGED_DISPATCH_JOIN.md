@@ -3909,3 +3909,27 @@ environment with live host-scope opt-in. The five pipeline tests also pass under
 Python 3.11. The local native-model environment lacks Flask, so it was used for
 the focused filesystem and pipeline checks, not claimed as a complete Python
 3.11 worker-suite pass. Exact-head GitHub worker CI remains required.
+
+
+### Refuse model-output aliases during preparation
+
+The rules-v5 file evaluator previously opened readiness paths without checking
+whether they named the output itself. The evaluator now compares resolved paths
+and filesystem identities before opening its four primary preparation files
+and each readiness artifact. Direct paths, symlinks and hard links to the output
+are refused before their bytes are opened. This also corrects the evaluator
+comment that implied its wrapper was connected to normal worker dispatch.
+
+The synthetic regression covers 15 combinations of alias type and input slot.
+It passes under Python 3.11 and the system Python. The existing validation
+instrument suite passes in the AequilibraE environment; the initial system
+Python invocation lacked Shapely and did not run that suite. The new regression
+is included in worker CI. A harmless comment and restored source pass; bypassing
+the refusal fails the regression. The versioned report is
+`prototype/validation-output-alias-controls.json`.
+
+These metadata checks do not fence concurrent filesystem replacement. They do
+not supply the missing prepared instrument, establish the origin of its source
+evidence, or close scientific acceptance. Normal managed dispatch remains held.
+GitHub worker CI for the preceding Python 3.11 host-record fix at `ae40cfbcd`
+completed successfully in run `37898373909`.
