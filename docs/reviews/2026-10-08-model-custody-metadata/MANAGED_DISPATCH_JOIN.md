@@ -4176,3 +4176,24 @@ boundary, establish an authority's legal applicability, validate source quality,
 or fence changing files. Those remain separate preparation and acceptance
 requirements. No historical study outputs or frozen holdouts were opened or
 rewritten for this change.
+
+
+### Refuse malformed readiness records before output access
+
+The rules-v5 evaluator previously skipped partial records, empty mappings and
+scalar values in readiness inputs. It now refuses them before reading model
+output. Nested artifact collections and empty source lists remain supported.
+When a record declares a byte size, the evaluator requires a nonnegative integer
+and compares it with the bytes read. Byte size remains optional for existing
+records that supply an exact path and hash.
+
+Six synthetic tests pass with instrumented model-output reads. Five targeted
+faults fail their named tests; harmless and restored controls pass. The retained
+report is `prototype/readiness-record-controls.json`, and its source hash matches
+the restored evaluator. The existing instrument suite, two input-custody tests
+and the output-alias suite pass. Worker CI includes the new readiness suite.
+
+These checks establish refusal ordering and declared-size verification. They do
+not establish source validity, complete readiness coverage, independent freezing,
+immutable filesystem custody or scientific acceptance. Empty source lists do not
+prove that a study has all required evidence.

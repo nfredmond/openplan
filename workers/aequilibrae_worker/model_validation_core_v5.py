@@ -327,13 +327,17 @@ def assess_frozen_instrument_files(
         raise ContractError("validation input bundle omitted readiness inputs")
 
     def records(value: Any) -> list[Mapping[str, Any]]:
-        if isinstance(value, Mapping) and "path" in value and "sha256" in value:
-            return [value]
         if isinstance(value, Mapping):
+            if any(key in value for key in ("path", "sha256", "bytes")):
+                if "path" not in value or "sha256" not in value:
+                    raise ContractError("readiness artifact omitted its exact path or hash")
+                return [value]
+            if not value:
+                raise ContractError("readiness input contains an empty record")
             return [item for child in value.values() for item in records(child)]
         if isinstance(value, list):
             return [item for child in value for item in records(child)]
-        return []
+        raise ContractError("readiness input must contain artifact records")
 
     readiness_records = records(readiness)
     if not readiness_records:
@@ -343,6 +347,8 @@ def assess_frozen_instrument_files(
         relative = record.get("path")
         if not _hash(expected) or not isinstance(relative, str) or not relative:
             raise ContractError("readiness artifact omitted its exact path or hash")
+        if "bytes" in record and (type(record["bytes"]) is not int or record["bytes"] < 0):
+            raise ContractError("readiness artifact has an invalid byte size")
         candidate = Path(relative)
         resolved = candidate if candidate.is_absolute() else root / candidate
         refuse_output_alias(resolved)
@@ -350,6 +356,8 @@ def assess_frozen_instrument_files(
             payload = resolved.read_bytes()
         except OSError as exc:
             raise ContractError(f"readiness artifact is unavailable: {relative}") from exc
+        if "bytes" in record and len(payload) != record["bytes"]:
+            raise ContractError(f"frozen readiness artifact size changed: {relative}")
         if hashlib.sha256(payload).hexdigest() != expected:
             raise ContractError(f"frozen readiness artifact changed: {relative}")
 

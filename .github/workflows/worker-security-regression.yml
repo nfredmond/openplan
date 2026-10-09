@@ -27,6 +27,7 @@ jobs:
           python -B scripts/modeling/tests/test_validation_input_custody.py
           python -B scripts/modeling/tests/test_validation_source_records.py
           python -B scripts/modeling/tests/test_validation_bundle_identity.py
+          python -B scripts/modeling/tests/test_validation_readiness_records.py
           python -B workers/aequilibrae_worker/test_activity_managed_dispatch.py
           python -B scripts/modeling/tests/test_directional_refusal.py
       - name: Harmless controls and targeted fault checks
