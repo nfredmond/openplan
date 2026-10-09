@@ -238,6 +238,7 @@ class AttemptWriter:
     def publish_validation_sources(self, *, method):
         """Publish this invocation's acknowledged source manifest and record its URI."""
         import model_validation_source_publication
+        import model_source_publication_recovery
         self.require_open()
         try:
             retained = self._retained_validation_sources.get(method)
@@ -247,20 +248,14 @@ class AttemptWriter:
             context = {'workspace_id': self.context.workspace_id, 'model_run_id': self.context.run_id,
                        'stage_id': self.context.stage_id, 'attempt_id': self.context.attempt_id,
                        'method': method}
+            model_source_publication_recovery.prepare(self.files, self.context, method, retained)
             published = model_validation_source_publication.publish(
                 retained=retained, expected_context=context,
                 state_dir=self.files.path / ('source_publication_' + method),
                 base_url=self.base_url, service_key=self.service_key)
             self.files.verify()
-            self.record_artifact({
-                'run_id': self.context.run_id, 'stage_id': self.context.stage_id,
-                'artifact_type': 'model_validation_source_publication',
-                'file_url': published['manifest_uri'], 'file_size_bytes': published['manifest_size_bytes'],
-                'content_hash': published['manifest_sha256'],
-                'metadata_json': {'schema': 'openplan.validation-source-catalog.v1', 'context': context,
-                                  'publication_state': 'remote_verified', 'object_count': published['object_count'],
-                                  'role_count': published['role_count'], 'scientific_acceptance': 'unassessed'},
-            }, logical_name='validation-source-publication-' + method)
+            self.record_artifact(model_source_publication_recovery.artifact_payload(self.context, published),
+                                 logical_name='validation-source-publication-' + method)
             return published
         except BaseException:
             self.stopped = True

@@ -419,3 +419,60 @@ inside one object; this joined proof covers final artifact registration uncertai
 An operator workflow for reconciling a stopped whole-source publication before its
 final artifact command exists remains unfinished. It must preserve the original
 publication intent and claim ownership without silently resuming model execution.
+
+## Explicit whole-source reconciliation checkpoint, October 9
+
+Before uploading, the admitted writer now retains a private `recovery.json` beside
+the publication state. It binds the original attempt context, method and acknowledged
+local manifest identity. A publication that fails before this record exists is not
+automatically recoverable through this command.
+
+`model_source_publication_recovery.py` reads the existing claim receipt, consumed
+admission, pinned workspace ownership marker, saved recovery scope and acknowledged
+local artifact. It verifies their relationships before network access. It refuses
+unrelated pending commands. It checks current stage/parent ownership before resuming
+uploads and again before registration. The artifact transaction still supplies the
+final native ownership fence. These two reads are point-in-time checks, not a lease
+covering a concurrent revocation during Storage transfer.
+
+The command reconciles the saved source set and uses the same deterministic artifact
+request ID and payload as the normal writer. It does not construct an AttemptWriter,
+reenter a handler, create an execution admission or write stage status. The original
+writer remains stopped after interruption. A final artifact reply loss stays in the
+existing command journal. Generic exact-request recovery remains available for an
+already prepared final artifact command; this new command covers the earlier gap.
+
+Operator invocation, from `workers/aequilibrae_worker`, uses the original recorded
+values, not a new deployment, root or claim. Replace the bracketed placeholders:
+
+```bash
+python model_source_publication_recovery.py \
+  --root '[absolute owned runs directory]' \
+  --journal '[original command journal directory]' \
+  --base-url '[original Supabase URL]' \
+  --deployment-id '[original deployment identity]' \
+  --claim-request-id '[original claim request UUID]' \
+  --method aequilibrae
+```
+
+Use `activitysim` for its separate saved source set. The service credential comes
+from `SUPABASE_SERVICE_ROLE_KEY`; do not put it in command arguments. A successful
+result reports `source_publication_reconciled` and `model_resumed: false`. Ownership
+or delivery uncertainty exits 2; invalid/missing local custody exits 3. Never treat
+either exit as authorization to relaunch the model or overwrite the object.
+
+Eleven reconciliation tests pass with actual files, saved journals and consumed
+admissions, but injected ownership/database responses and a synthetic TUS peer.
+They cover interrupted upload recovery, idempotency, exact normal-writer slot reuse,
+revocation before upload and before registration, changed owner/manifest records,
+missing method plans, pending commands and lost registration replies. Ten
+[reconciliation controls](prototype/source-reconciliation-controls.json) pass.
+The broader related set has 92 passing tests; nine publication controls still pass
+after artifact-payload construction moved into the shared recovery module.
+
+The first unrelated-pending mutation exposed a test reporting weakness: it reached
+a later transport error rather than the required early refusal. The assertion now
+identifies that wrong boundary explicitly. Product refusal behavior was unchanged.
+Native whole-source reconciliation and a fresh-process invocation of this new CLI
+remain unverified. The prior native final-command receipt proof does not cover this
+new earlier recovery boundary.
