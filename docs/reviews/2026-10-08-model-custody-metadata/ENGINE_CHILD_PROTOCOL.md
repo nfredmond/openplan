@@ -368,3 +368,14 @@ route. Its seven controls and separate committed-progress race are recorded in
 `prototype/recovery-decision-controls.json`. HTTP recovery, authenticated actor
 derivation, agent approval, physical termination and visible workflow joins
 remain necessary before activation.
+
+### Abandonment receipt recovery, October 8
+
+The command client retains the complete reviewed abandonment payload before
+transport and checks the echoed payload when accepting a receipt. A real
+PostgREST commit followed by a lost reply now recovers through a fresh existing
+command-recovery CLI. The first recovery resends the same bytes; a second recovery
+uses the local receipt. Neither retry changes execution state or authorizes a
+restart. `prototype/recovery-http-controls.json` records four controls, including
+omission of the disconnect. The service-side actor and approval boundaries remain
+unconnected; this proof does not grant an agent permission to abandon real work.

@@ -178,6 +178,10 @@ def validate_command(command: dict):
     _uuid(command['request_id'])
     args = command['arguments']
     operation = command['operation']
+    if operation == 'abandon_model_run_execution':
+        import model_recovery_decision_command as recovery_decision
+        recovery_decision.validate(command)
+        return
     if operation == 'record_legacy_model_kpi':
         legacy_kpi.validate(command)
         return
@@ -268,6 +272,12 @@ def _skip_receipt(command: dict, receipt: object) -> dict:
 
 
 def checked_receipt(command: dict, receipt: object) -> dict:
+    if command['operation'] == 'abandon_model_run_execution':
+        import model_recovery_decision_command as recovery_decision
+        try:
+            return recovery_decision.check_receipt(command, receipt)
+        except (ValueError, TypeError, KeyError, AttributeError):
+            raise DeliveryUnconfirmed('Recovery receipt does not match the reviewed request') from None
     if command['operation'] == 'skip_blocked_model_stage':
         return _skip_receipt(command, receipt)
     if command['operation'] == 'record_legacy_model_kpi':
@@ -346,6 +356,7 @@ def rpc_arguments(command: dict) -> dict:
                 'p_track': args['track'], 'p_expected': args['expected'], 'p_payload': args['payload']}
     result = {'p_request_id': command['request_id']}
     keys = {
+        'abandon_model_run_execution': ('workspace_id', 'run_id', 'actor_id', 'expected_state', 'reason', 'evidence'),
         'skip_blocked_model_stage': ('workspace_id', 'run_id', 'stage_id', 'blocker_id', 'blocker_status'),
         'claim_model_stage_attempt': ('stage_id', 'worker_id'),
         'write_model_stage_attempt': ('attempt_id', 'status', 'log_tail', 'error'),

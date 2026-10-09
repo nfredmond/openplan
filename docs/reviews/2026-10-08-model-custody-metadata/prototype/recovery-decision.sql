@@ -99,7 +99,7 @@ BEGIN
   error_message='Execution abandoned after recovery review. Process termination is unconfirmed.' WHERE id=p_run_id;
  DELETE FROM public.model_run_write_context WHERE transaction_id=txid_current() AND run_id=p_run_id;
  response:=jsonb_build_object('request_id',p_request_id,'workspace_id',p_workspace_id,'run_id',p_run_id,'actor_id',p_actor_id,
-  'outcome','execution_abandoned','run_status','cancelled','process_termination_verified',false,
+  'outcome','execution_abandoned','run_status','cancelled','request_payload',request,'process_termination_verified',false,
   'continuation_authorized',false,'model_resumed',false,'reported_evidence_verified',false);
  INSERT INTO public.model_run_recovery_receipts(request_id,run_id,workspace_id,actor_id,request_payload,response_payload,prior_run,prior_stages,prior_attempts)
   VALUES(p_request_id,p_run_id,p_workspace_id,p_actor_id,request,response,to_jsonb(parent),stages,attempts);

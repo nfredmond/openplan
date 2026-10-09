@@ -1,0 +1,130 @@
+{
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "control": "baseline",
+        "database": "openplan_attempt_cli_f78ea2bc41a4497a8f6e60479d2018c0",
+        "http_requests": [
+          {
+            "status": 200,
+            "sha256": "fea10629ebb444ef7e51573b030b39d42694f7f2b794a8c6dfb8fdaf32654581"
+          },
+          {
+            "status": 200,
+            "sha256": "fea10629ebb444ef7e51573b030b39d42694f7f2b794a8c6dfb8fdaf32654581"
+          }
+        ],
+        "recovery_request_counts": [
+          1,
+          0
+        ],
+        "fresh_cli": [
+          {
+            "request_id": "b836c1d7-f05f-403f-bd6c-6b6c37b84a6f",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          },
+          {
+            "request_id": "b836c1d7-f05f-403f-bd6c-6b6c37b84a6f",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          }
+        ],
+        "database_unchanged_after_retry": true,
+        "execution_starts_preserved": true,
+        "command_sha256": "39cd1fe8431036ab4a55aa274580d517a8f63d487afc6698c459ada54c3f58b8",
+        "receipt_sha256": "033b44153bd53fb95f0dc6c6d48d8e61fc49bdd4a0bbeac93412afef59ebc621",
+        "limits": "Synthetic operator through a service-role gateway, SQL commit followed by socket loss and fresh CLI recovery. No authenticated application route, human approval UI, physical process termination, restart or scientific acceptance."
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "control": "harmless",
+        "database": "openplan_attempt_cli_34ee77c8aac84820924ef43c305b484d",
+        "http_requests": [
+          {
+            "status": 200,
+            "sha256": "02ca33ac547c8b261f4cf17b865d67b506db5e801663fb7357a1a0a705393124"
+          },
+          {
+            "status": 200,
+            "sha256": "02ca33ac547c8b261f4cf17b865d67b506db5e801663fb7357a1a0a705393124"
+          }
+        ],
+        "recovery_request_counts": [
+          1,
+          0
+        ],
+        "fresh_cli": [
+          {
+            "request_id": "3ca36ed7-ecfc-4f49-a663-286984e7ad12",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          },
+          {
+            "request_id": "3ca36ed7-ecfc-4f49-a663-286984e7ad12",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          }
+        ],
+        "database_unchanged_after_retry": true,
+        "execution_starts_preserved": true,
+        "command_sha256": "cf5cb8f3923b8e5a02cd137e8b437fffbac3cfc96325dbb4198ba97d1059f47f",
+        "receipt_sha256": "47217bc4b983c541581ed5aaf075c7a4cc642b54296ad896c0d9792131ebc08c",
+        "limits": "Synthetic operator through a service-role gateway, SQL commit followed by socket loss and fresh CLI recovery. No authenticated application route, human approval UI, physical process termination, restart or scientific acceptance."
+      }
+    },
+    {
+      "control": "omit-disconnect",
+      "detected": "Recovery reply loss was not observed"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "control": "baseline",
+        "database": "openplan_attempt_cli_3c685deb648f46b0bf58dd4d30b9f498",
+        "http_requests": [
+          {
+            "status": 200,
+            "sha256": "5b570c987ac914d6f06b63a5a486ba7ca508ed6d6a5e07e982d372d9f36a02b4"
+          },
+          {
+            "status": 200,
+            "sha256": "5b570c987ac914d6f06b63a5a486ba7ca508ed6d6a5e07e982d372d9f36a02b4"
+          }
+        ],
+        "recovery_request_counts": [
+          1,
+          0
+        ],
+        "fresh_cli": [
+          {
+            "request_id": "ec5fc4c5-f2b2-47e0-85d6-a9e17de8bf33",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          },
+          {
+            "request_id": "ec5fc4c5-f2b2-47e0-85d6-a9e17de8bf33",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          }
+        ],
+        "database_unchanged_after_retry": true,
+        "execution_starts_preserved": true,
+        "command_sha256": "dd9dda8d910ce7379ae4c83078b0100df46d73f7ae683fd73b8d96884257e752",
+        "receipt_sha256": "986f61283c252b915f5931e317389ba50ba0b738556d1111987296bc941c8734",
+        "limits": "Synthetic operator through a service-role gateway, SQL commit followed by socket loss and fresh CLI recovery. No authenticated application route, human approval UI, physical process termination, restart or scientific acceptance."
+      }
+    }
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/recovery-http-controls-20261008-final",
+  "source_sha256": {
+    "docs/reviews/2026-10-08-model-custody-metadata/prototype/recovery-decision.sql": "a6916a4768a536dbd5c20fa81e97fa61d3f0fe4b507c35515c77eacac69e5a4c",
+    "docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_recovery_decision_http.py": "55cd4f0bfd207b5b868103352def48b0eaa88ba1c483606b1aaad469602c7fab",
+    "workers/aequilibrae_worker/model_command_client.py": "ea121468e361b0e4e7751842497928ea3bc41cf836b10f0e4177de9b0b612c37",
+    "workers/aequilibrae_worker/model_recovery_decision_command.py": "015f69eb92e6b27d52cd5114054cefb8d44a92919997e38c77322e0318635c9d"
+  },
+  "limits": "Actual PostgREST and SQL receipts with synthetic operator identity. Application actor derivation, agent approval, visible recovery, cancellation and restart remain unconnected."
+}

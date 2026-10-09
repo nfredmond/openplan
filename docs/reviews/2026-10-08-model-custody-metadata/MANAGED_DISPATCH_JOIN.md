@@ -3324,3 +3324,44 @@ concurrency races, cross-host recovery and safe restart. A trusted service-role
 caller supplies the actor to this prototype. An application route must derive it
 from authenticated identity and never trust a client-supplied actor. The broader
 M3, ActivitySim and scientific requirements remain open.
+
+### October 8: retained abandonment requests and lost HTTP replies
+
+The shared command client now accepts an explicitly prepared abandonment request.
+It validates workspace, run and actor identities, exact reviewed parent/stage
+fields, observation timestamps, a nonempty reason and bounded reported evidence.
+The existing journal commits the complete request before transport. The SQL
+prototype now echoes the complete request payload in its receipt. The client
+compares that payload and all outcome fields, refusing changed reasons, evidence,
+reviewed state or invented process-termination, evidence-verification or restart
+claims. This does not derive actor identity or create operator authorization.
+
+`prototype/recovery-http-controls.json` records four controls through an owned
+PostgREST gateway: baseline, harmless fresh-process comment, omitted disconnect
+and restored. The bridge forwards the real command, observes PostgreSQL's success
+response and closes the connection before returning it to the client. The decision
+commits once while the local request remains pending. A fresh instance of the
+existing recovery CLI sends the same body, retains the checked original receipt
+and leaves installed run, stage, attempt, execution-start and decision rows
+unchanged. A second fresh CLI process sends no HTTP request. Both request bodies
+have the same SHA-256. The omitted-disconnect fault fails the loss assertion.
+An audit hook refuses subprocess launch and connections to another destination
+inside the fresh recovery processes.
+
+The related command suites pass 69 tests. Five copied-module controls detect
+missing reason validation and omitted receipt matching, with harmless and restored
+passes. The seven installed SQL controls rerun against the echoed-request version.
+Evidence is in `prototype/recovery-command-controls.json` and
+`prototype/recovery-decision-controls.json`. Source hashes match the tested files.
+The initial broad run exposed a copied-fixture import dependency; the new helper
+is now imported only for this operation. The first new mutation assertion also
+expected an exception intentionally wrapped by transport; its corrected assertion
+checks whether invalid input reached transport. Neither failed run counted as a
+pass. The original command mutation suite now passes unchanged.
+
+This remains an execution-recovery foundation. The SQL command is still a
+prototype, without a production migration, authenticated application route,
+operator UI or agent approval connection. Tests use an explicit synthetic
+operator and private service credential; credentials are not retained in the
+journal or evidence reports. Physical termination, safe restart, cross-host
+recovery, ActivitySim supervision and scientific acceptance remain separate.
