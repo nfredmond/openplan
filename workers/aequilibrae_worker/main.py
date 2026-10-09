@@ -4219,6 +4219,10 @@ def prepare_assignment_count_inputs(run_row: dict, setup_result: dict, proj_dir:
     A retained record is authoritative. Consuming it never acquires replacement
     counts, even when its original source is no longer available.
     """
+    import model_engine_binding
+    engine = model_engine_binding.current()
+    if engine is not None:
+        return _call_engine_binding(engine, "prepare_counts", out_dir, counts_path_override, count_inputs_override)
     if count_inputs_override is not None:
         if not isinstance(count_inputs_override, dict) or not isinstance(count_inputs_override.get("counts_path"), str):
             raise ValueError("Retained count preparation requires its recorded path")
@@ -4525,6 +4529,10 @@ def stage_assignment(
             else None
         )
         if should_apply_trip_based_mode_split(demand_is_vehicle):
+            import model_engine_binding
+            engine = model_engine_binding.current()
+            if engine is not None:
+                transit_inputs_override = _call_engine_binding(engine, "prepare_transit", out_dir, transit_inputs_override)
             try:
                 zone_geometry = read_assignment_geometry(pkg_dir, ordered_zone_ids)
                 lons = np.asarray(zone_geometry["lons"], dtype=float)

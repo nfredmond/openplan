@@ -12,24 +12,24 @@
       "targeted_test": null
     },
     {
-      "control": "allow-foreign-run",
+      "control": "borrow-parent-counts",
       "exit_code": 1,
-      "targeted_test": "test_foreign_scope_and_terminal_write_refused"
+      "targeted_test": "test_parent_counts_are_independently_verified_and_copied"
     },
     {
-      "control": "allow-terminal-write",
+      "control": "reaccept-changed-counts",
       "exit_code": 1,
-      "targeted_test": "test_foreign_scope_and_terminal_write_refused"
+      "targeted_test": "test_changed_parent_counts_stop_without_acquisition"
     },
     {
-      "control": "accept-foreign-reply",
+      "control": "accept-child-count-override",
       "exit_code": 1,
-      "targeted_test": "test_foreign_parent_reply_and_package_refused"
+      "targeted_test": "test_child_override_refused_before_request"
     },
     {
-      "control": "skip-output-request",
+      "control": "accept-child-transit-override",
       "exit_code": 1,
-      "targeted_test": "test_actual_adapters_route_to_parent"
+      "targeted_test": "test_transit_requires_parent_outputs_and_no_child_override"
     },
     {
       "control": "restored",

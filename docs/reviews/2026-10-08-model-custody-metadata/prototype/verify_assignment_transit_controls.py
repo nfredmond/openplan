@@ -8,6 +8,7 @@ cases=[('baseline',source,''),('harmless',source+'\n# Harmless comment.\n',''),
  ('ignore-geometry-identity',source.replace('expected_geometry=zone_geometry', 'expected_geometry=None'),'test_changed_assignment_geometry_stops_without_auto_fallback'),
  ('erase-transit-status',source.replace('transit_status = retained_transit["transit_status"]', 'transit_status = "no_local_feed"'),'test_actual_mode_choice_uses_retained_result_and_writes_auto_matrix'),
  ('swallow-custody-failure',source.replace('            except WorkerStateWriteUnconfirmed:\n                raise\n', '').replace('                if transit_inputs_override is not None:\n                    raise WorkerStateWriteUnconfirmed("Retained mode choice requires reconciliation") from e\n',''),'test_corrupted_feed_stops_without_auto_fallback'),
+ ('skip-parent-transit-request',source.replace('transit_inputs_override = _call_engine_binding(engine, "prepare_transit", out_dir, transit_inputs_override)', 'transit_inputs_override = None'),'test_bound_assignment_requests_parent_transit_before_mode_choice'),
  ('restored',source,'')]
 runner='''
 import ast,sys,unittest

@@ -1,5 +1,5 @@
 {
-  "module_sha256": "ceabf55109539c20b5615cbbe491d949b52492242dbc45bf15435587426793f6",
+  "module_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
   "controls": [
     {
       "control": "baseline",
@@ -25,6 +25,11 @@
       "control": "swallow-custody-failure",
       "exit_code": 1,
       "targeted_test": "test_corrupted_feed_stops_without_auto_fallback"
+    },
+    {
+      "control": "skip-parent-transit-request",
+      "exit_code": 1,
+      "targeted_test": "test_bound_assignment_requests_parent_transit_before_mode_choice"
     },
     {
       "control": "restored",

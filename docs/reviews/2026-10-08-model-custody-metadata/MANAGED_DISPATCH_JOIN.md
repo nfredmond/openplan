@@ -2846,3 +2846,24 @@ a separate child-consumption directory because the parent already owns
 `run_output/count_inputs`. Transit requests must enter the retained override
 before mode choice. Full native assignment, process containment, real recovery
 and scientific acceptance remain open. The dispatcher remains disabled.
+
+
+## Child count and transit request join, October 8
+
+The bound assignment now requests counts from the parent and verifies them into
+`child_count_inputs`, separate from the registered parent count bundle. Child
+path/record overrides are refused before requesting inputs. Parent-created
+outputs are required. When person-trip mode choice applies, the actual branch
+requests parent transit and supplies its returned record to the retained path.
+Vehicle-trip assignment does not enter that branch.
+
+Four input-adapter tests plus a bound mode-choice branch test pass. The related
+suite passes 91 tests. Four input fault controls, four assignment branch controls
+and four existing binding controls detect their targeted faults; harmless and
+restored controls pass. Reports record current source hashes.
+
+The parent clients in the new adapter/branch tests are fakes. Earlier real-child
+channel cases remain separate evidence. Full native `stage_assignment` with all
+adapters together is the next execution boundary; it is not established by this
+checkpoint. Dispatcher activation, real interruption recovery, browser review
+and scientific acceptance remain open.

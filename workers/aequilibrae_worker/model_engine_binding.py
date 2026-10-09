@@ -19,6 +19,7 @@ class EngineBinding:
         self.work_directory = str(Path(work_directory).absolute())
         self.output_name = output_name
         self.owner = threading.get_ident()
+        self.output_directory = None
 
     def check(self):
         if threading.get_ident() != self.owner:
@@ -61,7 +62,27 @@ class EngineBinding:
         self.check()
         if str(Path(work_dir).absolute()) != self.work_directory or name != self.output_name:
             raise ValueError('Engine output request differs from parent configuration')
-        return self.client.create_outputs()['output_directory']
+        self.output_directory = self.client.create_outputs()['output_directory']
+        return self.output_directory
+
+    def require_outputs(self, out_dir):
+        self.check()
+        if self.output_directory is None or str(Path(out_dir).absolute()) != self.output_directory:
+            raise ValueError('Input preparation requires parent-created outputs')
+
+    def prepare_counts(self, out_dir, path_override, record_override):
+        self.require_outputs(out_dir)
+        if path_override is not None or record_override is not None:
+            raise ValueError('Child count overrides must be configured by the parent')
+        import model_count_inputs
+        record = self.client.prepare_counts()
+        return model_count_inputs.consume(record, Path(out_dir) / 'child_count_inputs')
+
+    def prepare_transit(self, out_dir, record_override):
+        self.require_outputs(out_dir)
+        if record_override is not None:
+            raise ValueError('Child transit overrides must be configured by the parent')
+        return self.client.prepare_transit()
 
 
 @contextmanager
