@@ -69,6 +69,7 @@ export function summarizeRunProgress(stages: readonly ProgressStageLike[] | null
   const completed = ordered.filter((stage) => FINISHED_STATUSES.has((stage.status ?? "").toLowerCase())).length;
   const runningIndex = ordered.findIndex((stage) => (stage.status ?? "").toLowerCase() === "running");
   const failed = ordered.find((stage) => (stage.status ?? "").toLowerCase() === "failed");
+  const cancelled = ordered.filter((stage) => (stage.status ?? "").toLowerCase() === "cancelled").length;
   const isFinished = ordered.every((stage) => TERMINAL_STATUSES.has((stage.status ?? "").toLowerCase()));
 
   const running = runningIndex >= 0 ? ordered[runningIndex] : null;
@@ -79,6 +80,8 @@ export function summarizeRunProgress(stages: readonly ProgressStageLike[] | null
     label = `Stopped at ${failed.stage_name ?? "an unnamed stage"} — ${completed} of ${total} stages finished.`;
   } else if (running) {
     label = `Stage ${runningIndex + 1} of ${total}: ${running.stage_name ?? "unnamed stage"}.`;
+  } else if (cancelled > 0) {
+    label = `${completed} of ${total} stages finished; ${cancelled} cancelled.`;
   } else if (isFinished) {
     label = `All ${total} stages finished.`;
   } else {

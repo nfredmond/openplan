@@ -70,6 +70,17 @@ describe("how far along a long run is", () => {
     expect(finished.label).toBe("All 6 stages finished.");
   });
 
+  it("does not describe cancelled stages as completed computation", () => {
+    const cancelled = summarizeRunProgress(SIX_STAGES.map((s) => ({ ...s, status: "cancelled" })));
+    expect(cancelled).toMatchObject({ completed: 0, total: 6, percent: 0, isFinished: true,
+      label: "0 of 6 stages finished; 6 cancelled." });
+    const partial = summarizeRunProgress([
+      stage({ status: "succeeded" }), stage({ status: "cancelled" }), stage({ status: "queued" }),
+    ]);
+    expect(partial).toMatchObject({ completed: 1, total: 3, percent: 33, isFinished: false,
+      label: "1 of 3 stages finished; 1 cancelled." });
+  });
+
   it("names the stage a failed run stopped at", () => {
     const failed = [
       stage({ stage_name: "AequilibraE Setup", status: "succeeded", sort_order: 1 }),

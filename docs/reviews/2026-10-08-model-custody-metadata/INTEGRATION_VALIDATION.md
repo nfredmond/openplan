@@ -302,3 +302,37 @@ Full TypeScript validation passes with no emit or incremental cache: 5,006 files
 55.92 seconds, 4,889,887 KB reported compiler memory. The process uses the existing
 6 GB Node heap under a 7 GB systemd scope with swap disabled. This is a type
 check, not a fresh production build or browser check of the changed page.
+
+
+## Identified relaunch preview and cancelled-stage summary, October 8
+
+A separate detached checkout at 276e26272202dcfb35ce3be9512c866e07d02183
+builds successfully with webpack (51 seconds), TypeScript (65 seconds) and
+137 static pages using two page workers. Its loopback service on port 3517
+reports that commit. The service process working directory matches the new
+checkout; the original port 3516 checkout and process remain unchanged.
+`prototype/relaunch-browser-verification.json` retains the service identity.
+
+T3 reads the authenticated saved abandoned run at 1280 by 800 and 390 by 844.
+Both show the retained-work explanation and no relaunch button. Mobile document
+scroll width is 390. Navigation through the Travel modeling link and the model
+list card returns to the same refusal. Navigation uses native DOM click through
+T3 evaluate, so physical pointer operation remains unverified. Snapshot capture
+still fails on the same T3 client. No screenshot or full console review is
+obtained. These observations establish rendered DOM behavior, not full visual
+acceptance, active worker termination or scientific acceptance.
+
+The same journey exposes a second defect: three cancelled stages are summarized
+as all finished, beside zero percent completion. The stage summary now names
+cancelled stages separately while preserving the completed-stage percentage and
+terminal-state calculation. Fourteen progress tests pass, including entirely
+cancelled and partly completed cases. A harmless comment preserves the result;
+removing cancellation handling fails the new assertion, and restoration passes.
+The combined five focused suites pass 65 tests; targeted lint passes. This small
+summary correction is not included in the identified port 3517 production build.
+`prototype/cancelled-progress-controls.json` records the control evidence.
+
+The model list also shows zero runs while the detail page shows one stored run.
+The list currently renders `linkageCounts.runs`, not a direct model-run count.
+Whether this is a mislabeled linked-analysis count or a missing count join remains
+to be resolved. Preserve this observed mismatch in the next workflow review.

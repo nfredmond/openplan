@@ -1,0 +1,37 @@
+{
+  "commit": "276e26272202dcfb35ce3be9512c866e07d02183",
+  "checkout": "/home/nathaniel/.local/state/openplan/relaunch-acceptance-276e2627",
+  "unit": "openplan-relaunch-acceptance-276e2627.service",
+  "invocation": "61025727dd7d417fb86a3af2045dcb24",
+  "pid": 1945454,
+  "url": "http://127.0.0.1:3517",
+  "build": {
+    "webpack_seconds": 51,
+    "typescript_seconds": 65,
+    "static_pages": 137,
+    "page_workers": 2,
+    "memory_limit": "7G",
+    "swap_limit": 0
+  },
+  "desktop": {
+    "width": 1280,
+    "height": 800,
+    "retained_refusal": true,
+    "relaunch_buttons": 0
+  },
+  "mobile": {
+    "height": 844,
+    "notice": true,
+    "relaunchButtons": 0,
+    "scrollWidth": 390,
+    "url": "http://127.0.0.1:3517/models/b9c7bf75-726d-4d1e-ad55-497a51a22e87",
+    "width": 390
+  },
+  "navigation": "T3 evaluate native DOM clicks: Travel modeling link, model list card, model detail. Not physical pointer acceptance.",
+  "snapshot": "Failed on preview-f07599c0933f53222dd8b3633c13d8cf; visible false",
+  "observed_defects": [
+    "Cancelled stage summary says All 3 stages finished at 0 percent.",
+    "Model list says 0 runs while detail lists one saved run."
+  ],
+  "limits": "Read-only application journey using existing isolated fixture. No screenshot, full console review, physical pointer or practitioner acceptance. New cancelled-summary correction is not included in this build."
+}
