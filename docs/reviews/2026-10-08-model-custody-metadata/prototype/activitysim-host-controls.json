@@ -1,0 +1,50 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    },
+    {
+      "case": "no-owner-binding",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "Owned runtime readiness or exit timed out"
+    },
+    {
+      "case": "ignore-descendants",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "Runtime completed while detached child remained live"
+    },
+    {
+      "case": "accept-container",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "Host policy reached bundle access"
+    },
+    {
+      "case": "drop-operator-memory",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "None != 134217728"
+    },
+    {
+      "case": "restored",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    }
+  ],
+  "source_sha256": {
+    "host_supervision.py": "630ecdae4d9f1e4fcf578c0c6729192d3508b79fd8e774c86f8742c1dcbdba18",
+    "runtime.py": "1f950d6e04f83a0e5aecb6768294c1c4c9f98418165ab46fdba1cd37688dfee0",
+    "main.py": "f481626db37605db70482d472c244580421d559cba9784d8308cd0ac6600fd40"
+  },
+  "limits": [
+    "Synthetic CLI through actual ActivitySim runtime",
+    "Container workloads refused for host supervision",
+    "No native ActivitySim scientific or human acceptance"
+  ]
+}

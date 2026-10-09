@@ -1,0 +1,31 @@
+{
+  "module_sha256": "13790ab924a1878c0f75976282ca4ecdc49d514eaf15086a14a57e4a1b8330dd",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "accept-changed-inventory",
+      "exit_code": 1,
+      "targeted_test": "test_changed_geometry_is_not_consumed"
+    },
+    {
+      "control": "discard-geometry",
+      "exit_code": 1,
+      "targeted_test": "test_large_geometry_has_small_reference_and_exact_copy"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Synthetic CSV and owned package fixtures. No complete assignment, child geometry handoff, original producer manifest authority or scientific acceptance."
+}

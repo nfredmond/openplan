@@ -1,0 +1,62 @@
+{
+  "workspace_sha256": "a8b3bcaec05d6c6c298a7454d45eed110183284557c117fbd2e7dbc54daee479",
+  "writer_sha256": "cdb667e37e31edd70f808a03ca7d0d14e9ba00b322169dd926e1d97461da3e4d",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "reuse-attempt",
+      "exit_code": 1,
+      "targeted_test": "WorkspaceTests.test_exclusive_identity_and_private_owner_record"
+    },
+    {
+      "control": "follow-run-symlink",
+      "exit_code": 1,
+      "targeted_test": "WorkspaceTests.test_symlinked_run_refuses_without_writing_foreign_directory"
+    },
+    {
+      "control": "ignore-owner-record",
+      "exit_code": 1,
+      "targeted_test": "WorkspaceTests.test_modified_or_linked_owner_refuses_state_publication"
+    },
+    {
+      "control": "redirect-state-publication",
+      "exit_code": 1,
+      "targeted_test": "WorkspaceTests.test_rename_during_replace_cannot_redirect_state_write"
+    },
+    {
+      "control": "cross-run-workspace",
+      "exit_code": 1,
+      "targeted_test": "WorkspaceBindingTests.test_activitysim_uses_attempt_directory_and_refuses_other_run"
+    },
+    {
+      "control": "skip-owner-recheck",
+      "exit_code": 1,
+      "targeted_test": "WorkspaceBindingTests.test_changed_owner_stops_later_database_write"
+    },
+    {
+      "control": "overwrite-predecessor-state",
+      "exit_code": 1,
+      "targeted_test": "WorkspaceTests.test_exclusive_identity_and_private_owner_record"
+    },
+    {
+      "control": "wrong-state-hash",
+      "exit_code": 1,
+      "targeted_test": "WorkspaceBindingTests.test_bound_state_registers_exact_original_bytes_before_completion"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Native local directories, descriptor publication, process competition and bound allocation hooks. Not engine confinement, predecessor handoff, native model execution or whole-host restart."
+}

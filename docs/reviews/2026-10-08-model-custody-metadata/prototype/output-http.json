@@ -1,0 +1,185 @@
+{
+  "source_sha256": "f9e2b22506b835a798591f4dcd3601be869eaa3ff441fe6d875f8af8c908cb12",
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "kpi",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "retained_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "retained_kpi",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "kpi",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 36,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "kpi",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "retained_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "retained_kpi",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "kpi",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 36,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "discard-prepared-id",
+      "expected_failure": "Native artifact lost prepared identity or evidence"
+    },
+    {
+      "control": "replace-null-with-zero",
+      "expected_failure": "Native KPI lost unassessed null value"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "kpi",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "retained_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "main",
+            "lost_reply": "retained_kpi",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          },
+          {
+            "worker": "supabase_poll",
+            "lost_reply": "kpi",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 36,
+        "gateway_removed": true
+      }
+    }
+  ],
+  "limits": "Installed migration21 and actual bound artifact/KPI adapters with native HTTP and fresh CLI recovery. Synthetic references, hashes and handler; no byte/file provenance, normal poll/push activation, model execution or scientific acceptance."
+}

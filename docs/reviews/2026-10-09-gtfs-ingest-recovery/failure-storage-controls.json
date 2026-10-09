@@ -1,0 +1,108 @@
+[
+  {
+    "case": "baseline",
+    "expectedPass": true,
+    "returnCode": 0,
+    "result": {
+      "closureAttempts": 3,
+      "second": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "third": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "storageAttempts": 2,
+      "nativeStageRefusals": 1,
+      "fault": "storage",
+      "nativeObjectUploadedAndRemoved": true,
+      "finding": "normal closure survives lost reply; pending removal retries after Storage interruption",
+      "scope": "native TypeScript, PostgREST and private Storage; one cleanup boundary interrupted with injected 503"
+    }
+  },
+  {
+    "case": "harmless",
+    "expectedPass": true,
+    "returnCode": 0,
+    "result": {
+      "closureAttempts": 3,
+      "second": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "third": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "storageAttempts": 2,
+      "nativeStageRefusals": 1,
+      "fault": "storage",
+      "nativeObjectUploadedAndRemoved": true,
+      "finding": "normal closure survives lost reply; pending removal retries after Storage interruption",
+      "scope": "native TypeScript, PostgREST and private Storage; one cleanup boundary interrupted with injected 503"
+    }
+  },
+  {
+    "case": "lost_acknowledgment",
+    "expectedPass": true,
+    "returnCode": 0,
+    "result": {
+      "closureAttempts": 3,
+      "second": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "third": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "storageAttempts": 2,
+      "nativeStageRefusals": 1,
+      "fault": "acknowledgment",
+      "nativeObjectUploadedAndRemoved": true,
+      "finding": "normal closure survives lost reply; pending removal retries after Storage interruption",
+      "scope": "native TypeScript, PostgREST and private Storage; one cleanup boundary interrupted with injected 503"
+    }
+  },
+  {
+    "case": "omit_removal",
+    "expectedPass": false,
+    "returnCode": 1,
+    "result": null
+  },
+  {
+    "case": "ignore_acknowledgment_error",
+    "expectedPass": false,
+    "returnCode": 1,
+    "result": null
+  },
+  {
+    "case": "discard_closure_receipt",
+    "expectedPass": false,
+    "returnCode": 1,
+    "result": null
+  },
+  {
+    "case": "restored",
+    "expectedPass": true,
+    "returnCode": 0,
+    "result": {
+      "closureAttempts": 3,
+      "second": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "third": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "storageAttempts": 2,
+      "nativeStageRefusals": 1,
+      "fault": "storage",
+      "nativeObjectUploadedAndRemoved": true,
+      "finding": "normal closure survives lost reply; pending removal retries after Storage interruption",
+      "scope": "native TypeScript, PostgREST and private Storage; one cleanup boundary interrupted with injected 503"
+    }
+  }
+]

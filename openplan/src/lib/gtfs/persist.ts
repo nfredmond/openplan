@@ -39,12 +39,9 @@
  *      statements. That function also refuses to promote anything that is not
  *      `ready`.
  *
- * AND WHEN IT GOES WRONG: `failGtfsFeedVersion` writes a failure code, deletes
- * the derived rows by `feed_version_id`, and removes the uploaded object. The
- * rows are deleted rather than left because a half-written feed that is never
- * promoted is invisible to readers but still answers `count(*)` — and the next
- * refresh of the same feed would then be comparing its own counts against
- * garbage.
+ * On failure, a database transaction closes an unfinished version, removes its
+ * partial rows and records private-object cleanup. The scheduled sweep retries
+ * object removal. Ready versions and retained failure receipts are preserved.
  *
  * WHAT THIS MODULE REFUSES TO DECIDE. It never invents a value it was not
  * given. `median_headway_basis` and `peak_headway_is_lower_bound` are copied
@@ -441,17 +438,7 @@ export async function markGtfsFeedVersionStage(
   versionId: string,
   stage: GtfsIngestStage
 ): Promise<boolean> {
-  // Deliberately not surfaced as a FAILURE. This is progress reporting: if it
-  // does not land, the reaper still sees a non-terminal row and the ingest
-  // still runs. Turning a bookkeeping miss into a refused ingest would trade a
-  // cosmetic problem for a real one.
-  //
-  // But "not a failure" is not the same as "not worth knowing". The row count
-  // is read and returned rather than discarded, because a zero here means the
-  // version row is GONE — reaped, or deleted under a running ingest — and a
-  // caller that wants to stop early can. Discarding it is how an UPDATE over
-  // zero rows becomes indistinguishable from success, which is the defect this
-  // repository has now found on four separate tables.
+  // A closed or unconfirmed version must not advance into more ingest work.
   const result = await service
     .from("gtfs_feed_versions")
     .update({ status: stage })
@@ -459,7 +446,7 @@ export async function markGtfsFeedVersionStage(
     .select("id")
     .maybeSingle();
 
-  return !writeMatchedNoRows(result);
+  return !result.error && !writeMatchedNoRows(result);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -902,20 +889,9 @@ export async function deleteVersionRows(
 }
 
 /**
- * How long an ingest may sit in a non-terminal state before it is certainly not
- * running any more.
- *
- * DERIVED FROM THE PLATFORM CEILING RATHER THAN CHOSEN. The ingest routes
- * declare `maxDuration = 300`, so no ingest can still be executing five minutes
- * after its last write; a serverless function is killed at that boundary
- * whether or not it finished. Three times that is the margin for clock skew,
- * cold starts and a platform that queued the invocation, and past it "still
- * working" is not a possible explanation — only "died without saying so" is.
- *
- * The cost of setting this too LOW is the one that matters: a live ingest
- * marked `failed` under itself, which would then write its derived rows against
- * a version the reaper had already cleaned. Too high merely leaves an honest
- * `parsing` row on a card for longer.
+ * Existing stale-ingest policy. Age is not proof that a local process stopped.
+ * Cleanup rechecks eligibility and fences subsequent database writes.
+ * Long-running ingestion still needs worker ownership and heartbeats.
  */
 export const GTFS_INGEST_ABANDONED_AFTER_MS = 15 * 60 * 1000;
 
@@ -955,17 +931,39 @@ export async function reapAbandonedGtfsIngests(
   const reaped: string[] = [];
 
   for (const row of rows) {
-    await failGtfsFeedVersion({
-      service,
-      versionId: row.id,
-      feedId: row.feed_id,
-      storagePath: row.storage_path,
-      code: "abandoned",
-      detail:
-        "This ingest stopped responding and was closed by the scheduled sweep. Nothing was stored " +
-        "from it. Bringing the feed in again is safe — it does not affect the feed currently in use.",
+    const result = await service.rpc("reap_gtfs_feed_version", {
+      p_version_id: row.id,
+      p_cutoff: cutoff,
     });
+    if (result.error || typeof result.data !== "boolean") {
+      throw new Error(`Could not close abandoned ingest: ${result.error?.message ?? "invalid cleanup result"}`);
+    }
+    if (!result.data) continue;
     reaped.push(row.id);
+  }
+
+  // Pending removals survive process loss and Storage errors after database closure.
+  const cleanup = await service
+    .from("gtfs_ingest_storage_cleanup")
+    .select("version_id, storage_path")
+    .order("created_at", { ascending: true })
+    .limit(200);
+  if (cleanup.error) throw new Error(`Could not read pending GTFS object cleanup: ${cleanup.error.message}`);
+  for (const object of cleanup.data ?? []) {
+    const removed = await service.storage.from(GTFS_UPLOADS_BUCKET).remove([object.storage_path]);
+    if (removed.error) throw new Error(`Could not remove abandoned GTFS object: ${removed.error.message}`);
+    const acknowledged = await service
+      .from("gtfs_ingest_storage_cleanup")
+      .delete()
+      .eq("version_id", object.version_id)
+      .eq("storage_path", object.storage_path)
+      .select("version_id");
+    if (acknowledged.error) throw new Error(`Could not acknowledge GTFS object cleanup: ${acknowledged.error.message}`);
+    // Zero means another sweep already acknowledged the same immutable request.
+    if (!Array.isArray(acknowledged.data) || acknowledged.data.length > 1 ||
+      acknowledged.data.some((receipt) => receipt.version_id !== object.version_id)) {
+      throw new Error("Invalid GTFS object cleanup acknowledgment");
+    }
   }
 
   return { scanned: rows.length, reaped };
@@ -981,76 +979,20 @@ export type FailGtfsFeedVersionParams = {
   storagePath?: string | null;
 };
 
-/**
- * Record a failed ingest and leave nothing half-written behind it.
- *
- * ORDER: derived rows first, then the object, then the status. The status is
- * last because it is the thing a surface reads — a row that says `failed` while
- * its derived rows are still there would invite the next refresh to compare
- * itself against them.
- */
+/** Close an unfinished version atomically; the scheduled sweep retries object removal. */
 export async function failGtfsFeedVersion(
   params: FailGtfsFeedVersionParams
 ): Promise<{ recorded: boolean; feedStatusChanged: boolean }> {
-  const { service, versionId } = params;
-
-  await deleteVersionRows(service, versionId);
-
-  if (params.storagePath) {
-    // Fire and forget, exactly as the Knowledge Base upload path does: a stray
-    // object in a private bucket is a housekeeping problem, and letting it
-    // prevent the failure from being RECORDED would turn a small mess into an
-    // ingest that never explains itself.
-    await service.storage
-      .from(GTFS_UPLOADS_BUCKET)
-      .remove([params.storagePath])
-      .catch(() => undefined);
+  const { data, error } = await params.service.rpc("close_failed_gtfs_version", {
+    p_version_id: params.versionId,
+    p_code: params.code,
+    p_detail: params.detail,
+    p_storage_path: params.storagePath ?? null,
+  });
+  if (error || !data || typeof data !== "object" || Array.isArray(data)
+    || typeof data.recorded !== "boolean" || typeof data.feedStatusChanged !== "boolean"
+    || (!data.recorded && data.feedStatusChanged)) {
+    return { recorded: false, feedStatusChanged: false };
   }
-
-  // `.select().maybeSingle()` so this can tell "recorded the failure" from
-  // "the version row was not there to record it on". The second case means the
-  // derived rows deleted above were orphans and nothing now explains the
-  // failure to anyone — worth knowing, and unknowable without asking.
-  const recorded = await service
-    .from("gtfs_feed_versions")
-    .update({
-      status: "failed",
-      failure_code: params.code,
-      failure_detail: params.detail,
-      // Zeroed so the next refresh cannot mistake a failed ingest's leftovers
-      // for a baseline to compare against.
-      route_service_level_rows: 0,
-      stop_service_level_rows: 0,
-      last_checked_at: new Date().toISOString(),
-    })
-    .eq("id", versionId)
-    .select("id")
-    .maybeSingle();
-
-  if (writeMatchedNoRows(recorded)) return { recorded: false, feedStatusChanged: false };
-
-  // Only when this feed has never had a working version. If one is current, the
-  // feed's status mirrors THAT version and must not be moved — a refresh that
-  // fails does not stop the feed in use from being ready, and overwriting the
-  // mirror here is exactly the disagreement
-  // `gtfs-feed-status-mirrors-its-current-version.test.ts` fails on.
-  if (params.feedId) {
-    const current = await service
-      .from("gtfs_feeds")
-      .select("id, current_version_id")
-      .eq("id", params.feedId)
-      .maybeSingle();
-    const feed = current.data as { current_version_id: string | null } | null;
-    if (!current.error && feed && !feed.current_version_id) {
-      const marked = await service
-        .from("gtfs_feeds")
-        .update({ status: "failed" })
-        .eq("id", params.feedId)
-        .select("id")
-        .maybeSingle();
-      return { recorded: true, feedStatusChanged: !writeMatchedNoRows(marked) };
-    }
-  }
-
-  return { recorded: true, feedStatusChanged: false };
+  return { recorded: data.recorded, feedStatusChanged: data.feedStatusChanged };
 }

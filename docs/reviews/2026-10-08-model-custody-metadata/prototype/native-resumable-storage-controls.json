@@ -1,0 +1,42 @@
+{
+  "cases": [
+    {
+      "control": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "wrong-identity",
+      "returncode": 1,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "skip-head",
+      "returncode": 1,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "skip-readback",
+      "returncode": 1,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "storage_container_removed": true
+    }
+  ],
+  "proof_sha256": "a9b71af62773c86e4dcf073651fb9a181e49503a5fb1cbd81fb9556d639fc478",
+  "limits": "Actual Storage v1.67.20 TUS and separate process recovery over a two-chunk synthetic file. No service restart, session expiration, complete source-set publication, worker dispatch or scientific acceptance."
+}

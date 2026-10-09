@@ -1,0 +1,38 @@
+{
+  "migration_sha256": "8093fd595bddd7369d800d5c7ecd2f9508d24e0100108762f7fe1b3ddd06f1ac",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0
+    },
+    {
+      "control": "discard-prepared-id",
+      "exit_code": 3
+    },
+    {
+      "control": "restored",
+      "exit_code": 0
+    },
+    {
+      "control": "client-baseline",
+      "exit_code": 0
+    },
+    {
+      "control": "client-harmless",
+      "exit_code": 0
+    },
+    {
+      "control": "client-accept-invalid-id",
+      "exit_code": 1
+    },
+    {
+      "control": "client-restored",
+      "exit_code": 0
+    }
+  ],
+  "limits": "Native registration/receipt/role cases with rollback and client identity validation. No normal worker output, filesystem or scientific acceptance."
+}

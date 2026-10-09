@@ -1,0 +1,144 @@
+{
+  "control": "lost-initial-input",
+  "database": "openplan_attempt_cli_e31004c676f148188c6812290fd93b29",
+  "run_id": "4866afad-eab7-4cc4-91d7-a7dd85189e2f",
+  "stage_id": "9a435c62-9ef6-42cc-a68b-27248f8c8997",
+  "native_converged": null,
+  "modeled_transit": null,
+  "replay": {
+    "original_receipt_recovered": true,
+    "fresh_process": true,
+    "native_tables_unchanged": 7,
+    "execution_admissions_unchanged": true,
+    "files_unchanged": true,
+    "writer_stopped": true,
+    "model_resumed": false
+  },
+  "final_outputs_absent": true,
+  "cancellation": null,
+  "cancellation_receipt_lost": null,
+  "engine_inspection": null,
+  "parent_loss": null,
+  "database_observation": null,
+  "registered_artifacts": [
+    "model_assignment_geometry",
+    "model_count_inputs",
+    "model_initial_assignment_inputs",
+    "model_package_working_copy",
+    "model_project_working_copy",
+    "model_transit_inputs"
+  ],
+  "http_calls": [
+    {
+      "method": "POST",
+      "operation": "/rpc/claim_model_stage_attempt",
+      "status": 200,
+      "body_sha256": "56b0b699493e15ac74f45943ec9efd2c6a679852963da258662df0190813ae07"
+    },
+    {
+      "method": "GET",
+      "operation": "/model_run_stages",
+      "status": 200,
+      "body_sha256": null
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_attempt_artifact",
+      "status": 200,
+      "body_sha256": "7cba2f1e3aee40b291f1fee8ba836afe5f3ea4f25b6e056dbe2feea95b458dc1"
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_attempt_artifact",
+      "status": 200,
+      "body_sha256": "b7962bac083be02b1da70538b33a7aac72a7856a2d01c72ae55fbbb161e5aca9"
+    },
+    {
+      "method": "GET",
+      "operation": "/model_run_stages",
+      "status": 200,
+      "body_sha256": null
+    },
+    {
+      "method": "GET",
+      "operation": "/model_run_stages",
+      "status": 200,
+      "body_sha256": null
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_attempt_artifact",
+      "status": 200,
+      "body_sha256": "a91e4bd84b81b3b8e1ee9779a65b455238966638d2d099e8ecbbfac5a8493bf2"
+    },
+    {
+      "method": "GET",
+      "operation": "/model_run_stages",
+      "status": 200,
+      "body_sha256": null
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_stage_attempt",
+      "status": 200,
+      "body_sha256": "0f8425be9e981e37f44ce8389631c5d0e585bc3bde4bec28a47ec8be6120cc22"
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_stage_attempt",
+      "status": 200,
+      "body_sha256": "3f7b069de672562470652734ca006899cae0f370691fc7922fba78bfae7e5036"
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_stage_attempt",
+      "status": 200,
+      "body_sha256": "5b05e5bbc75b1c854f12b24eba6a4c102d198987a50a5da39d7532acc3045fc8"
+    },
+    {
+      "method": "GET",
+      "operation": "/model_run_stages",
+      "status": 200,
+      "body_sha256": null
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_attempt_artifact",
+      "status": 200,
+      "body_sha256": "24903325085150fa40465a494acde081d1b31305c6bcc4bac603eb384a84a5a2"
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_attempt_artifact",
+      "status": 200,
+      "body_sha256": "e39ba545b4adce67fd0cec2d2d14144de85bbd5d09607272c901471e6d6b566f"
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_stage_attempt",
+      "status": 200,
+      "body_sha256": "f527a6a5ed3ccdd8fdb0da65c0879aae16f76a08eceacb013e7c865dfc0bc575"
+    },
+    {
+      "method": "GET",
+      "operation": "/model_run_stages",
+      "status": 200,
+      "body_sha256": null
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_attempt_artifact",
+      "status": 200,
+      "body_sha256": "2195e4b72f67d713afcca02ae68ebc3fcae1d878a9b86ee6cc2998cc02c617f8"
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_attempt_artifact",
+      "status": 200,
+      "body_sha256": "2195e4b72f67d713afcca02ae68ebc3fcae1d878a9b86ee6cc2998cc02c617f8"
+    }
+  ],
+  "stage_remains_running": true,
+  "worker_sha256": "edc0b4dbf2921c9177038604abf47b10dda4803eda03f01282f9611b07a68105",
+  "limits": "Full small native assignment with live isolated PostgREST and installed command schema. Synthetic predecessor inventories directly constructed. Lost-commit replay is recorded when selected. No final publication, model restart, scientific acceptance or normal dispatcher activation."
+}

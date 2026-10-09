@@ -487,12 +487,14 @@ const EXPECTED = {
   // Isolated postgres catalog: 756 policies, 225 policy tables, 252 application tables.
   // 20261016000001 adds one append-only BCA table and SELECT/INSERT policies.
   // Owned isolated catalog: 758 policies, 226 policy tables, 280 application RLS tables.
-  policies: 758,
-  permissive: 507,
+  // 20261016000024 adds SELECT on existing instrument custody: +1 permissive
+  // policy and +1 table with policies. Native catalog: 759 / 508 / 227.
+  policies: 759,
+  permissive: 508,
   restrictive: 251,
   permissiveWrites: 278,
   expanded: 286,
-  tablesWithPolicies: 226,
+  tablesWithPolicies: 227,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.
@@ -542,10 +544,18 @@ const EXPECTED = {
   // Installed CLI-upgrade catalog: 299 application tables, all with RLS, and 14 views.
   // 20261016000015 adds one private assessment receipt table.
   // Isolated upgrade catalog confirms 300 application tables with RLS and 14 views.
-  relations: 314,
-  tables: 300,
+  // 20261016000016 adds one private artifact receipt table.
+  // Isolated upgrade catalog confirms 301 application tables with RLS and 14 views.
+  // 20261016000017 adds one private KPI receipt table. Rollback catalog: 302 RLS tables and 14 views.
+  // Two private execution-retention tables; neither grants direct client policies.
+  // 20261016000020 adds private immutable skip receipts with no client policies.
+  // Installed clone confirms 305 application RLS tables and 14 application views.
+  // Migration 23 adds private recovery receipts. Installed clone: 306 RLS tables and 14 views.
+  // Migration 25 adds the private GTFS object-cleanup queue. Combined catalog requires live verification.
+  relations: 321,
+  tables: 307,
   views: 14,
-  rlsEnabledTables: 300,
+  rlsEnabledTables: 307,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -821,6 +831,13 @@ describe("policy classifiers", () => {
 });
 
 describe("migration schema inventory", () => {
+  it("keeps GTFS object cleanup limited to version, object key and queue time", () => {
+    expect(schema.columns("gtfs_ingest_storage_cleanup")).toEqual(new Set(["version_id", "storage_path", "created_at"]));
+    expect(schema.rlsEnabled("gtfs_ingest_storage_cleanup")).toBe(true);
+    expect(schema.hasColumn("gtfs_feed_versions", "ingest_abandoned_at")).toBe(true);
+    expect(schema.hasColumn("gtfs_feed_versions", "ingest_closed_at")).toBe(true);
+    expect(schema.hasColumn("gtfs_feed_versions", "ingest_failure_receipt")).toBe(true);
+  });
   it("reads every relation the migrations declare", () => {
     expect(schema.relations()).toHaveLength(EXPECTED.relations);
     expect(schema.tables()).toHaveLength(EXPECTED.tables);

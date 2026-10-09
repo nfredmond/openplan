@@ -1,0 +1,97 @@
+[
+  {
+    "control": "baseline",
+    "exitCode": 0,
+    "evidence": {
+      "database": "openplan_attempt_cli_8262a39d7f9c4dc5a3b734c9f4fef98b",
+      "transport": "PostgREST HTTP with PostgrestClient",
+      "cases": {
+        "baseline": [
+          null
+        ],
+        "releasedContention": [
+          "PT503",
+          null
+        ],
+        "persistentContention": [
+          "PT503",
+          "PT503",
+          "PT503"
+        ],
+        "viewerRefused": [
+          "42501"
+        ],
+        "restored": [
+          null
+        ]
+      },
+      "requestSha256": "45d9f159adf9b49e7efe735ab7bccc9e1211176db2a67bbe437f7fb54af71af3"
+    }
+  },
+  {
+    "control": "harmless-comment",
+    "exitCode": 0,
+    "evidence": {
+      "database": "openplan_attempt_cli_8262a39d7f9c4dc5a3b734c9f4fef98b",
+      "transport": "PostgREST HTTP with PostgrestClient",
+      "cases": {
+        "baseline": [
+          null
+        ],
+        "releasedContention": [
+          "PT503",
+          null
+        ],
+        "persistentContention": [
+          "PT503",
+          "PT503",
+          "PT503"
+        ],
+        "viewerRefused": [
+          "42501"
+        ],
+        "restored": [
+          null
+        ]
+      },
+      "requestSha256": "45d9f159adf9b49e7efe735ab7bccc9e1211176db2a67bbe437f7fb54af71af3"
+    }
+  },
+  {
+    "control": "omit-read-retry",
+    "exitCode": 1,
+    "evidence": {
+      "expectedFailure": "Synthesis request unavailable after the first native PT503"
+    }
+  },
+  {
+    "control": "restored",
+    "exitCode": 0,
+    "evidence": {
+      "database": "openplan_attempt_cli_8262a39d7f9c4dc5a3b734c9f4fef98b",
+      "transport": "PostgREST HTTP with PostgrestClient",
+      "cases": {
+        "baseline": [
+          null
+        ],
+        "releasedContention": [
+          "PT503",
+          null
+        ],
+        "persistentContention": [
+          "PT503",
+          "PT503",
+          "PT503"
+        ],
+        "viewerRefused": [
+          "42501"
+        ],
+        "restored": [
+          null
+        ]
+      },
+      "requestSha256": "45d9f159adf9b49e7efe735ab7bccc9e1211176db2a67bbe437f7fb54af71af3"
+    }
+  }
+]
+

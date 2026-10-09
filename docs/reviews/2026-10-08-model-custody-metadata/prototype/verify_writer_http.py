@@ -1,0 +1,531 @@
+"""Exercise both bound worker writers against installed commands and lost replies."""
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import socket
+import subprocess
+import sys
+import threading
+import types
+import uuid
+from unittest.mock import patch
+import requests
+from isolated_postgrest import gateway
+
+ROOT = Path(__file__).resolve().parent
+REPO = ROOT.parents[3]
+sys.path.insert(0, str(REPO / 'workers/aequilibrae_worker'))
+import model_attempt_invocation as invocation
+import model_attempt_writer as managed
+import model_command_client as client
+import model_command_journal as journal
+from worker_import_for_tests import import_worker_main
+
+
+def verify(output, writer_module, outputs=False, state_output=False, count_output=False, count_consumer=False, package_output=False, package_consumer=False, state_consumer=False, project_output=False, project_consumer=False, project_working=False, assignment_outputs=False, assignment_consumer=False, output_working=False):
+    assignment_consumer = assignment_consumer or output_working
+    assignment_outputs = assignment_outputs or assignment_consumer
+    project_consumer = project_consumer or project_working
+    project_output = project_output or project_consumer
+    package_consumer = package_consumer or state_consumer or project_consumer or assignment_consumer
+    package_output = package_output or package_consumer or project_output or assignment_outputs
+    count_output = count_output or count_consumer
+    outputs = outputs or state_output or count_output or package_output
+    source = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
+    if source['container'] != 'supabase_db_openplan-restore-target-2026091050' or not re.fullmatch(r'openplan_retention_upgrade_[0-9a-f]{32}', source['database']):
+        raise ValueError('Select owned retention source')
+    output.mkdir(mode=0o700, parents=True, exist_ok=False)
+    database = 'openplan_attempt_cli_' + uuid.uuid4().hex
+
+    def sql(db, body):
+        result = subprocess.run(['docker', 'exec', '-i', source['container'], 'psql', '-X', '-qAt',
+            '-U', 'postgres', '-d', db, '-v', 'ON_ERROR_STOP=1'], input=body,
+            text=True, capture_output=True, timeout=30)
+        if result.returncode:
+            raise RuntimeError(result.stderr)
+        return result.stdout.strip()
+
+    if sql('postgres', f"SELECT count(*) FROM pg_stat_activity WHERE datname='{source['database']}';") != '0':
+        raise RuntimeError('Source has active sessions')
+    sql('postgres', f'CREATE DATABASE {database} TEMPLATE {source["database"]};')
+    (output / 'candidate.json').write_text(json.dumps({'container': source['container'], 'database': database,
+        'source_database': source['database']}, indent=2) + '\n')
+    if sql(database, "SELECT count(*) FROM supabase_migrations.schema_migrations WHERE version='20261016000020';") != '1':
+        raise AssertionError('Installed migration20 required')
+    if outputs and sql(database, "SELECT count(*) FROM supabase_migrations.schema_migrations WHERE version='20261016000021';") != '1':
+        raise AssertionError('Installed migration21 required for outputs')
+    fixture = str(uuid.UUID(source['fixture_run']))
+    aeq = import_worker_main()
+    sys.path.insert(0, str(REPO / 'workers/activitysim_worker'))
+    import supabase_poll
+    calls, cases = [], []
+    fault = {'operation': None}
+    with gateway('public', database=database) as connection:
+        key = connection['service_token']
+
+        class Bridge(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+
+            def forward(self, method):
+                path = self.path.removeprefix('/rest/v1')
+                allowed = (method == 'GET' and (path.startswith('/model_run_stages?') or path.startswith('/model_run_artifacts?'))) or (
+                    method == 'POST' and path in ('/rpc/claim_model_stage_attempt', '/rpc/write_model_stage_attempt', '/rpc/write_model_attempt_artifact', '/rpc/write_model_attempt_kpi'))
+                if not allowed or self.headers.get('Authorization') != 'Bearer ' + key:
+                    self.send_error(403)
+                    return
+                body = self.rfile.read(int(self.headers.get('Content-Length', '0'))) if method == 'POST' else None
+                with requests.request(method, connection['url'] + path, data=body,
+                    headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'},
+                    timeout=15, allow_redirects=False) as response:
+                    status, content = response.status_code, response.content
+                calls.append({'method': method, 'status': status})
+                if status == 200 and method == 'POST' and path == '/rpc/' + str(fault['operation']):
+                    fault['operation'] = None
+                    self.close_connection = True
+                    self.connection.shutdown(socket.SHUT_RDWR)
+                    self.connection.close()
+                    return
+                self.send_response(status)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+
+            def do_POST(self):
+                self.forward('POST')
+
+            def do_GET(self):
+                self.forward('GET')
+
+        server = HTTPServer(('127.0.0.1', 0), Bridge)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        base = f'http://127.0.0.1:{server.server_port}'
+        try:
+            for worker in ((aeq,) if state_output or count_output or package_output else (aeq, supabase_poll)):
+                modes = (('artifact', 'kpi', 'retained_artifact', 'retained_kpi') if worker is aeq else ('artifact', 'kpi')) if outputs else ('claim', 'running', 'succeeded', 'failed')
+                if state_output or count_output or package_output:
+                    modes = ('package_artifact' if package_output else 'count_artifact' if count_output else 'state_artifact',)
+                for status in modes:
+                    run, stage = [str(uuid.uuid4()) for _ in range(2)]
+                    workspace = str(uuid.UUID(sql(database, f"""
+INSERT INTO public.model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by)
+ SELECT '{run}',workspace_id,model_id,engine_key,'queued','Synthetic managed writer HTTP',created_by
+ FROM public.model_runs WHERE id='{fixture}';
+INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order,log_tail)
+ VALUES('{stage}','{run}','Synthetic computation','queued',1,'Existing synthetic log');
+SELECT workspace_id FROM public.model_runs WHERE id='{run}';
+""")))
+                    if package_consumer:
+                        import model_package_inputs
+                        producer_stage, producer_artifact = str(uuid.uuid4()), str(uuid.uuid4())
+                        sql(database, f"UPDATE public.model_run_stages SET stage_name='Artifact Extraction' WHERE id='{stage}'; INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order) VALUES('{producer_stage}','{run}','Network Assignment','queued',0);")
+                        claim = json.loads(sql(database, f"SET ROLE service_role; SELECT public.claim_model_stage_attempt('{uuid.uuid4()}','{producer_stage}','native-package-producer');"))
+                        producer_attempt = str(uuid.UUID(claim['attempt_id']))
+                        installation = hashlib.sha256(client.destination(base,database).encode()).hexdigest()
+                        producer_directory = output / 'scratch/runs' / run / 'attempts' / installation / producer_stage / producer_attempt
+                        producer_package = producer_directory / 'package'
+                        producer_package.mkdir(parents=True)
+                        (producer_package / 'manifest.json').write_bytes(b'{"files":{}}')
+                        (producer_package / 'generated.csv').write_bytes(b'zone,trips\n1,17\n')
+                        (producer_package / 'empty').mkdir()
+                        producer_record = model_package_inputs.retain(producer_package, producer_directory / 'package_inputs')
+                        payload = json.dumps({'id':producer_artifact,'artifact_type':'model_package_inputs',
+                            'file_url':'local://'+producer_record['manifest_path'],'content_hash':producer_record['manifest_sha256'],
+                            'file_size_bytes':producer_record['manifest_size_bytes'],'metadata_json':{'schema':'openplan.package-inputs.v1'}}).replace("'", "''")
+                        if assignment_consumer:
+                            (producer_package / 'count_inputs').mkdir()
+                            (producer_package / 'count_inputs/manifest.json').write_bytes(b'{"source_reference":"/original/counts.csv","scientific_acceptance":"unassessed"}')
+                            (producer_package / 'travel_time_skims.omx').write_bytes(b'synthetic skim bytes')
+                            producer_record = model_package_inputs.retain(producer_package, producer_directory / 'assignment_outputs')
+                            payload = json.dumps({'id':producer_artifact,'artifact_type':'model_assignment_outputs',
+                                'file_url':'local://'+producer_record['manifest_path'],'content_hash':producer_record['manifest_sha256'],
+                                'file_size_bytes':producer_record['manifest_size_bytes'],
+                                'metadata_json':{'schema':'openplan.assignment-outputs.v1','inventory_schema':'openplan.package-inputs.v1',
+                                                 'scientific_acceptance':'unassessed','database_consistency':'unassessed'}}).replace("'", "''")
+                        if project_consumer:
+                            import sqlite3
+                            import model_project_inputs
+                            db = sqlite3.connect(producer_package / 'project_database.sqlite')
+                            db.execute('CREATE TABLE evidence (id INTEGER)')
+                            db.execute('INSERT INTO evidence VALUES (7)')
+                            db.commit()
+                            db.close()
+                            producer_record = model_project_inputs.retain(producer_package, producer_directory / 'project_inputs')
+                            payload = json.dumps({'id':producer_artifact,'artifact_type':'model_project_inputs',
+                                'file_url':'local://'+producer_record['manifest_path'],
+                                'content_hash':producer_record['manifest_sha256'],
+                                'file_size_bytes':producer_record['manifest_size_bytes'],
+                                'metadata_json':{'schema':'openplan.project-inputs.v1',
+                                    'inventory_schema':'openplan.package-inputs.v1',
+                                    'database_checks':producer_record['database_checks'],
+                                    'database_consistency':producer_record['database_consistency'],
+                                    'engine_closure':'unassessed','cross_database_consistency':'unassessed',
+                                    'scientific_acceptance':'unassessed','execution_ready':False}}).replace("'", "''")
+                        if state_consumer:
+                            producer_state_content = b'{"package":{"package_dir":"/original/package"},"setup":{"synthetic":true}}\n'
+                            producer_state_path = producer_directory / 'predecessor_state.json'
+                            producer_state_path.write_bytes(producer_state_content)
+                            payload = json.dumps({'id':producer_artifact,'artifact_type':'model_predecessor_state',
+                                'file_url':'local://'+str(producer_state_path),'content_hash':hashlib.sha256(producer_state_content).hexdigest(),
+                                'file_size_bytes':len(producer_state_content),'metadata_json':{'schema':'openplan.predecessor-state.v1'}}).replace("'", "''")
+                        sql(database,f"SET ROLE service_role; SELECT public.write_model_attempt_artifact('{uuid.uuid4()}','{producer_attempt}','{payload}'::jsonb); SELECT public.write_model_stage_attempt('{uuid.uuid4()}','{producer_attempt}','succeeded','Synthetic package complete',NULL);")
+                    directory = output / worker.__name__ / status
+                    artifact_id = str(uuid.uuid4())
+                    handled = []
+                    writers = []
+                    fault['operation'] = 'claim_model_stage_attempt' if status == 'claim' else None
+
+                    def handler(context):
+                        handled.append(context)
+                        writer = writer_module.AttemptWriter(directory, context, base_url=base,
+                            deployment_id=database, service_key=key)
+                        writers.append(writer)
+                        with writer_module.bind(writer):
+                            worker.sb_patch_stage(stage, {'log_tail': 'Useful synthetic partial log'})
+                            if outputs:
+                                kind = 'artifact' if status.endswith('artifact') else 'kpi'
+                                fault['operation'] = 'write_model_attempt_' + kind
+                                if kind == 'artifact':
+                                    payload = {'id': artifact_id, 'run_id': run, 'stage_id': stage,
+                                        'artifact_type': 'synthetic', 'file_url': 'local://synthetic-unread',
+                                        'file_size_bytes': 7, 'content_hash': 'a' * 64,
+                                        'metadata_json': {'claim_tier': 'prototype'}}
+                                else:
+                                    payload = {'run_id': run, 'kpi_name': 'synthetic', 'kpi_label': 'Unassessed',
+                                        'value': None, 'breakdown_json': {'status': 'unassessed'}}
+                                if status == 'package_artifact':
+                                    with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
+                                        if package_consumer:
+                                            worker.run_work_directory(run)
+                                            if project_working:
+                                                fault['operation'] = None
+                                                consumed_project = worker.retain_managed_predecessor_project()
+                                                fault['operation'] = 'write_model_attempt_artifact'
+                                                writer.prepare_project_working_copy(consumed_project)
+                                            elif project_consumer:
+                                                worker.retain_managed_predecessor_project()
+                                            elif assignment_consumer:
+                                                if output_working:
+                                                    fault['operation'] = None
+                                                    consumed_outputs = worker.retain_managed_predecessor_outputs()
+                                                    fault['operation'] = 'write_model_attempt_artifact'
+                                                    writer.prepare_output_working_copy(consumed_outputs)
+                                                else:
+                                                    worker.retain_managed_predecessor_outputs()
+                                            elif state_consumer:
+                                                worker.retain_managed_predecessor_state()
+                                            else:
+                                                worker.retain_managed_predecessor_package()
+                                            raise AssertionError('Lost consumer reply did not stop handler')
+                                        source_package = Path(worker.run_work_directory(run)) / 'package'
+                                        source_package.mkdir()
+                                        (source_package / 'manifest.json').write_bytes(b'{"files":{}}')
+                                        (source_package / 'generated.csv').write_bytes(b'zone,trips\n1,17\n')
+                                        (source_package / 'empty').mkdir()
+                                        if assignment_outputs:
+                                            (source_package / 'count_inputs').mkdir()
+                                            (source_package / 'count_inputs/manifest.json').write_bytes(b'{"source_reference":"/original/counts.csv","scientific_acceptance":"unassessed"}')
+                                            (source_package / 'travel_time_skims.omx').write_bytes(b'synthetic skim bytes')
+                                            writer.retain_assignment_outputs(source_package)
+                                        elif project_output:
+                                            import sqlite3
+                                            db = sqlite3.connect(source_package / 'project_database.sqlite')
+                                            db.execute('CREATE TABLE evidence (id INTEGER)')
+                                            db.execute('INSERT INTO evidence VALUES (7)')
+                                            db.commit()
+                                            db.close()
+                                            writer.retain_project(source_package)
+                                        else:
+                                            writer.retain_package(source_package)
+                                elif status == 'count_artifact':
+                                    external = output / 'selected_counts.csv'
+                                    external.write_bytes(b'station_id,count_year,aadt\nA,2020,123\n')
+                                    Path(str(external) + '.count-source.json').write_text('{"source":{"vintage":"2020"}}')
+                                    (output / 'count_source_status.json').write_text('{"status":"available"}')
+                                    with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
+                                        path = Path(worker.run_work_directory(run)) / 'run_output'
+                                        path.mkdir()
+                                        if count_consumer:
+                                            import model_count_inputs
+                                            predecessor = model_count_inputs.retain(str(external), str(output), output / 'predecessor-counts')
+                                            worker.stage_artifacts(run, stage, str(path.parent), {},
+                                                {'count_inputs': predecessor, 'counts_path': predecessor['counts_path']})
+                                        else:
+                                            worker.retain_assignment_counts(str(external), str(path), status_directory=str(output))
+                                elif status == 'state_artifact':
+                                    with patch.object(worker, 'RUN_WORK_ROOT', str(output / 'scratch')):
+                                        path = worker.run_work_directory(run)
+                                        worker.write_run_state(path, {'setup': {'synthetic': True},
+                                            'package': {'package_dir': '/original/synthetic/package'}})
+                                elif status == 'retained_artifact':
+                                    worker.sb_record_retained_artifact(payload, workspace_id=workspace,
+                                        journal_dir=str(directory), logical_name='synthetic-output')
+                                elif status == 'retained_kpi':
+                                    worker.sb_record_retained_kpi(payload, workspace_id=workspace,
+                                        stage_id=stage, journal_dir=str(directory))
+                                else:
+                                    getattr(worker, 'sb_post_' + kind)(payload)
+                                raise AssertionError('Lost output reply did not stop handler')
+                            fault['operation'] = 'write_model_stage_attempt'
+                            payload = {'status': status}
+                            if status == 'failed':
+                                payload['error_message'] = 'Synthetic computation failure'
+                            worker.sb_patch_stage(stage, payload)
+
+                    with patch.dict(sys.modules, {'model_attempt_writer': writer_module}), patch.object(
+                        worker.requests, 'patch', side_effect=AssertionError('Direct PATCH forbidden')), patch.object(
+                        worker, '_confirmed_record_insert', side_effect=AssertionError('Direct insert forbidden')), patch.object(
+                        worker, 'SUPABASE_URL', base), patch.object(worker, 'SUPABASE_KEY', key), patch.dict(
+                        os.environ, {'OPENPLAN_DEPLOYMENT_ID': database}):
+                        try:
+                            invocation.invoke_new_attempt(directory, run_id=run, stage_id=stage,
+                                worker_id='synthetic-native-writer', workspace_id=workspace,
+                                base_url=base, deployment_id=database, service_key=key, handler=handler)
+                        except (client.DeliveryUnconfirmed, worker.WorkerStateWriteUnconfirmed):
+                            pass
+                        else:
+                            raise AssertionError('Lost reply did not stop invocation')
+                    if fault['operation'] is not None or len(handled) != (0 if status == 'claim' else 1):
+                        raise AssertionError('Writer did not reach intended dropped reply')
+                    pending = journal.pending(directory, client.destination(base, database))
+                    if len(pending) != 1:
+                        raise AssertionError('Original unresolved command missing')
+                    command = pending[0]['command']
+                    request = command['request_id']
+
+                    receipt_table = ('model_artifact_write_receipts' if status.endswith('artifact') else 'model_kpi_write_receipts') if outputs else ('model_stage_claim_receipts' if status == 'claim' else 'model_stage_write_receipts')
+
+                    def native_state():
+                        return sql(database, f"""SELECT jsonb_build_object(
+ 'parent',(SELECT to_jsonb(r) FROM public.model_runs r WHERE id='{run}'),
+ 'stage',(SELECT to_jsonb(s) FROM public.model_run_stages s WHERE id='{stage}'),
+ 'attempts',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_stage_attempts a WHERE run_id='{run}'),
+ 'starts',(SELECT count(*) FROM public.model_stage_execution_starts WHERE run_id='{run}'),
+ 'artifacts',(SELECT coalesce(jsonb_agg(to_jsonb(a) ORDER BY id),'[]'::jsonb) FROM public.model_run_artifacts a WHERE run_id='{run}'),
+ 'kpis',(SELECT coalesce(jsonb_agg(to_jsonb(k) ORDER BY id),'[]'::jsonb) FROM public.model_run_kpis k WHERE run_id='{run}'),
+ 'receipt',(SELECT response_payload FROM public.{receipt_table} WHERE request_id='{request}'));""")
+
+                    before = native_state()
+                    observed = json.loads(before)
+                    expected_status = 'running' if outputs or status == 'claim' else status
+                    if observed['stage']['status'] != expected_status or observed['parent']['status'] != expected_status:
+                        raise AssertionError('Native terminal outcome differs')
+                    if status != 'claim' and observed['stage']['log_tail'] != 'Useful synthetic partial log':
+                        raise AssertionError('Native stage did not retain partial log')
+                    if observed['receipt'] is None or observed['starts'] != (2 if package_consumer else 1) or len(observed['attempts']) != (2 if package_consumer else 1):
+                        raise AssertionError('Native receipt or execution identity missing')
+                    if outputs:
+                        records = observed['artifacts'] if status.endswith('artifact') else observed['kpis']
+                        if package_consumer:
+                            records = [record for record in records if record['stage_id'] == stage]
+                        consumer_attempts = [attempt for attempt in observed['attempts'] if attempt['stage_id'] == stage]
+                        if output_working:
+                            if len(records) != 2 or {r['artifact_type'] for r in records} != {'model_output_consumption', 'model_output_working_copy'}:
+                                raise AssertionError('Output working copy lost its retained input record')
+                            consumed_record = next(r for r in records if r['artifact_type'] == 'model_output_consumption')
+                            records = [r for r in records if r['artifact_type'] == 'model_output_working_copy']
+                        if project_working:
+                            if len(records) != 2 or {r['artifact_type'] for r in records} != {'model_project_consumption', 'model_project_working_copy'}:
+                                raise AssertionError('Project working copy lost its retained input record')
+                            consumed_record = next(r for r in records if r['artifact_type'] == 'model_project_consumption')
+                            records = [r for r in records if r['artifact_type'] == 'model_project_working_copy']
+                        if len(records) != 1 or len(consumer_attempts) != 1 or records[0]['attempt_id'] != consumer_attempts[0]['id']:
+                            raise AssertionError('Output is absent, duplicated or belongs to another attempt')
+                        if state_consumer:
+                            retained_path = writers[0].files.path / 'predecessor_state_input.json'
+                            content = retained_path.read_bytes()
+                            expected_provenance = {'artifact_id':producer_artifact,'stage_id':producer_stage,
+                                'attempt_id':producer_attempt,'content_hash':hashlib.sha256(producer_state_content).hexdigest()}
+                            if (content != producer_state_content or records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
+                                    or records[0]['file_size_bytes'] != len(content)
+                                    or records[0]['file_url'] != 'local://' + str(retained_path)
+                                    or records[0]['artifact_type'] != 'model_state_consumption'
+                                    or records[0]['metadata_json'].get('producer') != expected_provenance
+                                    or records[0]['metadata_json'].get('paths_relocated') is not False
+                                    or retained_path.stat().st_ino == producer_state_path.stat().st_ino):
+                                raise AssertionError('Native state consumption differs from original bytes or provenance')
+                        elif status == 'package_artifact':
+                            retained_dir = writers[0].files.path / ('output_working' if output_working else 'predecessor_outputs' if assignment_consumer else 'assignment_outputs' if assignment_outputs else 'project_working' if project_working else 'predecessor_project' if project_consumer else 'project_inputs' if project_output else 'predecessor_package' if package_consumer else 'package_inputs')
+                            manifest = retained_dir / 'manifest.json'
+                            content = manifest.read_bytes()
+                            inventory = json.loads(content)
+                            if (records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
+                                    or records[0]['file_size_bytes'] != len(content)
+                                    or records[0]['file_url'] != 'local://' + str(manifest)
+                                    or records[0]['artifact_type'] != ('model_output_working_copy' if output_working else 'model_output_consumption' if assignment_consumer else 'model_assignment_outputs' if assignment_outputs else 'model_project_working_copy' if project_working else 'model_project_consumption' if project_consumer else 'model_project_inputs' if project_output else 'model_package_consumption' if package_consumer else 'model_package_inputs')):
+                                raise AssertionError('Native package manifest differs from retained bytes')
+                            if package_consumer:
+                                expected_provenance = {'artifact_id':producer_artifact,'stage_id':producer_stage,
+                                    'attempt_id':producer_attempt,'manifest_sha256':producer_record['manifest_sha256']}
+                                if records[0]['metadata_json'].get('producer') != expected_provenance:
+                                    raise AssertionError('Native package consumer lost producer provenance')
+                            expected_files = {'manifest.json': b'{"files":{}}', 'generated.csv': b'zone,trips\n1,17\n'}
+                            if assignment_outputs:
+                                expected_files['count_inputs/manifest.json'] = b'{"source_reference":"/original/counts.csv","scientific_acceptance":"unassessed"}'
+                                expected_files['travel_time_skims.omx'] = b'synthetic skim bytes'
+                                metadata = records[0]['metadata_json']
+                                if (metadata.get('schema') != ('openplan.output-working-copy.v1' if output_working else 'openplan.output-consumption.v1' if assignment_consumer else 'openplan.assignment-outputs.v1')
+                                        or (not output_working and metadata.get('inventory_schema') != 'openplan.package-inputs.v1')
+                                        or metadata.get('scientific_acceptance') != 'unassessed'
+                                        or (not output_working and metadata.get('database_consistency') != 'unassessed')):
+                                    raise AssertionError('Native assignment output metadata differs')
+                                if output_working:
+                                    retained_input = writers[0].files.path / 'predecessor_outputs/files/generated.csv'
+                                    working_file = retained_dir / 'files/generated.csv'
+                                    if (metadata.get('role') != 'initial_working_inventory'
+                                            or metadata.get('files_mutable') is not True
+                                            or metadata.get('execution_ready') is not False
+                                            or metadata.get('input_manifest_sha256') != consumed_record['content_hash']
+                                            or working_file.stat().st_ino == retained_input.stat().st_ino
+                                            or writers[0]._working_outputs is not None):
+                                        raise AssertionError('Native output working copy lost its retained input boundary')
+                                    original = retained_input.read_bytes()
+                                    working_file.write_bytes(b'synthetic changed output')
+                                    if retained_input.read_bytes() != original:
+                                        raise AssertionError('Working output write changed retained input')
+                                    # Restore only this proof-owned mutable file for inventory comparison.
+                                    working_file.write_bytes(original)
+
+                            if project_output:
+                                expected_db = ((producer_directory / 'project_inputs/files' if project_consumer else writers[0].files.path / 'package') / 'project_database.sqlite').read_bytes()
+                                expected_files['project_database.sqlite'] = expected_db
+                                expected_checks = {'project_database.sqlite': {'integrity': 'ok',
+                                    'sha256': hashlib.sha256(expected_db).hexdigest(), 'size_bytes': len(expected_db)}}
+                                metadata = records[0]['metadata_json']
+                                if (metadata.get('database_checks') != expected_checks
+                                        or metadata.get('schema') != ('openplan.project-working-copy.v1' if project_working else 'openplan.project-consumption.v1' if project_consumer else 'openplan.project-inputs.v1')
+                                        or (not project_working and metadata.get('database_consistency') != 'individual_sqlite_integrity_checked')
+                                        or metadata.get('execution_ready') is not False
+                                        or any(metadata.get(field) != 'unassessed' for field in (('engine_closure', 'scientific_acceptance') if project_working else ('engine_closure', 'cross_database_consistency', 'scientific_acceptance')))):
+                                    raise AssertionError('Native project database checks or limits differ')
+                                if project_working:
+                                    retained_input = writers[0].files.path / 'predecessor_project/files/project_database.sqlite'
+                                    if (metadata.get('role') != 'initial_working_inventory'
+                                            or metadata.get('files_mutable') is not True
+                                            or metadata.get('input_manifest_sha256') != consumed_record['content_hash']
+                                            or (retained_dir / 'files/project_database.sqlite').stat().st_ino == retained_input.stat().st_ino):
+                                        raise AssertionError('Native working copy lost its retained input boundary')
+                                    import sqlite3
+                                    db = sqlite3.connect(retained_dir / 'files/project_database.sqlite')
+                                    db.execute('INSERT INTO evidence VALUES (99)')
+                                    db.commit()
+                                    db.close()
+                                    if retained_input.read_bytes() != expected_db:
+                                        raise AssertionError('Working write changed retained project input')
+                                    # Restore only this proof-owned working database for
+                                    # the initial inventory assertions below.
+                                    (retained_dir / 'files/project_database.sqlite').write_bytes(expected_db)
+                            if set(inventory['entries']) != set(expected_files) | ({'empty', 'count_inputs'} if assignment_outputs else {'empty'}):
+                                raise AssertionError('Native package inventory is incomplete')
+                            if not (retained_dir / 'files/empty').is_dir():
+                                raise AssertionError('Native package lost empty directory')
+                            for name, expected in expected_files.items():
+                                copied = retained_dir / 'files' / name
+                                item = inventory['entries'][name]
+                                if (copied.read_bytes() != expected or item['sha256'] != hashlib.sha256(expected).hexdigest()
+                                        or item['size_bytes'] != len(expected)
+                                        or copied.stat().st_ino == ((producer_directory / 'assignment_outputs/files' if assignment_consumer else producer_directory / 'project_inputs/files' if project_consumer else producer_directory / 'package_inputs/files' if package_consumer else writers[0].files.path / 'package') / name).stat().st_ino):
+                                    raise AssertionError('Native package file differs from retained inventory')
+                        elif status == 'count_artifact':
+                            retained_dir = writers[0].files.path / 'run_output' / ('artifact_count_inputs' if count_consumer else 'count_inputs')
+                            manifest = retained_dir / 'manifest.json'
+                            content = manifest.read_bytes()
+                            inventory = json.loads(content)
+                            expected_files = {
+                                'counts.csv': b'station_id,count_year,aadt\nA,2020,123\n',
+                                'counts.csv.count-source.json': b'{"source":{"vintage":"2020"}}',
+                                'count_source_status.json': b'{"status":"available"}',
+                            }
+                            if (records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
+                                    or records[0]['file_size_bytes'] != len(content)
+                                    or records[0]['file_url'] != 'local://' + str(manifest)
+                                    or records[0]['artifact_type'] != 'model_count_inputs'):
+                                raise AssertionError('Native count manifest differs from retained bytes')
+                            for name, expected in expected_files.items():
+                                if count_consumer and (retained_dir / name).stat().st_ino == (output / 'predecessor-counts' / name).stat().st_ino:
+                                    raise AssertionError('Consumer reused predecessor count inode')
+                                item = inventory['files'][name]
+                                if ((retained_dir / name).read_bytes() != expected or item['status'] != 'retained'
+                                        or item['sha256'] != hashlib.sha256(expected).hexdigest() or item['size_bytes'] != len(expected)):
+                                    raise AssertionError('Native count inventory differs from retained inputs')
+                        elif status == 'state_artifact':
+                            retained_path = writers[0].files.path / 'predecessor_state.json'
+                            content = retained_path.read_bytes()
+                            expected_state = {'setup': {'synthetic': True}, 'package': {'package_dir': '/original/synthetic/package'}}
+                            if (json.loads(content) != expected_state or records[0]['content_hash'] != hashlib.sha256(content).hexdigest()
+                                    or records[0]['file_size_bytes'] != len(content)
+                                    or records[0]['file_url'] != 'local://' + str(retained_path)
+                                    or records[0]['artifact_type'] != 'model_predecessor_state'):
+                                raise AssertionError('Native predecessor state differs from retained bytes')
+                        elif status.endswith('artifact'):
+                            if records[0]['id'] != artifact_id or records[0]['content_hash'] != 'a' * 64 or records[0]['metadata_json'] != {'claim_tier': 'prototype'}:
+                                raise AssertionError('Native artifact lost prepared identity or evidence')
+                        elif records[0]['value'] is not None or records[0]['breakdown_json'] != {'status': 'unassessed'}:
+                            raise AssertionError('Native KPI lost unassessed null value')
+                    argv = [sys.executable, '-B', str(REPO / 'workers/aequilibrae_worker/model_command_recovery.py'),
+                        '--journal', str(directory), '--base-url', base, '--deployment-id', database, '--request-id', request]
+                    recovered = subprocess.run(argv, env={**os.environ, 'SUPABASE_SERVICE_ROLE_KEY': key},
+                        text=True, capture_output=True, timeout=40)
+                    if recovered.returncode or json.loads(recovered.stdout) != {'request_id': request,
+                        'outcome': 'command_receipt_retained', 'model_resumed': False}:
+                        raise AssertionError('Fresh CLI did not recover original command')
+                    if key in recovered.stdout or key in recovered.stderr or before != native_state():
+                        raise AssertionError('Recovery changed native state or disclosed credential')
+                    start = len(calls)
+                    cached = subprocess.run(argv, env={**os.environ, 'SUPABASE_SERVICE_ROLE_KEY': ''},
+                        text=True, capture_output=True, timeout=20)
+                    if cached.returncode or len(calls) != start:
+                        raise AssertionError('Cached recovery sent HTTP')
+                    if writers:
+                        try:
+                            writers[0].require_open()
+                        except invocation.ReconciliationRequired:
+                            pass
+                        else:
+                            raise AssertionError('Recovered write reopened stopped invocation')
+                    cases.append({'worker': worker.__name__, 'lost_reply': status,
+                        'handler_calls': len(handled), 'fresh_cli_recovered': True,
+                        'native_records_unchanged': True, 'cached_no_http': True})
+        finally:
+            server.shutdown()
+            thread.join(timeout=5)
+            server.server_close()
+    return {'cases': cases, 'http_calls': len(calls), 'gateway_removed': True}
+
+
+def main():
+    root = Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_OUTPUT'])
+    root.mkdir(mode=0o700, parents=True, exist_ok=False)
+    source = Path(managed.__file__).read_text()
+    anchor = 'state = {**self.state}'
+    if source.count(anchor) != 1:
+        raise AssertionError('Partial log mutation anchor changed')
+    results = []
+    for name, body in [('baseline', source), ('harmless', source + '\n# Harmless comment.\n'),
+                       ('erase-log', source.replace(anchor, "state = {'status': 'running', 'log_tail': None, 'error': None}")),
+                       ('restored', source)]:
+        candidate = types.ModuleType('model_attempt_writer')
+        exec(compile(body, managed.__file__, 'exec'), candidate.__dict__)
+        try:
+            result = verify(root / name, candidate)
+        except AssertionError as error:
+            if name != 'erase-log' or str(error) != 'Native stage did not retain partial log':
+                raise
+            results.append({'control': name, 'expected_failure': str(error)})
+        else:
+            if name == 'erase-log':
+                raise AssertionError('Lost partial log passed native proof')
+            results.append({'control': name, 'result': result})
+    report = {'source_sha256': hashlib.sha256(source.encode()).hexdigest(), 'controls': results,
+              'limits': 'Installed native claim and stage commands, fresh invocation helper and both bound worker stage adapters. Synthetic handler only; no normal poll/push loop, outputs, filesystem continuation, engine or scientific acceptance.'}
+    (root / 'writer-http.json').write_text(json.dumps(report, indent=2) + '\n')
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == '__main__':
+    main()

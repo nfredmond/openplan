@@ -1,0 +1,57 @@
+{
+  "writer_sha256": "e6c914263d65f882a6739b17d875c147ed74859b8f0f24cb00fbb2db4c7ab1f4",
+  "source_sha256": "eb25679f15f2c7522b5aaa0824a799439a0638bd6f231578482e8bb5fbfc6a34",
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "foreign-input",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "reuse-directory",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "skip-copy",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "authorize-execution",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "writer-harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "writer-no-registration",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "writer-not-stopped",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "writer-restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": "Real owned files and synthetic v2 records, including an empty observation package. No native preparation artifact command, stage integration, pre-result timing or scientific acceptance."
+}

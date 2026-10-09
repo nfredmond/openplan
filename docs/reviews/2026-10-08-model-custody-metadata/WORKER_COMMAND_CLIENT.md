@@ -476,3 +476,82 @@ restored controls pass; removing the summary copy and substituting the wrong
 consumer identity both fail. Controls are retained in
 `model-command-client-20261008-proof/screening-handoff-controls.json`.
 This file-copy test does not establish live artifact authorization or model accuracy.
+
+## Read-only delivery inventory, October 8
+
+`model_command_recovery.py --list-commands` now lists unresolved requests and
+validated retained receipts for one original journal and installation. It uses
+the read-only SQLite path, does not require credentials, sends no request and
+returns no scientific payload. Exact request/receipt hashes support comparison
+with a separately captured recovery inventory. Explicit false flags preserve
+that server state, current ownership and model continuation were not checked.
+Missing journals and invalid records fail the operation. A different installation
+returns no matching records, not proof that another installation has no work.
+
+The journal reader now checks request and destination columns against the saved
+command identity. The existing recovery check remains independent. The initial
+regression run exposed a mutation-test overlap: the new lower check caught the
+corruption before the mutated recovery check ran. A separate reader-result
+fixture now tests that recovery boundary without removing the native journal
+corruption test or weakening either production check.
+
+The 51 command tests pass, including the existing mutation suite and seven new
+inventory tests. Harmless source comments pass. Omitting resolved records,
+skipping receipt validation, skipping journal identity validation, relabeling a
+pending request as confirmed and claiming a server-state check each fail their
+intended assertions. The committed controls and native CLI result are under
+`prototype/command-inventory-controls.json` and
+`prototype/command-inventory-native.json`.
+
+A fresh credential-free CLI process also inspects the KPI receipt produced by
+the native dispatcher proof. It finds one retained receipt and leaves every
+journal row unchanged after the HTTP gateway has been removed. This proves
+local receipt inspection, not current PostgreSQL output existence, whole-run
+inventory completeness, filesystem adversary resistance, current attempt
+ownership or safe model resumption. The first targeted test invocation used an
+incorrect relative file path and did not create or run the new test; the
+corrected invocation and regression results above supersede it.
+
+## Read-only ownership inspection from the recovery CLI
+
+The CLI now exposes the existing scoped ownership reader through
+`--inspect-ownership CLAIM_REQUEST_ID --workspace-id WORKSPACE_ID`. It opens the
+existing journal without creating one, requires a resolved original claim,
+checks its receipt and deployment, and reads the current parent/stage snapshot.
+It neither redelivers pending commands nor writes journal records. Its output
+separates point-in-time ownership from continuation authority and model resumption.
+
+The focused reader, inventory, recovery and new CLI tests pass, followed by all
+55 command tests. That wider run reports an unclosed SQLite connection warning;
+it does not fail. New tests use explicitly closed connections. Controls retain a
+harmless comment and restored baseline; false continuation authorization, false
+resumption and reporting a failed ownership read as exit 0 all fail. Results are
+in `prototype/ownership-cli-controls.json`. The new checks use injected HTTP
+responses and the real local SQLite journal, not native database authorization.
+Existing native ownership-reader evidence remains separate. A fresh CLI against
+a native managed claim, operator reconciliation and actual model restart remain
+open. This command is not connected to the legacy normal dispatcher as a lease.
+
+## Fresh-process ownership CLI against native retention schema
+
+`verify_saved_ownership_cli.py` now clones the installed retention/recovery proof
+database and creates a synthetic run, stage and real managed claim over HTTP.
+A fresh CLI process reads the saved claim and confirms current ownership. A
+wrong workspace returns `ownership_unconfirmed`, not false ownership. After an
+explicit synthetic completion through the attempt-write RPC, the same saved
+claim correctly reports no ownership. Every inspection preserves journal rows
+and native run, stage and attempt rows and sends only GET requests. An invalid
+credential is refused by the loopback bridge before it reaches PostgREST.
+
+The native probe passes in baseline, harmless-comment and restored cases. A
+worker-reader mutation that always reports ownership fails on the completed
+attempt. Each run uses its own retained proof database; its bounded gateway is
+removed afterward. The first invocation omitted the required explicit container
+selection and stopped before creating a database. The corrected invocation and
+controls complete. Results are `prototype/saved-ownership-cli-native.json` and
+`prototype/saved-ownership-cli-native-controls.json`.
+
+This closes the fresh native CLI read check from the preceding entry. It does
+not establish model restart, an attempt lease, operator reconciliation, Storage
+recovery or scientific acceptance. No scientific computation runs. The normal
+legacy dispatcher still does not acquire managed claims through this command.

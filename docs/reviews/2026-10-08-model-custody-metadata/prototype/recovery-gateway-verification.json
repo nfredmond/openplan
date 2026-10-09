@@ -1,0 +1,18 @@
+{
+  "gateway": {
+    "name": "openplan-recovery-acceptance-gateway-c5da7ce9f438",
+    "image": "public.ecr.aws/supabase/kong:2.8.1",
+    "status": "ready",
+    "url": "http://127.0.0.1:29831",
+    "id": "1b332481e3c995ce820efc3a746f83aa5db3bf1327fb15ff144cb2ef7513fae5"
+  },
+  "checks": {
+    "missing_api_key_refused": true,
+    "password_sign_in": true,
+    "unrelated_workspace_read_empty": true,
+    "invalid_jwt_refused": true,
+    "app_origin_preflight": true,
+    "unconfigured_storage_route_404": true
+  },
+  "limits": "HTTP gateway checks, not a browser cookie journey or complete Supabase installation."
+}

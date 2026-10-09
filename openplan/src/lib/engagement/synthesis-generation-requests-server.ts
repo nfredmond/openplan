@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { setTimeout as delay } from "node:timers/promises";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { synthesisGenerationRequestIntentSchema, synthesisGenerationRequestScopeSchema as scopeSchema,
@@ -28,8 +29,19 @@ async function invoke(client: Client, name: string, args: Record<string, unknown
   scope: SynthesisGenerationRequestScope, signal: AbortSignal) {
   signal.throwIfAborted();
   const boundedSignal = AbortSignal.any([signal, AbortSignal.timeout(10_000)]);
-  const response = await client.rpc(name, args).abortSignal(boundedSignal);
+  let response = await client.rpc(name, args).abortSignal(boundedSignal);
   boundedSignal.throwIfAborted();
+  // Request reads take the native request lock too. Retry explicit contention
+  // within the original deadline; uncertain writes retain their existing recovery.
+  if (name === "read_engagement_synthesis_generation_request") {
+    for (const waitMs of [50, 150]) {
+      if (response.error?.code !== "PT503") break;
+      await delay(waitMs, undefined, { signal: boundedSignal });
+      boundedSignal.throwIfAborted();
+      response = await client.rpc(name, args).abortSignal(boundedSignal);
+      boundedSignal.throwIfAborted();
+    }
+  }
   if (response.error) {
     const code = response.error.code;
     if (code === "42501") throw new SynthesisGenerationRequestError("forbidden", 403);

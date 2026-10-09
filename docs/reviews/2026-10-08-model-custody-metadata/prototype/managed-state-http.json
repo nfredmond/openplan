@@ -1,0 +1,62 @@
+{
+  "adapter_sha256": "58460d45396ab8733e30ea0f268b7dc0862738af4d7380e0d20c9998f36600f2",
+  "worker_sha256": "64b9eb1149e2ab3b75bff79cc17c44a2dbef7faefff5afe98d88d5dbf0ff3f09",
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "package_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 8,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "package_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 8,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "wrong-consumer-hash",
+      "expected_failure": "Native state consumption differs from original bytes or provenance"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "package_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 8,
+        "gateway_removed": true
+      }
+    }
+  ],
+  "limits": "Actual selected-state helper and owned byte copy, native predecessor selection and consumption registration, fresh CLI recovery. No execution-state mapping, project transfer, normal dispatcher or scientific acceptance."
+}

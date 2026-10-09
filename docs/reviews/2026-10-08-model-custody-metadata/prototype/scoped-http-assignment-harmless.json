@@ -1,0 +1,160 @@
+{
+  "control": "harmless",
+  "scope_start": {
+    "attempt_id": "1a1ad1db-ce7f-4a2a-af0d-7d2facb7a5aa",
+    "command_sha256": "f40420d84d3aa43f9c6872b698ffd2db504ed2357ee8d68a3bef10ea08eb03d9",
+    "run_id": "63f7a657-26f5-416d-ae23-4260cdce0e1b",
+    "schema": "openplan.engine-process.v1",
+    "scope": {
+      "bootstrap_pid": 274097,
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-5ae8fa06eed447d4b17fdf6f9c36a291.scope",
+      "cgroup_device": 30,
+      "cgroup_inode": 1547171,
+      "invocation_id": "ccbea74ef0b7456ca12f3f9106c16681",
+      "memory_bytes": 1073741824,
+      "schema": "openplan.engine-scope.v1",
+      "tasks": 128,
+      "unit": "openplan-engine-5ae8fa06eed447d4b17fdf6f9c36a291.scope"
+    },
+    "scope_unit": "openplan-engine-5ae8fa06eed447d4b17fdf6f9c36a291.scope",
+    "stage_id": "06a00f47-cb6e-4596-a8e3-6a2b0878e01f"
+  },
+  "scope_empty_observation": {
+    "schema": "openplan.engine-scope.v1",
+    "unit": "openplan-engine-5ae8fa06eed447d4b17fdf6f9c36a291.scope",
+    "invocation_id": "ccbea74ef0b7456ca12f3f9106c16681",
+    "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-5ae8fa06eed447d4b17fdf6f9c36a291.scope",
+    "cgroup_device": 30,
+    "cgroup_inode": 1547171,
+    "bootstrap_pid": 274097,
+    "memory_bytes": 1073741824,
+    "tasks": 128,
+    "observed_scope_empty": true,
+    "scope_result": "success"
+  },
+  "native_http": {
+    "control": "harmless",
+    "database": "openplan_attempt_cli_3065ecf82c784811aa756c3d1ccd207d",
+    "run_id": "63f7a657-26f5-416d-ae23-4260cdce0e1b",
+    "stage_id": "06a00f47-cb6e-4596-a8e3-6a2b0878e01f",
+    "native_converged": true,
+    "modeled_transit": "modeled",
+    "replay": null,
+    "final_outputs_absent": null,
+    "registered_artifacts": [
+      "model_assignment_geometry",
+      "model_count_inputs",
+      "model_package_working_copy",
+      "model_project_working_copy",
+      "model_transit_inputs"
+    ],
+    "http_calls": [
+      {
+        "method": "POST",
+        "operation": "/rpc/claim_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "7189bf5a4b3b12bacff6eec98ec6f7d4456baeb3c69249273c7907bac54715ed"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "5448982b2f5a8ca334ca31ab1264efe968453aa69bed3dcfabcd8d80413e1acc"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "58c8cf22a4a4d6cdc3db13441ede86941a61cde6a7df40eeed35b4f4ab5555d9"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "7015b8cdd6041ada6d1af211d821acb5c3f8d5a263f1a6e88910d01ce78bc0ce"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "e8da7d90cd9218aefd836045a79b68bf76a5afaf62bafec387700a05f8e05e72"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "f232db90b164246bfda5cf917ad3169c45c557e9a30a0e3f67f19e8eaf4e518a"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "16c14db20525a471bdf478090033395611d3e0cf20906f5a9efc96b61c0a392c"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "0db89233c48a28ecf41ea0781e8f6e39aaf43d737ae89ec21fd4d8069f2a9654"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "22783d473236cb5c372f51eac18d6cf9d92be133b6cac966fc5793ad01143215"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "539c0e655d2085fe997f331cc742d3dafb9c9778963d8679184e77432d6b8cd7"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "9238c0541c788fb7680c4922d59b4cd83a16e3e0ce7bac2c642164abe0a4eef9"
+      }
+    ],
+    "stage_remains_running": true,
+    "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
+    "limits": "Full small native assignment with live isolated PostgREST and installed command schema. Synthetic predecessor inventories directly constructed. Lost-commit replay is recorded when selected. No final publication, model restart, scientific acceptance or normal dispatcher activation."
+  },
+  "source_sha256": {
+    "workers/aequilibrae_worker/model_engine_process.py": "d624864811b0af8eb03b9c1ca3bbaf2970a56932612bc21f35193bfd95877c72",
+    "workers/aequilibrae_worker/model_engine_supervision.py": "85caf0eff4b2408dbf6038ece9fbdce1c644e44c21254b408bd99039c6ab70c3",
+    "workers/aequilibrae_worker/model_engine_bootstrap.py": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a",
+    "docs/reviews/2026-10-08-model-custody-metadata/prototype/verify_native_assignment_http.py": "e4414f203e319accf878ce373af124ccfffb3b60386571d266850ec970394a09"
+  },
+  "limits": "Full small native assignment with production scope and installed isolated SQL. Receipt recovery uses a journal backup and does not resume the model. No cancellation, parent-loss recovery, final publication, scientific acceptance or normal dispatch activation."
+}

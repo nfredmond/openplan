@@ -1,0 +1,69 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "verified": true
+    },
+    {
+      "case": "missing-required-record",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "verified": true
+    },
+    {
+      "case": "foreign-launch",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "verified": true
+    },
+    {
+      "case": "foreign-owner",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "verified": true
+    },
+    {
+      "case": "foreign-boot",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "verified": true
+    },
+    {
+      "case": "invalid-shape",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "verified": true
+    },
+    {
+      "case": "directory-replacement",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "verified": true
+    },
+    {
+      "case": "invocation-replacement",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "verified": true
+    },
+    {
+      "case": "false-empty-on-race",
+      "returncode": 1,
+      "expected_failure": "False is not None",
+      "verified": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "verified": true
+    }
+  ],
+  "limits": [
+    "Live disposable scopes and private synthetic records",
+    "No database recovery decision or model restart",
+    "Read-only audits do not authorize termination or continuation"
+  ]
+}

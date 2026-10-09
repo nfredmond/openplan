@@ -1,0 +1,48 @@
+{
+  "source_sha256": "760507ed62d63fbfb10e8a22f29c6939cedaf0473a59c744e30422739045de3d",
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "forward-star",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "endpoint",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "branch",
+      "returncode": 1,
+      "expected_failure": "does not match",
+      "matched": true
+    },
+    {
+      "control": "centroid",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Synthetic source chains. Excluded directions, native runtime costs, flow expansion and scientific acceptance are outside this check."
+}

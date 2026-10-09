@@ -1,0 +1,44 @@
+{
+  "cases": [
+    {
+      "control": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "lost-ack",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restart",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restart-wrong-identity",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "upsert",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "proof_sha256": "8076cff96d1a6dc957e9423c0f175b7ef5a6cbe318315d7f91ba5587246fabf5",
+  "limits": [
+    "Actual worker upload, prefix-only proxy and isolated native private Storage",
+    "Fault changes x-upsert at transport; no custody RPC, full user RLS matrix, stage restart, full source publication or scientific acceptance"
+  ]
+}

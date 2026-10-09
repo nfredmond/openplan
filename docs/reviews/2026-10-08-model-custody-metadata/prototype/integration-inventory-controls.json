@@ -1,0 +1,47 @@
+{
+  "source_sha256": {
+    "policy": "5b89e82a5d74f04ef3f1364a9e3129912aab720475e464ed0155ebef2a4249b1",
+    "rls": "fccec0eaf4c432ec0c48e798064a3bba62c81641d368694bd48442dc8ea9d9c5",
+    "columns": "fc3e14acc295c2cdb71411107040aee6b2f69bcd389f201bf386205a95b96633",
+    "release": "7ec2c7d167e19e44c1334b28be023642d3da517c3a20611082343f5ef54c8764"
+  },
+  "controls": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "wrong-policy-count",
+      "returncode": 1,
+      "expected_failure": "have a length of 758",
+      "matched": true
+    },
+    {
+      "control": "missing-probe-inventory",
+      "returncode": 1,
+      "expected_failure": "model_attempt_instrument_custody",
+      "matched": true
+    },
+    {
+      "control": "stale-unread-exception",
+      "returncode": 1,
+      "expected_failure": "these columns are now read",
+      "matched": true
+    },
+    {
+      "control": "missing-migration-note",
+      "returncode": 1,
+      "expected_failure": "Missing: 20261016000024_model_attempt_instrument_member_read.sql",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Static migration and identifier inventories plus release notes. Live RLS tests are deliberately skipped; this is not a replacement for their native fixtures or GitHub jobs."
+}

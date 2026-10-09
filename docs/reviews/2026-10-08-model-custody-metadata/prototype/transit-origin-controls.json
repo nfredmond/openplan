@@ -1,0 +1,51 @@
+{
+  "worker_sha256": "20fea273f65b42d67c937ad8bd796f3940accfc1d11f573ad3e098abc7710f1c",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "omit-registration",
+      "exit_code": 1,
+      "targeted_test": "test_uncertain_registration_is_not_feed_unavailable"
+    },
+    {
+      "control": "wrong-extent",
+      "exit_code": 1,
+      "targeted_test": "test_discovered_feed_uses_exact_centroid_extent"
+    },
+    {
+      "control": "lose-catalog-failure",
+      "exit_code": 1,
+      "targeted_test": "test_catalog_failure_retains_fallback_disclosure"
+    },
+    {
+      "control": "ignore-selected-feed",
+      "exit_code": 1,
+      "targeted_test": "test_selected_feed_outranks_operator_and_catalog"
+    },
+    {
+      "control": "ignore-no-match",
+      "exit_code": 1,
+      "targeted_test": "test_catalog_no_match_does_not_substitute_bundle"
+    },
+    {
+      "control": "drop-deadline",
+      "exit_code": 1,
+      "targeted_test": "test_deadline_refusal_does_not_register_archive"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual parent policy and retained bundle, real synthetic archive/files/journal; mocked catalog, download, source DB and registration. Coordinates supplied by trusted parent fixture. General child channel, coverage outcome, live providers, hard deadlines, containment and scientific acceptance remain open."
+}

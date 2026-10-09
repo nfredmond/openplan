@@ -92,12 +92,20 @@ def pending(directory: Path, destination: str) -> list[dict]:
         return [record(row) for row in rows]
 
 
-def read_existing(directory: Path, destination: str, request_id: str | None = None) -> list[dict]:
+def read_existing(directory: Path, destination: str, request_id: str | None = None, *, include_resolved: bool = False) -> list[dict]:
     """Read saved commands without creating a journal or changing its records."""
     path = (directory / 'model-commands.sqlite3').resolve()
     with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=30)) as connection:
         if request_id is None:
-            rows = connection.execute('SELECT request_json,response_json FROM commands WHERE destination=? AND response_json IS NULL ORDER BY rowid', (destination,)).fetchall()
+            unresolved = '' if include_resolved else ' AND response_json IS NULL'
+            rows = connection.execute('SELECT request_id,destination,request_json,response_json FROM commands WHERE destination=?' + unresolved + ' ORDER BY rowid', (destination,)).fetchall()
         else:
-            rows = connection.execute('SELECT request_json,response_json FROM commands WHERE destination=? AND request_id=?', (destination, request_id)).fetchall()
-        return [record(row) for row in rows]
+            rows = connection.execute('SELECT request_id,destination,request_json,response_json FROM commands WHERE destination=? AND request_id=?', (destination, request_id)).fetchall()
+        records = []
+        for key, stored_destination, request, response in rows:
+            saved = record((request, response))
+            validate(saved['command'])
+            if saved['command']['request_id'] != key or saved['command']['destination'] != stored_destination:
+                raise ValueError('Saved command does not match its journal identity')
+            records.append(saved)
+        return records

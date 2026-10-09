@@ -1,0 +1,73 @@
+{
+  "progress_sha256": "467a9cb727465aa9e7a22038ffa8c0f4547ec0158bb257ae0dc589894c5dc958",
+  "worker_sha256": "07120c33ab53b167dd2f4ba816a3aae348aea627b639b75e331dd9aee9debb7b",
+  "scope_sha256": "faeda72e06e00f80c961fc93c5caad26e4874b214f1326a835365bc41d5d2599",
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "engine_version": "1.6.2",
+        "observed": [
+          {
+            "line": "Assignment warning: Cost field with wrong type. Converting to float64",
+            "on_invocation_thread": true
+          },
+          {
+            "line": "Assignment iteration 2 of at most 3,000 \u2014 relative gap 0, target 0.0005, step 0",
+            "on_invocation_thread": true
+          }
+        ],
+        "original_error_propagated": true,
+        "execute_returned": false,
+        "project_descriptors_after_exit": []
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "engine_version": "1.6.2",
+        "observed": [
+          {
+            "line": "Assignment warning: Cost field with wrong type. Converting to float64",
+            "on_invocation_thread": true
+          },
+          {
+            "line": "Assignment iteration 2 of at most 3,000 \u2014 relative gap 0, target 0.0005, step 0",
+            "on_invocation_thread": true
+          }
+        ],
+        "original_error_propagated": true,
+        "execute_returned": false,
+        "project_descriptors_after_exit": []
+      }
+    },
+    {
+      "control": "swallow",
+      "detected": "Native solver continued after unconfirmed progress"
+    },
+    {
+      "control": "wrong-logger",
+      "detected": "Native solver continued after unconfirmed progress"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "engine_version": "1.6.2",
+        "observed": [
+          {
+            "line": "Assignment warning: Cost field with wrong type. Converting to float64",
+            "on_invocation_thread": true
+          },
+          {
+            "line": "Assignment iteration 2 of at most 3,000 \u2014 relative gap 0, target 0.0005, step 0",
+            "on_invocation_thread": true
+          }
+        ],
+        "original_error_propagated": true,
+        "execute_returned": false,
+        "project_descriptors_after_exit": []
+      }
+    }
+  ],
+  "limits": "Native two-node one-link assignment with synthetic demand, accelerated progress clock and synthetic iteration callback failure. No database transport, full stage function, larger network thread behavior, supervisor loss or scientific acceptance."
+}

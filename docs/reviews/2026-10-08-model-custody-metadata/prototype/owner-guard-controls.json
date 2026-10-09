@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "verified": true
+    },
+    {
+      "case": "missing-systemd-binding",
+      "returncode": 1,
+      "expected_failure": "Engine owner guard binding differs",
+      "verified": true
+    },
+    {
+      "case": "missing-guard-record",
+      "returncode": 1,
+      "expected_failure": "Owner guard identity not retained",
+      "verified": true
+    },
+    {
+      "case": "missing-completion-guard-check",
+      "returncode": 1,
+      "expected_failure": "Engine exited unsuccessfully",
+      "verified": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "verified": true
+    }
+  ],
+  "limits": [
+    "Synthetic engine processes only",
+    "No native engine or database acceptance",
+    "No owner-service termination case",
+    "No normal-dispatch activation"
+  ]
+}

@@ -1,7 +1,7 @@
 """Deliver retained model commands without treating a missing reply as rollback.
 
-The stage dispatchers do not use this client yet. Adoption requires their complete
-claim, output, assessment, completion and restart paths to use attempt custody.
+Selected legacy output and assessment writes use this client. Complete stage
+restart still requires claim, output, completion and current ownership custody.
 Credentials stay in memory; every request is bound to a deployment and URL.
 """
 import json
@@ -12,6 +12,8 @@ from uuid import UUID
 import model_command_journal as journal
 import model_publication_values as publication
 import model_assessment_values as assessment
+import model_legacy_artifact_command as legacy_artifact
+import model_legacy_kpi_command as legacy_kpi
 from datetime import datetime
 
 
@@ -39,8 +41,10 @@ def _validate_artifact(command: dict):
             raise ValueError('Artifact command identities must be canonical UUIDs')
     payload = args['payload']
     required = {'artifact_type', 'file_url', 'file_size_bytes', 'content_hash'}
-    if not isinstance(payload, dict) or not required <= set(payload) or set(payload) - required - {'metadata_json'}:
+    if not isinstance(payload, dict) or not required <= set(payload) or set(payload) - required - {'metadata_json', 'id'}:
         raise ValueError('Invalid artifact payload fields')
+    if 'id' in payload:
+        _uuid(payload['id'])
     if any(not isinstance(payload[key], str) or not payload[key] for key in ('artifact_type', 'file_url')):
         raise ValueError('Artifact type and reference required')
     if type(payload['file_size_bytes']) is not int or payload['file_size_bytes'] < 0 or not isinstance(payload['content_hash'], str) or not re.fullmatch('[0-9a-f]{64}', payload['content_hash']):
@@ -174,6 +178,16 @@ def validate_command(command: dict):
     _uuid(command['request_id'])
     args = command['arguments']
     operation = command['operation']
+    if operation == 'abandon_model_run_execution':
+        import model_recovery_decision_command as recovery_decision
+        recovery_decision.validate(command)
+        return
+    if operation == 'record_legacy_model_kpi':
+        legacy_kpi.validate(command)
+        return
+    if operation == 'record_legacy_model_artifact':
+        legacy_artifact.validate(command)
+        return
     if operation == 'record_legacy_model_assessment':
         assessment.validate(command)
         return
@@ -190,6 +204,7 @@ def validate_command(command: dict):
         _validate_instrument(command)
         return
     fields = {
+        'skip_blocked_model_stage': {'workspace_id', 'run_id', 'stage_id', 'blocker_id', 'blocker_status'},
         'claim_model_stage_attempt': {'run_id', 'stage_id', 'worker_id'},
         'write_model_stage_attempt': {'run_id', 'stage_id', 'attempt_id', 'status', 'log_tail', 'error'},
     }
@@ -197,6 +212,14 @@ def validate_command(command: dict):
         raise ValueError('Unsupported operation or invalid command arguments')
     for key in ('run_id', 'stage_id'):
         _uuid(args[key])
+    if operation == 'skip_blocked_model_stage':
+        for key in ('workspace_id', 'blocker_id'):
+            _uuid(args[key])
+        if args['blocker_status'] not in ('failed', 'cancelled', 'skipped'):
+            raise ValueError('Invalid blocked predecessor status')
+        if args['blocker_id'] == args['stage_id']:
+            raise ValueError('Blocked stage cannot be its own predecessor')
+        return
     if operation == 'claim_model_stage_attempt':
         worker = args['worker_id']
         if not isinstance(worker, str) or not worker.strip() or len(worker) > 200:
@@ -221,7 +244,52 @@ def _timestamp(value):
         raise ValueError('Completion timestamp requires a timezone')
 
 
+def _skip_receipt(command: dict, receipt: object) -> dict:
+    """A skip receipt records a decision, never execution or current authority."""
+    args = command['arguments']
+    try:
+        keys = {'request_id', 'workspace_id', 'run_id', 'stage_id', 'blocker_id',
+                'observed_blocker_status', 'outcome', 'status', 'completed_at'}
+        if not isinstance(receipt, dict) or set(receipt) != keys:
+            raise ValueError('Invalid skip receipt fields')
+        expected = {'request_id': command['request_id'], **{key: args[key] for key in ('workspace_id', 'run_id', 'stage_id', 'blocker_id')}}
+        if any(receipt[key] != value for key, value in expected.items()):
+            raise ValueError('Skip receipt scope differs')
+        statuses = ('queued', 'running', 'succeeded', 'failed', 'cancelled', 'skipped')
+        if receipt['status'] not in statuses or receipt['observed_blocker_status'] not in statuses:
+            raise ValueError('Unknown skip receipt status')
+        if receipt['completed_at'] is not None:
+            _timestamp(receipt['completed_at'])
+        if receipt['outcome'] == 'skipped':
+            if receipt['status'] != 'skipped' or receipt['observed_blocker_status'] != args['blocker_status']:
+                raise ValueError('Skip result disagrees with prepared predecessor')
+            _timestamp(receipt['completed_at'])
+        elif receipt['outcome'] != 'not_skipped':
+            raise ValueError('Unknown skip outcome')
+    except (ValueError, TypeError, KeyError):
+        raise DeliveryUnconfirmed('Blocked stage receipt does not match the prepared command') from None
+    return receipt
+
+
 def checked_receipt(command: dict, receipt: object) -> dict:
+    if command['operation'] == 'abandon_model_run_execution':
+        import model_recovery_decision_command as recovery_decision
+        try:
+            return recovery_decision.check_receipt(command, receipt)
+        except (ValueError, TypeError, KeyError, AttributeError):
+            raise DeliveryUnconfirmed('Recovery receipt does not match the reviewed request') from None
+    if command['operation'] == 'skip_blocked_model_stage':
+        return _skip_receipt(command, receipt)
+    if command['operation'] == 'record_legacy_model_kpi':
+        try:
+            return legacy_kpi.check_receipt(command, receipt)
+        except (ValueError, TypeError, KeyError, AttributeError):
+            raise DeliveryUnconfirmed('Legacy KPI receipt does not match the prepared command') from None
+    if command['operation'] == 'record_legacy_model_artifact':
+        try:
+            return legacy_artifact.check_receipt(command, receipt)
+        except (ValueError, TypeError, KeyError, AttributeError):
+            raise DeliveryUnconfirmed('Legacy artifact receipt does not match the prepared command') from None
     if command['operation'] == 'record_legacy_model_assessment':
         try:
             return assessment.check_receipt(command, receipt)
@@ -279,6 +347,8 @@ def checked_receipt(command: dict, receipt: object) -> dict:
 
 def rpc_arguments(command: dict) -> dict:
     args = command['arguments']
+    if command['operation'] in ('record_legacy_model_artifact', 'record_legacy_model_kpi'):
+        return {'p_workspace': args['workspace_id'], 'p_payload': args['payload']}
     if command['operation'] == 'record_legacy_model_assessment':
         return {'p_request': command['request_id'], 'p_payload': args['payload']}
     if command['operation'] == 'publish_legacy_model_evidence':
@@ -286,6 +356,8 @@ def rpc_arguments(command: dict) -> dict:
                 'p_track': args['track'], 'p_expected': args['expected'], 'p_payload': args['payload']}
     result = {'p_request_id': command['request_id']}
     keys = {
+        'abandon_model_run_execution': ('workspace_id', 'run_id', 'actor_id', 'expected_state', 'reason', 'evidence'),
+        'skip_blocked_model_stage': ('workspace_id', 'run_id', 'stage_id', 'blocker_id', 'blocker_status'),
         'claim_model_stage_attempt': ('stage_id', 'worker_id'),
         'write_model_stage_attempt': ('attempt_id', 'status', 'log_tail', 'error'),
         'write_model_attempt_artifact': ('attempt_id', 'payload'),

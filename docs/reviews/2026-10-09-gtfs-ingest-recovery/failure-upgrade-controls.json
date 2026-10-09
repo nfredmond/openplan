@@ -1,0 +1,62 @@
+{
+  "migrationSha256": "071fb54e121b81c6c7069c2821c610741c800b9159c390f860b3b38b23b99201",
+  "database": "openplan_gtfs_recovery_671296a290a048caaf0a20b0c60ad507",
+  "comparison": "Exact JSON comparison of all rows in five GTFS tables, excluding only the two new nullable version columns; new columns checked NULL",
+  "controls": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "exitCode": 0,
+      "reason": null,
+      "committed": false,
+      "counts": {
+        "feeds": 1,
+        "versions": 1,
+        "routes": 1,
+        "stops": 1
+      }
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "reason": null,
+      "committed": false,
+      "counts": {
+        "feeds": 1,
+        "versions": 1,
+        "routes": 1,
+        "stops": 1
+      }
+    },
+    {
+      "case": "change-existing-row",
+      "expectedPass": false,
+      "exitCode": 3,
+      "reason": "existing GTFS rows changed",
+      "committed": false,
+      "counts": null
+    },
+    {
+      "case": "close-existing-version",
+      "expectedPass": false,
+      "exitCode": 3,
+      "reason": "existing version falsely closed",
+      "committed": false,
+      "counts": null
+    },
+    {
+      "case": "restored-committed",
+      "expectedPass": true,
+      "exitCode": 0,
+      "reason": null,
+      "committed": true,
+      "counts": {
+        "feeds": 1,
+        "versions": 1,
+        "routes": 1,
+        "stops": 1
+      }
+    }
+  ]
+}

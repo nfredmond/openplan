@@ -1487,17 +1487,10 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
   }
 }
 
-/* ---------- THE RAIL MUST NOT SCROLL ----------
-   Nineteen destinations at 44px apiece is 836px of nav, which does not fit a
-   1366×768 laptop — the rail grew a scrollbar, and a scrollbar inside a 60px
-   icon strip is both ugly and hard to use. Navigation is the one thing that
-   should never be behind a scroll.
-
-   So the rail compresses with the viewport instead. The group titles are the
-   first thing to go: they are already invisible while the rail is collapsed
-   (opacity 0) yet still occupied 14px each, so collapsing their height costs
-   nothing and buys ~50px. They come back on hover, where the rail is expanded
-   and there is room. */
+/* Compact short-window navigation without moving links during activation.
+   Restoring group headings on hover or focus shifts later links between
+   pointer-down and pointer-up. Keep the same heading geometry in every state;
+   destination labels still appear when the rail expands. */
 @media (max-height: 980px) {
   .op-cart-rail__btn {
     margin-top: 1px;
@@ -1510,30 +1503,12 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
     margin-top: 0;
     margin-bottom: 0;
   }
-  .op-cart-rail__group-title {
-    height: 0;
-    margin-top: 6px;
-    margin-bottom: 0;
-    overflow: hidden;
-  }
-  .op-cart-rail:hover .op-cart-rail__group-title,
-  .op-cart-rail:focus-within .op-cart-rail__group-title {
-    height: 14px;
-    margin: 8px 18px 4px;
-  }
-}
-
-/*
-   Below this height the two group titles stop expanding on hover as well. They
-   are a nicety; at 620px of window the 40px they would take is the difference
-   between the whole nav fitting and a scrollbar. The tooltips still name every
-   destination, so nothing becomes unidentifiable.
-*/
-@media (max-height: 620px) {
+  .op-cart-rail__group-title,
   .op-cart-rail:hover .op-cart-rail__group-title,
   .op-cart-rail:focus-within .op-cart-rail__group-title {
     height: 0;
     margin: 6px 18px 0;
+    overflow: hidden;
   }
 }
 

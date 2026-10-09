@@ -1,0 +1,36 @@
+{
+  "channel_sha256": "3bbf1c1c476d52451a8da914b1f46ecb622643db05e59a5af76e792904853e79",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "allow-path-override",
+      "exit_code": 1,
+      "targeted_test": "test_child_path_override_refused"
+    },
+    {
+      "control": "skip-project-identity",
+      "exit_code": 1,
+      "targeted_test": "test_replaced_working_project_closes_channel"
+    },
+    {
+      "control": "skip-package-activation",
+      "exit_code": 1,
+      "targeted_test": "test_unprepared_package_is_not_substituted"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real working-copy fixtures, reserved child and sockets; mocked registration and ownership. Paths are a checked read-time view, not pinned engine file opens or descendant containment."
+}

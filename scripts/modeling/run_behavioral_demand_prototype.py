@@ -21,7 +21,7 @@ if str(WORKER_DIR) not in sys.path:
 from build_activitysim_input_bundle import build_activitysim_input_bundle
 from extract_activitysim_behavioral_kpis import extract_activitysim_behavioral_kpis
 from ingest_activitysim_runtime_outputs import ingest_activitysim_runtime_outputs
-from runtime import run_activitysim_runtime
+from runtime import run_activitysim_runtime, require_no_host_custody
 
 PIPELINE_MANIFEST_NAME = "behavioral_demand_prototype_manifest.json"
 DEFAULT_OUTPUT_ROOT_NAME = "behavioral_demand_prototype"
@@ -102,6 +102,11 @@ def parse_args() -> argparse.Namespace:
         "--stock-configs-dir",
         help="Explicit path to the installed prototype_mtc example, for the 'mtc' config package.",
     )
+    parser.add_argument("--host-memory-bytes", type=int, help="Explicit runtime supervision setting; see worker DEPLOY.md")
+    parser.add_argument("--host-tasks", type=int, help="Explicit runtime supervision setting; see worker DEPLOY.md")
+    parser.add_argument("--container-memory-bytes", type=int, help="Explicit runtime supervision setting; see worker DEPLOY.md")
+    parser.add_argument("--container-tasks", type=int, help="Explicit runtime supervision setting; see worker DEPLOY.md")
+    parser.add_argument("--container-supervision-socket", type=str, help="Explicit runtime supervision setting; see worker DEPLOY.md")
     return parser.parse_args()
 
 
@@ -261,6 +266,11 @@ def run_behavioral_demand_prototype(
     container_engine_cli: str | None = None,
     activitysim_container_cli_template: str | None = None,
     container_network_mode: str | None = "none",
+    host_memory_bytes: int | None = None,
+    host_tasks: int | None = None,
+    container_memory_bytes: int | None = None,
+    container_tasks: int | None = None,
+    container_supervision_socket: str | None = None,
     run_label: str | None = None,
     force: bool = False,
     population_source: str = "auto",
@@ -272,6 +282,12 @@ def run_behavioral_demand_prototype(
         raise RuntimeError(f"Screening run directory does not exist: {screening_path}")
 
     resolved_output_root = Path(output_root).expanduser().resolve() if output_root else default_output_root(screening_path)
+    # The runtime records sit beside its output, inside this pipeline root.
+    # Replacing the parent would erase both execution evidence and model logs.
+    custody = resolved_output_root / "runtime.container-custody"
+    if custody.exists() or custody.is_symlink():
+        raise RuntimeError("Retained container custody exists; choose a new pipeline output root")
+    require_no_host_custody(resolved_output_root / "runtime")
     if resolved_output_root.exists():
         if not force:
             raise RuntimeError(f"Output root already exists: {resolved_output_root}")
@@ -354,6 +370,11 @@ def run_behavioral_demand_prototype(
             container_engine_command=shlex.split(container_engine_cli) if container_engine_cli else None,
             container_template=activitysim_container_cli_template,
             container_network_mode=container_network_mode,
+            host_memory_bytes=host_memory_bytes,
+            host_tasks=host_tasks,
+            container_memory_bytes=container_memory_bytes,
+            container_tasks=container_tasks,
+            container_supervision_socket=container_supervision_socket,
             run_label=run_label,
             force=False,
         )
@@ -493,6 +514,11 @@ def main() -> int:
         container_engine_cli=args.container_engine_cli,
         activitysim_container_cli_template=args.activitysim_container_cli_template,
         container_network_mode=args.container_network_mode,
+        host_memory_bytes=args.host_memory_bytes,
+        host_tasks=args.host_tasks,
+        container_memory_bytes=args.container_memory_bytes,
+        container_tasks=args.container_tasks,
+        container_supervision_socket=args.container_supervision_socket,
         run_label=args.run_label,
         force=args.force,
         population_source=args.population,

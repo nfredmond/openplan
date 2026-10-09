@@ -1,0 +1,46 @@
+{
+  "gtfs_sha256": "0115fe21ff63455560626d7d0e177c69cff533be87fe76b8a03bc99be9129000",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "lose-supplied-identity",
+      "exit_code": 1,
+      "targeted_test": "test_supplied_bytes_ignore_operator_urls_and_paths"
+    },
+    {
+      "control": "wrong-cache-key",
+      "exit_code": 1,
+      "targeted_test": "test_downloaded_bytes_are_the_exact_cached_archive"
+    },
+    {
+      "control": "expose-local-path",
+      "exit_code": 1,
+      "targeted_test": "test_operator_path_and_bundled_default_keep_local_identity"
+    },
+    {
+      "control": "ignore-url",
+      "exit_code": 1,
+      "targeted_test": "test_existing_url_precedence_over_path_is_preserved"
+    },
+    {
+      "control": "lose-parser-identity",
+      "exit_code": 1,
+      "targeted_test": "test_loader_parses_exact_acquisition_result_without_second_read"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real local/cache files and synthetic feed, mocked download transport. Existing precedence/cache behavior preserved, not live provider or acquisition deadline/containment proof. Non-selected-origin parent retention and channel integration remain open."
+}

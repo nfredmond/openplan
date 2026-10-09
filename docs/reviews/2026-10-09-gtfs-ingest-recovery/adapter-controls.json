@@ -1,0 +1,52 @@
+[
+  {
+    "case": "baseline",
+    "expectedPass": true,
+    "returnCode": 0
+  },
+  {
+    "case": "harmless_comment",
+    "expectedPass": true,
+    "returnCode": 0
+  },
+  {
+    "case": "ignore_false_receipt",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "wrong_version",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "accept_invalid_shape",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "ignore_storage_error",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "ignore_ack_error",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "skip_pending_cleanup",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "ignore_ack_shape",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "restored",
+    "expectedPass": true,
+    "returnCode": 0
+  }
+]

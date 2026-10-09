@@ -1,0 +1,41 @@
+{
+  "worker_sha256": "eed3059db686a6a155e1fdaea28ac093d99a46adf2c066cda03bc034eeee88d9",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "mutate-input-meta",
+      "exit_code": 1,
+      "targeted_test": "test_prepared_skim_preserves_input_and_ingest_facts_without_loading"
+    },
+    {
+      "control": "overwrite-ingest",
+      "exit_code": 1,
+      "targeted_test": "test_prepared_skim_preserves_input_and_ingest_facts_without_loading"
+    },
+    {
+      "control": "skip-coverage",
+      "exit_code": 1,
+      "targeted_test": "test_prepared_feed_outside_area_keeps_selected_feed_refusal"
+    },
+    {
+      "control": "drop-deadline",
+      "exit_code": 1,
+      "targeted_test": "test_existing_entrypoint_delegates_loaded_feed_and_options"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real synthetic GTFS parsing and skimming, mocked feed metadata and storage transport. Loaded-feed split only; main import still loads operator settings. No child process isolation, retained archive handoff or scientific acceptance."
+}

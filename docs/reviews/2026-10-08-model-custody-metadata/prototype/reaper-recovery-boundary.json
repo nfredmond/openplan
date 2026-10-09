@@ -1,0 +1,36 @@
+{
+  "database": "openplan_attempt_cli_38700b215b5e4e5f9527990d43c0a058",
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "fault_detected": false
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "fault_detected": false
+    },
+    {
+      "control": "unsafe-original",
+      "returncode": 3,
+      "fault_detected": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "fault_detected": false
+    }
+  ],
+  "existing_execution_rows_unchanged": true,
+  "proof_sha256": "8d8ca5df1dfae81daf9c7f896458e37d051a7ba843a0ec324248261429da6959",
+  "migration_sha256": "e94693fec4f95abda27fc627e2c3bf6888a60c19129fa313b72b5741c286b192",
+  "cases": [
+    "managed attempt",
+    "unmanaged running",
+    "queued parent with started stage",
+    "unstarted queued timeout"
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/reaper-recovery-boundary-20261008-final",
+  "limits": "Installed SQL state and role checks, with a synthetic future cutoff. No real 45-minute computation, process health, recovery decision, restart, browser journey or scientific acceptance is established."
+}

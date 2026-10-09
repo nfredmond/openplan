@@ -1,0 +1,42 @@
+{
+  "writer_sha256": "f79c8f4a4a9df994e2e637c03feae13e7d20c0ff07c8db093d4f75dfc7215c6a",
+  "worker_sha256": "69949926398d7bd5ab07398489ac7df085e52f6f2be89cfb1d7b2c8da57b4ef1",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "skip-assignment-package-check",
+      "exit_code": 1,
+      "targeted_test": "test_retained_input_cannot_be_used_for_assignment"
+    },
+    {
+      "control": "skip-artifact-package-check",
+      "exit_code": 1,
+      "targeted_test": "test_artifact_stage_refuses_missing_package_before_count_writes"
+    },
+    {
+      "control": "ignore-other-attempt",
+      "exit_code": 1,
+      "targeted_test": "test_wrong_attempt_directory_refused"
+    },
+    {
+      "control": "ignore-directory-replacement",
+      "exit_code": 1,
+      "targeted_test": "test_directory_replacement_refused"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual assignment entry and output preparation, stopped before computation; mocked registration. No engine execution, closure enforcement, complete input mapping, normal dispatch or scientific acceptance."
+}

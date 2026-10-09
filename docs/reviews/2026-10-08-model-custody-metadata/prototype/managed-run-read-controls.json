@@ -1,0 +1,41 @@
+{
+  "writer_sha256": "b94cf9513ea38daa6333a6f0567b6656b945cfe690dc3582bb3bb7441f4fa50b",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-requested-run",
+      "exit_code": 1,
+      "targeted_test": "test_foreign_requested_run_refused_before_transport"
+    },
+    {
+      "control": "omit-configuration-projection",
+      "exit_code": 1,
+      "targeted_test": "test_actual_worker_uses_owned_projection_without_legacy_read"
+    },
+    {
+      "control": "allow-missing-configuration",
+      "exit_code": 1,
+      "targeted_test": "test_missing_configuration_field_refuses"
+    },
+    {
+      "control": "ignore-revoked-attempt",
+      "exit_code": 1,
+      "targeted_test": "test_revoked_attempt_refuses_actual_worker_without_fallback"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real invocation journal and actual worker adapter; mocked HTTP with exact projection assertions. Read-time ownership snapshot, not a distributed lease, native RLS proof or child run-read channel."
+}

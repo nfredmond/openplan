@@ -1,0 +1,44 @@
+{
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "empty-identity",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "study-binding",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "geography-binding",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "audit-geography",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "registry-binding",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "source_sha256": "efcc1b5b7caea645ed5db4af83d6cded1464a1962bdd1abbefa31dbb6e0a848f",
+  "limits": [
+    "Synthetic identities and exact file bindings",
+    "No registry membership, authority applicability, boundary validity, source quality or filesystem-race acceptance"
+  ]
+}

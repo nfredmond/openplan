@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { readAttemptInstruments } from "@/lib/models/attempt-instrument-read";
 import { z } from "zod";
 import { tool, type Tool, type ToolSet } from "ai";
 import type { AssistantContext } from "@/lib/assistant/context";
@@ -811,6 +812,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
           .limit(10);
         if (comparableError) throw new Error(comparableError.message ?? "comparable observation custody query failed");
         const comparableRows = (comparableData ?? []) as Array<Record<string, unknown>>;
+        const attemptResult = await readAttemptInstruments(supabase, [input.modelRunId], workspaceId);
         const { data: structuralDemandData, error: structuralDemandError } = await supabase
           .from("modeling_structural_demand_diagnosis_custody")
           .select("id, input_audit_artifact_id, diagnosis_artifact_id, input_audit_sha256, diagnosis_sha256, method, scientific_outcome, created_at")
@@ -939,6 +941,11 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
                 createdAt: isoOrNull(row.created_at),
               };
             }),
+            attemptInstrumentCustody: {
+              status: attemptResult.readFailed ? "read_failed" : "available",
+              records: attemptResult.records,
+              note: "Each method and attempt remains separate and inconclusive. Retained custody does not establish accuracy. A failed read is not an absence of evidence.",
+            },
             comparableObservationCustody: comparableRows.map((row) => ({
               id: row.id,
               outcome: row.scientific_outcome,

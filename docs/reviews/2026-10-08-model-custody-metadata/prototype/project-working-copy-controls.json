@@ -1,0 +1,36 @@
+{
+  "source_sha256": "e2305c22f9bf7b377dd531423b1a3274dc031cba7e34948d672d13cf2a10b2d7",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "alias-retained-input",
+      "exit_code": 1,
+      "targeted_test": "test_mutating_working_database_preserves_retained_input"
+    },
+    {
+      "control": "erase-producer-reference",
+      "exit_code": 1,
+      "targeted_test": "test_mutating_working_database_preserves_retained_input"
+    },
+    {
+      "control": "ignore-foreign-path",
+      "exit_code": 1,
+      "targeted_test": "test_foreign_manifest_stops_before_copy"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Owned mutable working copy with real SQLite writes and mocked transport. Native receipt recovery, closure enforcement, cross-database consistency, normal dispatch and scientific acceptance remain unproved."
+}

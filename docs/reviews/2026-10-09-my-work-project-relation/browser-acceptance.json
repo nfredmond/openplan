@@ -1,0 +1,34 @@
+{
+  "build": "f76b0516d2d263dc08892d742ce245a2e792ae8d",
+  "service": "openplan-my-work-relation-acceptance-f76b0516.service",
+  "pid": 1803734,
+  "invocation": "f4e8787928e440f597c09e19ba8c5f8f",
+  "captures": [
+    {
+      "case": "myWorkFixedDesktop",
+      "consoleEntries": [],
+      "file": "browser-screenshot-127-0-0-1-mv1jdto2-3c2f4052.png",
+      "sha256": "3bad1cfca6ce75639775ff5ef87ce7b6a5bc772d39e2f212f98a65b5d6b69854"
+    },
+    {
+      "case": "myWorkFixedMobile",
+      "consoleEntries": [],
+      "file": "browser-screenshot-127-0-0-1-mv1jdubw-87f0ab61.png",
+      "sha256": "085be5d0c15d8d454056fcb12549bd6bd3c5831c271cff64617e53c0e150ca4f"
+    }
+  ],
+  "metrics": [
+    {
+      "width": 1280,
+      "panelClient": 888,
+      "panelScroll": 888
+    },
+    {
+      "width": 390,
+      "panelClient": 270,
+      "panelScroll": 270
+    }
+  ],
+  "readWarningRemoved": true,
+  "syntheticDecision": "e1409ff4-3cb6-4224-88cc-597f0838c3a5"
+}

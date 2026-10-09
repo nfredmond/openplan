@@ -450,7 +450,9 @@ const stageGateHoldsSource: MyWorkSource = {
   readLabel: "stage-gate decisions",
   block: "blocked_projects",
   table: "stage_gate_decisions",
-  select: "id, project_id, gate_id, decision, rationale, decided_at, projects!inner(id, name)",
+  select: "id, project_id, gate_id, decision, rationale, decided_at, projects!stage_gate_decisions_project_id_fkey!inner(id, name)",
+  // Name the original relationship: the restore-safe workspace constraint adds
+  // a second project foreign key, making an unqualified embed ambiguous.
   // This table carries its own workspace_id; the `!inner` here attaches the
   // project name and drops decisions with no project — an unattributed decision
   // is not evidence about any project, which is the summary builder's own rule.

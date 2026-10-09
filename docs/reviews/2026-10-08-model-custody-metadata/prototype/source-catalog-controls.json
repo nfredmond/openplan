@@ -1,0 +1,66 @@
+{
+  "source_sha256": "6ed3455d8ee074d001d08e87974aaaceae8b500ee9b4db855e7bcbb6f39b66ee",
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "context",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "document-bytes",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "binding-hash",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "missing-role",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "execution-phase",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "unverified-bytes",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "compressed-logical-hash",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "output-alias",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "duplicate-json",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "unavailable-status",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": "In-memory synthetic documents and producer-supplied binding metadata. Source bytes, filesystem aliases, native custody authority, publication, recovery and scientific acceptance are not established."
+}

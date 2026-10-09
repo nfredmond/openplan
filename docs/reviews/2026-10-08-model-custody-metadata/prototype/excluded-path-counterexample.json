@@ -1,0 +1,275 @@
+{
+  "engine_version": "1.6.2",
+  "candidate_sha256": "622c14fa2daf9da704b0210a0b71a9c82a930d52ff2f9b2994c139eadce229e3",
+  "proof_sha256": "2ee54e22139cc3bd1bf801ccde59fc6b67a86cca7408ed1dcfe04cfbf0e28f43",
+  "source_links": [
+    [
+      1,
+      1,
+      10,
+      0,
+      1.0,
+      "c"
+    ],
+    [
+      2,
+      10,
+      2,
+      1,
+      1.0,
+      "c"
+    ],
+    [
+      3,
+      2,
+      20,
+      0,
+      3.0,
+      "c"
+    ],
+    [
+      4,
+      20,
+      1,
+      0,
+      3.0,
+      "c"
+    ],
+    [
+      5,
+      2,
+      3,
+      0,
+      3.0,
+      "c"
+    ],
+    [
+      6,
+      3,
+      1,
+      0,
+      4.0,
+      "c"
+    ]
+  ],
+  "controls": [
+    {
+      "control": "baseline",
+      "candidate_refusal": "Excluded routing path connects distinct retained anchors",
+      "excluded": [
+        [
+          10,
+          1,
+          1.0,
+          1,
+          -1
+        ]
+      ],
+      "anchors": [
+        1,
+        2,
+        3,
+        10,
+        20
+      ],
+      "native_matches_independent_routes_and_flows": true,
+      "directed_links": 11,
+      "compact_links": 7,
+      "costs": [
+        [
+          0.0,
+          2.0,
+          4.0
+        ],
+        [
+          6.0,
+          0.0,
+          3.0
+        ],
+        [
+          4.0,
+          3.0,
+          0.0
+        ]
+      ],
+      "flows": {
+        "6:-1": 7.0,
+        "1:1": 5.0,
+        "4:-1": 0.0,
+        "5:1": 13.0,
+        "3:1": 11.0,
+        "6:1": 17.0,
+        "5:-1": 19.0,
+        "1:-1": 0.0,
+        "2:1": 5.0,
+        "4:1": 11.0,
+        "3:-1": 0.0
+      }
+    },
+    {
+      "control": "harmless",
+      "candidate_refusal": "Excluded routing path connects distinct retained anchors",
+      "excluded": [
+        [
+          10,
+          1,
+          1.0,
+          1,
+          -1
+        ]
+      ],
+      "anchors": [
+        1,
+        2,
+        3,
+        10,
+        20
+      ],
+      "native_matches_independent_routes_and_flows": true,
+      "directed_links": 11,
+      "compact_links": 7,
+      "costs": [
+        [
+          0.0,
+          2.0,
+          4.0
+        ],
+        [
+          6.0,
+          0.0,
+          3.0
+        ],
+        [
+          4.0,
+          3.0,
+          0.0
+        ]
+      ],
+      "flows": {
+        "6:-1": 7.0,
+        "1:1": 5.0,
+        "4:-1": 0.0,
+        "5:1": 13.0,
+        "3:1": 11.0,
+        "6:1": 17.0,
+        "5:-1": 19.0,
+        "1:-1": 0.0,
+        "2:1": 5.0,
+        "4:1": 11.0,
+        "3:-1": 0.0
+      }
+    },
+    {
+      "control": "row-order",
+      "candidate_refusal": "Excluded routing path connects distinct retained anchors",
+      "excluded": [
+        [
+          10,
+          1,
+          1.0,
+          1,
+          -1
+        ]
+      ],
+      "anchors": [
+        1,
+        2,
+        3,
+        10,
+        20
+      ],
+      "native_matches_independent_routes_and_flows": true,
+      "directed_links": 11,
+      "compact_links": 7,
+      "costs": [
+        [
+          0.0,
+          2.0,
+          4.0
+        ],
+        [
+          6.0,
+          0.0,
+          3.0
+        ],
+        [
+          4.0,
+          3.0,
+          0.0
+        ]
+      ],
+      "flows": {
+        "6:-1": 7.0,
+        "1:1": 5.0,
+        "4:-1": 0.0,
+        "5:1": 13.0,
+        "3:1": 11.0,
+        "6:1": 17.0,
+        "5:-1": 19.0,
+        "1:-1": 0.0,
+        "2:1": 5.0,
+        "4:1": 11.0,
+        "3:-1": 0.0
+      }
+    },
+    {
+      "control": "omit-route-check",
+      "expected_failure": "Candidate no longer reproduces partial-direction false rejection"
+    },
+    {
+      "control": "restored",
+      "candidate_refusal": "Excluded routing path connects distinct retained anchors",
+      "excluded": [
+        [
+          10,
+          1,
+          1.0,
+          1,
+          -1
+        ]
+      ],
+      "anchors": [
+        1,
+        2,
+        3,
+        10,
+        20
+      ],
+      "native_matches_independent_routes_and_flows": true,
+      "directed_links": 11,
+      "compact_links": 7,
+      "costs": [
+        [
+          0.0,
+          2.0,
+          4.0
+        ],
+        [
+          6.0,
+          0.0,
+          3.0
+        ],
+        [
+          4.0,
+          3.0,
+          0.0
+        ]
+      ],
+      "flows": {
+        "6:-1": 7.0,
+        "1:1": 5.0,
+        "4:-1": 0.0,
+        "5:1": 13.0,
+        "3:1": 11.0,
+        "6:1": 17.0,
+        "5:-1": 19.0,
+        "1:-1": 0.0,
+        "2:1": 5.0,
+        "4:1": 11.0,
+        "3:-1": 0.0
+      }
+    }
+  ],
+  "decision": "Rejected as a production refusal rule; excluded routing remains unassessed.",
+  "limits": "Synthetic fixed-cost all-or-nothing transformation counterexample. No general exclusion proof, equilibrium or scientific accuracy claim."
+}

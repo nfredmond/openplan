@@ -28,3 +28,8 @@ Both packaged workers, the launch route, reaper and artifact readers must move t
 Use the same native late-write probe as a regression: after reaping or relaunch, the old attempt's state and artifact writes must fail without altering the new attempt. Test simultaneous claims in separate processes, lost claim acknowledgements, exact retry, changed-payload rejection, heartbeat interruption, cancellation, reaper/claim races and long computations. Exercise both worker packages and actual launch/recovery routes. Verify that direct legacy REST writes cannot bypass the command boundary and that historical records remain readable. Restore populated journals, database records and exact output bytes on another installation. Keep scientific accuracy and planner acceptance separate from this operational proof.
 
 The roadmap remains the sole queue. This plan supplies the attempt identity required by the adjacent scientific-ingestion design; it does not reduce the full M3 or S1 scope.
+
+The [normal-dispatch integration audit](MANAGED_DISPATCH_JOIN.md) inventories
+the remaining worker writes at `f525836a` and defines the joined implementation
+and native proof boundaries. Managed command availability still does not mean
+the normal dispatchers acquire or enforce attempts.

@@ -1,0 +1,22 @@
+[
+  {
+    "case": "harmless",
+    "exit": 0,
+    "expected_exit": 0
+  },
+  {
+    "case": "missing_check",
+    "exit": 1,
+    "expected_exit": 1
+  },
+  {
+    "case": "requires_both",
+    "exit": 1,
+    "expected_exit": 1
+  },
+  {
+    "case": "restored",
+    "exit": 0,
+    "expected_exit": 0
+  }
+]

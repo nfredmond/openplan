@@ -1,0 +1,69 @@
+{
+  "cases": [
+    {
+      "method": "aequilibrae",
+      "control": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "aequilibrae",
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "aequilibrae",
+      "control": "bypass-stop",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "aequilibrae",
+      "control": "wrong-request",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "aequilibrae",
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "activitysim",
+      "control": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "activitysim",
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "activitysim",
+      "control": "bypass-stop",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "activitysim",
+      "control": "wrong-request",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "activitysim",
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "recovery_proof_sha256": "ea6a31d48f582c26fd6bb7cecc2fc2d414508e006e3af90675b366a606b08893",
+  "limits": [
+    "Native object bytes and exact method receipt recovery through the actual recovery CLI in a fresh process",
+    "Authored synthetic facts; no computation resumption, independent preparation, full source publication, full RLS matrix or scientific acceptance"
+  ]
+}

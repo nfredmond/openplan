@@ -15,11 +15,10 @@ Stage pipeline (L1 preflight — two stages this worker owns):
   2. "Runtime Staging & Readiness"   — report runtime capability (preflight_only on
                                         this infra) + write the evidence packet
 
-This mirrors workers/aequilibrae_worker/main.py's REST poll/claim contract exactly:
-there are NO Postgres RPCs; the atomic stage claim is a conditional PATCH
-(`?id=eq.<id>&status=eq.queued` with Prefer: return=representation — a lost race
-matches zero rows). Both workers poll the same table, so each scopes its poll query
-by the stage names it owns.
+Stage claims still use the conditional REST PATCH shared with AequilibraE.
+Blocked-stage decisions use a retained database command. Both workers scope
+their poll query by the stage names they own. Full managed execution and
+continuation reconciliation remain separate integration work.
 """
 from __future__ import annotations
 
@@ -107,6 +106,11 @@ def _activitysim_exec_config() -> dict:
         "container_engine_cli": os.getenv("ACTIVITYSIM_CONTAINER_ENGINE") or None,
         "activitysim_container_cli_template": os.getenv("ACTIVITYSIM_CONTAINER_CLI_TEMPLATE") or None,
         "container_network_mode": os.getenv("ACTIVITYSIM_CONTAINER_NETWORK_MODE", "none"),
+        "host_memory_bytes": int(os.environ["ACTIVITYSIM_HOST_MEMORY_BYTES"]) if os.getenv("ACTIVITYSIM_HOST_MEMORY_BYTES") else None,
+        "host_tasks": int(os.environ["ACTIVITYSIM_HOST_TASKS"]) if os.getenv("ACTIVITYSIM_HOST_TASKS") else None,
+        "container_memory_bytes": int(os.environ["ACTIVITYSIM_CONTAINER_MEMORY_BYTES"]) if os.getenv("ACTIVITYSIM_CONTAINER_MEMORY_BYTES") else None,
+        "container_tasks": int(os.environ["ACTIVITYSIM_CONTAINER_TASKS"]) if os.getenv("ACTIVITYSIM_CONTAINER_TASKS") else None,
+        "container_supervision_socket": os.getenv("ACTIVITYSIM_CONTAINER_SUPERVISION_SOCKET") or None,
     }
 
 
@@ -247,6 +251,13 @@ def _confirmed_state_patch(table: str, record_id: str, payload: dict, *, queued_
 
 
 def sb_patch_stage(stage_id: str, payload: dict):
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.patch_stage(stage_id, payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed stage write requires reconciliation; no PATCH fallback") from error
     _confirmed_state_patch("model_run_stages", stage_id, payload)
 
 
@@ -262,6 +273,13 @@ def sb_claim_stage(stage_id: str, payload: dict) -> bool:
 
 
 def sb_patch_run(run_id: str, payload: dict):
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.patch_run(run_id, payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed run write requires reconciliation; no PATCH fallback") from error
     _confirmed_state_patch("model_runs", run_id, payload)
 
 
@@ -288,14 +306,35 @@ def _confirmed_record_insert(table: str, payload: dict) -> None:
 
 
 def sb_post_kpi(payload: dict) -> None:
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_kpi(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed kpi registration requires reconciliation; no insert fallback") from error
     _confirmed_record_insert("model_run_kpis", payload)
 
 
 def sb_post_artifact(payload: dict) -> None:
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_artifact(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed artifact registration requires reconciliation; no insert fallback") from error
     _confirmed_record_insert("model_run_artifacts", payload)
 
 
 def sb_get_run(run_id: str) -> dict:
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.read_run(run_id)
+        except Exception as error:
+            raise WorkerStateReadUnconfirmed("Managed run read requires reconciliation; no legacy read fallback") from error
     url = (
         f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}"
         "&select=id,workspace_id,corridor_geojson,query_text,engine_key,run_title,input_snapshot_json"
@@ -310,6 +349,15 @@ def sb_get_run(run_id: str) -> dict:
 
 
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        from model_activitysim_handoff import read_screening_artifacts
+        try:
+            return read_screening_artifacts(writer, run_id)
+        except Exception as error:
+            writer.stopped = True
+            raise WorkerStateReadUnconfirmed("Managed screening handoff requires reconciliation; no legacy fallback") from error
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
         "&select=id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,model_run_stages!inner(id,run_id,status,attempt_managed,active_attempt_id)"
@@ -359,7 +407,7 @@ def get_prior_stage_statuses(run_id: str, sort_order: int) -> list[dict]:
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_stages"
         f"?run_id=eq.{run_id}&sort_order=lt.{sort_order}"
-        "&select=id,stage_name,sort_order,status,error_message&order=sort_order.asc"
+        "&select=id,stage_name,sort_order,status,error_message,updated_at&order=sort_order.asc"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
@@ -380,16 +428,25 @@ def classify_stage_readiness(stage: dict) -> tuple[str, str | None]:
     return "ready", None
 
 
-def mark_stage_skipped(stage: dict, reason: str) -> None:
-    sb_patch_stage(
-        stage["id"],
-        {
-            "status": "skipped",
-            "error_message": reason[:2000],
-            "completed_at": _utc_now(),
-            "log_tail": reason,
-        },
-    )
+def mark_stage_skipped(stage: dict, reason: str) -> bool:
+    """Retain the exact blocked decision; the database derives its current reason."""
+    import model_skip_command
+    try:
+        validate_run_identity(stage["run_id"])
+        prior = get_prior_stage_statuses(stage["run_id"], int(stage.get("sort_order") or 0))
+        blockers = [row for row in prior if row["status"] in {"failed", "cancelled", "skipped"}]
+        if not blockers:
+            return False
+        run = sb_get_run(stage["run_id"])
+        receipt = model_skip_command.deliver(
+            os.path.join(ACTIVITYSIM_WORK_DIR, stage["run_id"], "skip-commands", stage["id"]),
+            stage=stage, blocker=blockers[-1], workspace_id=run["workspace_id"],
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+        return receipt["outcome"] == "skipped"
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Blocked stage decision unconfirmed; recover the saved request before continuing") from None
 
 
 class WorkerStateReadUnconfirmed(RuntimeError):
@@ -480,18 +537,24 @@ def _retain_handoff_file(artifacts: list[dict], artifact_type: str, run_id: str,
     if type(expected_size) is not int or expected_size < 0:
         raise RuntimeError("Screening handoff byte size is unavailable")
     destination = Path(execution_dir) / (artifact_type + ".retained")
-    digest = hashlib.sha256()
-    size = 0
-    with resolved.open("rb") as reader, destination.open("xb") as writer:
-        while chunk := reader.read(1024 * 1024):
-            size += len(chunk)
-            if size > expected_size:
-                raise RuntimeError("Screening handoff byte size differs")
-            digest.update(chunk)
-            writer.write(chunk)
-    if size != expected_size or digest.hexdigest() != expected_hash:
-        raise RuntimeError("Screening handoff bytes differ from the registered artifact")
-    return str(destination)
+    import model_handoff_files
+    import model_attempt_writer
+    managed = model_attempt_writer.current()
+    try:
+        if managed is not None:
+            managed.require_open()
+            if managed.files is None or Path(execution_dir) != managed.files.path:
+                raise ValueError("Screening handoff destination is not the owned attempt directory")
+        retained = model_handoff_files.copy_registered(shared_root, run_id, resolved, destination,
+            sha256=expected_hash, size_bytes=expected_size)
+        if managed is not None:
+            managed.files.verify()
+        return retained
+    except (OSError, ValueError) as error:
+        if managed is not None:
+            managed.stopped = True
+        reason = str(error) if isinstance(error, ValueError) else "Local filesystem operation failed"
+        raise RuntimeError("Screening handoff file copy was not confirmed: " + reason) from error
 
 
 def _adapt_zone_attributes(src_csv: str, dest_csv: str) -> int:
@@ -544,9 +607,9 @@ def _materialize_screening_dir(
     import shutil
 
     screening_dir = os.path.join(dest_root, "screening")
-    if os.path.exists(screening_dir):
-        shutil.rmtree(screening_dir)
-    os.makedirs(os.path.join(screening_dir, "run_output"), exist_ok=True)
+    # A fresh attempt must not replace evidence from an earlier preparation.
+    os.mkdir(screening_dir, mode=0o700)
+    os.mkdir(os.path.join(screening_dir, "run_output"), mode=0o700)
 
     zones = _adapt_zone_attributes(zone_attr_path, os.path.join(screening_dir, "package", "zone_attributes.csv"))
     shutil.copy2(skim_path, os.path.join(screening_dir, "run_output", "travel_time_skims.omx"))
@@ -598,6 +661,13 @@ def validate_run_identity(run_id: str) -> None:
 def create_run_workspace(run_id: str) -> str:
     """Retain each execution separately without deleting predecessor files."""
     validate_run_identity(run_id)
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return str(writer.workspace(ACTIVITYSIM_WORK_DIR, run_id))
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Attempt workspace requires reconciliation") from error
     directory = os.path.join(ACTIVITYSIM_WORK_DIR, run_id)
     os.makedirs(directory, exist_ok=True)
     return tempfile.mkdtemp(prefix="execution-", dir=directory)
@@ -884,7 +954,37 @@ STAGE_DISPATCH = {
 }
 
 
+def _process_admitted_stage(stage: dict, writer) -> None:
+    """Execute an already admitted attempt without legacy claims or parent writes."""
+    try:
+        writer.require_open()
+        if stage['id'] != writer.context.stage_id or stage['run_id'] != writer.context.run_id:
+            raise ValueError("Managed dispatch crosses invocation scope")
+        stage_name = stage['stage_name']
+        handler = STAGE_DISPATCH.get(stage_name)
+        if handler is None:
+            raise ValueError("Managed dispatch has no owned handler")
+        run = writer.read_run(stage['run_id'], expected_stage_name=stage_name)
+        if _WORKER_HEARTBEAT is not None:
+            _WORKER_HEARTBEAT.set_current_work(
+                {'runId': stage['run_id'], 'stageId': stage['id'], 'stageName': stage_name})
+        result = handler(stage['run_id'], run, stage['id'])
+        sb_patch_stage(stage['id'], {'status': 'succeeded', 'log_tail': result['log']})
+    except BaseException:
+        # The handler may have committed a command before losing its reply.
+        # Reconciliation owns the outcome; never infer a failed terminal write.
+        writer.stopped = True
+        raise
+    finally:
+        if _WORKER_HEARTBEAT is not None:
+            _WORKER_HEARTBEAT.set_current_work(None)
+
+
 def process_stage(stage: dict) -> None:
+    import model_attempt_writer
+    admitted = model_attempt_writer.current()
+    if admitted is not None:
+        return _process_admitted_stage(stage, admitted)
     stage_id = stage["id"]
     run_id = stage["run_id"]
     stage_name = stage["stage_name"]
@@ -955,7 +1055,7 @@ def poll_for_jobs() -> None:
             url = (
                 f"{SUPABASE_URL}/rest/v1/model_run_stages"
                 f"?status=eq.queued&{_STAGE_FILTER}"
-                "&select=id,run_id,stage_name,status,sort_order,created_at"
+                "&select=id,run_id,stage_name,status,sort_order,created_at,updated_at"
                 "&order=created_at.asc,sort_order.asc&limit=25"
             )
             res = requests.get(url, headers=HEADERS, timeout=30)
@@ -977,9 +1077,8 @@ def poll_for_jobs() -> None:
                     processed = True
                     break
                 if readiness == "blocked_terminal":
-                    print(f"[{time.strftime('%X')}] ⏭️ Skipping {stage['stage_name']}: {reason}")
-                    mark_stage_skipped(stage, reason or "Skipped due to failed prior stage")
-                    processed = True
+                    print(f"[{time.strftime('%X')}] Checking blocked stage {stage['stage_name']}: {reason}")
+                    processed = mark_stage_skipped(stage, reason or "Skipped due to failed prior stage")
                     break
 
             if not processed:

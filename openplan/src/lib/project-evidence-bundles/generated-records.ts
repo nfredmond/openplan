@@ -87,11 +87,12 @@ async function evidenceRows(
   assessments: Record<string, unknown>[];
   diagnoses: Record<string, unknown>[];
   comparableObservationCustody: Record<string, unknown>[];
+  attemptInstrumentCustody: Record<string, unknown>[];
   structuralDemandCustody: Record<string, unknown>[];
   distributedWorkLoadingCustody: Record<string, unknown>[];
 }> {
   if (modelRunIds.length === 0 && countyRunIds.length === 0) {
-    return { sources: [], validation: [], claims: [], assessments: [], diagnoses: [], comparableObservationCustody: [], structuralDemandCustody: [], distributedWorkLoadingCustody: [] };
+    return { sources: [], validation: [], claims: [], assessments: [], diagnoses: [], comparableObservationCustody: [], attemptInstrumentCustody: [], structuralDemandCustody: [], distributedWorkLoadingCustody: [] };
   }
 
   const tableReads = [
@@ -153,6 +154,7 @@ async function evidenceRows(
   let assessments: Record<string, unknown>[] = [];
   let diagnoses: Record<string, unknown>[] = [];
   let comparableObservationCustody: Record<string, unknown>[] = [];
+  let attemptInstrumentCustody: Record<string, unknown>[] = [];
   let structuralDemandCustody: Record<string, unknown>[] = [];
   let distributedWorkLoadingCustody: Record<string, unknown>[] = [];
   if (modelRunIds.length > 0) {
@@ -201,6 +203,16 @@ async function evidenceRows(
     }
     comparableObservationCustody = rows(comparableRead.data);
 
+    const attemptRead = await readGeneratedRows(() => dynamicFrom("model_attempt_instrument_custody")
+      .select("id, workspace_id, model_run_id, stage_id, attempt_id, demand_method, model_output_artifact_id, model_output_sha256, input_bundle_artifact_id, match_audit_artifact_id, comparison_basis_artifact_id, assessment_artifact_id, diagnosis_artifact_id, input_bundle_sha256, match_audit_sha256, comparison_basis_sha256, assessment_sha256, diagnosis_sha256, scientific_outcome, created_at")
+      .eq("workspace_id", workspaceId)
+      .in("model_run_id", modelRunIds)
+      .order("created_at", { ascending: true }));
+    if (attemptRead.error) {
+      throw new ProjectEvidenceBundleError("missing_evidence", "Project-linked attempt instrument custody could not be read.");
+    }
+    attemptInstrumentCustody = rows(attemptRead.data);
+
     const structuralDemandRead = await readGeneratedRows(() => dynamicFrom("modeling_structural_demand_diagnosis_custody")
       .select("id, workspace_id, model_run_id, input_audit_artifact_id, diagnosis_artifact_id, input_audit_sha256, diagnosis_sha256, method, scientific_outcome, created_at")
       .eq("workspace_id", workspaceId)
@@ -222,7 +234,7 @@ async function evidenceRows(
     distributedWorkLoadingCustody = rows(distributedWorkLoadingRead.data);
   }
 
-  return { sources: collected[0], validation: collected[1], claims: collected[2], assessments, diagnoses, comparableObservationCustody, structuralDemandCustody, distributedWorkLoadingCustody };
+  return { sources: collected[0], validation: collected[1], claims: collected[2], assessments, diagnoses, comparableObservationCustody, attemptInstrumentCustody, structuralDemandCustody, distributedWorkLoadingCustody };
 }
 
 /**
@@ -515,6 +527,26 @@ export async function loadProjectEvidenceGeneratedFiles(
       numericClaim: true,
     }),
   }));
+  const attemptInstrumentCustody = modelingEvidence.attemptInstrumentCustody.map((custody) => ({
+    ...withoutPersonalIdentifiers(custody) as Record<string, unknown>,
+    evidenceDescriptor: buildEvidenceDescriptor({
+      identity: { table: "model_attempt_instrument_custody", id: custody.id },
+      source: {
+        kind: "attempt_validation_instrument",
+        label: "Attempt-specific model validation evidence",
+        citation: typeof custody.assessment_sha256 === "string" ? custody.assessment_sha256 : null,
+      },
+      asOfDate: typeof custody.created_at === "string" ? custody.created_at : null,
+      retrievedAt: generatedAt.toISOString(),
+      evidenceStatus: "modeled",
+      claimTier: null,
+      uncertainty: ["The scientific outcome remains inconclusive."],
+      limits: ["Retained custody does not establish model accuracy or an independently usable source archive."],
+      revisionToken: typeof custody.created_at === "string" ? custody.created_at : null,
+      checksumSha256: typeof custody.assessment_sha256 === "string" ? custody.assessment_sha256 : null,
+      numericClaim: true,
+    }),
+  }));
   const structuralDemandCustody = modelingEvidence.structuralDemandCustody.map((custody) => ({
     ...withoutPersonalIdentifiers(custody) as Record<string, unknown>,
     evidenceDescriptor: buildEvidenceDescriptor({
@@ -568,6 +600,7 @@ export async function loadProjectEvidenceGeneratedFiles(
     validationAssessments,
     structuralDiagnoses,
     comparableObservationCustody,
+    attemptInstrumentCustody,
     structuralDemandCustody,
     distributedWorkLoadingCustody,
     claimDecisions,
@@ -582,6 +615,7 @@ export async function loadProjectEvidenceGeneratedFiles(
     validationAssessments: withoutPersonalIdentifiers(modelingEvidence.assessments),
     structuralDiagnoses: withoutPersonalIdentifiers(modelingEvidence.diagnoses),
     comparableObservationCustody: withoutPersonalIdentifiers(modelingEvidence.comparableObservationCustody),
+    attemptInstrumentCustody: withoutPersonalIdentifiers(modelingEvidence.attemptInstrumentCustody),
     structuralDemandCustody: withoutPersonalIdentifiers(modelingEvidence.structuralDemandCustody),
     distributedWorkLoadingCustody: withoutPersonalIdentifiers(modelingEvidence.distributedWorkLoadingCustody),
     claimDecisions: withoutPersonalIdentifiers(modelingEvidence.claims),

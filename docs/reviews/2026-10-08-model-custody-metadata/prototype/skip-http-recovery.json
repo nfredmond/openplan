@@ -1,0 +1,88 @@
+{
+  "source_sha256": "5aa38d6b409f15326813cc1edfc8c33fee0f5e2644f163588e52c26e8e64e18f",
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "cases": [
+          {
+            "outcome": "skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          },
+          {
+            "outcome": "not_skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          }
+        ],
+        "http_calls": 4,
+        "rpc_calls": 4,
+        "worker_read_calls": 0,
+        "gateway_removed": true,
+        "worker": null
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "cases": [
+          {
+            "outcome": "skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          },
+          {
+            "outcome": "not_skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          }
+        ],
+        "http_calls": 4,
+        "rpc_calls": 4,
+        "worker_read_calls": 0,
+        "gateway_removed": true,
+        "worker": null
+      }
+    },
+    {
+      "control": "missing-receipt",
+      "expected_failure": "Committed skip receipt missing"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "cases": [
+          {
+            "outcome": "skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          },
+          {
+            "outcome": "not_skipped",
+            "committed_reply_dropped": true,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged_by_retry": true,
+            "cached_cli_no_http": true
+          }
+        ],
+        "http_calls": 4,
+        "rpc_calls": 4,
+        "worker_read_calls": 0,
+        "gateway_removed": true,
+        "worker": null
+      }
+    }
+  ],
+  "limits": "Native committed skip RPC and fresh CLI recovery through a loopback fault bridge. No installation migration, normal dispatcher, model computation, browser or scientific acceptance."
+}

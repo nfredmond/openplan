@@ -1,0 +1,41 @@
+{
+  "module_sha256": "6f18a5c498d1fb3cbf793fdde617821ce817f537ae54b044d01eff0986f921ed",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-feed-checksum",
+      "exit_code": 1,
+      "targeted_test": "test_mismatched_archive_refused_before_retention"
+    },
+    {
+      "control": "ignore-inventory",
+      "exit_code": 1,
+      "targeted_test": "test_generic_package_is_not_accepted_as_transit"
+    },
+    {
+      "control": "ignore-read-hash",
+      "exit_code": 1,
+      "targeted_test": "test_same_size_metadata_change_after_copy_is_refused"
+    },
+    {
+      "control": "wrong-settings",
+      "exit_code": 1,
+      "targeted_test": "test_original_bytes_metadata_and_settings_survive_independent_copy"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real private files, existing package inventory and synthetic GTFS parse/skim. Caller authority remains required; no parent artifact registration, live provider acquisition, child dispatch, OS containment or scientific acceptance."
+}

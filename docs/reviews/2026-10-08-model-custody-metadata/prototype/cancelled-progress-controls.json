@@ -1,0 +1,28 @@
+{
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "expected_failure": false
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "expected_failure": false
+    },
+    {
+      "control": "ignore-cancelled",
+      "exit_code": 1,
+      "expected_failure": true
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "expected_failure": false
+    }
+  ],
+  "source_sha256": "9b24d8117d872c6e32c9a4514d6ab5f8c60dfae89776cfff60c7d8d9fbb0b648",
+  "test_sha256": "004dfe9157e63bd584bda858f9d2cd3ee025703cae766409310d241fcbd24c61",
+  "evidence_directory": "/tmp/openplan-cancelled-progress-20261008",
+  "limits": "Pure stage summary tests. No actual worker, database or browser acceptance of this wording correction."
+}

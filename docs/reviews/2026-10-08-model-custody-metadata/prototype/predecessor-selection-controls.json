@@ -1,0 +1,47 @@
+{
+  "source_sha256": "04571940f929358c4aefee225bc633aa687e65d0ef8076e9f6fa8bf0ab171368",
+  "worker_sha256": "5ec1e4701f7a5cc78a2f25f3061c6554eae991f72d85d8e1293364d3412ac0ac",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-producer-completion",
+      "exit_code": 1,
+      "targeted_test": "PredecessorTests.test_incomplete_wrong_run_late_or_legacy_producer_refused"
+    },
+    {
+      "control": "ignore-consumer-attempt",
+      "exit_code": 1,
+      "targeted_test": "PredecessorTests.test_revoked_consumer_and_superseded_artifact_refused"
+    },
+    {
+      "control": "ignore-artifact-attempt",
+      "exit_code": 1,
+      "targeted_test": "PredecessorTests.test_revoked_consumer_and_superseded_artifact_refused"
+    },
+    {
+      "control": "ignore-ambiguous-producer",
+      "exit_code": 1,
+      "targeted_test": "PredecessorTests.test_ambiguous_producer_or_artifact_refused"
+    },
+    {
+      "control": "omit-stage-order-projection",
+      "exit_code": 1,
+      "targeted_test": "BoundPredecessorTests.test_adapter_uses_bound_installation_and_complete_projections"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Explicit stage and attempt selection with mocked HTTP projections. No native read proof, concurrent revocation fence, file transfer or scientific acceptance."
+}

@@ -99,6 +99,23 @@ class RunBehavioralDemandPrototypeTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
 
+    def test_force_preserves_retained_container_custody_and_runtime_log(self) -> None:
+        output = self.root / "retained-pipeline"
+        custody = output / "runtime.container-custody"
+        custody.mkdir(parents=True)
+        record = custody / "intent.json"
+        record.write_text('synthetic retained intent')
+        log = output / "runtime" / "command.log"
+        log.parent.mkdir()
+        log.write_text('synthetic retained command output')
+        with self.assertRaisesRegex(RuntimeError, "Retained container custody"):
+            run_behavioral_demand_prototype(
+                screening_run_dir=str(self.screening_run_dir),
+                output_root=str(output), force=True,
+            )
+        self.assertEqual(record.read_text(), 'synthetic retained intent')
+        self.assertEqual(log.read_text(), 'synthetic retained command output')
+
     def test_completes_honest_preflight_when_activitysim_is_unavailable(self) -> None:
         output_root = self.root / "behavioral-demand"
 

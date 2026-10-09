@@ -75,6 +75,7 @@ class PublicationCustodyTests(unittest.TestCase):
                     return
                 result = invoke()
                 if failed:
+                    self.assertEqual(path.read_bytes(), main.model_validation_core.canonical_json(before_write).encode())
                     self.assertEqual(result['validation_evidence_write'], 'validation evidence write failed')
                     self.assertNotIn('validation_custody_receipt', result)
                     return
@@ -88,6 +89,31 @@ class PublicationCustodyTests(unittest.TestCase):
                 }, track=caller)
                 retained = publication['claim']['validation_summary_json']['model_validation_assessment']
                 self.assertEqual(retained['validation_custody_receipt'], result['validation_custody_receipt'])
+
+    def test_actual_record_materialization_retries_and_refuses_changed_bytes(self):
+        for caller in ('assignment', 'behavioral_demand'):
+            with self.subTest(caller=caller), tempfile.TemporaryDirectory() as temporary:
+                root=Path(temporary)/'records'
+                bundle,basis,assessment=records()
+                with patch.object(main,'upload_immutable_validation_json',side_effect=ValueError('synthetic upload failure')) as upload:
+                    def invoke():
+                        if caller=='behavioral_demand':
+                            return main.persist_rules_v4_validation_records(
+                                run_id='synthetic-run',stage_id='synthetic-stage',workspace_id='synthetic-workspace',track=caller,
+                                model_output_artifact_id='synthetic-output',record_dir=str(root),
+                                validation_input_bundle=copy.deepcopy(bundle),comparison_basis=copy.deepcopy(basis),assessment=copy.deepcopy(assessment))
+                        function=next(n for n in ast.parse(Path(main.__file__).read_text()).body if isinstance(n,ast.FunctionDef) and n.name=='stage_artifacts')
+                        statement=next(n for n in function.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='validation_record_paths' for t in n.targets))
+                        scope=dict(vars(main),validation_record_dir=str(root),validation_input_bundle=bundle,comparison_basis=basis,validation_assessment=assessment)
+                        exec(compile(ast.Module(body=[statement],type_ignores=[]),main.__file__,'exec'),scope)
+                    invoke();target=root/'model_validation_assessment.json';before=target.read_bytes();inode=target.stat().st_ino
+                    (root/'model_comparison_basis.json').unlink()
+                    invoke()
+                    self.assertEqual(target.read_bytes(),before);self.assertEqual(target.stat().st_ino,inode)
+                    self.assertTrue((root/'model_comparison_basis.json').exists())
+                    target.write_bytes(b'conflicting retained bytes');upload.reset_mock()
+                    with self.assertRaises(main.WorkerStateWriteUnconfirmed):invoke()
+                    self.assertEqual(target.read_bytes(),b'conflicting retained bytes');upload.assert_not_called()
 
     def test_acknowledged_identity_survives_both_publication_callers(self):
         for caller in ('assignment', 'behavioral_demand'):

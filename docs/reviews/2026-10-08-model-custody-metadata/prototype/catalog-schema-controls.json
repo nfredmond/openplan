@@ -1,0 +1,68 @@
+{
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "target": null,
+      "failure_marker": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "target": null,
+      "failure_marker": null
+    },
+    {
+      "control": "omit-count-projection",
+      "exit_code": 1,
+      "target": "counts saved model executions separately",
+      "failure_marker": "model_runs(count)"
+    },
+    {
+      "control": "invent-zero",
+      "exit_code": 1,
+      "target": "keeps an unassessed saved-run count unavailable",
+      "failure_marker": "Unable to find"
+    },
+    {
+      "control": "count-links-as-executions",
+      "exit_code": 1,
+      "target": "counts saved model executions separately",
+      "failure_marker": "Unable to find"
+    },
+    {
+      "control": "untracked-relation",
+      "exit_code": 1,
+      "target": "reads every relation the migrations declare",
+      "failure_marker": "321"
+    },
+    {
+      "control": "unread-column",
+      "exit_code": 1,
+      "target": "finds no unread column that is not accounted for",
+      "failure_marker": "unassessed_probe"
+    },
+    {
+      "control": "omit-upgrade-note",
+      "exit_code": 1,
+      "target": "the CHANGELOG's Unreleased section names every migration",
+      "failure_marker": "20261016000023_model_recovery_decisions.sql"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "target": null,
+      "failure_marker": null
+    }
+  ],
+  "sha256": {
+    "openplan/src/app/(app)/models/page.tsx": "ebdc17294aa5f6e21ef2f0d84b03f7451f5dfae3b8cd3f5c79cedb566b603f96",
+    "openplan/supabase/migrations/20261016000023_model_recovery_decisions.sql": "3a8da545fb864e35e6798a070301da929093bbcca51aaadf1335f6ee2dc4ace9",
+    "CHANGELOG.md": "f64700b07febcbbbf3408ab0ba28311bd45cd1b1b5ada15092a313a131ed3dd4",
+    "openplan/src/test/county-models-pages-disclose-failed-reads.test.tsx": "73acb8cbc1beb6764563e3c62ea90cb072482acf9edf398c7b531c289ca7c07d",
+    "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "dad325ea4cc00cb360122eb36854c5e4882ef6ea6e254e133dc44f3085247256",
+    "openplan/src/test/migrations/inventory.test.ts": "2ecadd29e0e506bf1537f13a3071d76250a0610b955e844c082c24eff196ca79",
+    "openplan/src/test/migrations/release-ordering.test.ts": "c53fa1c79160ef23a4c185b4bb89d268359ce3302914008786589c7db23c5bad"
+  },
+  "limits": "Mocked page queries and source migration parsing. Not browser visual acceptance, installed SQL mutation, or whole-suite CI. Native catalog count and authenticated aggregate are separate observations."
+}

@@ -1,18 +1,10 @@
 /**
- * Stale-run reaper — turns a stuck run into a truthful `failed` state.
+ * Ask the database to fail stale work that has not begun execution.
  *
- * Given a set of non-terminal runs (each with its stages), classify each with
- * the pure `run-liveness` predicate and, for the stale ones, call the atomic
- * `reap_model_run_if_stale` RPC (see migration 20260722000004).
- *
- * The RPC re-validates progress across BOTH model_runs and model_run_stages
- * inside one transaction, so a worker that claims a long-queued run — or
- * streams a fresh `log_tail` on an in-flight stage — between our snapshot read
- * and the reap write is never clobbered. `model_runs.updated_at` alone is NOT a
- * usable guard: it freezes for the life of a `running` run (only the per-stage
- * heartbeat advances), which is why the reap runs server-side across both
- * tables rather than as a client-side status-only guarded update. The `client`
- * MUST be a service-role client (the RPC is granted to service_role only).
+ * Liveness timestamps identify candidates, not proof of process loss. The RPC
+ * locks the parent and stages, checks fresh progress, and refuses running,
+ * attempt-managed or previously started work. Those cases require explicit
+ * recovery. See migration 20261016000022. The caller uses a service-role client.
  */
 
 import {

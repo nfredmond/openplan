@@ -1,0 +1,125 @@
+{
+  "proof_sha256": "a6968d9eea53c7b805fa80a365aa547978ce12287c8450e1d1d1b48397e4d746",
+  "controls": [
+    {
+      "control": "baseline",
+      "scope_empty": true,
+      "database": "openplan_attempt_cli_40bfff62d05c4ab78ddd1536eefcb3f3",
+      "native_converged": true,
+      "modeled_transit": "modeled",
+      "replay": null,
+      "final_outputs_absent": null
+    },
+    {
+      "control": "harmless",
+      "scope_empty": true,
+      "database": "openplan_attempt_cli_3065ecf82c784811aa756c3d1ccd207d",
+      "native_converged": true,
+      "modeled_transit": "modeled",
+      "replay": null,
+      "final_outputs_absent": null
+    },
+    {
+      "control": "lost-progress",
+      "scope_empty": true,
+      "database": "openplan_attempt_cli_6cd3ad9202c74268a9c9b4937c32b675",
+      "native_converged": null,
+      "modeled_transit": null,
+      "replay": {
+        "request_id": "0a842ea5-62e1-4038-8b64-e5d44db34f87",
+        "committed_reply_dropped": true,
+        "fresh_process_outcomes": [
+          {
+            "request_id": "0a842ea5-62e1-4038-8b64-e5d44db34f87",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          },
+          {
+            "request_id": "0a842ea5-62e1-4038-8b64-e5d44db34f87",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          }
+        ],
+        "http_calls_per_recovery": [
+          1,
+          0
+        ],
+        "database_state_unchanged": true,
+        "request_body_sha256": "a796acacddaeb50f5fe7142b597ff8519f549f83aac81376cea495a09d2a94ce",
+        "model_resumed": false,
+        "limits": "Real installed SQL receipt replay from a journal backup. Original journal remains pending. No model continuation or supervisor restart."
+      },
+      "final_outputs_absent": true
+    },
+    {
+      "control": "lost-progress-harmless",
+      "scope_empty": true,
+      "database": "openplan_attempt_cli_d077622aba34493f9fd54b3d91790d2a",
+      "native_converged": null,
+      "modeled_transit": null,
+      "replay": {
+        "request_id": "3393051a-5941-4296-95c7-288737d23bbc",
+        "committed_reply_dropped": true,
+        "fresh_process_outcomes": [
+          {
+            "request_id": "3393051a-5941-4296-95c7-288737d23bbc",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          },
+          {
+            "request_id": "3393051a-5941-4296-95c7-288737d23bbc",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          }
+        ],
+        "http_calls_per_recovery": [
+          1,
+          0
+        ],
+        "database_state_unchanged": true,
+        "request_body_sha256": "bfdf7f7d244a47999a04bd98c8ce79214b3892ac6c97ae67f2988290c3fd0dce",
+        "model_resumed": false,
+        "limits": "Real installed SQL receipt replay from a journal backup. Original journal remains pending. No model continuation or supervisor restart."
+      },
+      "final_outputs_absent": true
+    },
+    {
+      "control": "omit-scope",
+      "detected": "Live native scope supervision missing"
+    },
+    {
+      "control": "restored",
+      "scope_empty": true,
+      "database": "openplan_attempt_cli_0506cc69aabb4d78b2c95d366b16d009",
+      "native_converged": null,
+      "modeled_transit": null,
+      "replay": {
+        "request_id": "1dbac843-1189-4faf-aa33-29d43f6b930b",
+        "committed_reply_dropped": true,
+        "fresh_process_outcomes": [
+          {
+            "request_id": "1dbac843-1189-4faf-aa33-29d43f6b930b",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          },
+          {
+            "request_id": "1dbac843-1189-4faf-aa33-29d43f6b930b",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          }
+        ],
+        "http_calls_per_recovery": [
+          1,
+          0
+        ],
+        "database_state_unchanged": true,
+        "request_body_sha256": "e15af0a84bc528b1a90f49f0978162e894d71de728d6af001c0ef7235171a544",
+        "model_resumed": false,
+        "limits": "Real installed SQL receipt replay from a journal backup. Original journal remains pending. No model continuation or supervisor restart."
+      },
+      "final_outputs_absent": true
+    }
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/scoped-http-controls-20261008",
+  "limits": "Actual small native assignment, production scope and isolated installed SQL. No cancellation, parent-loss recovery, final publication, scientific acceptance or dispatcher activation."
+}

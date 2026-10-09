@@ -1,0 +1,41 @@
+{
+  "source_sha256": "f200dce10df8ec8df3820b11bbd363076fe2447e35922607d7b3e8fdd550775a",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-producer",
+      "exit_code": 1,
+      "targeted_test": "test_different_attempt_refused"
+    },
+    {
+      "control": "ignore-paths",
+      "exit_code": 1,
+      "targeted_test": "test_foreign_count_path_refused"
+    },
+    {
+      "control": "mutate-original",
+      "exit_code": 1,
+      "targeted_test": "test_mapped_record_can_be_consumed_without_rewriting_sources"
+    },
+    {
+      "control": "retain-original-path",
+      "exit_code": 1,
+      "targeted_test": "test_mapped_record_can_be_consumed_without_rewriting_sources"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real retained count/output files and actual count consumer, synthetic data. Mapping helper only; not yet joined to native state preparation or normal dispatch. No scientific acceptance."
+}

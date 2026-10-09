@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "reread-bundle",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "reread-audit",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "check-replacement-package",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "check-replacement-audit",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "source_sha256": "d5e2823a16c69e9799ab68fef250677c4971793d01cd42ea2a3208c02527260a",
+  "limits": [
+    "Synthetic replacement during readiness checks and after output read",
+    "No concurrent filesystem fencing or immutable Storage proof",
+    "No source validity or scientific acceptance claim"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "scope_sha256": "faeda72e06e00f80c961fc93c5caad26e4874b214f1326a835365bc41d5d2599",
+  "worker_sha256": "892cadd344b07b8e92f5f8c4e9688d8d1043b07cdaa7e3626b7e6e8ed573a4e1",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "omit-close",
+      "exit_code": 1,
+      "targeted_test": "test_actual_assignment_closes_after_graph_failure"
+    },
+    {
+      "control": "ignore-interruption",
+      "exit_code": 1,
+      "targeted_test": "test_interrupt_closes_and_preserves_exception"
+    },
+    {
+      "control": "ignore-managed-stop",
+      "exit_code": 1,
+      "targeted_test": "test_partial_open_closes_and_stops_managed_writer"
+    },
+    {
+      "control": "swallow-close-error",
+      "exit_code": 1,
+      "targeted_test": "test_cleanup_failure_propagates_with_original_error"
+    },
+    {
+      "control": "omit-project-log-close",
+      "exit_code": 1,
+      "targeted_test": "test_project_log_closes_without_touching_unrelated_handler"
+    },
+    {
+      "control": "omit-matrix-cleanup",
+      "exit_code": 1,
+      "targeted_test": "test_matrices_close_once_in_reverse_order"
+    },
+    {
+      "control": "duplicate-matrix-cleanup",
+      "exit_code": 1,
+      "targeted_test": "test_matrices_close_once_in_reverse_order"
+    },
+    {
+      "control": "ignore-matrix-failure-stop",
+      "exit_code": 1,
+      "targeted_test": "test_matrix_close_failure_does_not_skip_remaining_cleanup"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual setup and assignment entry points with injected project failures. Verifies close is attempted and errors remain visible, not that native handles all close or that scientific output is valid."
+}

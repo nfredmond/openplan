@@ -1,0 +1,33 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    },
+    {
+      "case": "unlimited-swap",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "Scope resource policy differs"
+    },
+    {
+      "case": "accept-wrong-policy",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "ValueError not raised"
+    },
+    {
+      "case": "restored",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    }
+  ],
+  "source_sha256": "ecc1fab72bc799b21a5091f7c3aa00fe80a33e532e2375b57abea2bef9865cd6",
+  "limits": [
+    "Synthetic commands in owned live user scopes",
+    "No memory exhaustion, native model, container, database or scientific acceptance"
+  ]
+}

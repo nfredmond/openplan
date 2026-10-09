@@ -1,0 +1,81 @@
+{
+  "cases": [
+    {
+      "mode": "baseline",
+      "owner_unit": "openplan-owner-service-proof-dd3ce54b088347439d0d16e47b939059.service",
+      "owner_invocation": "1b2db75dad994318a17cda39e66089cc",
+      "guard_outside_owner_service": true,
+      "sources": {
+        "model_engine_owner_guard.py": "6a4abf9cddf42ec1d05c1d2c52e09baa813e389a3c97ea6a0ced697776ffc105",
+        "model_engine_supervision.py": "0a799a458fc3ae5c3e08a14a3976643d6d24df52128ef0c3ef2cfa5516ff325d",
+        "model_engine_bootstrap.py": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a"
+      },
+      "owner_service_terminated": true,
+      "engine_scope_empty": true,
+      "guard_scope_stopped": true,
+      "outputs_absent": true
+    },
+    {
+      "mode": "owner-alive",
+      "owner_unit": "openplan-owner-service-proof-18766588c7a34083b7cf00067ef7f8b7.service",
+      "owner_invocation": "6cbf67cd70d94df7ab75f46749d38b6e",
+      "guard_outside_owner_service": true,
+      "sources": {
+        "model_engine_owner_guard.py": "6a4abf9cddf42ec1d05c1d2c52e09baa813e389a3c97ea6a0ced697776ffc105",
+        "model_engine_supervision.py": "0a799a458fc3ae5c3e08a14a3976643d6d24df52128ef0c3ef2cfa5516ff325d",
+        "model_engine_bootstrap.py": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a"
+      },
+      "owner_alive_outputs_present": true
+    },
+    {
+      "mode": "harmless",
+      "owner_unit": "openplan-owner-service-proof-fc9ab80808e0456ca59b945fae3bd74b.service",
+      "owner_invocation": "6e90dda28a9842f3a3c16278d2a769eb",
+      "guard_outside_owner_service": true,
+      "sources": {
+        "model_engine_owner_guard.py": "6a4abf9cddf42ec1d05c1d2c52e09baa813e389a3c97ea6a0ced697776ffc105",
+        "model_engine_supervision.py": "0a799a458fc3ae5c3e08a14a3976643d6d24df52128ef0c3ef2cfa5516ff325d",
+        "model_engine_bootstrap.py": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a"
+      },
+      "owner_service_terminated": true,
+      "engine_scope_empty": true,
+      "guard_scope_stopped": true,
+      "outputs_absent": true
+    },
+    {
+      "mode": "ignore-owner-loss",
+      "owner_unit": "openplan-owner-service-proof-3fccd0b2afe84e37958913b681218916.service",
+      "owner_invocation": "ed0b6ebf55954047a05ca21232dc9f94",
+      "guard_outside_owner_service": true,
+      "sources": {
+        "model_engine_owner_guard.py": "6a4abf9cddf42ec1d05c1d2c52e09baa813e389a3c97ea6a0ced697776ffc105",
+        "model_engine_supervision.py": "0a799a458fc3ae5c3e08a14a3976643d6d24df52128ef0c3ef2cfa5516ff325d",
+        "model_engine_bootstrap.py": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a"
+      },
+      "fault_detected": "Engine and detached child wrote after owner-service loss"
+    },
+    {
+      "mode": "restored",
+      "owner_unit": "openplan-owner-service-proof-48adddcc3b4a454bb58c39059626eb63.service",
+      "owner_invocation": "ab379f7a750840ca9a5ca5a02e86e726",
+      "guard_outside_owner_service": true,
+      "sources": {
+        "model_engine_owner_guard.py": "6a4abf9cddf42ec1d05c1d2c52e09baa813e389a3c97ea6a0ced697776ffc105",
+        "model_engine_supervision.py": "0a799a458fc3ae5c3e08a14a3976643d6d24df52128ef0c3ef2cfa5516ff325d",
+        "model_engine_bootstrap.py": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a"
+      },
+      "owner_service_terminated": true,
+      "engine_scope_empty": true,
+      "guard_scope_stopped": true,
+      "outputs_absent": true
+    }
+  ],
+  "cleanup": "All owned services, guard scopes and engine scopes observed stopped or empty",
+  "limits": [
+    "Synthetic engine and detached child only",
+    "No native model, database, scientific or human acceptance",
+    "Saved identities do not authorize restart"
+  ],
+  "script_sha256": "2685bb258645671e9dba3ad5f0656e1e70ad092bea1009bb6e6e661144831a8f"
+}
+

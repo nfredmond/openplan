@@ -1,0 +1,38 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "detected": null,
+      "verified": true
+    },
+    {
+      "case": "missing-runtime-copy",
+      "returncode": 1,
+      "detected": "shows evidence-panel runtime guidance",
+      "verified": true
+    },
+    {
+      "case": "false-demographics-warning",
+      "returncode": 1,
+      "detected": "stays silent on a SUCCESSFUL rebuild",
+      "verified": true
+    },
+    {
+      "case": "unsafe-relaunch",
+      "returncode": 1,
+      "detected": "withholds relaunch for",
+      "verified": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "detected": null,
+      "verified": true
+    }
+  ],
+  "limits": [
+    "Component tests with mocked fetch",
+    "No browser, authenticated route or human acceptance"
+  ]
+}

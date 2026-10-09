@@ -16,6 +16,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
+const custodyRpcMock = vi.fn();
 const prepareWorkerZoneAttributesMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const loadModelAccessMock = vi.fn();
@@ -122,9 +123,7 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
   // `withWorkspaceIntegrationContext` loads the workspace's decrypted keys with
   // this; the real one is exercised in its own suite.
-  createServiceRoleClient: () => {
-    throw new Error("no service-role key in this test");
-  },
+  createServiceRoleClient: () => ({ rpc: custodyRpcMock }),
 }));
 
 vi.mock("@/lib/models/zone-attribute-payload", async (importOriginal) => {
@@ -209,6 +208,7 @@ function requeuePayload(): Record<string, unknown> {
 /** A relaunchable failed run, everything green. Shared by both suites below. */
 function givenARelaunchableRun() {
     vi.clearAllMocks();
+    custodyRpcMock.mockResolvedValue({ data: { run_id: MODEL_RUN_ID, workspace_id: WORKSPACE_ID, state: "unstarted" }, error: null });
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({

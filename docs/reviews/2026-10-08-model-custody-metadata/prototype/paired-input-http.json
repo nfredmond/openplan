@@ -1,0 +1,285 @@
+{
+  "selector_sha256": "9d0b3a59a1bbc2e88bc4d63a484a588bf6850ecbe94ab27f8c6f0d12453d3eea",
+  "worker_sha256": "cec65d74bdd7f465b9e2ca8769c3a6496891c8458e2273b54aa555c94de45483",
+  "controls": [
+    {
+      "control": "baseline",
+      "outcome": {
+        "paired": true,
+        "original_preserved": true,
+        "execution_ready": false
+      },
+      "consumer_artifacts": 3,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "harmless",
+      "outcome": {
+        "paired": true,
+        "original_preserved": true,
+        "execution_ready": false
+      },
+      "consumer_artifacts": 3,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "omit-package-mapping",
+      "outcome": {
+        "mapping_fault_detected": true
+      },
+      "consumer_artifacts": 3,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "source-mismatch",
+      "outcome": {
+        "refused": true,
+        "writer_stopped": true
+      },
+      "consumer_artifacts": 2,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "lost-mapping-reply",
+      "outcome": {
+        "delivery_unconfirmed": true,
+        "writer_stopped": true,
+        "fresh_cli_recovered": true,
+        "cached_no_http": true,
+        "native_tables_unchanged": 7
+      },
+      "consumer_artifacts": 3,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "control": "restored",
+      "outcome": {
+        "paired": true,
+        "original_preserved": true,
+        "execution_ready": false
+      },
+      "consumer_artifacts": 3,
+      "http_calls": [
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    }
+  ],
+  "gateway_removed": true,
+  "limits": "Actual paired helper and native commands through a route-prefix transport adapter. Producer fixture registration uses native SQL commands. Durable partial mapping is verified. Fresh CLI mapping recovery uses the same route-prefix adapter; cached recovery forbids HTTP. No project/output/count mapping, full dispatcher or scientific acceptance."
+}

@@ -30,6 +30,7 @@ vi.mock("server-only", () => ({}));
 type TableResult = { data: unknown[] | null; error: { message: string } | null };
 
 const tableResults = new Map<string, TableResult>();
+const queries: Array<{ table: string; method: string; args: unknown[] }> = [];
 
 function setTable(table: string, result: TableResult) {
   tableResults.set(table, result);
@@ -48,7 +49,7 @@ function builderFor(table: string) {
   const builder: Record<string, unknown> = {};
   const chain = () => builder;
   for (const method of ["select", "order", "in", "eq", "limit", "or", "not", "range"]) {
-    builder[method] = vi.fn(chain);
+    builder[method] = vi.fn((...args: unknown[]) => { queries.push({ table, method, args }); return chain(); });
   }
   builder.maybeSingle = vi.fn(() => Promise.resolve(resultFor(table)));
   builder.single = vi.fn(() => Promise.resolve(resultFor(table)));
@@ -136,6 +137,7 @@ function modelRow(overrides: Record<string, unknown> = {}) {
   return {
     id: "model-1",
     workspace_id: "workspace-1",
+    model_runs: [{ count: 0 }],
     project_id: null,
     scenario_set_id: null,
     title: "Regional travel demand",
@@ -161,6 +163,7 @@ function modelRow(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   vi.clearAllMocks();
   tableResults.clear();
+  queries.length = 0;
 
   authGetUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
   loadCurrentWorkspaceMembershipMock.mockResolvedValue({
@@ -228,7 +231,7 @@ describe("/models when a read fails", () => {
 
     await renderModels();
 
-    expect(screen.queryByText(/0 reports · 0 runs/)).toBeNull();
+    expect(screen.queryByText(/0 linked reports · 0 linked analysis runs/)).toBeNull();
     expect(screen.getByText(/Readiness and links unavailable/)).toBeInTheDocument();
     expect(screen.queryByText(/^Missing:/)).toBeNull();
     expect(screen.getByTestId("models-read-failures")).toHaveTextContent(/what each model is connected to/i);
@@ -240,9 +243,32 @@ describe("/models when a read fails", () => {
 
     await renderModels();
 
-    expect(screen.getByText(/0 reports · 0 runs/)).toBeInTheDocument();
+    expect(screen.getByText(/0 linked reports · 0 linked analysis runs/)).toBeInTheDocument();
     expect(screen.getByText(/^Missing:/)).toBeInTheDocument();
     expect(screen.queryByTestId("models-read-failures")).toBeNull();
+  });
+
+  it("counts saved model executions separately from linked analyses", async () => {
+    setTable("models", { data: [modelRow({ model_runs: [{ count: 1 }] })], error: null });
+    setTable("model_links", { data: [{ model_id: "model-1", link_type: "run", linked_id: "analysis-1" }, { model_id: "model-1", link_type: "run", linked_id: "analysis-2" }], error: null });
+    await renderModels();
+    expect(screen.getByText("1 saved model run")).toBeInTheDocument();
+    expect(screen.getByText(/2 linked analysis runs/)).toBeInTheDocument();
+    expect(queries).toContainEqual({ table: "models", method: "eq", args: ["workspace_id", "workspace-1"] });
+    expect(queries.find(q => q.table === "models" && q.method === "select")?.args[0]).toContain("model_runs(count)");
+  });
+
+  it.each([undefined, null, [], [{ count: null }], [{ count: -1 }], [{ count: 1.5 }], [{ count: "1" }], [{ count: 1 }, { count: 2 }]].map(value => [value]))("keeps an unassessed saved-run count unavailable (%j)", async (model_runs) => {
+    setTable("models", { data: [modelRow({ model_runs })], error: null });
+    await renderModels();
+    expect(screen.getByText("Saved model run count unavailable")).toBeInTheDocument();
+    expect(screen.queryByText("0 saved model runs")).toBeNull();
+  });
+
+  it("shows a verified zero saved-run count", async () => {
+    setTable("models", { data: [modelRow()], error: null });
+    await renderModels();
+    expect(screen.getByText("0 saved model runs")).toBeInTheDocument();
   });
 
   /**

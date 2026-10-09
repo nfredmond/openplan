@@ -1,0 +1,42 @@
+{
+  "source_sha256": "74d4acbc5121a0b8196a51a5d60db36b7607fd0cb41709c84beea99ed3f21376",
+  "worker_sha256": "74d7f8eac1a523c50a596690e228409a0b1b1f6153f08af6a133785006f52007",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-foreign-path",
+      "exit_code": 1,
+      "targeted_test": "ManagedPackageHandoffTests.test_foreign_manifest_is_refused_before_file_copy"
+    },
+    {
+      "control": "ignore-producer-bytes",
+      "exit_code": 1,
+      "targeted_test": "ManagedPackageHandoffTests.test_tampered_producer_files_stop_before_registration"
+    },
+    {
+      "control": "erase-producer-attempt",
+      "exit_code": 1,
+      "targeted_test": "ManagedPackageHandoffTests.test_selected_package_is_copied_and_consumer_provenance_registered"
+    },
+    {
+      "control": "register-as-producer-output",
+      "exit_code": 1,
+      "targeted_test": "ManagedPackageHandoffTests.test_selected_package_is_copied_and_consumer_provenance_registered"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual selected-package join and independent local files, mocked transport. No native joined recovery, state/project transfer, normal dispatch or scientific acceptance."
+}

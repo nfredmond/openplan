@@ -1,0 +1,45 @@
+{
+  "cases": [
+    {
+      "case": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "tampered",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "bypass-hash",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "drop-provenance",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "sources": {
+    "workers/activitysim_worker/supabase_poll.py": "e42596a4ff0969484596f18ea1a598f6b12408fa6db27b4c32c33b49003f1403",
+    "workers/aequilibrae_worker/model_activitysim_handoff.py": "570465a429cd2f941992b248dc0bb51b25cf5ab773acb8e79a0678e06f4db0ea",
+    "workers/aequilibrae_worker/model_handoff_files.py": "76e51c8b88571dcfe42d6fe6ea9f6e2fa10ce7ca3e632451ebba9a72b4059421",
+    "scripts/modeling/run_behavioral_demand_prototype.py": "0932aa534fb51e8fb182f87a39bdcdfc6d38903889742296ec26a1907730baf1"
+  },
+  "limits": [
+    "Real database-selected synthetic files, materialization and scaffold preflight in attempt directory",
+    "No native engine dispatch, concurrent revocation fence, full RLS matrix or scientific acceptance"
+  ]
+}
+

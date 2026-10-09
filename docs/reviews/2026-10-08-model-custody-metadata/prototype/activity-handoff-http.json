@@ -1,0 +1,113 @@
+{
+  "handoff_sha256": "570465a429cd2f941992b248dc0bb51b25cf5ab773acb8e79a0678e06f4db0ea",
+  "selector_sha256": "6fc02ba2e4e5ad9e0d8df8e1541d93e427ffa9347c1f6a5cc92d1b33f9d89ce6",
+  "worker_sha256": "d838268b6fbcdb3bc10466b1fa17529dae24c040c8659204f0dd8b7247bce5b0",
+  "controls": [
+    {
+      "control": "baseline",
+      "selected_declared_producer": true,
+      "fault_detected": false
+    },
+    {
+      "control": "harmless",
+      "selected_declared_producer": true,
+      "fault_detected": false
+    },
+    {
+      "control": "wrong-predecessor-name",
+      "selected_declared_producer": false,
+      "fault_detected": true
+    },
+    {
+      "control": "restored",
+      "selected_declared_producer": true,
+      "fault_detected": false
+    },
+    {
+      "control": "database-revoked-consumer",
+      "refused": true,
+      "writer_stopped": true
+    }
+  ],
+  "http_calls": [
+    {
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    }
+  ],
+  "native_tables_unchanged": 7,
+  "gateway_removed": true,
+  "limits": "Actual ActivitySim adapter, fresh admitted consumer, native completed producers and three later unrelated artifacts. The consumer attempt is failed by an explicit database command before the refused read; table snapshots exclude that declared mutation. No file reads, transfer, full dispatcher, RLS matrix, revocation fence or scientific acceptance."
+}

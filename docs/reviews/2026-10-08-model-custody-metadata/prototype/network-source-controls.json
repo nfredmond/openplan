@@ -1,0 +1,54 @@
+{
+  "source_sha256": "11429fcdcbc39c86fa4e4506f3edfbd120aeee6f9ed4dc0d4f0e79ded6ecafaa",
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "ignore-geometry",
+      "returncode": 1,
+      "expected_failure": "AssertionError",
+      "matched": true
+    },
+    {
+      "control": "duplicate-identities",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "noninteger-identities",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "empty-source",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "column-order",
+      "returncode": 1,
+      "expected_failure": "AssertionError",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Real synthetic SQLite tables. Does not establish the transformation from source records to the solver graph, source adequacy or scientific acceptance."
+}
