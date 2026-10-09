@@ -149,3 +149,16 @@ This is native database concurrency, not concurrent Node workers or HTTP transpo
 python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_replacement_overlap.py \
   /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
 ```
+
+## Ready completion experiment, October 9
+
+The [completion command](complete-prototype.sql) checks active prepared ownership and parsing status, compares the caller's expected manifest to that attempt's recorded batches, and reconciles actual route/stop counts with receipt totals. It requires a matching nonempty archive path, SHA-256 and byte count already stored on the version. It copies the explicit parser metadata fields, derives stored row counts itself, and writes ready status and a retained completion receipt atomically. A private transaction context permits the version update. Exact command replay returns the saved result even after ready; changed replay fails, and a new completion command cannot complete the terminal version again.
+
+The [rollback suite](verify_complete.py) passes eight controls: baseline, harmless comment, omitted manifest check, changed replay allowed, omitted count check, omitted archive check, authenticated execution granted, and restored behavior. Assertions cover a manifest with an omitted entry, mismatched archive metadata, an extra stored route inside a rolled-back corruption fixture, terminal replay, caller permissions, receipt count and context cleanup. The version becomes ready without becoming current or changing the feed pointer. [Results](completion-controls.json) retain all input SQL and assertion hashes. Every schema and fixture change rolls back.
+
+The archive is synthetic metadata in this test. Matching metadata is not proof that Storage has the object or that its bytes match the hash. The manifest is supplied by the trusted caller; this does not independently validate the parser's expected work or declared source counts. Parser warnings and schedule-derived distinctions remain explicit. Tract computation is unassessed in this experiment and its completion fields remain null. Populated tract computation, stored-object recovery, lifecycle admission/staging, completion over HTTP or after process loss, concurrent completion and human adoption remain open. No application version uses this prototype.
+
+```bash
+python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_complete.py \
+  /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
+```
