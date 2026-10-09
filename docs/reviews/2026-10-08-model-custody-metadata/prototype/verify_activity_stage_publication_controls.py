@@ -11,8 +11,13 @@ REPO=HERE.parents[3]
 output=Path(os.environ['OPENPLAN_STAGE_PUBLICATION_CONTROLS'])
 output.mkdir(mode=0o700,parents=True,exist_ok=False)
 faults={'drop-kpi':'Stage KPI inventory differs','drop-artifact':'Stage evidence registration differs','drop-terminal':'Managed terminal transaction did not complete run'}
+uncertainty=os.environ.get('OPENPLAN_STAGE_PUBLICATION_UNCERTAINTY')=='1'
+controls=('normal','harmless',*faults,'restored')
+if uncertainty:
+    faults={'lost-reply-bypass-stop':'Stopped writer accepted later terminal write'}
+    controls=('lost-reply','lost-reply-harmless',*faults,'lost-reply-restored')
 cases=[]
-for control in ('normal','harmless',*faults,'restored'):
+for control in controls:
     result=subprocess.run([sys.executable,'-B',str(HERE/'verify_activity_handoff_copy_http.py')],
         env={**os.environ,'OPENPLAN_STAGE_PUBLICATION_CONTROL':control,'OPENPLAN_MODEL_COMMAND_PROOF_OUTPUT':str(output/control)},
         text=True,capture_output=True,timeout=90)
@@ -28,5 +33,5 @@ report={'cases':cases,'worker_sha256':hashlib.sha256((REPO/'workers/activitysim_
     'limits':['Actual scaffold stage handler with native managed database commands','Storage byte service is synthetic; no real Storage acceptance','No normal dispatcher, native engine execution, concurrent revocation fence or scientific acceptance']}
 content=json.dumps(report,indent=2)+'\n'
 (output/'controls.json').write_text(content)
-(HERE/'activity-stage-publication-controls.json').write_text(content)
+(HERE/('activity-publication-uncertainty-controls.json' if uncertainty else 'activity-stage-publication-controls.json')).write_text(content)
 print(content)

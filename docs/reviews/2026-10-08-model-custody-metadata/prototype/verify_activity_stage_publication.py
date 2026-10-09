@@ -8,12 +8,12 @@ from unittest.mock import patch
 
 
 def verify_stage(worker, writer, run, stage, base, key, output, storage, sql, database, control):
-    assert control in ('normal', 'harmless', 'drop-kpi', 'drop-artifact', 'drop-terminal', 'restored')
+    assert control in ('normal', 'harmless', 'drop-kpi', 'drop-artifact', 'drop-terminal', 'restored', 'lost-reply', 'lost-reply-harmless', 'lost-reply-bypass-stop', 'lost-reply-restored')
     assert shutil.which('activitysim') is None, 'No implicit native CLI allowed'
     assert not any(value for name,value in os.environ.items() if name.startswith('ACTIVITYSIM_')), 'Proof requires unconfigured execution environment'
     corridor={'type':'Polygon','coordinates':[[[-121.71,38.54],[-121.69,38.54],[-121.69,38.56],[-121.71,38.56],[-121.71,38.54]]]}
     handler=worker.run_bundle_and_preflight_stage
-    if control=='harmless':
+    if control in ('harmless','lost-reply-harmless'):
         scope=dict(worker.__dict__)
         exec(compile(inspect.getsource(handler)+'\n# Harmless source comment.\n',worker.__file__,'exec'),scope)
         handler=scope[handler.__name__]
@@ -33,8 +33,11 @@ def verify_stage(worker, writer, run, stage, base, key, output, storage, sql, da
         return original_stage(identity,payload)
     with patch.object(worker,'sb_post_artifact',record_artifact), patch.object(worker,'sb_patch_stage',patch_stage), patch.object(worker,'SUPABASE_URL',base), patch.object(worker,'SUPABASE_KEY',key), patch.object(worker,'HEADERS',headers), patch.object(worker,'ACTIVITYSIM_WORK_DIR',str(output/'stage-work')), patch.object(worker,'sb_post_kpi',record_kpi):
         # The harmless compiled function needs the same operator settings and adapter.
-        if control=='harmless':
+        if control in ('harmless','lost-reply-harmless'):
             handler.__globals__.update({name:getattr(worker,name) for name in ('SUPABASE_URL','SUPABASE_KEY','HEADERS','ACTIVITYSIM_WORK_DIR','sb_post_kpi','sb_post_artifact','sb_patch_stage')})
+        if control.startswith('lost-reply'):
+            from verify_activity_publication_uncertainty import verify_lost_reply
+            return verify_lost_reply(worker,writer,handler,run,stage,corridor,base,key,output,sql,database,control)
         result=handler(run,{'id':run,'corridor_geojson':corridor},stage)
         artifacts=json.loads(sql(database,f"SELECT coalesce(jsonb_agg(to_jsonb(a)),'[]') FROM public.model_run_artifacts a WHERE stage_id='{stage}';"))
         kpis=json.loads(sql(database,f"SELECT coalesce(jsonb_agg(to_jsonb(k)),'[]') FROM public.model_run_kpis k WHERE run_id='{run}';"))

@@ -3696,3 +3696,31 @@ synthetic handler input; this campaign does not prove run-configuration reads.
 The earlier native container evidence remains a separate lifecycle test.
 Joined native execution, publication and recovery remain open before enabling
 normal managed dispatch.
+
+
+### Lost artifact reply during the actual handler
+
+The uncertainty campaign lets the native artifact RPC commit, discards its
+successful HTTP response and raises a synthetic transport timeout. The actual
+scaffold handler stops with one committed evidence artifact, no later KPIs and
+one pending command. An attempted success write is refused; the stage remains
+running rather than claiming completion.
+
+A separate `model_command_recovery.py` process replays the exact saved request.
+Its retained receipt equals the response observed before the simulated loss.
+Snapshots of seven native tables remain unchanged across recovery, and the
+journal has no pending command afterward. The original writer stays stopped.
+Recovery does not invoke the handler or authorize its continuation.
+
+Run `prototype/verify_activity_stage_publication_controls.py` with
+`OPENPLAN_STAGE_PUBLICATION_UNCERTAINTY=1` to select this campaign. Normal,
+harmless-comment and restored cases must pass. An in-memory fault bypasses the
+writer's stopped/pending-command guard; its later completion write reaches the
+database and fails the proof's terminal-refusal assertion. This fault is confined
+to its fresh synthetic database clone, and no production file is changed.
+
+The report is `prototype/activity-publication-uncertainty-controls.json`.
+This covers reply loss after the first artifact commit. It does not cover every
+progress, KPI or terminal boundary, process loss during native computation,
+real Storage recovery, normal dispatch or scientific acceptance. The earlier
+full-handler recovery gap is narrowed by this case, not closed in full.
