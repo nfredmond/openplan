@@ -6,6 +6,7 @@ establish local file custody, database consistency or scientific acceptance.
 import uuid
 
 PREDECESSORS = {
+    'ActivitySim Bundle & Preflight': 'Artifact Extraction',
     'Network Assignment': 'AequilibraE Setup',
     'Artifact Extraction': 'Network Assignment',
     'ActivitySim Network Assignment': 'Network Assignment',
@@ -13,7 +14,7 @@ PREDECESSORS = {
 
 
 def select(context, stages, artifacts, artifact_type):
-    if artifact_type not in {'model_predecessor_state', 'model_package_inputs', 'model_project_inputs', 'model_assignment_outputs'}:
+    if artifact_type not in {'model_predecessor_state', 'model_package_inputs', 'model_project_inputs', 'model_assignment_outputs', 'skim_matrix', 'zone_attributes', 'network_setup_summary'}:
         raise ValueError('Unsupported predecessor input kind')
     if not isinstance(stages, list) or not isinstance(artifacts, list):
         raise ValueError('Predecessor read must return row lists')
@@ -24,6 +25,9 @@ def select(context, stages, artifacts, artifact_type):
     if (consumer.get('run_id') != context.run_id or consumer.get('status') != 'running'
             or consumer.get('attempt_managed') is not True or consumer.get('active_attempt_id') != context.attempt_id):
         raise ValueError('Consumer stage does not confirm this managed attempt')
+    screening = {'skim_matrix', 'zone_attributes', 'network_setup_summary'}
+    if (consumer.get('stage_name') == 'ActivitySim Bundle & Preflight') != (artifact_type in screening):
+        raise ValueError('Artifact kind differs from consumer handoff')
     expected_name = PREDECESSORS.get(consumer.get('stage_name'))
     if expected_name is None:
         raise ValueError('Consumer has no declared predecessor handoff')

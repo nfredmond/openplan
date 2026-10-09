@@ -349,6 +349,15 @@ def sb_get_run(run_id: str) -> dict:
 
 
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        from model_activitysim_handoff import read_screening_artifacts
+        try:
+            return read_screening_artifacts(writer, run_id)
+        except Exception as error:
+            writer.stopped = True
+            raise WorkerStateReadUnconfirmed("Managed screening handoff requires reconciliation; no legacy fallback") from error
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
         "&select=id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,model_run_stages!inner(id,run_id,status,attempt_managed,active_attempt_id)"

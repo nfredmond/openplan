@@ -3548,3 +3548,26 @@ This is a read-time ownership check, not a lease or a live RLS/dispatch result.
 Normal managed dispatch is still disabled. Artifact reads, execution integration,
 publication and terminal-state handling require their complete joined evidence
 before activation. Scientific and browser acceptance remain separate.
+
+
+### ActivitySim reads its declared screening producer
+
+A bound ActivitySim consumer now reads artifacts through its attempt's endpoint,
+credentials and run identity. The shared predecessor selector declares Artifact
+Extraction as the producer of `skim_matrix`, `zone_attributes` and
+`network_setup_summary`, matching the existing extraction publisher. Selection
+requires an earlier, completed managed producer and its active attempt. Other
+artifact kinds cannot use this consumer path. The adapter rechecks current
+consumer ownership after selection, closes response objects and stops on
+uncertainty without a legacy fallback.
+
+The focused shared handoff, predecessor and run-read suites pass, as do all 106
+ActivitySim tests. Six targeted faults fail for omitted query fields, omitted
+final ownership, ignored producer attempt, wrong declared producer, foreign
+artifact kind and adapter bypass. Harmless and restored controls pass. Evidence
+is in `prototype/activity-handoff-controls.json` and its executable verifier.
+
+HTTP remains mocked with exact projection assertions. Separate database reads
+are not a lease or transactionally consistent snapshot. File-copy custody checks
+and fenced publication still apply. Normal managed dispatch, live database
+integration and scientific acceptance remain open.

@@ -1,0 +1,53 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "omit-projection",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "omit-final-ownership",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "ignore-producer-attempt",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "wrong-producer",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "allow-foreign-kind",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "bypass-adapter",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "sources": {
+    "workers/aequilibrae_worker/model_activitysim_handoff.py": "570465a429cd2f941992b248dc0bb51b25cf5ab773acb8e79a0678e06f4db0ea",
+    "workers/aequilibrae_worker/model_predecessor_inputs.py": "6fc02ba2e4e5ad9e0d8df8e1541d93e427ffa9347c1f6a5cc92d1b33f9d89ce6",
+    "workers/activitysim_worker/supabase_poll.py": "d838268b6fbcdb3bc10466b1fa17529dae24c040c8659204f0dd8b7247bce5b0"
+  },
+  "limits": [
+    "Mocked HTTP and exact query projections; no live database dispatch",
+    "Separate ownership and producer reads are snapshots, not a lease"
+  ]
+}
