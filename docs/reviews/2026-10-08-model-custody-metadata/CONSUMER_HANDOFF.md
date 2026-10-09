@@ -198,3 +198,12 @@ requirements. No application server or preview database was changed.
 
 The native TypeScript proof passes focused lint and the scoped runtime type
 check, now including that script and its imported production readers.
+
+## Source-publication prerequisite
+
+[The source-publication contract](SOURCE_PUBLICATION.md) records the next
+implementation boundary. Each retained synthetic method fixture has nine local
+files, but six named comparison dependencies do not resolve within that folder.
+Publishing a whole directory would not close the gap. An explicit dependency
+catalog must preserve preparation versus execution evidence and refuse unresolved
+roles before streamed publication and recovery can claim a complete archive.
