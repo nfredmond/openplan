@@ -356,9 +356,11 @@ describe("get_model_run_results", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("returns exact attempt records with workspace scope and no method selection", async () => {
-    const data = modelRunFixture();
     const records = Array.from({ length: 4 }, (_, i) => attemptInstrumentFixture(RUN_ID, WORKSPACE_ID, i));
-    data.model_attempt_instrument_custody = [...records, attemptInstrumentFixture(RUN_ID, OTHER_WORKSPACE_ID, 4)];
+    const data = {
+      ...modelRunFixture(),
+      model_attempt_instrument_custody: [...records, attemptInstrumentFixture(RUN_ID, OTHER_WORKSPACE_ID, 4)],
+    };
     const supabase = createFilteringSupabaseMock(data);
     const { tools } = buildTools(supabase);
     const result = await toolExecute(tools, "get_model_run_results")({ modelRunId: RUN_ID }, CALL_OPTIONS);
