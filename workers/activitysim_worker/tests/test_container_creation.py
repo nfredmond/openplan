@@ -83,3 +83,52 @@ class ContainerCreationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "directory changed"):
                 creation.record_created(self.plan.daemon_id, self.observed)
             self.assertFalse((self.records / "created.json").exists())
+
+    def test_replaced_live_plan_cannot_reserve_original_intent(self):
+        with ContainerCreation(self.records, self.plan, "a" * 64) as creation:
+            creation.plan = replace(self.plan, command=("unplanned",))
+            with self.assertRaisesRegex(ValueError, "live plan"):
+                creation.begin_create()
+        self.assertFalse((self.records / "create-requested.json").exists())
+
+    def test_replaced_live_plan_cannot_record_a_different_command(self):
+        with ContainerCreation(self.records, self.plan, "a" * 64) as creation:
+            creation.begin_create()
+            creation.plan = replace(self.plan, command=("unplanned",))
+            observed = {**self.observed, "Config": {**self.observed["Config"], "Cmd": ["unplanned"]}}
+            with self.assertRaisesRegex(ValueError, "live plan"):
+                creation.record_created(self.plan.daemon_id, observed)
+        self.assertFalse((self.records / "created.json").exists())
+
+    def test_bootstrap_requires_live_creation_and_unchanged_record(self):
+        fixture = fixtures.ContainerIdentityTests(); fixture.setUp()
+        observed = fixture.bootstrap()
+        with ContainerCreation(self.records, self.plan, "a" * 64) as creation:
+            with self.assertRaisesRegex(ValueError, "live verified creation"):
+                creation.observe_bootstrap(self.plan.daemon_id, observed)
+            creation.begin_create()
+            created = creation.record_created(self.plan.daemon_id, self.observed)
+            result = creation.observe_bootstrap(self.plan.daemon_id, observed)
+            self.assertEqual(result["policy_sha256"], created["policy_sha256"])
+            self.assertIs(result["start_authorized"], False)
+            self.assertEqual(result["bootstrap_pid"], 123)
+            creation.recorded = False
+            with self.assertRaisesRegex(ValueError, "live verified creation"):
+                creation.observe_bootstrap(self.plan.daemon_id, observed)
+            creation.recorded = True
+            path = self.records / "created.json"
+            original = path.read_bytes(); path.write_bytes(original + b" ")
+            with self.assertRaisesRegex(ValueError, "record changed"):
+                creation.observe_bootstrap(self.plan.daemon_id, observed)
+            path.write_bytes(original)
+            creation.plan = replace(self.plan, command=("unplanned",))
+            with self.assertRaisesRegex(ValueError, "live plan"):
+                creation.observe_bootstrap(self.plan.daemon_id, observed)
+
+    def test_bootstrap_cannot_substitute_another_created_id(self):
+        fixture = fixtures.ContainerIdentityTests(); fixture.setUp()
+        observed = fixture.bootstrap(); observed["Id"] = "4" * 64
+        with ContainerCreation(self.records, self.plan, "a" * 64) as creation:
+            creation.begin_create(); creation.record_created(self.plan.daemon_id, self.observed)
+            with self.assertRaisesRegex(ValueError, "created identity"):
+                creation.observe_bootstrap(self.plan.daemon_id, observed)

@@ -11,7 +11,7 @@ from pathlib import Path
 import re
 import sys
 
-from container_identity import ContainerPlan, verify_created_container
+from container_identity import ContainerPlan, verify_created_container, verify_bootstrap_container
 
 SHARED_WORKER = str(Path(__file__).resolve().parent.parent / "aequilibrae_worker")
 if SHARED_WORKER not in sys.path:
@@ -40,6 +40,7 @@ class ContainerCreation:
         self.plan = plan
         self.requested = False
         self.recorded = False
+        self.created_hash = None
         try:
             self.intent_hash = self._write("intent.json", {
                 "schema": "openplan.container-creation-intent.v1", "plan": asdict(plan),
@@ -74,13 +75,22 @@ class ContainerCreation:
         self._verify()
         return hashlib.sha256(content).hexdigest()
 
+    def verify_intent(self):
+        """Require the retained bytes and the live immutable plan to agree."""
+        self._verify()
+        intent, current_hash = read_record(self.directory, "intent.json")
+        if current_hash != self.intent_hash:
+            raise ValueError("Container creation intent changed")
+        if (not isinstance(self.plan, ContainerPlan)
+                or json.dumps(intent.get("plan"), sort_keys=True, allow_nan=False)
+                != json.dumps(asdict(self.plan), sort_keys=True, allow_nan=False)):
+            raise ValueError("Container live plan differs from retained intent")
+        return intent
+
     def begin_create(self):
         if self.requested:
             raise ValueError("Container create request already reserved; reconcile its result")
-        self._verify()
-        _, current_hash = read_record(self.directory, "intent.json")
-        if current_hash != self.intent_hash:
-            raise ValueError("Container creation intent changed")
+        self.verify_intent()
         self._write("create-requested.json", {"schema": "openplan.container-create-request.v1",
             "intent_sha256": self.intent_hash, "request_id": self.plan.request_id})
         self.requested = True
@@ -88,19 +98,30 @@ class ContainerCreation:
     def record_created(self, daemon_id: str, observed: dict):
         if not self.requested or self.recorded:
             raise ValueError("One reserved container create request required")
-        self._verify()
-        _, current_hash = read_record(self.directory, "intent.json")
-        if current_hash != self.intent_hash:
-            raise ValueError("Container creation intent changed")
+        self.verify_intent()
         request, _ = read_record(self.directory, "create-requested.json")
         if request != {"schema": "openplan.container-create-request.v1", "intent_sha256": self.intent_hash,
                        "request_id": self.plan.request_id}:
             raise ValueError("Container create reservation changed")
         identity = verify_created_container(self.plan, daemon_id, observed)
-        self._write("created.json", {"schema": "openplan.container-created-record.v1",
+        self.created_hash = self._write("created.json", {"schema": "openplan.container-created-record.v1",
             "intent_sha256": self.intent_hash, "identity": identity})
         self.recorded = True
         return identity
+
+    def observe_bootstrap(self, daemon_id: str, observed: dict):
+        """Bind a running observation to this live object's verified creation."""
+        if not self.recorded or self.created_hash is None:
+            raise ValueError("A live verified creation is required")
+        self.verify_intent()
+        record, digest = read_record(self.directory, "created.json")
+        if digest != self.created_hash or record.get("intent_sha256") != self.intent_hash:
+            raise ValueError("Verified creation record changed")
+        identity = record["identity"]
+        result = verify_bootstrap_container(self.plan, daemon_id, observed, identity["container_id"])
+        if result["policy_sha256"] != identity["policy_sha256"]:
+            raise ValueError("Bootstrap policy differs from verified creation")
+        return result
 
     def close(self):
         if self.directory is not None:

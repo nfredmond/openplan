@@ -397,3 +397,41 @@ runtime still requires a controller that retains creation/startup/exit records,
 delivers the real owner's descriptors, captures logs and reconciles failures
 with database attempt ownership. Native ActivitySim and broader scientific and
 human acceptance remain unproved by these synthetic cases.
+
+
+## Bind the live plan to retained intent and creation
+
+Two regression tests reproduced a gap in `ContainerCreation`: although the plan
+value is frozen, a caller could replace the object's plan reference. Reservation
+and receipt verification then accepted the replacement command while the saved
+intent still described the original command. Both tests failed before the fix
+with `ValueError not raised`. The failing output is retained privately with the
+live evidence, not treated as a passing check.
+
+`verify_intent` now compares the live plan's canonical JSON against the retained
+plan as well as verifying the exact intent-file hash. Reservation, receipt
+retention and bootstrap observation all call it. Replaced plans fail before
+reservation or verified receipt creation. The creation object also retains the
+exact created-record hash. Its new `observe_bootstrap` method requires this live
+verified creation and unchanged intent/receipt before checking the running
+container against the original full ID and policy. Saved records alone do not
+construct that object or authorize startup.
+
+The live prototype now reserves intent before its Docker CLI create request,
+retains the verified creation, and uses the same live creation object to verify
+the running bootstrap before descriptor delivery. All ten live cases pass.
+This experiment still creates/starts through the explicit local Docker CLI; it
+does not claim those commands use the adapter's frozen HTTP connection or that
+the complete production controller is connected.
+
+All 92 ActivitySim tests pass with live host tests enabled. Ten deliberate
+creation/receipt faults fail their named tests, with harmless/restored passes.
+The added controls cover replaced live plans, changed receipt bytes, missing
+live creation state and substituted bootstrap IDs. Reports are
+`prototype/live-intent-controls.json` and `prototype/live-intent-startup.json`.
+Private records and the failing-before log remain under
+`~/.local/state/openplan/intent-1008a/`.
+
+Production startup/exit logging, exact bootstrap-byte retention, native model
+interruption and database recovery remain open. This correction prepares their
+creation boundary without declaring those workflows complete.

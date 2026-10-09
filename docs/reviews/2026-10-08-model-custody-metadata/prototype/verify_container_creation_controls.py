@@ -10,7 +10,11 @@ cases=[('harmless',[],None),
  ('ignore-intent-change',[('if current_hash != self.intent_hash:','if False:')],'test_changed_intent_refuses_create_and_receipt'),
  ('ignore-directory-change',[('if (info.st_dev, info.st_ino) != self.identity:','if False:')],'test_replaced_directory_refuses_receipt'),
  ('accept-unverified-container',[('identity = verify_created_container(self.plan, daemon_id, observed)', 'identity = {"start_authorized": False}')],'test_wrong_container_is_not_retained_as_created'),
- ('invent-start-authority',[('self._write("created.json",','identity["start_authorized"] = True\n        self._write("created.json",')],'test_verified_creation_is_recorded_once_without_start_authority'),
+ ('invent-start-authority',[('        self.created_hash = self._write("created.json",','        identity["start_authorized"] = True\n        self.created_hash = self._write("created.json",')],'test_verified_creation_is_recorded_once_without_start_authority'),
+ ('replace-live-plan', [('!= json.dumps(asdict(self.plan), sort_keys=True, allow_nan=False)', '!= json.dumps(intent.get("plan"), sort_keys=True, allow_nan=False)')], 'test_replaced_live_plan_cannot_reserve_original_intent'),
+ ('ignore-creation-receipt', [('digest != self.created_hash', 'False')], 'test_bootstrap_requires_live_creation_and_unchanged_record'),
+ ('ignore-live-creation', [('if not self.recorded or self.created_hash is None:', 'if self.created_hash is None:')], 'test_bootstrap_requires_live_creation_and_unchanged_record'),
+ ('substitute-bootstrap-id', [('identity["container_id"]', 'observed["Id"]')], 'test_bootstrap_cannot_substitute_another_created_id'),
  ('restored',[],None)]
 records=[]
 try:
