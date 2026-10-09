@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-10-09T22:50:01.652Z",
+  "archive": {
+    "byteSize": 892312,
+    "checksumSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080"
+  },
+  "output": {
+    "byteSize": 495655,
+    "sha256": "cedab120e6a421ec0f10ceb7cda0ea1bf195942f465f8e73bb5c37435cd8e4fb",
+    "parsed": true
+  },
+  "routes": 14,
+  "stops": 287,
+  "trips": 4417,
+  "renewals": [
+    "2026-10-09T22:50:00.756Z",
+    "2026-10-09T22:50:00.811Z",
+    "2026-10-09T22:50:00.861Z",
+    "2026-10-09T22:50:00.912Z",
+    "2026-10-09T22:50:00.962Z",
+    "2026-10-09T22:50:01.012Z",
+    "2026-10-09T22:50:01.063Z",
+    "2026-10-09T22:50:01.113Z",
+    "2026-10-09T22:50:01.163Z",
+    "2026-10-09T22:50:01.214Z",
+    "2026-10-09T22:50:01.264Z",
+    "2026-10-09T22:50:01.289Z"
+  ],
+  "boundary": "Actual parser child and retained local bytes; renewal is a controlled callback, not a database lease. No import route, queue, Storage custody, publication or planner journey is exercised.",
+  "service": {
+    "name": "openplan-gtfs-parse-archive-20261009.service",
+    "invocation": "f49e00a73dac4f18b7ef0fa157084762",
+    "result": "success",
+    "elapsedSeconds": 1.119,
+    "journalMemoryPeak": "114.1M",
+    "memoryMaxBytes": 2147483648,
+    "swapMaxBytes": 0
+  }
+}
