@@ -5,7 +5,7 @@ import subprocess
 ROOT=Path(__file__).resolve().parents[3]
 source=ROOT/'openplan/src/lib/gtfs/persist.ts'
 original=source.read_text()
-cases=[('baseline',original,True),('harmless',original+'\n// Harmless receipt control.\n',True),('ignore-version-error',original.replace('recorded.error || writeMatchedNoRows(recorded)','writeMatchedNoRows(recorded)'),False),('ignore-feed-error',original.replace('!marked.error && !writeMatchedNoRows(marked)','!writeMatchedNoRows(marked)'),False),('restored',original,True)]
+cases=[('baseline',original,True),('harmless',original+'\n// Harmless receipt control.\n',True),('wrong-version',original.replace('p_version_id: params.versionId','p_version_id: "wrong-version"'),False),('false-success',original.replace('return { recorded: false, feedStatusChanged: false };','return { recorded: true, feedStatusChanged: false };'),False),('discard-confirmed-receipt',original.replace('return { recorded: data.recorded, feedStatusChanged: data.feedStatusChanged };','return { recorded: false, feedStatusChanged: false };'),False),('restored',original,True)]
 results=[]
 try:
  for name,text,expected in cases:

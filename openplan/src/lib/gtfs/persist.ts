@@ -39,12 +39,9 @@
  *      statements. That function also refuses to promote anything that is not
  *      `ready`.
  *
- * AND WHEN IT GOES WRONG: `failGtfsFeedVersion` writes a failure code, deletes
- * the derived rows by `feed_version_id`, and removes the uploaded object. The
- * rows are deleted rather than left because a half-written feed that is never
- * promoted is invisible to readers but still answers `count(*)` — and the next
- * refresh of the same feed would then be comparing its own counts against
- * garbage.
+ * On failure, a database transaction closes an unfinished version, removes its
+ * partial rows and records private-object cleanup. The scheduled sweep retries
+ * object removal. Ready versions and retained failure receipts are preserved.
  *
  * WHAT THIS MODULE REFUSES TO DECIDE. It never invents a value it was not
  * given. `median_headway_basis` and `peak_headway_is_lower_bound` are copied
@@ -982,76 +979,20 @@ export type FailGtfsFeedVersionParams = {
   storagePath?: string | null;
 };
 
-/**
- * Record a failed ingest and leave nothing half-written behind it.
- *
- * ORDER: derived rows first, then the object, then the status. The status is
- * last because it is the thing a surface reads — a row that says `failed` while
- * its derived rows are still there would invite the next refresh to compare
- * itself against them.
- */
+/** Close an unfinished version atomically; the scheduled sweep retries object removal. */
 export async function failGtfsFeedVersion(
   params: FailGtfsFeedVersionParams
 ): Promise<{ recorded: boolean; feedStatusChanged: boolean }> {
-  const { service, versionId } = params;
-
-  await deleteVersionRows(service, versionId);
-
-  if (params.storagePath) {
-    // Fire and forget, exactly as the Knowledge Base upload path does: a stray
-    // object in a private bucket is a housekeeping problem, and letting it
-    // prevent the failure from being RECORDED would turn a small mess into an
-    // ingest that never explains itself.
-    await service.storage
-      .from(GTFS_UPLOADS_BUCKET)
-      .remove([params.storagePath])
-      .catch(() => undefined);
+  const { data, error } = await params.service.rpc("close_failed_gtfs_version", {
+    p_version_id: params.versionId,
+    p_code: params.code,
+    p_detail: params.detail,
+    p_storage_path: params.storagePath ?? null,
+  });
+  if (error || !data || typeof data !== "object" || Array.isArray(data)
+    || typeof data.recorded !== "boolean" || typeof data.feedStatusChanged !== "boolean"
+    || (!data.recorded && data.feedStatusChanged)) {
+    return { recorded: false, feedStatusChanged: false };
   }
-
-  // `.select().maybeSingle()` so this can tell "recorded the failure" from
-  // "the version row was not there to record it on". The second case means the
-  // derived rows deleted above were orphans and nothing now explains the
-  // failure to anyone — worth knowing, and unknowable without asking.
-  const recorded = await service
-    .from("gtfs_feed_versions")
-    .update({
-      status: "failed",
-      failure_code: params.code,
-      failure_detail: params.detail,
-      // Zeroed so the next refresh cannot mistake a failed ingest's leftovers
-      // for a baseline to compare against.
-      route_service_level_rows: 0,
-      stop_service_level_rows: 0,
-      last_checked_at: new Date().toISOString(),
-    })
-    .eq("id", versionId)
-    .select("id")
-    .maybeSingle();
-
-  if (recorded.error || writeMatchedNoRows(recorded)) return { recorded: false, feedStatusChanged: false };
-
-  // Only when this feed has never had a working version. If one is current, the
-  // feed's status mirrors THAT version and must not be moved — a refresh that
-  // fails does not stop the feed in use from being ready, and overwriting the
-  // mirror here is exactly the disagreement
-  // `gtfs-feed-status-mirrors-its-current-version.test.ts` fails on.
-  if (params.feedId) {
-    const current = await service
-      .from("gtfs_feeds")
-      .select("id, current_version_id")
-      .eq("id", params.feedId)
-      .maybeSingle();
-    const feed = current.data as { current_version_id: string | null } | null;
-    if (!current.error && feed && !feed.current_version_id) {
-      const marked = await service
-        .from("gtfs_feeds")
-        .update({ status: "failed" })
-        .eq("id", params.feedId)
-        .select("id")
-        .maybeSingle();
-      return { recorded: true, feedStatusChanged: !marked.error && !writeMatchedNoRows(marked) };
-    }
-  }
-
-  return { recorded: true, feedStatusChanged: false };
+  return { recorded: data.recorded, feedStatusChanged: data.feedStatusChanged };
 }

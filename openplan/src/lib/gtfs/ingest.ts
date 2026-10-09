@@ -360,7 +360,7 @@ export function gtfsUploadObjectPath(
  * reaper's cleanup complete rather than best-effort.
  *
  * A missing or refused record stops the ingest before parsing. The failure
- * path removes the just-uploaded object rather than proceeding without custody.
+ * path queues removal of the just-uploaded object rather than proceeding without custody.
  */
 async function recordUploadedObject(
   service: SupabaseClient,
