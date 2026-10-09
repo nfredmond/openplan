@@ -954,7 +954,37 @@ STAGE_DISPATCH = {
 }
 
 
+def _process_admitted_stage(stage: dict, writer) -> None:
+    """Execute an already admitted attempt without legacy claims or parent writes."""
+    try:
+        writer.require_open()
+        if stage['id'] != writer.context.stage_id or stage['run_id'] != writer.context.run_id:
+            raise ValueError("Managed dispatch crosses invocation scope")
+        stage_name = stage['stage_name']
+        handler = STAGE_DISPATCH.get(stage_name)
+        if handler is None:
+            raise ValueError("Managed dispatch has no owned handler")
+        run = writer.read_run(stage['run_id'], expected_stage_name=stage_name)
+        if _WORKER_HEARTBEAT is not None:
+            _WORKER_HEARTBEAT.set_current_work(
+                {'runId': stage['run_id'], 'stageId': stage['id'], 'stageName': stage_name})
+        result = handler(stage['run_id'], run, stage['id'])
+        sb_patch_stage(stage['id'], {'status': 'succeeded', 'log_tail': result['log']})
+    except BaseException:
+        # The handler may have committed a command before losing its reply.
+        # Reconciliation owns the outcome; never infer a failed terminal write.
+        writer.stopped = True
+        raise
+    finally:
+        if _WORKER_HEARTBEAT is not None:
+            _WORKER_HEARTBEAT.set_current_work(None)
+
+
 def process_stage(stage: dict) -> None:
+    import model_attempt_writer
+    admitted = model_attempt_writer.current()
+    if admitted is not None:
+        return _process_admitted_stage(stage, admitted)
     stage_id = stage["id"]
     run_id = stage["run_id"]
     stage_name = stage["stage_name"]

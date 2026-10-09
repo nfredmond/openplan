@@ -44,7 +44,12 @@ def verify_stage(worker, writer, run, stage, base, key, output, storage, sql, da
         if control.startswith('lost-reply'):
             from verify_activity_publication_uncertainty import verify_lost_reply
             return verify_lost_reply(worker,writer,handler,run,stage,corridor,base,key,output,sql,database,control)
-        result=handler(run,{'id':run,'corridor_geojson':corridor},stage)
+        use_entry = os.environ.get('OPENPLAN_STAGE_USE_ENTRY') == '1'
+        if use_entry:
+            with patch.dict(worker.STAGE_DISPATCH, {worker.STAGE_BUNDLE_PREFLIGHT: handler}):
+                worker.process_stage({'id': stage, 'run_id': run, 'stage_name': worker.STAGE_BUNDLE_PREFLIGHT})
+        else:
+            result=handler(run,{'id':run,'corridor_geojson':corridor},stage)
         artifacts=json.loads(sql(database,f"SELECT coalesce(jsonb_agg(to_jsonb(a)),'[]') FROM public.model_run_artifacts a WHERE stage_id='{stage}';"))
         kpis=json.loads(sql(database,f"SELECT coalesce(jsonb_agg(to_jsonb(k)),'[]') FROM public.model_run_kpis k WHERE run_id='{run}';"))
         assert len(artifacts)==1 and artifacts[0]['artifact_type']=='evidence_packet', 'Stage evidence registration differs'
@@ -59,7 +64,8 @@ def verify_stage(worker, writer, run, stage, base, key, output, storage, sql, da
         assert all(row['attempt_id']==writer.context.attempt_id for row in kpis)
         mode=next(row for row in kpis if row['kpi_name']=='activitysim_runtime_mode')
         assert mode['value'] is None and mode['breakdown_json']['mode']=='preflight_only'
-        worker.sb_patch_stage(stage,{'status':'succeeded','log_tail':result['log']})
+        if not use_entry:
+            worker.sb_patch_stage(stage,{'status':'succeeded','log_tail':result['log']})
         state=json.loads(sql(database,f"SELECT jsonb_build_object('run',r.status,'stage',s.status) FROM public.model_runs r JOIN public.model_run_stages s ON s.run_id=r.id WHERE s.id='{stage}';"))
         assert state=={'run':'succeeded','stage':'succeeded'}, 'Managed terminal transaction did not complete run'
     return {'control':'actual-stage-publication','evidence_artifacts':1,'structural_kpis':4,'native_model_executed':False,'terminal_state':state,'storage_backend':'synthetic HTTP byte service'}

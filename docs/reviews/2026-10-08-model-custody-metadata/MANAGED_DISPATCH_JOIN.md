@@ -3964,3 +3964,46 @@ before output access. Restoring file rereads to either hash check fails its
 specific regression. The local Python 3.11 environment lacks Shapely, so its
 attempt did not execute the new suite; Python 3.11 verification remains assigned
 to the GitHub worker job, which installs that dependency.
+
+
+### ActivitySim entry accepts a fresh admitted attempt
+
+`process_stage` now recognizes an invocation-bound writer. It checks run and
+stage identity, reads the run through the ownership query with the expected
+stage name, and calls the existing handler. The query explicitly selects the
+stage name; an unrelated stage cannot select the ActivitySim handler through a
+caller-supplied label. Success uses the fenced stage command, which owns the
+parent transition. The admitted branch never takes a legacy claim, patches the
+parent, or runs the legacy completion check. Any uncertain or failed handler
+stops the writer and propagates the error for reconciliation. Heartbeat work is
+cleared on exit.
+
+This connects the actual entry function for an already admitted context. The
+poll loop does not yet create that context automatically. AequilibraE's prepared
+instrument and remaining lifecycle joins still prevent automatic enrollment.
+Existing unbound dispatch behavior is unchanged.
+
+The native campaign sets a synthetic corridor before claiming any stage, then
+invokes `process_stage` inside a fresh admission against each isolated clone.
+The real scaffold handler retains one evidence packet and four KPIs, and the
+managed terminal transaction completes both stage and parent. Normal, harmless
+and restored cases pass. Dropping the artifact, runtime KPI or terminal command
+fails the corresponding native assertion. The report is
+`prototype/activity-admitted-entry-controls.json`; private logs and clone
+metadata are in `activity-admitted-entry-20261009a` under the OpenPlan state
+folder. Its Storage HTTP service is synthetic and its model mode is preflight.
+
+Seven focused entry tests pass under Python 3.11. Eight targeted source faults are
+detected, with harmless and restored controls, recorded in
+`prototype/activity-entry-unit-controls.json`. All 110 ActivitySim worker tests
+pass with live host-scope opt-in, and eight existing managed run-read tests pass.
+The initial entry test reused a fixture that unnecessarily imported AequilibraE
+and required unavailable Shapely in the local Python 3.11 environment. The final
+fixture uses the real journal and injected receipts directly, imports only the
+ActivitySim worker, and passes in that environment. No engine is mocked into an
+execution claim. Worker CI now runs this focused entry suite.
+
+Native model dispatch through this entry, real Storage, interruption recovery
+through this entry, concurrent revocation fencing and scientific acceptance
+remain open. Earlier native handler and recovery campaigns retain their narrower
+scope; this checkpoint does not relabel them as poll-loop acceptance.

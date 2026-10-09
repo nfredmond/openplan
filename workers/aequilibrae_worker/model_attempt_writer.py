@@ -83,7 +83,7 @@ class AttemptWriter:
                 self.stopped = True
                 raise
 
-    def _read_state(self, *, include_run=False):
+    def _read_state(self, *, include_run=False, expected_stage_name=None):
         """Read the claimed stage's actual log before expanding partial patches."""
         get = self.get
         if get is None:
@@ -98,7 +98,7 @@ class AttemptWriter:
                 headers={'apikey': self.service_key, 'Authorization': 'Bearer ' + self.service_key},
                 params={'id': 'eq.' + ctx.stage_id, 'run_id': 'eq.' + ctx.run_id,
                         'model_runs.workspace_id': 'eq.' + ctx.workspace_id,
-                        'select': 'id,run_id,status,attempt_managed,active_attempt_id,log_tail,error_message,model_runs!inner(' + run_projection + ')'},
+                        'select': ('stage_name,' if expected_stage_name is not None else '') + 'id,run_id,status,attempt_managed,active_attempt_id,log_tail,error_message,model_runs!inner(' + run_projection + ')'},
                 timeout=(5, 30), allow_redirects=False)
         except Exception:
             raise client.OwnershipUnconfirmed('Managed stage read did not confirm current state') from None
@@ -107,6 +107,8 @@ class AttemptWriter:
             if not isinstance(rows, list) or len(rows) != 1:
                 raise ValueError('Missing unique stage')
             stage = rows[0]
+            if expected_stage_name is not None and stage.get('stage_name') != expected_stage_name:
+                raise ValueError('Claimed stage handler differs')
             run = stage['model_runs']
             if (stage['id'] != ctx.stage_id or stage['run_id'] != ctx.run_id
                     or stage['active_attempt_id'] != ctx.attempt_id or stage['attempt_managed'] is not True
@@ -127,13 +129,15 @@ class AttemptWriter:
         finally:
             response.close()
 
-    def read_run(self, run_id):
+    def read_run(self, run_id, *, expected_stage_name=None):
         """Read only the claimed run in the same query that checks stage ownership."""
         self.require_open()
         try:
             if run_id != self.context.run_id:
                 raise ValueError('Managed run read crosses invocation scope')
-            return self._read_state(include_run=True)
+            if expected_stage_name is not None and (not isinstance(expected_stage_name, str) or not expected_stage_name.strip()):
+                raise ValueError('Expected stage name must be nonempty')
+            return self._read_state(include_run=True, expected_stage_name=expected_stage_name)
         except BaseException:
             self.stopped = True
             raise

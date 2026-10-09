@@ -33,7 +33,12 @@ for control in controls:
     cases.append({'control':control,'returncode':result.returncode,'expected_behavior_observed':True})
 report={'boundary':boundary if uncertainty else None,'cases':cases,'worker_sha256':hashlib.sha256((REPO/'workers/activitysim_worker/supabase_poll.py').read_bytes()).hexdigest(),
     'limits':['Actual scaffold stage handler with native managed database commands','Storage byte service is synthetic; no real Storage acceptance','No normal dispatcher, native engine execution, concurrent revocation fence or scientific acceptance']}
+if os.environ.get('OPENPLAN_STAGE_USE_ENTRY') == '1':
+    report['entry'] = 'process_stage with a fresh admitted and bound writer'
+    report['limits'] = ['Actual ActivitySim process_stage entry and scaffold handler with native database commands',
+        'Storage byte service is synthetic; no real Storage acceptance',
+        'No automatic poll enrollment, native engine execution, concurrent revocation fence or scientific acceptance']
 content=json.dumps(report,indent=2)+'\n'
 (output/'controls.json').write_text(content)
-(HERE/('activity-publication-'+boundary+'-uncertainty-controls.json' if uncertainty else 'activity-stage-publication-controls.json')).write_text(content)
+(HERE/('activity-admitted-entry-controls.json' if os.environ.get('OPENPLAN_STAGE_USE_ENTRY')=='1' else 'activity-publication-'+boundary+'-uncertainty-controls.json' if uncertainty else 'activity-stage-publication-controls.json')).write_text(content)
 print(content)
