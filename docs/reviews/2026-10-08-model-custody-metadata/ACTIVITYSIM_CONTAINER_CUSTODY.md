@@ -548,3 +548,20 @@ the parent guard makes the retained-record regression fail with the expected
 missing refusal; restored code passes. See `prototype/pipeline-custody-controls.json`
 and its executable verifier. This verifies a synthetic filesystem boundary,
 not database recovery, native model execution or scientific acceptance.
+
+
+## Operator settings reach the behavioral pipeline
+
+The poller previously ignored host limits, container limits and the explicit
+supervision socket. It now reads those operator environment settings and sends
+them through the behavioral pipeline into the runtime. The pipeline CLI exposes
+the same five settings. Runtime validation still governs incompatible backends
+and incomplete limits; no job payload chooses this policy.
+
+All 106 worker tests pass with live host checks enabled, and five behavioral
+pipeline tests pass. Fifteen deliberate omissions, one per setting at the
+operator, pipeline CLI and runtime boundaries, fail the intended checks.
+Harmless and restored controls pass. The new tests build a synthetic bundle and
+stop at a mocked runtime boundary. They do not establish live database dispatch,
+managed attempt binding, native container execution or scientific acceptance.
+See `prototype/pipeline-policy-controls.json` and its executable verifier.

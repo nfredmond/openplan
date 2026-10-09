@@ -102,6 +102,11 @@ def parse_args() -> argparse.Namespace:
         "--stock-configs-dir",
         help="Explicit path to the installed prototype_mtc example, for the 'mtc' config package.",
     )
+    parser.add_argument("--host-memory-bytes", type=int, help="Explicit runtime supervision setting; see worker DEPLOY.md")
+    parser.add_argument("--host-tasks", type=int, help="Explicit runtime supervision setting; see worker DEPLOY.md")
+    parser.add_argument("--container-memory-bytes", type=int, help="Explicit runtime supervision setting; see worker DEPLOY.md")
+    parser.add_argument("--container-tasks", type=int, help="Explicit runtime supervision setting; see worker DEPLOY.md")
+    parser.add_argument("--container-supervision-socket", type=str, help="Explicit runtime supervision setting; see worker DEPLOY.md")
     return parser.parse_args()
 
 
@@ -261,6 +266,11 @@ def run_behavioral_demand_prototype(
     container_engine_cli: str | None = None,
     activitysim_container_cli_template: str | None = None,
     container_network_mode: str | None = "none",
+    host_memory_bytes: int | None = None,
+    host_tasks: int | None = None,
+    container_memory_bytes: int | None = None,
+    container_tasks: int | None = None,
+    container_supervision_socket: str | None = None,
     run_label: str | None = None,
     force: bool = False,
     population_source: str = "auto",
@@ -359,6 +369,11 @@ def run_behavioral_demand_prototype(
             container_engine_command=shlex.split(container_engine_cli) if container_engine_cli else None,
             container_template=activitysim_container_cli_template,
             container_network_mode=container_network_mode,
+            host_memory_bytes=host_memory_bytes,
+            host_tasks=host_tasks,
+            container_memory_bytes=container_memory_bytes,
+            container_tasks=container_tasks,
+            container_supervision_socket=container_supervision_socket,
             run_label=run_label,
             force=False,
         )
@@ -498,6 +513,11 @@ def main() -> int:
         container_engine_cli=args.container_engine_cli,
         activitysim_container_cli_template=args.activitysim_container_cli_template,
         container_network_mode=args.container_network_mode,
+        host_memory_bytes=args.host_memory_bytes,
+        host_tasks=args.host_tasks,
+        container_memory_bytes=args.container_memory_bytes,
+        container_tasks=args.container_tasks,
+        container_supervision_socket=args.container_supervision_socket,
         run_label=args.run_label,
         force=args.force,
         population_source=args.population,

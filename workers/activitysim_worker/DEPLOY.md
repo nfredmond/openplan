@@ -103,6 +103,12 @@ Podman. The HTTP operator can set `ACTIVITYSIM_CONTAINER_SUPERVISION_SOCKET`,
 `ACTIVITYSIM_CONTAINER_MEMORY_BYTES` and `ACTIVITYSIM_CONTAINER_TASKS`; clients
 cannot override them in JSON.
 
+The database poller also reads these operator variables and forwards them through
+the behavioral pipeline. Host execution uses `ACTIVITYSIM_HOST_MEMORY_BYTES` and
+`ACTIVITYSIM_HOST_TASKS`. The standalone pipeline accepts matching CLI options.
+Configuration-forwarding tests cover these paths; live database-dispatched
+supervision and managed attempt binding remain unverified.
+
 Custody lives in a sibling `<runtime-directory>.container-custody` directory
 outside the model's writable mounts. Keep it with the runtime output for recovery.
 The controller retains intent, creation, bootstrap identity, command log hashes

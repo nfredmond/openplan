@@ -106,6 +106,11 @@ def _activitysim_exec_config() -> dict:
         "container_engine_cli": os.getenv("ACTIVITYSIM_CONTAINER_ENGINE") or None,
         "activitysim_container_cli_template": os.getenv("ACTIVITYSIM_CONTAINER_CLI_TEMPLATE") or None,
         "container_network_mode": os.getenv("ACTIVITYSIM_CONTAINER_NETWORK_MODE", "none"),
+        "host_memory_bytes": int(os.environ["ACTIVITYSIM_HOST_MEMORY_BYTES"]) if os.getenv("ACTIVITYSIM_HOST_MEMORY_BYTES") else None,
+        "host_tasks": int(os.environ["ACTIVITYSIM_HOST_TASKS"]) if os.getenv("ACTIVITYSIM_HOST_TASKS") else None,
+        "container_memory_bytes": int(os.environ["ACTIVITYSIM_CONTAINER_MEMORY_BYTES"]) if os.getenv("ACTIVITYSIM_CONTAINER_MEMORY_BYTES") else None,
+        "container_tasks": int(os.environ["ACTIVITYSIM_CONTAINER_TASKS"]) if os.getenv("ACTIVITYSIM_CONTAINER_TASKS") else None,
+        "container_supervision_socket": os.getenv("ACTIVITYSIM_CONTAINER_SUPERVISION_SOCKET") or None,
     }
 
 

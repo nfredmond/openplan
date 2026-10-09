@@ -1,0 +1,96 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "runtime-host_memory_bytes",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "cli-host_memory_bytes",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "operator-host_memory_bytes",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "runtime-host_tasks",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "cli-host_tasks",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "operator-host_tasks",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "runtime-container_memory_bytes",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "cli-container_memory_bytes",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "operator-container_memory_bytes",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "runtime-container_tasks",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "cli-container_tasks",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "operator-container_tasks",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "runtime-container_supervision_socket",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "cli-container_supervision_socket",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "operator-container_supervision_socket",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "sources": {
+    "scripts/modeling/run_behavioral_demand_prototype.py": "0932aa534fb51e8fb182f87a39bdcdfc6d38903889742296ec26a1907730baf1",
+    "workers/activitysim_worker/supabase_poll.py": "34db4c923abb1256d7f4ead279cb5bf03fa10cb38218d26a5177c47791d76ab0"
+  },
+  "limits": [
+    "Configuration forwarding with a mocked runtime boundary; no live database or model execution"
+  ]
+}
