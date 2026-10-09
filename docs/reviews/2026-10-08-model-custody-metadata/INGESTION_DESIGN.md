@@ -207,3 +207,23 @@ that structural sources, observation matching, population, network and the
 comparison basis describe the same prepared case. Hash equality and a run label
 do not establish those scientific relationships or independent timing. Normal
 managed dispatch, native Storage and the remaining acceptance work stay open.
+
+
+### Focused CI import dependency correction
+
+GitHub run `37904285529` at `ed8572fe8` failed when the new structural-wrapper
+test imported `main.py`: the focused workflow did not install pandas. The local
+AequilibraE environment already had it, so the earlier local pass did not cover
+the workflow's dependency boundary.
+
+A new isolated Python 3.11 environment with the original focused dependencies
+reproduced `ModuleNotFoundError: No module named 'pandas'`. The workflow now adds
+pandas and `numpy<2.1`, matching the main worker CI job's lightweight dependency
+setup. The existing engine-import test boundary remains in place; no numerical
+engine is installed or claimed tested by this correction.
+
+After that dependency change, all commands in the focused workflow pass locally,
+including its science mutation runner. The commands ran serially in a user scope
+with MemoryMax 2 GiB, MemorySwapMax 0 and TasksMax 128. The full log is retained
+privately as `/tmp/openplan-focused-ci-full.log`. Tests and refusal criteria were
+not weakened. GitHub verification of the new commit remains a separate check.

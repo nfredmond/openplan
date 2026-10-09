@@ -15,7 +15,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install flask requests python-dotenv shapely
+      # Wrapper tests import the worker, matching the lightweight worker CI dependencies.
+      - run: pip install flask requests python-dotenv shapely "numpy<2.1" pandas
       - name: HTTP, runtime, process-tree and directional regressions
         run: |
           python -B workers/activitysim_worker/test_http_security.py
