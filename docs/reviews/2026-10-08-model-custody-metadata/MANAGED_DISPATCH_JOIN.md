@@ -4112,3 +4112,35 @@ rather than a general scientific diagnosis. General source, geography, network,
 population and observation preparation, immutable Storage, the actual scientific
 worker call site and scientific acceptance remain unfinished. The legacy v4
 persistence path must not be redirected to this fixture or relabeled v5.
+
+
+### Verify supplied sources before building a validation bundle
+
+`build_input_bundle` previously copied `source_artifacts` into its readiness
+manifest without reading those files. It now calls `verified_source_artifacts`
+before constructing the bundle. Each supplied record must carry a nonempty
+path, lowercase SHA-256 and nonnegative integer byte size. The referenced file
+must exist and match both hash and size. Relative paths use the existing
+`relative_to` root; explicit absolute references remain supported. Verified
+records are copied so later changes to a caller's path/hash/size fields do not
+change the returned bundle.
+
+The change verifies supplied records, not source coverage. Empty source lists
+remain empty. It does not turn unavailable evidence into a zero observation or
+a passing scientific result. Existing source selection and package/match audit
+checks remain in place; no historical study is rewritten or reassessed.
+
+Six focused tests use the actual bundle builder with synthetic retained files.
+They cover valid and empty lists, relative and absolute paths, changed bytes,
+wrong sizes, missing files, directory references, malformed collections and
+malformed records. Eight targeted faults are detected, including bypassing the
+builder call, dropping hash or size checks, silently skipping invalid sources,
+and retaining a caller-mutable record. Harmless and restored controls pass.
+The report is `prototype/source-record-controls.json`. Existing validation
+instrument and three directional-refusal tests also pass. Worker CI includes
+the new source-record suite.
+
+This is retention verification, not source quality or observation-lineage
+validation. It does not fence concurrent filesystem replacement or prove that
+a caller froze its instrument independently of model output. General prepared
+worker inputs and scientific acceptance remain open.

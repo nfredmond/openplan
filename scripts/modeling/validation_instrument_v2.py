@@ -656,6 +656,39 @@ def validate_match_audit(
     return audit
 
 
+def verified_source_artifacts(
+    records: Sequence[Mapping[str, Any]], *, relative_to: Path | None = None,
+) -> list[dict[str, Any]]:
+    """Check supplied source bytes before freezing their records into a bundle.
+
+    This verifies retention, not source quality or observation lineage. An empty
+    list remains empty; it does not establish complete source coverage.
+    """
+    if not isinstance(records, Sequence) or isinstance(records, (str, bytes)):
+        raise InstrumentV2Error("Source artifacts must be a sequence of records")
+    verified = []
+    for record in records:
+        if not isinstance(record, Mapping):
+            raise InstrumentV2Error("Source artifact must be a record")
+        label, expected_hash, expected_size = (record.get(key) for key in ('path', 'sha256', 'bytes'))
+        if (not isinstance(label, str) or not label.strip()
+                or not isinstance(expected_hash, str) or len(expected_hash) != 64
+                or any(char not in '0123456789abcdef' for char in expected_hash)
+                or type(expected_size) is not int or expected_size < 0):
+            raise InstrumentV2Error("Source artifact requires an exact path, hash and byte size")
+        path = Path(label)
+        if not path.is_absolute() and relative_to is not None:
+            path = relative_to / path
+        if not path.is_file():
+            raise InstrumentV2Error("Source artifact is unavailable")
+        actual_hash = sha256_file(path)
+        actual_size = path.stat().st_size
+        if actual_hash != expected_hash or actual_size != expected_size:
+            raise InstrumentV2Error("Source artifact bytes differ from retained record")
+        verified.append(dict(record))
+    return verified
+
+
 def build_input_bundle(
     *,
     study_id: str,
@@ -669,6 +702,7 @@ def build_input_bundle(
     created_at: str | None = None,
     relative_to: Path | None = None,
 ) -> dict[str, Any]:
+    sources = verified_source_artifacts(source_artifacts, relative_to=relative_to)
     audit = validate_match_audit(match_audit_path, network_path, observation_package_path, registry_path)
     if audit.get("model_output_bytes_read") is not False:
         raise InstrumentV2Error("Input bundle was not frozen before output reveal")
@@ -685,6 +719,6 @@ def build_input_bundle(
             "observation_package": artifact_record(observation_package_path, relative_to=relative_to),
             "pre_volume_match_audit": artifact_record(match_audit_path, relative_to=relative_to),
             "assignment_profile": artifact_record(assignment_profile_path, relative_to=relative_to),
-            "sources": list(source_artifacts),
+            "sources": sources,
         },
     }

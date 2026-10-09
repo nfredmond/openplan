@@ -1,0 +1,59 @@
+{
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "bypass-builder-check",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "ignore-hash",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "ignore-size",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "skip-unavailable",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "skip-malformed",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "skip-nonrecord",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "accept-nonsequence",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "retain-mutable-record",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "source_sha256": "375b46c89024b32ad72f590ee32c9fe8dfd9f04aaaf2ad3c660e4ddc66d35a77",
+  "limits": [
+    "Synthetic retained files through the real bundle builder",
+    "No source quality, observation lineage, filesystem race, independent freezing or scientific acceptance proof"
+  ]
+}
