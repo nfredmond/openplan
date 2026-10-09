@@ -9,7 +9,7 @@ sys.path.insert(0,str(WORKER))
 from aequilibrae import Project
 from shapely.geometry import Point,LineString
 from model_engine_scope import project_scope
-from model_engine_process import EngineProcess
+from model_engine_process import EngineProcess,EngineStillRunning
 import model_project_inputs,model_package_inputs,model_attempt_writer as managed
 import model_command_journal as journal
 from test_project_working_copy import ProjectWorkingCopyTests
@@ -103,6 +103,16 @@ def main():
                         raise BrokenPipeError('Synthetic lost acknowledgement during native iteration')
                     return send(payload)
                 handle.progress.send=lose_ack
+            if getattr(fixture,'cancel_on_iteration',False) and not getattr(fixture,'omit_cancellation',False):
+                class NativeCancellationRequested(RuntimeError):pass
+                send=handle.progress.send
+                def cancel_before_ack(payload):
+                    if 'Assignment iteration' in (writer.state or {}).get('log_tail',''):
+                        fixture.before_native_cancel()
+                        handle.cancel()
+                        raise NativeCancellationRequested('Owned native iteration cancellation')
+                    return send(payload)
+                handle.progress.send=cancel_before_ack
             deadline=time.monotonic()+90
             while handle.process.poll() is None:
                 if time.monotonic()>deadline:raise RuntimeError('Native assignment observation deadline exceeded')
@@ -112,10 +122,28 @@ def main():
                 try:handle.progress.serve_one()
                 except Exception as error:
                     parent_failure=type(error).__name__
-                    if control not in ('lost-progress','lost-response','swallow-progress-fault'):raise
+                    if control not in ('lost-progress','lost-response','swallow-progress-fault') and not getattr(fixture,'cancel_on_iteration',False):raise
                     break
             code=handle.process.wait(timeout=15)
         (output/'child.log').write_text((handle.directory/'engine.log').read_text())
+        if getattr(fixture,'cancel_on_iteration',False):
+            assert code!=0 and writer.stopped and parent_failure=='NativeCancellationRequested','Native cancellation did not stop engine'
+            assert not (root/'assignment-result.json').exists() and not (root/'run_output/link_volumes.csv').exists(),'Native cancellation published final outputs'
+            deadline=time.monotonic()+5
+            while True:
+                try:cancelled=handle.confirm_cancelled();break
+                except EngineStillRunning:
+                    if time.monotonic()>deadline:raise
+                    time.sleep(.02)
+            assert cancelled['termination_observed'] and cancelled['execution_ready'] is False
+            assert not journal.pending(fixture.directory,writer.context.destination)
+            database=fixture.after_native_cancel()
+            report={'control':'cancel-progress','live_parent_transport':getattr(fixture,'live_transport',False),
+                    'child_exit_code':code,'cancellation':cancelled,'database_observation':database,'final_outputs_absent':True,
+                    'worker_sha256':hashlib.sha256((WORKER/'main.py').read_bytes()).hexdigest(),
+                    'limits':'Forced native cancellation at a confirmed iteration before child acknowledgement. Partial files are not authorized for reuse. No database cancellation decision, recovery, UI workflow or scientific acceptance.'}
+            content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/'native-bound-assignment-cancel-progress.json').write_text(content)
+            print(content);return
         if control in ('lost-progress','lost-response','swallow-progress-fault'):
             assert code!=0 and writer.stopped and parent_failure,'Native interruption did not stop both sides'
             failure=json.loads((root/'assignment-failure.json').read_text())

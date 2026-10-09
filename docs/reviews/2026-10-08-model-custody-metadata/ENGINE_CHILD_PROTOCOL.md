@@ -260,3 +260,14 @@ native-solver cancellation, fresh-process reconciliation of a lost cancellation
 receipt, parent-loss handling, database cancellation decisions, UI cancellation
 and normal dispatch remain open. Permission or identity failure does not fall
 back to killing a process group or an unverified unit.
+
+## Native cancellation join, October 8
+
+The full native assignment now calls local scope cancellation at a confirmed
+iteration before sending its acknowledgement to the child. The installed SQL
+state remains identical while the child terminates, the scope empties and final
+outputs remain absent. The six controls in
+`prototype/native-cancellation-controls.json` include an omitted-cancellation
+fault and normal-assignment/receipt-replay regressions. This proves forced
+interruption of the small synthetic native case, not graceful checkpointing,
+reusable partial files, restart, UI cancellation or a database terminal decision.

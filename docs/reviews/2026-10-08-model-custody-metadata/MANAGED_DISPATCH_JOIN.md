@@ -3091,3 +3091,33 @@ all signaled processes belong to disposable test scopes.
 This adds local cancellation machinery, not the full cancellation workflow.
 Native-solver interruption, lost-receipt reconciliation, parent-loss recovery,
 database status decisions, UI behavior and normal dispatch remain unverified.
+
+## Native solver cancellation with installed SQL, October 8
+
+The full synthetic assignment now exercises the production cancellation helper
+while the native solver waits for acknowledgement of a confirmed iteration.
+The parent snapshots the installed database state, retains cancellation intent,
+signals the verified owned scope and observes termination. The writer stays
+stopped. The final assignment result and `link_volumes.csv` do not exist, and the
+scope is empty. No pending database command remains because the iteration write
+was confirmed before cancellation.
+
+Complete run, stage, attempt, artifact and KPI rows and the execution-start count
+remain unchanged from the pre-cancellation snapshot. There is one attempt and
+one execution start. The stage remains running; local termination evidence does
+not substitute for a database cancellation decision or success publication.
+Partial files are not authorized for reuse, and SIGKILL provides no graceful
+native checkpoint claim.
+
+Six controls pass: native cancellation, harmless cancellation, omitted
+cancellation, restored cancellation, normal assignment and committed-reply
+recovery. Omitting cancellation lets the native computation finish but fails
+`Native cancellation did not stop engine`. Normal assignment still converges,
+and receipt recovery still sends once then uses its retained receipt. See
+`prototype/native-cancellation-controls.json` for all six isolated databases,
+source hashes and private evidence locations.
+
+This closes the preceding missing native-solver cancellation test. Fresh-process
+cancellation reconciliation, parent-loss recovery, database/UI cancellation
+semantics, completed output publication, scientific acceptance and normal
+dispatch remain open. The preview database and holdouts are unchanged.

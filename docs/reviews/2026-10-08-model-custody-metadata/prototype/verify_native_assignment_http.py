@@ -14,7 +14,7 @@ if source['container']!='supabase_db_openplan-restore-target-2026091050' or not 
 output=Path(os.environ['OPENPLAN_NATIVE_ASSIGNMENT_HTTP_OUTPUT']).absolute()
 output.mkdir(mode=0o700,parents=True,exist_ok=False)
 control=os.environ.get('OPENPLAN_NATIVE_ASSIGNMENT_HTTP_CONTROL','baseline')
-if control not in ('baseline','harmless','omit-geometry-registration','lost-progress','lost-progress-harmless','omit-disconnect'):raise ValueError('Unknown native HTTP control')
+if control not in ('baseline','harmless','omit-geometry-registration','lost-progress','lost-progress-harmless','omit-disconnect','cancel-progress','cancel-progress-harmless','omit-cancellation'):raise ValueError('Unknown native HTTP control')
 def sql(database,statement):
     result=subprocess.run(['docker','exec','-i',source['container'],'psql','-X','-qAt','-U','postgres','-d',database,'-v','ON_ERROR_STOP=1'],input=statement,text=True,capture_output=True,timeout=30)
     if result.returncode:raise RuntimeError(result.stderr)
@@ -60,6 +60,24 @@ with gateway('public',database=database) as connection:
     class LiveFixture:
         live_transport=True
         handles_progress_loss=True
+        cancel_on_iteration=control in ('cancel-progress','cancel-progress-harmless','omit-cancellation')
+        omit_cancellation=control=='omit-cancellation'
+        def native_cancel_state(self):
+            return sql(database,f"""SELECT jsonb_build_object(
+'parent',(SELECT to_jsonb(r) FROM public.model_runs r WHERE id='{run}'),
+'stage',(SELECT to_jsonb(s) FROM public.model_run_stages s WHERE id='{stage}'),
+'attempts',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_stage_attempts a WHERE run_id='{run}'),
+'starts',(SELECT count(*) FROM public.model_stage_execution_starts WHERE run_id='{run}'),
+'artifacts',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM public.model_run_artifacts a WHERE run_id='{run}'),
+'kpis',(SELECT coalesce(jsonb_agg(to_jsonb(k) ORDER BY id),'[]'::jsonb) FROM public.model_run_kpis k WHERE run_id='{run}'));""")
+        def before_native_cancel(self):
+            self.before_cancel=self.native_cancel_state()
+            state=json.loads(self.before_cancel)
+            assert state['stage']['status']=='running' and 'Assignment iteration' in state['stage']['log_tail']
+            assert len(state['attempts'])==1 and state['starts']==1
+        def after_native_cancel(self):
+            assert self.native_cancel_state()==self.before_cancel,'Native cancellation changed database state'
+            return {'database_state_unchanged':True,'one_attempt_and_execution_start':True,'stage_status':'running'}
         def setUp(self):
             self.directory=output/'journal';self.get=requests.get
             self.artifact={name:str(uuid.uuid4()) for name in ('id','stage_id','attempt_id')}
@@ -112,7 +130,7 @@ with gateway('public',database=database) as connection:
         native.ProjectWorkingCopyTests=LiveFixture
         os.environ['OPENPLAN_BOUND_ASSIGNMENT_OUTPUT']=str(output/'native')
         os.environ['OPENPLAN_BOUND_ASSIGNMENT_CONTROL']='lost-progress' if lost_control else ('harmless' if control=='harmless' else 'baseline')
-        if control=='lost-progress-harmless':native.CHILD+='\n# Harmless native child comment.\n'
+        if control in ('lost-progress-harmless','cancel-progress-harmless'):native.CHILD+='\n# Harmless native child comment.\n'
         native.main()
         result=json.loads((output/'native/result.json').read_text())
         assert result['live_parent_transport'] is True
@@ -121,7 +139,7 @@ with gateway('public',database=database) as connection:
         artifacts=json.loads(sql(database,f"SELECT coalesce(json_agg(artifact_type ORDER BY artifact_type),'[]') FROM public.model_run_artifacts WHERE run_id='{run}';"))
         assert set(artifacts)=={'model_project_working_copy','model_package_working_copy','model_count_inputs','model_transit_inputs','model_assignment_geometry'},'Installed input registration differs'
         assert all(call['status']==200 for call in calls),calls
-        report={'control':control,'database':database,'run_id':run,'stage_id':stage,'native_converged':result.get('convergence',{}).get('converged'),'modeled_transit':result.get('mode_split',{}).get('transit_status'),'replay':result.get('replay'),'final_outputs_absent':result.get('final_outputs_absent'),
+        report={'control':control,'database':database,'run_id':run,'stage_id':stage,'native_converged':result.get('convergence',{}).get('converged'),'modeled_transit':result.get('mode_split',{}).get('transit_status'),'replay':result.get('replay'),'final_outputs_absent':result.get('final_outputs_absent'),'cancellation':result.get('cancellation'),'database_observation':result.get('database_observation'),
                 'registered_artifacts':artifacts,'http_calls':calls,'stage_remains_running':True,'worker_sha256':result['worker_sha256'],
                 'limits':'Full small native assignment with live isolated PostgREST and installed command schema. Synthetic predecessor inventories directly constructed. Lost-commit replay is recorded when selected. No final publication, model restart, scientific acceptance or normal dispatcher activation.'}
         content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(native.ROOT/('native-assignment-http-'+control+'.json')).write_text(content);print(content)

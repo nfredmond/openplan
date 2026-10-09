@@ -7,7 +7,7 @@ from model_engine_supervision import ScopeLimits,ScopeStillPopulated
 ROOT=Path(__file__).resolve().parent
 output=Path(os.environ['OPENPLAN_SCOPED_HTTP_OUTPUT']).absolute();output.mkdir(mode=0o700,parents=True,exist_ok=False)
 control=os.environ.get('OPENPLAN_SCOPED_HTTP_CONTROL','baseline')
-if control not in ('baseline','harmless','lost-progress','lost-progress-harmless','omit-scope'):raise ValueError('Unknown scoped HTTP control')
+if control not in ('baseline','harmless','lost-progress','lost-progress-harmless','omit-scope','cancel-progress','cancel-progress-harmless','omit-cancellation'):raise ValueError('Unknown scoped HTTP control')
 handles=[]
 class ScopedHttpEngine(EngineProcess):
     def __init__(self,*args,**kwargs):
@@ -44,10 +44,13 @@ assert scope['observed_scope_empty'] is True
 if control.startswith('lost-progress'):
     assert result['replay']['database_state_unchanged'] and result['replay']['http_calls_per_recovery']==[1,0]
     assert result['final_outputs_absent'] and handle.writer.stopped
+elif control.startswith('cancel-progress'):
+    assert result['cancellation']['termination_observed'] and result['database_observation']['database_state_unchanged']
+    assert result['final_outputs_absent'] and handle.writer.stopped
 else:
     assert result['native_converged'] and result['modeled_transit']=='modeled'
 assert result['stage_remains_running']
 report={'control':control,'scope_start':started,'scope_empty_observation':scope,'native_http':result,
         'source_sha256':{str(path.relative_to(native.WORKER.parents[1])):hashlib.sha256(path.read_bytes()).hexdigest() for path in [native.WORKER/'model_engine_process.py',native.WORKER/'model_engine_supervision.py',native.WORKER/'model_engine_bootstrap.py',ROOT/'verify_native_assignment_http.py']},
-        'limits':'Full small native assignment with production scope and installed isolated SQL. Receipt recovery uses a journal backup and does not resume the model. No cancellation, parent-loss recovery, final publication, scientific acceptance or normal dispatch activation.'}
+        'limits':'Full small native assignment with production scope and installed isolated SQL. Receipt recovery uses a journal backup and does not resume the model. Native cancellation is recorded when selected. No parent-loss recovery, final publication, scientific acceptance or normal dispatch activation.'}
 content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/('scoped-http-assignment-'+control+'.json')).write_text(content);print(content)

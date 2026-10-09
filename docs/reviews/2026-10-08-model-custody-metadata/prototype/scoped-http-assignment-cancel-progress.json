@@ -1,71 +1,76 @@
 {
-  "control": "lost-progress",
+  "control": "cancel-progress",
   "scope_start": {
-    "attempt_id": "163b69a8-a7f8-4e79-a59d-65916c83d179",
-    "command_sha256": "202ba63d36759bb571c2bb7c9e6890036e089a14290ccf2ab37d463295e55830",
-    "run_id": "68549ac2-e7ce-4bb1-a78f-9456ac242e4c",
+    "attempt_id": "0a1341fc-9039-491c-9149-7321fe75e03e",
+    "command_sha256": "9af74e130fa6117ad2a3075375f8dc31d0e20ed3e10c079ec11d11821607211b",
+    "run_id": "5f74654f-91ae-4f48-9c3b-8904aa328ed9",
     "schema": "openplan.engine-process.v1",
     "scope": {
-      "bootstrap_pid": 374123,
-      "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-1faba8a9e641498387e69b3ac1561377.scope",
+      "bootstrap_pid": 371070,
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-ee83777db31842608ee05d6d4d6ab894.scope",
       "cgroup_device": 30,
-      "cgroup_inode": 1554335,
-      "invocation_id": "37d80eea6ffc4fa39ef7b91a268df976",
+      "cgroup_inode": 1554059,
+      "invocation_id": "f901ecae12cc4554b5802b0d4388b849",
       "memory_bytes": 1073741824,
       "schema": "openplan.engine-scope.v1",
       "tasks": 128,
-      "unit": "openplan-engine-1faba8a9e641498387e69b3ac1561377.scope"
+      "unit": "openplan-engine-ee83777db31842608ee05d6d4d6ab894.scope"
     },
-    "scope_unit": "openplan-engine-1faba8a9e641498387e69b3ac1561377.scope",
-    "stage_id": "9833f83c-8553-4f7d-a299-919599a2a56a"
+    "scope_unit": "openplan-engine-ee83777db31842608ee05d6d4d6ab894.scope",
+    "stage_id": "ad9c119c-24a9-494b-9b9d-a806c5a1c0d5"
   },
   "scope_empty_observation": {
     "schema": "openplan.engine-scope.v1",
-    "unit": "openplan-engine-1faba8a9e641498387e69b3ac1561377.scope",
-    "invocation_id": "37d80eea6ffc4fa39ef7b91a268df976",
-    "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-1faba8a9e641498387e69b3ac1561377.scope",
+    "unit": "openplan-engine-ee83777db31842608ee05d6d4d6ab894.scope",
+    "invocation_id": "f901ecae12cc4554b5802b0d4388b849",
+    "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-ee83777db31842608ee05d6d4d6ab894.scope",
     "cgroup_device": 30,
-    "cgroup_inode": 1554335,
-    "bootstrap_pid": 374123,
+    "cgroup_inode": 1554059,
+    "bootstrap_pid": 371070,
     "memory_bytes": 1073741824,
     "tasks": 128,
     "observed_scope_empty": true,
     "scope_result": "success"
   },
   "native_http": {
-    "control": "lost-progress",
-    "database": "openplan_attempt_cli_061bd02887cf485b9bb62105494c0ffd",
-    "run_id": "68549ac2-e7ce-4bb1-a78f-9456ac242e4c",
-    "stage_id": "9833f83c-8553-4f7d-a299-919599a2a56a",
+    "control": "cancel-progress",
+    "database": "openplan_attempt_cli_0d278cc33fe34b7eb9ed168f0c17cab7",
+    "run_id": "5f74654f-91ae-4f48-9c3b-8904aa328ed9",
+    "stage_id": "ad9c119c-24a9-494b-9b9d-a806c5a1c0d5",
     "native_converged": null,
     "modeled_transit": null,
-    "replay": {
-      "request_id": "aa26babf-137f-4215-ba50-3aaf2db354f6",
-      "committed_reply_dropped": true,
-      "fresh_process_outcomes": [
-        {
-          "request_id": "aa26babf-137f-4215-ba50-3aaf2db354f6",
-          "outcome": "command_receipt_retained",
-          "model_resumed": false
-        },
-        {
-          "request_id": "aa26babf-137f-4215-ba50-3aaf2db354f6",
-          "outcome": "command_receipt_retained",
-          "model_resumed": false
-        }
-      ],
-      "http_calls_per_recovery": [
-        1,
-        0
-      ],
-      "database_state_unchanged": true,
-      "request_body_sha256": "bbd607a7a7f0ecc4344f5b336166a1f666455e5260f3b78f7a7bd49f9c850ff4",
-      "model_resumed": false,
-      "limits": "Real installed SQL receipt replay from a journal backup. Original journal remains pending. No model continuation or supervisor restart."
-    },
+    "replay": null,
     "final_outputs_absent": true,
-    "cancellation": null,
-    "database_observation": null,
+    "cancellation": {
+      "schema": "openplan.engine-process.v1",
+      "run_id": "5f74654f-91ae-4f48-9c3b-8904aa328ed9",
+      "stage_id": "ad9c119c-24a9-494b-9b9d-a806c5a1c0d5",
+      "attempt_id": "0a1341fc-9039-491c-9149-7321fe75e03e",
+      "command_sha256": "9af74e130fa6117ad2a3075375f8dc31d0e20ed3e10c079ec11d11821607211b",
+      "scope_unit": "openplan-engine-ee83777db31842608ee05d6d4d6ab894.scope",
+      "scope": {
+        "schema": "openplan.engine-scope.v1",
+        "unit": "openplan-engine-ee83777db31842608ee05d6d4d6ab894.scope",
+        "invocation_id": "f901ecae12cc4554b5802b0d4388b849",
+        "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-ee83777db31842608ee05d6d4d6ab894.scope",
+        "cgroup_device": 30,
+        "cgroup_inode": 1554059,
+        "bootstrap_pid": 371070,
+        "memory_bytes": 1073741824,
+        "tasks": 128,
+        "observed_scope_empty": true,
+        "scope_result": "success"
+      },
+      "returncode": -9,
+      "termination_observed": true,
+      "execution_ready": false,
+      "database_status_changed": false
+    },
+    "database_observation": {
+      "database_state_unchanged": true,
+      "one_attempt_and_execution_start": true,
+      "stage_status": "running"
+    },
     "registered_artifacts": [
       "model_assignment_geometry",
       "model_count_inputs",
@@ -78,7 +83,7 @@
         "method": "POST",
         "operation": "/rpc/claim_model_stage_attempt",
         "status": 200,
-        "body_sha256": "eaee9bcbbfa7df5480fbc179ed4e17dc0d506afa9532d085a5299f5137044d0a"
+        "body_sha256": "30210a7c93e2d43bcd6690e4ea4bf255cbb345f8edc64e21f66fb83128e286d6"
       },
       {
         "method": "GET",
@@ -90,13 +95,13 @@
         "method": "POST",
         "operation": "/rpc/write_model_attempt_artifact",
         "status": 200,
-        "body_sha256": "77b3eacdbccc6034d1f8c3e34858fe961a11a38d8d2a128098a550d8118c67c1"
+        "body_sha256": "8afa0ed1d7b69541b3a539f9920c1629aafe2461d20c807e943469bd8a1b1e29"
       },
       {
         "method": "POST",
         "operation": "/rpc/write_model_attempt_artifact",
         "status": 200,
-        "body_sha256": "d2769034afca9930ca73249f7cf329419a00c080a352d00d777acb79055f0d03"
+        "body_sha256": "41c90a6c0a5ff68f812e68a0a4b54f71146f82840055ae21c4d7a5b32ddb77e2"
       },
       {
         "method": "GET",
@@ -114,7 +119,7 @@
         "method": "POST",
         "operation": "/rpc/write_model_attempt_artifact",
         "status": 200,
-        "body_sha256": "c0b96bf84626cdee8e2cb6ceee67b5ffedbca02002880e8b0e1a663d16d8600e"
+        "body_sha256": "49a057e1ce6cfc8dccf6c3d7dd5910f1c7b32b97b5d1f31456c37441bcabf9b8"
       },
       {
         "method": "GET",
@@ -126,19 +131,19 @@
         "method": "POST",
         "operation": "/rpc/write_model_stage_attempt",
         "status": 200,
-        "body_sha256": "4e8fa0ac65142b2aecdc057e8ce2c6bbe30b2c2c2c8d250dc529c126f2af4e48"
+        "body_sha256": "c6cfae8939882c8fa441483707b69f16256ca770c8da7a43dd95c5530a25a662"
       },
       {
         "method": "POST",
         "operation": "/rpc/write_model_stage_attempt",
         "status": 200,
-        "body_sha256": "1c63340a1e470aad5ece255d7316d801adc888231e505238dee7b6d9b5d609ed"
+        "body_sha256": "b9e9c48045302c84bd7bdc3f91971cce8a18ade979611300b84b23139714032c"
       },
       {
         "method": "POST",
         "operation": "/rpc/write_model_stage_attempt",
         "status": 200,
-        "body_sha256": "3fb2e4b1a966464432d9ffec1c756799fb22223e9e215755c7705e38a1ddb841"
+        "body_sha256": "7029f87a1527752306c072f4cc936ac3babf9a10a977cd35d25209aaad8b83e6"
       },
       {
         "method": "GET",
@@ -150,31 +155,25 @@
         "method": "POST",
         "operation": "/rpc/write_model_attempt_artifact",
         "status": 200,
-        "body_sha256": "3f1d590c5d4398d8cef8d454f134e7815e7ae8402a3e17d80ae6031e16b174f7"
+        "body_sha256": "48f1c7014e98659192b96b833fac0bd40b992205e49f05b28ef6a257cf8887bf"
       },
       {
         "method": "POST",
         "operation": "/rpc/write_model_attempt_artifact",
         "status": 200,
-        "body_sha256": "ec855d79349dfc6f14782ce3c8f29cadaf6e057e416924ed4856f3692bd6843d"
+        "body_sha256": "c453182c725749d673736d07c7f3c7f4d8b48d10ac730ef7b463b4a334d8375c"
       },
       {
         "method": "POST",
         "operation": "/rpc/write_model_stage_attempt",
         "status": 200,
-        "body_sha256": "65ffe22cc79085af868f0c8df56c7c36213e1d5266814e0994025dac6f74e324"
+        "body_sha256": "8f9c5036e5b05eecc082582cf45b9f00ce692b8e563c8be478d19b6d61a962a9"
       },
       {
         "method": "POST",
         "operation": "/rpc/write_model_stage_attempt",
         "status": 200,
-        "body_sha256": "bbd607a7a7f0ecc4344f5b336166a1f666455e5260f3b78f7a7bd49f9c850ff4"
-      },
-      {
-        "method": "POST",
-        "operation": "/rpc/write_model_stage_attempt",
-        "status": 200,
-        "body_sha256": "bbd607a7a7f0ecc4344f5b336166a1f666455e5260f3b78f7a7bd49f9c850ff4"
+        "body_sha256": "314ca2b9213035deee979e678cb4a38224fd7c9ae8f3982061baff452aca5b00"
       }
     ],
     "stage_remains_running": true,
