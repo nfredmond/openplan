@@ -1,9 +1,19 @@
 {
-  "source_sha256": "f6ef4f0a8533787af3aeb0298ed45ebcf2056e092d299ae3ab53d0c7d6aaaf72",
+  "source_sha256": "632297c402aa05cdd3867f3337b73f058cbc606ee31f2cd4986836d86abb8494",
   "cases": [
     {
       "control": "harmless",
       "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "native-error-code",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "native-error-status",
+      "returncode": 1,
       "expected_behavior_observed": true
     },
     {

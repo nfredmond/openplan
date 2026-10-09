@@ -2,6 +2,7 @@
 import hashlib
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import io
+import json
 import threading
 import unittest
 from unittest.mock import Mock
@@ -55,6 +56,18 @@ class ReadbackTests(unittest.TestCase):
             with self.subTest(status=status), self.assertRaisesRegex(readback.ObjectReadbackUnconfirmed, 'status'):
                 self.run_read(response)
             self.assertTrue(response.closed)
+    def test_native_missing_key_envelope_is_narrow_and_bounded(self):
+        headers = {'Content-Type':'application/json; charset=utf-8'}
+        missing = {'code':'NoSuchKey', 'statusCode':'404'}
+        self.assertFalse(self.run_read(Response(json.dumps(missing).encode(), 400, headers)))
+        for body in (json.dumps({'code':'AccessDenied','statusCode':'403'}).encode(),
+                     json.dumps({'code':'NoSuchBucket','statusCode':'404'}).encode(),
+                     json.dumps({'code':'NoSuchKey','statusCode':'500'}).encode(),
+                     b'not json', b' '*4097):
+            response = Response(body, 400, headers)
+            with self.assertRaises(readback.ObjectReadbackUnconfirmed): self.run_read(response)
+            self.assertEqual(response.raw.requests, [4097])
+
     def test_wrong_truncated_and_excess_bytes_refuse(self):
         for data in (b'x'*len(self.data), self.data[:-1], self.data+b'x'):
             response = Response(data)

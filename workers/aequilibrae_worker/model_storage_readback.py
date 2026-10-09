@@ -1,5 +1,6 @@
 """Bounded verification of exact stored object bytes, shared by upload recovery."""
 import hashlib
+import json
 import re
 from urllib.parse import quote, urlsplit
 
@@ -45,6 +46,18 @@ def verify_object(*, base_url, service_key, bucket, object_path, sha256, size_by
                                    timeout=(15, 60), allow_redirects=False, stream=True) as response:
             if response.status_code == 404:
                 return False
+            if response.status_code == 400:
+                # Native Storage retains this older HTTP envelope for NoSuchKey.
+                if (response.headers.get('Content-Encoding', 'identity').lower() == 'identity'
+                        and response.headers.get('Content-Type', '').split(';')[0].strip().lower() == 'application/json'):
+                    body = response.raw.read(4097, decode_content=False)
+                    if len(body) <= 4096:
+                        try:
+                            error = json.loads(body)
+                        except (ValueError, UnicodeError):
+                            error = None
+                        if isinstance(error, dict) and error.get('code') == 'NoSuchKey' and str(error.get('statusCode')) == '404':
+                            return False
             if response.status_code != 200:
                 raise ObjectReadbackUnconfirmed('Object read status unconfirmed')
             if response.headers.get('Content-Encoding', 'identity').lower() != 'identity':

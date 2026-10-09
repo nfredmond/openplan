@@ -9,10 +9,12 @@ ROOT = Path(__file__).resolve().parents[4]
 source = ROOT / 'workers/aequilibrae_worker/model_storage_readback.py'
 original = source.read_text()
 mutations = [
+    ('native-error-code', "error.get('code') == 'NoSuchKey'", 'True'),
+    ('native-error-status', " and str(error.get('statusCode')) == '404'", ''),
     ('hash', ' or digest.hexdigest() != sha256', ''),
     ('size', "if received > size_bytes:", 'if False:'),
     ('status', "if response.status_code != 200:", 'if False:'),
-    ('absence', '                return False', '                return True'),
+    ('absence', 'if response.status_code == 404:\n                return False', 'if response.status_code == 404:\n                return True'),
     ('encoding', "if response.headers.get('Content-Encoding', 'identity').lower() != 'identity':", 'if False:'),
     ('redirect', 'allow_redirects=False', 'allow_redirects=True'),
     ('stream', 'stream=True', 'stream=False'),

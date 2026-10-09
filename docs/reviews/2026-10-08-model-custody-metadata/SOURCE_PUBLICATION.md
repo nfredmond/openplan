@@ -305,3 +305,42 @@ This client is not yet connected to the source-set publisher. Native Storage TUS
 configuration, separate-process interruption recovery, session expiration policy,
 manifest-last publication and the admitted worker join remain open. These tests
 are not a native service, large-network throughput or scientific acceptance claim.
+
+## Native resumable transfer and process recovery, October 9
+
+The client now has native Storage v1.67.20 evidence. Each case uses a fresh owned
+database clone and file backend in a 512 MiB Storage container with no swap. The
+source is a synthetic file of 6 MiB plus 25 bytes. The first uploader process exits
+with code 73 after the server commits the first PATCH, before local progress is
+updated. A fresh process reads the retained session URL, observes the server's
+6 MiB offset, sends the remaining bytes and verifies the complete native object.
+It does not create another upload session.
+
+Six [native controls](prototype/native-resumable-storage-controls.json) pass:
+normal, harmless file variation, changed object identity, skipped HEAD offset,
+skipped readback and restored behavior. The three faulty cases fail their stated
+assertions. Every case confirms removal of its owned Storage container. Private
+candidate metadata, request summaries, local state and logs remain under
+`~/.local/state/openplan/native-resumable-storage-controls-20261009a/`.
+
+The first standalone run found a real client compatibility gap. This Storage
+version reports an absent key with HTTP 400 and a JSON `NoSuchKey` code plus
+`statusCode: "404"`. Readback now recognizes that precise legacy envelope using
+a bounded 4,097-byte read and a 4,096-byte acceptance limit. It still refuses
+other HTTP 400 errors, wrong error codes/statuses, malformed or oversized error
+bodies and encoded responses. The nine readback tests and eleven readback controls
+pass. Supabase documents both current and legacy structured errors in its
+[Storage error guide](https://supabase.com/docs/guides/storage/debugging/error-codes).
+
+Standalone run `native-resumable-storage-20261009a` retains that refusal. Run `b`
+found a test adapter path error: the native service needs the gateway prefix
+removed for TUS requests as well as object reads. The prefix-only request adapter
+now applies to both; run `c` passes. It does not simulate TUS responses, alter
+headers, translate statuses or replace service byte verification.
+
+This proves uploader-process interruption recovery, not a Storage-service restart,
+session expiration recovery, network-scale performance or complete source-set
+publication. Publisher integration must still retain one state per object, bind
+the original manifest, publish the manifest last and register the verified remote
+reference through the admitted writer. Independent preparation and scientific
+acceptance remain open.
