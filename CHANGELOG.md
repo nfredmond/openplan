@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Navigation links stay in place during pointer and keyboard focus in short
+desktop windows. Group headings retain their compact spacing rather than moving
+later destinations while a click is in progress.
+
 GTFS failure messages wrap long source details and file controls fit their panel
 on narrow screens, keeping the current feed and failed-attempt history readable.
 

@@ -36,3 +36,69 @@ T3 signs in against a separate cloned database and Auth/REST/Storage stack at AP
 The actual Upload and read control returns a ready feed with 95 route-service and 717 stop-service rows derived from 14 routes, 287 stops and 4,417 trips. Uploading an intentionally invalid 77-byte replacement through that feed's newer-archive control records `not_a_zip` while the original version remains ready and current. Exact version JSON and sorted-row digests preserve its route/stop rows. The failed version has one immutable closure receipt and one private-object cleanup request. Native comparisons occur only in the owned acceptance database; no demo data changes.
 
 At 390 pixels, the failure's long library URL overflows the GTFS panel even though document width remains 390. File inputs also exceed their available width slightly. Diagnostic wrapping and bounded file controls reduce panel scroll width from 474 to its 351-pixel client width. The source correction applies those styles to the GTFS panel and its two file inputs. Targeted lint and 50 existing GTFS panel, failure-receipt and closure tests pass. No test or guard changes. Final rebuilt visual review, scheduled-route cleanup, synthesis browser acceptance and combined-head CI remain pending. The production GTFS ingest still runs in the request; the worker ownership prototypes are not enrolled.
+
+## Joined candidate acceptance at f2e1d191
+
+The configured production build at `f2e1d19176edd53852896e5fe2ff1119f4337353`
+passes. Its retained log SHA-256 is
+`a89ca558a01a9ebd434b60aaf9e7423df1ebd56de71182bf39d014517c846330`.
+The owned service on port 3520 reports that commit and version 0.68.0, with its
+process cwd in the integration checkout's application directory.
+
+T3 checks the rebuilt GTFS panel at 1280 by 800 and 390 by 844. Both archive
+inputs fit. The phone panel has equal client and scroll widths of 351 pixels;
+document width remains 390. A harmless outline change preserves that result;
+restoring ordinary URL wrapping reproduces 474 pixels of overflow, and restoring
+the correction returns 351. Native file chooser behavior is not tested.
+
+The actual scheduled cleanup route refuses a missing credential with 401 and
+leaves the failed archive present. An authenticated call returns 200, removes
+the queued failed object and empties its cleanup queue. Storage subsequently
+returns an explicit `NoSuchKey`; the ready BART archive remains readable with
+its original SHA-256. A repeated sweep returns 200. The route's `scanned: 0,
+reaped: 0` counters describe abandoned ingests, not deleted cleanup objects.
+Direct Storage and database reads establish removal.
+
+The synthesis journey creates a private draft campaign, two approved synthetic
+staff notes, their complete retained source and an analysis request through the
+interface. A saved no-key destination at `https://acceptance.invalid/v1/` supplies
+the clearly labelled `synthetic-not-executed` model. Saving does not contact it.
+The retained source digest is
+`024dd31018954fad0d6a4278deaa59531c1c942860d37bbb08e0c41f49b2229a`;
+the request intent digest is
+`834a420038b43a58aa132882e33b071f00dcefdfbf045dd190a39acf643a2009`.
+
+From saved request history, Inspect preparation and Review cancellation options
+reopen the original request. A separate rollback-only PostgreSQL transaction
+holds its advisory lock. Refresh original request produces one native busy error;
+the controller releases the lock only after observing that error. The browser's
+single HTTP request returns 200 with the original model. This exercises the real
+Next route, authenticated PostgREST and production adapter, supplementing the
+[native and HTTP controls](../2026-10-09-synthesis-read-contention/VERIFICATION.md).
+
+Holding the lock through all retries produces nine native busy errors across
+three browser reads. The server records three unavailable reads. Browser
+Resource Timing reports 503, 503 and 0 for those reads; 0 is not claimed as a
+confirmed response status. The UI removes the cancellation form and says the
+original request could not be confirmed. After rollback, an explicit refresh
+returns 200 and restores the original model and form. Desktop and 390px captures
+show the recovered state; the phone panel has equal client and scroll widths of
+327 pixels. Native readback finds zero plans, execution authorizations, attempts
+and cancellations for this request. These are test records, not resident input
+or agency decisions. Controlled lock timing is not a workload capacity result.
+
+The transient journey has no newly reported console entry in its snapshot.
+The persistent case deliberately exercises unavailable responses. Older console
+history includes the invalid ZIP, fixture-transport authorization refusal and
+the corrected browser probe failure; none is erased to claim whole-app health.
+
+Navigation also reveals a separate short-desktop rail defect. The first pointer
+activation can move its target by 100 pixels as group headings expand. The
+[causal report](../2026-10-09-short-rail/VERIFICATION.md) retains that finding and
+its diagnostic correction. The earlier mobile-only correction does not cover it.
+Current-head GitHub checks and rebuilt rail acceptance remain required before
+the integration lands. Full v1, scientific and practitioner acceptance stay open.
+
+Compact evidence is in `joined-browser-acceptance.json`. Raw synthetic readbacks,
+logs and captures remain private under the acceptance state directory and T3
+browser-artifacts directory.
