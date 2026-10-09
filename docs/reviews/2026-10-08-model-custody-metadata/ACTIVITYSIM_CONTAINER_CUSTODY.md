@@ -194,3 +194,44 @@ live owner, stop the exact container after owner loss, reconcile unknown creatio
 outcomes and integrate database admission. Connection loss does not prove that
 the daemon stopped work. Controller/daemon restart behavior, security policy,
 native ActivitySim container execution and scientific acceptance remain open.
+
+
+## Read-only observation after a lost creation reply
+
+`LocalDocker.observe_creation` reads candidates from the original daemon using
+an explicit request-label filter, including stopped containers. No candidate
+returns `not_observed`; multiple candidates return `ambiguous`. One candidate
+requires full-ID inspection and the same immutable-plan verification used at
+creation. Changed commands, policies, daemon identity or substituted inspection
+IDs fail. An already-started container fails the unstarted-state verifier; this
+method does not provide general running-container recovery.
+
+All outcomes deny start, signal, continuation and retry authority. Labels locate
+candidates; they do not establish ownership. An empty list is only a current
+observation, not proof that a create request never reached Docker. The caller
+explicitly opens a separate observation connection after a failed connection.
+The original adapter still never reconnects or repeats creation automatically.
+Observation does not rewrite original intent, request or creation records.
+
+A private Unix-socket proxy forwarded an actual create request to local Docker
+and discarded the successful response. Only intent and request records remained.
+A new direct connection to the same daemon found and verified the exact container
+ID retained by the proof proxy. There was one creation request, the command never
+started, and the original record bytes remained unchanged. The proof removed
+its identified unstarted container. This is actual response-loss evidence, not
+an owner/controller kill or daemon-restart test.
+
+All 85 ActivitySim tests pass with live host tests enabled. Seventeen deliberate
+transport/recovery faults fail their named checks, with harmless/restored passes.
+The added faults cover daemon mismatch, invented retry authority, substituted
+ID, ignored policy, omitted stopped containers and ignored ambiguity. Reports
+are `prototype/container-recovery-controls.json` and
+`prototype/container-lost-reply.json`. The runners are
+`prototype/verify_container_transport_controls.py` and
+`prototype/verify_container_lost_reply.py`; private evidence remains under
+`~/.local/state/openplan/activitysim-container-lost-reply-20261008a/`.
+
+This provides read-only reconciliation evidence. It does not adopt a container,
+reconstruct a live owner, authorize removal, or satisfy supervised startup.
+Independent owner/controller-loss handling, database admission and integration
+into the normal execution path remain unfinished.

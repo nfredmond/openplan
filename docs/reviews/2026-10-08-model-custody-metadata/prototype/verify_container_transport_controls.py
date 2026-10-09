@@ -16,6 +16,12 @@ cases=[('harmless',[],None),
  ('ignore-http-status',[('response.status != status','False')],'test_unexpected_http_status_is_refused'),
  ('ignore-response-size',[('len(content) > MAX_RESPONSE_BYTES','False')],'test_valid_json_over_response_limit_is_refused'),
  ('ignore-create-warning',[('if response.get("Warnings") not in (None, []):','if False:')],'test_creation_warning_remains_unverified'),
+ ('ignore-recovery-daemon', [('plan.daemon_id != self.daemon_id:', 'False:')], 'test_recovery_refuses_changed_daemon_before_listing'),
+ ('grant-retry', [('"retry_authorized": False', '"retry_authorized": True')], 'test_absence_and_ambiguity_do_not_authorize_retry'),
+ ('ignore-recovery-identity', [('if observed.get("Id") != container_id:\n            raise DockerTransportError("Creation observation returned another container")', 'if False:\n            raise DockerTransportError("Creation observation returned another container")')], 'test_recovery_rechecks_full_inspection_and_exact_id'),
+ ('ignore-recovery-policy', [('identity = verify_created_container(plan, self.daemon_id, observed)', 'identity = {}')], 'test_recovery_rechecks_full_inspection_and_exact_id'),
+ ('omit-stopped-containers', [('"all": "1"', '"all": "0"')], 'test_lost_reply_can_be_observed_without_repeating_creation'),
+ ('ignore-recovery-ambiguity', [('if len(candidates) != 1:', 'if False:')], 'test_absence_and_ambiguity_do_not_authorize_retry'),
  ('restored',[],None)]
 records=[]
 try:

@@ -10,6 +10,8 @@ import tempfile
 import threading
 import unittest
 from unittest.mock import patch
+from urllib.parse import urlparse, parse_qs
+from dataclasses import replace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from container_creation import ContainerCreation
@@ -43,6 +45,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.reply(200, self.server.version)
         elif self.path.endswith("/info"):
             self.reply(200, {"ID": "synthetic-daemon"})
+        elif self.path.startswith("/v1.51/containers/json?"):
+            self.reply(200, self.server.candidates)
         else:
             self.reply(200, self.server.inspection)
 
@@ -83,6 +87,7 @@ class ContainerTransportTests(unittest.TestCase):
         self.server.version_bytes = 0
         self.server.version_status = 200
         self.server.warnings = []
+        self.server.candidates = [{"Id": "3" * 64}]
         self.server.requests = []
         self.server.connections = 0
         self.server.drop_create = self.server.close_version = False
@@ -190,3 +195,48 @@ class ContainerTransportTests(unittest.TestCase):
         with patch.object(transport.struct, "unpack", return_value=(123, 987654, 987654)):
             with self.assertRaises(DockerTransportError):
                 self.connect()
+
+    def test_lost_reply_can_be_observed_without_repeating_creation(self):
+        client = self.connect()
+        self.server.drop_create = True
+        with ContainerCreation(self.server.records, self.plan, client.endpoint_sha256) as creation:
+            with self.assertRaises(DockerTransportError):
+                client.create_reserved(creation)
+        original = {p.name: p.read_bytes() for p in self.server.records.iterdir()}
+        observation = self.connect().observe_creation(self.plan)
+        self.assertEqual(observation["outcome"], "verified_unstarted")
+        for flag in ("start_authorized", "signal_authorized", "continuation_authorized", "retry_authorized"):
+            self.assertIs(observation[flag], False)
+        self.assertEqual(original, {p.name: p.read_bytes() for p in self.server.records.iterdir()})
+        self.assertEqual(sum(method == "POST" for method, _, _ in self.server.requests), 1)
+        lists = [path for _, path, _ in self.server.requests if "/containers/json?" in path]
+        self.assertEqual(len(lists), 1)
+        query = parse_qs(urlparse(lists[0]).query)
+        self.assertEqual(query["all"], ["1"])
+        self.assertEqual(json.loads(query["filters"][0]), {"label": ["openplan.execution-request=" + self.plan.request_id]})
+
+    def test_absence_and_ambiguity_do_not_authorize_retry(self):
+        client = self.connect()
+        for candidates, outcome in [([], "not_observed"), ([{"Id": "3" * 64}] * 2, "ambiguous")]:
+            self.server.candidates = candidates
+            result = client.observe_creation(self.plan)
+            self.assertEqual(result["outcome"], outcome)
+            self.assertIs(result["retry_authorized"], False)
+        self.assertFalse(any(path.endswith("/json") for _, path, _ in self.server.requests))
+
+    def test_recovery_refuses_changed_daemon_before_listing(self):
+        client = self.connect()
+        with self.assertRaisesRegex(ValueError, "original daemon"):
+            client.observe_creation(replace(self.plan, daemon_id="another-daemon"))
+        self.assertFalse(any("/containers/" in path for _, path, _ in self.server.requests))
+
+    def test_recovery_rechecks_full_inspection_and_exact_id(self):
+        client = self.connect()
+        original = copy.deepcopy(self.server.inspection)
+        self.server.inspection["Id"] = "4" * 64
+        with self.assertRaisesRegex(DockerTransportError, "another container"):
+            client.observe_creation(self.plan)
+        self.server.inspection = original
+        self.server.inspection["Config"]["Cmd"] = ["unexpected-command"]
+        with self.assertRaises(ValueError):
+            client.observe_creation(self.plan)

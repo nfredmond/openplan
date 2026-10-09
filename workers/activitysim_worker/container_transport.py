@@ -13,7 +13,9 @@ import socket
 import struct
 import sys
 import threading
+from urllib.parse import urlencode
 
+from container_identity import ContainerPlan, verify_created_container
 from container_creation import ContainerCreation
 from model_engine_recovery import read_record, unique_object, invalid_constant
 
@@ -77,7 +79,7 @@ class LocalDocker:
             self.close()
             raise
 
-    def _json(self, method, path, payload=None, status=200):
+    def _json(self, method, path, payload=None, status=200, expected_type=dict):
         if self.closed or self.owner != (os.getpid(), threading.get_ident()):
             raise DockerTransportError("Docker connection is closed or belongs to another invocation")
         body = None if payload is None else json.dumps(payload, allow_nan=False).encode()
@@ -88,8 +90,8 @@ class LocalDocker:
             if len(content) > MAX_RESPONSE_BYTES or response.status != status:
                 raise DockerTransportError("Docker response size or status is unexpected")
             value = json.loads(content, object_pairs_hook=unique_object, parse_constant=invalid_constant)
-            if not isinstance(value, dict):
-                raise DockerTransportError("Docker response must be an object")
+            if not isinstance(value, expected_type):
+                raise DockerTransportError("Docker response has an unexpected JSON type")
             return value
         except (OSError, http.client.HTTPException, ValueError, DockerTransportError) as error:
             self.close()
@@ -129,6 +131,35 @@ class LocalDocker:
         if observed.get("Id") != container_id:
             raise DockerTransportError("Inspected container differs from creation response")
         return creation.record_created(self.daemon_id, observed)
+
+    def observe_creation(self, plan: ContainerPlan):
+        """Read a possible lost creation outcome without adopting execution ownership.
+
+        A matching label locates candidates only. Full inspection must match the
+        immutable plan, and even a verified observation grants no start authority.
+        Absence is an observation at this instant, not proof creation never ran.
+        """
+        if not isinstance(plan, ContainerPlan) or plan.daemon_id != self.daemon_id:
+            raise ValueError("Creation observation requires the original daemon and plan")
+        query = urlencode({"all": "1", "filters": json.dumps({
+            "label": ["openplan.execution-request=" + plan.request_id]})})
+        candidates = self._json("GET", f"/v{API_VERSION}/containers/json?{query}", expected_type=list)
+        result = {"schema": "openplan.container-creation-observation.v1",
+            "daemon_id": self.daemon_id, "endpoint_sha256": self.endpoint_sha256,
+            "request_id": plan.request_id, "start_authorized": False,
+            "signal_authorized": False, "continuation_authorized": False,
+            "retry_authorized": False}
+        if not candidates:
+            return {**result, "outcome": "not_observed"}
+        if len(candidates) != 1:
+            return {**result, "outcome": "ambiguous", "candidate_count": len(candidates)}
+        candidate = candidates[0]
+        container_id = candidate.get("Id") if isinstance(candidate, dict) else None
+        observed = self.inspect(container_id)
+        if observed.get("Id") != container_id:
+            raise DockerTransportError("Creation observation returned another container")
+        identity = verify_created_container(plan, self.daemon_id, observed)
+        return {**result, "outcome": "verified_unstarted", "identity": identity}
 
     def close(self):
         self.closed = True
