@@ -62,3 +62,7 @@ harmless and restored passes and detects two faults: unlimited swap requested,
 and policy verification bypassed. The results and source hash are retained in
 `prototype/scope-swap-controls.json`. These checks use small synthetic commands;
 they do not exhaust memory or establish native-model or scientific acceptance.
+
+The subsequent [host supervision checkpoint](ACTIVITYSIM_HOST_SUPERVISION.md)
+adds an opt-in CLI/HTTP host path and synthetic owner-loss evidence. Its stated
+limits supersede only the earlier unconnected-host status in this note.

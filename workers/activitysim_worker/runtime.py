@@ -583,7 +583,16 @@ def run_activitysim_runtime(
     container_network_mode: str | None = "none",
     run_label: str | None = None,
     force: bool = False,
+    host_memory_bytes: int | None = None,
+    host_tasks: int | None = None,
 ) -> dict[str, Any]:
+    if (host_memory_bytes is None) != (host_tasks is None):
+        raise ValueError("Host supervision requires both memory and task limits")
+    if host_memory_bytes is not None:
+        from host_supervision import ScopeLimits
+        ScopeLimits(host_memory_bytes, host_tasks)
+        if container_image:
+            raise ValueError("Host supervision cannot supervise container daemon workloads")
     bundle_dir, bundle_manifest_path = resolve_bundle_paths(bundle_path, manifest_path)
     output_dir = prepare_runtime_directory(
         bundle_dir=bundle_dir,
@@ -800,13 +809,22 @@ def run_activitysim_runtime(
                         # Retain output while the command runs. Capturing pipes
                         # buffers the entire log and loses it with this owner.
                         with run_log_path.open("wb") as run_log:
-                            completed = subprocess.run(
-                                command,
-                                cwd=str(output_dir / "workdir"),
-                                stdout=run_log,
-                                stderr=subprocess.STDOUT,
-                                check=False,
-                            )
+                            if host_memory_bytes is not None:
+                                from host_supervision import run_host_command
+                                completed = run_host_command(
+                                    command, cwd=output_dir / "workdir", log=run_log,
+                                    records=stage_dir / "host_supervision",
+                                    memory_bytes=host_memory_bytes, tasks=host_tasks,
+                                )
+                                stage.metadata["host_supervision"] = "owned_linux_scope"
+                            else:
+                                completed = subprocess.run(
+                                    command,
+                                    cwd=str(output_dir / "workdir"),
+                                    stdout=run_log,
+                                    stderr=subprocess.STDOUT,
+                                    check=False,
+                                )
                         stage.artifacts.append({"artifact_type": "activitysim_stdout_log", "path": str(run_log_path)})
                         stage.metadata["returncode"] = completed.returncode
                         if completed.returncode == 0:
