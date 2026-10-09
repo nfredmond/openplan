@@ -92,3 +92,16 @@ Unlike the earlier rollback suite, this experiment retains small, uniquely named
 python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_ownership_concurrency.py \
   /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
 ```
+
+## Attempt-owned derived batches, October 9
+
+The [batch prototype](batch-prototype.sql) writes the actual public route and stop service tables through a service-role-only function. Its explicit column lists follow the existing TypeScript row mappers, omit generated columns and retain the schedule-derived claim fields. It validates the version/workspace scope, active ownership, bounded array size and allowed fields. A command receipt binds the version, token, kind, ordinal and canonical JSON payload hash. Repeating the exact command returns its saved receipt. Reusing its ID with changed content fails. A unique attempt/kind/ordinal prevents a second command from duplicating a batch.
+
+The [rollback suite](verify_batch.py) passes baseline, harmless and restored runs. Four broken controls fail at the intended assertions: changed payload accepted, wrong owner accepted, authenticated caller allowed, and duplicate ordinal accepted. It writes one synthetic route row and one synthetic stop row, reads their actual counts, and verifies receipt count two. A duplicate ordinal fails while inserting its receipt after a distinct route row was inserted; the final count confirms both actions rolled back together. Anonymous and authenticated execution fail, and the service role cannot forge a receipt directly. [Results](batch-controls.json) retain both implementation hashes and the assertions hash. All schema and fixture changes roll back.
+
+This is a command prototype, not managed ingestion. The existing service role can still bypass it by writing the public derived tables directly. Version lifecycle writes, legacy cleanup, tract computation, finalization and promotion also need guarded commands and transaction-scoped authorization before enrollment. This suite does not test HTTP, real parser output, large batches, every invalid-field case, role membership revocation or browser behavior. Its synthetic single-row records prove the database command mechanics, not feed validity or full mapper parity. The database-owner test switches PostgreSQL roles; it does not establish end-user route authorization.
+
+```bash
+python3 docs/reviews/2026-10-09-gtfs-worker-ownership/verify_batch.py \
+  /home/nathaniel/.local/state/openplan/gtfs-recovery-http-20261009.json
+```
