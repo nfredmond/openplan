@@ -15,6 +15,7 @@ import math
 import re
 import sqlite3
 from collections import Counter, defaultdict, deque
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -73,17 +74,41 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
+def _zone_id(value: str) -> int:
+    """Preserve integer identity without rounding through binary floating point."""
+    try:
+        number = Decimal(value)
+    except (InvalidOperation, TypeError, ValueError) as exc:
+        raise StructuralAuditRefused("Zone ids must be finite integers") from exc
+    if not number.is_finite() or number != number.to_integral_value():
+        raise StructuralAuditRefused("Zone ids must be finite integers")
+    return int(number)
+
+
+def _read_zones(path: Path) -> tuple[list[dict[str, str]], dict[int, dict[str, str]]]:
+    rows = _read_csv(path)
+    try:
+        ids = [_zone_id(row["zone_id"]) for row in rows]
+    except KeyError as exc:
+        raise StructuralAuditRefused("Zone table requires zone_id") from exc
+    if not ids or len(set(ids)) != len(ids):
+        raise StructuralAuditRefused("Zone table must have nonempty unique zone ids")
+    return rows, dict(zip(ids, rows))
+
+
 def _read_matrix(path: Path) -> tuple[list[int], list[list[float]]]:
     with path.open(newline="", encoding="utf-8") as handle:
         rows = list(csv.reader(handle))
     if len(rows) < 2 or len(rows[0]) < 2:
         raise StructuralAuditRefused("OD matrix is empty")
     try:
-        destination_ids = [int(float(value)) for value in rows[0][1:]]
-        origin_ids = [int(float(row[0])) for row in rows[1:]]
+        destination_ids = [_zone_id(value) for value in rows[0][1:]]
+        origin_ids = [_zone_id(row[0]) for row in rows[1:]]
         matrix = [[float(value) for value in row[1:]] for row in rows[1:]]
-    except (TypeError, ValueError) as exc:
+    except (TypeError, ValueError, IndexError) as exc:
         raise StructuralAuditRefused("OD matrix has unreadable zone ids or values") from exc
+    if len(set(origin_ids)) != len(origin_ids) or len(set(destination_ids)) != len(destination_ids):
+        raise StructuralAuditRefused("OD matrix must have unique zone ids")
     if origin_ids != destination_ids or any(len(row) != len(destination_ids) for row in matrix):
         raise StructuralAuditRefused("OD matrix must be square with identical ordered zone ids")
     if any(not math.isfinite(value) or value < 0 for row in matrix for value in row):
@@ -228,8 +253,7 @@ def build_structural_input_audit(
         "network_setup_summary": Path(network_setup_summary_path),
     }
     source_hashes = {key: artifact(path, root=root) for key, path in paths.items()}
-    zones_raw = _read_csv(paths["zone_attributes"])
-    zones = {int(float(row["zone_id"])): row for row in zones_raw}
+    zones_raw, zones = _read_zones(paths["zone_attributes"])
     zone_ids, matrix = _read_matrix(paths["od_matrix"])
     if zone_ids != list(zones):
         raise StructuralAuditRefused("Zone ids differ between the matrix and exact zone table")
@@ -311,7 +335,7 @@ def build_structural_input_audit(
     link_component = {int(item["link_id"]): component_of.get(int(item["a_node"])) for item in links}
     structurally_unreachable = [int(item["link_id"]) for item in links if item["link_type"] != "centroid_connector" and link_component[int(item["link_id"])] not in centroid_components]
     registered_total = float(layers.get("total_trips", total))
-    jobs_sources = Counter(str(row.get("jobs_source") or UNKNOWN) for row in zones_raw if int(float(row["zone_id"])) not in external_ids)
+    jobs_sources = Counter(str(row.get("jobs_source") or UNKNOWN) for row in zones_raw if _zone_id(row["zone_id"]) not in external_ids)
     lodes = source_vintages.get("lodes") if isinstance(source_vintages.get("lodes"), Mapping) else {}
     through_share = (layers.get("trip_rates") or {}).get("gateway_passthrough_share", UNKNOWN)
     audit = {

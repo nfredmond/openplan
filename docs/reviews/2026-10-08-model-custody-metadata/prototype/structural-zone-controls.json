@@ -1,0 +1,54 @@
+{
+  "source_sha256": "52d3939123ede5842b418e0fd2d1a27f6bc6bcdd09857547d8b2f2f03ea82872",
+  "controls": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "binary-rounding",
+      "returncode": 1,
+      "expected_failure": "OD matrix must have unique zone ids",
+      "matched": true
+    },
+    {
+      "control": "fraction-truncation",
+      "returncode": 1,
+      "expected_failure": "StructuralAuditRefused not raised",
+      "matched": true
+    },
+    {
+      "control": "duplicate-matrix",
+      "returncode": 1,
+      "expected_failure": "StructuralAuditRefused not raised",
+      "matched": true
+    },
+    {
+      "control": "duplicate-table",
+      "returncode": 1,
+      "expected_failure": "Invalid zones reached demand computation",
+      "matched": true
+    },
+    {
+      "control": "empty-table",
+      "returncode": 1,
+      "expected_failure": "StructuralAuditRefused not raised",
+      "matched": true
+    },
+    {
+      "control": "blank-matrix-row",
+      "returncode": 1,
+      "expected_failure": "IndexError",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Parser and actual audit-entry refusal tests over synthetic files. No native engine, geographic acceptance, scientific accuracy or launch-order proof."
+}

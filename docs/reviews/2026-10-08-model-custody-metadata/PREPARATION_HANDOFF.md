@@ -258,3 +258,31 @@ All ten handoff/recovery controls passed their expected outcomes. The current
 Private evidence is retained under
 `native-preparation-handoff-controls-20261009c` in the local OpenPlan state folder.
 The earlier five-case report remains in Git history.
+
+## Structural zone identity correction, October 9
+
+Before connecting the structural audit to execution, inspection found a
+reproducible identity defect. The matrix reader accepted duplicate zone IDs,
+converted `1.9` and `1.1` to the same integer, and collapsed adjacent integer IDs
+`9007199254740992` and `9007199254740993` through binary floating point. The zone
+table used the same conversion and a dictionary that silently discarded duplicate
+rows. Such a matrix cannot support an exact zone-based demand audit.
+
+The reader now parses integer identities exactly, accepts integral decimal and
+exponent spellings, and refuses fractional/non-finite IDs. Matrix axes must have
+unique IDs; zone tables must be nonempty and unique. Empty matrix rows produce
+an explicit structural refusal. The actual audit entry calls this checked zone
+reader before reading demand. Seven new tests, fourteen existing preparation-file
+tests and the existing structural audit/diagnosis script pass. Eight harmless,
+broken and restored controls pass their expected outcomes in isolated module
+copies. See `prototype/structural-zone-controls.json`. Historical study records
+remain unchanged; these tests do not establish geographic or model acceptance.
+
+Tracing `stage_assignment` also confirms that input-package demand is not the
+final assigned matrix. Mode choice, scenario adjustments, gateway injection and
+unreachable-pair filtering occur before resident/external traffic classes are
+constructed. The execution connection must preserve the package audit and
+separately bind the actual class matrices, centroid order and applied network
+settings immediately before assignment. Calling the existing package audit a
+freeze of final engine demand would overstate its scope. That connection remains
+open; this correction fixes a prerequisite rather than claiming it complete.
