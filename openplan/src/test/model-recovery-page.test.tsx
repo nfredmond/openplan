@@ -106,3 +106,25 @@ describe("authorized model recovery page join", () => {
     expect(mocks.reap).toHaveBeenCalledWith([expect.objectContaining({ id: run })]);
   });
 });
+
+
+describe("recovery decision permission props", () => {
+  const user = "40000000-0000-4000-8000-000000000001";
+  it.each(["owner", "admin", "member"])("binds %s membership to the signed-in user and workspace", async (role) => {
+    results.set("workspace_members", { data: { workspace_id: workspace, user_id: user, role }, error: null });
+    const props = managerProps(await load());
+    expect(props?.recoveryUserId).toBe(user);
+    expect(props?.recoveryPermission).toBe(role === "member" ? "denied" : "allowed");
+    expect(queries).toContainEqual({ table: "workspace_members", method: "select", args: ["workspace_id, user_id, role"] });
+    expect(queries).toContainEqual({ table: "workspace_members", method: "eq", args: ["workspace_id", workspace] });
+    expect(queries).toContainEqual({ table: "workspace_members", method: "eq", args: ["user_id", user] });
+  });
+  it.each(["workspace_id", "user_id"])("refuses a membership with different %s", async (field) => {
+    results.set("workspace_members", { data: { workspace_id: workspace, user_id: user, role: "owner", [field]: model }, error: null });
+    expect(managerProps(await load())?.recoveryPermission).toBe("denied");
+  });
+  it("keeps failed permission reads unavailable", async () => {
+    results.set("workspace_members", { data: null, error: { message: "Synthetic read failure" } });
+    expect(managerProps(await load())?.recoveryPermission).toBe("unavailable");
+  });
+});

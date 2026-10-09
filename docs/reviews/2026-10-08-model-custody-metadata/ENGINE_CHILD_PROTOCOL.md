@@ -389,3 +389,14 @@ current membership. Explicit Planner Agent headers refuse until recovery has its
 own approved action. Missing replies remain unconfirmed and require the same
 saved request. Mocked route controls and installed SQL/HTTP controls pass, but
 real session-cookie, browser and operator-control journeys remain unproved.
+
+### Browser decision custody, October 8
+
+The model run page now exposes scoped operator recovery review and acknowledgement.
+A versioned browser copy precedes transport; reload retries the same request and
+retains its exact receipt for download. Expected account/workspace headers and
+same-origin POST checks complement server authorization. Pending, conflicting,
+unreadable and confirmed records remain distinct. Component and mocked route/page
+checks do not establish a rendered or authenticated browser journey. T3 capture
+remains unavailable. No process termination, continuation, restart or scientific
+claim follows from the abandonment receipt.

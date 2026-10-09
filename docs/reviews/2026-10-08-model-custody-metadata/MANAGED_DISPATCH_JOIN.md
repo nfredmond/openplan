@@ -3411,3 +3411,46 @@ preview remains unchanged. Real session-cookie journeys, operator controls,
 saved browser requests, actual T3 rendering and downloadable decisions remain
 open. Process termination, model restart, ActivitySim supervision and scientific
 acceptance are still separate requirements. Normal managed dispatch remains off.
+
+### October 8: retained browser recovery decisions
+
+The model run page now supplies the authenticated user and scoped owner/admin
+permission to a recovery panel. Membership reads select and check workspace,
+user and role; failed reads remain unavailable. Worker run records retain the
+panel after becoming terminal so a lost abandonment reply can still be recovered.
+The operator reviews the exact current state, provides a reason and acknowledges
+that abandonment does not establish process termination or authorize restart.
+
+Before POST, the browser saves a versioned request under its account, workspace,
+model and run. Reload and retry use that original decision. Storage failures
+prevent a new send; conflicting or unreadable copies remain intact. Exact
+receipts are retained with the decision and can be downloaded as JSON. Conflicts
+require a new review. This implementation does not yet import or repair unreadable
+copies, so that self-service boundary remains open.
+
+GET and POST require expected-user and expected-workspace headers matching the
+current authenticated session. POST also requires the same browser origin. A
+session switch therefore cannot silently attribute a saved decision to another
+operator. These browser checks supplement current route and SQL authorization.
+The UI's review and saved-copy state are also scoped to the current account/run.
+
+Four focused suites pass 50 tests. They include real component event handlers,
+remount/retry and downloaded JSON, plus mocked page permission reads with exact
+projections and filters. Focused TypeScript checks the recovery helper, route,
+component and their tests/imports; targeted ESLint passes. The focused type check
+includes the test setup's DOM matcher declarations. It does not establish a
+whole-project type check or production build.
+
+The browser and route mutation reports record harmless survivors and deliberate
+fault detection. An initial expanded browser-control run detected the omitted
+permission projection, but its report matcher expected the wrong assertion text.
+That run did not count as a passing control report. The runner now checks the
+actual projection assertion. Mutations restore original source bytes in finally
+blocks; no served checkout or preview database is changed.
+
+T3 opens both the existing tab and a fresh tab and reads the OpenPlan landing
+page, but reports the panel hidden and fails snapshots. The frozen preview is an
+older build. No desktop/390px rendering, real session-cookie recovery journey,
+keyboard/screen-reader acceptance or practitioner observation is claimed here.
+Normal managed dispatch remains off. Physical termination, restart, ActivitySim
+supervision and independent scientific acceptance remain open.

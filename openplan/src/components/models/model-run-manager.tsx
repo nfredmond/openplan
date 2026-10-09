@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import dynamic from "next/dynamic";
+import { ModelRecoveryPanel } from "@/components/models/model-recovery-panel";
 import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-panel";
 import { StructuralDiagnosisExplanation } from "@/components/models/structural-diagnosis-explanation";
 import { ModelRunHeadlineAnswer } from "@/components/models/model-run-headline-answer";
@@ -179,6 +180,8 @@ export type ModelRunComparisonCandidate = {
 };
 
 type ModelRunManagerProps = {
+  recoveryUserId?: string | null;
+  recoveryPermission?: "allowed" | "denied" | "unavailable";
   modelId: string;
   modelTitle: string;
   defaultQueryText: string;
@@ -384,6 +387,8 @@ function ManagedRunPromotionControl({
 }
 
 export function ModelRunManager({
+  recoveryUserId = null,
+  recoveryPermission = "unavailable",
   modelId,
   modelTitle,
   defaultQueryText,
@@ -1363,6 +1368,9 @@ export function ModelRunManager({
                           for every non-failed run, so the copy below is
                           untouched for them.
                         */}
+                        {recoveryUserId && workspaceId && isWorkerExecutedRunMode(run.engine_key) ? (
+                          <ModelRecoveryPanel key={`${recoveryUserId}:${workspaceId}:${modelId}:${run.id}`} userId={recoveryUserId} workspaceId={workspaceId} modelId={modelId} runId={run.id} permission={recoveryPermission} stageNames={Object.fromEntries(run.stages.map((stage) => [stage.id, stage.stage_name]))} onConfirmed={() => router.refresh()} />
+                        ) : null}
                         {recoveryNotice ? (
                           <div className="space-y-1 text-sm text-amber-800 dark:text-amber-200" data-testid="run-recovery-notice">
                             <p>{recoveryNotice}</p>

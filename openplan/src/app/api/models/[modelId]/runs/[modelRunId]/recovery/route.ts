@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { loadModelAccess } from "@/lib/models/api";
 import { isWorkerExecutedRunMode } from "@/lib/models/run-modes";
@@ -11,7 +12,7 @@ const paramsSchema = z.object({ modelId: recoveryIdentitySchema, modelRunId: rec
 type Context = { params: Promise<{ modelId: string; modelRunId: string }> };
 const response = (error: string, status: number) => NextResponse.json({ error }, { status });
 
-async function authorize(context: Context) {
+async function authorize(request: NextRequest, context: Context) {
   const params = paramsSchema.safeParse(await context.params);
   if (!params.success) return { response: response("Invalid model run route params", 400) };
   const supabase = await createClient();
@@ -23,6 +24,9 @@ async function authorize(context: Context) {
   if (!access.allowed || !access.membership || !["owner", "admin"].includes(access.membership.role)
       || access.membership.workspace_id !== access.model.workspace_id) {
     return { response: response("Recovery requires a workspace owner or administrator", 403) };
+  }
+  if (request.headers.get("x-openplan-expected-user") !== user.id || request.headers.get("x-openplan-expected-workspace") !== access.model.workspace_id) {
+    return { response: response("The signed-in account or workspace changed. Reopen recovery from the current session.", 403) };
   }
   const { data: run, error } = await supabase.from("model_runs")
     .select("id, model_id, workspace_id, engine_key")
@@ -38,7 +42,7 @@ async function authorize(context: Context) {
 export async function GET(request: NextRequest, context: Context) {
   const audit = createApiAuditLogger("model_runs.recovery.inspect", request);
   try {
-    const access = await authorize(context);
+    const access = await authorize(request, context);
     if (access.response) return access.response;
     const { data, error } = await createServiceRoleClient().rpc("inspect_model_run_recovery", {
       p_workspace_id: access.workspaceId, p_run_id: access.runId, p_actor_id: access.actorId,
@@ -65,8 +69,9 @@ export async function POST(request: NextRequest, context: Context) {
       return response("Planner Agent recovery decisions are not supported. An authorized operator must review this decision directly.", 403);
     }
   }
+  try { requireProviderBrowserOrigin(request); } catch { return response("Recovery writes require the same browser origin", 403); }
   try {
-    const access = await authorize(context);
+    const access = await authorize(request, context);
     if (access.response) return access.response;
     const body = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
     if (!body.ok) return body.response;

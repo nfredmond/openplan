@@ -10,7 +10,7 @@ const stamp = "2026-10-08T19:00:00+00:00";
 const state = { model_id: model, run_id: run, workspace_id: workspace, status: "running", updated_at: stamp, attempt_managed: true, stages: [{ id: stage, status: "running", updated_at: stamp, active_attempt_id: attempt, attempt_managed: true }] };
 const decision = () => ({ requestId, decision: "abandon_execution", expectedState: structuredClone(state), reason: "Synthetic reviewed abandonment", evidence: { scope: "unconfirmed" } });
 const context = () => ({ params: Promise.resolve({ modelId: model, modelRunId: run }) });
-const request = (body: unknown = decision(), headers: Record<string, string> = {}) => new NextRequest("http://localhost/api/recovery", { method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body) });
+const request = (body: unknown = decision(), headers: Record<string, string> = {}) => new NextRequest("http://localhost/api/recovery", { method: "POST", headers: { "Content-Type": "application/json", "origin": "http://localhost", "x-openplan-expected-user": actor, "x-openplan-expected-workspace": workspace, ...headers }, body: JSON.stringify(body) });
 const receipt = () => ({ request_id: requestId, workspace_id: workspace, run_id: run, actor_id: actor, outcome: "execution_abandoned", run_status: "cancelled", process_termination_verified: false, continuation_authorized: false, model_resumed: false, reported_evidence_verified: false, request_payload: { workspace_id: workspace, run_id: run, actor_id: actor, expected_state: structuredClone(state), reason: decision().reason, reported_evidence: decision().evidence } });
 let runRow: Record<string, unknown> | null;
 let runError: { message: string } | null;
@@ -33,7 +33,7 @@ it("derives actor and scope and asserts the full run projection", async () => {
 });
 it("reads a scoped inspection without continuation authority", async () => {
  const observation = { expected_state: state, process_termination_verified: false, continuation_authorized: false, model_resumed: false }; mocks.rpc.mockResolvedValue({ data: observation, error: null });
- const result = await GET(new NextRequest("http://localhost/api/recovery"), context()); expect(result.status).toBe(200); expect(await result.json()).toEqual(observation);
+ const result = await GET(new NextRequest("http://localhost/api/recovery", { headers: { "x-openplan-expected-user": actor, "x-openplan-expected-workspace": workspace } }), context()); expect(result.status).toBe(200); expect(await result.json()).toEqual(observation);
  expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("inspect_model_run_recovery", { p_workspace_id: workspace, p_run_id: run, p_actor_id: actor });
 });
 it("refuses unauthenticated requests before privileged access", async () => { mocks.auth.mockResolvedValue({ data: { user: null } }); expect((await POST(request(), context())).status).toBe(401); expect(mocks.service).not.toHaveBeenCalled(); });
@@ -45,6 +45,8 @@ it("refuses mismatched or unavailable run reads", async () => { runRow = { ...ru
 it("requires fresh review after progress", async () => { mocks.rpc.mockResolvedValue({ data: null, error: { message: "Model recovery state changed", code: "P0001" } }); expect((await POST(request(), context())).status).toBe(409); });
 it.each(["actor_id", "request_payload", "process_termination_verified", "model_resumed"])("keeps changed receipt %s unconfirmed", async (key) => { mocks.rpc.mockResolvedValue({ data: { ...receipt(), [key]: "changed" }, error: null }); const result = await POST(request(), context()); expect(result.status).toBe(503); expect((await result.json()).outcome).toBe("recovery_unconfirmed"); });
 it("keeps lost replies unconfirmed and repeats exact requests", async () => { mocks.rpc.mockRejectedValueOnce(new Error("private transport detail")).mockResolvedValueOnce({ data: receipt(), error: null }); const first = await POST(request(), context()); expect(first.status).toBe(503); expect(await first.text()).not.toContain("private transport detail"); expect((await POST(request(), context())).status).toBe(200); expect(mocks.rpc.mock.calls[0]).toEqual(mocks.rpc.mock.calls[1]); });
-it("refuses inspection with invented continuation authority", async () => { mocks.rpc.mockResolvedValue({ data: { expected_state: state, process_termination_verified: false, continuation_authorized: true, model_resumed: false }, error: null }); expect((await GET(new NextRequest("http://localhost/api/recovery"), context())).status).toBe(503); });
+it("refuses inspection with invented continuation authority", async () => { mocks.rpc.mockResolvedValue({ data: { expected_state: state, process_termination_verified: false, continuation_authorized: true, model_resumed: false }, error: null }); expect((await GET(new NextRequest("http://localhost/api/recovery", { headers: { "x-openplan-expected-user": actor, "x-openplan-expected-workspace": workspace } }), context())).status).toBe(503); });
 
 it("rejects noncanonical request identities before transport", async () => { expect((await POST(request({ ...decision(), requestId: "AAAAAAAA-1111-4111-8111-111111111111" }), context())).status).toBe(400); expect(mocks.rpc).not.toHaveBeenCalled(); });
+
+it.each(["x-openplan-expected-user", "x-openplan-expected-workspace", "origin"])("refuses changed browser scope %s", async (header) => { expect((await POST(request(decision(), { [header]: "changed" }), context())).status).toBe(403); expect(mocks.service).not.toHaveBeenCalled(); });

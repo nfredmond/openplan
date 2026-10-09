@@ -31,13 +31,28 @@
       "detected": "keeps changed receipt"
     },
     {
+      "control": "omit-user-binding",
+      "returncode": 1,
+      "detected": "refuses changed browser scope x-openplan-expected-user"
+    },
+    {
+      "control": "omit-workspace-binding",
+      "returncode": 1,
+      "detected": "refuses changed browser scope x-openplan-expected-workspace"
+    },
+    {
+      "control": "omit-origin",
+      "returncode": 1,
+      "detected": "refuses changed browser scope origin"
+    },
+    {
       "control": "restored",
       "returncode": 0,
       "detected": null
     }
   ],
-  "route_sha256": "4b3b0399911e6d4741c1b553db123c394e588e64af167519cdfef0f56c3317ed",
-  "test_sha256": "95b9c4b4924e255cdd04c8b571845350b32d783789a89e788b549662d7f8fd2d",
-  "evidence_directory": "/home/nathaniel/.local/state/openplan/recovery-route-controls-20261008",
+  "route_sha256": "6fd03621e826dfee8265bce6f4eef77a2598e672afdc822b58a5b931786c12b8",
+  "test_sha256": "c55b3d1ed08fc53bf4f5c248e2041ba0eb0e1805fbd7256ae9405fd48f3470a8",
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/recovery-route-controls-20261008-browser-v1",
   "limits": "Mocked route/session/RPC tests, with exact read projection assertions. SQL and HTTP command behavior have separate proofs. This does not establish real session cookies, browser controls, deployed configuration, physical termination or agent approval."
 }

@@ -179,7 +179,7 @@ export default async function ModelDetailPage({
     notFound();
   }
 
-  const [projectsResult, scenarioOptionsResult, primaryProjectResult, primaryScenarioResult, plansResult, reportsResult, datasetsResult, runsResult, linksResult, scenarioEntriesResult, modelRunsResult, scenarioAssumptionSetsResult, scenarioDataPackagesResult, scenarioIndicatorSnapshotsResult, workspaceResult] =
+  const [projectsResult, scenarioOptionsResult, primaryProjectResult, primaryScenarioResult, plansResult, reportsResult, datasetsResult, runsResult, linksResult, scenarioEntriesResult, modelRunsResult, scenarioAssumptionSetsResult, scenarioDataPackagesResult, scenarioIndicatorSnapshotsResult, workspaceResult, recoveryMembershipResult] =
     await Promise.all([
       supabase.from("projects").select("id, name").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
       supabase.from("scenario_sets").select("id, title").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
@@ -252,6 +252,7 @@ export default async function ModelDetailPage({
       // inherits when neither the model nor its project carries an area. Same
       // read as county-runs/page.tsx and safety/page.tsx.
       supabase.from("workspaces").select(HOME_GEOGRAPHY_COLUMNS).eq("id", model.workspace_id).maybeSingle(),
+      supabase.from("workspace_members").select("workspace_id, user_id, role").eq("workspace_id", model.workspace_id).eq("user_id", user.id).maybeSingle(),
     ]);
 
   /**
@@ -396,6 +397,8 @@ export default async function ModelDetailPage({
   const primaryProjectUnreadable = reads.check("the primary project", primaryProjectResult);
   const primaryScenarioUnreadable = reads.check("the primary scenario set", primaryScenarioResult);
   const scenarioEntriesUnreadable = reads.check("scenario entries", scenarioEntriesResult);
+  const recoveryMembershipUnreadable = reads.check("model recovery permissions", recoveryMembershipResult);
+  const recoveryPermission = recoveryMembershipUnreadable ? "unavailable" : recoveryMembershipResult.data?.workspace_id === model.workspace_id && recoveryMembershipResult.data?.user_id === user.id && ["owner", "admin"].includes(recoveryMembershipResult.data?.role ?? "") ? "allowed" : "denied";
   const homeGeographyUnreadable = reads.check("this workspace's home geography", workspaceResult);
 
   // The link set itself. Everything downstream of it — the six linked-record
@@ -909,6 +912,8 @@ export default async function ModelDetailPage({
           <div className="space-y-6">
             <div id="run-model">
             <ModelRunManager
+              recoveryUserId={user.id}
+              recoveryPermission={recoveryPermission}
               modelId={model.id}
               modelTitle={model.title}
               defaultQueryText={launchTemplate.queryText ?? ""}

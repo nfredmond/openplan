@@ -10,6 +10,9 @@ controls=[('baseline',original,None),('harmless',original+'\n// Harmless route c
  ('omit-agent-refusal',original.replace('if (request.headers.has(name))','if (false)'),'refuses agent header'),
  ('omit-model-scope',original.replace('decision.expectedState.model_id !== access.modelId','false'),'refuses reviewed state with different model_id'),
  ('omit-receipt',original.replace('!matchesRecoveryReceipt(data, args)','false'),'keeps changed receipt'),
+ ('omit-user-binding',original.replace('request.headers.get("x-openplan-expected-user") !== user.id','false'),'refuses changed browser scope x-openplan-expected-user'),
+ ('omit-workspace-binding',original.replace('request.headers.get("x-openplan-expected-workspace") !== access.model.workspace_id','false'),'refuses changed browser scope x-openplan-expected-workspace'),
+ ('omit-origin',original.replace('requireProviderBrowserOrigin(request);','void request;'),'refuses changed browser scope origin'),
  ('restored',original,None)]
 records=[]
 try:
