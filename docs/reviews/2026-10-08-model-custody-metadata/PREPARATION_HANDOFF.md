@@ -137,3 +137,31 @@ handoff. The manifest says `source_completeness`, `structural_preparation`,
 actual freeze timing, structural audit binding, native artifact registration and
 normal stage/engine integration still require evidence. No historical study files
 or existing output bytes were rewritten.
+
+## Native preparation registration and lost-reply recovery
+
+The native registration verifier now exercises `prepare_validation_bundle` as
+well as the complete source-catalog writer. Each preparation case uses a fresh
+admitted attempt and isolated database clone. It verifies the retained bundle,
+manifest and six declared readiness roles against their hashes and byte sizes,
+then checks the actual artifact's type, method, attempt and manifest reference.
+No source is acquired and no model is invoked.
+
+For each method, the verifier commits the artifact command and suppresses its
+reply. The writer stops, and its original request remains pending. A separate
+Python process runs exact-request recovery through the existing CLI. It retrieves
+the same committed receipt and clears the pending command. Snapshots of six native
+tables remain unchanged during recovery; the original writer remains stopped.
+A wrong request ID fails, and a deliberate stopped-writer bypass is detected.
+
+All seven preparation registration cases and all seven existing source-registration
+cases passed their expected outcomes against separate clones. Their results are retained in
+`prototype/native-preparation-registration-controls.json` and
+`prototype/native-source-registration-controls.json`. The gateway is removed on
+successful completion of each owned context. Database clones remain as evidence.
+
+This establishes native artifact registration and receipt recovery for these
+synthetic preparation files. The fixture's empty observation package does not
+establish useful observations, adequate source coverage, scientific independence,
+structural preparation or execution ordering. No Storage publication, normal
+stage handoff or engine launch is proved by this checkpoint.

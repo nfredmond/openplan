@@ -7,6 +7,7 @@ import subprocess
 import sys
 
 HERE = Path(__file__).resolve().parent
+preparation = os.environ.get('OPENPLAN_SOURCE_REGISTRATION_KIND') == 'preparation'
 output = Path(os.environ['OPENPLAN_SOURCE_REGISTRATION_CONTROLS'])
 output.mkdir(mode=0o700, parents=True, exist_ok=False)
 cases = []
@@ -30,7 +31,7 @@ for method, control in [('aequilibrae', 'normal'), ('activitysim', 'normal'),
         assert result.returncode == 0, result.stderr
         report = json.loads((output / name / 'activity-stage-publication.json').read_text())
         assert report['gateway_removed'] is True
-        check = next(row for row in report['controls'] if row['control'] == 'native-source-registration')
+        check = next(row for row in report['controls'] if row['control'] == ('native-preparation-registration' if preparation else 'native-source-registration'))
         assert check['registered_manifests'] == (1 if method == 'aequilibrae' else 2)
         assert check['fresh_process_exact_receipt_recovered'] and check['native_tables_unchanged'] == 6
         assert check['storage_uploaded'] is False and check['execution_resumed'] is False
@@ -39,5 +40,5 @@ report = {'cases':cases, 'proof_sha256':hashlib.sha256((HERE / 'verify_native_so
           'limits':'Native artifact registration, local object hashes and separate-process receipt recovery over synthetic fixtures. No Storage upload, native model execution, independent preparation, normal dispatch or scientific acceptance.'}
 content = json.dumps(report, indent=2) + '\n'
 (output / 'controls.json').write_text(content)
-(HERE / 'native-source-registration-controls.json').write_text(content)
+(HERE / ('native-preparation-registration-controls.json' if preparation else 'native-source-registration-controls.json')).write_text(content)
 print(content)
