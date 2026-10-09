@@ -61,3 +61,41 @@ preflight work; managed dispatch is not enabled by this change. Arbitrary
 operator commands that delegate work to external daemons are outside the host
 scope's descendant boundary. Follow-up must join these remaining boundaries
 without promoting this synthetic case into a scientific acceptance claim.
+
+## Native execution follow-up
+
+A subsequent serial campaign ran installed ActivitySim 1.5.1 through this worker's
+actual CLI and supervised runtime. It copied the retained development bundle for
+Broomfield County, Colorado (08014) into private proof directories. The only
+configuration change set the household sample from all households to 100.
+Stock coefficients and the stock configuration digest remained unchanged. This
+case did not read or reopen an acceptance holdout.
+
+The baseline, harmless run-label control, and restored case each reached the
+native `school_location` step before the proof runner killed its own runtime
+owner. Each owned engine scope then became empty. Retained logs contained
+15,523, 15,524 and 15,524 bytes respectively. None produced an observed-exit
+receipt, runtime summary, or final trip file. A control omitting owner termination
+completed every runtime stage and wrote 779 trip rows. An earlier owner-alive
+pilot also completed with 779 trip rows.
+
+The runtime verified a 1.5 GiB RAM cap, zero swap, and 32-task cap. Compute thread
+environment settings were one. The successful control's native log reported
+529.3 MB high-water RSS; that is a process report, not total host memory or an
+ActivitySim capacity recommendation. The four scopes were observed empty after
+cleanup. Hashes over every source-bundle file matched before and after the
+campaign.
+
+`prototype/verify_activitysim_native_owner_loss.py` and
+`prototype/activitysim-native-owner-loss.json` retain the procedure, cases,
+source/worker hashes and live scope identities. Private complete evidence is in
+`~/.local/state/openplan/activitysim-native-host-controls-20261008a/`; the earlier
+pilot is in `activitysim-native-host-20261008a/` under the same parent.
+
+This supersedes the absence of any native interruption case stated above. It
+proves one sampled development execution, with a logged native step before the
+kill; it does not identify the exact machine instruction at interruption. It
+proves neither full-population capacity nor restart, continuation, graceful
+project closure, container custody, nationwide use-specific accuracy or human
+acceptance. The 779 rows demonstrate runnable output, not plausible local travel
+behavior or an independent acceptance result.
