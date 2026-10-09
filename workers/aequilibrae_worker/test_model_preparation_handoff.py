@@ -1,4 +1,5 @@
 """Bound worker adapter with real files/journal and injected native responses."""
+import json
 import shutil
 import unittest
 import uuid
@@ -16,7 +17,7 @@ from test_model_skip_dispatch import aeq
 
 class HandoffTests(unittest.TestCase):
     response=source_fixtures.BoundSourceTests.response
-    def setUp(self):
+    def setUp(self, *, assignment_profile=None):
         writer_fixtures.WriterTests.setUp(self)
         consumer=self.writer.context
         self.writer.workspace(self.directory/'runs',consumer.run_id)
@@ -26,6 +27,8 @@ class HandoffTests(unittest.TestCase):
         inputs=files.path/'inputs';shutil.copytree(source.arguments['relative_to'],inputs)
         arguments={key:(inputs/value.name if key in preparation.PATH_FIELDS else value) for key,value in source.arguments.items()}
         arguments['relative_to']=inputs
+        if assignment_profile is not None:
+            arguments['assignment_profile_path'].write_text(json.dumps(assignment_profile))
         retained=preparation.retain(files=files,method='aequilibrae',bundle_arguments=arguments)
         self.producer={'id':producer.stage_id,'run_id':consumer.run_id,'stage_name':'AequilibraE Setup','status':'succeeded',
                        'sort_order':1,'attempt_managed':True,'active_attempt_id':producer.attempt_id}

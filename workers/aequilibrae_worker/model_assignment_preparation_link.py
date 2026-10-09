@@ -1,7 +1,8 @@
 """Bind initial assignment metadata to a confirmed, byte-checked preparation.
 
-This establishes custody only. It does not assert that the solver used the
-prepared profile or network, or that the observations are independent.
+This checks custody and declared profile equality. It does not assert that every
+solver setting matches its declaration, or establish network, demand or
+observation equivalence and independence.
 """
 import json
 
@@ -19,7 +20,7 @@ def _document(path, expected_hash, expected_size):
         parse_constant=lambda value: (_ for _ in ()).throw(ValueError('Nonfinite preparation metadata')))
 
 
-def retained_preparation(writer, method):
+def retained_preparation(writer, method, *, assignment_profile):
     """Select from this parent's journal, never a child-provided artifact ID."""
     from model_assignment_input_publication import _file
     from model_validation_source_catalog import _artifact
@@ -80,6 +81,19 @@ def retained_preparation(writer, method):
         actual, _ = _file(path.parent / record['path'])
         if actual['sha256'] != record['sha256'] or actual['bytes'] != record['bytes']:
             raise ValueError('Preparation link source bytes differ')
+    profiles = [entry for entry in entries if entry['role'] == 'assignment_profile']
+    if len(profiles) != 1:
+        raise ValueError('Preparation link requires one assignment profile')
+    profile_record = profiles[0]
+    prepared = _document(path.parent / profile_record['object_name'],
+        profile_record['sha256'], profile_record['bytes'])
+    from assignment_settings import canonical_assignment_profile, assignment_profile_digest
+    prepared = canonical_assignment_profile(prepared)
+    current = canonical_assignment_profile(assignment_profile)
+    if prepared != current:
+        raise ValueError('Prepared assignment profile differs from initial assignment')
     return {'status': 'retained', 'artifact_id': receipt['id'],
         'manifest_sha256': payload['content_hash'], 'producer': producer,
+        'assignment_profile': {'status': 'matched', 'scope': 'declared_assignment_profile',
+            'prepared_sha256': profile_record['sha256'], 'canonical_sha256': assignment_profile_digest(current)},
         'solver_input_equivalence': 'unassessed'}

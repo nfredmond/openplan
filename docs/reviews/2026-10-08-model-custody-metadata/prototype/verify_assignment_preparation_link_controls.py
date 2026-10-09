@@ -13,13 +13,15 @@ original = {name: (worker / name).read_text() for name in names}
 checks = [
     ('baseline', None, None, None, None, None),
     ('harmless', None, None, None, None, None),
-    ('omit-link', names[1], 'preparation_link=retained_preparation(writer,method)', "preparation_link={'status':'not_retained','solver_input_equivalence':'unassessed'}", 'test_parent_links_confirmed_consumption_before_solver', 'AssertionError'),
+    ('omit-link', names[1], "preparation_link=retained_preparation(writer,method,assignment_profile=manifest.get('profile'))", "preparation_link={'status':'not_retained','solver_input_equivalence':'unassessed'}", 'test_parent_links_confirmed_consumption_before_solver', 'AssertionError'),
     ('changed-source', names[0], "if actual['sha256'] != record['sha256'] or actual['bytes'] != record['bytes']:", 'if False:', 'test_changed_source_stops_before_snapshot_registration_or_solver', 'ValueError not raised'),
     ('changed-manifest', names[0], "if record['sha256'] != expected_hash or record['bytes'] != expected_size:", 'if False:', 'test_changed_preserved_documents_refuse', 'ValueError not raised'),
     ('wrong-method', names[0], "or metadata.get('demand_method') != method", "or False", 'test_wrong_method_is_not_treated_as_missing', None),
     ('duplicate', names[0], 'if len(selected) != 1:', 'if False:', 'test_duplicate_consumption_refuses', 'ValueError not raised'),
     ('unchecked-receipt', names[0], "receipt = client.checked_receipt(saved['command'], saved['response'])", "receipt = saved['response']", 'test_corrupt_saved_receipt_refuses', 'DeliveryUnconfirmed not raised'),
     ('foreign-attempt', names[0], "('run_id', 'stage_id', 'attempt_id')", "('run_id', 'stage_id')", 'test_other_attempt_cannot_supply_this_assignments_link', 'DeliveryUnconfirmed'),
+    ('profile-mismatch', names[0], 'if prepared != current:', 'if False:', 'test_changed_profile_stops_before_solver_even_when_engine_matches_it', 'ValueError not raised'),
+    ('incomplete-prepared-profile', names[0], 'prepared = canonical_assignment_profile(prepared)', 'prepared = prepared', 'test_incomplete_prepared_profile_refuses', 'ValueError: Prepared assignment profile differs'),
     ('restored', None, None, None, None, None),
 ]
 # Method also determines the fixed directory; removing one redundant condition

@@ -6,6 +6,7 @@ from unittest.mock import patch
 import model_attempt_writer as managed
 import model_assignment_input_snapshot as snapshot
 import model_assignment_preparation_link as link
+import assignment_settings
 import test_model_preparation_handoff as handoff
 import test_assignment_input_snapshot as inputs
 
@@ -14,14 +15,18 @@ class PreparationLinkTests(unittest.TestCase):
     response = handoff.HandoffTests.response
 
     def setUp(self):
-        handoff.HandoffTests.setUp(self)
+        fixture = inputs.SnapshotTests(); fixture.setUp(); self.addCleanup(fixture.doCleanups)
+        self.engine = fixture.engine
+        with patch.object(assignment_settings, 'installed_assignment_engine_version', return_value='1.6.2'):
+            self.profile = assignment_settings.resolve_assignment_profile({'AEQ_CORES': '1'})
+        self.engine.rgap_target = self.profile['target_gap']
+        self.engine.max_iter = self.profile['max_iterations']
+        handoff.HandoffTests.setUp(self, assignment_profile=self.profile)
         with managed.bind(self.writer):
             self.retained = handoff.aeq.retain_managed_validation_preparation('aequilibrae')
         self.get.return_value.json.return_value[0]['stage_name'] = 'Network Assignment'
         self.writer.get = self.get
         self.post.reset_mock()
-        fixture = inputs.SnapshotTests(); fixture.setUp(); self.addCleanup(fixture.doCleanups)
-        self.engine = fixture.engine; self.profile = fixture.profile
         self.output = self.writer.files.path / 'run_output'; self.output.mkdir()
 
     def execute(self):
@@ -40,6 +45,9 @@ class PreparationLinkTests(unittest.TestCase):
             self.assertEqual(record['producer'], self.retained['producer'])
             self.assertEqual(record['manifest_sha256'], self.retained['manifest_sha256'])
             self.assertEqual(record['solver_input_equivalence'], 'unassessed')
+            self.assertEqual(record['assignment_profile']['status'], 'matched')
+            self.assertEqual(record['assignment_profile']['scope'], 'declared_assignment_profile')
+            self.assertEqual(record['assignment_profile']['canonical_sha256'], assignment_settings.assignment_profile_digest(self.profile))
             self.assertEqual(metadata['scientific_acceptance'], 'unassessed')
             self.assertEqual(metadata['preparation_independence'], 'unassessed')
         self.engine.execute.side_effect = verify
@@ -59,7 +67,7 @@ class PreparationLinkTests(unittest.TestCase):
 
     def test_wrong_method_is_not_treated_as_missing(self):
         with self.assertRaisesRegex(ValueError, 'method, location or claims'):
-            link.retained_preparation(self.writer, 'activitysim')
+            link.retained_preparation(self.writer, 'activitysim', assignment_profile=self.profile)
 
     def test_changed_preserved_documents_refuse(self):
         directory = Path(self.retained['manifest_path']).parent
@@ -69,7 +77,7 @@ class PreparationLinkTests(unittest.TestCase):
             try:
                 path.write_bytes(original + b' ')
                 with self.subTest(name=name), self.assertRaisesRegex(ValueError, 'file bytes differ'):
-                    link.retained_preparation(self.writer, 'aequilibrae')
+                    link.retained_preparation(self.writer, 'aequilibrae', assignment_profile=self.profile)
             finally:
                 path.write_bytes(original)
 
@@ -82,8 +90,32 @@ class PreparationLinkTests(unittest.TestCase):
                     row['command']['arguments']['attempt_id'] = self.producer['active_attempt_id']
             return saved
         with patch.object(link.journal, 'read_existing', foreign):
-            self.assertEqual(link.retained_preparation(self.writer, 'aequilibrae'),
+            self.assertEqual(link.retained_preparation(self.writer, 'aequilibrae', assignment_profile=self.profile),
                 {'status': 'not_retained', 'solver_input_equivalence': 'unassessed'})
+
+    def test_changed_profile_stops_before_solver_even_when_engine_matches_it(self):
+        self.profile['target_gap'] /= 2
+        self.engine.rgap_target = self.profile['target_gap']
+        with self.assertRaisesRegex(ValueError, 'Prepared assignment profile differs'): self.execute()
+        self.engine.execute.assert_not_called(); self.post.assert_not_called()
+        self.assertTrue(self.writer.stopped)
+
+    def test_engine_version_and_core_changes_refuse(self):
+        for key, value in (('engine_version', '1.6.3'), ('cores', 2), ('max_iterations', 4000)):
+            changed = {**self.profile, key: value}
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'Prepared assignment profile differs'):
+                link.retained_preparation(self.writer, 'aequilibrae', assignment_profile=changed)
+
+    def test_incomplete_profile_refuses(self):
+        with self.assertRaises(assignment_settings.AssignmentSettingsError):
+            link.retained_preparation(self.writer, 'aequilibrae', assignment_profile={})
+
+    def test_incomplete_prepared_profile_refuses(self):
+        fixture = handoff.HandoffTests(); fixture.setUp(); self.addCleanup(fixture.doCleanups)
+        with managed.bind(fixture.writer):
+            handoff.aeq.retain_managed_validation_preparation('aequilibrae')
+        with self.assertRaises(assignment_settings.AssignmentSettingsError):
+            link.retained_preparation(fixture.writer, 'aequilibrae', assignment_profile=self.profile)
 
     def test_duplicate_consumption_refuses(self):
         read = link.journal.read_existing

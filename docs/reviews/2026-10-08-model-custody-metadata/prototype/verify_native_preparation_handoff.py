@@ -23,6 +23,10 @@ import model_validation_preparation as preparation
 from test_model_skip_dispatch import aeq as worker
 from test_model_validation_preparation import source_fixtures
 
+# Optional joined proof hooks. The ordinary handoff/recovery campaign leaves
+# these unset and retains its original fixture and artifact inventory.
+configure_inputs = None
+after_consumption = None
 
 def main():
     output = Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_OUTPUT'])
@@ -73,6 +77,7 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                     shutil.copytree(fixture.root,inputs)
                     arguments={name:(inputs/value.name if name in preparation.PATH_FIELDS else value) for name,value in fixture.arguments.items()}
                     arguments.update(relative_to=inputs,source_artifacts=[fixture.record],created_at='2026-10-09T00:00:00Z')
+                    if configure_inputs is not None: configure_inputs(arguments)
                     writer.prepare_validation_bundle(method=method,bundle_arguments=arguments)
                 finally: fixture.doCleanups()
                 for path in writer.files.path.rglob('*'):
@@ -107,6 +112,8 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                     content=Path(result['source_paths'][entry['role']]).read_bytes()
                     assert len(content)==entry['bytes'] and hashlib.sha256(content).hexdigest()==entry['sha256']
                 assert all(path.read_bytes()==content for path,content in producer_bytes.items()), 'Producer bytes changed'
+                if after_consumption is not None:
+                    after_consumption(writer,method,row,sql,database)
                 states=json.loads(sql(database,f"SELECT jsonb_object_agg(id,status) FROM public.model_run_stages WHERE run_id='{run}';"))
                 assert states=={producer:'succeeded',consumer:'running'}, 'Preparation consumption changed stage status'
                 results.append({'method':method,'roles':6,'producer_completed':True,'separate_consumer_attempt':True,'consumer_registered':True,'producer_bytes_unchanged':True,'execution_authorized':False,**({'recovery':result['recovery']} if 'recovery' in result else {})})

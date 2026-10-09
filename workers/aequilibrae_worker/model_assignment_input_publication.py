@@ -64,7 +64,7 @@ def register(writer, output_directory):
                 actual,_=_file(path.parent/name)
                 if actual!=expected:raise ValueError('Assignment snapshot array bytes differ')
         from model_assignment_preparation_link import retained_preparation
-        preparation_link=retained_preparation(writer,method)
+        preparation_link=retained_preparation(writer,method,assignment_profile=manifest.get('profile'))
         writer.files.verify()
         writer.record_artifact({'run_id':writer.context.run_id,'stage_id':writer.context.stage_id,
             'artifact_type':'model_initial_assignment_inputs','file_url':'local://'+str(path),

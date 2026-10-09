@@ -52,3 +52,50 @@ acceptance, nationwide scientific coverage and planner acceptance remain open.
 GitHub checks for the previous checkpoint were queued or running when inspected.
 No merge, release or scientific claim follows from these local results. T3 still
 loads OpenPlan but cannot capture the preview; browser acceptance remains open.
+
+## Declared profile comparison checkpoint
+
+The subsequent October 9 change compares the retained preparation profile with
+the initial assignment's declared profile before registering the snapshot. It
+uses `canonical_assignment_profile`, the existing worker validator, rather than
+introducing another profile format. Both profiles must be complete and valid.
+Their canonical engine version, algorithm, volume-delay function and parameters,
+capacity/time fields, PCE, convergence limits and core count must match. Even a
+tighter target is a changed preparation and is refused until deliberately
+prepared again. Equivalent JSON formatting does not change this comparison.
+
+Successful metadata records the prepared file hash and canonical profile hash
+with `scope: declared_assignment_profile`. The overall solver-input equivalence
+stays unassessed. The snapshot currently checks live PCE, target gap, iteration
+limit and core count; this checkpoint does not newly inspect every internal
+solver parameter. Network and transformed demand identity are also separate.
+
+Verification for this checkpoint:
+
+- 83 related worker tests pass, including 12 preparation-link tests. The new
+  cases cover changed targets with matching live synthetic solver settings,
+  engine/core/iteration differences, and incomplete current or prepared profiles.
+- Twelve isolated link controls and eight publication controls meet their
+  expected outcomes. Removing profile equality permits a mismatch and fails its
+  test. Removing prepared-profile validation changes the required refusal and
+  fails its test. These results do not prove native engine settings.
+- Six native profile controls meet their expected outcomes. Both methods use
+  real claims, completed producer stages, consumption receipts and initial-input
+  artifact transactions through isolated PostgreSQL/PostgREST. Baseline,
+  formatting-only and restored cases register the exact consumption artifact ID
+  and matching profile digest. Changed and incomplete profiles leave no initial
+  input artifact, do not call the synthetic solver and stop the writer.
+  Deliberately disabling equality makes the native mismatch proof fail.
+
+The native profile campaign uses synthetic solver objects and source inputs. It
+does not execute AequilibraE or ActivitySim, prove actual engine behavior, or close
+scientific acceptance. Its retained evidence is
+`/home/nathaniel/.local/state/openplan/native-preparation-profile-controls-20261009a`;
+the committed summary is `prototype/native-preparation-profile-controls.json`.
+Each case preserves its database clone and removes its temporary gateway.
+
+The previous checkpoint's focused GitHub worker check passed. Its live RLS job
+was running and the remaining checks were queued at inspection. Those results do
+not establish this new checkpoint's CI status. The next modeling boundary is to
+verify the full declared profile against live solver configuration and bind the
+prepared network and documented demand transformations.
