@@ -10,8 +10,10 @@ control = os.environ.get('OPENPLAN_LIVE_PROFILE_CONTROL', 'baseline')
 mutations = {'target-drift': 'result.assignment.rgap_target = 0.01',
              'vdf-drift': 'result.assignment.vdf_parameters[0][0] = 0.16',
              'capacity-drift': 'result.assignment.capacity[0] += 1',
-             'skip-guard': 'result.assignment.rgap_target = 0.01'}
-assert control in ('baseline','harmless','restored',*mutations)
+             'skip-guard': 'result.assignment.rgap_target = 0.01',
+             'graph-drift': "result.assignment.capacity[0] += 1; result.classes[0].graph.graph.loc[result.classes[0].graph.graph['__supernet_id__']==0,'capacity'] += 1"}
+mutations['skip-graph']=mutations['graph-drift']
+assert control in ('baseline','harmless','restored','recorded-factor',*mutations)
 injection = '''
 from aequilibrae.paths import TrafficAssignment
 original_execute = TrafficAssignment.execute
@@ -28,6 +30,18 @@ main.build_traffic_assignment = changed_builder
 '''.replace('MUTATION', mutations.get(control, 'pass'))
 if control == 'skip-guard':
     injection += '\nimport model_assignment_live_profile\nmodel_assignment_live_profile.verify = lambda *args: {}\n'
+if control == 'skip-graph':
+    injection += '\nimport model_assignment_network_graph,model_assignment_network_source\nmodel_assignment_network_graph.verify = lambda assignment,database,settings: (model_assignment_network_source.identity(database), {})\n'
+if control == 'recorded-factor':
+    injection += '''
+original_stage=main.stage_assignment
+def adjusted_stage(*args,**kwargs):
+ settings=main.assignment_network_settings({'default':1.25})
+ payload=main.network_settings_payload_json(settings)
+ kwargs.update(persisted_network_settings=settings,persisted_network_settings_payload_json=payload,persisted_network_settings_digest=main.network_settings_digest(settings,payload))
+ return original_stage(*args,**kwargs)
+main.stage_assignment=adjusted_stage
+'''
 if control == 'harmless': injection += '\n# Harmless native-profile comment.\n'
 assert proof.CHILD.count('import main\n') == 1
 proof.CHILD = proof.CHILD.replace('import main\n','import main\n'+injection)
@@ -42,7 +56,8 @@ if control in mutations:
     assert failed, 'Native solver drift was not refused'
     log = (output/'child.log').read_text()
     expected = {'target-drift':'settings differ', 'skip-guard':'settings differ',
-                'vdf-drift':'VDF parameter values differ', 'capacity-drift':'network field values differ'}[control]
+                'vdf-drift':'VDF parameter values differ', 'capacity-drift':'network field values differ',
+                'graph-drift':'source and recorded transformations','skip-graph':'source and recorded transformations'}[control]
     assert expected in log, 'Native child failed for an unrelated reason'
     failures = list(output.rglob('assignment-failure.json'))
     assert len(failures) == 1
@@ -58,6 +73,9 @@ else:
     record = json.loads(manifests[0].read_text())['live_profile_verification']
     assert record['status'] == 'matched' and record['scope'] == 'initial_assignment_profile_fields'
     assert record['engine_version'] == '1.6.2'
+    graph_record=json.loads(manifests[0].read_text())['network_graph_verification']
+    assert graph_record['status']=='matched'
+    assert graph_record['scope']=='directed_source_links_with_road_class_factors'
     assert len(list(output.rglob('live-profile-execute-entered'))) == 1
 report = {'control':control,'native_engine':'AequilibraE 1.6.2','refused_before_execution':failed,
     'source_sha256':hashlib.sha256((proof.WORKER/'model_assignment_live_profile.py').read_bytes()).hexdigest(),

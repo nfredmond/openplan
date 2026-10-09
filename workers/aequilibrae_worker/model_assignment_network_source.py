@@ -19,7 +19,7 @@ def _value(value):
     raise ValueError('Network source contains an unsupported or nonfinite value')
 
 
-def identity(database):
+def identity(database, *, observe=None):
     """Read a consistent read-only snapshot of every node and link column.
 
     No geometry extension or model engine is loaded. Geometry blobs remain exact
@@ -48,6 +48,7 @@ def identity(database):
                     raise ValueError('Network source identities must be unique integers')
                 previous=item_id
                 digest.update(_json([_value(value) for value in values])+b'\n');count+=1
+                if observe is not None:observe(table,dict(zip(columns,values)))
             if count==0: raise ValueError('Network source table is empty')
             records[table]={'columns':columns,'count':count,'sha256':digest.hexdigest()}
         return {'schema':'openplan.assignment-network-source.v1','tables':records,

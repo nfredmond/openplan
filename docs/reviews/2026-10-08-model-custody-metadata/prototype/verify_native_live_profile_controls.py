@@ -9,14 +9,14 @@ root = Path(__file__).resolve().parent
 output = Path(os.environ['OPENPLAN_LIVE_PROFILE_CONTROLS'])
 output.mkdir(mode=0o700,parents=True,exist_ok=False)
 results = []
-for control in ('baseline','harmless','target-drift','vdf-drift','capacity-drift','skip-guard','restored'):
+for control in ('baseline','harmless','recorded-factor','target-drift','vdf-drift','capacity-drift','graph-drift','skip-guard','skip-graph','restored'):
     env = dict(os.environ,OPENPLAN_LIVE_PROFILE_CONTROL=control,
                OPENPLAN_BOUND_ASSIGNMENT_OUTPUT=str(output/control),OPENPLAN_BOUND_ASSIGNMENT_CONTROL='baseline')
     result = subprocess.run([sys.executable,'-B',str(root/'verify_native_live_profile.py')],
                             env=env,capture_output=True,text=True,timeout=150)
     log = result.stdout+result.stderr
     (output/(control+'.log')).write_text(log)
-    failure = 'Native solver drift was not refused' if control == 'skip-guard' else None
+    failure = 'Native solver drift was not refused' if control in ('skip-guard','skip-graph') else None
     matched = result.returncode == 0 if failure is None else result.returncode != 0 and failure in log
     results.append({'control':control,'returncode':result.returncode,'expected_failure':failure,'matched':matched})
     if not matched: raise AssertionError(f'{control}: {log[-4000:]}')

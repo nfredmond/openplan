@@ -16,8 +16,8 @@ def fixture(path):
 CREATE TABLE nodes(node_id INTEGER PRIMARY KEY,is_centroid INTEGER,geometry BLOB);
 CREATE TABLE links(link_id INTEGER PRIMARY KEY,a_node INTEGER,b_node INTEGER,direction INTEGER,
  modes TEXT,distance REAL,travel_time_ab REAL,travel_time_ba REAL,capacity_ab REAL,capacity_ba REAL,geometry BLOB);
-INSERT INTO nodes VALUES(1,1,X'0102'),(2,1,X'0304');
-INSERT INTO links VALUES(9,1,2,0,'c',3000,5,5,1000,1000,X'0506');
+INSERT INTO nodes VALUES(100,1,X'0102'),(900,1,X'0304');
+INSERT INTO links VALUES(9,100,900,0,'c',3000,5,6,1000,2000,X'0506');
 ''')
 
 
@@ -49,7 +49,7 @@ class NetworkSourceTests(unittest.TestCase):
         original=self.path.read_bytes();expected=source.identity(self.path)
         for statement in ("UPDATE links SET capacity_ab=1001", "UPDATE links SET a_node=2",
                           "UPDATE links SET modes='cw'", "UPDATE links SET geometry=X'0507'",
-                          "UPDATE nodes SET is_centroid=0 WHERE node_id=1"):
+                          "UPDATE nodes SET is_centroid=0 WHERE node_id=100"):
             with self.subTest(statement=statement):
                 self.path.write_bytes(original);self.change(statement)
                 self.assertNotEqual(source.identity(self.path),expected)

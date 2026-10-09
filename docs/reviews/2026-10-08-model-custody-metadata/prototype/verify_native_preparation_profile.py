@@ -13,6 +13,7 @@ import assignment_settings
 import model_assignment_input_snapshot as snapshot
 import model_attempt_writer as managed
 import test_assignment_input_snapshot as inputs
+from network_settings import assignment_network_settings
 
 control = os.environ.get('OPENPLAN_PREPARATION_PROFILE_CONTROL', 'baseline')
 assert control in ('baseline', 'harmless', 'mismatch', 'incomplete', 'restored', 'skip-comparison',
@@ -50,6 +51,8 @@ def verify(writer, method, consumption, sql, database):
             with sqlite3.connect(working) as connection:
                 if control in ('network-mismatch','skip-network-comparison'):
                     connection.execute('UPDATE links SET capacity_ab=999')
+                    for item in fixture.engine.classes:item.graph.graph['capacity'][0]=999
+                    fixture.engine.capacity[0]=999
                 elif control=='network-metadata':
                     connection.execute('CREATE TABLE operator_notes(note TEXT)')
                     connection.execute("INSERT INTO operator_notes VALUES('harmless metadata')")
@@ -57,7 +60,7 @@ def verify(writer, method, consumption, sql, database):
                 snapshot.retain_and_execute(fixture.engine,
                     directory=output/'initial_assignment_inputs',
                     context={'run_id':writer.context.run_id,'stage_id':writer.context.stage_id,'demand_method':method},
-                    profile=current,network_state={},network_settings={},network_database=working)
+                    profile=current,network_state={},network_settings=assignment_network_settings(),network_database=working)
         if control in ('skip-comparison','skip-network-comparison'):
             import model_assignment_preparation_link as link
             source = Path(link.__file__).read_text()

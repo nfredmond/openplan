@@ -10,6 +10,7 @@ import model_assignment_input_snapshot as snapshot
 import model_assignment_preparation_link as link
 import assignment_settings
 import model_assignment_network_source as network_source
+from network_settings import assignment_network_settings
 import test_model_preparation_handoff as handoff
 import test_assignment_input_snapshot as inputs
 
@@ -40,7 +41,7 @@ class PreparationLinkTests(unittest.TestCase):
                 directory=self.output / 'initial_assignment_inputs',
                 context={'run_id': self.writer.context.run_id, 'stage_id': self.writer.context.stage_id,
                          'demand_method': 'aequilibrae'},
-                profile=self.profile, network_state={}, network_settings={},network_database=self.network_database)
+                profile=self.profile, network_state={}, network_settings=assignment_network_settings(),network_database=self.network_database)
 
     def test_parent_links_confirmed_consumption_before_solver(self):
         def verify():
@@ -129,6 +130,8 @@ class PreparationLinkTests(unittest.TestCase):
     def test_changed_working_network_refuses_before_registration_and_solver(self):
         with sqlite3.connect(self.network_database) as connection:
             connection.execute('UPDATE links SET capacity_ab=999')
+        for item in self.engine.classes:item.graph.graph['capacity'][0]=999
+        self.engine.capacity[0]=999
         with self.assertRaisesRegex(ValueError,'Prepared network source differs'):self.execute()
         self.post.assert_not_called();self.engine.execute.assert_not_called()
         self.assertTrue(self.writer.stopped)

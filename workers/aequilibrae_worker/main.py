@@ -46,6 +46,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Tuple
 
 import requests
+from network_settings import assignment_network_settings, canonical_network_settings
 from model_validation_receipts import (
     assessment_receipt, verify_assessment_artifacts,
     ASSESSMENT_ARTIFACTS, ASSESSMENT_ARTIFACT_PROJECTION,
@@ -3559,47 +3560,6 @@ def should_apply_trip_based_mode_split(
 ) -> bool:
     """A vehicle matrix must never be reduced by person-trip mode choice again."""
     return mode_split_enabled and not demand_is_vehicle
-
-
-def assignment_network_settings(road_class_factors: dict | None = None) -> dict:
-    """Build the one versioned settings object for baseline and calibrated networks."""
-    factors: dict[str, float] = {}
-    for road_class, raw_factor in (road_class_factors or {}).items():
-        if isinstance(raw_factor, bool):
-            raise AssignmentSettingsError("Network calibration factors cannot be boolean")
-        try:
-            factor = float(raw_factor)
-        except (TypeError, ValueError, OverflowError) as error:
-            raise AssignmentSettingsError("Network calibration factors must be numeric") from error
-        if not isinstance(road_class, str) or not road_class or not np.isfinite(factor) or factor <= 0:
-            raise AssignmentSettingsError("Network calibration factors must have a name and be finite and positive")
-        factors[road_class] = factor
-    return {
-        "schema_version": "openplan.network-calibration.v1",
-        "road_class_factors": dict(sorted(factors.items())),
-        "application": {
-            "travel_time": "baseline_travel_time / factor",
-            "capacity": "baseline_capacity * factor",
-        },
-        "excludes": ["trip_based_od_adjustments"],
-    }
-
-
-def canonical_network_settings(settings: dict) -> dict:
-    """Validate a persisted network-settings object without trusting its spelling."""
-    if not isinstance(settings, dict):
-        raise AssignmentSettingsError("Network settings are missing")
-    expected_keys = {"schema_version", "road_class_factors", "application", "excludes"}
-    if set(settings) != expected_keys:
-        raise AssignmentSettingsError("Network settings fields do not match the v1 schema")
-    canonical = assignment_network_settings(settings.get("road_class_factors"))
-    if settings.get("schema_version") != canonical["schema_version"]:
-        raise AssignmentSettingsError("Unsupported network-settings schema")
-    if settings.get("application") != canonical["application"]:
-        raise AssignmentSettingsError("Network-settings application semantics do not match v1")
-    if settings.get("excludes") != canonical["excludes"]:
-        raise AssignmentSettingsError("Network-settings exclusions do not match v1")
-    return canonical
 
 
 def network_settings_payload_json(settings: dict) -> str:

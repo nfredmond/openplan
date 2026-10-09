@@ -1,7 +1,7 @@
 {
   "source_sha256": {
     "model_assignment_input_publication.py": "3fee7e7597d5eef1dbc7d095913211f5010db3c9414bee3a77dc19aeca13ad99",
-    "model_assignment_input_snapshot.py": "ae39bdc9452ce0b108e9f9d79cf3a7470533960e14793e23a125e1231d610f19",
+    "model_assignment_input_snapshot.py": "8c91219b979b86ce7f3007a1e261df58f27f66ef3c3283b1b19b286d0211eb1d",
     "model_engine_channel.py": "9eced6696938e6ad4783d7e6fbfdc4d7b6c63abb3796944dd9dd18c723c9267f",
     "model_engine_binding.py": "9d52976d12bcbc65ede273278bd001dc7ea4f4f0b3e091b1632fb22ea9294901"
   },

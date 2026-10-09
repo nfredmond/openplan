@@ -1,5 +1,10 @@
 # Prepared network source comparison, October 9, 2026
 
+Follow-up: [directed graph comparison](ASSIGNMENT_DIRECTED_GRAPH.md) adds checks
+for recorded road-class factors, direction, node remapping and mode exclusion.
+The original source-only evidence and limits below describe the preceding
+checkpoint.
+
 The initial assignment snapshot now records a logical identity for the actual
 working project's node and link tables. When a confirmed preparation consumption
 exists, the parent compares its retained network against that identity before

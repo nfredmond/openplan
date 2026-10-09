@@ -28,6 +28,9 @@ class SnapshotTests(unittest.TestCase):
         for item in classes:
             item.results=SimpleNamespace(cores=1);item._aon_results=SimpleNamespace(cores=1)
             item.graph.graph={'__supernet_id__':np.array([0,1]),'capacity':np.array([1000.,2000.]),'travel_time':np.array([5.,6.])}
+            item.graph.graph.update(link_id=np.array([9,9]),direction=np.array([1,-1]),a_node=np.array([0,1]),
+                b_node=np.array([1,0]),modes=np.array(['c','c']),distance=np.array([3000.,3000.]))
+            item.graph.mode='c';item.graph.all_nodes=np.array([100,900])
         settings=dict(algorithm='bfw',rgap_target=self.profile['target_gap'],max_iter=self.profile['max_iterations'],cores=1,
             time_field='travel_time',vdf=SimpleNamespace(function='BPR'),vdf_parameters=[np.array([.15,.15]),np.array([4.,4.])],
             capacity=np.array([1000.,2000.]),free_flow_tt=np.array([5.,6.]))
