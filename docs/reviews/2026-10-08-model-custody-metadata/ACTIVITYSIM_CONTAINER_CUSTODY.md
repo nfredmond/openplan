@@ -154,3 +154,43 @@ has no transport or startup method. Independently supervised creation, lost-repl
 reconciliation, live-owner startup, owner/controller-loss termination and
 server-side continuation remain required before connecting a supervised
 container path.
+
+
+## Local Docker connection and creation checkpoint
+
+`container_transport.py` creates through one Linux Unix socket connection. It
+checks the socket peer's user, the daemon ID and support for the fixed
+[Docker Engine API 1.51](https://docs.docker.com/reference/api/engine/version/v1.51/).
+The endpoint fingerprint retains those observed facts. A root-owned socket peer
+may be systemd socket activation, so the peer PID is not claimed as the daemon
+PID. Remote and non-Linux transports remain unsupported by this adapter.
+
+The adapter reserves creation before sending the request. It retains the exact
+returned container ID before inspecting and verifying that container. A warning,
+changed identity or failed response leaves the request unresolved. It does not
+reconnect or repeat creation after a dropped reply. Bounded response parsing
+rejects unexpected HTTP status, duplicate fields and non-object JSON. This is
+not a complete Docker namespace or security-profile audit.
+
+All 81 ActivitySim tests pass with live host checks enabled. Eleven deliberate
+source faults fail their named checks; harmless and restored source passes.
+Actual Unix-socket tests inject synthetic Docker replies, including reply loss
+after receipt of a create request and connection closure during setup. These
+controls establish the adapter's behavior, not Docker daemon crash recovery.
+The report is `prototype/container-transport-controls.json`, with runner
+`prototype/verify_container_transport_controls.py`.
+
+A separate live Docker proof created exactly one unstarted container through
+this adapter, retained all four records, refused repeat creation and refused use
+after closing the connection. Its command never ran. The proof removed only its
+identified container. The report is `prototype/reserved-container-transport.json`,
+with runner `prototype/verify_reserved_container_transport.py`; private records
+remain under `~/.local/state/openplan/activitysim-container-transport-20261008a/`.
+The production source hash matches both retained reports.
+
+The adapter exposes no start, signal or removal operation and is not connected
+to normal execution. An independent controller must still bind startup to the
+live owner, stop the exact container after owner loss, reconcile unknown creation
+outcomes and integrate database admission. Connection loss does not prove that
+the daemon stopped work. Controller/daemon restart behavior, security policy,
+native ActivitySim container execution and scientific acceptance remain open.
