@@ -3571,3 +3571,30 @@ HTTP remains mocked with exact projection assertions. Separate database reads
 are not a lease or transactionally consistent snapshot. File-copy custody checks
 and fenced publication still apply. Normal managed dispatch, live database
 integration and scientific acceptance remain open.
+
+
+### Native database check for the ActivitySim handoff
+
+The actual ActivitySim adapter now passes a read-only handoff check against a
+fresh clone of the owned restore-target database through a temporary PostgREST
+gateway. Native claim, artifact-write and completion commands create a completed
+Artifact Extraction producer, three screening inputs and later unrelated
+artifacts. A fresh admitted consumer selects only its declared producer's three
+records. A harmless selector change passes. Changing the declared predecessor
+to the unrelated stage fails the expected-producer assertion; restored code
+passes.
+
+An explicit database command then fails the consumer attempt. Its next artifact
+read refuses and stops the writer. Read operations preserve snapshots of seven
+tables before and after the declared revocation command. The temporary gateway
+is removed. The preview database is not a test target.
+
+`prototype/activity-handoff-http.json` records source hashes, HTTP results and
+controls; `prototype/verify_activity_handoff_http.py` retains the executable
+procedure. Private database identity and journal are retained under
+`~/.local/state/openplan/activity-handoff-http-20261008c/`. Earlier runs remain
+under the corresponding `a` and `b` directories.
+
+This verifies actual database responses for selection and refusal. It does not
+run native models, copy files, prove a full RLS matrix, fence a concurrent
+revocation, activate normal managed dispatch or establish scientific acceptance.
