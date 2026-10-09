@@ -1,0 +1,33 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "expected_behavior_observed": true,
+      "returncode": 0
+    },
+    {
+      "case": "ignore-owner",
+      "expected_behavior_observed": true,
+      "returncode": 1
+    },
+    {
+      "case": "writable-records",
+      "expected_behavior_observed": true,
+      "returncode": 1
+    },
+    {
+      "case": "reuse-log",
+      "expected_behavior_observed": true,
+      "returncode": 1
+    },
+    {
+      "case": "restored",
+      "expected_behavior_observed": true,
+      "returncode": 0
+    }
+  ],
+  "source_sha256": "9bc74bb284b4c3ef9c2f59e4702edc2d4f101671830a023058380374c1b9b9c0",
+  "limits": [
+    "Refusal before process or daemon use; separate live controller campaign covers execution"
+  ]
+}

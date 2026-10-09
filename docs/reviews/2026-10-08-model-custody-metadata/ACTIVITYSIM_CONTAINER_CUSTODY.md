@@ -435,3 +435,61 @@ Private records and the failing-before log remain under
 Production startup/exit logging, exact bootstrap-byte retention, native model
 interruption and database recovery remain open. This correction prepares their
 creation boundary without declaring those workflows complete.
+
+
+## Worker controller with retained logs and real owner observation
+
+`container_supervision.py` now implements `run_container_command` in the worker
+package. It retains the exact `container_bootstrap.py` bytes and hash, refuses
+records inside writable model mounts, creates a new private command log, and
+starts the independent host owner guard. Creation, inspection, startup and
+normal removal use one `LocalDocker` connection. The bootstrap plan adds private
+control, read-only bootstrap and command-log mounts, a private PID namespace,
+no inserted init process, dropped capabilities and no-new-privileges.
+
+The controller records startup intent before the start request. Before workload
+release it checks the live creation receipt, complete plan, actual socket peer,
+bootstrap bytes and live guard. It transfers descriptors for the actual Python
+owner and its independently observed guard. The bootstrap writes command output
+to the mounted log and waits for the whole process tree. On confirmed exit, the
+controller hashes and fsyncs the log, retains exit/OOM status and then requests
+removal of that exact container. A removal acknowledgment is retained separately.
+These records make no database status change. The controller does not retry a
+failed Docker connection or reconstruct execution from saved records.
+
+The live campaign calls the actual worker controller with synthetic Python work.
+Normal execution retains its log, waits for an explicitly released detached
+child, records exit and acknowledges removal. Killing the actual controller
+process stops the namespace with exit 125 and preserves the flushed command log.
+No completion receipt appears after that owner loss. The proof reconciles and
+removes only that exact stopped container. Changed bootstrap bytes and an
+unrelated same-user socket connection are both refused before workload release.
+
+Five live source faults fail for their stated reasons: bypassed artifact hash,
+bypassed peer binding, omitted owner watch, premature completion and omitted
+command-log capture. Harmless/restored campaigns pass. One rerun encountered a
+proof-cleanup race when the container exited between inspection and the cleanup
+kill. The proof now re-inspects after a failed kill and accepts only the same
+identified container in a confirmed exited state. The one leftover exited test
+container was separately verified and removed. The corrected campaign passed.
+
+All 98 ActivitySim tests pass with live host checks enabled. Twenty transport
+faults and three input-boundary faults fail their named tests, with harmless and
+restored source passes. Input checks refuse a different local user, records in a
+writable mount and reuse of an existing command log before starting a guard or
+contacting Docker. Source hashes match the retained reports:
+`prototype/controller-live.json`, `prototype/controller-controls.json`,
+`prototype/controller-transport-controls.json` and
+`prototype/controller-boundary-controls.json`. Private control evidence is under
+`~/.local/state/openplan/controller-controls-20261008c/`.
+
+This controller is implemented and exercised directly, but `runtime.py` and
+normal database dispatch do not call it yet. Production integration must resolve
+and retain the configured image, map existing engine arguments and mounts,
+connect caller-visible cancellation/recovery, and test native ActivitySim. No
+ActivitySim-named image was found in the local image inventory during this work;
+all container checks use the cached Python image. The separately validated host
+ActivitySim environment is not container evidence. Remote/rootless Docker,
+Podman, daemon/full-host failure and scientific acceptance remain separate
+unproved boundaries. File fsync is implemented; no power-loss experiment is
+claimed.

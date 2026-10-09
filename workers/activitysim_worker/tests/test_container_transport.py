@@ -240,3 +240,26 @@ class ContainerTransportTests(unittest.TestCase):
         self.server.inspection["Config"]["Cmd"] = ["unexpected-command"]
         with self.assertRaises(ValueError):
             client.observe_creation(self.plan)
+
+    def test_bootstrap_creation_sends_required_privilege_policy(self):
+        client = self.connect()
+        with ContainerCreation(self.server.records, self.plan, client.endpoint_sha256) as creation:
+            client.create_reserved(creation, bootstrap=True)
+        host = next(payload["HostConfig"] for method, _, payload in self.server.requests if method == "POST")
+        self.assertEqual(host["CapDrop"], ["ALL"])
+        self.assertEqual(host["SecurityOpt"], ["no-new-privileges"])
+        self.assertEqual(host["PidMode"], "")
+        self.assertIs(host["Init"], False)
+
+    def test_empty_response_contract_refuses_json_body(self):
+        client = self.connect()
+        with self.assertRaises(DockerTransportError):
+            client._json("GET", "/version", expected_type=None)
+        self.assertTrue(client.closed)
+
+    def test_bootstrap_policy_requires_boolean(self):
+        client = self.connect()
+        with ContainerCreation(self.server.records, self.plan, client.endpoint_sha256) as creation:
+            with self.assertRaisesRegex(ValueError, "Explicit bootstrap"):
+                client.create_reserved(creation, bootstrap=1)
+        self.assertFalse(any(method == "POST" for method, _, _ in self.server.requests))

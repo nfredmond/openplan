@@ -22,6 +22,9 @@ cases=[('harmless',[],None),
  ('ignore-recovery-policy', [('identity = verify_created_container(plan, self.daemon_id, observed)', 'identity = {}')], 'test_recovery_rechecks_full_inspection_and_exact_id'),
  ('omit-stopped-containers', [('"all": "1"', '"all": "0"')], 'test_lost_reply_can_be_observed_without_repeating_creation'),
  ('ignore-recovery-ambiguity', [('if len(candidates) != 1:', 'if False:')], 'test_absence_and_ambiguity_do_not_authorize_retry'),
+ ('omit-bootstrap-policy', [('if bootstrap:', 'if False:')], 'test_bootstrap_creation_sends_required_privilege_policy'),
+ ('ignore-empty-body', [('if content:', 'if False:')], 'test_empty_response_contract_refuses_json_body'),
+ ('allow-nonboolean-bootstrap', [('if type(bootstrap) is not bool:', 'if False:')], 'test_bootstrap_policy_requires_boolean'),
  ('restored',[],None)]
 records=[]
 try:

@@ -1,7 +1,7 @@
 """One Linux Unix-socket Docker connection, with no retry or reconnect.
 
-This adapter creates and inspects an unstarted container. It is not a lifecycle
-controller and deliberately exposes no start, signal, or removal operation.
+Creation and inspection share the connection with explicit controller requests.
+The adapter never reconstructs execution ownership from saved records.
 """
 import hashlib
 import http.client
@@ -89,6 +89,10 @@ class LocalDocker:
             content = response.read(MAX_RESPONSE_BYTES + 1)
             if len(content) > MAX_RESPONSE_BYTES or response.status != status:
                 raise DockerTransportError("Docker response size or status is unexpected")
+            if expected_type is None:
+                if content:
+                    raise DockerTransportError("Expected an empty Docker response")
+                return None
             value = json.loads(content, object_pairs_hook=unique_object, parse_constant=invalid_constant)
             if not isinstance(value, expected_type):
                 raise DockerTransportError("Docker response has an unexpected JSON type")
@@ -102,7 +106,9 @@ class LocalDocker:
             raise ValueError("Full container ID required for inspection")
         return self._json("GET", f"/v{API_VERSION}/containers/{container_id}/json")
 
-    def create_reserved(self, creation: ContainerCreation):
+    def create_reserved(self, creation: ContainerCreation, *, bootstrap=False):
+        if type(bootstrap) is not bool:
+            raise ValueError("Explicit bootstrap policy required")
         creation._verify()
         intent, digest = read_record(creation.directory, "intent.json")
         if (digest != creation.intent_hash or intent.get("endpoint_sha256") != self.endpoint_sha256
@@ -118,6 +124,8 @@ class LocalDocker:
                 "Privileged": False, "RestartPolicy": {"Name": "no"},
                 "Mounts": [{"Type": "bind", "Source": source, "Target": target, "ReadOnly": read_only}
                            for source, target, read_only in plan.mounts]}}
+        if bootstrap:
+            payload["HostConfig"].update(CapDrop=["ALL"], SecurityOpt=["no-new-privileges"], PidMode="", Init=False)
         response = self._json("POST", f"/v{API_VERSION}/containers/create", payload, status=201)
         container_id = response.get("Id")
         if not isinstance(container_id, str) or not re.fullmatch(r"[0-9a-f]{64}", container_id):

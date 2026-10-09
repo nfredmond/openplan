@@ -1,0 +1,48 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "skip-artifact",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "skip-peer",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "skip-owner-watch",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "early-completion",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "omit-log",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "sources": {
+    "container_supervision.py": "9bc74bb284b4c3ef9c2f59e4702edc2d4f101671830a023058380374c1b9b9c0",
+    "container_bootstrap.py": "aef5b4906fd91369386e5c0513aafadfd6c4fe6a89c3b5c047b3f521d0b9a84f",
+    "container_peer.py": "06f4eab78d47d4b466abe02c9348e8cab3a3388a9491a74beff8c792252e75a9"
+  },
+  "limits": [
+    "Actual controller, synthetic command, local Docker only",
+    "Not runtime dispatch, database recovery or scientific acceptance"
+  ]
+}
