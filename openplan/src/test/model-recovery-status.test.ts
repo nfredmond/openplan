@@ -16,13 +16,24 @@ const response = {
 };
 const runs = [{ id: run, engine_key: "aequilibrae" }];
 
-beforeEach(() => { rpc.mockReset(); rpc.mockResolvedValue({ data: response, error: null }); });
+beforeEach(() => { rpc.mockReset(); rpc.mockImplementation(async (name: string) => ({ data: name === "inspect_model_relaunch_custody" ? { workspace_id: workspace, run_id: run, state: "unstarted" } : response, error: null })); });
 
 describe("scoped recovery records", () => {
   it("reads the exact workspace/run and preserves observed enrollment", async () => {
     const result = await loadModelRecoveryStatuses(workspace, runs);
-    expect(rpc).toHaveBeenCalledExactlyOnceWith("inspect_model_recovery_status", { p_workspace: workspace, p_run: run });
-    expect(result.get(run)).toEqual({ state: "historical_unassessed", enrolledAt: stamp, observedStarts: 0, lastStartObservedAt: null });
+    expect(rpc).toHaveBeenCalledTimes(2);
+    expect(rpc).toHaveBeenNthCalledWith(1, "inspect_model_recovery_status", { p_workspace: workspace, p_run: run });
+    expect(rpc).toHaveBeenNthCalledWith(2, "inspect_model_relaunch_custody", { p_workspace: workspace, p_run: run });
+    expect(result.get(run)).toEqual({ state: "historical_unassessed", relaunchCustody: "unstarted", enrolledAt: stamp, observedStarts: 0, lastStartObservedAt: null });
+  });
+  it.each(["retained", "unassessed", "unavailable"])("preserves %s custody separately from new-run provenance", async (state) => {
+    rpc.mockResolvedValueOnce({ data: { ...response, provenance: "new_run" }, error: null });
+    rpc.mockResolvedValueOnce(state === "unavailable"
+      ? { data: null, error: { message: "private custody failure" } }
+      : { data: { workspace_id: workspace, run_id: run, state }, error: null });
+    expect((await loadModelRecoveryStatuses(workspace, runs)).get(run)).toEqual({
+      state: "new_run", relaunchCustody: state, enrolledAt: stamp, observedStarts: 0, lastStartObservedAt: null,
+    });
   });
   it("does not apply worker recovery rules to in-process engines", async () => {
     expect(await loadModelRecoveryStatuses(workspace, [{ id: run, engine_key: "deterministic_corridor_v1" }])).toEqual(new Map());
@@ -48,8 +59,8 @@ describe("scoped recovery records", () => {
     expect((await loadModelRecoveryStatuses(workspace, runs)).get(run)).toEqual({ state: "unavailable" });
   });
   it("retains new execution observations without granting ownership", async () => {
-    rpc.mockResolvedValue({ data: { ...response, provenance: "new_run", observed_starts: 2, last_start_observed_at: stamp }, error: null });
-    expect((await loadModelRecoveryStatuses(workspace, runs)).get(run)).toEqual({ state: "new_run", enrolledAt: stamp, observedStarts: 2, lastStartObservedAt: stamp });
+    rpc.mockResolvedValueOnce({ data: { ...response, provenance: "new_run", observed_starts: 2, last_start_observed_at: stamp }, error: null });
+    expect((await loadModelRecoveryStatuses(workspace, runs)).get(run)).toEqual({ state: "new_run", relaunchCustody: "unstarted", enrolledAt: stamp, observedStarts: 2, lastStartObservedAt: stamp });
   });
 });
 

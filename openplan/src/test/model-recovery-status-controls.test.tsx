@@ -45,8 +45,14 @@ describe("model recovery controls", () => {
     expect(screen.queryByRole("button", { name: /Reset queue/ })).toBeNull();
   });
   it.each(["aequilibrae", "behavioral_demand"])("offers the queue control for a new %s run", (engine) => {
-    show("queued", { ...historical, state: "new_run" }, engine);
+    show("queued", { ...historical, state: "new_run", relaunchCustody: "unstarted" }, engine);
     expect(screen.getByRole("button", { name: "Reset queue" })).toBeInTheDocument();
+  });
+  it.each(["retained", "unassessed", "unavailable", undefined] as const)("withholds relaunch for %s custody without rewriting provenance", (relaunchCustody) => {
+    show("cancelled", { ...historical, state: "new_run", relaunchCustody });
+    expect(screen.queryByRole("button", { name: /Relaunch worker run|Reset queue/ })).toBeNull();
+    expect(screen.getByText(/Relaunch is unavailable/)).toBeInTheDocument();
+    expect(screen.queryByTestId("run-recovery-notice")).toBeNull();
   });
   it("withholds the behavioral recovery control for historical work", () => {
     show("queued", historical, "behavioral_demand");

@@ -34,6 +34,7 @@ function renderFailedRun() {
       runTitle="Screening run that nothing picked up"
       runStatus="failed"
       engineKey="aequilibrae"
+      recovery={{ state: "new_run", relaunchCustody: "unstarted", enrolledAt: "2026-10-08T10:00:00Z", observedStarts: 0, lastStartObservedAt: null }}
       comparisonCandidates={[]}
     />
   );

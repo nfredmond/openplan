@@ -79,7 +79,9 @@ describe("authorized model recovery page join", () => {
   });
   it("carries scoped historical status into the real manager props and excludes it from reaping", async () => {
     const props = managerProps(await load());
-    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("inspect_model_recovery_status", { p_workspace: workspace, p_run: run });
+    expect(mocks.rpc).toHaveBeenCalledTimes(2);
+    expect(mocks.rpc).toHaveBeenNthCalledWith(1, "inspect_model_recovery_status", { p_workspace: workspace, p_run: run });
+    expect(mocks.rpc).toHaveBeenNthCalledWith(2, "inspect_model_relaunch_custody", { p_workspace: workspace, p_run: run });
     expect(props?.modelRuns[0]).toMatchObject({ id: run, status: "running", recovery: { state: "historical_unassessed" } });
     expect(mocks.reap).toHaveBeenCalledExactlyOnceWith([]);
     expect(queries).toContainEqual({ table: "models", method: "eq", args: ["id", model] });

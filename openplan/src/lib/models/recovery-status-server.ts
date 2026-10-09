@@ -4,6 +4,8 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isWorkerExecutedRunMode } from "@/lib/models/run-modes";
 import type { ModelRecoveryStatus } from "./recovery-status";
 
+import { inspectRelaunchCustody } from "./relaunch-custody";
+
 const recoverySchema = z.object({
   workspace_id: z.string().uuid(),
   run_id: z.string().uuid(),
@@ -32,6 +34,7 @@ export async function loadModelRecoveryStatuses(
       if (!parsed.success || parsed.data.workspace_id !== workspaceId || parsed.data.run_id !== run.id) continue;
       result.set(run.id, {
         state: parsed.data.provenance,
+        relaunchCustody: await inspectRelaunchCustody(workspaceId, run.id),
         enrolledAt: parsed.data.enrolled_at,
         observedStarts: parsed.data.observed_starts,
         lastStartObservedAt: parsed.data.last_start_observed_at,

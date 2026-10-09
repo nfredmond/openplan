@@ -1,6 +1,6 @@
 "use client";
 
-import { modelRecoveryNeedsReview, type ModelRecoveryStatus } from "@/lib/models/recovery-status";
+import { modelRelaunchNotice, type ModelRecoveryStatus } from "@/lib/models/recovery-status";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Download, FileJson2, Loader2, RefreshCcw, RotateCcw } from "lucide-react";
@@ -526,8 +526,9 @@ export function ModelRunEvidencePanel({
    * inverted: a person can now do at least what the Planner Agent can offer to
    * do on their behalf.
    */
+  const relaunchNotice = modelRelaunchNotice(recovery);
   const canRelaunch =
-    !modelRecoveryNeedsReview(recovery) && isWorkerExecutedRunMode(engineKey) && routeAcceptsRelaunchOfStatus(runStatus);
+    relaunchNotice === null && isWorkerExecutedRunMode(engineKey) && routeAcceptsRelaunchOfStatus(runStatus);
   const packetHref = `/api/models/${modelId}/runs/${modelRunId}/evidence-packet`;
   const runMode = useMemo(() => getManagedRunModeDefinition(engineKey), [engineKey]);
 
@@ -754,7 +755,9 @@ export function ModelRunEvidencePanel({
               ? "What went into this run and what came out — inputs, sources, results, and caveats. Refresh it after the worker runs again."
               : canRelaunch
                 ? "This worker run can be reset and queued again without leaving the model page."
-                : "Evidence becomes available after the run completes successfully."}
+                : isWorkerExecutedRunMode(engineKey) && routeAcceptsRelaunchOfStatus(runStatus)
+                  ? relaunchNotice
+                  : "Evidence becomes available after the run completes successfully."}
           </p>
           {/*
             NARROWER THAN THE RUN CARD'S RULE, for a real reason rather than an

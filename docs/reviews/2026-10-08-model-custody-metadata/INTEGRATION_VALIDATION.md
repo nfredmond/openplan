@@ -267,3 +267,38 @@ connected preview host. No mobile screenshot, final viewport measurement or
 complete browser-console review is obtained. No alternate browser is used.
 Physical termination, running-child interruption, restart, scientific acceptance
 and practitioner observation remain open.
+
+
+## Retained-run relaunch presentation, October 8
+
+The queued abandonment journey exposes a misleading control: the cancelled,
+attempt-managed run still offers relaunch, although the launch route correctly
+refuses retained execution records. The page now reads the existing scoped
+relaunch-custody RPC separately from enrollment provenance. It offers reset only
+for a new run with verified unstarted custody. Retained, unassessed, missing and
+unreadable custody display a refusal explanation. Saved status, evidence access,
+reaping rules and route authorization remain unchanged. The route repeats its
+check because rendered page data can become stale.
+
+The four focused suites pass 51 tests. The seven-case control campaign includes
+baseline, a harmless comment, four targeted faults and restored baseline. Faults
+expose an incorrectly offered retained-run control, ignored custody, a missing
+eligible control and reversed workspace/run arguments. Source bytes are restored
+in finally blocks and hashed in `prototype/relaunch-custody-controls.json`.
+Targeted ESLint passes. The first test invocation used the repository root and
+failed to resolve application imports; the corrected application-directory run
+passes. The first control report expected the wrong assertion wording; the
+fault itself failed as intended, and the corrected instrument passes.
+
+These tests use component DOM and mocked RPC/HTTP responses. They do not prove
+real database authorization, rendered layout, physical worker recovery or human
+acceptance. The acceptance checkout stays at 3cfaae4e and does not contain this
+presentation correction. T3 reconnects and reads the model in both tab_16 and a
+fresh tab_17, but both snapshot calls still fail on its preview client. The panel
+reports hidden even after preview_open. Desktop and mobile visual acceptance
+remain open; no alternate browser is used.
+
+Full TypeScript validation passes with no emit or incremental cache: 5,006 files,
+55.92 seconds, 4,889,887 KB reported compiler memory. The process uses the existing
+6 GB Node heap under a 7 GB systemd scope with swap disabled. This is a type
+check, not a fresh production build or browser check of the changed page.
