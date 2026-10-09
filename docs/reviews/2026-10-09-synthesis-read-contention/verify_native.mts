@@ -1,13 +1,18 @@
-/** Native request locking through the production adapter using psql, not HTTP.
+/** Native request locking through the production adapter using psql or PostgREST.
  * Requires a separately seeded proof-owned database; preserves all its rows.
  */
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { readSynthesisGenerationRequest } from '../../../openplan/src/lib/engagement/synthesis-generation-requests-server';
 const config = JSON.parse(readFileSync(process.argv[2], 'utf8')) as { container: string; database: string };
-assert.match(config.database, /^openplan_synthesis_read_[a-f0-9]{32}$/);
+assert.match(config.database, /^openplan_(?:synthesis_read|attempt_cli)_[a-f0-9]{32}$/);
 assert.equal(config.container, 'supabase_db_openplan-restore-target-2026091050');
+const httpUrl = process.env.OPENPLAN_PROOF_HTTP_URL;
+if (httpUrl) assert.match(httpUrl, /^http:\/\/127\.0\.0\.1:[0-9]+$/);
+const require = createRequire(new URL('../../../openplan/package.json', import.meta.url));
+const { PostgrestClient } = require('@supabase/postgrest-js') as typeof import('../../../openplan/node_modules/@supabase/postgrest-js');
 const command = ['exec', '-i', config.container, 'psql', '-U', 'postgres', '-d', config.database,
   '-X', '-qAt', '-v', 'ON_ERROR_STOP=1'];
 const scope = { campaignId: '10c5cdd7-16c6-4b91-b9c0-d2f67598a54f',
@@ -53,16 +58,21 @@ async function hold() {
 }
 function client(actor = owner, afterBusy?: () => Promise<void>) {
   const codes: (string | null)[] = [];
+  const bearer = actor === owner ? process.env.OPENPLAN_PROOF_OWNER_TOKEN : process.env.OPENPLAN_PROOF_VIEWER_TOKEN;
+  if (httpUrl) assert.ok(bearer, 'Proof bearer is required');
+  const http = httpUrl ? new PostgrestClient(httpUrl, { headers: { Authorization: `Bearer ${bearer}` } }) : null;
   const rpc = (name: string, args: Record<string, unknown>) => ({ abortSignal: async (signal: AbortSignal) => {
     assert.equal(name, 'read_engagement_synthesis_generation_request');
     assert.deepEqual(args, { p_campaign: scope.campaignId, p_request: scope.requestId });
-    const output = await query(`BEGIN; SET LOCAL statement_timeout='5s';
+    const result = http ? await http.rpc(name, args).abortSignal(signal) : JSON.parse(await query(`BEGIN; SET LOCAL statement_timeout='5s';
       CREATE FUNCTION pg_temp.read_probe() RETURNS jsonb LANGUAGE plpgsql AS $$
       BEGIN RETURN jsonb_build_object('data',public.read_engagement_synthesis_generation_request('${scope.campaignId}','${scope.requestId}'),'error',NULL);
       EXCEPTION WHEN OTHERS THEN RETURN jsonb_build_object('data',NULL,'error',jsonb_build_object('code',SQLSTATE)); END $$;
       SET LOCAL request.jwt.claim.sub='${actor}'; SET LOCAL ROLE authenticated;
-      SELECT pg_temp.read_probe(); ROLLBACK;`, signal);
-    const result = JSON.parse(output) as { data: unknown; error: { code: string } | null };
+      SELECT pg_temp.read_probe(); ROLLBACK;`, signal)) as { data: unknown; error: { code: string; message?: string } | null };
+    if (http && result.error && !['PT503', '42501'].includes(result.error.code)) {
+      console.error(JSON.stringify({ unexpectedHttpCode: result.error.code, message: result.error.message?.slice(0, 240) }));
+    }
     codes.push(result.error?.code ?? null);
     if (result.error?.code === 'PT503' && afterBusy) await afterBusy();
     return result;
@@ -91,6 +101,6 @@ await assert.rejects(readSynthesisGenerationRequest(forbidden.db, scope, new Abo
 assert.deepEqual(forbidden.codes, ['42501']);
 const restored = client();
 assert.deepEqual(await readSynthesisGenerationRequest(restored.db, scope, new AbortController().signal), saved);
-console.log(JSON.stringify({ database: config.database, transport: 'psql', cases: {
+console.log(JSON.stringify({ database: config.database, transport: httpUrl ? 'PostgREST HTTP with PostgrestClient' : 'psql', cases: {
   baseline: baseline.codes, releasedContention: short.codes, persistentContention: persistent.codes,
   viewerRefused: forbidden.codes, restored: restored.codes }, requestSha256: saved.state.request?.intentSha256 }, null, 2));

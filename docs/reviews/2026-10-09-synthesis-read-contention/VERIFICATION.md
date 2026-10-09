@@ -94,3 +94,43 @@ This establishes native lock-response recovery for the adapter. The transport is
 not PostgREST, and the release is synchronized rather than a measured workload.
 HTTP behavior, real concurrency distributions and the original T3 journey remain
 open. The read still cannot bypass a held lock or renew execution permission.
+
+## HTTP transport follow-up
+
+The production adapter also passes through the installed PostgrestClient over
+loopback HTTP. A separate clone,
+`openplan_attempt_cli_8262a39d7f9c4dc5a3b734c9f4fef98b`, retains the same synthetic
+request and roles. A private proof schema exposes a single security-invoker SQL
+wrapper around the unchanged public request reader, with the same argument
+names. Only authenticated callers receive execute permission. The wrapper does
+not replace the native authorization or locking function. The existing gateway
+helper creates a temporary signing secret and authenticated owner/viewer tokens;
+none are retained in the evidence files.
+
+The [HTTP controls](http-controls.json) pass baseline, harmless-comment and
+restored cases. The removed-retry mutation fails on native `PT503`. Transient
+contention returns `PT503` then unchanged custody; persistent contention returns
+three failures; the viewer receives one `42501`. The gateway is removed after the
+check, and the script checks cleanup. Scoped TypeScript passes with both transport
+paths. Run with the metadata for the retained HTTP clone:
+
+```sh
+OPENPLAN_MODEL_ATTEMPT_TEST_CONTAINER=supabase_db_openplan-restore-target-2026091050 \
+python3 docs/reviews/2026-10-09-synthesis-read-contention/verify_http.py \
+  /home/nathaniel/.local/state/openplan/synthesis-read-http-20261009.json
+```
+
+The first invocation omitted the helper's required explicit container selection
+and stopped before starting a gateway. Subsequent full-public-schema attempts
+failed with interrupted sockets. Docker then confirmed `OOMKilled=true` and exit
+137 for the 128 MB gateway. Some immediate removal checks caught asynchronous
+container removal; later inspection found no surviving proof container. The
+successful run narrows the exposed schema rather than increasing the memory
+limit. This is a transport fixture, not evidence that a full OpenPlan PostgREST
+catalog operates within 128 MB. That resource boundary remains unmeasured above
+the failed limit.
+
+This adds authenticated HTTP transport evidence for the adapter and installed
+reader. It does not execute the Next.js route, browser session or original
+engagement navigation. T3 capture and identified-build browser acceptance remain
+open, as do full workload capacity and planner usefulness.
