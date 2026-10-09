@@ -549,7 +549,10 @@ def detect_activitysim_capability(
 
 def require_no_host_custody(path: Path) -> None:
     """Preserve host launch records even when the containing runtime is replaced."""
-    for records in path.glob("stages/*/host_supervision"):
+    # Python 3.11 glob omits a dangling link in a literal final component.
+    # Enumerate the parents so the record's own link identity is still checked.
+    for stage in (path / "stages").glob("*"):
+        records = stage / "host_supervision"
         if records.exists() or records.is_symlink():
             raise RuntimeError("Retained host custody exists; choose a new runtime directory")
 

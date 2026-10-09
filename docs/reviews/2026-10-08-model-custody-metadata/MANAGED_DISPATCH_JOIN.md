@@ -3887,3 +3887,25 @@ new-writer-to-native-relationship gap for these fixtures. Preparing real source,
 geography, network, population, observation and matching evidence before model
 output access remains open, as do normal dispatcher integration, native
 concurrency, real Storage and scientific acceptance.
+
+
+### Python 3.11 dangling-link regression and correction
+
+GitHub worker-security run `37897707693` at `7154a2cc1` failed the two dangling
+host-record alias cases. The earlier local pass used Python 3.14. A focused
+rerun under Python 3.11.15 reproduces both failures: its glob omits a dangling
+link when `host_supervision` is the literal final path component, so the guard
+never reaches `is_symlink()`.
+
+The guard now enumerates stage entries, constructs each `host_supervision` path
+and checks that path directly. Both preservation tests pass under Python 3.11.
+The updated controls restore the old glob under Python 3.11 and observe the
+same intended failure. Separate reports retain Python 3.11 and 3.14 results;
+the earlier controls report remains historical. No test assertion was weakened
+and CI's Python version was not changed.
+
+All 110 worker tests pass under the dedicated Python 3.14 ActivitySim test
+environment with live host-scope opt-in. The five pipeline tests also pass under
+Python 3.11. The local native-model environment lacks Flask, so it was used for
+the focused filesystem and pipeline checks, not claimed as a complete Python
+3.11 worker-suite pass. Exact-head GitHub worker CI remains required.

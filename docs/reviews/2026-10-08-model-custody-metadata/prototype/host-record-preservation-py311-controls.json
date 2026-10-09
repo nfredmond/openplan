@@ -1,0 +1,43 @@
+{
+  "python_version": "3.11.15",
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "erase-runtime",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "erase-pipeline",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "ignore-record-alias",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "old-python-glob",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "sources": {
+    "workers/activitysim_worker/runtime.py": "f3e4f4ceefa4f20f46f14f275b55fe0eacd36684ca87af2da98a991859321ba9",
+    "scripts/modeling/run_behavioral_demand_prototype.py": "5438ff45878e319e9fc4dbcb603f0be80e240cd8532d540670ecd8d5f94a27fb"
+  },
+  "limits": [
+    "Synthetic retained filesystem records and dangling aliases",
+    "No concurrent filesystem attacker, active native process, database or scientific acceptance"
+  ]
+}

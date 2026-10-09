@@ -23,6 +23,11 @@ variants=(
     ('ignore-record-alias',{runtime:original[runtime].replace(alias_guard,b'if records.exists():')},'test_runtime_force_preserves_host_records'),
     ('restored',{},None),
 )
+if sys.version_info[:2]==(3,11):
+    current_loop=b'    for stage in (path / "stages").glob("*"):\n        records = stage / "host_supervision"\n'
+    old_loop=b'    for records in path.glob("stages/*/host_supervision"):\n'
+    assert original[runtime].count(current_loop)==1
+    variants=variants[:-1]+(('old-python-glob',{runtime:original[runtime].replace(current_loop,old_loop)},'test_runtime_force_preserves_host_records'),)+variants[-1:]
 try:
     for name,changes,failure in variants:
         for path,content in original.items():path.write_bytes(changes.get(path,content))
@@ -34,8 +39,8 @@ try:
         cases.append({'case':name,'returncode':result.returncode,'expected_behavior_observed':True})
 finally:
     for path,content in original.items():path.write_bytes(content)
-report={'cases':cases,'sources':{str(path.relative_to(ROOT)):hashlib.sha256(content).hexdigest() for path,content in original.items()},
+report={'python_version':sys.version.split()[0],'cases':cases,'sources':{str(path.relative_to(ROOT)):hashlib.sha256(content).hexdigest() for path,content in original.items()},
     'limits':['Synthetic retained filesystem records and dangling aliases','No concurrent filesystem attacker, active native process, database or scientific acceptance']}
 content=json.dumps(report,indent=2)+'\n'
-Path(__file__).with_name('host-record-preservation-controls.json').write_text(content)
+Path(__file__).with_name(f'host-record-preservation-py{sys.version_info.major}{sys.version_info.minor}-controls.json').write_text(content)
 print(content)
