@@ -286,3 +286,43 @@ separately bind the actual class matrices, centroid order and applied network
 settings immediately before assignment. Calling the existing package audit a
 freeze of final engine demand would overstate its scope. That connection remains
 open; this correction fixes a prerequisite rather than claiming it complete.
+
+## Initial assignment input checkpoint, October 9
+
+`stage_assignment` now calls `model_assignment_input_snapshot.retain_and_execute`
+in place of its initial `assig.execute()`. The helper reads the configured
+resident and external traffic classes directly. It checks each class's actual
+computational view, integer centroid identities, agreement with graph centroid
+order, PCE, iteration limit, convergence target and core count. Demand must be
+square, finite and nonnegative. This occurs after mode choice, scenario adjustment,
+gateway loading and unreachable-pair filtering.
+
+The helper saves centroid arrays and demand arrays as NPY files, reads them back
+against the active solver views, and records hashes, sizes, the assignment profile,
+network state and applied network settings. It writes the manifest last and syncs
+both the snapshot directory and its parent before calling the engine. Existing
+complete or partial directories are refused. A retention failure prevents the
+initial execute call; an engine failure preserves the completed input snapshot.
+The returned assignment result includes the snapshot identity under
+`initial_assignment_inputs`. Reusing an output directory containing a snapshot
+now requires reconciliation rather than an implicit second execution.
+
+Forty-five related tests pass, including nine new snapshot cases. Seven isolated
+mutation controls detect early execution, reused directories, skipped array
+readback and changed graph/settings checks. AequilibraE 1.6.2 also completes the
+existing two-centroid, one-link synthetic bound-assignment proof with the new
+checkpoint. Both class snapshots match the native OMX exports exactly, and their
+network state/settings match the assignment result. Four native readback controls
+pass their expected outcomes, including a deliberately changed in-memory expected
+matrix. Reports are `prototype/assignment-snapshot-controls.json`,
+`prototype/native-assignment-input-snapshot.json` and
+`prototype/native-assignment-snapshot-controls.json`. Native run evidence is in
+`native-initial-assignment-snapshot-20261009b` under the local OpenPlan state folder.
+
+This checkpoint covers only the initial traffic assignment. Calibration reruns
+are explicitly outside its scope. The native proof uses injected parent database
+responses and synthetic demand; it does not establish scientific accuracy,
+observation independence or a complete normal-dispatch journey. Database artifact
+registration and the link to the consumed observation/structural preparation are
+still missing. The network record identifies solver-visible state; this change
+does not add a complete downloadable graph snapshot or a concurrent-mutation lease.

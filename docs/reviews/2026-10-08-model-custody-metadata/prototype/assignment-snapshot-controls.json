@@ -1,0 +1,48 @@
+{
+  "source_sha256": "2bcfd67ca9b71918a1cf52e1cfb28163b2fc0bb5456f90ca44575b4feed5f791",
+  "controls": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "early-execute",
+      "returncode": 1,
+      "expected_failure": "FileNotFoundError",
+      "matched": true
+    },
+    {
+      "control": "reuse-directory",
+      "returncode": 1,
+      "expected_failure": "FileExistsError not raised",
+      "matched": true
+    },
+    {
+      "control": "skip-readback",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "changed-settings",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "changed-graph",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Injected solver interface with real arrays and files. Native engine evidence is recorded separately."
+}

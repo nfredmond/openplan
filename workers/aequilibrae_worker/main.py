@@ -4992,7 +4992,14 @@ def stage_assignment(
             target_gap=assig.rgap_target,
             max_iterations=assig.max_iter,
         ):
-            assig.execute()
+            import model_assignment_input_snapshot
+            initial_assignment_inputs = model_assignment_input_snapshot.retain_and_execute(
+                assig, directory=os.path.join(out_dir, "initial_assignment_inputs"),
+                context={"run_id": run_id, "stage_id": stage_id,
+                         "demand_method": "activitysim" if demand_is_vehicle else "aequilibrae"},
+                profile=assignment_profile, network_state=network_state_record,
+                network_settings=applied_network_settings,
+            )
 
         rgap = getattr(assig.assignment, "rgap", float("nan"))
         iters = assignment_iteration_count(assig.assignment)
@@ -5123,6 +5130,7 @@ def stage_assignment(
         "convergence_diagnostic": convergence_diag,
         "select_link_analysis": select_link_analysis,
         "calibration": calibration_result,
+        "initial_assignment_inputs": initial_assignment_inputs,
         "network_settings": applied_network_settings,
         "network_settings_payload_json": applied_network_settings_payload,
         "network_settings_digest": applied_network_settings_digest,
