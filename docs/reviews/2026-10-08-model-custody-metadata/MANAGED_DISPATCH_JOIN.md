@@ -2824,3 +2824,25 @@ the retained record. Retained-path numerical exceptions currently stop the
 attempt for reconciliation; they do not claim a successful auto-only result.
 Dispatcher activation, real recovery, browser and scientific acceptance remain
 open. No published claim tier changes.
+
+
+## Assignment child binding, October 8
+
+A context-bound engine adapter now routes the actual worker run read, stage
+progress, project/package paths and output creation through the inherited parent
+channel. It checks run, stage and workspace identities, limits stage writes to
+progress, checks the returned run identity and rejects a substituted package.
+Channel errors become reconciliation failures without direct database or local
+output fallback. The binding restores its prior context on exit.
+
+Four focused tests exercise the actual worker adapters with a fake parent
+client. The related adapter/channel/transit suite passes 79 tests. Four targeted
+faults detect foreign run requests, terminal writes, foreign replies and skipped
+parent output creation; baseline, harmless and restored controls pass. See
+`prototype/assignment-engine-binding-controls.json`.
+
+This binding is not yet a full assignment launcher. Count preparation must use
+a separate child-consumption directory because the parent already owns
+`run_output/count_inputs`. Transit requests must enter the retained override
+before mode choice. Full native assignment, process containment, real recovery
+and scientific acceptance remain open. The dispatcher remains disabled.

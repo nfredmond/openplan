@@ -615,7 +615,19 @@ def _confirmed_state_patch(table: str, record_id: str, payload: dict, *, queued_
         raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: no valid receipt") from error
 
 
+def _call_engine_binding(engine, method, *args):
+    """Never fall back to direct database or file operations after channel failure."""
+    try:
+        return getattr(engine, method)(*args)
+    except Exception as error:
+        raise WorkerStateWriteUnconfirmed("Engine parent channel requires reconciliation") from error
+
+
 def sb_patch_stage(stage_id: str, payload: dict):
+    import model_engine_binding
+    engine = model_engine_binding.current()
+    if engine is not None:
+        return _call_engine_binding(engine, "patch_stage", stage_id, payload)
     import model_attempt_writer
     writer = model_attempt_writer.current()
     if writer is not None:
@@ -1815,6 +1827,10 @@ def write_model_run_modeling_evidence(
 
 
 def sb_get_run(run_id: str) -> dict:
+    import model_engine_binding
+    engine = model_engine_binding.current()
+    if engine is not None:
+        return _call_engine_binding(engine, "read_run", run_id)
     import model_attempt_writer
     writer = model_attempt_writer.current()
     if writer is not None:
@@ -7013,6 +7029,10 @@ def write_run_state(work_dir: str, state: dict) -> None:
 
 def package_work_directory(work_dir: str, package_directory: str | None) -> str | None:
     """Validate the supplied managed package path without substituting inputs."""
+    import model_engine_binding
+    engine = model_engine_binding.current()
+    if engine is not None:
+        return _call_engine_binding(engine, "package_directory", work_dir, package_directory)
     import model_attempt_writer
     writer = model_attempt_writer.current()
     if writer is None:
@@ -7029,6 +7049,10 @@ def package_work_directory(work_dir: str, package_directory: str | None) -> str 
 
 def project_work_directory(work_dir: str) -> str:
     """Use confirmed managed working files, with legacy layout outside a binding."""
+    import model_engine_binding
+    engine = model_engine_binding.current()
+    if engine is not None:
+        return _call_engine_binding(engine, "project_directory", work_dir)
     import model_attempt_writer
     writer = model_attempt_writer.current()
     if writer is None:
@@ -7041,6 +7065,10 @@ def project_work_directory(work_dir: str) -> str:
 
 def create_assignment_output_directory(work_dir: str, name: str) -> str:
     """Reserve fresh managed outputs without adopting previous assignment files."""
+    import model_engine_binding
+    engine = model_engine_binding.current()
+    if engine is not None:
+        return _call_engine_binding(engine, "create_outputs", work_dir, name)
     import model_attempt_writer
     writer = model_attempt_writer.current()
     if writer is None:

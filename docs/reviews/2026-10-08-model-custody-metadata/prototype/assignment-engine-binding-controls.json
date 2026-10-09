@@ -1,0 +1,41 @@
+{
+  "module_sha256": "8ddbedd53b9d1807012d20fa083a9bf88d751b8d30e44320ca10d8433cb120cc",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "allow-foreign-run",
+      "exit_code": 1,
+      "targeted_test": "test_foreign_scope_and_terminal_write_refused"
+    },
+    {
+      "control": "allow-terminal-write",
+      "exit_code": 1,
+      "targeted_test": "test_foreign_scope_and_terminal_write_refused"
+    },
+    {
+      "control": "accept-foreign-reply",
+      "exit_code": 1,
+      "targeted_test": "test_foreign_parent_reply_and_package_refused"
+    },
+    {
+      "control": "skip-output-request",
+      "exit_code": 1,
+      "targeted_test": "test_actual_adapters_route_to_parent"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual worker adapters with a fake parent client. No real child native assignment, count/transit integration, process containment or scientific acceptance."
+}
