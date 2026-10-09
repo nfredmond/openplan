@@ -4075,3 +4075,40 @@ coerced departure choices. The earlier owner-loss campaign and this entry run
 remain separate evidence; interruption during native execution through this
 entry has not yet been joined. Automatic poll enrollment and the upstream
 AequilibraE prepared-instrument path remain open.
+
+
+### Synthetic evaluated content reaches instrument custody
+
+The earlier instrument campaign used empty files to establish database
+relationships. A separate mode now creates nonempty software-integrity fixtures,
+runs the shared rules-v5 evaluator and registers the exact resulting bytes
+through the admitted writer. AequilibraE and ActivitySim method labels retain
+separate prescribed model values of 100 and 120 against one synthetic observation.
+Both outcomes remain `inconclusive`. These values are authored fixtures, not
+outputs from either native demand engine.
+
+The fixture binds its actual run ID, output hash, input bundle, match audit,
+comparison basis, assessment and fixture diagnosis. Twelve attempt-bound
+artifacts and two method-specific custody records are retained through the
+native command path. Exact named retries return the original checked receipts.
+Normal, harmless-name and restored cases pass. A missing custody write fails
+the native row assertion; changing output bytes after evaluation fails before
+publication. The report is `prototype/native-assessed-instrument-controls.json`;
+private logs and clone metadata are in `native-assessed-instrument-20261009a`.
+
+`prototype/synthetic-instrument-binding-controls.json` retains 12 local content
+controls. Normal, harmless and restored inputs pass. Nine changed-content cases
+detect another run, another method, an outcome promoted to pass, altered input
+bundle or audit bytes, changed output bytes, a changed comparison output hash,
+a changed logical comparison basis and a changed diagnosis-to-assessment hash.
+The proof helper uses synthetic test constructors and is not a new production
+preparation service.
+
+The fixture author knows the prescribed values. Its false output-read flags
+exercise the existing schema and do not establish assignment-blind preparation
+or independent acceptance. Observation/source metadata is synthetic, supporting
+files remain local fixture inputs, and the diagnosis is an explicit fixture
+rather than a general scientific diagnosis. General source, geography, network,
+population and observation preparation, immutable Storage, the actual scientific
+worker call site and scientific acceptance remain unfinished. The legacy v4
+persistence path must not be redirected to this fixture or relabeled v5.

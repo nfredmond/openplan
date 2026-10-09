@@ -14,7 +14,8 @@ ROLES=(('model_output','synthetic_output','synthetic.output'),
 
 def verify_instrument(writer,run,stage,output,sql,database):
     control=os.environ.get('OPENPLAN_NATIVE_INSTRUMENT_CONTROL','normal')
-    assert control in ('normal','harmless','drop-write','restored')
+    assert control in ('normal','harmless','drop-write','changed-output','restored')
+    assessed=os.environ.get('OPENPLAN_NATIVE_INSTRUMENT_CONTENT')=='assessed-fixture'
     directory=writer.workspace(output/'instrument-files',run)
     digest=hashlib.sha256(b'').hexdigest()
     results=[]
@@ -24,13 +25,21 @@ def verify_instrument(writer,run,stage,output,sql,database):
         return original(payload,**kwargs)
     with patch.object(writer,'record_instrument',record):
         for method in ('aequilibrae','activitysim'):
+            paths=None
+            if assessed:
+                from synthetic_assessed_instrument import prepare, check_bindings
+                paths=prepare(directory/method,run,method)
+                if control=='changed-output':paths['model_output'].write_text('link_id,PCE_tot\na,999\n')
+                check_bindings(paths,method,run)
             payload={'demand_method':method,'scientific_outcome':'inconclusive'}
             for role,kind,schema in ROLES:
-                path=directory/(method+'-'+role+'.synthetic')
-                path.write_bytes(b'')
+                path=paths[role] if paths else directory/(method+'-'+role+'.synthetic')
+                if paths is None:path.write_bytes(b'')
+                content=path.read_bytes()
+                digest=hashlib.sha256(content).hexdigest()
                 artifact=writer.record_artifact({'run_id':run,'stage_id':stage,'artifact_type':kind,
-                    'file_url':'local://'+str(path),'file_size_bytes':0,'content_hash':digest,
-                    'metadata_json':{'schema':schema,'demand_method':method,'fixture':'empty bytes; not an assessed instrument'}})
+                    'file_url':'local://'+str(path),'file_size_bytes':len(content),'content_hash':digest,
+                    'metadata_json':{'schema':schema,'demand_method':method,'fixture':'synthetic evaluated input; not scientific acceptance' if assessed else 'empty bytes; not an assessed instrument'}})
                 payload[role+'_artifact_id']=artifact['id'];payload[role+'_sha256']=digest
             name=('harmless-' if control=='harmless' else '')+method
             first=writer.record_instrument(payload,logical_name=name)
@@ -48,5 +57,5 @@ def verify_instrument(writer,run,stage,output,sql,database):
         for key,value in payload.items():assert row[key]==value
     assert sql(database,f"SELECT count(*) FROM public.model_run_artifacts WHERE stage_id='{stage}';")=='12'
     return {'control':'native-instrument-writer','separate_methods':2,'attempt_bound_artifacts':12,
-        'exact_receipts_reused':True,'scientific_outcome':'inconclusive',
-        'limits':'Native database relationship checks over empty synthetic artifact files; no prepared instrument content, scientific assessment, normal dispatcher or Storage acceptance.'}
+        'exact_receipts_reused':True,'scientific_outcome':'inconclusive','synthetic_evaluator_used':assessed,
+        'limits':('Native database relationships over synthetic evaluated files; no real source preparation, native model assessment, general diagnosis, dispatcher or Storage acceptance.' if assessed else 'Native database relationship checks over empty synthetic artifact files; no prepared instrument content, scientific assessment, normal dispatcher or Storage acceptance.')}

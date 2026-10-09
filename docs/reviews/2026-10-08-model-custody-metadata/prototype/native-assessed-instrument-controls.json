@@ -1,0 +1,34 @@
+{
+  "cases": [
+    {
+      "case": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "drop-write",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "changed-output",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "writer_sha256": "b06aa3034acc0cae8e57a6cfbb3c9f771d737afc2430d74def42bc5551f3b16f",
+  "limits": [
+    "Native custody over nonempty synthetic evaluated files, separate method values 100 and 120",
+    "No real source preparation, native model assessment, general diagnosis, dispatcher or Storage acceptance"
+  ]
+}
