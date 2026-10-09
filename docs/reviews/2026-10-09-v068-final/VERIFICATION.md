@@ -77,3 +77,13 @@ This release-record branch joins that complete history; the single changelog
 conflict preserves both the candidate instructions and the query correction.
 The joined application matches tested source `f76b0516` except for test and
 evidence records. Final combined GitHub results still govern landing and tagging.
+
+The joined release-ordering, My Work query, board and page checks pass all 63
+tests. Product direction validation passes with the same reminders. An audit
+against join `1c20c158bbc019f731c2f917c73040ca14ea04db` accounts for all 100
+registered worktree heads and all 116 local branch heads whose latest commit
+falls on or after September 9. Every head is an ancestor of the pushed candidate.
+There are no stashes. Only the canonical checkout's untracked `.directory`
+differs; it is preserved. This does not account for unsaved buffers, unknown
+clones, ignored artifacts or semantic completeness. The private machine-readable
+record is `v068-final-records-proof-20261009/integration-audit.json`.

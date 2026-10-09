@@ -102,3 +102,25 @@ the integration lands. Full v1, scientific and practitioner acceptance stay open
 Compact evidence is in `joined-browser-acceptance.json`. Raw synthetic readbacks,
 logs and captures remain private under the acceptance state directory and T3
 browser-artifacts directory.
+
+## Release-record join and My Work correction
+
+PR 182 reconciles the unpublished v0.68 candidate's 399 migrations and completes
+the previously unavailable award-reopening post-submit images. Its follow-up
+navigation discovers that migration 27 makes My Work's stage-gate project embed
+ambiguous. PR 181 names the existing project-ID foreign key while retaining the
+workspace filter, caller permissions and inner join. No constraint is removed.
+
+The [My Work report](../2026-10-09-my-work-project-relation/VERIFICATION.md)
+records the reproduced native PGRST201, nonempty authenticated query controls,
+57 focused tests and identified-build desktop/390px acceptance of a hold saved
+through the actual project form. The joined application matches that tested
+source, `f76b0516`, with only test and documentation differences. The combined
+focused suite passes 63 tests, including candidate migration ordering.
+
+The [release record](../2026-10-09-v068-final/VERIFICATION.md) retains passing
+full QA and the populated v0.67 upgrade at preceding head `5b4b5e09`, plus
+the refreshed 100-worktree and 116-recent-branch audit. These heads are accounted
+for in the pushed join, not yet main. Current integration checks, live isolation
+and full-archive restore remain required before landing. No v0.68 tag or full-v1
+claim is made by this evidence checkpoint.
