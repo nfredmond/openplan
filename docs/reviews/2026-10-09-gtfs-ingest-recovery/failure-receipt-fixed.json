@@ -1,0 +1,17 @@
+{
+  "result": {
+    "recorded": false,
+    "feedStatusChanged": false
+  },
+  "writes": [
+    {
+      "status": 500,
+      "response": {
+        "code": "55000",
+        "details": null,
+        "hint": null,
+        "message": "GTFS ingest was abandoned; start a new version"
+      }
+    }
+  ]
+}

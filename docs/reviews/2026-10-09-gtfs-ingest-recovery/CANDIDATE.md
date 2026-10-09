@@ -149,3 +149,12 @@ They do not replace an identified-build browser journey. Final current-head CI
 and T3 workflow acceptance remain open before landing this visible error-path
 change. Long-running workers, actual process termination and complete M3 remain
 outside the completed evidence.
+
+
+## Late failure receipt correction
+
+A native PostgreSQL abandonment fence rejects a late failure update with code 55000. The helper previously returned `recorded: true` despite that error. It now requires an error-free version update before reporting a recorded failure, and an error-free feed update before reporting a changed feed status. Zero-row responses still report false.
+
+`failure-receipt-counterexample.json` retains the original native refusal with the false success receipt. `failure-receipt-fixed.json` retains the same refusal with the corrected false receipt. Run `failure-receipt.py` with the isolated proof configuration path; it creates only synthetic records in the named proof database and removes its temporary gateway. The measurement does not prove normal route authorization, successful cleanup or interruption recovery.
+
+Five adapter cases cover both error and zero-row responses plus a successful feed update, including exact read/write projections. All 23 receipt, reaper and ingest-closure cases pass. The five control runs in `failure-receipt-controls.json` include a harmless comment and separate targeted removal of each error check. Both broken variants fail; restored source passes. Scoped TypeScript and ESLint pass. The existing failure cleanup still uses separate operations and remains outside the atomic reaper guarantee. These receipt checks do not make that cleanup resumable or prevent its other races.

@@ -1028,7 +1028,7 @@ export async function failGtfsFeedVersion(
     .select("id")
     .maybeSingle();
 
-  if (writeMatchedNoRows(recorded)) return { recorded: false, feedStatusChanged: false };
+  if (recorded.error || writeMatchedNoRows(recorded)) return { recorded: false, feedStatusChanged: false };
 
   // Only when this feed has never had a working version. If one is current, the
   // feed's status mirrors THAT version and must not be moved — a refresh that
@@ -1049,7 +1049,7 @@ export async function failGtfsFeedVersion(
         .eq("id", params.feedId)
         .select("id")
         .maybeSingle();
-      return { recorded: true, feedStatusChanged: !writeMatchedNoRows(marked) };
+      return { recorded: true, feedStatusChanged: !marked.error && !writeMatchedNoRows(marked) };
     }
   }
 
