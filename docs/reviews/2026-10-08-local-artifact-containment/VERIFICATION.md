@@ -102,3 +102,17 @@ directory case also fails its expected refusal message. These controls are in
 `filetype-controls.json`. The race suite passed alongside the initial combined
 non-regular case; the final separated cases pass in the containment suite.
 Targeted lint passes. No production source changes accompany this evidence.
+# CI system-binary declaration follow-up
+
+The `f525836a` QA job `113487881919` failed at Knip because the new native FIFO
+test invokes `mkfifo`, an undeclared system binary. The existing unused-export
+and type reports remain warnings. The test itself was not reached by that job.
+
+`openplan/knip.json` now declares `mkfifo` beside the other system utilities.
+Local dead-code checking passes, as do both native containment/race files
+(15 tests). A harmless whitespace control passes. A temporary test invoking an
+undeclared synthetic binary still fails Knip; removing that fixture restores a
+pass. This preserves the binary check rather than downgrading its rule.
+
+These checks do not replace the remaining exact-commit GitHub QA, isolation,
+restore or browser evidence. Other running jobs were not cancelled.
