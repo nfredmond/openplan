@@ -20,6 +20,9 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Model recovery controls now wrap within narrow run cards. Review, restore, retry
+and download actions remain inside the card at a 390-pixel viewport.
+
 Migration `20261016000026_gtfs_failure_closure.sql` makes normal GTFS failure
 cleanup transactional. Ready versions remain available even if a late failure
 arrives. Unfinished versions retain their failure receipt and private-object
