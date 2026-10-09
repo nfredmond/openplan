@@ -9,6 +9,7 @@ import unittest
 from unittest.mock import patch
 import model_attempt_writer as managed
 import test_model_zone_geometry as fixtures
+import test_transit_feed_handoff as feeds
 from test_model_skip_dispatch import aeq
 
 
@@ -44,23 +45,31 @@ class TransitGeometryTests(unittest.TestCase):
         geometry=model_geometry_inputs.consume(result['geometry_record'],self.writer.files.path/'geometry-copy')
         self.assertEqual(geometry['lats'],[-14,39])
 
-    def run_child(self, lost_registration=False):
-        self.working()
+    def run_child(self, lost_registration=False, modeled=False):
+        package=self.working()
+        if modeled:
+            (package/'zone_attributes.csv').write_text('zone_id,centroid_lon,centroid_lat,area_sq_mi\n20,-121.050,39.200,2\n10,-121.070,39.220,1\n')
+        local=self.writer.files.path/'synthetic-feed.zip';local.write_bytes(feeds._feed_bytes())
         with managed.bind(self.writer):
             callback=aeq.managed_assignment_transit_preparer({'centroid_map':{'10':200,'20':100}},deadline=None)
         if lost_registration:
-            self.post.side_effect=TimeoutError('Synthetic lost registration reply')
+            def lose_geometry_reply(url, **kwargs):
+                if kwargs['json'].get('p_payload',{}).get('artifact_type')=='model_assignment_geometry':
+                    raise TimeoutError('Synthetic lost geometry registration reply')
+                return self.response(url, **kwargs)
+            self.post.side_effect=lose_geometry_reply
         child="""
 import json
 from pathlib import Path
 from model_engine_channel import inherited_progress_client
-import model_geometry_inputs
+from model_transit_execution import consume_and_skim
 client=inherited_progress_client()
 try:
  client.create_outputs()
  result=client.prepare_transit()
- geometry=model_geometry_inputs.consume(result['geometry_record'],Path.cwd()/'child-geometry')
- Path('geometry-result.json').write_text(json.dumps({'geometry':geometry,'status':result['transit_status']}))
+ computed=consume_and_skim(result,Path.cwd()/'child-geometry')
+ skim=computed['skim']
+ Path('geometry-result.json').write_text(json.dumps({'geometry':computed['geometry'],'status':computed['transit_status'],'available':bool(skim['available'][0,1]) if skim is not None else None,'metadata':computed['metadata']}))
 finally:client.stop()
 """
         handle=EngineProcess(self.writer,[sys.executable,'-B','-c',child],
@@ -74,7 +83,7 @@ finally:client.stop()
             handle.process.wait(timeout=10)
         self.addCleanup(cleanup)
         no_match=aeq.gtfs_skim.FeedDiscovery(None,'no_match',None)
-        with patch.object(self.writer,'read_run',return_value={}),patch.dict(os.environ,{'GTFS_URL':'','GTFS_PATH':''}),patch.object(aeq,'GTFS_DISCOVER',True),patch.object(aeq.gtfs_skim,'discover_feed',return_value=no_match):
+        with patch.object(self.writer,'read_run',return_value={}),patch.dict(os.environ,{'GTFS_URL':'','GTFS_PATH':str(local) if modeled else ''}),patch.object(aeq,'GTFS_DISCOVER',True),patch.object(aeq.gtfs_skim,'discover_feed',return_value=no_match):
             handle.progress.serve_one()
             if lost_registration:
                 with self.assertRaises(aeq.WorkerStateWriteUnconfirmed):handle.progress.serve_one()
@@ -91,11 +100,29 @@ finally:client.stop()
         self.post.assert_called_once()
         self.assertFalse(handle.confirm_exit()['execution_ready'])
 
+    def test_general_child_skims_parent_feed_and_coordinates(self):
+        handle=self.run_child(modeled=True)
+        self.assertEqual(handle.process.wait(timeout=10),0,(handle.directory/'engine.log').read_text())
+        result=json.loads((self.writer.files.path/'geometry-result.json').read_text())
+        self.assertEqual(result['geometry']['zone_ids'],[20,10])
+        self.assertEqual(result['geometry']['lons'],[-121.050,-121.070])
+        self.assertEqual(result['status'],'modeled');self.assertTrue(result['available'])
+        self.assertEqual(result['metadata']['feed_origin'],'operator_path')
+        self.assertEqual(self.post.call_count,2)
+        self.assertFalse(handle.confirm_exit()['execution_ready'])
+
     def test_lost_geometry_registration_never_reaches_child(self):
         handle=self.run_child(lost_registration=True)
         self.assertNotEqual(handle.process.wait(timeout=10),0)
         self.assertFalse((self.writer.files.path/'child-geometry').exists())
         self.assertFalse((self.writer.files.path/'geometry-result.json').exists())
+        self.assertTrue(self.writer.stopped)
+
+    def test_registered_feed_without_geometry_never_reaches_child(self):
+        handle=self.run_child(lost_registration=True,modeled=True)
+        self.assertNotEqual(handle.process.wait(timeout=10),0)
+        self.assertEqual(self.post.call_count,2)
+        self.assertFalse((self.writer.files.path/'child-geometry').exists())
         self.assertTrue(self.writer.stopped)
 
     def test_unbound_callback_refuses_before_feed_preparation(self):

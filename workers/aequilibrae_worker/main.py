@@ -2439,7 +2439,7 @@ def managed_assignment_transit_preparer(setup_result: dict, *, deadline):
                 "file_size_bytes": retained["manifest_size_bytes"], "content_hash": retained["manifest_sha256"],
                 "metadata_json": {"schema": geometry["schema"], "scientific_acceptance": "unassessed"},
             }, logical_name="assignment-geometry")
-            return {**result, "geometry_record": retained}
+            return {**result, "geometry_record": retained, "deadline": deadline}
         except Exception as error:
             writer.stopped = True
             raise WorkerStateWriteUnconfirmed("Geometry retention requires reconciliation") from error

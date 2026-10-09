@@ -2775,3 +2775,26 @@ proven separately with mocked database/source transports. General modeled-feed
 child consumption using these coordinates is next. Full native assignment,
 real registration recovery, original producer geometry authority and scientific
 acceptance remain unproved. The dispatcher remains disabled.
+
+
+## General child transit computation, October 8
+
+`model_transit_execution.consume_and_skim` consumes the parent-confirmed
+geometry and feed bundles, applies retained skim settings, and computes against
+the retained zone coordinates. The parent response now includes its deadline.
+Unavailable outcomes preserve their status and reason without reading a feed.
+This helper performs no catalog selection or database operation.
+
+A real reserved child now computes a synthetic operator-feed skim through the
+general request. Two confirmed artifact writes precede its response. A lost
+geometry-registration reply after successful feed registration prevents child
+consumption. No-match and unavailable cases remain separate from modeled output.
+The related suite passes 84 tests. Four new numerical-consumer fault controls
+catch ignored deadlines, substituted settings, substituted coordinates and false
+absence status. The four parent callback controls pass again with their faults
+detected. Harmless and restored controls pass.
+
+This demonstrates synthetic transit computation, not full native assignment,
+all-origin child acceptance, real database recovery or scientific validity.
+No production dispatcher is enabled. Next integrate the consumer with the
+assignment mode-choice branch and test retained geometry/feed use there.
