@@ -76,3 +76,39 @@ This describes the open execution contract, not a second roadmap or a completed
 controller. Native ActivitySim container interruption, remote/rootless daemon
 coverage, full-host recovery, independent scientific validation and human
 acceptance remain open.
+
+## Prestart identity verifier checkpoint
+
+`workers/activitysim_worker/container_identity.py` introduces an immutable plan
+and a verifier for supplied Docker inspection facts. It compares the daemon ID,
+full container ID, immutable image ID, unique request label, command/entrypoint,
+environment, user, working directory, memory/swap/process limits, network,
+restart/removal/privilege flags and exact bind mounts. It requires an unstarted
+`created` state. A result contains identity and a policy hash; start, signal and
+continuation authorization all remain false. The verifier does not contact
+Docker or establish the origin of facts supplied by its caller. It is not yet
+connected to normal execution.
+
+A live Docker proof created one disposable container with the retained local
+image. Initial verification passed. Changing its actual memory-plus-swap policy
+from 64 MiB to 128 MiB was refused. Restoring 64 MiB produced the original
+identity result. The container stayed in `created`, its marker command never
+ran, and the proof removed it. The source hash and result are retained in
+`prototype/created-container-identity.json`; the runner is
+`prototype/verify_created_container_identity.py`. Private evidence is under
+`~/.local/state/openplan/activitysim-created-container-20261008b/`.
+
+All 65 ActivitySim tests pass with live host tests enabled. Six source faults
+are detected with harmless/restored passes: invented start authority, ignored
+daemon, ignored image, ignored environment, ignored mounts and mutable command
+acceptance. `prototype/container-identity-controls.json` retains the results.
+Tests also refuse changed user, working directory, limits, network, automatic
+removal, restart, privilege and already-started state. This is a check of named
+fields, not an exhaustive Docker security-policy audit.
+
+The controller still must authenticate and freeze its endpoint, retain intent
+and exact creation response outside writable mounts, reconcile a lost creation
+reply, bind startup to a live owner, and verify termination after owner/controller
+loss. Namespace/security-profile policy and remote/rootless variants also need
+explicit coverage before claiming complete daemon custody. No saved verifier
+result is a capability to start, stop or recreate a container.
