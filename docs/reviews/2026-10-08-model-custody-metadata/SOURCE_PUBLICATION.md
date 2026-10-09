@@ -268,3 +268,40 @@ large source files, with immutable object names and this exact readback before
 marking an object complete. A streamed single POST alone would not provide
 byte-offset recovery after interruption. Native TUS configuration and restart
 behavior still need verification against the isolated local Storage service.
+
+## Retained resumable client checkpoint, October 9
+
+`model_storage_resumable.upload_file` now retains one immutable upload intent and
+its TUS session URL in an atomically replaced, private local state file. A file
+lock prevents two processes from using that state concurrently. The saved intent
+includes server, bucket, object name, hash, size and content type, without the
+service credential. A caller cannot reuse it for a different object.
+
+The client checks a private regular source file through an open descriptor before
+network access. It sends at most 6 MiB per PATCH, checks the exact acknowledged
+offset, and records progress after each confirmed chunk. After an uncertain PATCH,
+a later call asks the server for its current offset. It accepts progress beyond
+the last saved acknowledgement but refuses regression or a different total length.
+Before reporting success, it verifies the entire stored object through bounded
+raw readback. It also repeats readback when resuming previously verified state.
+
+The implementation follows the [TUS 1.0 protocol](https://tus.io/protocols/resumable-upload)
+for empty creation requests, HEAD offsets and PATCH acknowledgements. Creation
+sends no file bytes. If the creation reply is lost before its URL is retained, a
+later call can create another empty session for the same immutable object. The
+original empty server session may remain until server expiration. A known expired
+session is an explicit failure; automated expiration reconciliation is not yet
+implemented. Foreign upload locations and redirects are refused. Upsert stays
+false throughout.
+
+Eleven protocol tests use a deterministic synthetic peer with actual local files
+and saved state. They cover lost chunk and final replies, lost creation replies,
+changed sources, changed intent, upload origin, protocol version, exact offsets,
+corrupt readback, empty files and concurrent state ownership. Eleven
+[fault-control cases](prototype/storage-resumable-controls.json) include harmless
+and restored runs. Thirty related source and upload tests pass in Python 3.11.
+
+This client is not yet connected to the source-set publisher. Native Storage TUS
+configuration, separate-process interruption recovery, session expiration policy,
+manifest-last publication and the admitted worker join remain open. These tests
+are not a native service, large-network throughput or scientific acceptance claim.
