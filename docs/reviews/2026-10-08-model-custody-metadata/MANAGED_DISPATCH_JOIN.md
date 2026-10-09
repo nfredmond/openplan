@@ -3668,3 +3668,31 @@ This joins the preflight preparation path only. The synthetic skim is copied,
 not validated as a scientific matrix. Census synthesis, native model dispatch,
 output publication, terminal handling, concurrent revocation fencing and normal
 managed dispatcher activation remain separate open requirements.
+
+
+### Actual scaffold handler publication and completion
+
+The opt-in publication campaign now runs `run_bundle_and_preflight_stage`
+inside an admitted managed attempt against a fresh isolated database clone.
+The existing handler retains database-selected input files, runs the scaffold
+pipeline, registers one evidence packet and four structural KPIs, and writes
+progress through native command receipts. A final managed stage command
+completes both the stage and its parent run. The normal dispatcher remains
+unchanged and disabled for managed execution.
+
+`prototype/verify_activity_stage_publication_controls.py` runs normal,
+harmless-comment and restored cases plus three in-memory faults. Omitting an
+evidence registration, the runtime-mode KPI or the completion write must fail
+the corresponding database-state assertion. The proof verifies the evidence
+bytes against registered size and SHA-256, producing attempt IDs, the complete
+structural KPI inventory, a null runtime-mode numeric value and explicit
+`preflight_only` status. No production source file is mutated.
+
+The storage HTTP byte service is synthetic. These checks establish the tested
+handler-to-database connection, not real Supabase Storage operation, normal
+poll/push dispatch, lost-response recovery across the full handler, native
+ActivitySim execution or scientific accuracy. Study geometry is an explicit
+synthetic handler input; this campaign does not prove run-configuration reads.
+The earlier native container evidence remains a separate lifecycle test.
+Joined native execution, publication and recovery remain open before enabling
+normal managed dispatch.

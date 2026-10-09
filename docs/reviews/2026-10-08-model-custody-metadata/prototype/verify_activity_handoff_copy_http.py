@@ -74,6 +74,8 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
             sql(database,f"SET ROLE service_role; SELECT public.write_model_attempt_artifact('{uuid.uuid4()}','{attempt}','{payload}'::jsonb);")
         sql(database,f"SET ROLE service_role; SELECT public.write_model_stage_attempt('{uuid.uuid4()}','{attempt}','succeeded','Synthetic complete',NULL);")
     calls, results = [], []
+    publication = os.environ.get('OPENPLAN_STAGE_PUBLICATION_CONTROL')
+    storage = {}
     original = Path(predecessor.__file__).read_text()
     def snapshot():
         tables=('model_runs','model_run_stages','model_stage_attempts','model_run_artifacts','model_stage_claim_receipts','model_stage_write_receipts','model_artifact_write_receipts')
@@ -85,7 +87,18 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                 pass
             def forward(self,method):
                 path=self.path.removeprefix('/rest/v1')
-                allowed=(method=='GET' and (path.startswith('/model_run_stages?') or path.startswith('/model_run_artifacts?'))) or (method=='POST' and path=='/rpc/claim_model_stage_attempt')
+                if publication and self.path.startswith('/storage/v1/object/'):
+                    if self.headers.get('Authorization') != 'Bearer '+key:
+                        self.send_error(403);return
+                    object_key=self.path.removeprefix('/storage/v1/object/').removeprefix('authenticated/')
+                    if method=='POST':
+                        content=self.rfile.read(int(self.headers.get('Content-Length','0')))
+                        storage.setdefault(object_key,content)
+                        status,content=200,b'{}'
+                    else:
+                        status,content=(200,storage[object_key]) if object_key in storage else (404,b'{}')
+                    self.send_response(status);self.send_header('Content-Length',str(len(content)));self.end_headers();self.wfile.write(content);return
+                allowed=(method=='GET' and (path.startswith('/model_run_stages?') or path.startswith('/model_run_artifacts?'))) or (method=='POST' and (path=='/rpc/claim_model_stage_attempt' or (publication and path in ('/rpc/write_model_stage_attempt','/rpc/write_model_attempt_artifact','/rpc/write_model_attempt_kpi'))))
                 if not allowed or self.headers.get('Authorization')!='Bearer '+key:
                     self.send_error(403);return
                 body=self.rfile.read(int(self.headers.get('Content-Length','0')))
@@ -127,6 +140,10 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
                                 raise AssertionError('Wrong selector mutation survived the declared-producer check')
                             results.append({'control':control,'selected_declared_producer':not fault_detected,'fault_detected':fault_detected})
                         if snapshot()!=before:raise AssertionError('Predecessor reads mutated native records')
+                        if publication:
+                            from verify_activity_stage_publication import verify_stage
+                            results.append(verify_stage(worker,writer,run,consumer,base,key,output,storage,sql,database,publication))
+                            return
                         destination=writer.workspace(output/'consumer',run)
                         import model_handoff_files
                         original_copy=model_handoff_files.copy_registered
@@ -204,6 +221,13 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
     report={'handoff_sha256':hashlib.sha256(Path(handoff.__file__).read_bytes()).hexdigest(),'selector_sha256':hashlib.sha256(original.encode()).hexdigest(),'worker_sha256':hashlib.sha256(Path(worker.__file__).read_bytes()).hexdigest(),
             'controls':results,'http_calls':calls,'native_tables_unchanged':7,'gateway_removed':True,
             'limits':'Actual ActivitySim adapter, fresh admitted consumer, native completed producers and three later unrelated artifacts. The consumer attempt is failed by an explicit database command before the refused read; table snapshots exclude that declared mutation. Synthetic files are retained, materialized and passed through the actual scaffold preflight pipeline. No model execution, full dispatcher, RLS matrix, concurrent revocation fence or scientific acceptance.'}
+    if publication:
+        report.pop('native_tables_unchanged')
+        report['limits']='Actual stage handler, native database commands and scaffold pipeline. Storage HTTP byte service is synthetic. No normal dispatcher, native model, real Storage service, concurrent revocation fence or scientific acceptance.'
+        content=json.dumps(report,indent=2)+'\n'
+        (output/'activity-stage-publication.json').write_text(content)
+        print(content)
+        return
     content=json.dumps(report,indent=2)+'\n'
     (output/'activity-handoff-copy-http.json').write_text(content);(ROOT/'activity-handoff-copy-http.json').write_text(content)
     print(content)
