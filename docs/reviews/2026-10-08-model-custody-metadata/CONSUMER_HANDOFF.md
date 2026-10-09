@@ -163,3 +163,38 @@ incremental output. The initial temporary configuration omitted that ambient
 type root and reported missing GeoJSON types; correcting the configuration
 resolved those errors. The check uses a 3 GiB Node heap within a 4 GiB no-swap
 scope. This is not a passing whole-application type check.
+
+## October 9 native reader and report resolver
+
+The [native consumer campaign](prototype/native-instrument-consumer-controls.json)
+now runs the real Supabase JavaScript client, production attempt reader and
+report resolver against a temporary native PostgREST service. It uses a fresh
+clone of the populated migration-24 access fixture. The source database has no
+connections before cloning and remains unchanged. The private candidate and
+result live under `native-instrument-consumers-20261009a`.
+
+The service sets `PGRST_DB_MAX_ROWS=2`. Both readers retain all ten custody rows
+at offsets 0, 2, 4, 6, 8 and 10, preserving each parent-run relationship. The
+viewer reads the expected complete records; an owner in another workspace reads
+none; the anonymous role receives a failed read. An injected later-page HTTP
+503 makes both readers discard the prefix and report failure. Removing the
+viewer's membership in the clone ends access. Retained custody rows are unchanged.
+
+Seven cases include harmless input metadata, a wrong-member-token fault, a
+missing-native-cap fault and a restored normal pass. Wrong-member and missing-cap
+cases fail for the expected identity and pagination assertions. Five invalid
+row-cap values are refused before creating a service. The shared gateway adds
+only an optional, validated row cap; its default remains unchanged. Each of the
+three temporary REST services is removed and its absence checked by the gateway.
+Credentials travel through child stdin and process memory, not arguments, files
+or reports. The transport adapter removes only the usual `/rest/v1` prefix,
+because this isolated service has no upstream gateway.
+
+This closes the native reader/report-resolver boundary over synthetic retained
+records and locally signed test JWTs. It does not exercise Auth sign-in, the
+assistant HTTP route, project freeze, actual report download, browser rendering,
+source-file completeness or scientific/human acceptance. Those remain separate
+requirements. No application server or preview database was changed.
+
+The native TypeScript proof passes focused lint and the scoped runtime type
+check, now including that script and its imported production readers.
