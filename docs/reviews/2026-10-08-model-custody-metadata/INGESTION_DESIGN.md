@@ -480,3 +480,10 @@ before output access, exact structural/source identities, explicit readiness and
 an immutable handoff to execution. The existing development freeze remains useful
 source code and evidence, not authorization to enable managed dispatch or promote
 a scientific claim.
+
+The [preparation handoff design](PREPARATION_HANDOFF.md) separates the observation
+protocol freeze from each method's assignment-input freeze. This distinction is
+required because ActivitySim demand is an output of the behavioral stage before
+it becomes an input to network assignment. The document identifies the current
+producer/dispatcher seams and the native, ordering and recovery evidence required
+before enabling dispatch. It changes no claim tier or study result.

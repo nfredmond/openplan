@@ -235,6 +235,31 @@ class AttemptWriter:
             self.stopped = True
             raise
 
+    def prepare_validation_bundle(self, *, method, bundle_arguments):
+        """Retain explicit inputs without authorizing execution or scientific claims."""
+        import model_validation_preparation
+        self.require_open()
+        try:
+            if self.files is None:
+                raise ValueError('Validation preparation requires the owned workspace')
+            retained = model_validation_preparation.retain(
+                files=self.files, method=method, bundle_arguments=bundle_arguments)
+            self.files.verify()
+            self.record_artifact({
+                'run_id': self.context.run_id, 'stage_id': self.context.stage_id,
+                'artifact_type': 'model_validation_preparation',
+                'file_url': 'local://' + retained['manifest_path'],
+                'file_size_bytes': retained['manifest_size_bytes'],
+                'content_hash': retained['manifest_sha256'],
+                'metadata_json': {'schema': 'openplan.validation-preparation-files.v1',
+                                  'demand_method': method, 'preparation_independence': 'unassessed',
+                                  'execution_authorized': False, 'scientific_acceptance': 'unassessed'},
+            }, logical_name='validation-preparation-' + method)
+            return retained
+        except BaseException:
+            self.stopped = True
+            raise
+
     def publish_validation_sources(self, *, method):
         """Publish this invocation's acknowledged source manifest and record its URI."""
         import model_validation_source_publication
