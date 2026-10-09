@@ -12,7 +12,7 @@ ROLES=(('model_output','synthetic_output','synthetic.output'),
        ('diagnosis','model_validation_structural_diagnosis_v2','openplan.model-validation-structural-diagnosis.v2'))
 
 
-def verify_instrument(writer,run,stage,output,sql,database):
+def verify_instrument(writer,run,stage,output,sql,database,*,upload=None):
     control=os.environ.get('OPENPLAN_NATIVE_INSTRUMENT_CONTROL','normal')
     assert control in ('normal','harmless','drop-write','changed-output','restored')
     content_mode=os.environ.get('OPENPLAN_NATIVE_INSTRUMENT_CONTENT')
@@ -40,7 +40,7 @@ def verify_instrument(writer,run,stage,output,sql,database):
                 content=path.read_bytes()
                 digest=hashlib.sha256(content).hexdigest()
                 artifact=writer.record_artifact({'run_id':run,'stage_id':stage,'artifact_type':kind,
-                    'file_url':'local://'+str(path),'file_size_bytes':len(content),'content_hash':digest,
+                    'file_url':upload(run,method,path,content) if upload else 'local://'+str(path),'file_size_bytes':len(content),'content_hash':digest,
                     'metadata_json':{'schema':schema,'demand_method':method,'fixture':'synthetic evaluated input; not scientific acceptance' if assessed else 'empty bytes; not an assessed instrument'}})
                 payload[role+'_artifact_id']=artifact['id'];payload[role+'_sha256']=digest
             name=('harmless-' if control=='harmless' else '')+method
@@ -59,5 +59,5 @@ def verify_instrument(writer,run,stage,output,sql,database):
         for key,value in payload.items():assert row[key]==value
     assert sql(database,f"SELECT count(*) FROM public.model_run_artifacts WHERE stage_id='{stage}';")=='12'
     return {'control':'native-instrument-writer','separate_methods':2,'attempt_bound_artifacts':12,
-        'exact_receipts_reused':True,'scientific_outcome':'inconclusive','synthetic_evaluator_used':assessed,'worker_wrapper_used':worker_wrapper,
-        'limits':('Native database relationships over synthetic evaluated files; no real source preparation, native model assessment, general diagnosis, dispatcher or Storage acceptance.' if assessed else 'Native database relationship checks over empty synthetic artifact files; no prepared instrument content, scientific assessment, normal dispatcher or Storage acceptance.')}
+        'exact_receipts_reused':True,'scientific_outcome':'inconclusive','synthetic_evaluator_used':assessed,'worker_wrapper_used':worker_wrapper,'native_storage_uploaded':upload is not None,
+        'limits':('Native database relationships over synthetic evaluated files; no real source preparation, native model assessment, general diagnosis or dispatcher acceptance. Storage verification, when supplied, belongs to the enclosing proof.' if assessed else 'Native database relationship checks over empty synthetic artifact files; no prepared instrument content, scientific assessment, normal dispatcher or Storage acceptance.')}

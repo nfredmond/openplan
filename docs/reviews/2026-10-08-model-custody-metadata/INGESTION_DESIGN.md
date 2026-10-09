@@ -362,3 +362,39 @@ join native object publication with the custody RPC, publish all scientific
 sources or establish scientific acceptance. The retained manifest belongs to
 the proof; a production recovery workflow still needs its own retained identity
 and authorization path.
+
+
+### Join native Storage objects to attempt-bound instrument custody
+
+A new optional upload callback connects the existing evaluated-instrument proof
+to the actual immutable uploader. Native Storage and the isolated PostgREST
+gateway use the same fresh database clone. The proof creates a synthetic run
+and stage, obtains a fresh admitted writer, evaluates separate method fixtures
+through the actual worker wrapper, uploads all six instrument roles for each
+method, and registers the returned Storage references through native artifact
+and instrument commands.
+
+After registration, the proof queries the twelve artifact rows and downloads
+each recorded Storage reference. Object bytes, SHA-256 values and sizes must
+match. Both instrument rows retain their actual attempt, stage, workspace and
+method, and exact retries reuse their receipts. No model engine runs.
+
+Six fresh-clone controls pass their expected outcomes: normal, harmless, dropped
+custody write, changed output, wrong Storage reference and restored. The wrong
+reference is deliberately registered and then fails the downloaded-byte check.
+The database RPC does not itself fetch or reject that unavailable object; this
+is a verification boundary, not a new database enforcement claim. See
+`prototype/native-storage-custody-controls.json`.
+
+The first joined diagnostic and the six-case campaign are retained privately
+in `native-storage-custody-20261009a` and
+`native-storage-custody-controls-20261009a`. Candidate records account for the
+isolated databases. Temporary Storage/PostgREST services and credential files
+are removed. Existing stores and the preview database remain outside the writes.
+
+This joins evaluated fixture publication, native object bytes and native custody
+in one case. It does not establish independent preparation, real network or
+population inputs, publication of supporting source files, normal dispatcher
+integration, the full RLS matrix or scientific acceptance. Lost custody-reply
+recovery has separate native database evidence but has not yet been exercised
+with this joined native Storage path.

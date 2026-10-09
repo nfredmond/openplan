@@ -37,7 +37,8 @@ def main():
         return result.stdout.strip()
     if sql('postgres', f"SELECT count(*) FROM pg_stat_activity WHERE datname='{source['database']}';") != '0':
         raise RuntimeError('Source has active connections')
-    database = 'openplan_storage_proof_' + uuid.uuid4().hex
+    joined = os.environ.get('OPENPLAN_NATIVE_STORAGE_JOIN') == '1'
+    database = ('openplan_attempt_cli_' if joined else 'openplan_storage_proof_') + uuid.uuid4().hex
     sql('postgres', f'CREATE DATABASE {database} TEMPLATE {source["database"]};')
     (output/'candidate.json').write_text(json.dumps({'database':database,'container':source['container'],'source_database':source['database']},indent=2)+'\n')
     inspected = json.loads(docker('inspect', 'supabase_storage_openplan-restore-target-2026091050'))[0]
@@ -176,11 +177,65 @@ print(json.dumps({'uri':uri,'pid':os.getpid()}))
             assert fetch() == original, 'Rejected overwrite changed native bytes'
             anonymous = requests.get(native+'/object/authenticated/run-artifacts/'+object_path, timeout=10)
             assert anonymous.status_code in (400,401,403), 'Private object allowed unauthenticated access'
-        report = {'control':control,'upload_responses':responses,'database':database,'storage_image':inspected['Config']['Image'],
+        joined_result = None
+        if joined:
+            from isolated_postgrest import gateway
+            import model_attempt_invocation as invocation
+            import model_attempt_writer as managed
+            from verify_native_instrument_writer import verify_instrument
+            fixture = str(uuid.UUID(source['fixture_run']))
+            instrument_run, stage = str(uuid.uuid4()), str(uuid.uuid4())
+            workspace = sql(database, f"""
+INSERT INTO public.model_runs(id,workspace_id,model_id,engine_key,status,run_title,created_by)
+ SELECT '{instrument_run}',workspace_id,model_id,engine_key,'queued','Synthetic native Storage custody',created_by
+ FROM public.model_runs WHERE id='{fixture}';
+INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order)
+ VALUES ('{stage}','{instrument_run}','Artifact Extraction','queued',1);
+SELECT workspace_id FROM public.model_runs WHERE id='{instrument_run}';
+""")
+            workspace = str(uuid.UUID(workspace))
+            with gateway('public', database=database) as connection:
+                base, key = connection['url'], connection['service_token']
+                def adapt(method, url, **kwargs):
+                    assert url.startswith(base+'/rest/v1/'), 'Unexpected custody destination'
+                    return requests.request(method, base+url.removeprefix(base+'/rest/v1'), **kwargs)
+                def post(url, **kwargs): return adapt('POST',url,**kwargs)
+                def get(url, **kwargs): return adapt('GET',url,**kwargs)
+                directory = output/'custody-journal'
+                expected_objects = {}
+                def upload(run_id, method, artifact_path, content):
+                    object_path = f'model-runs/{run_id}/native-instrument/{method}/{artifact_path.name}'
+                    with patch.object(worker,'SUPABASE_URL',f'http://127.0.0.1:{server.server_port}'), patch.object(worker,'SUPABASE_KEY',token):
+                        uri = worker.upload_verified_immutable_bytes(object_path,content,'text/csv' if artifact_path.suffix=='.csv' else 'application/json')
+                    if os.environ.get('OPENPLAN_STORAGE_CUSTODY_FAULT') == 'wrong-reference': uri += '-wrong'
+                    expected_objects[uri] = content
+                    return uri
+                results = []
+                def handler(context):
+                    writer = managed.AttemptWriter(directory,context,base_url=base,deployment_id=database,service_key=key,post=post,get=get)
+                    with managed.bind(writer):
+                        results.append(verify_instrument(writer,instrument_run,stage,output,sql,database,upload=upload))
+                invocation.invoke_new_attempt(directory,run_id=instrument_run,stage_id=stage,
+                    worker_id='native-storage-custody-proof',workspace_id=workspace,base_url=base,
+                    deployment_id=database,service_key=key,handler=handler,post=post,get=get)
+                assert len(results)==1 and results[0]['native_storage_uploaded'], 'Native custody callback did not complete'
+                rows = json.loads(sql(database, f"SELECT jsonb_agg(jsonb_build_object('file_url',file_url,'content_hash',content_hash,'size',file_size_bytes)) FROM public.model_run_artifacts WHERE run_id='{instrument_run}';"))
+                assert len(rows)==len(expected_objects)==12, 'Storage artifact inventory differs'
+                for row in rows:
+                    content = expected_objects[row['file_url']]
+                    response = requests.get(native+'/object/authenticated/'+row['file_url'].removeprefix('storage://'),headers=headers,timeout=10)
+                    assert response.status_code==200 and response.content==content, 'Custody object bytes differ'
+                    assert row['content_hash']==hashlib.sha256(content).hexdigest() and row['size']==len(content), 'Custody object metadata differs'
+                joined_result = {'instrument':results[0],'native_objects_verified':len(rows),
+                    'same_database':True,'postgrest_gateway_removed_on_exit':True}
+        report = {'joined_custody':joined_result,'control':control,'upload_responses':responses,'database':database,'storage_image':inspected['Config']['Image'],
             'exact_bytes_downloaded':True,'exact_retry_reused':True,'lost_ack_exercised':bool(lost_ack),'fresh_process_recovered':restart_recovered,'changed_upload_refused':True,'original_bytes_preserved':True,
             'unauthenticated_status':anonymous.status_code,'content_sha256':hashlib.sha256(original).hexdigest(),
             'limits':['Native private Storage and actual worker upload with a prefix-only HTTP proxy',
                       'No stage restart, custody RPC, RLS user matrix, full source publication or scientific acceptance']}
+        if joined:
+            report['limits'] = ['Actual wrapper/evaluator, native private Storage and native attempt custody in one isolated database',
+                                'Authored synthetic sources and outputs; no independent preparation, stage restart, full user RLS matrix, full source publication or scientific acceptance']
         (output/'result.json').write_text(json.dumps(report,indent=2)+'\n')
         print(json.dumps(report,indent=2))
     finally:
