@@ -16,6 +16,7 @@ checks=[
  ('no-reverse-swap','sign,start if sign==1 else end,end if sign==1 else start,','sign,start,end,','test_baseline_and_row_reordering_match_source','ValueError: Assignment graph differs'),
  ('extra-directions',"if record['position']!=len(record['order']):raise ValueError('Assignment graph adds directions absent from source')",'pass','test_missing_and_extra_directions_refuse','ValueError not raised'),
  ('absent-nodes',"if record['remaining_nodes']:raise ValueError('Assignment graph node map contains nodes absent from source')",'pass','test_invalid_or_absent_node_map_refuses','ValueError not raised'),
+ ('skip-centroid-policy','        _verify_centroids(graph)','        pass','test_centroid_policy_drift_stops_before_snapshot_and_execution','ValueError not raised'),
  ('restored',None,None,None,None),
 ]
 results=[]

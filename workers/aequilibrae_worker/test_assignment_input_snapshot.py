@@ -31,6 +31,11 @@ class SnapshotTests(unittest.TestCase):
             item.graph.graph.update(link_id=np.array([9,9]),direction=np.array([1,-1]),a_node=np.array([0,1]),
                 b_node=np.array([1,0]),modes=np.array(['c','c']),distance=np.array([3000.,3000.]))
             item.graph.mode='c';item.graph.all_nodes=np.array([100,900])
+            item.graph.num_zones=2;item.graph.block_centroid_flows=True
+            item.graph.compact_all_nodes=item.graph.all_nodes.copy()
+            item.graph.nodes_to_indices=np.full(901,-1,dtype=np.int64)
+            item.graph.nodes_to_indices[[100,900]]=[0,1]
+            item.graph.compact_nodes_to_indices=item.graph.nodes_to_indices.copy()
         settings=dict(algorithm='bfw',rgap_target=self.profile['target_gap'],max_iter=self.profile['max_iterations'],cores=1,
             time_field='travel_time',vdf=SimpleNamespace(function='BPR'),vdf_parameters=[np.array([.15,.15]),np.array([4.,4.])],
             capacity=np.array([1000.,2000.]),free_flow_tt=np.array([5.,6.]))

@@ -98,5 +98,27 @@ class NetworkGraphTests(unittest.TestCase):
         self.settings=assignment_network_settings();self.sql('UPDATE links SET direction=2')
         with self.assertRaisesRegex(ValueError,'Source link direction'):self.call()
 
+    def test_centroid_policy_drift_stops_before_snapshot_and_execution(self):
+        original=copy.deepcopy(self.engine)
+        changes=(('block_centroid_flows',False),('block_centroid_flows',1),('num_zones',3),
+                 ('centroids',np.array([100,100])),('centroids',np.array([0,900])),
+                 ('all_nodes',np.array([900,100])),('compact_all_nodes',np.array([900,100])),
+                 ('nodes_to_indices',np.zeros(901,dtype=np.int64)),
+                 ('compact_nodes_to_indices',np.zeros(901,dtype=np.int64)),
+                 ('compact_nodes_to_indices',np.array([0,1])))
+        for field,value in changes:
+            self.engine=copy.deepcopy(original)
+            setattr(self.engine.classes[0].graph,field,value)
+            with self.subTest(field=field),self.assertRaisesRegex(ValueError,'centroid|zone count'):
+                snapshot.retain_and_execute(self.engine,directory=self.path,context={},profile=self.profile,
+                    network_state={},network_settings=self.settings,network_database=self.database)
+            self.engine.execute.assert_not_called();self.assertFalse(self.path.exists())
+
+    def test_centroid_mapping_verification_does_not_claim_path_equivalence(self):
+        record=self.call()[1]
+        self.assertEqual(record['centroid_policy'],{'block_through_flows':True,
+            'directed_and_compact_centroid_indices':'matched'})
+        self.assertEqual(record['compressed_routing_equivalence'],'unassessed')
+
 
 if __name__=='__main__':unittest.main()

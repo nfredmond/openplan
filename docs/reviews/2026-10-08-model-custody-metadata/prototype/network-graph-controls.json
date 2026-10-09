@@ -1,5 +1,5 @@
 {
-  "source_sha256": "c8ef41b74614ac5ceed051982f006e82a7cd360b40b2429b4427f4eb7552fc99",
+  "source_sha256": "d1fae35de475ccd61d7eed211db4ffaad665a0fd892b0cabba435b1559d37183",
   "controls": [
     {
       "control": "baseline",
@@ -45,6 +45,12 @@
     },
     {
       "control": "absent-nodes",
+      "returncode": 1,
+      "expected_failure": "ValueError not raised",
+      "matched": true
+    },
+    {
+      "control": "skip-centroid-policy",
       "returncode": 1,
       "expected_failure": "ValueError not raised",
       "matched": true

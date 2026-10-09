@@ -22,6 +22,27 @@ def _number(value):
     return result
 
 
+def _verify_centroids(graph):
+    """Protect the native routing indices and this stage's no-through policy."""
+    centroids=np.asarray(graph.centroids)
+    if (centroids.ndim!=1 or centroids.dtype.kind not in 'iu' or len(centroids)==0
+            or np.any(centroids<=0) or len(np.unique(centroids))!=len(centroids)):
+        raise ValueError('Assignment routing centroids must be unique positive integers')
+    if _integer(graph.num_zones)!=len(centroids):
+        raise ValueError('Assignment routing zone count differs from centroids')
+    if graph.block_centroid_flows is not True:
+        raise ValueError('Assignment routing must block through-centroid flows')
+    for prefix in ('','compact_'):
+        nodes=np.asarray(getattr(graph,prefix+'all_nodes'))
+        indices=np.asarray(getattr(graph,prefix+'nodes_to_indices'))
+        if (nodes.ndim!=1 or nodes.dtype.kind not in 'iu'
+                or not np.array_equal(nodes[:len(centroids)],centroids)
+                or indices.ndim!=1 or indices.dtype.kind not in 'iu'
+                or np.any(centroids>=len(indices))
+                or not np.array_equal(indices[centroids],np.arange(len(centroids)))):
+            raise ValueError('Assignment routing centroid node mapping differs: '+prefix)
+
+
 def verify(assignment,database,settings):
     """Check direction, node remapping, mode exclusion and recorded class factors.
 
@@ -36,6 +57,7 @@ def verify(assignment,database,settings):
         graph=item.graph
         if id(graph) in seen:continue
         seen.add(id(graph))
+        _verify_centroids(graph)
         if not isinstance(graph.mode,str) or len(graph.mode)!=1 or not graph.mode.isalnum():
             raise ValueError('Unsupported source-to-graph mode identity')
         frame=graph.graph
@@ -96,4 +118,6 @@ def verify(assignment,database,settings):
     payload=json.dumps(settings,sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False).encode()
     return source,{'scope':'directed_source_links_with_road_class_factors','status':'matched',
                    'source_sha256':source['sha256'],'network_settings_sha256':hashlib.sha256(payload).hexdigest(),
-                   'graphs':records,'compressed_routing_equivalence':'unassessed'}
+                   'graphs':records,'centroid_policy':{'block_through_flows':True,
+                       'directed_and_compact_centroid_indices':'matched'},
+                   'compressed_routing_equivalence':'unassessed'}

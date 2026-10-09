@@ -1,5 +1,9 @@
 # Directed source network comparison, October 9, 2026
 
+Follow-up: [centroid routing checks](ASSIGNMENT_CENTROID_ROUTING.md) add native
+centroid-map and through-flow policy verification. The evidence below describes
+the original directed-link checkpoint.
+
 Initial assignment now checks its directed graph against the working network
 before creating snapshot files or calling the solver. The comparison uses the
 same read-only SQLite transaction that hashes the source nodes and links. It
