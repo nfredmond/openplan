@@ -1,0 +1,100 @@
+{
+  "control": "baseline",
+  "database": "openplan_attempt_cli_41cda42b5a7c476f90092ee10375a23c",
+  "run_id": "0072fa25-e049-4f20-963b-49151f4dbdc3",
+  "stage_id": "478533c6-b719-4d64-ad6c-aef064c21730",
+  "native_converged": true,
+  "modeled_transit": "modeled",
+  "registered_artifacts": [
+    "model_assignment_geometry",
+    "model_count_inputs",
+    "model_package_working_copy",
+    "model_project_working_copy",
+    "model_transit_inputs"
+  ],
+  "http_calls": [
+    {
+      "method": "POST",
+      "operation": "/rpc/claim_model_stage_attempt",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "operation": "/model_run_stages",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_attempt_artifact",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_attempt_artifact",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "operation": "/model_run_stages",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "operation": "/model_run_stages",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_attempt_artifact",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "operation": "/model_run_stages",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_stage_attempt",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_stage_attempt",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_stage_attempt",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "operation": "/model_run_stages",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_attempt_artifact",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_attempt_artifact",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_stage_attempt",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "operation": "/rpc/write_model_stage_attempt",
+      "status": 200
+    }
+  ],
+  "stage_remains_running": true,
+  "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
+  "limits": "Full small native assignment with live isolated PostgREST and installed command schema. Synthetic predecessor inventories directly constructed. No lost-commit replay, final publication, model restart, scientific acceptance or normal dispatcher activation."
+}

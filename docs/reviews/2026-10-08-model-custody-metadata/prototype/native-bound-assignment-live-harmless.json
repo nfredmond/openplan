@@ -1,0 +1,150 @@
+{
+  "control": "harmless",
+  "live_parent_transport": true,
+  "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
+  "source_sha256": {
+    "model_engine_binding.py": "b4787d2e94e3b1a5bf04c3b1f784b6045033d744eda7dfbf6a522f899ed769f6",
+    "model_engine_channel.py": "bd0f6f63bf5f8a611c663d37fd6df8562fe139a210ee29ff2cdfc4530fdbdf63",
+    "model_engine_process.py": "c93ef15317e2bef824bf44547320a45884cabda4643e3b75cfe4c9c78a222b31",
+    "model_transit_execution.py": "32c876e43befd4f43da6f26f6dd3197919c49f4f79778c5f7ab5bafc12022f7e",
+    "model_geometry_inputs.py": "13790ab924a1878c0f75976282ca4ecdc49d514eaf15086a14a57e4a1b8330dd",
+    "model_count_inputs.py": "5b0b5b2af6b09907a8d43ad1e9d9ca0f9e9807ecbf82b55ccc9b977fd894e594"
+  },
+  "engine_version": "1.6.2",
+  "convergence": {
+    "final_gap": 0.0,
+    "iterations": 2,
+    "target_gap": 0.0005,
+    "max_iterations": 3000,
+    "algorithm": "bfw",
+    "converged": true,
+    "assignment_profile": {
+      "schema_version": "openplan.assignment-profile.v1",
+      "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+      "engine": "aequilibrae",
+      "algorithm": "bfw",
+      "vdf": "BPR",
+      "vdf_parameters": {
+        "alpha": 0.15,
+        "beta": 4
+      },
+      "capacity_field": "capacity",
+      "time_field": "travel_time",
+      "class_pce": 1,
+      "engine_version": "1.6.2",
+      "target_gap": 0.0005,
+      "max_iterations": 3000,
+      "cores": 1
+    },
+    "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+    "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157"
+  },
+  "loaded_links": 1,
+  "mode_split": {
+    "auto_trips": 173,
+    "transit_trips": 4,
+    "active_trips": 43,
+    "auto_share": 0.7903933432086736,
+    "transit_share": 0.01803444002142706,
+    "distance_bands": [
+      {
+        "band_miles": "0-1",
+        "person_trips": 20.0,
+        "auto_share_pct": 71.6
+      },
+      {
+        "band_miles": "1-3",
+        "person_trips": 200.0,
+        "auto_share_pct": 79.8
+      },
+      {
+        "band_miles": "3-5",
+        "person_trips": 0.0,
+        "auto_share_pct": null
+      },
+      {
+        "band_miles": "5-inf",
+        "person_trips": 0.0,
+        "auto_share_pct": null
+      }
+    ],
+    "walk_mph": 3.0,
+    "bike_mph": 10.0,
+    "transit_modeled": true,
+    "transit_available_pairs": 1,
+    "transit_total_pairs": 2,
+    "avg_transit_ivtt_min": 20.0,
+    "avg_transit_wait_min": 15.0,
+    "shares_pct": {
+      "auto": 78.64,
+      "transit": 1.82,
+      "active": 19.54
+    },
+    "transit_status": "modeled",
+    "transit_los": {
+      "access_buffer_miles": 0.5,
+      "discovery_error": null,
+      "fallback_after_catalog_failure": false,
+      "feed_checksum_sha256": "fb679fb4b835fd1e1b4bd1eb1b9d52adcfde62d3ea3b0048bcfdfe2dfb0cebfd",
+      "feed_expiry_evaluated_at": "2026-10-09T00:37:18.272753+00:00",
+      "feed_origin": "operator_path",
+      "feed_schedule_expired": false,
+      "feed_service_end_date": "2026-12-31",
+      "flat_fare_usd": 1.5,
+      "frequency_trips_excluded": 0,
+      "n_lines": 1,
+      "n_routes": 1,
+      "n_served_stops": 3,
+      "operator_env_overridden": false,
+      "scheduled_trips_used": 2,
+      "selection_reason": null,
+      "service_day": "monday",
+      "service_end": "20261231",
+      "service_period": "20250101..20261231",
+      "service_start": "20250101",
+      "skim_settings": {
+        "access_miles": 0.5,
+        "transfer_penalty_min": 5.0,
+        "flat_fare_usd": 1.5,
+        "walk_mph": 3.0
+      },
+      "source_name": "synthetic-feed.zip",
+      "source_url": null
+    }
+  },
+  "artifacts": {
+    "run_output/external_demand.omx": "782e09248115a462afc36bd2859461b96ec9f3752f46ce436469241e99e1e355",
+    "run_output/resident_demand.omx": "36ac8e0ee0d38f70ac276fb85a0f285338a3db9299c34e86b349b734bf1d6323",
+    "run_output/demand.aem": "3dcb59d398c12e21df3bfc7c95c969348775a439f92251ea3e15e23593ac1e21",
+    "run_output/travel_time_skims.omx": "f1ae0bd7f4a2303f91dc2fe6d556c84d8312941d9f759a53b5e39dc1b2de3c85",
+    "run_output/link_volumes.csv": "0363855364f05c3dac0f1ff9153babde381745f177472e6b7854353be1cf883d",
+    "run_output/resident_demand.aem": "6d7d472fab7c5cc996a97a871887fcb17fb48bfbd3491c0493d3dbb749bc48ed",
+    "run_output/demand.omx": "79f57cd5f98bdd0cc4d413bdf60ab41a9810fd52c730d0b099f477e974ffbf78",
+    "run_output/external_demand.aem": "8120aec0542cfadc988280d7d2c25f08ddc3e9289e242f8f209bc3cf7a7dc677",
+    "run_output/transit_inputs/manifest.json": "9981b35cc5267f820d1f77a6488ba4053446c6049e9935719a99000900137f5a",
+    "run_output/child_count_inputs/manifest.json": "71fe90d0221dcab9bfb9d6feb941a39d7a370df3050273cddf5623befd475d67",
+    "run_output/geometry_inputs/manifest.json": "8c69e2f0750951053b2c68dc5a206a566bfb99bda60aa2046ce5447b3b04425a",
+    "run_output/count_inputs/manifest.json": "3fe1fe207ede7bec82b414fce344b37ee9a1232824c5fa2dd559683e78b9a78f",
+    "run_output/geometry_inputs/files/geometry.json": "823edb36e6e7518a16c7b3cfc7dc4cd2612bd1d7b3285aa1701bd4ad191e61e8",
+    "run_output/assignment_transit/geometry/manifest.json": "c713b2588d2e86c0bae99720cd167515694620e12d00cb3d7ccd87fb6662f35c",
+    "run_output/assignment_transit/transit/manifest.json": "0216ef110bd3fa5a830f0a4e65f4f3130302bca4c1ca4cd708ef81ac49140fc1",
+    "run_output/assignment_transit/transit/files/transit.json": "2b6bcbee76aa6d2657d3838b4b88fcd1c12a7e54c5def94003302e3f8e73e764",
+    "run_output/assignment_transit/transit/files/feed.zip": "fb679fb4b835fd1e1b4bd1eb1b9d52adcfde62d3ea3b0048bcfdfe2dfb0cebfd",
+    "run_output/assignment_transit/geometry/files/geometry.json": "823edb36e6e7518a16c7b3cfc7dc4cd2612bd1d7b3285aa1701bd4ad191e61e8",
+    "run_output/transit_inputs/files/transit.json": "2b6bcbee76aa6d2657d3838b4b88fcd1c12a7e54c5def94003302e3f8e73e764",
+    "run_output/transit_inputs/files/feed.zip": "fb679fb4b835fd1e1b4bd1eb1b9d52adcfde62d3ea3b0048bcfdfe2dfb0cebfd"
+  },
+  "exit_receipt": {
+    "schema": "openplan.engine-process.v1",
+    "run_id": "3c121d0b-6173-493f-801e-f4e838d17d5a",
+    "stage_id": "04fffc8a-3735-4a24-a04b-82e83f58f579",
+    "attempt_id": "0e89e9e9-a1ee-4fe0-940c-2b67358e6a77",
+    "command_sha256": "5b922464f3841fcc0454f8f3f1117aa190168f764f50b05b5cf8528901121f44",
+    "pid": 67860,
+    "returncode": 0,
+    "observed_original_process_group_empty": true,
+    "execution_ready": false,
+    "scientific_acceptance": "unassessed"
+  },
+  "limits": "Full native stage_assignment with two synthetic centroid nodes and one link. Parent transport mode is recorded explicitly. Directly constructed consumed predecessor fixtures, no calibration/cordons. No interruption recovery, scientific validity, normal dispatcher or release acceptance."
+}

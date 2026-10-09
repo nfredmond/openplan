@@ -1,6 +1,6 @@
 """Run the complete assignment stage in a reserved child with synthetic inputs."""
 import hashlib,json,os,select,socket,sqlite3,subprocess,sys,time
-from contextlib import closing
+from contextlib import closing, nullcontext
 from pathlib import Path
 from unittest.mock import patch
 ROOT=Path(__file__).resolve().parent
@@ -91,7 +91,8 @@ def main():
         body=CHILD+('\n# Harmless comment.\n' if control=='harmless' else '')
         if control=='swallow-progress-fault':
             body=body.replace('import main\n', "import main\noriginal_stream=main.stream_assignment_progress\ndef swallow(*args,**kwargs):\n kwargs['fatal_exceptions']=()\n return original_stream(*args,**kwargs)\nmain.stream_assignment_progress=swallow\n")
-        with patch.object(writer,'read_run',return_value=row),patch.dict(os.environ,{'GTFS_PATH':str(local),'GTFS_URL':''}):
+        read_context=nullcontext() if getattr(fixture,'live_transport',False) else patch.object(writer,'read_run',return_value=row)
+        with read_context,patch.dict(os.environ,{'GTFS_PATH':str(local),'GTFS_URL':''}):
             handle=EngineProcess(writer,[sys.executable,'-B','-c',body,str(root),writer.context.run_id,writer.context.stage_id,json.dumps(setup)],env=env,
                 progress=True,output_name='run_output',count_preparer=counts,transit_preparer=transit)
             handle.progress.connection.settimeout(10)
@@ -143,7 +144,7 @@ def main():
             report={'control':control,'parent_failure':parent_failure,'replay':replay_result,'child_failure':failure,'child_exit_code':code,
                     'pending_commands':len(pending),'final_outputs_absent':True,'worker_sha256':hashlib.sha256((WORKER/'main.py').read_bytes()).hexdigest(),
                     'limits':'Full synthetic native stage failure with mocked transport. Fresh-process exact command replay tested on snapshot with mocked RPC. No live database replay, model restart, supervisor loss, escaped descendants or scientific acceptance.'}
-            content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/('native-bound-assignment-'+control+'.json')).write_text(content)
+            content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/('native-bound-assignment-'+('live-' if getattr(fixture,'live_transport',False) else '')+control+'.json')).write_text(content)
             print(content);return
         if code:raise AssertionError('Native child failed; inspect '+str(output/'child.log'))
         result=json.loads((root/'assignment-result.json').read_text())
@@ -154,11 +155,11 @@ def main():
         receipt=handle.confirm_exit();assert receipt['execution_ready'] is False
         artifacts={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (root/'run_output').rglob('*') if p.is_file()}
         assert 'run_output/link_volumes.csv' in artifacts
-        report={'control':control,'worker_sha256':hashlib.sha256((WORKER/'main.py').read_bytes()).hexdigest(),'source_sha256':{name:hashlib.sha256((WORKER/name).read_bytes()).hexdigest() for name in ('model_engine_binding.py','model_engine_channel.py','model_engine_process.py','model_transit_execution.py','model_geometry_inputs.py','model_count_inputs.py')},
+        report={'control':control,'live_parent_transport':getattr(fixture,'live_transport',False),'worker_sha256':hashlib.sha256((WORKER/'main.py').read_bytes()).hexdigest(),'source_sha256':{name:hashlib.sha256((WORKER/name).read_bytes()).hexdigest() for name in ('model_engine_binding.py','model_engine_channel.py','model_engine_process.py','model_transit_execution.py','model_geometry_inputs.py','model_count_inputs.py')},
                 'engine_version':(root/'native-version.txt').read_text(),
                 'convergence':result['convergence'],'loaded_links':result['loaded_links'],'mode_split':result['mode_split'],'artifacts':artifacts,'exit_receipt':receipt,
-                'limits':'Full native stage_assignment with two synthetic centroid nodes and one link; mocked parent run/database transport, directly constructed consumed predecessor fixtures, no calibration/cordons. No interruption recovery, scientific validity, normal dispatcher or release acceptance.'}
-        content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/('native-bound-assignment-'+control+'.json')).write_text(content)
+                'limits':'Full native stage_assignment with two synthetic centroid nodes and one link. Parent transport mode is recorded explicitly. Directly constructed consumed predecessor fixtures, no calibration/cordons. No interruption recovery, scientific validity, normal dispatcher or release acceptance.'}
+        content=json.dumps(report,indent=2)+'\n';(output/'result.json').write_text(content);(ROOT/('native-bound-assignment-'+('live-' if getattr(fixture,'live_transport',False) else '')+control+'.json')).write_text(content)
         print(json.dumps({'output':str(output),'engine_version':report['engine_version'],'converged':result['convergence']['converged'],'loaded_links':result['loaded_links'],'artifact_count':len(artifacts)}))
     finally:
         if handle is not None:

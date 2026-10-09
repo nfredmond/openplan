@@ -2945,3 +2945,27 @@ The replay uses real native-failure journal snapshots with mocked RPC responses.
 It does not test live database idempotency or resume a model. Ownership after
 replay, interrupted computation recovery, supervisor loss, output publication,
 scientific acceptance and normal dispatcher activation remain open.
+
+
+## Full native assignment with installed commands, October 8
+
+The native fixture now also runs with actual fresh claims, ownership/run reads,
+artifact registrations and progress writes through isolated PostgREST. It clones
+the previously owned `prepared-artifact-upgrade-v1` test database, after checking
+that migrations 20 and 21 are installed and no source sessions are active. Each
+case uses its own clone and loopback gateway limited to 128 MB and half a CPU.
+The preview database is not a write target. No schema changes are made.
+
+Baseline, harmless-comment and restored cases converge with modeled transit and
+all five expected input artifact types present in the database. The native stage
+produces its 20 local output files but remains running in the database; output
+publication and completion are not authorized by this test. A fault that skips
+geometry registration still completes native computation, but fails the database
+inventory check. Gateways close at the end of each case; cloned databases and
+private evidence remain identified in the control report.
+
+The proof directly constructs synthetic predecessor inventories. It does not
+establish real predecessor selection in this joined test, lost-commit replay,
+final publication, model restart, larger-network behavior or scientific accuracy.
+Next join the native iteration-disconnect case to installed-command replay.
+Normal dispatcher activation and full V1 acceptance remain open.
