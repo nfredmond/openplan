@@ -157,7 +157,7 @@ The inherited file descriptor remains usable through `systemd-run --user --scope
 This makes an owned scope a feasible Linux backend for the existing channel.
 Baseline, harmless-comment and restored cases pass. Replacing the population
 check with the original process-group check fails at the intended assertion.
-See `prototype/engine-scope-controls.json`. Initial fixture setup used an obsolete
+See `prototype/engine-descendant-scope-controls.json`. Initial fixture setup used an obsolete
 predecessor-read stub and failed ownership validation before engine work; restoring
 the current invocation read stub allowed the actual scope experiment to proceed.
 
