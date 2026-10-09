@@ -2409,6 +2409,30 @@ def managed_assignment_zone_geometry(setup_result: dict) -> dict:
         raise WorkerStateWriteUnconfirmed("Assignment geometry requires reconciliation") from error
 
 
+def managed_assignment_transit_preparer(setup_result: dict, *, deadline):
+    """Bind parent-owned zone order and deadline before accepting child requests."""
+    import copy
+    import model_attempt_writer as managed
+    writer = managed.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Transit preparation requires a bound parent writer")
+    writer.require_open()
+    setup = copy.deepcopy(setup_result)
+
+    def prepare(out_dir):
+        if managed.current() is not writer:
+            raise WorkerStateWriteUnconfirmed("Transit preparation requires its original parent writer")
+        geometry = managed_assignment_zone_geometry(setup)
+        result = prepare_managed_transit_for_engine(
+            out_dir, lons=np.asarray(geometry["lons"], dtype=float),
+            lats=np.asarray(geometry["lats"], dtype=float), deadline=deadline,
+        )
+        writer.require_open()
+        return {**result, "geometry": geometry}
+
+    return prepare
+
+
 def resolve_transit_feed_plan(run_row, lons, lats):
     """Use the existing feed precedence and actual centroid extent for discovery."""
     env_url, env_path = os.getenv("GTFS_URL"), os.getenv("GTFS_PATH")

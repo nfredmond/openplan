@@ -1,0 +1,36 @@
+{
+  "module_sha256": "425db495c55b70fab93fdf09fb4229a60c1706a5fbbe002351bf8750fe826277",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "mutable-setup",
+      "exit_code": 1,
+      "targeted_test": "test_callback_uses_owned_coordinates_and_frozen_zone_order"
+    },
+    {
+      "control": "omit-deadline",
+      "exit_code": 1,
+      "targeted_test": "test_deadline_is_forwarded_with_owned_geometry"
+    },
+    {
+      "control": "wrong-longitudes",
+      "exit_code": 1,
+      "targeted_test": "test_callback_uses_owned_coordinates_and_frozen_zone_order"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Synthetic CSV and owned package fixtures. No complete assignment, child geometry handoff, original producer manifest authority or scientific acceptance."
+}

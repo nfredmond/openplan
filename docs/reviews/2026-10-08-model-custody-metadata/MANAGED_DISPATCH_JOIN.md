@@ -2730,3 +2730,25 @@ not establish original producer CSV authority, registered geometry transfer,
 child request integration, full native assignment, or scientific acceptance.
 The dispatcher remains disabled. Next, bind the shared geometry to general
 transit preparation and carry its exact identity into child consumption.
+
+
+## Parent transit geometry binding, October 8
+
+`managed_assignment_transit_preparer` now freezes the trusted parent setup
+mapping and binds preparation to its original writer. Each invocation reads
+coordinates from the owned working package, calls general feed preparation with
+those coordinates and the parent deadline, and returns the geometry identity
+alongside the feed outcome. The child cannot supply coordinates through this
+callback. Geometry ownership failures stop before feed preparation.
+
+Four focused tests and 64 related tests pass. Three fault controls detect a
+mutable setup mapping, an omitted deadline and substituted longitudes. Baseline,
+harmless comment and restored controls pass. Discovery uses a synthetic package
+spanning positive and negative coordinates; no external catalog is contacted.
+See `prototype/transit-geometry-controls.json`.
+
+This is parent callback integration, not general child-channel integration or
+registered geometry transfer. The geometry hash identifies bytes read from the
+mutable working package; it does not establish original producer authority.
+Complete native assignment, operational recovery, browser and scientific
+acceptance remain open. The dispatcher remains disabled.
