@@ -83,12 +83,18 @@ def _file_metadata(path: Path, base_dir: Path) -> dict[str, Any]:
 
 
 def _tail_text(path: Path, max_chars: int = 4000) -> str | None:
-    if not path.exists():
+    if type(max_chars) is not int or max_chars <= 0:
+        raise ValueError("Log tail size must be a positive integer")
+    try:
+        with path.open("rb") as handle:
+            # Four bytes cover one UTF-8 character. Slicing decoded text drops
+            # any partial leading character while retaining the requested tail.
+            size = handle.seek(0, os.SEEK_END)
+            handle.seek(max(0, size - max_chars * 4))
+            text = handle.read(max_chars * 4).decode("utf-8", errors="replace")
+    except FileNotFoundError:
         return None
-    text = path.read_text()
-    if not text:
-        return None
-    return text[-max_chars:]
+    return text[-max_chars:] if text else None
 
 
 def _is_relative_to(path: Path, parent: Path) -> bool:
@@ -791,18 +797,16 @@ def run_activitysim_runtime(
                             }
                         (output_dir / DEFAULT_OUTPUT_SUBDIR).mkdir(parents=True, exist_ok=True)
                         logger.log(f"Executing ActivitySim command: {' '.join(shlex.quote(part) for part in command)}")
-                        completed = subprocess.run(
-                            command,
-                            cwd=str(output_dir / "workdir"),
-                            capture_output=True,
-                            text=True,
-                            check=False,
-                        )
-                        run_log_path.write_text(
-                            (completed.stdout or "")
-                            + ("\n" if completed.stdout and completed.stderr else "")
-                            + (completed.stderr or "")
-                        )
+                        # Retain output while the command runs. Capturing pipes
+                        # buffers the entire log and loses it with this owner.
+                        with run_log_path.open("wb") as run_log:
+                            completed = subprocess.run(
+                                command,
+                                cwd=str(output_dir / "workdir"),
+                                stdout=run_log,
+                                stderr=subprocess.STDOUT,
+                                check=False,
+                            )
                         stage.artifacts.append({"artifact_type": "activitysim_stdout_log", "path": str(run_log_path)})
                         stage.metadata["returncode"] = completed.returncode
                         if completed.returncode == 0:
