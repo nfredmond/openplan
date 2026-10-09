@@ -291,3 +291,12 @@ observation versions and uncertain delivery stop the operation; no-op receipts
 remain no-ops. This does not switch normal stage claims to managed attempts or
 authorize model restart. Both existing ActivitySim image builds include the
 repository tree containing the shared command modules.
+
+## Started-run recovery boundary
+
+Migration `20261016000022_model_reaper_recovery_boundary.sql` also protects
+ActivitySim runs from timestamp-only reaping. Only unstarted queued work remains
+eligible for automatic timeout. Running or previously started work can remain
+nonterminal after worker loss until explicit recovery is available. This shared
+database boundary does not establish ActivitySim process supervision, durable
+reconciliation or safe restart. Preserve retained stages and outputs.

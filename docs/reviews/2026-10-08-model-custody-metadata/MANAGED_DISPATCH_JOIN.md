@@ -3239,3 +3239,39 @@ loss controls also pass after the shared supervisor and HTTP proof changes,
 including omitted loss and swallowed channel-loss faults. `git diff --check`
 passes. GitHub restore-drill run 37869706360 remains in progress for the preceding
 checkpoint; this local result does not declare that run or the next commit green.
+
+### October 8: timestamp-only reaping cannot revoke started computation
+
+Recovery inspection found that the installed reaper could fail a managed attempt
+using only parent and stage timestamps. The earlier prototype intentionally
+verified revocation by that path. It did not establish that an old timestamp
+means the engine is dead. That behavior conflicts with healthy long computation
+and is superseded by migration
+`20261016000022_model_reaper_recovery_boundary.sql`.
+
+The reaper still locks the parent and stages and checks for newer progress. It
+now returns false for a running parent, attempt-managed work, a retained execution
+start, or a stage that is no longer queued. Only unstarted queued work remains
+eligible for automatic timeout. Protected runs, stages, attempts and start records
+remain byte-equivalent at the JSON row boundary. The caller records no successful
+reap when the RPC returns false. No model success, failure, cancellation or
+continuation is inferred from missing progress.
+
+`prototype/reaper-recovery-boundary.json` records four installed-SQL controls:
+baseline, harmless comment, restored unsafe function and restored correction.
+The unsafe function fails the managed-attempt preservation assertion. Positive
+cases cover a managed claim, unmanaged running work, a queued parent with a
+started stage and an unstarted queue timeout. Calls use the service role; public
+roles remain excluded. Installing each function leaves the pre-existing fixture's
+execution rows unchanged. Synthetic cases roll back, and the corrected function
+remains installed only in the owned proof clone. The preview database is unchanged.
+
+All 14 existing reaper, cron-route and migration unit tests pass; they cover
+caller behavior and historical migration structure, not this new database rule.
+The separate installed-SQL proof covers the rule. Migration inventory passes with
+394 files. This does not run a 45-minute model: a future cutoff exercises the
+predicate without waiting or altering a managed timestamp. Explicit durable
+reconciliation and restart remain unfinished. A genuinely lost started worker
+will therefore retain its nonterminal state pending recovery rather than being
+misreported as a proven failure. The operator/browser recovery workflow remains
+open, and managed dispatch stays disabled.

@@ -272,3 +272,14 @@ version receives a new decision; a no-op result is not reported as a skip.
 Missing versions or uncertain delivery stop that operation without a direct
 PATCH fallback. This connects blocked-stage decisions only. It does not enable
 managed claims, restart a stage or establish safe model continuation.
+
+## Started-run recovery boundary
+
+Apply `20261016000022_model_reaper_recovery_boundary.sql` with this checkpoint.
+The automatic reaper only times out queued work that has not started. Running,
+attempt-managed and previously started work requires explicit recovery; old
+progress timestamps alone do not prove engine loss. A lost worker can remain
+nonterminal pending that decision. Do not reset its stages or delete retained
+files to force a restart. Durable reconciliation and restart are still under
+development. The proof is in
+`docs/reviews/2026-10-08-model-custody-metadata/MANAGED_DISPATCH_JOIN.md`.
