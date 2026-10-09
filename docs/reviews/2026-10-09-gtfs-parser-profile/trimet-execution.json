@@ -1,0 +1,28 @@
+{
+  "command": [
+    "systemd-run",
+    "--user",
+    "--quiet",
+    "--wait",
+    "--pipe",
+    "--collect",
+    "--unit=openplan-gtfs-profile-20261009-trimet",
+    "--working-directory=/home/nathaniel/.local/state/openplan/gtfs-ingest-recovery-20261009/openplan",
+    "-p",
+    "MemoryMax=768M",
+    "-p",
+    "MemorySwapMax=0",
+    "-p",
+    "CPUQuota=100%",
+    "-p",
+    "RuntimeMaxSec=120",
+    "/usr/bin/env",
+    "NODE_OPTIONS=--max-old-space-size=512",
+    "/home/nathaniel/.local/state/openplan/gtfs-ingest-recovery-20261009/openplan/node_modules/.bin/tsx",
+    "/home/nathaniel/.local/state/openplan/gtfs-profile-20261009/profile.mts",
+    "/home/nathaniel/.local/state/openplan/gtfs-profile-20261009/trimet.zip"
+  ],
+  "exitCode": 0,
+  "completedAt": "2026-10-09T14:25:20.099927+00:00",
+  "checkoutCommit": "091861d72c866c4ac13c904c0e7d51dda6b58190"
+}
