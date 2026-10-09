@@ -333,3 +333,32 @@ lost-upload/readback regression pass.
 This establishes same-process upload recovery after a lost acknowledgement. It
 does not complete process-restart recovery, joined native Storage/database
 custody, full user-role RLS, source publication or scientific acceptance.
+
+
+### Fresh-process upload retry after committed output
+
+The native Storage campaign now includes an actual process exit. A child imports
+the worker and uploads the fixture, then calls `os._exit(73)` immediately after
+native commit and before the helper can perform readback. The parent verifies
+the committed bytes. A newly launched child reads a retained, credential-free
+fixture manifest and calls the actual upload helper with the same identifiers
+and bytes. It recovers the original Storage reference through authenticated
+readback. Credentials pass privately through stdin, not the manifest or command
+arguments.
+
+Seven fresh-clone cases pass their expected outcomes: normal, harmless, lost
+acknowledgement, fresh-process retry, wrong restart identity, upsert fault and
+restored. The wrong-identity control deliberately substitutes an assessment ID
+and fails the original-reference assertion. This detects a defective recovery
+attempt; it does not claim the upload API forbids all new assessment identities.
+The upsert control still fails on replacement. Evidence is retained in
+`prototype/native-validation-storage-restart-controls.json` and the private
+`native-validation-storage-restart-20261009a` directory. All seven database clones
+have candidate records. Temporary services and credential files are removed.
+
+This closes the fresh-process upload-helper retry check for this synthetic
+fixture. It does not resume an admitted stage, restore a whole worker service,
+join native object publication with the custody RPC, publish all scientific
+sources or establish scientific acceptance. The retained manifest belongs to
+the proof; a production recovery workflow still needs its own retained identity
+and authorization path.

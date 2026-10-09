@@ -21,7 +21,7 @@ from worker_import_for_tests import import_worker_main
 
 def main():
     control = os.environ.get('OPENPLAN_NATIVE_STORAGE_CONTROL', 'normal')
-    assert control in ('normal', 'harmless', 'lost-ack', 'upsert', 'restored')
+    assert control in ('normal', 'harmless', 'lost-ack', 'restart', 'restart-wrong-identity', 'upsert', 'restored')
     output = Path(os.environ['OPENPLAN_NATIVE_STORAGE_PROOF_OUTPUT'])
     output.mkdir(mode=0o700, parents=True, exist_ok=False)
     source = json.loads(Path(os.environ['OPENPLAN_MODEL_COMMAND_PROOF_METADATA']).read_text())
@@ -104,6 +104,48 @@ def main():
         path = output/'assessment.json'; original = b'{"scientific_outcome":"inconclusive","fixture":true}'
         if control == 'harmless': original += b'\n'
         path.write_bytes(original)
+        restart_recovered = False
+        if control in ('restart', 'restart-wrong-identity'):
+            retained = {'run':run,'assessment':assessment,'path':str(path),
+                        'sha256':hashlib.sha256(original).hexdigest()}
+            manifest = output/'upload-context.json'
+            manifest.write_text(json.dumps(retained))
+            child_code = """
+import hashlib,json,os,sys
+from pathlib import Path
+record=json.load(sys.stdin)
+sys.path.insert(0,record['worker_root'])
+from worker_import_for_tests import import_worker_main
+worker=import_worker_main()
+worker.SUPABASE_URL=record['base']; worker.SUPABASE_KEY=record['key']
+context=json.loads(Path(record['manifest']).read_text())
+assert hashlib.sha256(Path(context['path']).read_bytes()).hexdigest()==context['sha256']
+if record['exit_after_upload']:
+    original=worker.requests.post
+    def commit_then_exit(*args,**kwargs):
+        response=original(*args,**kwargs)
+        assert response.status_code in (200,201)
+        os._exit(73)
+    worker.requests.post=commit_then_exit
+if record['wrong_identity']: context['assessment']='wrong-restart-identity'
+uri=worker.upload_immutable_validation_json(context['run'],context['assessment'],context['path'])
+print(json.dumps({'uri':uri,'pid':os.getpid()}))
+"""
+            child_input = {'worker_root':str(ROOT/'workers/aequilibrae_worker'),
+                'base':f'http://127.0.0.1:{server.server_port}', 'key':token,
+                'manifest':str(manifest),'exit_after_upload':True,'wrong_identity':False}
+            first = subprocess.run([sys.executable,'-B','-c',child_code],input=json.dumps(child_input),capture_output=True,text=True,timeout=30)
+            assert first.returncode == 73, 'First upload process did not exit at the committed boundary'
+            expected_uri = f'storage://run-artifacts/model-runs/{run}/validation-assessments/{assessment}/{path.name}'
+            committed = requests.get(native+'/object/authenticated/'+expected_uri.removeprefix('storage://'),headers=headers,timeout=10)
+            assert committed.status_code == 200 and committed.content == original, 'Exited upload did not retain exact native bytes'
+            child_input.update(exit_after_upload=False,wrong_identity=control=='restart-wrong-identity')
+            second = subprocess.run([sys.executable,'-B','-c',child_code],input=json.dumps(child_input),capture_output=True,text=True,timeout=30)
+            assert second.returncode == 0, 'Fresh upload process did not recover'
+            recovered = json.loads(second.stdout)
+            assert recovered['uri'] == expected_uri, 'Fresh upload process changed retained object identity'
+            assert recovered['pid'] != os.getpid(), 'Recovery did not run in a fresh process'
+            restart_recovered = True
         original_post = requests.post
         lost_ack = []
         def controlled_post(url, **kwargs):
@@ -135,10 +177,10 @@ def main():
             anonymous = requests.get(native+'/object/authenticated/run-artifacts/'+object_path, timeout=10)
             assert anonymous.status_code in (400,401,403), 'Private object allowed unauthenticated access'
         report = {'control':control,'upload_responses':responses,'database':database,'storage_image':inspected['Config']['Image'],
-            'exact_bytes_downloaded':True,'exact_retry_reused':True,'lost_ack_exercised':bool(lost_ack),'changed_upload_refused':True,'original_bytes_preserved':True,
+            'exact_bytes_downloaded':True,'exact_retry_reused':True,'lost_ack_exercised':bool(lost_ack),'fresh_process_recovered':restart_recovered,'changed_upload_refused':True,'original_bytes_preserved':True,
             'unauthenticated_status':anonymous.status_code,'content_sha256':hashlib.sha256(original).hexdigest(),
             'limits':['Native private Storage and actual worker upload with a prefix-only HTTP proxy',
-                      'No custody RPC, RLS user matrix, process-restart recovery, full source publication or scientific acceptance']}
+                      'No stage restart, custody RPC, RLS user matrix, full source publication or scientific acceptance']}
         (output/'result.json').write_text(json.dumps(report,indent=2)+'\n')
         print(json.dumps(report,indent=2))
     finally:

@@ -6,23 +6,26 @@ HERE=Path(__file__).resolve().parent
 output=Path(os.environ['OPENPLAN_NATIVE_STORAGE_CONTROLS'])
 output.mkdir(mode=0o700,parents=True,exist_ok=False)
 cases=[]
-for control in ('normal','harmless','lost-ack','upsert','restored'):
+for control in ('normal','harmless','lost-ack','restart','restart-wrong-identity','upsert','restored'):
     result=subprocess.run([sys.executable,'-B',str(HERE/'verify_native_validation_storage.py')],
         env={**os.environ,'OPENPLAN_NATIVE_STORAGE_CONTROL':control,'OPENPLAN_NATIVE_STORAGE_PROOF_OUTPUT':str(output/control)},
         capture_output=True,text=True,timeout=90)
     (output/(control+'.log')).write_text(result.stdout+result.stderr)
-    if control=='upsert':
+    if control=='restart-wrong-identity':
+        assert result.returncode!=0 and 'AssertionError: Fresh upload process changed retained object identity' in result.stderr,result.stderr
+    elif control=='upsert':
         assert result.returncode!=0 and 'AssertionError: Immutable upload replaced an existing object' in result.stderr,result.stderr
     else:
         assert result.returncode==0,result.stderr
         report=json.loads((output/control/'result.json').read_text())
         assert report['exact_bytes_downloaded'] and report['original_bytes_preserved'] and report['changed_upload_refused'] and report['exact_retry_reused']
         assert report['lost_ack_exercised'] is (control=='lost-ack')
+        assert report['fresh_process_recovered'] is (control=='restart')
     cases.append({'control':control,'returncode':result.returncode,'expected_behavior_observed':True})
 report={'cases':cases,'proof_sha256':hashlib.sha256((HERE/'verify_native_validation_storage.py').read_bytes()).hexdigest(),
  'limits':['Actual worker upload, prefix-only proxy and isolated native private Storage',
- 'Fault changes x-upsert at transport; no custody RPC, full user RLS matrix, process-restart recovery, full source publication or scientific acceptance']}
+ 'Fault changes x-upsert at transport; no custody RPC, full user RLS matrix, stage restart, full source publication or scientific acceptance']}
 content=json.dumps(report,indent=2)+'\n'
 (output/'controls.json').write_text(content)
-(HERE/'native-validation-storage-recovery-controls.json').write_text(content)
+(HERE/'native-validation-storage-restart-controls.json').write_text(content)
 print(content)
