@@ -303,9 +303,12 @@ def assess_frozen_instrument_files(
     for input_path in (package_path, audit_path, bundle_path, basis_path):
         refuse_output_alias(input_path)
 
+    input_bytes: dict[Path, bytes] = {}
+
     def load_json(path: Path, label: str) -> dict[str, Any]:
-        with path.open(encoding="utf-8") as handle:
-            value = json.load(handle)
+        payload = path.read_bytes()
+        input_bytes[path] = payload
+        value = json.loads(payload)
         if not isinstance(value, dict):
             raise ContractError(f"{label} must be a JSON object")
         return value
@@ -352,9 +355,9 @@ def assess_frozen_instrument_files(
 
     expected_package = (readiness.get("observation_package") or {}).get("sha256")
     expected_audit = (readiness.get("pre_volume_match_audit") or {}).get("sha256")
-    if hashlib.sha256(package_path.read_bytes()).hexdigest() != expected_package:
+    if hashlib.sha256(input_bytes[package_path]).hexdigest() != expected_package:
         raise ContractError("frozen observation package bytes changed")
-    if hashlib.sha256(audit_path.read_bytes()).hexdigest() != expected_audit:
+    if hashlib.sha256(input_bytes[audit_path]).hexdigest() != expected_audit:
         raise ContractError("frozen pre-volume match audit bytes changed")
     validate_inputs(package.get("observations") or [], audit, basis)
 
@@ -378,8 +381,8 @@ def assess_frozen_instrument_files(
         basis,
         volumes,
         assessment_id=assessment_id,
-        input_bundle_sha256=hashlib.sha256(bundle_path.read_bytes()).hexdigest(),
-        match_audit_sha256=hashlib.sha256(audit_path.read_bytes()).hexdigest(),
+        input_bundle_sha256=hashlib.sha256(input_bytes[bundle_path]).hexdigest(),
+        match_audit_sha256=hashlib.sha256(input_bytes[audit_path]).hexdigest(),
         created_at=created_at,
     )
 

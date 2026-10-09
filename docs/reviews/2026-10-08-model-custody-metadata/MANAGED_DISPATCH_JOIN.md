@@ -3933,3 +3933,34 @@ not supply the missing prepared instrument, establish the origin of its source
 evidence, or close scientific acceptance. Normal managed dispatch remains held.
 GitHub worker CI for the preceding Python 3.11 host-record fix at `ae40cfbcd`
 completed successfully in run `37898373909`.
+
+
+### Keep assessment hashes bound to evaluated input bytes
+
+The shared file evaluator parsed its preparation JSON, then reread the bundle
+and match audit after model-output access to produce assessment hashes. A file
+replacement in that interval could make the assessment cite bytes it never
+used. The evaluator now retains each JSON payload as bytes, parses those bytes,
+and uses the same payload for its exact input hashes and package/audit checks.
+
+A synthetic regression changes the bundle and audit when the output is opened.
+The assessment retains the original hashes and computed value while both files
+on disk have different hashes. Separate faults restore the old bundle and audit
+rereads and fail their corresponding assertions. Harmless and restored controls
+pass; `prototype/validation-input-custody-controls.json` retains the results.
+The existing validation-instrument and directional-refusal suites and the 15
+static output-alias combinations also pass. Worker CI includes the new test.
+
+This establishes internal byte custody for the evaluated JSON. It does not
+make the surrounding filesystem immutable or prove that a subsequent uploader
+uses the same bytes. Source validity, general prepared-worker inputs, scientific
+acceptance and normal managed dispatch remain open. The historical study builder
+still derives its basis from fixed development-run paths and must not be used
+unchanged as a general worker preparation service.
+
+Additional controls replace package or audit bytes immediately after parsing,
+then update the bundle to name those replacement hashes. Both cases refuse
+before output access. Restoring file rereads to either hash check fails its
+specific regression. The local Python 3.11 environment lacks Shapely, so its
+attempt did not execute the new suite; Python 3.11 verification remains assigned
+to the GitHub worker job, which installs that dependency.
