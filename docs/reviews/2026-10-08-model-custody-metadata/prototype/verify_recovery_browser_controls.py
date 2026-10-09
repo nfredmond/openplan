@@ -27,6 +27,10 @@ controls = [
     ('omit-membership-workspace', page, originals[page].replace('recoveryMembershipResult.data?.workspace_id === model.workspace_id', 'true'), 'refuses a membership with different workspace_id', 'expected'),
     ('omit-permission-error', page, originals[page].replace('recoveryMembershipUnreadable ? "unavailable"', 'false ? "unavailable"'), 'keeps failed permission reads unavailable', 'expected'),
     ('omit-permission-projection', page, originals[page].replace('select("workspace_id, user_id, role")', 'select("role")'), 'binds owner membership', 'to deep equally contain'),
+    ('trust-imported-receipt', helper, originals[helper].replace('return { ...record, phase: "pending", receipt: null };', 'return record;'), 'restores an imported receipt as pending', 'expected'),
+    ('omit-damaged-ack', helper, originals[helper].replace('!damaged || damaged.key !== key || damaged.raw !== old', 'false'), 'preserves exact unreadable bytes before replacing', 'to throw an error'),
+    ('omit-archive-readback', helper, originals[helper].replace('storage.getItem(archiveKey) !== archive', 'false'), 'never replaces unreadable data when archiving fails', 'to throw an error'),
+    ('overwrite-existing-decision', helper, originals[helper].replace('!same(previous.decision, imported.decision)', 'false'), 'refuses stale damage acknowledgement and preserves', 'to throw an error'),
     ('restored', helper, None, None, None),
 ]
 records = []

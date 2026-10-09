@@ -400,3 +400,10 @@ unreadable and confirmed records remain distinct. Component and mocked route/pag
 checks do not establish a rendered or authenticated browser journey. T3 capture
 remains unavailable. No process termination, continuation, restart or scientific
 claim follows from the abandonment receipt.
+
+Downloaded recovery decisions can now be restored locally after explicit review.
+Imported receipts start unconfirmed and require the original server request to
+recover authority. An acknowledged unreadable copy is archived and read back
+before replacement; archives remain downloadable. No original download means
+missing bytes remain unresolved. Browser storage is not a transactional server
+journal, and this path does not terminate or restart an engine.

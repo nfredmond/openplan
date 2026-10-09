@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ModelRecoveryPanel } from "@/components/models/model-recovery-panel";
-import { readRecoveryDecisions } from "@/lib/models/pending-recovery-decision";
+import { readRecoveryDecisions, recoveryDecisionKey, readRecoveryArchives, type SavedRecoveryDecision } from "@/lib/models/pending-recovery-decision";
 import type { RecoveryDecision } from "@/lib/models/recovery-decision";
 const [userId, workspaceId, modelId, runId, stageId] = Array.from({ length: 5 }, (_, i) => `${String(i + 1).padStart(8, "0")}-1111-4111-8111-111111111111`);
 const scope = { userId, workspaceId, modelId, runId };
@@ -56,4 +56,23 @@ it("discards the visible review when account props change", async () => {
  await screen.findByLabelText("Reason for abandoning this execution");
  view.rerender(<ModelRecoveryPanel {...scope} userId={stageId} permission="allowed" />);
  expect(screen.queryByLabelText("Reason for abandoning this execution")).not.toBeInTheDocument();
+});
+
+it.each([false, true])("reviews and restores a downloaded receipt without sending or claiming confirmation, damaged=%s", async (damaged) => {
+ const transport = vi.fn(); vi.stubGlobal("fetch", transport);
+ const decision: RecoveryDecision = { requestId: stageId, decision: "abandon_execution", reason: "Downloaded recovery decision", evidence: {}, expectedState: state as RecoveryDecision["expectedState"] };
+ const record: SavedRecoveryDecision = { version: 1, scope, decision, phase: "confirmed", receipt: receipt(decision) };
+ if (damaged) localStorage.setItem(recoveryDecisionKey(record), "damaged-original");
+ const file = new File([JSON.stringify(record)], "decision.json", { type: "application/json" }); Object.defineProperty(file, "text", { value: async () => JSON.stringify(record) });
+ render(<ModelRecoveryPanel {...scope} permission="allowed" />); open();
+ fireEvent.change(screen.getByLabelText("Restore a downloaded recovery copy"), { target: { files: [file] } });
+ const restore = await screen.findByText("Restore decision copy");
+ if (damaged) { expect(restore).toBeDisabled(); fireEvent.click(screen.getByRole("checkbox")); }
+ fireEvent.click(restore);
+ await screen.findByText(/The decision copy is retained/);
+ expect(transport).not.toHaveBeenCalled();
+ if (damaged) { expect(JSON.parse(readRecoveryArchives(localStorage, scope)[0].raw).raw).toBe("damaged-original"); expect(screen.getByText("Download preserved original")).toBeInTheDocument(); }
+ expect(screen.getByText("Retry saved decision")).toBeInTheDocument();
+ expect(screen.queryByText("Decision receipt retained")).not.toBeInTheDocument();
+ expect(readRecoveryDecisions(localStorage, scope).records[0]).toMatchObject({ phase: "pending", receipt: null, decision });
 });

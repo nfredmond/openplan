@@ -79,6 +79,30 @@
       "failure_marker": "to deep equally contain"
     },
     {
+      "control": "trust-imported-receipt",
+      "returncode": 1,
+      "targeted_test": "restores an imported receipt as pending",
+      "failure_marker": "expected"
+    },
+    {
+      "control": "omit-damaged-ack",
+      "returncode": 1,
+      "targeted_test": "preserves exact unreadable bytes before replacing",
+      "failure_marker": "to throw an error"
+    },
+    {
+      "control": "omit-archive-readback",
+      "returncode": 1,
+      "targeted_test": "never replaces unreadable data when archiving fails",
+      "failure_marker": "to throw an error"
+    },
+    {
+      "control": "overwrite-existing-decision",
+      "returncode": 1,
+      "targeted_test": "refuses stale damage acknowledgement and preserves",
+      "failure_marker": "to throw an error"
+    },
+    {
       "control": "restored",
       "returncode": 0,
       "targeted_test": null,
@@ -86,13 +110,13 @@
     }
   ],
   "sha256": {
-    "src/lib/models/pending-recovery-decision.ts": "f46f496ce58608fb487aef8568506c5875e3ae5246150e221589e24223cd719b",
-    "src/components/models/model-recovery-panel.tsx": "1adccfb38679d39faa1eb2678b8a623da6605b3f41038b8c77d088eb931c178b",
+    "src/lib/models/pending-recovery-decision.ts": "4555175ef71d327fe240afa1d9671321f02ea84bc582d194b2fb5e6fea59ad9f",
+    "src/components/models/model-recovery-panel.tsx": "ffecf26677a468249cb7bd80a7b7da2ef4cd6c511a8aceb7a3241207e563a43f",
     "src/app/(app)/models/[modelId]/page.tsx": "fbc62d5dbebded4b405edb975bd08ccb0843fc6a4e43ded7802d0da3796e098f",
-    "src/test/model-recovery-browser-copy.test.ts": "088426cae1550a5db06d26a902b887e3d085d22535f8c02a68439ae0a26e2481",
-    "src/test/model-recovery-panel.test.tsx": "c36168468e9d27258687f6aca7c12ecaddd724fdad7704f7f0856ad17a9eaa93",
+    "src/test/model-recovery-browser-copy.test.ts": "faa54a8837d8b47a4fc593744fdcbda6d7cbce16ad662f81ab1ba48cb9637202",
+    "src/test/model-recovery-panel.test.tsx": "e32122358280fce3b2fe0feef1bfafe74ee33fb239a57fa9b28dd5ccac29a49b",
     "src/test/model-recovery-page.test.tsx": "219aaab4d6136c342b8578c6b91cf38b7925f23b76ddb0b754019f5816fc597b"
   },
-  "evidence_directory": "/home/nathaniel/.local/state/openplan/recovery-browser-controls-20261008-v3",
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/recovery-browser-controls-20261008-import-v2",
   "limits": "DOM component and mocked HTTP tests. These do not prove rendered desktop or mobile layout, real cookies, database behavior, physical worker termination, restart or practitioner acceptance."
 }

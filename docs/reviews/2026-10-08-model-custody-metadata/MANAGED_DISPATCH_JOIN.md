@@ -3454,3 +3454,42 @@ older build. No desktop/390px rendering, real session-cookie recovery journey,
 keyboard/screen-reader acceptance or practitioner observation is claimed here.
 Normal managed dispatch remains off. Physical termination, restart, ActivitySim
 supervision and independent scientific acceptance remain open.
+
+### October 8: restore downloaded browser decisions
+
+The recovery panel now accepts an original downloaded JSON decision for the
+current account, workspace, model and run. It shows the request ID and reason
+before local restoration. Import never sends a request and never treats an
+imported receipt as server confirmation. A restored request starts pending and
+requires an explicit exact-request retry. An already retained matching confirmed
+receipt stays intact; another decision using the same request ID refuses.
+
+Replacing an unreadable copy requires explicit acknowledgement. The browser
+first saves and reads back a separate archive containing the original key and
+exact damaged bytes, then checks that the damaged copy has not changed. Archive
+failure stops replacement. Archived originals remain available for download.
+Scope mismatches, oversized files and stale acknowledgements refuse without
+inventing a replacement decision. If no valid downloaded copy exists, this
+workflow cannot reconstruct missing bytes or prove whether the server committed.
+Browser storage loss, eviction and simultaneous cross-tab writes are not a
+transactional database guarantee; retained server receipts remain authoritative.
+
+Tests cover pending restoration of imported receipts, exact subsequent retry,
+wrong-account and oversized files, damaged-byte preservation, archive failure,
+stale acknowledgement, request collision and repeated import. Component handlers
+cover both clean and damaged restoration with no HTTP request and no confirmed
+outcome claim. The first expanded mutation run found the missing acknowledgement
+but its report matcher expected different assertion wording. That run did not
+count as a passing report. The archive-failure fixture now drops only the archive
+write so an omitted readback guard would actually replace unpreserved data.
+
+T3 rendering and a real authenticated desktop/390px journey remain open, as do
+whole-project checks, physical termination/restart and scientific acceptance.
+This closes the downloaded-copy restoration implementation gap, not all possible
+loss or recovery cases. Normal managed dispatch remains off.
+
+The updated four-suite run passes 58 tests; 18 browser/page controls and the
+unchanged ten route controls have retained evidence. Focused TypeScript and
+changed-file ESLint pass. A read-only TypeScript configuration inventory finds
+3,509 root files, with no nested worktree in that root list. This does not explain
+or resolve the prior whole-project heap failures; full validation remains open.

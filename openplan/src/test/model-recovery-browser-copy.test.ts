@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { readRecoveryDecisions, retainRecoveryDecision, sendRecoveryDecision, recoveryDecisionKey, type SavedRecoveryDecision } from "@/lib/models/pending-recovery-decision";
+import { reviewRecoveryCopy, restoreRecoveryCopy, readRecoveryArchives, readRecoveryDecisions, retainRecoveryDecision, sendRecoveryDecision, recoveryDecisionKey, type SavedRecoveryDecision } from "@/lib/models/pending-recovery-decision";
 const [userId, workspaceId, modelId, runId, requestId, stageId] = Array.from({ length: 6 }, (_, i) => `${String(i + 1).padStart(8, "0")}-1111-4111-8111-111111111111`);
 export const scope = { userId, workspaceId, modelId, runId };
 export const saved = (): SavedRecoveryDecision => ({ version: 1, scope, phase: "pending", receipt: null, decision: { requestId, decision: "abandon_execution", reason: "Synthetic operator review", evidence: { process_termination: "unconfirmed" }, expectedState: { run_id: runId, workspace_id: workspaceId, model_id: modelId, status: "running", attempt_managed: true, updated_at: "2026-10-08T19:00:00Z", stages: [{ id: stageId, status: "running", updated_at: "2026-10-08T19:00:00Z", attempt_managed: true, active_attempt_id: null }] } } });
@@ -44,4 +44,52 @@ it("does not downgrade a confirmed receipt", async () => {
  const original = retainRecoveryDecision(localStorage, saved()); await sendRecoveryDecision(localStorage, original, vi.fn(async () => Response.json(receipt())));
  const transport = vi.fn(); await expect(sendRecoveryDecision(localStorage, original, transport)).rejects.toThrow("changed"); expect(transport).not.toHaveBeenCalled();
  expect(readRecoveryDecisions(localStorage, scope).records[0].phase).toBe("confirmed");
+});
+
+it("restores an imported receipt as pending and requires server confirmation", async () => {
+ const text = JSON.stringify({ ...saved(), phase: "confirmed", receipt: receipt() });
+ const original = restoreRecoveryCopy(localStorage, text, scope);
+ expect(original.phase).toBe("pending"); expect(original.receipt).toBeNull();
+ const transport = vi.fn(async (_url: unknown, _options?: RequestInit) => Response.json(receipt()));
+ expect((await sendRecoveryDecision(localStorage, original, transport)).phase).toBe("confirmed");
+ expect(JSON.parse(transport.mock.calls[0][1]?.body as string)).toEqual(saved().decision);
+});
+it("refuses imported copies for another account or oversized files", () => {
+ expect(() => reviewRecoveryCopy(JSON.stringify(saved()), { ...scope, userId: stageId })).toThrow("another account");
+ expect(() => reviewRecoveryCopy(" ".repeat(2_000_001), scope)).toThrow("2 MB");
+ expect(localStorage.length).toBe(0);
+});
+it("preserves exact unreadable bytes before replacing the acknowledged request", () => {
+ const key = recoveryDecisionKey(saved()); localStorage.setItem(key, "broken-json");
+ expect(() => restoreRecoveryCopy(localStorage, JSON.stringify(saved()), scope)).toThrow("acknowledge");
+ expect(localStorage.getItem(key)).toBe("broken-json");
+ const set = vi.spyOn(Storage.prototype, "setItem");
+ const restored = restoreRecoveryCopy(localStorage, JSON.stringify(saved()), scope, { key, raw: "broken-json" });
+ expect(restored.phase).toBe("pending");
+ expect(set.mock.calls[0][0]).toContain("model-recovery-archive:");
+ expect(JSON.parse(set.mock.calls[0][1])).toEqual({ version: 1, originalKey: key, raw: "broken-json" });
+ expect(set.mock.calls[1][0]).toBe(key);
+ expect(JSON.parse(readRecoveryArchives(localStorage, scope)[0].raw).raw).toBe("broken-json");
+ expect(readRecoveryArchives(localStorage, { ...scope, userId: stageId })).toEqual([]);
+ expect(readRecoveryDecisions(localStorage, scope).unreadable).toEqual([]);
+});
+it("never replaces unreadable data when archiving fails", () => {
+ const key = recoveryDecisionKey(saved()); localStorage.setItem(key, "damaged");
+ const write = Storage.prototype.setItem;
+ vi.spyOn(Storage.prototype, "setItem").mockImplementation(function (this: Storage, storageKey, value) {
+  if (!storageKey.includes("model-recovery-archive:")) write.call(this, storageKey, value);
+ });
+ expect(() => restoreRecoveryCopy(localStorage, JSON.stringify(saved()), scope, { key, raw: "damaged" })).toThrow("did not preserve");
+ expect(localStorage.getItem(key)).toBe("damaged");
+});
+it("refuses stale damage acknowledgement and preserves a different valid request", () => {
+ const key = recoveryDecisionKey(saved()); localStorage.setItem(key, "changed");
+ expect(() => restoreRecoveryCopy(localStorage, JSON.stringify(saved()), scope, { key, raw: "old" })).toThrow("acknowledge");
+ const other = { ...saved(), decision: { ...saved().decision, reason: "Different reason" } }; localStorage.setItem(key, JSON.stringify(other));
+ expect(() => restoreRecoveryCopy(localStorage, JSON.stringify(saved()), scope)).toThrow("different decision");
+ expect(JSON.parse(localStorage.getItem(key)!)).toEqual(other);
+});
+it("keeps an existing confirmed receipt on repeated import", () => {
+ const confirmed = { ...saved(), phase: "confirmed" as const, receipt: receipt() }; retainRecoveryDecision(localStorage, confirmed);
+ expect(restoreRecoveryCopy(localStorage, JSON.stringify(saved()), scope)).toEqual(confirmed);
 });

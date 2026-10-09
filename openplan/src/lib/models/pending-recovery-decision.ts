@@ -68,3 +68,53 @@ export async function sendRecoveryDecision(storage: RecoveryStorage, saved: Save
   } catch { /* The saved request survives transport and receipt-storage failures. */ }
   return retained;
 }
+
+
+const archivePrefix = (scope: RecoveryScope) => `openplan:model-recovery-archive:${scope.userId}:${scope.workspaceId}:${scope.modelId}:${scope.runId}:`;
+const archiveSchema = z.object({ version: z.literal(1), originalKey: z.string(), raw: z.string() }).strict();
+
+/** Imported receipts are untrusted until the current server confirms the exact request. */
+export function reviewRecoveryCopy(text: string, scope: RecoveryScope): SavedRecoveryDecision {
+  if (text.length > 2_000_000) throw new Error("Recovery copy exceeds the 2 MB review limit.");
+  const record = checked(JSON.parse(text), scope);
+  return { ...record, phase: "pending", receipt: null };
+}
+
+export function readRecoveryArchives(storage: RecoveryStorage, scope: RecoveryScope) {
+  const archives: Array<{ key: string; raw: string }> = [];
+  for (let index = 0; index < storage.length; index++) {
+    const key = storage.key(index);
+    if (key?.startsWith(archivePrefix(scope))) {
+      const raw = storage.getItem(key);
+      if (raw !== null) archives.push({ key, raw });
+    }
+  }
+  return archives;
+}
+
+/** Preserve damaged bytes before replacing the same request with an explicitly reviewed copy. */
+export function restoreRecoveryCopy(storage: RecoveryStorage, text: string, scope: RecoveryScope, damaged?: { key: string; raw: string }) {
+  const imported = reviewRecoveryCopy(text, scope), key = recoveryDecisionKey(imported);
+  const old = storage.getItem(key);
+  if (old === null) {
+    if (damaged) throw new Error("The saved copy changed. Review it again before restoring.");
+    return retainRecoveryDecision(storage, imported);
+  }
+  let previous: SavedRecoveryDecision | null = null;
+  try { previous = checked(JSON.parse(old), scope); } catch { /* Explicit damaged-copy replacement below. */ }
+  if (previous) {
+    if (!same(previous.decision, imported.decision)) throw new Error("A different decision already uses this request ID. Its copy was kept.");
+    return previous;
+  }
+  if (!damaged || damaged.key !== key || damaged.raw !== old) throw new Error("Review and acknowledge preservation of the unreadable copy before restoring.");
+  const archiveKey = archivePrefix(scope) + crypto.randomUUID();
+  const archive = JSON.stringify(archiveSchema.parse({ version: 1, originalKey: key, raw: old }));
+  if (storage.getItem(archiveKey) !== null) throw new Error("Archive identity already exists. Nothing was replaced.");
+  storage.setItem(archiveKey, archive);
+  if (storage.getItem(archiveKey) !== archive) throw new Error("Browser storage did not preserve the unreadable copy. Nothing was replaced.");
+  if (storage.getItem(key) !== old) throw new Error("The saved copy changed. Its archive was kept; review again.");
+  const restored = JSON.stringify(imported);
+  storage.setItem(key, restored);
+  if (storage.getItem(key) !== restored) throw new Error("The restored copy could not be verified. The unreadable bytes remain archived.");
+  return imported;
+}
