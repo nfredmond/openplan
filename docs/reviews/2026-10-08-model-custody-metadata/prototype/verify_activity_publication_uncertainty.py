@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 import uuid
+from unittest.mock import patch
 
 import requests
 import model_command_journal as journal
@@ -30,9 +31,13 @@ def verify_lost_reply(worker, writer, handler, run, stage, corridor, base, key, 
         return response
     writer.post=lose_output_reply
     try:
-        result=handler(run,{'id':run,'corridor_geojson':corridor},stage)
-        if boundary=='terminal':
-            worker.sb_patch_stage(stage,{'status':'succeeded','log_tail':result['log']})
+        if os.environ.get('OPENPLAN_STAGE_USE_ENTRY') == '1':
+            with patch.dict(worker.STAGE_DISPATCH, {worker.STAGE_BUNDLE_PREFLIGHT: handler}):
+                worker.process_stage({'id': stage, 'run_id': run, 'stage_name': worker.STAGE_BUNDLE_PREFLIGHT})
+        else:
+            result=handler(run,{'id':run,'corridor_geojson':corridor},stage)
+            if boundary=='terminal':
+                worker.sb_patch_stage(stage,{'status':'succeeded','log_tail':result['log']})
     except worker.WorkerStateWriteUnconfirmed:
         pass
     else:

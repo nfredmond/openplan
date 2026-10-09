@@ -40,5 +40,9 @@ if os.environ.get('OPENPLAN_STAGE_USE_ENTRY') == '1':
         'No automatic poll enrollment, native engine execution, concurrent revocation fence or scientific acceptance']
 content=json.dumps(report,indent=2)+'\n'
 (output/'controls.json').write_text(content)
-(HERE/('activity-admitted-entry-controls.json' if os.environ.get('OPENPLAN_STAGE_USE_ENTRY')=='1' else 'activity-publication-'+boundary+'-uncertainty-controls.json' if uncertainty else 'activity-stage-publication-controls.json')).write_text(content)
+if os.environ.get('OPENPLAN_STAGE_USE_ENTRY') == '1':
+    report_name = 'activity-admitted-entry-' + boundary + '-uncertainty-controls.json' if uncertainty else 'activity-admitted-entry-controls.json'
+else:
+    report_name = 'activity-publication-' + boundary + '-uncertainty-controls.json' if uncertainty else 'activity-stage-publication-controls.json'
+(HERE/report_name).write_text(content)
 print(content)

@@ -4007,3 +4007,71 @@ Native model dispatch through this entry, real Storage, interruption recovery
 through this entry, concurrent revocation fencing and scientific acceptance
 remain open. Earlier native handler and recovery campaigns retain their narrower
 scope; this checkpoint does not relabel them as poll-loop acceptance.
+
+
+### Recover lost replies through the admitted ActivitySim entry
+
+The lost-response campaign now enters through `process_stage` inside a fresh
+admitted context. It loses one response after a native database commit at each
+of four boundaries: progress, artifact, KPI and terminal completion. Every
+positive case stops the writer, retains one unresolved command, and refuses a
+later completion write. A separate recovery process retrieves the exact
+committed receipt without changing any of the eight observed native tables or
+reopening execution.
+
+The progress case retains no output; artifact loss retains one artifact; KPI
+loss retains one artifact and one KPI. Terminal reply loss retains one artifact
+and four KPIs, with stage and parent already succeeded. Earlier boundaries
+leave stage and parent running for reconciliation. The entry does not turn a
+lost completion response into a failed run.
+
+Each boundary includes normal, harmless, targeted-broken and restored cases.
+Bypassing the stopped-writer guard makes an illegal later terminal write and
+fails the progress/artifact/KPI controls. Recovering a different request fails
+the terminal control. The four reports are
+`prototype/activity-admitted-entry-*-uncertainty-controls.json`; private logs
+and clone metadata are in the corresponding `activity-entry-recovery-*-20261009a`
+state directories. All 16 cases observe their expected outcomes.
+
+These are scaffold runs with native database commands and a synthetic Storage
+HTTP service. Native-process interruption, actual Storage recovery, automatic
+poll enrollment and scientific acceptance remain separate checks. GitHub worker
+CI for `f909d1769` passed in run `37899702907`; its broader workflows remained
+queued at this checkpoint. Four older workflows whose jobs were all queued were
+canceled and their final cancellation states verified. Running jobs were kept.
+
+
+### Native ActivitySim execution through the admitted entry
+
+The copied Broomfield development bundle now runs through `process_stage`, not
+only its handler. The synthetic database run receives the source bundle's
+recorded corridor before any stage claim. The proof checks the retained run
+geometry against that bundle before entering the worker. A supplemental fault
+shifts the expected corridor and is refused before the model workspace exists.
+This is fixture identity checking, not a general geography resolver assessment.
+
+The normal, harmless and restored cases each execute the pinned ActivitySim
+container on 100 sampled households and produce 779 trip rows, four registered
+artifacts and eight KPIs. Actual runtime execution, ingestion, demand-package
+conversion and managed terminal completion pass. Registered sizes and hashes
+match their bytes; the original source bundle hash remains
+`4b914da7e522e8d2c24947bdfb371b6c37c8cf4cd9fab2dc7e26173c0d09e66f`.
+Each completed run records container removal. Omitting demand-matrix registration
+fails the native inventory assertion. In this admitted-entry campaign the
+assertion follows entry completion; it does not prove a production pre-completion
+inventory guard. The injected omission is a silent fake writer, not a successful
+native artifact command.
+
+The report is `prototype/activity-native-entry-controls.json`; private logs,
+source inventory and isolated clone metadata are in `activity-native-entry-20261009a`.
+The geography control ran after the four original cases, and its extra evidence
+is identified in the report. Execution uses a 1.5 GB container memory limit,
+32-task limit and no container network. Heavy campaigns run serially.
+
+The builder still substitutes a copied prepared development bundle. These
+checks do not rebuild Census inputs, run the full population, establish real
+Storage operation or prove scientific accuracy. Native scheduling still reports
+coerced departure choices. The earlier owner-loss campaign and this entry run
+remain separate evidence; interruption during native execution through this
+entry has not yet been joined. Automatic poll enrollment and the upstream
+AequilibraE prepared-instrument path remain open.

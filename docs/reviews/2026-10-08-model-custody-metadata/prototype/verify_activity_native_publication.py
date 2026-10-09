@@ -16,7 +16,7 @@ def verify_native(worker,writer,run,stage,base,key,output,storage,sql,database):
     def inventory():
         return {str(p.relative_to(SOURCE)):hashlib.sha256(p.read_bytes()).hexdigest() for p in SOURCE.rglob('*') if p.is_file()}
     control=os.environ.get('OPENPLAN_NATIVE_PUBLICATION_CONTROL','normal')
-    assert control in ('normal','harmless','drop-demand-matrix','restored')
+    assert control in ('normal','harmless','drop-demand-matrix','wrong-corridor','restored')
     before=inventory()
     sys.path.insert(0,str(Path(worker.__file__).parents[2]/'scripts/modeling'))
     import run_behavioral_demand_prototype as pipeline
@@ -50,9 +50,17 @@ def verify_native(worker,writer,run,stage,base,key,output,storage,sql,database):
     source_manifest=json.loads((SOURCE/'metadata/source_screening_bundle_manifest.json').read_text())
     west,south,east,north=source_manifest['boundary']['bbox']
     corridor={'type':'Polygon','coordinates':[[[west,south],[east,south],[east,north],[west,north],[west,south]]]}
+    if control=='wrong-corridor':
+        assert os.environ.get('OPENPLAN_STAGE_USE_ENTRY')=='1'
+        for point in corridor['coordinates'][0]: point[0] += 1
     headers={'apikey':key,'Authorization':'Bearer '+key,'Content-Type':'application/json'}
     with patch.object(worker,'sb_post_artifact',record_artifact), patch.object(pipeline,'build_activitysim_input_bundle',prepared_bundle), patch.object(worker,'_activitysim_exec_config',return_value=config), patch.object(worker,'SUPABASE_URL',base), patch.object(worker,'SUPABASE_KEY',key), patch.object(worker,'HEADERS',headers), patch.object(worker,'ACTIVITYSIM_WORK_DIR',str(output/'stage-work')):
-        result=worker.run_bundle_and_preflight_stage(run,{'id':run,'corridor_geojson':corridor},stage)
+        use_entry=os.environ.get('OPENPLAN_STAGE_USE_ENTRY') == '1'
+        if use_entry:
+            assert writer.read_run(run, expected_stage_name=worker.STAGE_BUNDLE_PREFLIGHT)['corridor_geojson']==corridor, 'Native entry geography differs from prepared bundle'
+            worker.process_stage({'id':stage,'run_id':run,'stage_name':worker.STAGE_BUNDLE_PREFLIGHT})
+        else:
+            result=worker.run_bundle_and_preflight_stage(run,{'id':run,'corridor_geojson':corridor},stage)
         assert len(supplied)==1
         artifacts=json.loads(sql(database,f"SELECT jsonb_agg(to_jsonb(a)) FROM public.model_run_artifacts a WHERE stage_id='{stage}';"))
         assert {a['artifact_type'] for a in artifacts}=={'evidence_packet','activitysim_demand_package_manifest','activitysim_demand_matrix','activitysim_demand_zones'}, 'Native demand artifact inventory differs'
@@ -70,11 +78,12 @@ def verify_native(worker,writer,run,stage,base,key,output,storage,sql,database):
         assert trips>0
         kpis=json.loads(sql(database,f"SELECT jsonb_agg(to_jsonb(k)) FROM public.model_run_kpis k WHERE run_id='{run}';"))
         assert all(k['attempt_id']==writer.context.attempt_id for k in kpis)
-        worker.sb_patch_stage(stage,{'status':'succeeded','log_tail':result['log']})
+        if not use_entry:
+            worker.sb_patch_stage(stage,{'status':'succeeded','log_tail':result['log']})
         assert sql(database,f"SELECT status FROM public.model_runs WHERE id='{run}';")=='succeeded'
     assert inventory()==before,'Original development bundle changed'
     return {'control':'native-stage-publication','trip_rows':trips,'artifacts':len(artifacts),'kpis':len(kpis),
-        'native_model_executed':True,'container_removed':True,'source_bundle_unchanged':True,
+        'admitted_entry':use_entry,'native_model_executed':True,'container_removed':True,'source_bundle_unchanged':True,
         'source_bundle_sha256':hashlib.sha256(json.dumps(before,sort_keys=True).encode()).hexdigest(),
         'image_id':IMAGE,'scientific_acceptance':'unassessed',
-        'limits':'Prepared bundle builder is replaced with a copied development bundle and 100-household sample; actual native runtime, ingestion, demand packaging and managed database writes. Synthetic Storage bytes. No Census rebuild, normal dispatch, full population or scientific acceptance.'}
+        'limits':'Prepared bundle builder is replaced with a copied development bundle and 100-household sample; actual native runtime, ingestion, demand packaging and managed database writes. Synthetic Storage bytes. No Census rebuild, automatic poll enrollment, full population or scientific acceptance.'}

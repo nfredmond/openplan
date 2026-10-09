@@ -66,6 +66,10 @@ SELECT workspace_id FROM public.model_runs WHERE id='{run}';
             'network_setup_summary':json.dumps({'network':original_manifest['network'],'source':'development screening bundle manifest; network excerpt for integration fixture'}).encode()}
     if os.environ.get('OPENPLAN_STAGE_USE_ENTRY') == '1':
         corridor={'type':'Polygon','coordinates':[[[-121.71,38.54],[-121.69,38.54],[-121.69,38.56],[-121.71,38.56],[-121.71,38.54]]]}
+        if os.environ.get('OPENPLAN_STAGE_PUBLICATION_CONTROL') == 'native':
+            manifest_path=Path('/home/nathaniel/code/openplan/data/agreement-study/runs/dev/08014/activitysim_bundle/metadata/source_screening_bundle_manifest.json')
+            west,south,east,north=json.loads(manifest_path.read_text())['boundary']['bbox']
+            corridor={'type':'Polygon','coordinates':[[[west,south],[east,south],[east,north],[west,north],[west,south]]]}
         sql(database,f"UPDATE public.model_runs SET corridor_geojson='{json.dumps(corridor)}'::jsonb WHERE id='{run}';")
     expected_ids=[]; unrelated_ids=[]
     for stage, target in ((producer,expected_ids),(unrelated,unrelated_ids)):

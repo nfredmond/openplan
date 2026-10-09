@@ -1,0 +1,89 @@
+{
+  "cases": [
+    {
+      "case": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "result": {
+        "control": "native-stage-publication",
+        "trip_rows": 779,
+        "artifacts": 4,
+        "kpis": 8,
+        "admitted_entry": true,
+        "native_model_executed": true,
+        "container_removed": true,
+        "source_bundle_unchanged": true,
+        "source_bundle_sha256": "4b914da7e522e8d2c24947bdfb371b6c37c8cf4cd9fab2dc7e26173c0d09e66f",
+        "image_id": "sha256:472ad0ab51bbea22ca5816941a7b9bc04375efc577ef2f164e2f4db46368f676",
+        "scientific_acceptance": "unassessed",
+        "limits": "Prepared bundle builder is replaced with a copied development bundle and 100-household sample; actual native runtime, ingestion, demand packaging and managed database writes. Synthetic Storage bytes. No Census rebuild, automatic poll enrollment, full population or scientific acceptance."
+      }
+    },
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "result": {
+        "control": "native-stage-publication",
+        "trip_rows": 779,
+        "artifacts": 4,
+        "kpis": 8,
+        "admitted_entry": true,
+        "native_model_executed": true,
+        "container_removed": true,
+        "source_bundle_unchanged": true,
+        "source_bundle_sha256": "4b914da7e522e8d2c24947bdfb371b6c37c8cf4cd9fab2dc7e26173c0d09e66f",
+        "image_id": "sha256:472ad0ab51bbea22ca5816941a7b9bc04375efc577ef2f164e2f4db46368f676",
+        "scientific_acceptance": "unassessed",
+        "limits": "Prepared bundle builder is replaced with a copied development bundle and 100-household sample; actual native runtime, ingestion, demand packaging and managed database writes. Synthetic Storage bytes. No Census rebuild, automatic poll enrollment, full population or scientific acceptance."
+      }
+    },
+    {
+      "case": "drop-demand-matrix",
+      "returncode": 1,
+      "expected_behavior_observed": true,
+      "result": {
+        "expected_missing_artifact_detected": true
+      }
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "result": {
+        "control": "native-stage-publication",
+        "trip_rows": 779,
+        "artifacts": 4,
+        "kpis": 8,
+        "admitted_entry": true,
+        "native_model_executed": true,
+        "container_removed": true,
+        "source_bundle_unchanged": true,
+        "source_bundle_sha256": "4b914da7e522e8d2c24947bdfb371b6c37c8cf4cd9fab2dc7e26173c0d09e66f",
+        "image_id": "sha256:472ad0ab51bbea22ca5816941a7b9bc04375efc577ef2f164e2f4db46368f676",
+        "scientific_acceptance": "unassessed",
+        "limits": "Prepared bundle builder is replaced with a copied development bundle and 100-household sample; actual native runtime, ingestion, demand packaging and managed database writes. Synthetic Storage bytes. No Census rebuild, automatic poll enrollment, full population or scientific acceptance."
+      }
+    },
+    {
+      "case": "wrong-corridor",
+      "returncode": 1,
+      "expected_behavior_observed": true,
+      "result": {
+        "expected_geography_mismatch_detected": true,
+        "model_workspace_absent": true
+      }
+    }
+  ],
+  "sources": {
+    "workers/activitysim_worker/supabase_poll.py": "d5d9ffdf4d07e2e25ceea7b0da82d2f36e471e58ae135c7da3445d2e48ce2f18",
+    "workers/activitysim_worker/runtime.py": "f3e4f4ceefa4f20f46f14f275b55fe0eacd36684ca87af2da98a991859321ba9",
+    "scripts/modeling/run_behavioral_demand_prototype.py": "5438ff45878e319e9fc4dbcb603f0be80e240cd8532d540670ecd8d5f94a27fb"
+  },
+  "limits": [
+    "Copied prepared development bundle; builder boundary substituted and sample limited to 100 households",
+    "Native scheduling log includes coerced departure choices; no scientific acceptance",
+    "Synthetic Storage byte service; no Census rebuild, full population, automatic poll enrollment or native-process recovery"
+  ],
+  "supplemental_control": "Geography fault ran after the four native controls; refused before workspace creation."
+}
