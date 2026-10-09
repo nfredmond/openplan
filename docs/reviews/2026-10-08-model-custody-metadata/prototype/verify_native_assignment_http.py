@@ -15,7 +15,7 @@ if source['container']!='supabase_db_openplan-restore-target-2026091050' or not 
 output=Path(os.environ['OPENPLAN_NATIVE_ASSIGNMENT_HTTP_OUTPUT']).absolute()
 output.mkdir(mode=0o700,parents=True,exist_ok=False)
 control=os.environ.get('OPENPLAN_NATIVE_ASSIGNMENT_HTTP_CONTROL','baseline')
-if control not in ('baseline','harmless','omit-geometry-registration','lost-progress','lost-progress-harmless','omit-disconnect','cancel-progress','cancel-progress-harmless','omit-cancellation','cancel-receipt-loss','cancel-receipt-loss-harmless','omit-receipt-loss','parent-loss','parent-loss-harmless','omit-parent-loss','swallow-parent-loss'):raise ValueError('Unknown native HTTP control')
+if control not in ('baseline','harmless','omit-geometry-registration','lost-progress','lost-progress-harmless','omit-disconnect','cancel-progress','cancel-progress-harmless','omit-cancellation','cancel-receipt-loss','cancel-receipt-loss-harmless','omit-receipt-loss','parent-loss','parent-loss-harmless','omit-parent-loss','swallow-parent-loss','startup-before','startup-before-harmless','startup-after','startup-early'):raise ValueError('Unknown native HTTP control')
 def sql(database,statement):
     result=subprocess.run(['docker','exec','-i',source['container'],'psql','-X','-qAt','-U','postgres','-d',database,'-v','ON_ERROR_STOP=1'],input=statement,text=True,capture_output=True,timeout=30)
     if result.returncode:raise RuntimeError(result.stderr)
@@ -182,7 +182,9 @@ with gateway('public',database=database) as connection:
         state=json.loads(sql(database,f"SELECT row_to_json(s) FROM (SELECT status,attempt_managed,active_attempt_id FROM public.model_run_stages WHERE id='{stage}') s;"))
         assert state['status']=='running' and state['attempt_managed'] is True
         artifacts=json.loads(sql(database,f"SELECT coalesce(json_agg(artifact_type ORDER BY artifact_type),'[]') FROM public.model_run_artifacts WHERE run_id='{run}';"))
-        assert set(artifacts)=={'model_project_working_copy','model_package_working_copy','model_count_inputs','model_transit_inputs','model_assignment_geometry'},'Installed input registration differs'
+        expected_artifacts={'model_project_working_copy','model_package_working_copy'}
+        if not control.startswith('startup-'):expected_artifacts.update({'model_count_inputs','model_transit_inputs','model_assignment_geometry'})
+        assert set(artifacts)==expected_artifacts,'Installed input registration differs'
         assert all(call['status']==200 for call in calls),calls
         report={'control':control,'database':database,'run_id':run,'stage_id':stage,'native_converged':result.get('convergence',{}).get('converged'),'modeled_transit':result.get('mode_split',{}).get('transit_status'),'replay':result.get('replay'),'final_outputs_absent':result.get('final_outputs_absent'),'cancellation':result.get('cancellation'),'cancellation_receipt_lost':result.get('cancellation_receipt_lost'),'engine_inspection':result.get('engine_inspection'),'parent_loss':result.get('parent_loss'),'database_observation':result.get('database_observation'),
                 'registered_artifacts':artifacts,'http_calls':calls,'stage_remains_running':True,'worker_sha256':result['worker_sha256'],

@@ -1,0 +1,238 @@
+{
+  "proof_sha256": {
+    "verify_native_parent_loss.py": "77729f7ddbfcf4d523cbad780a67bc847ecd4d36055cc2056c01e9513417f047",
+    "verify_native_parent_supervisor.py": "d1fcae06ca0b5afff4cb73e86bb0f58b141739a4dd34d56ba498553026fd9ac2",
+    "verify_native_assignment_http.py": "2bbffccb6c5073f5c8f2d89b62eaf055ca082f89a6a4b4831ad305fbb6c641be"
+  },
+  "controls": [
+    {
+      "control": "before-record",
+      "database": "openplan_attempt_cli_320ff119622945569c712fa18e57d9cb",
+      "parent_loss": {
+        "interruption_point": "before",
+        "engine_body_started": false,
+        "supervisor_exit_code": -9,
+        "scope_observation": {
+          "outcome": "scope_absent_observed",
+          "scope_has_live_processes": false
+        },
+        "native_failure": null,
+        "fresh_inspections": [
+          {
+            "attempt_id": "d658107d-57b6-4d1b-9512-1063d5e562ae",
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_startup_unconfirmed",
+            "record_sha256": {
+              "attempt_owner.json": "3415671475810fb8900f358740ed435008f8c01a46fc6619a3c48cbd823f287f",
+              "launch-reserved.json": "b602e62d14c472d2b44214a462c93c96f87e723af0643494cddc912ca8a9efae"
+            },
+            "run_id": "77e72f20-2a8e-4074-bbcb-15b898adcfac",
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "b60cf26e-f2a6-45f0-8632-227c7d5c20f8",
+            "termination_cause": "unconfirmed"
+          },
+          {
+            "attempt_id": "d658107d-57b6-4d1b-9512-1063d5e562ae",
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_startup_unconfirmed",
+            "record_sha256": {
+              "attempt_owner.json": "3415671475810fb8900f358740ed435008f8c01a46fc6619a3c48cbd823f287f",
+              "launch-reserved.json": "b602e62d14c472d2b44214a462c93c96f87e723af0643494cddc912ca8a9efae"
+            },
+            "run_id": "77e72f20-2a8e-4074-bbcb-15b898adcfac",
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "b60cf26e-f2a6-45f0-8632-227c7d5c20f8",
+            "termination_cause": "unconfirmed"
+          }
+        ],
+        "records_unchanged": true,
+        "command_inventory_unchanged": true,
+        "database_state_unchanged": true,
+        "final_outputs_absent": true
+      },
+      "stage_remains_running": true
+    },
+    {
+      "control": "harmless",
+      "database": "openplan_attempt_cli_846c1ec5881647418b7487401e1f6478",
+      "parent_loss": {
+        "interruption_point": "before",
+        "engine_body_started": false,
+        "supervisor_exit_code": -9,
+        "scope_observation": {
+          "outcome": "scope_absent_observed",
+          "scope_has_live_processes": false
+        },
+        "native_failure": null,
+        "fresh_inspections": [
+          {
+            "attempt_id": "cf7a4eac-51e5-45e5-a7d4-f4b68b08c0ea",
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_startup_unconfirmed",
+            "record_sha256": {
+              "attempt_owner.json": "0a0b26028bde934a914843f81525f117d56e3da0df0de2f9618af2ed12702d76",
+              "launch-reserved.json": "86ef8c5dfa344d9329501433fa4cbe7a3b4cd80f35e4a0d7a2232315efeba443"
+            },
+            "run_id": "b20c0236-1957-4265-ac23-078b364c2d33",
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "6cd5d8f4-67ac-48ac-93ec-d8fe33f94da7",
+            "termination_cause": "unconfirmed"
+          },
+          {
+            "attempt_id": "cf7a4eac-51e5-45e5-a7d4-f4b68b08c0ea",
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_startup_unconfirmed",
+            "record_sha256": {
+              "attempt_owner.json": "0a0b26028bde934a914843f81525f117d56e3da0df0de2f9618af2ed12702d76",
+              "launch-reserved.json": "86ef8c5dfa344d9329501433fa4cbe7a3b4cd80f35e4a0d7a2232315efeba443"
+            },
+            "run_id": "b20c0236-1957-4265-ac23-078b364c2d33",
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "6cd5d8f4-67ac-48ac-93ec-d8fe33f94da7",
+            "termination_cause": "unconfirmed"
+          }
+        ],
+        "records_unchanged": true,
+        "command_inventory_unchanged": true,
+        "database_state_unchanged": true,
+        "final_outputs_absent": true
+      },
+      "stage_remains_running": true
+    },
+    {
+      "control": "after-record",
+      "database": "openplan_attempt_cli_f50650884a744b2a9bfc590e2d549709",
+      "parent_loss": {
+        "interruption_point": "after",
+        "engine_body_started": false,
+        "supervisor_exit_code": -9,
+        "scope_observation": {
+          "outcome": "scope_absent_observed",
+          "scope_has_live_processes": false
+        },
+        "native_failure": null,
+        "fresh_inspections": [
+          {
+            "attempt_id": "6d651ddd-7233-4245-9ab8-83b4638c2a9f",
+            "cancellation_observed": false,
+            "cancellation_requested": false,
+            "cancellation_signal_written": false,
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_absent_observed",
+            "record_sha256": {
+              "attempt_owner.json": "6a7f74804a0a7deee4b09e5c0316818c5c7b4cba47b8ecc578e53e6868efb856",
+              "launch-reserved.json": "c67124233fdb5fd89cce6c7aab0c2f5426d1b7d1aa0f71d85cccbe7d10a40e74",
+              "scope-started.json": "3d512392c8def93319b72ed8f3c8a0b81d4a8fe1e4e9018a53454086ca348a56"
+            },
+            "run_id": "07a78749-fa9a-4b76-994e-d2d5028163d8",
+            "scope_has_live_processes": false,
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "54c98f45-aedb-41ef-a4d3-a73f9f9db338",
+            "termination_cause": "unconfirmed"
+          },
+          {
+            "attempt_id": "6d651ddd-7233-4245-9ab8-83b4638c2a9f",
+            "cancellation_observed": false,
+            "cancellation_requested": false,
+            "cancellation_signal_written": false,
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_absent_observed",
+            "record_sha256": {
+              "attempt_owner.json": "6a7f74804a0a7deee4b09e5c0316818c5c7b4cba47b8ecc578e53e6868efb856",
+              "launch-reserved.json": "c67124233fdb5fd89cce6c7aab0c2f5426d1b7d1aa0f71d85cccbe7d10a40e74",
+              "scope-started.json": "3d512392c8def93319b72ed8f3c8a0b81d4a8fe1e4e9018a53454086ca348a56"
+            },
+            "run_id": "07a78749-fa9a-4b76-994e-d2d5028163d8",
+            "scope_has_live_processes": false,
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "54c98f45-aedb-41ef-a4d3-a73f9f9db338",
+            "termination_cause": "unconfirmed"
+          }
+        ],
+        "records_unchanged": true,
+        "command_inventory_unchanged": true,
+        "database_state_unchanged": true,
+        "final_outputs_absent": true
+      },
+      "stage_remains_running": true
+    },
+    {
+      "control": "early-release",
+      "database": "openplan_attempt_cli_2328d5f5b42b47fc9d8e2b7ec895f513",
+      "detected": "Engine began before startup custody was released"
+    },
+    {
+      "control": "restored",
+      "database": "openplan_attempt_cli_55ec75e495614e679f3c259350b3e0c5",
+      "parent_loss": {
+        "interruption_point": "before",
+        "engine_body_started": false,
+        "supervisor_exit_code": -9,
+        "scope_observation": {
+          "outcome": "scope_absent_observed",
+          "scope_has_live_processes": false
+        },
+        "native_failure": null,
+        "fresh_inspections": [
+          {
+            "attempt_id": "f405aaed-900f-424a-ab63-7eb1cec4cb95",
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_startup_unconfirmed",
+            "record_sha256": {
+              "attempt_owner.json": "69275265446ea4f625933b2f6de677b463ead37bb6ad080e22e04b83b1c202f6",
+              "launch-reserved.json": "bddb0154a1c78288144b70121600f626bef099ee504939c743840d2783df2865"
+            },
+            "run_id": "2b0fc8f2-d157-49d1-8837-814e318bf48b",
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "7c1065a6-70a2-40e4-9b1f-f9e28bde1582",
+            "termination_cause": "unconfirmed"
+          },
+          {
+            "attempt_id": "f405aaed-900f-424a-ab63-7eb1cec4cb95",
+            "continuation_authorized": false,
+            "database_status_changed": false,
+            "model_resumed": false,
+            "outcome": "scope_startup_unconfirmed",
+            "record_sha256": {
+              "attempt_owner.json": "69275265446ea4f625933b2f6de677b463ead37bb6ad080e22e04b83b1c202f6",
+              "launch-reserved.json": "bddb0154a1c78288144b70121600f626bef099ee504939c743840d2783df2865"
+            },
+            "run_id": "2b0fc8f2-d157-49d1-8837-814e318bf48b",
+            "server_ownership_checked": false,
+            "signal_sent": false,
+            "stage_id": "7c1065a6-70a2-40e4-9b1f-f9e28bde1582",
+            "termination_cause": "unconfirmed"
+          }
+        ],
+        "records_unchanged": true,
+        "command_inventory_unchanged": true,
+        "database_state_unchanged": true,
+        "final_outputs_absent": true
+      },
+      "stage_remains_running": true
+    }
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-startup-loss-controls-20261008-final",
+  "limits": "Actual supervisor SIGKILL before or after scope record and before authorization. The engine body must remain unexecuted. The outer fixture retains scope identity only for cleanup observation; missing production startup custody remains unconfirmed. No restart, durable reconciliation, UI workflow, publication or scientific acceptance."
+}

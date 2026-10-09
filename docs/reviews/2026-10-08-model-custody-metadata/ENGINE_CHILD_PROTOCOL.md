@@ -341,3 +341,15 @@ process, so terminating the supervisor does not orphan its test database gateway
 This establishes loss handling at one confirmed iteration. It does not establish
 continuous parent-loss detection, pre-startup failure handling, durable recovery
 or authority to resume or publish a model.
+
+### Startup interruption evidence, October 8
+
+The installed-command supervisor-loss proof now interrupts before and after the
+scope startup record, with authorization withheld in both cases. The production
+bootstrap exits without entering engine code. Fresh inspection must leave
+missing startup custody unconfirmed; a retained verified record permits only a
+read-only scope observation. The test owner separately observes cleanup using
+its live verified identity. It supplies no recovery or continuation authority.
+See `prototype/native-startup-loss-controls.json` for harmless, early-release
+fault and restored controls. No database lifecycle reconciliation or model
+restart follows from an empty scope.

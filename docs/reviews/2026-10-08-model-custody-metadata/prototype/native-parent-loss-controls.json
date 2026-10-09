@@ -1,14 +1,16 @@
 {
   "proof_sha256": {
-    "verify_native_parent_loss.py": "2c4ce5145f813d036d7ea49ce77cb333142e2c6a7d60398cd4a309beccc19490",
-    "verify_native_parent_supervisor.py": "54ce6909bcd8382ecddec7c0e9ad4eb1bbe66a205addbdf3c5192d39d26f9464",
-    "verify_native_assignment_http.py": "871cff85b1d35413877423f5a538e4175e1415a4df8f9bb99b449b1fc158b9eb"
+    "verify_native_parent_loss.py": "77729f7ddbfcf4d523cbad780a67bc847ecd4d36055cc2056c01e9513417f047",
+    "verify_native_parent_supervisor.py": "d1fcae06ca0b5afff4cb73e86bb0f58b141739a4dd34d56ba498553026fd9ac2",
+    "verify_native_assignment_http.py": "2bbffccb6c5073f5c8f2d89b62eaf055ca082f89a6a4b4831ad305fbb6c641be"
   },
   "controls": [
     {
       "control": "baseline",
-      "database": "openplan_attempt_cli_a694dd811dc844eabecb835050b61665",
+      "database": "openplan_attempt_cli_9f31662f652e4fd8b91193073db21047",
       "parent_loss": {
+        "interruption_point": "iteration",
+        "engine_body_started": null,
         "supervisor_exit_code": -9,
         "scope_observation": {
           "outcome": "scope_absent_observed",
@@ -20,7 +22,7 @@
         },
         "fresh_inspections": [
           {
-            "attempt_id": "5cd0566e-01ae-4cb7-a544-ebd28d692c60",
+            "attempt_id": "b38c4906-c44c-4a82-bc02-b24046ff5eb4",
             "cancellation_observed": false,
             "cancellation_requested": false,
             "cancellation_signal_written": false,
@@ -29,19 +31,19 @@
             "model_resumed": false,
             "outcome": "scope_absent_observed",
             "record_sha256": {
-              "attempt_owner.json": "a75dbfbdcaaf1137d531762092e74d09de39a02ae17a1fd66b0425dafdf6fcf1",
-              "launch-reserved.json": "695dcc6835a68215bdcb697062e8eef4fc9176e9f8c90d8d9962e3d7b38ac32f",
-              "scope-started.json": "0d990bc1df0244e23a2e3d1b55bf6e46ed5e1ead994b5d40f08d0ec7300709c7"
+              "attempt_owner.json": "e98f188ebdfa90654b8f80efd3ed417600bde3d9332e0718bc2a04281df8cb7c",
+              "launch-reserved.json": "c56ab87539c6d2ccfb989d50fe5f65517cebbfbea4cc443d0fd8c0b8c0b02255",
+              "scope-started.json": "36356cd23765df7729272c6a40e3d978e3b61769e41a757b3095bb9ab51d607e"
             },
-            "run_id": "a6511bb9-6545-4b0f-bbdd-cd5e00ddd3f3",
+            "run_id": "daff98ef-c8d4-4bb3-b945-9c276a65e3b8",
             "scope_has_live_processes": false,
             "server_ownership_checked": false,
             "signal_sent": false,
-            "stage_id": "1ec7cbc1-d76e-4bef-812e-282b3405e359",
+            "stage_id": "c9991058-e808-47f3-8a1b-c035ee716f02",
             "termination_cause": "unconfirmed"
           },
           {
-            "attempt_id": "5cd0566e-01ae-4cb7-a544-ebd28d692c60",
+            "attempt_id": "b38c4906-c44c-4a82-bc02-b24046ff5eb4",
             "cancellation_observed": false,
             "cancellation_requested": false,
             "cancellation_signal_written": false,
@@ -50,15 +52,15 @@
             "model_resumed": false,
             "outcome": "scope_absent_observed",
             "record_sha256": {
-              "attempt_owner.json": "a75dbfbdcaaf1137d531762092e74d09de39a02ae17a1fd66b0425dafdf6fcf1",
-              "launch-reserved.json": "695dcc6835a68215bdcb697062e8eef4fc9176e9f8c90d8d9962e3d7b38ac32f",
-              "scope-started.json": "0d990bc1df0244e23a2e3d1b55bf6e46ed5e1ead994b5d40f08d0ec7300709c7"
+              "attempt_owner.json": "e98f188ebdfa90654b8f80efd3ed417600bde3d9332e0718bc2a04281df8cb7c",
+              "launch-reserved.json": "c56ab87539c6d2ccfb989d50fe5f65517cebbfbea4cc443d0fd8c0b8c0b02255",
+              "scope-started.json": "36356cd23765df7729272c6a40e3d978e3b61769e41a757b3095bb9ab51d607e"
             },
-            "run_id": "a6511bb9-6545-4b0f-bbdd-cd5e00ddd3f3",
+            "run_id": "daff98ef-c8d4-4bb3-b945-9c276a65e3b8",
             "scope_has_live_processes": false,
             "server_ownership_checked": false,
             "signal_sent": false,
-            "stage_id": "1ec7cbc1-d76e-4bef-812e-282b3405e359",
+            "stage_id": "c9991058-e808-47f3-8a1b-c035ee716f02",
             "termination_cause": "unconfirmed"
           }
         ],
@@ -71,8 +73,10 @@
     },
     {
       "control": "harmless",
-      "database": "openplan_attempt_cli_9f234866ec5e49bca7bb9f962dba2c06",
+      "database": "openplan_attempt_cli_51fd9e3c01514dbaaa6dcf735d3ae61e",
       "parent_loss": {
+        "interruption_point": "iteration",
+        "engine_body_started": null,
         "supervisor_exit_code": -9,
         "scope_observation": {
           "outcome": "scope_absent_observed",
@@ -84,7 +88,7 @@
         },
         "fresh_inspections": [
           {
-            "attempt_id": "f0d4c3f8-29fa-4d80-b331-6ee5140730dd",
+            "attempt_id": "8a22bfc7-8148-44f2-92e9-88eb20ced5d2",
             "cancellation_observed": false,
             "cancellation_requested": false,
             "cancellation_signal_written": false,
@@ -93,19 +97,19 @@
             "model_resumed": false,
             "outcome": "scope_absent_observed",
             "record_sha256": {
-              "attempt_owner.json": "eb4151bc2d16f5a72ae1ebccdcd1b7009618736da633d5b59f38059dff365933",
-              "launch-reserved.json": "de17e0e7a3d741d2521b11985f9858a79931d89f7a0e221fd905dd0923508c23",
-              "scope-started.json": "59b7d07fa2c77bdadd61118f26d506c6dbdff1156a00f3d10ce3dfb5546fc550"
+              "attempt_owner.json": "2e8bdd697ef3276b0e52599972fdef2d83aa870a9bf300f9eb8f5fc8fa072aea",
+              "launch-reserved.json": "bace41bcaa5c0e1d157116104e7ad20c7399de911e8fc4738e4009d30bdae77f",
+              "scope-started.json": "ffb33a34dd41bdc9ef7390079ae279f3928ae2e7729e9e749bdc86967f11cb44"
             },
-            "run_id": "a4613d11-d941-40b4-9235-4f64de09e0c2",
+            "run_id": "d89e3a34-1468-45fb-a220-b1e5dd486cca",
             "scope_has_live_processes": false,
             "server_ownership_checked": false,
             "signal_sent": false,
-            "stage_id": "66373f4b-6675-48aa-83c7-80accd22e149",
+            "stage_id": "adbc1670-5722-47b3-9df3-c03ecb248426",
             "termination_cause": "unconfirmed"
           },
           {
-            "attempt_id": "f0d4c3f8-29fa-4d80-b331-6ee5140730dd",
+            "attempt_id": "8a22bfc7-8148-44f2-92e9-88eb20ced5d2",
             "cancellation_observed": false,
             "cancellation_requested": false,
             "cancellation_signal_written": false,
@@ -114,15 +118,15 @@
             "model_resumed": false,
             "outcome": "scope_absent_observed",
             "record_sha256": {
-              "attempt_owner.json": "eb4151bc2d16f5a72ae1ebccdcd1b7009618736da633d5b59f38059dff365933",
-              "launch-reserved.json": "de17e0e7a3d741d2521b11985f9858a79931d89f7a0e221fd905dd0923508c23",
-              "scope-started.json": "59b7d07fa2c77bdadd61118f26d506c6dbdff1156a00f3d10ce3dfb5546fc550"
+              "attempt_owner.json": "2e8bdd697ef3276b0e52599972fdef2d83aa870a9bf300f9eb8f5fc8fa072aea",
+              "launch-reserved.json": "bace41bcaa5c0e1d157116104e7ad20c7399de911e8fc4738e4009d30bdae77f",
+              "scope-started.json": "ffb33a34dd41bdc9ef7390079ae279f3928ae2e7729e9e749bdc86967f11cb44"
             },
-            "run_id": "a4613d11-d941-40b4-9235-4f64de09e0c2",
+            "run_id": "d89e3a34-1468-45fb-a220-b1e5dd486cca",
             "scope_has_live_processes": false,
             "server_ownership_checked": false,
             "signal_sent": false,
-            "stage_id": "66373f4b-6675-48aa-83c7-80accd22e149",
+            "stage_id": "adbc1670-5722-47b3-9df3-c03ecb248426",
             "termination_cause": "unconfirmed"
           }
         ],
@@ -135,18 +139,20 @@
     },
     {
       "control": "omit-parent-loss",
-      "database": "openplan_attempt_cli_cd1db00cd28e44059594c0afd175b9b4",
+      "database": "openplan_attempt_cli_a8d3554eb7374a14a89aa78d497f4c20",
       "detected": "Native supervisor loss was not observed"
     },
     {
       "control": "swallow-parent-loss",
-      "database": "openplan_attempt_cli_5fe33adf708d4bd38734aa704d74e2af",
+      "database": "openplan_attempt_cli_b0f56c33e0e14675b84030f2ff9502d9",
       "detected": "Native child published outputs after supervisor loss"
     },
     {
       "control": "restored",
-      "database": "openplan_attempt_cli_7f0931f1a8b64b2692ff02b8879f7a70",
+      "database": "openplan_attempt_cli_1b7501eb9331450db1164a715102f6c0",
       "parent_loss": {
+        "interruption_point": "iteration",
+        "engine_body_started": null,
         "supervisor_exit_code": -9,
         "scope_observation": {
           "outcome": "scope_absent_observed",
@@ -158,7 +164,7 @@
         },
         "fresh_inspections": [
           {
-            "attempt_id": "15e565e3-c0d6-4ceb-a47e-39459615cb89",
+            "attempt_id": "a8d03bc2-fa9f-4fc7-ac91-e9b753f262d5",
             "cancellation_observed": false,
             "cancellation_requested": false,
             "cancellation_signal_written": false,
@@ -167,19 +173,19 @@
             "model_resumed": false,
             "outcome": "scope_absent_observed",
             "record_sha256": {
-              "attempt_owner.json": "f363628429c431a7ecf787b5e3549521be1e848ead7f330cc78ca43c12422efe",
-              "launch-reserved.json": "ec34cfe06fcfca1d6a7ba376c790d11349c48dd8e2022c345e28211d41e495df",
-              "scope-started.json": "55091d8ce78ed001a7e797ca6508b9c9bf833afb8f6a14fa603333df30f7fbe8"
+              "attempt_owner.json": "7dce458a0f73d161866c66cc70831d6189e82ee2789e9c500228228bdde5219d",
+              "launch-reserved.json": "6ca3790c94027bad90e06615e2956e0489da00ef1f590edfed5ca86c63c0b1cb",
+              "scope-started.json": "6a38674ebf9d962e515557be4d9a8843b1184523ba9eed4c27f3bb2c5101436b"
             },
-            "run_id": "9c4d35bb-2778-4e87-954d-addef5b171cc",
+            "run_id": "0fc8f561-761b-4c47-8513-80e3fcf59b03",
             "scope_has_live_processes": false,
             "server_ownership_checked": false,
             "signal_sent": false,
-            "stage_id": "56755443-d716-4a01-97ff-1bb026b1984c",
+            "stage_id": "8f06e65a-dc5d-4d04-975b-77a7fccb9833",
             "termination_cause": "unconfirmed"
           },
           {
-            "attempt_id": "15e565e3-c0d6-4ceb-a47e-39459615cb89",
+            "attempt_id": "a8d03bc2-fa9f-4fc7-ac91-e9b753f262d5",
             "cancellation_observed": false,
             "cancellation_requested": false,
             "cancellation_signal_written": false,
@@ -188,15 +194,15 @@
             "model_resumed": false,
             "outcome": "scope_absent_observed",
             "record_sha256": {
-              "attempt_owner.json": "f363628429c431a7ecf787b5e3549521be1e848ead7f330cc78ca43c12422efe",
-              "launch-reserved.json": "ec34cfe06fcfca1d6a7ba376c790d11349c48dd8e2022c345e28211d41e495df",
-              "scope-started.json": "55091d8ce78ed001a7e797ca6508b9c9bf833afb8f6a14fa603333df30f7fbe8"
+              "attempt_owner.json": "7dce458a0f73d161866c66cc70831d6189e82ee2789e9c500228228bdde5219d",
+              "launch-reserved.json": "6ca3790c94027bad90e06615e2956e0489da00ef1f590edfed5ca86c63c0b1cb",
+              "scope-started.json": "6a38674ebf9d962e515557be4d9a8843b1184523ba9eed4c27f3bb2c5101436b"
             },
-            "run_id": "9c4d35bb-2778-4e87-954d-addef5b171cc",
+            "run_id": "0fc8f561-761b-4c47-8513-80e3fcf59b03",
             "scope_has_live_processes": false,
             "server_ownership_checked": false,
             "signal_sent": false,
-            "stage_id": "56755443-d716-4a01-97ff-1bb026b1984c",
+            "stage_id": "8f06e65a-dc5d-4d04-975b-77a7fccb9833",
             "termination_cause": "unconfirmed"
           }
         ],
@@ -208,6 +214,6 @@
       "stage_remains_running": true
     }
   ],
-  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-parent-loss-controls-20261008",
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-parent-loss-controls-20261008-startup-regression",
   "limits": "Actual parent SIGKILL and native channel-loss handling at a confirmed iteration, installed SQL and fresh inspection. No general parent-loss supervision during computation, durable reconciliation, restart, UI workflow, publication or scientific acceptance."
 }

@@ -3201,3 +3201,41 @@ interruption points, durable reconciliation, restart, UI decisions and full M3/V
 acceptance remain open. Product direction passes with existing dated reminders.
 PR #170's GitHub checks pass; its visual acceptance remains open because T3 page
 capture still fails after reopening the preview. No alternative browser is used.
+
+### October 8: supervisor loss around startup custody
+
+The installed-command proof now kills its owned supervisor at two additional
+boundaries: after scope verification but before saving `scope-started.json`, and
+after saving that record but before authorizing the bootstrap. The actual
+production bootstrap gates the same native assignment command used by the
+iteration-loss proof. A marker at the first engine statement remains absent in
+both cases. Neither the native failure handler nor final output creation runs.
+The original scope empties without a fabricated cancellation or exit receipt.
+
+Before the startup record exists, a fresh inspection reports
+`scope_startup_unconfirmed` and does not claim to know whether the scope is live.
+After the record exists, it observes scope absence. Both inspections run twice,
+retain identical local records and command inventories, and leave installed run,
+stage, attempt, artifact, KPI and execution-start state unchanged. The stage
+remains running. Only the two prepared working-copy artifacts exist at startup;
+count, transit and assignment geometry registration have not run.
+
+The outer test owner retains the verified scope identity to observe cleanup.
+That fixture knowledge does not become recovery authority for a fresh process.
+An early-authorization fault explicitly waits for the engine marker before
+killing the supervisor. The output-absence proof rejects that fault at the engine
+entry assertion, even when no completed assignment outputs exist. The harmless
+comment and restored controls exercise the same startup path.
+
+Evidence: `prototype/native-startup-loss-controls.json`. These startup cases do
+not establish recovery before claim admission, supervisor loss during arbitrary
+computation, durable reconciliation, model restart, ActivitySim supervision,
+normal managed dispatch, browser decisions or scientific acceptance. The prior
+iteration-loss controls remain a separate regression check. No production worker
+behavior or scientific claim changes in this checkpoint.
+
+The final startup suite passes all five controls. The five existing iteration-
+loss controls also pass after the shared supervisor and HTTP proof changes,
+including omitted loss and swallowed channel-loss faults. `git diff --check`
+passes. GitHub restore-drill run 37869706360 remains in progress for the preceding
+checkpoint; this local result does not declare that run or the next commit green.

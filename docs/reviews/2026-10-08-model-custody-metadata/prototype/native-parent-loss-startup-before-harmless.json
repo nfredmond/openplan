@@ -1,0 +1,103 @@
+{
+  "control": "startup-before-harmless",
+  "native_http": {
+    "control": "startup-before-harmless",
+    "database": "openplan_attempt_cli_846c1ec5881647418b7487401e1f6478",
+    "run_id": "b20c0236-1957-4265-ac23-078b364c2d33",
+    "stage_id": "6cd5d8f4-67ac-48ac-93ec-d8fe33f94da7",
+    "native_converged": null,
+    "modeled_transit": null,
+    "replay": null,
+    "final_outputs_absent": true,
+    "cancellation": null,
+    "cancellation_receipt_lost": null,
+    "engine_inspection": null,
+    "parent_loss": {
+      "interruption_point": "before",
+      "engine_body_started": false,
+      "supervisor_exit_code": -9,
+      "scope_observation": {
+        "outcome": "scope_absent_observed",
+        "scope_has_live_processes": false
+      },
+      "native_failure": null,
+      "fresh_inspections": [
+        {
+          "attempt_id": "cf7a4eac-51e5-45e5-a7d4-f4b68b08c0ea",
+          "continuation_authorized": false,
+          "database_status_changed": false,
+          "model_resumed": false,
+          "outcome": "scope_startup_unconfirmed",
+          "record_sha256": {
+            "attempt_owner.json": "0a0b26028bde934a914843f81525f117d56e3da0df0de2f9618af2ed12702d76",
+            "launch-reserved.json": "86ef8c5dfa344d9329501433fa4cbe7a3b4cd80f35e4a0d7a2232315efeba443"
+          },
+          "run_id": "b20c0236-1957-4265-ac23-078b364c2d33",
+          "server_ownership_checked": false,
+          "signal_sent": false,
+          "stage_id": "6cd5d8f4-67ac-48ac-93ec-d8fe33f94da7",
+          "termination_cause": "unconfirmed"
+        },
+        {
+          "attempt_id": "cf7a4eac-51e5-45e5-a7d4-f4b68b08c0ea",
+          "continuation_authorized": false,
+          "database_status_changed": false,
+          "model_resumed": false,
+          "outcome": "scope_startup_unconfirmed",
+          "record_sha256": {
+            "attempt_owner.json": "0a0b26028bde934a914843f81525f117d56e3da0df0de2f9618af2ed12702d76",
+            "launch-reserved.json": "86ef8c5dfa344d9329501433fa4cbe7a3b4cd80f35e4a0d7a2232315efeba443"
+          },
+          "run_id": "b20c0236-1957-4265-ac23-078b364c2d33",
+          "server_ownership_checked": false,
+          "signal_sent": false,
+          "stage_id": "6cd5d8f4-67ac-48ac-93ec-d8fe33f94da7",
+          "termination_cause": "unconfirmed"
+        }
+      ],
+      "records_unchanged": true,
+      "command_inventory_unchanged": true,
+      "database_state_unchanged": true,
+      "final_outputs_absent": true
+    },
+    "database_observation": null,
+    "registered_artifacts": [
+      "model_package_working_copy",
+      "model_project_working_copy"
+    ],
+    "http_calls": [
+      {
+        "method": "POST",
+        "operation": "/rpc/claim_model_stage_attempt",
+        "status": 200,
+        "body_sha256": "3064d26bbc715518c118e9e3eb4ff4ae1ccb3460c54f846335ce5f726a2799dd"
+      },
+      {
+        "method": "GET",
+        "operation": "/model_run_stages",
+        "status": 200,
+        "body_sha256": null
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "38e1b4a412217206bf6f5f15b64248f90dbd5b0de1a7513940e3be8c6e2e4a09"
+      },
+      {
+        "method": "POST",
+        "operation": "/rpc/write_model_attempt_artifact",
+        "status": 200,
+        "body_sha256": "2192ae70012bf1a6c4d1d0186a6d953b86eec52ed84886c0fda56deb014be866"
+      }
+    ],
+    "stage_remains_running": true,
+    "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
+    "limits": "Full small native assignment with live isolated PostgREST and installed command schema. Synthetic predecessor inventories directly constructed. Lost-commit replay is recorded when selected. No final publication, model restart, scientific acceptance or normal dispatcher activation."
+  },
+  "proof_sha256": {
+    "verify_native_parent_supervisor.py": "d1fcae06ca0b5afff4cb73e86bb0f58b141739a4dd34d56ba498553026fd9ac2",
+    "verify_native_assignment_http.py": "2bbffccb6c5073f5c8f2d89b62eaf055ca082f89a6a4b4831ad305fbb6c641be"
+  },
+  "limits": "Actual supervisor SIGKILL at the declared startup or iteration boundary. Unreleased startup must not execute engine code; iteration loss closes the native project; gateway remains in outer process. No general parent-loss detection during computation, restart, durable reconciliation, UI decision, publication or scientific acceptance."
+}
