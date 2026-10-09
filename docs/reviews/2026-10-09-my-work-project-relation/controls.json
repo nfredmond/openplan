@@ -1,0 +1,60 @@
+{
+  "role": "authenticated synthetic owner",
+  "projection": "id, project_id, gate_id, decision, rationale, decided_at, projects!stage_gate_decisions_project_id_fkey!inner(id, name)",
+  "syntheticDecisionId": "e1409ff4-3cb6-4224-88cc-597f0838c3a5",
+  "cases": [
+    {
+      "case": "fixed",
+      "status": 200,
+      "matched": true,
+      "errorCode": null,
+      "rowCount": 1
+    },
+    {
+      "case": "harmless-space",
+      "status": 200,
+      "matched": true,
+      "errorCode": null,
+      "rowCount": 1
+    },
+    {
+      "case": "ambiguous",
+      "status": 300,
+      "matched": true,
+      "errorCode": "PGRST201",
+      "rowCount": null
+    },
+    {
+      "case": "restored",
+      "status": 200,
+      "matched": true,
+      "errorCode": null,
+      "rowCount": 1
+    }
+  ],
+  "queryControls": [
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "passed": 31,
+      "failed": [],
+      "matched": true
+    },
+    {
+      "case": "ambiguous-embed",
+      "exitCode": 1,
+      "passed": 30,
+      "failed": [
+        "my work \u2014 the union read blocks a project on its LATEST gate decision, not on any hold ever recorded"
+      ],
+      "matched": true
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "passed": 31,
+      "failed": [],
+      "matched": true
+    }
+  ]
+}

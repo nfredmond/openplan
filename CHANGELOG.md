@@ -37,6 +37,11 @@ migrations in order before updating the app and workers. Migration 27 validates
 existing project relationships and takes table locks; schedule a maintenance
 window. The detailed instructions and unfinished boundaries follow.
 
+My Work names the stage-gate decision's original project relationship explicitly.
+This keeps blocked-project reads working after migration 27 adds a second,
+workspace-scoped project foreign key. Permissions and latest-decision rules stay
+unchanged.
+
 Navigation links stay in place during pointer and keyboard focus in short
 desktop windows. Group headings retain their compact spacing rather than moving
 later destinations while a click is in progress.

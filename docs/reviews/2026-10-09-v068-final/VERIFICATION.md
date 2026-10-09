@@ -67,3 +67,13 @@ and integration checks remain separate required evidence.
 No tag is published here. Full v1 remains unfinished, including managed model
 continuation, resumable GTFS workers, full geography and authority coverage,
 independent nationwide scientific acceptance and observed human outcomes.
+
+## Corrected integration join
+
+PR 181 now includes completed nonempty authenticated reads and production-build
+desktop/390px acceptance. Its [verification report](../2026-10-09-my-work-project-relation/VERIFICATION.md)
+retains the native ambiguity control, exact source identity and rendered hold.
+This release-record branch joins that complete history; the single changelog
+conflict preserves both the candidate instructions and the query correction.
+The joined application matches tested source `f76b0516` except for test and
+evidence records. Final combined GitHub results still govern landing and tagging.
