@@ -376,13 +376,22 @@ def assess_frozen_instrument_files(
         raise ContractError("model-output bytes differ from the frozen comparison basis")
     reader = csv.DictReader(io.StringIO(output_bytes.decode("utf-8")))
     fields = reader.fieldnames or []
+    if len(fields) != len(set(fields)):
+        raise ContractError("rules-v5 model output has duplicate column names")
     volume_field = next(
         (field for field in ("PCE_tot", "demand_tot", "volume", "loaded_volume") if field in fields),
         None,
     )
     if volume_field is None or "link_id" not in fields:
         raise ContractError("rules-v5 model output has no supported link-volume fields")
-    volumes = {str(row["link_id"]): float(row[volume_field]) for row in reader}
+    volumes: dict[str, float] = {}
+    for row in reader:
+        identifier = row["link_id"]
+        if not isinstance(identifier, str) or not identifier.strip():
+            raise ContractError("rules-v5 model output has an empty link identity")
+        if identifier in volumes:
+            raise ContractError("rules-v5 model output repeats a link identity")
+        volumes[identifier] = float(row[volume_field])
     return assess_validation(
         package["observations"],
         audit,

@@ -4197,3 +4197,26 @@ These checks establish refusal ordering and declared-size verification. They do
 not establish source validity, complete readiness coverage, independent freezing,
 immutable filesystem custody or scientific acceptance. Empty source lists do not
 prove that a study has all required evidence.
+
+
+### Preserve model-output link identity during CSV ingestion
+
+The file evaluator used a dictionary comprehension that silently retained the
+last value for a repeated link ID. `csv.DictReader` also collapsed duplicate
+column names. Both could change the numerical input to an assessment without
+reporting ambiguous output. The evaluator now refuses duplicate columns,
+repeated link IDs and blank link IDs before calling the assessment function.
+It does not aggregate repeated rows or choose one occurrence. Opaque identities
+remain exact strings, including distinct `001` and `1` values.
+
+Four synthetic file-based tests pass. They verify a valid multi-row CSV with
+extra columns and opaque IDs, equal and unequal repeated values, duplicate
+columns, and empty or whitespace-only identities. Refused inputs never reach
+`assess_validation`. Three targeted guard faults fail their named tests;
+harmless and restored controls pass. See `prototype/output-identity-controls.json`.
+The existing instrument suite and six readiness-record tests pass. Worker CI
+includes the output-identity suite.
+
+This verifies CSV identity integrity, not a complete output schema, quantity
+comparability, source validity or scientific acceptance. No historical model
+outputs or frozen holdouts were opened, rewritten or reassessed.
