@@ -5367,8 +5367,9 @@ def assess_rules_v5_validation_instrument(
 ) -> dict:
     """Use the same rules-v5 evaluator as the controlled development study.
 
-    The normal local worker accepts only a caller-frozen v2 package, audit,
-    bundle, and basis. It verifies every input before opening link-volume bytes.
+    This wrapper has no normal dispatch caller yet. It checks structural audit
+    contents, then delegates file verification to the shared evaluator. It does
+    not establish independent preparation or bind structural sources to a run.
     """
     with open(structural_input_audit_path, encoding="utf-8") as handle:
         structural_input = json.load(handle)

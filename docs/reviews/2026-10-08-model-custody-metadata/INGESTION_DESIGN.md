@@ -111,3 +111,46 @@ recovery against a disposable stack and retain an unchanged earlier assessment.
 Independent AequilibraE and ActivitySim acceptance, representative human use,
 all-state/DC coverage and the remaining contract gates are separate obligations.
 No successful ingestion case closes them.
+
+
+## October 9 connection audit at a0ffd8cb0
+
+The roadmap S1 obligation remains production preparation and ingestion. Recent
+input-bundle, readiness-record and CSV identity checks repair concrete defects
+in shared helpers. They do not supply the missing worker connection.
+
+`main.py:assess_rules_v5_validation_instrument` still has no tracked production
+caller. It opens a caller-supplied structural audit, validates its contents, then
+calls the shared evaluator. Its arguments contain no expected workspace, run,
+method or preparation identity. The structural audit is not passed to that
+evaluator or required as a named bundle readiness artifact. Its source records
+include both logical and stored hashes, including gzip handling; those cannot
+be replaced by a generic path/hash comparison without preserving their meaning.
+
+The next production connection must join these existing pieces in dependency
+order, within S1 rather than as a separate product queue:
+
+1. Retain preparation against the actual admitted run and method before opening
+   output. Bind the structural audit, observation package, pre-volume match audit
+   and input bundle to the selected geography, network, assignment, population
+   and source records. Verify stored and logical bytes under their declared
+   representations. Caller timing flags alone remain insufficient evidence.
+2. Use that retained preparation at the real AequilibraE stage entry. Refuse a
+   mismatched run or method before output access. Preserve the existing honest
+   unassessed path where preparation is absent. Do not enable automatic managed
+   enrollment merely because the ActivitySim admitted-entry fixture passes.
+3. Materialize and upload immutable assessment and diagnosis artifacts, then use
+   `model_attempt_writer.record_instrument` for exact delivery and recovery.
+   That method explicitly does not prepare or grade evidence. Its existence
+   cannot substitute for steps 1 and 2.
+4. Verify native Storage and database records, then the identified-build Models,
+   report, assistant and exported-evidence journeys required above. T3 snapshot
+   failure still prevents complete browser evidence.
+
+Use synthetic transport fixtures for implementation and fault controls. Keep
+real source quality, preparation independence, general quantity comparability,
+untouched geographic acceptance and practitioner observation separate. The
+current diagnostic evaluator does not authorize a nationwide accuracy claim.
+
+This audit changes the next implementation target, not the V1 scope or acceptance
+standard. It does not mark any of the four connection steps complete.
