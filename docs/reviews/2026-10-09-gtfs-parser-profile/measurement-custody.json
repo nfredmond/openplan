@@ -1,0 +1,22 @@
+{
+  "checkoutCommit": "091861d72c866c4ac13c904c0e7d51dda6b58190",
+  "sourceShaMatches": true,
+  "resourceLimits": {
+    "memoryMiB": 768,
+    "swapMiB": 0,
+    "nodeHeapMiB": 512,
+    "cpuQuotaPercent": 100,
+    "runtimeSeconds": 120
+  },
+  "scope": "One actual BART archive, parse only. No database writes, scientific validity, large-feed or worker capacity claim.",
+  "sourceFailures": [
+    {
+      "source": "https://apps.sacrt.com/gtfs/srtd/google_transit.zip",
+      "failure": "TLS certificate expired; verification kept enabled"
+    },
+    {
+      "source": "https://iportal.sacrt.com/GTFS/SRTD/google_transit.zip",
+      "failure": "TLS certificate expired; verification kept enabled"
+    }
+  ]
+}

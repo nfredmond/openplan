@@ -66,7 +66,7 @@ These foundations establish more than API convention, but they do not prove case
 
 AequilibraE and ActivitySim are separate demand methods. Shared networks/assignment and comparison boundaries support disciplined comparison; their results must never be averaged. ActivitySim execution exists. Borrowed behavioral parameters, period/mode representation, distribution, external travel, road loading and nationwide validation remain scientific gaps.
 
-GTFS catalog, upload and refresh ingestion currently runs in a 300-second HTTP request, with durable version/custody state and abandonment cleanup but no resumable worker execution. Move the long work using those existing semantics after representative profiling.
+GTFS catalog, upload and refresh ingestion currently runs in a 300-second HTTP request, with durable version/custody state and abandonment cleanup but no resumable worker execution. Move the long work using those existing semantics after representative profiling. [October 9 parser measurements](reviews/2026-10-09-gtfs-parser-profile/README.md) cover two feeds and one native persistence path; complete-import storage, concurrency and interruption profiling remain open.
 
 General polling workers claim stages in Postgres. County-onramp jobs use a separate attempt/callback lifecycle. OCR and ODM have their own runtime and artifact contracts. Long work belongs in these workers, not in a serverless request. General-run reconciliation currently relies on stage timestamps while independent worker heartbeats live separately; healthy long ActivitySim silence needs explicit fault-tested reconciliation and attempt fencing.
 

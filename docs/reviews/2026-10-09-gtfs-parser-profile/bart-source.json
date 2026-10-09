@@ -1,0 +1,11 @@
+{
+  "downloadedAt": "2026-10-09T14:18:44.255938+00:00",
+  "source": "https://www.bart.gov/dev/schedules/google_transit.zip",
+  "publisherPage": "https://www.bart.gov/schedules/developers/gtfs",
+  "license": "https://www.bart.gov/schedules/developers/developer-license-agreement",
+  "resolvedUrl": "https://www.bart.gov/sites/default/files/2026-08/google_transit_20260810-20270108_v02.zip",
+  "bytes": 892312,
+  "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+  "downloadSeconds": 0.387,
+  "lastModified": "Tue, 04 Aug 2026 18:23:24 GMT"
+}

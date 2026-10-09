@@ -1,0 +1,10 @@
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+const { parseGtfsFeed } = await import(process.cwd() + '/src/lib/gtfs/parse.ts');
+const { resolveGtfsLimits } = await import(process.cwd() + '/src/lib/gtfs/limits.ts');
+const bytes = readFileSync(process.argv[2]);
+const limits = resolveGtfsLimits({});
+const before = performance.now();
+const result = await parseGtfsFeed(bytes, { limits });
+const elapsedMs = performance.now() - before;
+console.log(JSON.stringify({inputSha256:createHash('sha256').update(bytes).digest('hex'),archiveBytes:bytes.length,limits,elapsedMs,processMaxRssKiB:process.resourceUsage().maxRSS,nodeVersion:process.version,ok:result.ok,...(result.ok ? {stats:result.feed.stats,routeCount:result.feed.routes.length,stopCount:result.feed.stops.length,derivedRouteRows:result.feed.routeServiceLevels.length,derivedStopRows:result.feed.stopServiceLevels.length,serviceWindow:result.feed.serviceWindow,warnings:result.feed.warnings} : {code:result.code,detail:result.detail})},null,2));

@@ -1,0 +1,16 @@
+{
+  "openplan/src/lib/gtfs/assistant-summary.ts": "08c2ccf97b00092d0dd8d4827b2892f5d0e599a61c9a6c7007a62e574aab95e1",
+  "openplan/src/lib/gtfs/catalog.ts": "4940bae3aa5e4d5db68cb203e498179eb85c416b6cd3b819d6cc4189f9a92a08",
+  "openplan/src/lib/gtfs/caveats.ts": "86a536768a973aa7ecfef343e59a305546897b63b1271927792064fde67faea4",
+  "openplan/src/lib/gtfs/coverage.ts": "ed6e75d75c818f50e36298d9f70be109aac8f20f8f5a31003c61e8fb59df757e",
+  "openplan/src/lib/gtfs/fetch.ts": "1849622622ee65aabd41b8c9aaaea7c5e145515dcfb34cd803bb145f9ea1292d",
+  "openplan/src/lib/gtfs/ingest.ts": "87ebf0f7d097dabb471abf10fdd6ee73f75f7312bdb3aeeb6f0843b180bda1b0",
+  "openplan/src/lib/gtfs/limits.ts": "7384f5fa65c204262b090a33378579c42cf86e90040b3420a1b7a0ebdf150ae5",
+  "openplan/src/lib/gtfs/parse.ts": "c554b7aba8d4ba27c3041ab9feaec12f6b1f04c5d7c97ad71549b04216322c1c",
+  "openplan/src/lib/gtfs/persist.ts": "95567fd49b2f0f97ca4921d925c58f0e2cf374d89b784a95a0e7a4e212ac58ed",
+  "openplan/src/lib/gtfs/route-projections.ts": "07e9999d049ff57c54d279a0f0c1d6325ea573776e84fce63e3a9d37918cc89c",
+  "openplan/src/lib/gtfs/service-day-groups.ts": "5e88ee5d1906e8312569217c148e1aaebb154210bc445d2c59e6de7945136126",
+  "openplan/src/lib/gtfs/service-levels.ts": "e1f6a81df473ed1a61d63ad440ff94d9c0f5052f14811ffccc4f3ef62c301cd7",
+  "openplan/src/lib/gtfs/types.ts": "9a2ea3797d21f83d7c14420f40a0f0edfa3d2264d8f7d9ec95a43c8a81ef0bae",
+  "openplan/src/lib/gtfs/zip.ts": "81b082b33342f3aad6186efd46e1679e8c018fa19ec7d80d55b567c94a266ab2"
+}
