@@ -44,14 +44,16 @@ if (phase === 'seed') {
     const replaced = await client.storage.from('gtfs-uploads').upload(identity.storagePath, changed, { contentType: 'application/zip', upsert: true });
     assert.equal(replaced.error, null, 'Native corruption fixture failed');
     const mismatch = await readRetainedGtfsArchive(client, identity);
-    assert.deepEqual(mismatch, { ok: false, code: 'archive_mismatch' }, 'Changed archive was accepted');
+    assert.equal(mismatch.ok, false, 'Changed archive was accepted');
+    assert.equal(mismatch.code, 'archive_mismatch');
     const restored = await client.storage.from('gtfs-uploads').upload(identity.storagePath, recovered.bytes, { contentType: 'application/zip', upsert: true });
     assert.equal(restored.error, null, 'Native fixture restoration failed');
     assert.equal((await readRetainedGtfsArchive(client, identity)).ok, true);
     const removed = await client.storage.from('gtfs-uploads').remove([identity.storagePath]);
     assert.equal(removed.error, null);
     const missing = await readRetainedGtfsArchive(client, identity);
-    assert.deepEqual(missing, { ok: false, code: 'archive_unavailable' });
+    assert.equal(missing.ok, false, 'Missing archive was accepted');
+    assert.equal(missing.code, 'archive_unavailable');
     console.log(JSON.stringify({ identity, recoveredAcrossProcesses: true, alteredObjectRefused: true,
       restoredObjectReadable: true, missingObjectUnavailable: true,
       parsedRoutes: parsed.feed.routes.length, parsedStops: parsed.feed.stops.length,

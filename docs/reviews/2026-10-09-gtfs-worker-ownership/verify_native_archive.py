@@ -37,6 +37,7 @@ try:
             return subprocess.run(command + [phase, *extra], cwd=root / 'openplan', env=env,
                                   capture_output=True, text=True, timeout=40)
         for name, code, reason in cases:
+            print('Native archive control: ' + name, file=sys.stderr, flush=True)
             candidate.write_text(code)
             seeded = run('seed', [str(archive)])
             if seeded.returncode:

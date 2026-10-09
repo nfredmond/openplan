@@ -1,0 +1,91 @@
+{
+  "recordedAt": "2026-10-09T20:07:57.978568+00:00",
+  "sourceSha256": "92e712dce8aea3e0332cd06945e67a181d370fd2689c43a442049ce2b680a04e",
+  "trackedSourceUnchanged": true,
+  "nativeStorageRemoved": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "proof": {
+        "identity": {
+          "workspaceId": "eeb33379-2858-4aa2-9dc9-a582ac76e545",
+          "feedId": "a3075a64-0ded-44fd-9197-0853a79bc2c9",
+          "versionId": "538fa832-c8a8-46c0-813a-3585bf672d60",
+          "storagePath": "eeb33379-2858-4aa2-9dc9-a582ac76e545/a3075a64-0ded-44fd-9197-0853a79bc2c9/538fa832-c8a8-46c0-813a-3585bf672d60.zip",
+          "checksumSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+          "byteSize": 892312
+        },
+        "recoveredAcrossProcesses": true,
+        "alteredObjectRefused": true,
+        "restoredObjectReadable": true,
+        "missingObjectUnavailable": true,
+        "parsedRoutes": 14,
+        "parsedStops": 287,
+        "maxRssKiB": 149340
+      }
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "proof": {
+        "identity": {
+          "workspaceId": "fd094cac-eb36-4bf9-81b0-9e8a151a8757",
+          "feedId": "a808eb3a-956d-49c8-9ead-0d783db7c798",
+          "versionId": "b6bfa664-2864-46da-bd0d-053142b7a93e",
+          "storagePath": "fd094cac-eb36-4bf9-81b0-9e8a151a8757/a808eb3a-956d-49c8-9ead-0d783db7c798/b6bfa664-2864-46da-bd0d-053142b7a93e.zip",
+          "checksumSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+          "byteSize": 892312
+        },
+        "recoveredAcrossProcesses": true,
+        "alteredObjectRefused": true,
+        "restoredObjectReadable": true,
+        "missingObjectUnavailable": true,
+        "parsedRoutes": 14,
+        "parsedStops": 287,
+        "maxRssKiB": 149888
+      }
+    },
+    {
+      "case": "ignore-hash",
+      "expectedPass": false,
+      "exitCode": 1,
+      "expectedFailure": "Changed archive was accepted",
+      "proof": null
+    },
+    {
+      "case": "restored",
+      "expectedPass": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "proof": {
+        "identity": {
+          "workspaceId": "c988b2c7-d537-4871-8559-f6d8aec0ed0a",
+          "feedId": "55289a7a-13c5-4bab-a715-12e03ae20e15",
+          "versionId": "26531756-0d22-49a3-97ee-1ba1d150a78c",
+          "storagePath": "c988b2c7-d537-4871-8559-f6d8aec0ed0a/55289a7a-13c5-4bab-a715-12e03ae20e15/26531756-0d22-49a3-97ee-1ba1d150a78c.zip",
+          "checksumSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+          "byteSize": 892312
+        },
+        "recoveredAcrossProcesses": true,
+        "alteredObjectRefused": true,
+        "restoredObjectReadable": true,
+        "missingObjectUnavailable": true,
+        "parsedRoutes": 14,
+        "parsedStops": 287,
+        "maxRssKiB": 151596
+      }
+    }
+  ],
+  "runnerSha256": {
+    "verify_native_archive.py": "e1834cce657520248f5601a8294ca0cccbf7fee746cdecef9efa9c28fc2dca32",
+    "verify_native_archive.mts": "7aa1e36416e6ed5f88eb690904d49e9ccca582862f78de0bc6cd906b9cbaae50"
+  },
+  "serviceMemoryLimitBytes": 1073741824,
+  "serviceMemoryPeakJournal": "172.6M",
+  "storageMemoryLimitBytes": 536870912
+}
