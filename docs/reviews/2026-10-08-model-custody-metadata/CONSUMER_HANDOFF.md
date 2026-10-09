@@ -207,3 +207,25 @@ files, but six named comparison dependencies do not resolve within that folder.
 Publishing a whole directory would not close the gap. An explicit dependency
 catalog must preserve preparation versus execution evidence and refuse unresolved
 roles before streamed publication and recovery can claim a complete archive.
+
+## Shared CI access coverage repair, October 9
+
+GitHub RLS run 37913214040 and restore run 37912318158 both failed the shared
+workspace-table census. Migration 24 made `model_attempt_instrument_custody`
+member-readable, but the dedicated proof remained outside `test:rls-live` and the
+census inventory. The 1,484 passing tests in each run did not cover that omission.
+
+`attempt-instrument-member-read-rls.test.ts` now runs a dedicated native SQL
+fixture through the existing isolated-stack guard. It creates both methods through
+real claim, artifact and instrument commands, then tests member/outsider reads,
+removed membership, parent visibility and private write/receipt grants. The table
+is registered as a dedicated live probe, not added to the excuse list. Both the
+RLS command and restore drill include the new test through `test:rls-live`.
+
+The exact SQL fixture passed on a fresh isolated database clone. A harmless policy
+comment passed. Open access, denied member access, omitted parent checks, a direct
+write grant and a receipt read grant each failed for the intended reason. Results
+and the fixture hash are in `prototype/instrument-rls-census-controls.json`.
+The Vitest stack-resolution wrapper and complete CI suites still require their
+own passing runs. Native role/JWT-sub checks do not prove Auth issuance, REST,
+browser exports or scientific content validity.
