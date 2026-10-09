@@ -1,0 +1,64 @@
+{
+  "source_sha256": "81ec4b7427c942871155588f7d30b2d9e6f9b1ee273a0ba5a3fe04293112d7b4",
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "audit-hash",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "method",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "geography",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "sources",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "stored",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "logical",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "path",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "alias",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "wrapper-bypass",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": [
+    "Actual wrapper with synthetic audit and sources; evaluator replaced by sentinel",
+    "No admitted run preparation, independent timing, filesystem race fence, native Storage or scientific acceptance"
+  ]
+}

@@ -430,3 +430,66 @@ def validate_structural_input_audit(audit: Mapping[str, Any]) -> None:
     if loadable < 0 or structural < 0 or loadable + structural != roadway_total:
         raise StructuralAuditRefused("Roadway loading readiness discarded non-centroid links")
     _assert_assignment_blind(audit)
+
+
+def verify_structural_input_files(
+    audit_path: str | Path, *, root: str | Path, model_output_path: str | Path,
+    expected_audit_sha256: str, expected_method: str,
+    expected_geography: Mapping[str, Any], expected_sources: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Verify retained audit and source bytes without reading assignment output.
+
+    Expectations must come from retained preparation, not this audit itself.
+    This verifies file identity; it does not establish preparation independence.
+    """
+    output = Path(model_output_path)
+
+    def read_input(path: Path) -> bytes:
+        try:
+            aliases = path.resolve() == output.resolve() or path.samefile(output)
+        except FileNotFoundError:
+            aliases = path.resolve() == output.resolve()
+        if aliases:
+            raise StructuralAuditRefused("Structural input aliases model output")
+        try:
+            return path.read_bytes()
+        except OSError as exc:
+            raise StructuralAuditRefused("Structural input is unavailable") from exc
+
+    payload = read_input(Path(audit_path))
+    if hashlib.sha256(payload).hexdigest() != expected_audit_sha256:
+        raise StructuralAuditRefused("Structural audit differs from retained preparation")
+    try:
+        audit = json.loads(payload)
+    except (ValueError, UnicodeError) as exc:
+        raise StructuralAuditRefused("Structural audit is not valid JSON") from exc
+    if not isinstance(audit, dict):
+        raise StructuralAuditRefused("Structural audit must be an object")
+    validate_structural_input_audit(audit)
+    if audit.get("method") != expected_method:
+        raise StructuralAuditRefused("Structural audit method differs from preparation")
+    if not isinstance(expected_geography, Mapping) or not expected_geography or canonical_json(audit.get("geography")) != canonical_json(expected_geography):
+        raise StructuralAuditRefused("Structural audit geography differs from preparation")
+    if not isinstance(expected_sources, Mapping) or not expected_sources or canonical_json(audit["source_hashes"]) != canonical_json(expected_sources):
+        raise StructuralAuditRefused("Structural audit sources differ from preparation")
+    for record in audit["source_hashes"].values():
+        if not isinstance(record, Mapping):
+            raise StructuralAuditRefused("Structural source record is malformed")
+        if any(not isinstance(record.get(key), str) or not record[key].strip()
+               for key in ("path", "stored_path", "sha256", "stored_sha256")) or type(record.get("bytes")) is not int or record["bytes"] < 0:
+            raise StructuralAuditRefused("Structural source record is malformed")
+        stored_path = Path(record["stored_path"])
+        path = stored_path if stored_path.is_absolute() else Path(root) / stored_path
+        stored = read_input(path)
+        if hashlib.sha256(stored).hexdigest() != record["stored_sha256"]:
+            raise StructuralAuditRefused("Structural stored source bytes changed")
+        logical_name = record["stored_path"][:-3] if path.suffix == ".gz" else record["stored_path"]
+        if logical_name != record["path"]:
+            raise StructuralAuditRefused("Structural logical source path differs")
+        try:
+            logical = gzip.decompress(stored) if path.suffix == ".gz" else stored
+        except (OSError, EOFError) as exc:
+            raise StructuralAuditRefused("Structural compressed source is invalid") from exc
+        if len(logical) != record["bytes"] or hashlib.sha256(logical).hexdigest() != record["sha256"]:
+            raise StructuralAuditRefused("Structural logical source bytes changed")
+    return audit

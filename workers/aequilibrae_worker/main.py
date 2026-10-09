@@ -5363,21 +5363,25 @@ def assess_rules_v5_validation_instrument(
     structural_input_audit_path: str,
     link_volumes_csv: str,
     assessment_id: str,
+    expected_structural_audit_sha256: str,
+    expected_method: str,
+    expected_geography: dict,
+    expected_structural_sources: dict,
     readiness_root: str | None = None,
 ) -> dict:
     """Use the same rules-v5 evaluator as the controlled development study.
 
-    This wrapper has no normal dispatch caller yet. It checks structural audit
-    contents, then delegates file verification to the shared evaluator. It does
+    This wrapper has no normal dispatch caller yet. It verifies retained structural audit
+    and source bytes, then delegates assessment to the shared evaluator. It does
     not establish independent preparation or bind structural sources to a run.
     """
-    with open(structural_input_audit_path, encoding="utf-8") as handle:
-        structural_input = json.load(handle)
-    model_structural_input_audit.validate_structural_input_audit(structural_input)
-    if structural_input.get("model_output_bytes_read") is not False:
-        raise model_structural_input_audit.StructuralAuditRefused(
-            "Model output cannot open before the structural input audit passes"
-        )
+    root = readiness_root or os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    model_structural_input_audit.verify_structural_input_files(
+        structural_input_audit_path, root=root, model_output_path=link_volumes_csv,
+        expected_audit_sha256=expected_structural_audit_sha256,
+        expected_method=expected_method, expected_geography=expected_geography,
+        expected_sources=expected_structural_sources,
+    )
     return model_validation_core_v5.assess_frozen_instrument_files(
         observation_package_path=observation_package_path,
         pre_volume_match_audit_path=pre_volume_match_audit_path,
@@ -5385,7 +5389,7 @@ def assess_rules_v5_validation_instrument(
         comparison_basis_path=comparison_basis_path,
         model_output_path=link_volumes_csv,
         assessment_id=assessment_id,
-        readiness_root=readiness_root or os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
+        readiness_root=root,
     )
 
 

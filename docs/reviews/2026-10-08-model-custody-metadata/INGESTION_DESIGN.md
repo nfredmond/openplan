@@ -154,3 +154,30 @@ current diagnostic evaluator does not authorize a nationwide accuracy claim.
 
 This audit changes the next implementation target, not the V1 scope or acceptance
 standard. It does not mark any of the four connection steps complete.
+
+
+### Structural source verification implemented after the audit
+
+The existing worker wrapper now requires expected structural-audit hash, method,
+geography and source records. `verify_structural_input_files` compares those
+expectations, validates audit contents, and verifies every recorded source. It
+checks stored bytes separately from logical bytes, preserving the producer's
+`.gz` representation and logical filename. The audit and source files cannot
+alias the supplied model-output file. The wrapper calls the evaluator only
+after these checks pass.
+
+Fourteen synthetic tests traverse the actual wrapper with the assessment
+function replaced by a sentinel. Valid compressed and plain sources pass. Wrong
+audit hash, method, geography, source records, stored bytes, logical hash or size,
+logical path, output alias, malformed record, unavailable file and already-read
+output flags are refused. Eight targeted verifier faults and a wrapper-bypass
+fault fail; harmless and restored verifier controls pass. Evidence is retained
+in `prototype/structural-preparation-controls.json`.
+
+The required expectations have no automatic admitted-run producer yet. They
+must not be derived from the audit being checked. Comparison-basis/run bindings,
+complete required source coverage, immutable preparation custody and independent
+timing remain unfinished. Files can still change after verification; this is
+not a filesystem race fence. The tests do not execute an engine, native Storage
+or a scientific acceptance assessment. The four production connection steps
+above remain open.
