@@ -138,3 +138,14 @@ function. No route or worker is enrolled. The 83-case combined native record and
 advisor comparison identify this checkpoint; earlier records remain historical.
 Failure/cancellation/cleanup, queue/read commands, committed concurrency/recovery,
 worker integration, upgrade/restore and actual browser review remain unfinished.
+
+## Worker failure and member cancellation
+
+[The termination checkpoint](TERMINATION.md) adds owned worker failure and current
+member cancellation, exact terminal receipts, atomic partial-row removal and
+prepared-object cleanup scheduling. The current feed is preserved. One hundred
+combined native controls and the advisor comparison identify this candidate.
+The worker still must settle or reconcile in-flight Storage writes before cleanup
+can be considered complete. No route or worker is connected. Queue/read commands,
+worker journals, lease renewal, committed recovery/contention, upgrade/restore and
+T3 browser evidence remain required before enrollment or merge.

@@ -19,6 +19,7 @@ checks = (Path(__file__).parent / 'admission-checks.sql').read_text()
 checks += '\n' + (Path(__file__).parent / 'batch-checks.sql').read_text()
 checks += '\n' + (Path(__file__).parent / 'completion-checks.sql').read_text()
 checks += '\n' + (Path(__file__).parent / 'adoption-checks.sql').read_text()
+checks += '\n' + (Path(__file__).parent / 'terminal-checks.sql').read_text()
 results = []
 
 
@@ -121,6 +122,23 @@ cases = [
     ('adoption-client-execution', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.adopt_gtfs_ingest(uuid,uuid,uuid,uuid,jsonb) TO anon;\nCOMMIT;'), 'client called adoption'),
     ('adoption-current-rewrite', mutation('ELSIF feed.current_version_id=p_version THEN', 'ELSIF false THEN'), 'current adoption changed timestamp'),
     ('adoption-destructive-replay', source.replace('SELECT * INTO saved FROM openplan_gtfs.adoption_receipts WHERE command_id=p_command;', 'SELECT * INTO saved FROM openplan_gtfs.adoption_receipts WHERE false;').replace('VALUES(p_command,p_workspace,p_actor,p_version,hash,result);', 'VALUES(p_command,p_workspace,p_actor,p_version,hash,result) ON CONFLICT(command_id) DO UPDATE SET response=excluded.response;'), 'adoption replay changed receipt'),
+    ('terminal-reason', mutation("OR p_detail IS NULL OR length(btrim(p_detail))=0 OR length(p_detail)>2000 THEN", 'OR p_detail IS NULL THEN'), 'invalid terminal reason accepted'),
+    ('terminal-code', mutation("OR p_code IS NULL OR p_code NOT IN ('too_large','not_a_zip','ambiguous_archive','missing_required_file',\n    'no_usable_stops','no_usable_service','fetch_failed','fetch_timed_out','host_not_allowed',\n    'catalog_unavailable','catalog_entry_requires_key','catalog_entry_deprecated','partial_write','abandoned')", 'OR p_code IS NULL'), 'unknown terminal failure code accepted'),
+    ('terminal-actor', remove_guard('GTFS terminal write access is unavailable'), 'viewer cancelled import'),
+    ('terminal-scope', remove_guard('GTFS terminal version is unavailable'), 'foreign workspace cancelled import'),
+    ('terminal-readiness', remove_guard('GTFS terminal command requires an unfinished managed import'), 'GTFS terminal closure was refused'),
+    ('terminal-ownership', remove_guard('GTFS failure requires current worker ownership'), 'wrong worker closed import'),
+    ('terminal-payload', remove_guard('GTFS terminal command payload changed'), 'changed terminal payload accepted'),
+    ('terminal-prepared-archive', mutation("object_path:=coalesce(v.storage_path,j.archive_identity->>'path');", 'object_path:=v.storage_path;'), 'terminal cleanup or feed receipt incorrect'),
+    ('terminal-state', mutation('SET state=p_kind,token=NULL,lease_until=NULL,prepared_token=NULL WHERE version_id=p_version;', 'SET token=NULL,lease_until=NULL,prepared_token=NULL WHERE version_id=p_version;'), 'terminal private state incorrect'),
+    ('terminal-context-transaction', mutation("WHERE c.transaction_id=txid_current() AND c.version_id=old_version AND c.kind='termination' AND c.operation='DELETE'", "WHERE c.version_id=old_version AND c.kind='termination' AND c.operation='DELETE'"), 'invalid terminal context authorized derived mutation'),
+    ('terminal-context-version', mutation("WHERE c.transaction_id=txid_current() AND c.version_id=old_version AND c.kind='termination' AND c.operation='DELETE'", "WHERE c.transaction_id=txid_current() AND c.kind='termination' AND c.operation='DELETE'"), 'invalid terminal context authorized derived mutation'),
+    ('terminal-context-kind', mutation("WHERE c.transaction_id=txid_current() AND c.version_id=old_version AND c.kind='termination' AND c.operation='DELETE'", "WHERE c.transaction_id=txid_current() AND c.version_id=old_version AND c.operation='DELETE'"), 'invalid terminal context authorized derived mutation'),
+    ('terminal-context-operation', mutation("WHERE c.transaction_id=txid_current() AND c.version_id=old_version AND c.kind='termination' AND c.operation='DELETE'", "WHERE c.transaction_id=txid_current() AND c.version_id=old_version AND c.kind='termination'"), 'invalid terminal context authorized derived mutation'),
+    ('terminal-context-delete-only', mutation("IF TG_OP='DELETE' AND EXISTS(SELECT 1 FROM openplan_gtfs.write_context c", 'IF EXISTS(SELECT 1 FROM openplan_gtfs.write_context c'), 'invalid terminal context authorized derived mutation'),
+    ('terminal-cancel-client', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.cancel_gtfs_ingest(uuid,uuid,uuid,uuid,text) TO anon;\nCOMMIT;'), 'client called cancellation'),
+    ('terminal-failure-client', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.fail_gtfs_ingest(uuid,uuid,uuid,text,text) TO anon;\nCOMMIT;'), 'client called failure'),
+    ('terminal-closure-result', remove_guard('GTFS terminal closure was refused'), 'refused closure recorded terminal success'),
     ('restored', source, None),
 ]
 

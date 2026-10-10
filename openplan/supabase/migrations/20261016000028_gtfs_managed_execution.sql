@@ -749,6 +749,103 @@ END $$;
 REVOKE ALL ON FUNCTION public.adopt_gtfs_ingest(uuid,uuid,uuid,uuid,jsonb) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.adopt_gtfs_ingest(uuid,uuid,uuid,uuid,jsonb) TO service_role;
 
+-- Terminal decisions survive individual feed deletion, like admission/adoption.
+CREATE TABLE openplan_gtfs.terminal_receipts (
+ command_id uuid PRIMARY KEY,
+ workspace_id uuid NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
+ version_id uuid NOT NULL,
+ actor_id uuid NOT NULL,
+ payload_hash text NOT NULL,
+ response jsonb NOT NULL,
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp()
+);
+CREATE INDEX gtfs_terminal_receipts_workspace ON openplan_gtfs.terminal_receipts(workspace_id);
+CREATE INDEX gtfs_terminal_receipts_version ON openplan_gtfs.terminal_receipts(version_id);
+ALTER TABLE openplan_gtfs.terminal_receipts ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON openplan_gtfs.terminal_receipts FROM PUBLIC,anon,authenticated,service_role;
+
+-- Failure belongs to an active worker. Cancellation belongs to a current
+-- workspace writer, including a different writer when the submitter is revoked.
+CREATE FUNCTION openplan_gtfs.terminate_ingest(p_workspace uuid,p_version uuid,p_command uuid,p_actor uuid,
+ p_token uuid,p_kind text,p_code text,p_detail text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE saved openplan_gtfs.terminal_receipts%ROWTYPE; v public.gtfs_feed_versions%ROWTYPE;
+ j openplan_gtfs.executions%ROWTYPE; s openplan_gtfs.submissions%ROWTYPE;
+ hash text; result jsonb; closure jsonb; target_feed uuid; object_path text;
+BEGIN
+ IF p_workspace IS NULL OR p_version IS NULL OR p_command IS NULL OR p_actor IS NULL
+  OR p_kind IS NULL OR p_kind NOT IN ('failed','cancelled')
+  OR (p_kind='failed' AND p_token IS NULL) OR (p_kind='cancelled' AND p_token IS NOT NULL)
+  OR p_code IS NULL OR p_code NOT IN ('too_large','not_a_zip','ambiguous_archive','missing_required_file',
+    'no_usable_stops','no_usable_service','fetch_failed','fetch_timed_out','host_not_allowed',
+    'catalog_unavailable','catalog_entry_requires_key','catalog_entry_deprecated','partial_write','abandoned')
+  OR p_detail IS NULL OR length(btrim(p_detail))=0 OR length(p_detail)>2000 THEN
+  RAISE EXCEPTION 'Invalid GTFS terminal command' USING ERRCODE='22023';
+ END IF;
+ IF openplan_gtfs.actor_can_write(p_workspace,p_actor) IS NOT TRUE THEN
+  RAISE EXCEPTION 'GTFS terminal write access is unavailable' USING ERRCODE='42501';
+ END IF;
+ PERFORM pg_advisory_xact_lock(hashtextextended('gtfs-terminal:'||p_command::text,0));
+ hash:=encode(extensions.digest(jsonb_build_object('workspace',p_workspace,'version',p_version,'actor',p_actor,
+  'token',p_token,'kind',p_kind,'code',p_code,'detail',p_detail)::text,'sha256'),'hex');
+ SELECT * INTO saved FROM openplan_gtfs.terminal_receipts WHERE command_id=p_command;
+ IF FOUND THEN
+  IF saved.payload_hash IS DISTINCT FROM hash THEN
+   RAISE EXCEPTION 'GTFS terminal command payload changed' USING ERRCODE='22023';
+  END IF;
+  RETURN saved.response;
+ END IF;
+ SELECT feed_id INTO target_feed FROM public.gtfs_feed_versions WHERE id=p_version AND workspace_id=p_workspace;
+ IF NOT FOUND THEN
+  RAISE EXCEPTION 'GTFS terminal version is unavailable' USING ERRCODE='42501';
+ END IF;
+ PERFORM 1 FROM public.gtfs_feeds WHERE id=target_feed AND workspace_id=p_workspace FOR UPDATE;
+ SELECT * INTO v FROM public.gtfs_feed_versions WHERE id=p_version AND workspace_id=p_workspace FOR UPDATE;
+ SELECT * INTO j FROM openplan_gtfs.executions WHERE version_id=p_version FOR UPDATE;
+ IF NOT FOUND OR j.state NOT IN ('awaiting_archive','queued','running')
+  OR v.status NOT IN ('pending','fetching','parsing') OR v.is_current
+  OR v.ingest_closed_at IS NOT NULL OR v.ingest_abandoned_at IS NOT NULL
+  OR EXISTS(SELECT 1 FROM public.gtfs_feeds WHERE id=target_feed AND current_version_id=p_version) THEN
+  RAISE EXCEPTION 'GTFS terminal command requires an unfinished managed import' USING ERRCODE='55000';
+ END IF;
+ SELECT * INTO s FROM openplan_gtfs.submissions WHERE request_id=j.request_id;
+ IF p_kind='failed' AND (s.actor_id IS DISTINCT FROM p_actor OR openplan_gtfs.owns_attempt(p_version,p_token) IS NOT TRUE) THEN
+  RAISE EXCEPTION 'GTFS failure requires current worker ownership' USING ERRCODE='55000';
+ END IF;
+ -- An upload may have reached Storage before its confirmation reply. Include
+ -- the prepared deterministic key so cancellation can reconcile that object too.
+ object_path:=coalesce(v.storage_path,j.archive_identity->>'path');
+ INSERT INTO openplan_gtfs.write_context VALUES(txid_current(),p_version,'version','UPDATE',p_token);
+ INSERT INTO openplan_gtfs.write_context VALUES(txid_current(),p_version,'termination','DELETE',p_token);
+ closure:=public.close_failed_gtfs_version(p_version,p_code,p_detail,object_path);
+ IF closure->>'recorded' IS DISTINCT FROM 'true' THEN
+  RAISE EXCEPTION 'GTFS terminal closure was refused' USING ERRCODE='55000';
+ END IF;
+ DELETE FROM openplan_gtfs.write_context WHERE transaction_id=txid_current() AND version_id=p_version;
+ UPDATE openplan_gtfs.executions SET state=p_kind,token=NULL,lease_until=NULL,prepared_token=NULL WHERE version_id=p_version;
+ result:=jsonb_build_object('command',p_command,'version',p_version,'state',p_kind,'closure',closure,
+  'cleanupPending',object_path IS NOT NULL,'closedAt',(SELECT ingest_closed_at FROM public.gtfs_feed_versions WHERE id=p_version));
+ INSERT INTO openplan_gtfs.terminal_receipts(command_id,workspace_id,version_id,actor_id,payload_hash,response)
+ VALUES(p_command,p_workspace,p_version,p_actor,hash,result);
+ RETURN result;
+END $$;
+
+CREATE FUNCTION public.fail_gtfs_ingest(p_version uuid,p_token uuid,p_command uuid,p_code text,p_detail text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE s openplan_gtfs.submissions%ROWTYPE;
+BEGIN
+ SELECT * INTO s FROM openplan_gtfs.submissions WHERE version_id=p_version;
+ IF NOT FOUND THEN RAISE EXCEPTION 'GTFS failure submission is unavailable' USING ERRCODE='42501'; END IF;
+ RETURN openplan_gtfs.terminate_ingest(s.workspace_id,p_version,p_command,s.actor_id,p_token,'failed',p_code,p_detail);
+END $$;
+CREATE FUNCTION public.cancel_gtfs_ingest(p_workspace uuid,p_version uuid,p_command uuid,p_actor uuid,p_reason text)
+RETURNS jsonb LANGUAGE sql SECURITY DEFINER SET search_path='' AS $$
+ SELECT openplan_gtfs.terminate_ingest(p_workspace,p_version,p_command,p_actor,NULL,'cancelled','abandoned',p_reason);
+$$;
+REVOKE ALL ON FUNCTION public.fail_gtfs_ingest(uuid,uuid,uuid,text,text),public.cancel_gtfs_ingest(uuid,uuid,uuid,uuid,text)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.fail_gtfs_ingest(uuid,uuid,uuid,text,text),public.cancel_gtfs_ingest(uuid,uuid,uuid,uuid,text) TO service_role;
+
 -- Lifecycle commands will populate this private transaction context. Until
 -- they are connected, enrollment refuses every legacy mutation of managed work.
 CREATE FUNCTION openplan_gtfs.guard_version() RETURNS trigger
@@ -779,6 +876,10 @@ BEGIN
     JOIN public.workspaces w ON w.id=v.workspace_id WHERE v.id=coalesce(old_version,new_version)) THEN
     row_kind:=CASE TG_TABLE_NAME WHEN 'gtfs_route_service_levels' THEN 'route'
       WHEN 'gtfs_stop_service_levels' THEN 'stop' WHEN 'gtfs_tract_service' THEN 'tract' END;
+    IF TG_OP='DELETE' AND EXISTS(SELECT 1 FROM openplan_gtfs.write_context c
+      WHERE c.transaction_id=txid_current() AND c.version_id=old_version AND c.kind='termination' AND c.operation='DELETE') THEN
+      RETURN OLD;
+    END IF;
     IF TG_OP='UPDATE' OR NOT EXISTS(SELECT 1 FROM openplan_gtfs.write_context c
       JOIN openplan_gtfs.executions j ON j.version_id=c.version_id AND j.token=c.token
       WHERE c.transaction_id=txid_current() AND c.version_id=coalesce(new_version,old_version)

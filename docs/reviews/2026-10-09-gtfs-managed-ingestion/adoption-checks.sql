@@ -1,6 +1,6 @@
 -- Synthetic completed imports use the actual managed commands. This helper and
 -- every fixture exist only inside the enclosing rollback transaction.
-CREATE FUNCTION pg_temp.ready_gtfs(p_workspace uuid,p_actor uuid,p_feed uuid,p_routes integer,p_stops integer)
+CREATE FUNCTION pg_temp.ready_gtfs(p_workspace uuid,p_actor uuid,p_feed uuid,p_routes integer,p_stops integer,p_finish boolean DEFAULT true)
 RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE admitted jsonb; receipt jsonb; version uuid; feed uuid; token uuid:=gen_random_uuid();
  tract_command uuid:=gen_random_uuid(); archive jsonb; plan jsonb; manifest jsonb; rows jsonb; metadata jsonb;
@@ -29,6 +29,9 @@ BEGIN
  PERFORM public.compute_managed_gtfs_tracts(version,token,tract_command,plan,manifest);
  metadata:=jsonb_build_object('agency_count',1,'route_count',p_routes,'stop_count',p_stops,'trip_count',p_routes,
   'stop_time_row_count',p_stops,'calendar_service_count',1,'frequency_trip_count',0,'scheduled_trip_count',p_routes,'parse_warnings','[]'::jsonb);
+ IF NOT p_finish THEN
+  RETURN admitted||jsonb_build_object('token',token,'archive',archive,'plan',plan,'manifest',manifest);
+ END IF;
  PERFORM public.complete_gtfs_ingest(version,token,gen_random_uuid(),archive,plan,manifest,metadata,tract_command);
  RETURN admitted;
 END $$;
