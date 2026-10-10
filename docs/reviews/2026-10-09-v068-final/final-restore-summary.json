@@ -1,0 +1,34 @@
+{
+  "head": "283c206991bd205ae5284adfa81d14e85e02a1dc",
+  "run": 37999548040,
+  "artifact": 11649986446,
+  "manifestSha256": "61381390fe0948576dab7171c44794f90ba1699fc77b97d279ae2e8e82c58386",
+  "scope": "Default local CLI database and Storage; no external workers, custom roles or scheduled SQL jobs",
+  "bootstrapPreserved": true,
+  "tableCount": 360,
+  "rowCount": 9254,
+  "storageObjects": 1,
+  "storageBytes": 38,
+  "owpSourceTargetEqual": true,
+  "owpRecordSha256": "5735ce69d5967d127f86687309f3055a1eb0ab51ae79e40e22bdc2f264adc194",
+  "owpValues": {
+    "priorUnpaidClaim": "3.00",
+    "successorClaimRequest": "8.00",
+    "refundRemaining": "1.00",
+    "outstandingCommitment": "15.00",
+    "incurredAcrossCycles": "20.35",
+    "physicalEntries": 5,
+    "originalCarryover": "20.00",
+    "currentCarryover": "19.00",
+    "overlappingCycles": true,
+    "oldPeriodClosed": true
+  },
+  "mutations": {
+    "harmless": 3,
+    "targetedFailures": 42
+  },
+  "archiveSha256": {
+    "postgres.dump": "404ba80e4644e1adbb59e5549f7634e12f9adc0ab415b9c9c88e3db54f7d7f95",
+    "storage.tgz": "722604e1ad612e7ac07f4a9d42d40197726daaed0c87bbf60abce3ae4cc0043a"
+  }
+}
