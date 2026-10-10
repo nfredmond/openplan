@@ -97,6 +97,14 @@ In the browser, three problems showed up that the sweep had not listed:
   would have written into the shared database. Tests and mutation checks cover
   it.
 
+- **The embed is the map.** `/embed/<token>` now renders the same map-first
+  shell, so the version most residents meet on an agency's own site is no
+  longer the weaker one. Checked inside an iframe on a local host page at 1280
+  and 390 px wide: comments, `?item=` links, search and the rail all work, and
+  the door opens a new tab. (A host page on `about:blank` or a public origin
+  cannot frame a loopback dev server; Chrome's Private Network Access rule, not
+  OpenPlan, blocked those two attempts.)
+
 ## How it was checked
 
 - Browser, dev server on port 3530 from this worktree (base `565cd983`),

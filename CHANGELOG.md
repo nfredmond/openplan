@@ -39,6 +39,11 @@ published response to it and its approved replies. On the about page, each
 "We did" entry lists the comments it answers, each linking to that comment on
 the map in the reader's language.
 
+**Embed.** The `/embed/<token>` widget agencies place in an iframe now serves
+the same map-first surface as `/engage/<token>`, instead of the older tabbed
+page with a small inline map. Its one link out opens in a new tab, because the
+pages behind it refuse to be framed. Existing embed snippets need no change.
+
 **Fixed.** Tapping someone else's pin to read it also moved the resident's own
 mark onto that pin. A tap on a pin or a line now opens the comment and marks
 nothing. A tap on empty map still marks.

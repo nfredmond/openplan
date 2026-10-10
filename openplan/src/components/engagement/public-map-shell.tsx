@@ -78,6 +78,7 @@ export function PublicMapShell({
   campaignTitle,
   campaignDescription,
   detailsHref,
+  detailsTarget,
   detailsContents,
   mapAvailable,
   placeSearchAvailable = false,
@@ -85,6 +86,7 @@ export function PublicMapShell({
   defaultBasemapId = null,
   languageChrome = null,
   accessibilityNotice = null,
+  railFooter = null,
   previewMode = false,
 }: {
   shareToken: string;
@@ -102,6 +104,8 @@ export function PublicMapShell({
   campaignDescription: PortalText | null;
   /** The one way onward. A path, resolved by the route, with the language kept on it. */
   detailsHref: string;
+  /** "_blank" inside the embed iframe, where the about page refuses to be framed. */
+  detailsTarget?: "_blank";
   /**
    * WHAT IS ACTUALLY BEHIND THE ONE DOOR, so its label can say so.
    *
@@ -138,6 +142,8 @@ export function PublicMapShell({
    * server-side from the campaign's own record.
    */
   accessibilityNotice?: ReactNode;
+  /** Last in the rail: the embed's attribution. */
+  railFooter?: ReactNode;
   previewMode?: boolean;
 }) {
   const translator = useMemo(() => createPortalTranslator(messages), [messages]);
@@ -513,6 +519,7 @@ export function PublicMapShell({
             {accessibilityNotice}
           </div>
         ) : null}
+        {railFooter ? <div className="px-5 pb-4">{railFooter}</div> : null}
     </div>
   );
 
@@ -524,6 +531,8 @@ export function PublicMapShell({
   const railDoor = (
       <a
         href={detailsHref}
+        target={detailsTarget}
+        rel={detailsTarget ? "noopener noreferrer" : undefined}
         data-testid="portal-details-link"
         className="flex min-h-14 shrink-0 items-center justify-between gap-3 border-t border-border/60 bg-background px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
