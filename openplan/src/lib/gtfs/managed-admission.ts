@@ -27,6 +27,7 @@ const scopeSchema = z.object({ workspaceId: id, actorId: id, requestId: id }).st
 const resolvedSchema = z.object({ feedId: id.nullable(), source: sourceSchema }).strict();
 const bindingSchema = scopeSchema.extend({ schemaVersion: z.literal(1), target: z.string(), installationId: id, intent: z.json() }).strict();
 const savedSchema = z.object({ binding: bindingSchema, resolved: resolvedSchema.nullable(), archive: bytesSchema.nullable(), response: responseSchema.nullable() }).strict();
+export type GtfsSavedSubmission = z.infer<typeof savedSchema>;
 
 export type GtfsAdmissionSource = z.infer<typeof sourceSchema>;
 export type GtfsAdmissionResponse = z.infer<typeof responseSchema>;
@@ -57,6 +58,15 @@ function checkedSource(raw: unknown) {
     requireMatch(source.kind !== "catalog" || !!source.catalogSourceId?.trim(), "GTFS admission catalog identity missing");
   }
   return source;
+}
+
+/** Read private retained intent for unattended recovery. This record grants no
+ * write authority; recovery must recheck the original actor before admission.
+ */
+export async function readGtfsSavedSubmission(directory: string): Promise<GtfsSavedSubmission> {
+  const saved = savedSchema.parse(await readPrivateJson(join(directory, "pending.json"), 65536));
+  if (saved.resolved) checkedSource(saved.resolved.source);
+  return saved;
 }
 
 /** Admission creates the existing feed/version identity. A receipt alone does

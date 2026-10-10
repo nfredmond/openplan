@@ -187,6 +187,18 @@ export async function readGtfsStatus(service: GtfsWorkerService, scope: { worksp
   }, signal), expected);
 }
 
+/** A missing committed submission remains unconfirmed. It never proves that a
+ * retained client request failed or that a workspace has no transit service.
+ */
+export async function readGtfsSubmissionStatus(service: GtfsWorkerService, scope: { workspaceId: string; requestId: string; actorId: string }, signal: AbortSignal) {
+  const expected = { workspaceId: id.parse(scope.workspaceId), requestId: id.parse(scope.requestId), actorId: id.parse(scope.actorId) };
+  const raw = await call(service, "read_gtfs_submission_status", { p_workspace: expected.workspaceId, p_request: expected.requestId, p_actor: expected.actorId }, signal);
+  if (raw === null) return null;
+  const result = verifyGtfsStatus(raw, { workspaceId: expected.workspaceId, versionId: statusSchema.parse(raw).versionId });
+  requireMatch(result.requestId === expected.requestId, "GTFS submission status request differs");
+  return result;
+}
+
 export function verifyGtfsArchive(raw: unknown, scope: GtfsArchiveScope): GtfsArchiveIdentity {
   const archive = archiveSchema.parse(raw);
   const path = `${id.parse(scope.workspaceId)}/${id.parse(scope.feedId)}/${id.parse(scope.versionId)}.zip`;

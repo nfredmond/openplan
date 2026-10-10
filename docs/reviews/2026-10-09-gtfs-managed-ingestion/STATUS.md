@@ -359,3 +359,18 @@ Older first-page and submission-helper paragraphs remain historical. Routes,
 retained-submission polling, planner progress/recovery/adoption, full restore,
 capacity, role and browser journeys remain unfinished. Draft route helpers and
 migration 29 are outside this verified checkpoint. Nothing is merged or released.
+
+## October 10: retained submission polling and managed API candidates
+
+[Managed enrollment](ENROLLMENT.md) connects opt-in URL/catalog/ZIP/refresh API
+paths, request status/recovery and submission polling before worker discovery.
+Native polling survives six interruptions without client ZIP resupply or mutable
+source resolution. Member status remains separate from unconfirmed/unavailable
+results. Final enrollment, submission, queue and native role controls preserve
+their intended outcomes; linked regression and scoped TypeScript/lint pass.
+
+The planner panel remains disconnected. Uncommitted requests still need durable
+cancellation reservations. Human completion review/adoption and retained browser
+request handling are separate drafts. Candidate migrations 28 and 29 are not
+released; draft migration 30 is excluded from this checkpoint. Full worker CLI,
+upgrade/restore, capacity, live application roles and T3 journeys remain open.

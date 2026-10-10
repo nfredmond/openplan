@@ -210,6 +210,28 @@ describe("managed GTFS queue", () => {
     expect(await runGtfsQueueService({ ...f.options, once: true, report, reportError })).toBe("pass_complete");
     expect(report).toHaveBeenCalledWith({ outcomes: [], pendingCount: 0, candidateCount: 0 }); expect(reportError).not.toHaveBeenCalled();
   });
+  it("recovers submissions before queue discovery and preserves unconfirmed handoffs in once status", async () => {
+    const f = await fixture(); f.candidates.clear(); const report = vi.fn(), recoverSubmissions = vi.fn(async () => {
+      expect(f.events).toEqual([]); return { pendingCount: 2 };
+    });
+    expect(await runGtfsQueueService({ ...f.options, once: true, report, reportError: vi.fn(), recoverSubmissions })).toBe("unconfirmed");
+    expect(recoverSubmissions).toHaveBeenCalledTimes(1); expect(report).toHaveBeenCalledWith({ outcomes: [], pendingCount: 2, candidateCount: 0 });
+  });
+  it("keeps unavailable submission inventory distinct from a known zero pending count", async () => {
+    const f = await fixture(); f.candidates.clear(); const report = vi.fn();
+    expect(await runGtfsQueueService({ ...f.options, once: true, report, reportError: vi.fn(), recoverSubmissions: async () => ({ pendingCount: 0, unavailable: true }) })).toBe("unconfirmed");
+    expect(report).toHaveBeenCalledWith({ outcomes: [], pendingCount: 0, candidateCount: 0, submissionRecoveryUnavailable: true });
+  });
+  it("refuses invalid submission pending counts before queue discovery", async () => {
+    const f = await fixture(), report = vi.fn(), reportError = vi.fn();
+    expect(await runGtfsQueueService({ ...f.options, once: true, report, reportError, recoverSubmissions: async () => ({ pendingCount: -1 }) })).toBe("error");
+    expect(f.events).toEqual([]); expect(reportError).toHaveBeenCalledTimes(1); expect(report).not.toHaveBeenCalled();
+  });
+  it("stops after interrupted submission recovery before queue discovery", async () => {
+    const f = await fixture(), report = vi.fn(), reportError = vi.fn();
+    expect(await runGtfsQueueService({ ...f.options, once: true, report, reportError, recoverSubmissions: async () => { f.controller.abort(); return { pendingCount: 0 }; } })).toBe("stopped");
+    expect(f.events).toEqual([]); expect(report).not.toHaveBeenCalled(); expect(reportError).not.toHaveBeenCalled();
+  });
   it("polling exits on a stop requested after its report", async () => {
     const f = await fixture(); f.candidates.clear(); const report = vi.fn(() => f.controller.abort());
     expect(await runGtfsQueueService({ ...f.options, once: false, report, reportError: vi.fn() })).toBe("stopped"); expect(report).toHaveBeenCalledTimes(1);

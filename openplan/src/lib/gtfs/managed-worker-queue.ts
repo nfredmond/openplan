@@ -179,12 +179,19 @@ export function gtfsQueueOptions(argv: string[], env: Partial<NodeJS.ProcessEnv>
  */
 export async function runGtfsQueueService(options: GtfsQueueOptions & { once: boolean;
   report: (pass: Awaited<ReturnType<typeof runGtfsQueuePass>>) => void; reportError: () => void;
+  recoverSubmissions?: () => Promise<{ pendingCount: number; unavailable?: boolean }>;
 }) {
   while (!options.signal.aborted) {
     let pause = 2000;
     try {
-      const result = await runGtfsQueuePass(options); options.signal.throwIfAborted(); options.report(result);
-      if (options.once) return result.pendingCount > 0 ? "unconfirmed" as const : "pass_complete" as const;
+      const submission = options.recoverSubmissions ? await options.recoverSubmissions() : { pendingCount: 0 };
+      const pending = z.number().int().nonnegative().safe().parse(submission.pendingCount);
+      const unavailable = z.boolean().parse(submission.unavailable ?? false);
+      options.signal.throwIfAborted();
+      const queue = await runGtfsQueuePass(options);
+      const result = { ...queue, ...(unavailable ? { submissionRecoveryUnavailable: true } : {}) }; result.pendingCount += pending;
+      options.signal.throwIfAborted(); options.report(result);
+      if (options.once) return result.pendingCount > 0 || unavailable ? "unconfirmed" as const : "pass_complete" as const;
       if (result.pendingCount > 0) pause = 5000;
     } catch {
       if (options.signal.aborted) return "stopped" as const;

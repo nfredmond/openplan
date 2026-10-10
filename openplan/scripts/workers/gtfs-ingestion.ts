@@ -1,5 +1,7 @@
 import { createServiceRoleClient } from "../../src/lib/supabase/server";
 import { gtfsQueueOptions, runGtfsQueueService } from "../../src/lib/gtfs/managed-worker-queue";
+import { runGtfsSubmissionRecoveryPass } from "../../src/lib/gtfs/managed-submission-recovery";
+import { authorizeManagedGtfsSubmission, resolveManagedGtfsSubmission } from "../../src/lib/gtfs/managed-source";
 
 async function main() {
   const options = gtfsQueueOptions(process.argv.slice(2), process.env);
@@ -10,8 +12,23 @@ async function main() {
   const stopping = new AbortController(), stop = () => stopping.abort();
   process.on("SIGINT", stop); process.on("SIGTERM", stop);
   try {
-    const status = await runGtfsQueueService({ ...options, service: createServiceRoleClient(),
+    const service = createServiceRoleClient();
+    const status = await runGtfsQueueService({ ...options, service,
       serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "", signal: stopping.signal, batchSize: 100,
+      recoverSubmissions: async () => {
+        try {
+          const pass = await runGtfsSubmissionRecoveryPass({ ...options, directory: `${options.directory}-submissions`, service,
+            serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "", signal: stopping.signal, env: process.env,
+            authorize: (saved, signal) => authorizeManagedGtfsSubmission(service, saved, signal),
+            resolve: (saved, archive) => resolveManagedGtfsSubmission(service, saved.binding.intent, archive) });
+          console.log(`Transit submissions: ${pass.outcomes.filter(item => item.state === "handed_off").length} handed to processing; ${pass.pendingCount} retained submissions unconfirmed. Handoff does not establish processing completion or adoption.`);
+          return pass;
+        } catch {
+          stopping.signal.throwIfAborted();
+          console.error("Transit submission recovery is unavailable. Retain its private files. Previously enrolled worker jobs can still be considered.");
+          return { pendingCount: 0, unavailable: true };
+        }
+      },
       parser: { maxOutputBytes: 128 * 1024 * 1024, maxOldSpaceMb: 768, renewEveryMs: 30_000,
         renewTimeoutMs: 10_000, maxRuntimeMs: 30 * 60_000, terminationGraceMs: 1000 },
       report: pass => console.log(`Transit pass: ${pass.outcomes.filter(item => ["finished", "recovered_terminal", "observed_terminal"].includes(item.state)).length} terminal observations; ${pass.pendingCount} retained jobs unconfirmed or awaiting another pass. This is not full queue completion or adoption.`),

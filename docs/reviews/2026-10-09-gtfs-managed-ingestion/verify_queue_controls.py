@@ -37,7 +37,7 @@ variants = [
     ('queue-relative', change('isAbsolute(options.directory)', 'true'), 'relative queue directories'),
     ('shutdown-signal', change('signal,\n          work:', 'signal: new AbortController().signal,\n          work:'), 'shutdown cancels active work'),
     ('installation-lock', change('const lock = await acquireConnectorLock(directory), ending = new AbortController();', 'await privateConnectorDirectory(directory);\n  const lock = { signal: new AbortController().signal, release: async () => {} }, ending = new AbortController();'), 'second process'),
-    ('once-status', change('if (options.once) return result.pendingCount > 0 ? "unconfirmed" as const : "pass_complete" as const;', 'if (options.once) return "unconfirmed" as const;'), 'successful --once pass'),
+    ('once-status', change('if (options.once) return result.pendingCount > 0 || unavailable ? "unconfirmed" as const : "pass_complete" as const;', 'if (options.once) return "unconfirmed" as const;'), 'successful --once pass'),
     ('poll-stop', change('if (options.signal.aborted) return "stopped" as const;', 'if (options.signal.aborted) return "error" as const;'), 'polling exits'),
     ('error-report', change('options.reportError(); if (options.once)', 'if (options.once)'), 'queue transport errors'),
     ('diagnostic-drop', change('options.onUnconfirmed?.(versionId, error);', '// Drop the private diagnostic.'), 'optional error diagnostics'),
@@ -49,6 +49,10 @@ variants = [
     ('installation-config', change('id.parse(env.OPENPLAN_GTFS_INSTALLATION_ID)', 'String(env.OPENPLAN_GTFS_INSTALLATION_ID)'), 'invalid installation configuration'),
     ('build-config', change('z.string().regex(/^[a-f0-9]{40,64}$/).parse(env.OPENPLAN_GTFS_PARSER_BUILD)', 'String(env.OPENPLAN_GTFS_PARSER_BUILD)'), 'invalid build configuration'),
     ('cli-help-creds', change('  const options = gtfsQueueOptions(process.argv.slice(2), process.env);', '  createServiceRoleClient();\n  const options = gtfsQueueOptions(process.argv.slice(2), process.env);', 1), 'CLI prints help'),
+    ('submission-hook', change('options.recoverSubmissions ? await options.recoverSubmissions() : { pendingCount: 0 }', '{ pendingCount: 0 }'), 'recovers submissions before queue discovery'),
+    ('submission-pending', change('result.pendingCount += pending;', '// Drop unconfirmed submissions.'), 'recovers submissions before queue discovery'),
+    ('submission-bound', change('const pending = z.number().int().nonnegative().safe().parse(submission.pendingCount);', 'const pending = submission.pendingCount;'), 'invalid submission pending counts'),
+    ('submission-unavailable', change('const unavailable = z.boolean().parse(submission.unavailable ?? false);', 'const unavailable = false;'), 'unavailable submission inventory'),
     ('restored', originals, None),
 ]
 records = []

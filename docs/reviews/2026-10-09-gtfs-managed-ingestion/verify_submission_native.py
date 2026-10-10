@@ -46,7 +46,7 @@ with storage(config) as native,gateway('public',database=config['database'],subj
    run('seed');run('interrupt-'+boundary)
    identity=json.loads((directory/'identity.json').read_text());request=identity['requestId']
    interrupted=json.loads((directory/'interrupted.json').read_text());assert interrupted['resolutions']==1
-   if kind=='upload':assert hashlib.sha256((directory/'submission/archive.zip').read_bytes()).hexdigest()==hashlib.sha256(archive.read_bytes()).hexdigest(),'Private bytes differ at interruption'
+   if kind=='upload':assert hashlib.sha256((directory/'submissions'/request/'archive.zip').read_bytes()).hexdigest()==hashlib.sha256(archive.read_bytes()).hexdigest(),'Private bytes differ at interruption'
    before=int(sql(f"SELECT count(*) FROM openplan_gtfs.submissions WHERE request_id='{request}';"));assert before==(0 if boundary=='local' else 1)
    resumed=run('resume-'+boundary);retained=run('retained')
    assert resumed['registration']==retained['registration'],'Replay changed admission identity'
@@ -54,7 +54,7 @@ with storage(config) as native,gateway('public',database=config['database'],subj
    version=resumed['registration']['versionId']
    state=json.loads(sql(f"SELECT jsonb_build_object('status',v.status,'current',v.is_current,'state',j.state,'archiveConfirmed',j.archive_available,'routes',(SELECT count(*) FROM public.gtfs_route_service_levels WHERE feed_version_id=v.id),'stops',(SELECT count(*) FROM public.gtfs_stop_service_levels WHERE feed_version_id=v.id),'completion',(SELECT count(*) FROM openplan_gtfs.completion_receipts WHERE version_id=v.id)) FROM public.gtfs_feed_versions v JOIN openplan_gtfs.executions j ON j.version_id=v.id WHERE v.id='{version}';"))
    assert state==({'status':'ready','state':'ready','current':False,'archiveConfirmed':True,'routes':95,'stops':717,'completion':1} if kind=='upload' else {'status':'pending','state':'queued','current':False,'archiveConfirmed':False,'routes':0,'stops':0,'completion':0}),'Native submission state differs'
-   saved=json.loads((directory/'submission/pending.json').read_text());args={'p_request':request,'p_workspace':workspace,'p_actor':actor,'p_feed':saved['resolved']['feedId'],'p_source':saved['resolved']['source']}
+   saved=json.loads((directory/'submissions'/request/'pending.json').read_text());args={'p_request':request,'p_workspace':workspace,'p_actor':actor,'p_feed':saved['resolved']['feedId'],'p_source':saved['resolved']['source']}
    sql(f"UPDATE public.workspace_members SET role='viewer' WHERE workspace_id='{workspace}' AND user_id='{actor}';")
    try:
     denied=requests.post(rest['url']+'/rpc/admit_gtfs_ingest',headers={'Authorization':'Bearer '+rest['service_token']},json=args,timeout=10);assert denied.status_code==403 and denied.json().get('code')=='42501','Retained admission bypassed current original-actor access'
@@ -67,5 +67,5 @@ with storage(config) as native,gateway('public',database=config['database'],subj
    if identity.get('versionId'):paths.append(f'{workspace}/{identity["feedId"]}/{identity["versionId"]}.zip')
   if paths:
    deleted=requests.delete(native['url']+'/object/gtfs-uploads',headers={'Authorization':'Bearer '+native['token']},json={'prefixes':paths},timeout=10);assert deleted.status_code==200,'Synthetic object cleanup failed'
-summary={'records':records,'sourceSha256':{str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [root/'openplan/src/lib/gtfs/managed-admission.ts',root/'openplan/src/lib/gtfs/managed-worker-queue.ts',root/'openplan/src/lib/gtfs/managed-worker-service.ts',migration,here/'verify_submission_native.mts',Path(__file__).resolve()]},'boundary':'Native PostgreSQL/PostgREST/Storage, retained ZIP process recovery and full ZIP parser publication. URL/catalog prove saved resolution and identity only. No application route, actual catalog request, public network, full CLI upgrade/restore, capacity, adoption or browser acceptance.'}
+summary={'records':records,'sourceSha256':{str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [root/'openplan/src/lib/gtfs/managed-submission-recovery.ts',root/'openplan/src/lib/gtfs/managed-source.ts',root/'openplan/src/lib/gtfs/managed-admission.ts',root/'openplan/src/lib/gtfs/managed-worker-queue.ts',root/'openplan/src/lib/gtfs/managed-worker-service.ts',migration,here/'verify_submission_native.mts',Path(__file__).resolve()]},'boundary':'Native PostgreSQL/PostgREST/Storage, retained ZIP process recovery and full ZIP parser publication. URL/catalog prove saved resolution and identity only. No application route, actual catalog request, public network, full CLI upgrade/restore, capacity, adoption or browser acceptance.'}
 (out/'result.json').write_text(json.dumps(summary,indent=2)+'\n')

@@ -4,6 +4,9 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { join, basename } from "node:path";
 import { createRequire } from "node:module";
 import { admitGtfsSubmission } from "../../../openplan/src/lib/gtfs/managed-admission.ts";
+import { runGtfsSubmissionRecoveryPass } from "../../../openplan/src/lib/gtfs/managed-submission-recovery.ts";
+import { authorizeManagedGtfsSubmission } from "../../../openplan/src/lib/gtfs/managed-source.ts";
+import { readGtfsStatus } from "../../../openplan/src/lib/gtfs/managed-worker-service.ts";
 import { runGtfsQueuePass } from "../../../openplan/src/lib/gtfs/managed-worker-queue.ts";
 
 const require = createRequire(process.cwd() + "/package.json");
@@ -47,7 +50,7 @@ const transport: typeof fetch = async (input, init) => {
   return response;
 };
 const service = createClient(restUrl, process.env.OPENPLAN_PROOF_HTTP_TOKEN!, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: transport } });
-const result = await admitGtfsSubmission({ ...identity, directory: join(directory, "submission"), target: restUrl,
+const options = { ...identity, directory: join(directory, "submissions", identity.requestId), target: restUrl,
   intent: { source: kind, name: basename(directory) }, signal: new AbortController().signal, service, serviceKey: process.env.OPENPLAN_PROOF_HTTP_TOKEN!, storageFetch: transport,
   upload: kind === "upload" && mode.startsWith("interrupt-") ? bytes : undefined, env: {},
   resolve: async archive => {
@@ -56,7 +59,18 @@ const result = await admitGtfsSubmission({ ...identity, directory: join(director
     const sourceUrl = `https://example.invalid/${identity.requestId}.zip`;
     return { feedId: null, source: { kind: kind as "url" | "catalog", provisionalName: "Synthetic native URL/catalog submission", sourceUrl, normalizedSourceUrl: sourceUrl,
       ...(kind === "catalog" ? { catalogProvider: "Synthetic catalog", catalogSourceId: identity.requestId, catalogRowStatus: "active" } : {}) } };
-  } });
+  } } satisfies Parameters<typeof admitGtfsSubmission>[0];
+let handoff = null;
+let result;
+if (mode.startsWith("resume-")) {
+  handoff = await runGtfsSubmissionRecoveryPass({ ...options, directory: join(directory, "submissions"),
+    authorize: (saved, signal) => authorizeManagedGtfsSubmission(service, saved, signal), resolve: (_saved, archive) => options.resolve(archive), maxJobs: 1 });
+  assert.deepEqual(handoff.outcomes, [{requestId: identity.requestId, state: "handed_off"}]); assert.equal(handoff.pendingCount, 0);
+  const saved = JSON.parse(await readFile(join(options.directory, "pending.json"), "utf8"));
+  result = { registration: saved.response, status: await readGtfsStatus(service, { workspaceId: identity.workspaceId, actorId: identity.actorId, versionId: saved.response.versionId }, options.signal) };
+  const retained = await runGtfsSubmissionRecoveryPass({ ...options, directory: join(directory, "submissions"), authorize: async () => { throw new Error("Handed off history should be skipped"); }, resolve: () => { throw new Error("Retained metadata should be skipped"); } });
+  assert.deepEqual(retained, { outcomes: [], pendingCount: 0 });
+} else result = await admitGtfsSubmission(options);
 assert.equal(result.registration.requestId, identity.requestId); assert.equal(result.registration.versionId, identity.versionId);
 assert.equal(resolutions, 0, "Fresh process did not reuse retained resolution");
 assert.equal(result.status.archiveConfirmed, kind === "upload");
@@ -69,4 +83,4 @@ if (kind === "upload" && mode !== "retained") {
     parser: { maxOutputBytes: 32 * 1024 * 1024, maxOldSpaceMb: 384, renewEveryMs: 100, renewTimeoutMs: 1000, maxRuntimeMs: 30_000, terminationGraceMs: 200 } });
   assert.deepEqual(queue.outcomes, [{ versionId: identity.versionId, state: "finished" }]); assert.equal(queue.pendingCount, 0); publication = queue;
 }
-console.log(JSON.stringify({ mode, kind, registration: result.registration, state: result.status.state, uploads, resolutions, calls, publication, maxRssKiB: process.resourceUsage().maxRSS }));
+console.log(JSON.stringify({ mode, kind, registration: result.registration, state: result.status.state, uploads, resolutions, calls, handoff, publication, maxRssKiB: process.resourceUsage().maxRSS }));
