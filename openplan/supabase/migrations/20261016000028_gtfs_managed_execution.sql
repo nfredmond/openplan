@@ -846,6 +846,83 @@ REVOKE ALL ON FUNCTION public.fail_gtfs_ingest(uuid,uuid,uuid,text,text),public.
  FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.fail_gtfs_ingest(uuid,uuid,uuid,text,text),public.cancel_gtfs_ingest(uuid,uuid,uuid,uuid,text) TO service_role;
 
+-- Queue reads are hints. The claim transaction alone assigns worker ownership.
+CREATE FUNCTION public.list_gtfs_ingest_candidates(p_limit integer DEFAULT 10)
+RETURNS TABLE(version_id uuid) LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+BEGIN
+ IF p_limit IS NULL OR p_limit NOT BETWEEN 1 AND 100 THEN
+  RAISE EXCEPTION 'GTFS queue limit must be between 1 and 100' USING ERRCODE='22023';
+ END IF;
+ RETURN QUERY
+ SELECT v.id FROM openplan_gtfs.executions j
+ JOIN openplan_gtfs.submissions s ON s.request_id=j.request_id
+ JOIN public.gtfs_feed_versions v ON v.id=j.version_id AND v.workspace_id=s.workspace_id
+ WHERE (j.state='queued' OR (j.state='running' AND j.lease_until<=clock_timestamp()))
+  AND v.status IN ('pending','fetching','parsing') AND v.ingest_closed_at IS NULL AND v.ingest_abandoned_at IS NULL
+  AND EXISTS(SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=s.workspace_id
+    AND m.user_id=s.actor_id AND m.role IN ('owner','admin','member'))
+ ORDER BY s.created_at,v.id LIMIT p_limit;
+END $$;
+
+-- Retained tokens can inspect their own historical claim and preparation.
+-- No response exposes the replacement worker's token or changes a lease.
+CREATE FUNCTION public.read_gtfs_ingest_attempt(p_version uuid,p_token uuid)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE v public.gtfs_feed_versions%ROWTYPE; j openplan_gtfs.executions%ROWTYPE;
+ s openplan_gtfs.submissions%ROWTYPE; claim openplan_gtfs.claims%ROWTYPE; output_plan jsonb;
+BEGIN
+ SELECT * INTO v FROM public.gtfs_feed_versions WHERE id=p_version FOR UPDATE;
+ SELECT * INTO j FROM openplan_gtfs.executions WHERE version_id=p_version FOR UPDATE;
+ IF NOT FOUND THEN
+  RAISE EXCEPTION 'GTFS attempt is unavailable' USING ERRCODE='42501';
+ END IF;
+ SELECT * INTO s FROM openplan_gtfs.submissions WHERE request_id=j.request_id;
+ IF openplan_gtfs.actor_can_write(s.workspace_id,s.actor_id) IS NOT TRUE THEN
+  RAISE EXCEPTION 'GTFS attempt read access is unavailable' USING ERRCODE='42501';
+ END IF;
+ SELECT * INTO claim FROM openplan_gtfs.claims WHERE token=p_token AND version_id=p_version;
+ IF NOT FOUND THEN
+  RAISE EXCEPTION 'GTFS attempt read requires its retained claim' USING ERRCODE='42501';
+ END IF;
+ SELECT plan INTO output_plan FROM openplan_gtfs.prepare_receipts WHERE token=p_token AND version_id=p_version;
+ RETURN jsonb_build_object('schemaVersion',1,'versionId',v.id,'feedId',v.feed_id,'workspaceId',v.workspace_id,
+  'requestId',s.request_id,'state',j.state,'stage',v.status,'attempts',j.attempt,'claim',to_jsonb(claim),
+  'active',openplan_gtfs.owns_attempt(p_version,p_token),'prepared',coalesce(j.prepared_token=p_token,false),
+  'source',s.payload->'source','archive',j.archive_identity,'archiveConfirmed',j.archive_available,
+  'plan',output_plan,'tract',(SELECT response FROM openplan_gtfs.tract_receipts WHERE token=p_token AND version_id=p_version),
+  'completion',(SELECT response FROM openplan_gtfs.completion_receipts WHERE token=p_token AND version_id=p_version));
+END $$;
+
+-- A trusted route binds p_actor to the session. Members may inspect progress;
+-- worker tokens, prepared object identity and submitted source arguments stay private.
+CREATE FUNCTION public.read_gtfs_ingest_status(p_workspace uuid,p_version uuid,p_actor uuid)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE result jsonb;
+BEGIN
+ PERFORM 1 FROM public.workspace_members WHERE workspace_id=p_workspace AND user_id=p_actor FOR SHARE;
+ IF NOT FOUND THEN
+  RAISE EXCEPTION 'GTFS status read access is unavailable' USING ERRCODE='42501';
+ END IF;
+ SELECT jsonb_build_object('schemaVersion',1,'requestId',s.request_id,'versionId',v.id,'feedId',v.feed_id,
+  'workspaceId',v.workspace_id,'state',j.state,'stage',v.status,'attempts',j.attempt,'leaseUntil',j.lease_until,
+  'archiveConfirmed',j.archive_available,'submittedAt',s.created_at,'isCurrent',v.is_current,
+  'failureCode',v.failure_code,'failureDetail',v.failure_detail,
+  'submitterAccessUnavailable',j.state IN ('awaiting_archive','queued','running') AND NOT EXISTS(
+    SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=s.workspace_id AND m.user_id=s.actor_id
+      AND m.role IN ('owner','admin','member')))
+ INTO result FROM openplan_gtfs.executions j JOIN openplan_gtfs.submissions s ON s.request_id=j.request_id
+ JOIN public.gtfs_feed_versions v ON v.id=j.version_id AND v.workspace_id=s.workspace_id
+ WHERE v.id=p_version AND v.workspace_id=p_workspace;
+ IF result IS NULL THEN
+  RAISE EXCEPTION 'GTFS status version is unavailable' USING ERRCODE='42501';
+ END IF;
+ RETURN result;
+END $$;
+REVOKE ALL ON FUNCTION public.list_gtfs_ingest_candidates(integer),public.read_gtfs_ingest_attempt(uuid,uuid),
+ public.read_gtfs_ingest_status(uuid,uuid,uuid) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.list_gtfs_ingest_candidates(integer),public.read_gtfs_ingest_attempt(uuid,uuid),
+ public.read_gtfs_ingest_status(uuid,uuid,uuid) TO service_role;
+
 -- Lifecycle commands will populate this private transaction context. Until
 -- they are connected, enrollment refuses every legacy mutation of managed work.
 CREATE FUNCTION openplan_gtfs.guard_version() RETURNS trigger

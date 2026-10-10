@@ -20,6 +20,7 @@ checks += '\n' + (Path(__file__).parent / 'batch-checks.sql').read_text()
 checks += '\n' + (Path(__file__).parent / 'completion-checks.sql').read_text()
 checks += '\n' + (Path(__file__).parent / 'adoption-checks.sql').read_text()
 checks += '\n' + (Path(__file__).parent / 'terminal-checks.sql').read_text()
+checks += '\n' + (Path(__file__).parent / 'read-checks.sql').read_text()
 results = []
 
 
@@ -109,7 +110,7 @@ cases = [
     ('adoption-identity', remove_guard('GTFS adoption requires its complete identity'), 'GTFS adoption write access is unavailable'),
     ('adoption-actor', remove_guard('GTFS adoption write access is unavailable'), 'viewer adopted feed'),
     ('adoption-payload', remove_guard('GTFS adoption command payload changed'), 'changed adoption command accepted'),
-    ('adoption-version-scope', mutation('v.id=p_version AND v.workspace_id=p_workspace;', 'v.id=p_version;'), 'GTFS adoption feed is unavailable'),
+    ('adoption-version-scope', mutation('SELECT v.feed_id INTO target_feed_id FROM public.gtfs_feed_versions v WHERE v.id=p_version AND v.workspace_id=p_workspace;', 'SELECT v.feed_id INTO target_feed_id FROM public.gtfs_feed_versions v WHERE v.id=p_version;'), 'GTFS adoption feed is unavailable'),
     ('adoption-ready', remove_guard('GTFS adoption requires a ready version'), 'Managed GTFS adoption requires its completion receipt'),
     ('adoption-completion', remove_guard('Managed GTFS adoption requires its completion receipt'), 'managed version without completion adopted'),
     ('adoption-current-evidence', remove_guard('GTFS current feed evidence is inconsistent'), 'inconsistent current feed accepted'),
@@ -139,6 +140,26 @@ cases = [
     ('terminal-cancel-client', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.cancel_gtfs_ingest(uuid,uuid,uuid,uuid,text) TO anon;\nCOMMIT;'), 'client called cancellation'),
     ('terminal-failure-client', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.fail_gtfs_ingest(uuid,uuid,uuid,text,text) TO anon;\nCOMMIT;'), 'client called failure'),
     ('terminal-closure-result', remove_guard('GTFS terminal closure was refused'), 'refused closure recorded terminal success'),
+    ('queue-bound-validation', remove_guard('GTFS queue limit must be between 1 and 100'), 'invalid queue bound accepted'),
+    ('queue-limit', mutation('ORDER BY s.created_at,v.id LIMIT p_limit;', 'ORDER BY s.created_at,v.id;'), 'queue bound ignored'),
+    ('queue-live-lease', mutation("(j.state='running' AND j.lease_until<=clock_timestamp())", "j.state='running'"), 'queue selected ineligible or out-of-order work'),
+    ('queue-public-stage', mutation("AND v.status IN ('pending','fetching','parsing') AND v.ingest_closed_at IS NULL AND v.ingest_abandoned_at IS NULL", 'AND v.ingest_closed_at IS NULL AND v.ingest_abandoned_at IS NULL'), 'queue selected publicly closed work'),
+    ('queue-closed', mutation("AND v.status IN ('pending','fetching','parsing') AND v.ingest_closed_at IS NULL AND v.ingest_abandoned_at IS NULL", "AND v.status IN ('pending','fetching','parsing') AND v.ingest_abandoned_at IS NULL"), 'queue selected publicly closed work'),
+    ('queue-abandoned', mutation("AND v.status IN ('pending','fetching','parsing') AND v.ingest_closed_at IS NULL AND v.ingest_abandoned_at IS NULL", "AND v.status IN ('pending','fetching','parsing') AND v.ingest_closed_at IS NULL"), 'queue selected publicly closed work'),
+    ('queue-revoked-submitter', mutation("AND EXISTS(SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=s.workspace_id\n    AND m.user_id=s.actor_id AND m.role IN ('owner','admin','member'))", 'AND true'), 'queue selected ineligible or out-of-order work'),
+    ('attempt-read-actor', remove_guard('GTFS attempt read access is unavailable'), 'revoked submitter read attempt'),
+    ('attempt-read-claim', remove_guard('GTFS attempt read requires its retained claim'), 'foreign claim read attempt'),
+    ('attempt-read-scope', mutation('SELECT * INTO claim FROM openplan_gtfs.claims WHERE token=p_token AND version_id=p_version;', 'SELECT * INTO claim FROM openplan_gtfs.claims WHERE token=p_token;'), 'foreign claim read attempt'),
+    ('attempt-replacement-token', mutation("'attempts',j.attempt,'claim',to_jsonb(claim),", "'attempts',j.attempt,'claim',to_jsonb(claim)||jsonb_build_object('token',j.token),"), 'old attempt snapshot exposed replacement or lost history'),
+    ('attempt-plan-scope', mutation("SELECT plan INTO output_plan FROM openplan_gtfs.prepare_receipts WHERE token=p_token AND version_id=p_version;\n RETURN jsonb_build_object('schemaVersion',1,'versionId',v.id", "SELECT plan INTO output_plan FROM openplan_gtfs.prepare_receipts WHERE version_id=p_version;\n RETURN jsonb_build_object('schemaVersion',1,'versionId',v.id"), 'replacement borrowed old preparation'),
+    ('status-read-membership', remove_guard('GTFS status read access is unavailable'), 'nonmember read status'),
+    ('status-read-workspace', mutation("WHERE v.id=p_version AND v.workspace_id=p_workspace;\n IF result IS NULL THEN", "WHERE v.id=p_version;\n IF result IS NULL THEN"), 'foreign workspace read status'),
+    ('status-worker-secret', mutation("'archiveConfirmed',j.archive_available,'submittedAt',s.created_at", "'archiveConfirmed',j.archive_available,'workerToken',j.token,'submittedAt',s.created_at"), 'member status exposed worker secrets'),
+    ('status-revoked-submitter', mutation("'submitterAccessUnavailable',j.state IN ('awaiting_archive','queued','running') AND NOT EXISTS(", "'submitterAccessUnavailable',false AND NOT EXISTS("), 'revoked submitter hidden in member status'),
+    ('queue-client-read', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.list_gtfs_ingest_candidates(integer) TO anon;\nCOMMIT;'), 'client called queue'),
+    ('attempt-client-read', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.read_gtfs_ingest_attempt(uuid,uuid) TO anon;\nCOMMIT;'), 'client called attempt read'),
+    ('status-client-read', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.read_gtfs_ingest_status(uuid,uuid,uuid) TO anon;\nCOMMIT;'), 'client called status read'),
+    ('queue-awaiting-archive', mutation("WHERE (j.state='queued' OR (j.state='running' AND j.lease_until<=clock_timestamp()))", "WHERE (j.state IN ('queued','awaiting_archive') OR (j.state='running' AND j.lease_until<=clock_timestamp()))"), 'queue selected ineligible or out-of-order work'),
     ('restored', source, None),
 ]
 

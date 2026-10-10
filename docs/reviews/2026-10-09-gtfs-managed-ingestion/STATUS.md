@@ -149,3 +149,13 @@ The worker still must settle or reconcile in-flight Storage writes before cleanu
 can be considered complete. No route or worker is connected. Queue/read commands,
 worker journals, lease renewal, committed recovery/contention, upgrade/restore and
 T3 browser evidence remain required before enrollment or merge.
+
+## Worker queue and scoped reads
+
+[The read checkpoint](READS.md) adds a bounded candidate queue, retained-claim
+attempt reads and member status reads without worker tokens or private source
+arguments. The 120-case combined native record and advisor comparison identify
+this candidate. Queue results do not grant ownership, and reads do not renew
+leases. Worker response validation, durable journals, actual polling/renewal,
+Storage reconciliation, route integration and committed recovery/contention still
+remain. No managed import route is enabled.
