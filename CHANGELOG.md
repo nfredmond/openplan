@@ -20,7 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes are recorded here.
+Transit import cleanup retains deletion keys so it can remove uploads that
+finish after cancellation, abandonment or feed/workspace deletion. Recurring
+cleanup preserves open imports, ready feeds and files without recorded deletion
+authority. Apply candidate migration `20261016000028` before running this app
+code. The managed import worker remains under development; existing import
+routes are not yet connected to it. This is not a released version.
 
 ## 0.68.0 (2026-10-09)
 

@@ -1139,4 +1139,119 @@ BEGIN
 END $$;
 -- End legacy feed lock order
 
+-- Begin recurring archive retirement
+-- A successful Storage removal does not fence an already authorized upload.
+-- Keep deletion authority independently of versions, workspaces and queue acks.
+CREATE TABLE openplan_gtfs.retired_archives (
+ version_id uuid PRIMARY KEY,
+ storage_path text NOT NULL UNIQUE,
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ last_selected_at timestamptz
+);
+ALTER TABLE openplan_gtfs.retired_archives ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON openplan_gtfs.retired_archives FROM PUBLIC,anon,authenticated,service_role;
+CREATE INDEX gtfs_retired_archive_rotation ON openplan_gtfs.retired_archives
+ (last_selected_at ASC NULLS FIRST,version_id);
+
+CREATE FUNCTION openplan_gtfs.remember_retired_archive(p_version uuid,p_path text)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE v public.gtfs_feed_versions%ROWTYPE; saved_path text;
+BEGIN
+ IF p_version IS NULL OR p_path IS NULL OR p_path !~
+  '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.zip$'
+  OR split_part(p_path,'/',3)<>p_version::text||'.zip' THEN
+  RAISE EXCEPTION 'Invalid retired GTFS archive identity' USING ERRCODE='22023';
+ END IF;
+ SELECT * INTO v FROM public.gtfs_feed_versions WHERE id=p_version;
+ IF FOUND AND p_path<>v.workspace_id::text||'/'||v.feed_id::text||'/'||v.id::text||'.zip' THEN
+  RAISE EXCEPTION 'Retired GTFS archive scope differs' USING ERRCODE='22023';
+ END IF;
+ INSERT INTO openplan_gtfs.retired_archives(version_id,storage_path) VALUES(p_version,p_path)
+ ON CONFLICT(version_id) DO NOTHING;
+ SELECT storage_path INTO saved_path FROM openplan_gtfs.retired_archives WHERE version_id=p_version;
+ IF saved_path IS DISTINCT FROM p_path THEN
+  RAISE EXCEPTION 'Retired GTFS archive identity changed' USING ERRCODE='22023';
+ END IF;
+END $$;
+
+CREATE FUNCTION openplan_gtfs.remember_archive_cleanup() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+BEGIN
+ PERFORM openplan_gtfs.remember_retired_archive(NEW.version_id,NEW.storage_path);
+ RETURN NEW;
+END $$;
+CREATE TRIGGER gtfs_remember_archive_cleanup BEFORE INSERT OR UPDATE ON public.gtfs_ingest_storage_cleanup
+FOR EACH ROW EXECUTE FUNCTION openplan_gtfs.remember_archive_cleanup();
+
+-- Legacy uploads can still be in flight before storage_path reaches the row.
+CREATE FUNCTION openplan_gtfs.retire_closed_archive() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+BEGIN
+ IF NEW.status='failed' AND (NEW.ingest_closed_at IS NOT NULL OR NEW.ingest_abandoned_at IS NOT NULL) THEN
+  PERFORM openplan_gtfs.remember_retired_archive(NEW.id,
+   coalesce(NEW.storage_path,NEW.workspace_id::text||'/'||NEW.feed_id::text||'/'||NEW.id::text||'.zip'));
+ END IF;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER gtfs_retire_closed_archive AFTER INSERT OR UPDATE ON public.gtfs_feed_versions
+FOR EACH ROW EXECUTE FUNCTION openplan_gtfs.retire_closed_archive();
+
+CREATE FUNCTION openplan_gtfs.retire_deleted_archive() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE object_path text;
+BEGIN
+ object_path:=coalesce(OLD.storage_path,OLD.workspace_id::text||'/'||OLD.feed_id::text||'/'||OLD.id::text||'.zip');
+ PERFORM openplan_gtfs.remember_retired_archive(OLD.id,object_path);
+ INSERT INTO public.gtfs_ingest_storage_cleanup(version_id,storage_path) VALUES(OLD.id,object_path)
+ ON CONFLICT(version_id) DO NOTHING;
+ RETURN OLD;
+END $$;
+CREATE TRIGGER gtfs_retire_archive_before_delete BEFORE DELETE ON public.gtfs_feed_versions
+FOR EACH ROW EXECUTE FUNCTION openplan_gtfs.retire_deleted_archive();
+
+-- Recover known requests and closed versions whose old queue entry was removed.
+-- Unknown bucket keys are not deletion authority and are never swept by pattern.
+DO $$
+DECLARE r record;
+BEGIN
+ FOR r IN SELECT version_id,storage_path FROM public.gtfs_ingest_storage_cleanup LOOP
+  PERFORM openplan_gtfs.remember_retired_archive(r.version_id,r.storage_path);
+ END LOOP;
+ FOR r IN SELECT id,coalesce(storage_path,workspace_id::text||'/'||feed_id::text||'/'||id::text||'.zip') AS path
+  FROM public.gtfs_feed_versions WHERE status='failed' AND (ingest_closed_at IS NOT NULL OR ingest_abandoned_at IS NOT NULL) LOOP
+  PERFORM openplan_gtfs.remember_retired_archive(r.id,r.path);
+ END LOOP;
+END $$;
+
+CREATE FUNCTION public.reconcile_gtfs_storage_cleanup(p_limit integer DEFAULT 200)
+RETURNS TABLE(version_id uuid,storage_path text)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE r record;
+BEGIN
+ IF p_limit IS NULL OR p_limit NOT BETWEEN 1 AND 200 THEN
+  RAISE EXCEPTION 'GTFS archive reconciliation requires a bounded page' USING ERRCODE='22023';
+ END IF;
+ FOR r IN SELECT a.version_id,a.storage_path FROM openplan_gtfs.retired_archives a
+  ORDER BY a.last_selected_at ASC NULLS FIRST,a.version_id LIMIT p_limit FOR UPDATE SKIP LOCKED LOOP
+  -- Selection, not successful deletion. A crash before API work is retried on a
+  -- later rotation. Rotation prevents permanently failing keys starving others.
+  UPDATE openplan_gtfs.retired_archives a SET last_selected_at=clock_timestamp() WHERE a.version_id=r.version_id;
+  IF EXISTS(SELECT 1 FROM public.gtfs_feed_versions v WHERE v.id=r.version_id AND
+    (v.status<>'failed' OR (v.ingest_closed_at IS NULL AND v.ingest_abandoned_at IS NULL)))
+    OR EXISTS(SELECT 1 FROM public.gtfs_feeds f WHERE f.current_version_id=r.version_id) THEN
+   CONTINUE;
+  END IF;
+  IF EXISTS(SELECT 1 FROM storage.objects o WHERE o.bucket_id='gtfs-uploads' AND o.name=r.storage_path)
+    OR EXISTS(SELECT 1 FROM public.gtfs_ingest_storage_cleanup q WHERE q.version_id=r.version_id AND q.storage_path=r.storage_path) THEN
+   INSERT INTO public.gtfs_ingest_storage_cleanup AS q(version_id,storage_path) VALUES(r.version_id,r.storage_path)
+   ON CONFLICT ON CONSTRAINT gtfs_ingest_storage_cleanup_pkey DO NOTHING;
+   version_id:=r.version_id;storage_path:=r.storage_path;RETURN NEXT;
+  END IF;
+ END LOOP;
+END $$;
+REVOKE ALL ON FUNCTION openplan_gtfs.remember_retired_archive(uuid,text),openplan_gtfs.remember_archive_cleanup(),
+ openplan_gtfs.retire_closed_archive(),openplan_gtfs.retire_deleted_archive(),public.reconcile_gtfs_storage_cleanup(integer) FROM PUBLIC,anon,authenticated,service_role;
+GRANT EXECUTE ON FUNCTION public.reconcile_gtfs_storage_cleanup(integer) TO service_role;
+-- End recurring archive retirement
+
 COMMIT;

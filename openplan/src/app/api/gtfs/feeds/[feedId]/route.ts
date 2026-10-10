@@ -302,11 +302,10 @@ export async function DELETE(
       0
     );
 
-    // OBJECTS FIRST. Deleting the rows first would erase the only record of
-    // where the objects are, leaving them in a private bucket with nothing able
-    // to find them again. A failure here is reported and does NOT stop the
-    // delete: an orphaned object is housekeeping, while a feed a planner asked
-    // to remove and which is still there is a broken promise.
+    // Remove known objects immediately. Version deletion also retains their
+    // deterministic keys for recurring cleanup if this request fails or an
+    // in-flight upload finishes later. Storage failure does not undo the
+    // planner's requested feed deletion.
     let storageObjectsRemoved = 0;
     if (storagePaths.length > 0) {
       const removed = await service.storage.from(GTFS_UPLOADS_BUCKET).remove(storagePaths);

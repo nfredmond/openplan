@@ -54,6 +54,7 @@
 
 import { randomUUID } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
 import { writeMatchedNoRows } from "@/lib/http/write-outcome";
 import type {
   GtfsFailureCode,
@@ -942,29 +943,40 @@ export async function reapAbandonedGtfsIngests(
     reaped.push(row.id);
   }
 
-  // Pending removals survive process loss and Storage errors after database closure.
-  const cleanup = await service
-    .from("gtfs_ingest_storage_cleanup")
-    .select("version_id, storage_path")
-    .order("created_at", { ascending: true })
-    .limit(200);
+  // Retained deletion keys rediscover uploads that finish after an earlier removal.
+  // SQL rotates a bounded page even when a previous API deletion failed.
+  const cleanup = await service.rpc("reconcile_gtfs_storage_cleanup", { p_limit: 200 });
   if (cleanup.error) throw new Error(`Could not read pending GTFS object cleanup: ${cleanup.error.message}`);
-  for (const object of cleanup.data ?? []) {
-    const removed = await service.storage.from(GTFS_UPLOADS_BUCKET).remove([object.storage_path]);
-    if (removed.error) throw new Error(`Could not remove abandoned GTFS object: ${removed.error.message}`);
-    const acknowledged = await service
-      .from("gtfs_ingest_storage_cleanup")
-      .delete()
-      .eq("version_id", object.version_id)
-      .eq("storage_path", object.storage_path)
-      .select("version_id");
-    if (acknowledged.error) throw new Error(`Could not acknowledge GTFS object cleanup: ${acknowledged.error.message}`);
-    // Zero means another sweep already acknowledged the same immutable request.
-    if (!Array.isArray(acknowledged.data) || acknowledged.data.length > 1 ||
-      acknowledged.data.some((receipt) => receipt.version_id !== object.version_id)) {
-      throw new Error("Invalid GTFS object cleanup acknowledgment");
+  const uuid = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+  const candidates = z.array(z.object({
+    version_id: z.string().regex(new RegExp(`^${uuid}$`)),
+    storage_path: z.string().regex(new RegExp(`^${uuid}/${uuid}/${uuid}\\.zip$`)),
+  }).strict().refine(row => row.storage_path.endsWith(`/${row.version_id}.zip`))).max(200).safeParse(cleanup.data);
+  if (!candidates.success || new Set(candidates.data.map(row => row.version_id)).size !== candidates.data.length) {
+    throw new Error("Invalid GTFS object reconciliation result");
+  }
+  let firstFailure: unknown;
+  for (const object of candidates.data) {
+    try {
+      const removed = await service.storage.from(GTFS_UPLOADS_BUCKET).remove([object.storage_path]);
+      if (removed.error) throw new Error(`Could not remove abandoned GTFS object: ${removed.error.message}`);
+      const acknowledged = await service
+        .from("gtfs_ingest_storage_cleanup")
+        .delete()
+        .eq("version_id", object.version_id)
+        .eq("storage_path", object.storage_path)
+        .select("version_id");
+      if (acknowledged.error) throw new Error(`Could not acknowledge GTFS object cleanup: ${acknowledged.error.message}`);
+      // Zero means another sweep already acknowledged the same immutable request.
+      if (!Array.isArray(acknowledged.data) || acknowledged.data.length > 1 ||
+        acknowledged.data.some((receipt) => receipt.version_id !== object.version_id)) {
+        throw new Error("Invalid GTFS object cleanup acknowledgment");
+      }
+    } catch (error) {
+      firstFailure ??= error;
     }
   }
+  if (firstFailure) throw firstFailure;
 
   return { scanned: rows.length, reaped };
 }

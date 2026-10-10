@@ -1,5 +1,10 @@
 # Managed GTFS ingestion implementation checkpoint
 
+Latest implementation, October 10: [recurring archive cleanup](ARCHIVE_RECONCILIATION.md)
+now retains authorized keys after acknowledgment and parent deletion. The actual
+application sweep rediscovers late native uploads while preserving open, ready
+and unrelated files. Source intake and managed route enrollment remain unfinished.
+
 Latest investigation, October 10: the [native late-upload counterexample](LATE_STORAGE_UPLOAD.md)
 shows an object arriving after cancellation and successful cleanup acknowledgment,
 including with an active-state Storage policy. The installed provider checks that
