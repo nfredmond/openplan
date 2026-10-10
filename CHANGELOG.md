@@ -29,6 +29,16 @@ palette when the operator set none. Close pins group into a count until the
 resident zooms in. The map adds find-my-location, a compass, and a 3D buildings
 switch. Mapbox's own buttons now speak the resident's language.
 
+**Find a street or place.** A search box on the public map moves the map to an
+address or place and hands focus to the map, so a keyboard user can press Enter
+to mark the spot. What a resident types goes to Mapbox's geocoder on the
+existing map key. Set `OPENPLAN_PUBLIC_PLACE_SEARCH=off` to remove it.
+
+**What happened to a comment.** An open comment on the map shows the team's
+published response to it and its approved replies. On the about page, each
+"We did" entry lists the comments it answers, each linking to that comment on
+the map in the reader's language.
+
 **Fixed.** Tapping someone else's pin to read it also moved the resident's own
 mark onto that pin. A tap on a pin or a line now opens the comment and marks
 nothing. A tap on empty map still marks.
@@ -46,8 +56,8 @@ drops the posture card, fact tiles and mode labels. Tabs read "Add a comment"
 and "Comments". A comment count is withheld, not shown as zero, when comments
 could not be read. The public-claims guard now follows relative imports.
 
-Not done: address search, a map that works without a Mapbox key, replies on the
-map, and observation with residents. See
+Not done: a map that works without a Mapbox key, replying from the map, and
+observation with residents. See
 `docs/reviews/2026-10-10-engagement-map-sweep/README.md`.
 
 ## 0.68.0 (2026-10-09)

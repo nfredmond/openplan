@@ -16,6 +16,7 @@ import {
   type TranslationLanguage,
 } from "@/lib/engagement/translation-languages";
 import {
+  PORTAL_DEFAULT_LOCALE,
   PORTAL_LOCALE_DIRECTION,
   type ResolvedPortalLocale,
 } from "@/lib/engagement/portal-i18n/locales";
@@ -873,7 +874,25 @@ export function PublicEngagementPortal({
               readFailures.closeLoop && closeLoopEntries.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t("portal.partOfPageUnavailable")}</p>
               ) : (
-                <PublicCloseLoop entries={closeLoopEntries} translator={translator} />
+                <PublicCloseLoop
+                  entries={closeLoopEntries}
+                  translator={translator}
+                  sourceLink={
+                    previewMode
+                      ? null
+                      : {
+                          // Opens the comment on the map, in the same language.
+                          href: (itemId) =>
+                            `/engage/${shareToken}?item=${encodeURIComponent(itemId)}${
+                              locale.locale === PORTAL_DEFAULT_LOCALE ? "" : `&lang=${locale.locale}`
+                            }`,
+                          headline: (itemId) => {
+                            const item = topLevel.find((entry) => entry.id === itemId);
+                            return item ? item.title?.trim() || item.body.trim().split("\n")[0] : null;
+                          },
+                        }
+                  }
+                />
               )
             ) : null}
 

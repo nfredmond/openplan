@@ -195,7 +195,9 @@ describe("the colour a topic is drawn in", () => {
           approved("reply", null, "crossing"),
         ],
         surveyQuestions: [],
-        closeLoopEntries: [],
+        closeLoopEntries: [
+          { id: "entry-1", themeTitleText: text("Crossings"), weDidText: text("Added a refuge island."), sourceItemIds: ["crossing"] },
+        ],
         readFailures: { comments: false, categories: false, closeLoop: false, project: false },
         demographicsEnabled: false,
         mapFraming: resolvePortalMapFraming({}),
@@ -209,6 +211,9 @@ describe("the colour a topic is drawn in", () => {
     expect(byId.crossing.color).toBe(PARTICIPANT_CATEGORY_PALETTE[0]);
     expect(byId.transit.color).toBe("#123456");
     expect(byId.crossing.replyCount).toBe(1);
+    expect(byId.crossing.replies?.map((reply) => reply.id)).toEqual(["reply"]);
+    expect(byId.crossing.teamResponses?.map((response) => response.weDidText.text)).toEqual(["Added a refuge island."]);
+    expect(byId.transit.teamResponses).toEqual([]);
     // A topic since deleted reads as no topic, not as one the filter cannot find.
     expect(byId["deleted-topic"].categoryId).toBeNull();
     expect(byId["deleted-topic"].color).toBe(UNCATEGORIZED_MAP_COLOR);
@@ -226,6 +231,30 @@ describe("the colour a topic is drawn in", () => {
     const byId = Object.fromEntries(data.features.map((feature) => [feature.properties.itemId, feature.properties.color]));
     expect(byId["item-crossing"]).toBe("#123456");
     expect(byId["item-bus"]).toBe(PARTICIPANT_CATEGORY_PALETTE[0]);
+  });
+});
+
+describe("what happened to a comment, on the comment", () => {
+  it("shows the team's response and the replies inside the open comment", async () => {
+    const withAnswers = ITEMS.map((item) =>
+      item.id === "item-crossing"
+        ? {
+            ...item,
+            replies: [{ id: "r1", body: "Same problem at First.", submittedBy: "Neighbour", createdAt: "2026-07-28T12:00:00Z" }],
+            teamResponses: [{ id: "e1", themeTitleText: text("Crossings"), weDidText: text("Added a refuge island.") }],
+          }
+        : item
+    );
+    await renderShell({ items: withAnswers });
+    fireEvent.click(screen.getByTestId("portal-feed-open"));
+    fireEvent.click(screen.getByText("Crossing is dangerous"));
+
+    expect(screen.getByTestId("portal-feed-team-response")).toHaveTextContent("Added a refuge island.");
+    expect(screen.getByTestId("portal-feed-replies")).toHaveTextContent("Same problem at First.");
+
+    fireEvent.click(screen.getByRole("button", { name: "Next comment" }));
+    expect(screen.queryByTestId("portal-feed-team-response")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("portal-feed-replies")).not.toBeInTheDocument();
   });
 });
 

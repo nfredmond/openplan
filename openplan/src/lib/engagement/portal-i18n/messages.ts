@@ -419,6 +419,7 @@ export const EN_PORTAL_MESSAGES = {
   "portal.feedPosition": "{position} of {total}",
   "portal.feedNoPlace": "Not on the map",
   "portal.feedReplies": "Replies ({count})",
+  "portal.feedTeamResponse": "Team response",
   "portal.feedTopics": "Topics",
   "portal.feedNoTopic": "No topic",
   "portal.mapZoomIn": "Zoom in",
@@ -427,6 +428,10 @@ export const EN_PORTAL_MESSAGES = {
   "portal.mapFindMe": "Find my location",
   "portal.mapFindMeUnavailable": "Your location is not available",
   "portal.map3d": "3D buildings",
+  "portal.placeSearch": "Find a street or place",
+  "portal.placeSearchNoResults": "No places found.",
+  "portal.placeSearchFailed": "Search is not available right now.",
+  "portal.placeSearchMoved": "Map moved to {place}. Press Enter to mark the middle of the map.",
 
   // ------------------------------------------------- portal: email updates
   /*
@@ -511,6 +516,7 @@ export const EN_PORTAL_MESSAGES = {
   "closeLoop.youSaid": "You said",
   "closeLoop.weDid": "We did",
   "closeLoop.empty": "The project team has not published any updates for this campaign yet.",
+  "closeLoop.answers": "Answers these comments",
 } as const;
 
 /** The exact type of the English source, used to type placeholders. */
@@ -754,6 +760,7 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "portal.feedPosition": "{position} de {total}",
   "portal.feedNoPlace": "No está en el mapa",
   "portal.feedReplies": "Respuestas ({count})",
+  "portal.feedTeamResponse": "Respuesta del equipo",
   "portal.feedTopics": "Temas",
   "portal.feedNoTopic": "Sin tema",
   "portal.mapZoomIn": "Acercar",
@@ -762,6 +769,10 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "portal.mapFindMe": "Buscar mi ubicación",
   "portal.mapFindMeUnavailable": "Su ubicación no está disponible",
   "portal.map3d": "Edificios en 3D",
+  "portal.placeSearch": "Buscar una calle o un lugar",
+  "portal.placeSearchNoResults": "No se encontraron lugares.",
+  "portal.placeSearchFailed": "La búsqueda no está disponible en este momento.",
+  "portal.placeSearchMoved": "El mapa se movió a {place}. Pulse Intro para marcar el centro del mapa.",
 
   "portal.subscribeHeading": "Reciba novedades por correo electrónico",
   "portal.subscribeHint":
@@ -857,6 +868,7 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "closeLoop.youSaid": "Usted dijo",
   "closeLoop.weDid": "Nosotros hicimos",
   "closeLoop.empty": "El equipo del proyecto todavía no ha publicado novedades para esta campaña.",
+  "closeLoop.answers": "Responde a estos comentarios",
 };
 
 /**

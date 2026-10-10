@@ -19,10 +19,13 @@ import {
 import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
 import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
 import type { PortalTranslator } from "@/lib/engagement/portal-i18n/translator";
+import type { PortalText } from "@/lib/engagement/portal-i18n/operator-text";
 import { translatePublicBasemapChoices } from "@/lib/engagement/portal-i18n/basemap-words";
 import type { PublicBasemapChoice, PublicBasemapId } from "@/lib/cartographic/basemaps";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { PublicMapPickers } from "./public-map-pickers";
+import { PublicMapPlaceSearch } from "./public-map-place-search";
+import type { PlaceSearchResult } from "@/lib/engagement/place-search";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -84,6 +87,10 @@ export type ParticipantMapItem = {
   submittedBy?: string | null;
   photoUrl?: string | null;
   replyCount?: number;
+  /** Approved replies, oldest first, shown read-only beside the map. */
+  replies?: Array<{ id: string; body: string; submittedBy: string | null; createdAt: string }>;
+  /** Published "We did" responses that cite this comment. */
+  teamResponses?: Array<{ id: string; themeTitleText: PortalText; weDidText: PortalText }>;
 };
 
 function safeHexColor(value: string | null | undefined): string | null {
@@ -225,6 +232,7 @@ export function PublicMapStage({
   selectedItemId = null,
   onSelectItem,
   feed = null,
+  placeSearch = false,
   contextLayers = null,
   initialView = null,
   drawEnabled = true,
@@ -250,6 +258,8 @@ export function PublicMapStage({
    * camera can keep a selected place out from under it.
    */
   feed?: { button: ReactNode; panel: ReactNode } | null;
+  /** Offer "Find a street or place". Decided server-side; see `place-search.ts`. */
+  placeSearch?: boolean;
   contextLayers?: ParticipantContextLayerSet | null;
   /** Where the camera opens, from `resolvePortalMapFraming`. Null = nothing framed it. */
   initialView?: { center: [number, number]; zoom: number } | null;
@@ -1004,6 +1014,28 @@ export function PublicMapStage({
     source?.setData(buildPreviewFeatureCollection(draw));
   }, [draw]);
 
+  /**
+   * A found place moves the camera and nothing else. Focus goes to the map, so
+   * a keyboard user is one Enter away from marking the spot at its centre.
+   */
+  const goToPlace = (result: PlaceSearchResult) => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (result.bbox) {
+      map.fitBounds(
+        [
+          [result.bbox[0], result.bbox[1]],
+          [result.bbox[2], result.bbox[3]],
+        ],
+        { padding: 48, maxZoom: 17 }
+      );
+    } else {
+      map.easeTo({ center: result.center, zoom: Math.max(map.getZoom(), 17) });
+    }
+    announce(t("portal.placeSearchMoved", { place: result.name }));
+    if (drawEnabled) mapContainerRef.current?.focus();
+  };
+
   const clear = () => {
     if (drawRef.current.vertices.length === 0) return;
     applyDraw((previous) => ({ ...previous, vertices: [], areaClosed: false }));
@@ -1186,6 +1218,19 @@ export function PublicMapStage({
 
       {mapUnavailable ? null : (
         <div className="pointer-events-none absolute left-3 top-3 z-10 flex w-[min(16rem,calc(100%-6rem))] flex-col gap-2">
+        {placeSearch ? (
+          <div className="pointer-events-auto">
+            <PublicMapPlaceSearch
+              token={MAPBOX_ACCESS_TOKEN}
+              translator={translator}
+              getProximity={() => {
+                const center = mapRef.current?.getCenter();
+                return center ? [center.lng, center.lat] : null;
+              }}
+              onChoose={goToPlace}
+            />
+          </div>
+        ) : null}
         {feed?.button ? <div className="pointer-events-auto">{feed.button}</div> : null}
         <PublicMapPickers
           className="pointer-events-none flex flex-col gap-2"

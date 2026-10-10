@@ -68,6 +68,11 @@ export type PublicCloseLoopEntry = {
   youSaidText: PortalText;
   weDidText: PortalText;
   categoryLabelText: PortalText | null;
+  /**
+   * The approved comments this response answers. The loader publishes an entry
+   * only when every one of them is public, so each can be linked.
+   */
+  sourceItemIds?: readonly string[];
 };
 
 /**
@@ -90,7 +95,7 @@ export type PublicCloseLoopEntry = {
  * English source sitting inside a page that declares itself Korean — the exact
  * mismatch the caveat exists to warn about, made by the warning.
  */
-function OperatorLine({
+export function OperatorLine({
   value,
   translator,
   className,
@@ -135,6 +140,7 @@ function OperatorLine({
 export function PublicCloseLoop({
   entries,
   translator,
+  sourceLink = null,
 }: {
   entries: PublicCloseLoopEntry[];
   /**
@@ -145,7 +151,13 @@ export function PublicCloseLoop({
    * defect where two surfaces computed the same fact differently.
    */
   translator: PortalTranslator;
+  /**
+   * Where each answered comment opens, and its one-line name. Omitted in the
+   * operator preview, where a link would leave the console.
+   */
+  sourceLink?: { href: (itemId: string) => string; headline: (itemId: string) => string | null } | null;
 }) {
+  const answers = portalMessageView(translator, "closeLoop.answers");
   /*
     OpenPlan's OWN three strings here — "You said", "We did", and the empty state
     — each with the language it actually came out in.
@@ -260,6 +272,36 @@ export function PublicCloseLoop({
                 )}
               </div>
             </div>
+            {/*
+              THE COMMENTS THIS ANSWERS, each a link to it on the map. A response
+              a resident can trace to their own words is the difference between
+              "we heard you" and a record.
+            */}
+            {sourceLink && entry.sourceItemIds && entry.sourceItemIds.length > 0 ? (
+              <div className="mt-3" data-testid="close-loop-sources">
+                <p
+                  className="text-label font-semibold uppercase tracking-wide text-muted-foreground"
+                  lang={answers.lang}
+                  dir={answers.dir}
+                >
+                  {answers.sentence}
+                </p>
+                <ul className="mt-1 space-y-1 text-sm">
+                  {entry.sourceItemIds.map((itemId) => {
+                    const headline = sourceLink.headline(itemId);
+                    if (!headline) return null;
+                    return (
+                      <li key={itemId}>
+                        {/* A resident's own words: no `lang`. */}
+                        <a className="text-foreground underline underline-offset-4" href={sourceLink.href(itemId)}>
+                          {headline}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ) : null}
           </div>
         </article>
         );

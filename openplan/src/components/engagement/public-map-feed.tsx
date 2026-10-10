@@ -8,6 +8,7 @@ import { formatPortalDate, formatPortalNumber } from "@/lib/engagement/portal-i1
 import { portalTextDisclosureView, portalTextLang } from "@/lib/engagement/portal-i18n/provenance";
 import { UNCATEGORIZED_MAP_COLOR } from "@/lib/engagement/participant-category-colors";
 import { participantItemGeometry, type ParticipantMapItem } from "./public-map-stage";
+import { OperatorLine } from "./public-close-loop";
 import type { SidebarCategory } from "./public-map-sidebar";
 
 /** The "No topic" filter, for comments sent without one. */
@@ -81,7 +82,6 @@ export function PublicMapFeedPanel({
   onSupport,
   hasVoted,
   previewMode,
-  detailsHref,
   translator,
 }: {
   open: boolean;
@@ -106,7 +106,6 @@ export function PublicMapFeedPanel({
   onSupport: (itemId: string) => void;
   hasVoted: (itemId: string) => boolean;
   previewMode: boolean;
-  detailsHref: string;
   translator: PortalTranslator;
 }) {
   const { t, bcp47 } = translator;
@@ -269,15 +268,53 @@ export function PublicMapFeedPanel({
                   <span className="tabular-nums">· {formatPortalNumber(selected.votesCount ?? 0, bcp47)}</span>
                 </button>
               )}
-              {selected.replyCount ? (
-                <a
-                  href={`${detailsHref}#comment-${selected.id}`}
-                  className="text-sm font-medium text-foreground underline underline-offset-4"
-                >
-                  {t("portal.feedReplies", { count: formatPortalNumber(selected.replyCount, bcp47) })}
-                </a>
-              ) : null}
             </div>
+
+            {/*
+              WHAT THE TEAM DID ABOUT IT, on the comment it answers. The agency's
+              words keep their translation caveat; this is where a resident sees
+              that somebody read what they wrote.
+            */}
+            {selected.teamResponses && selected.teamResponses.length > 0 ? (
+              <section className="mt-5 space-y-3 border-t border-border/60 pt-4" data-testid="portal-feed-team-response">
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("portal.feedTeamResponse")}
+                </h4>
+                {selected.teamResponses.map((response) => (
+                  <div key={response.id}>
+                    <OperatorLine
+                      value={response.themeTitleText}
+                      translator={translator}
+                      className="text-sm font-semibold text-foreground"
+                    />
+                    <OperatorLine
+                      value={response.weDidText}
+                      translator={translator}
+                      className="mt-1 whitespace-pre-line text-sm leading-relaxed text-foreground"
+                    />
+                  </div>
+                ))}
+              </section>
+            ) : null}
+
+            {selected.replies && selected.replies.length > 0 ? (
+              <section className="mt-5 border-t border-border/60 pt-4" data-testid="portal-feed-replies">
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("portal.feedReplies", { count: formatPortalNumber(selected.replies.length, bcp47) })}
+                </h4>
+                <ul className="mt-2 space-y-3">
+                  {selected.replies.map((reply) => (
+                    <li key={reply.id} className="border-s-2 border-border ps-3">
+                      <p className="text-xs text-muted-foreground">
+                        {formatPortalDate(reply.createdAt, bcp47)}
+                        {reply.submittedBy ? ` · ${reply.submittedBy}` : ""}
+                      </p>
+                      <p className="mt-0.5 whitespace-pre-wrap text-sm text-foreground">{reply.body}</p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
           </div>
         </div>
       ) : (

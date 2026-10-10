@@ -80,6 +80,7 @@ export function PublicMapShell({
   detailsHref,
   detailsContents,
   mapAvailable,
+  placeSearchAvailable = false,
   basemapChoices = [],
   defaultBasemapId = null,
   languageChrome = null,
@@ -114,6 +115,8 @@ export function PublicMapShell({
    */
   detailsContents: { survey: boolean; comments: boolean; closeLoop: boolean };
   mapAvailable: boolean;
+  /** Offer "Find a street or place" on the map. Decided server-side. */
+  placeSearchAvailable?: boolean;
   /**
    * The map backgrounds this deployment offers, resolved server-side by
    * `resolvePublicBasemapConfig` — the operator's `OPENPLAN_PUBLIC_BASEMAPS`
@@ -563,6 +566,7 @@ export function PublicMapShell({
           items={visibleItems}
           selectedItemId={selectedItemId}
           onSelectItem={selectItem}
+          placeSearch={placeSearchAvailable}
           feed={{
             button: (
               <PublicMapFeedButton
@@ -591,7 +595,6 @@ export function PublicMapShell({
                 onSupport={(itemId) => void onSupport(itemId)}
                 hasVoted={hasVoted}
                 previewMode={previewMode}
-                detailsHref={detailsHref}
                 translator={translator}
               />
             ),

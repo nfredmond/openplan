@@ -1187,6 +1187,7 @@ async function buildPublicPortalBundle(
       youSaid: entry.you_said,
       weDid: entry.we_did,
       categoryLabel: category?.label ?? null,
+      sourceItemIds: entry.source_item_ids,
       themeTitleText: resolveOperatorText(
         translationIndex,
         { entity: "close_loop_entry", id: entry.id, field: "theme_title" },

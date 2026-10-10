@@ -80,6 +80,23 @@ In the browser, three problems showed up that the sweep had not listed:
   read failed. The review-before-publish sentence remains, reworded plainly,
   and passes its protected-claim check.
 
+## Added after the first pull request
+
+- **Find a street or place.** A combobox over Mapbox's geocoder on the existing
+  map key, ranked near the map's centre, in the resident's language. A result
+  moves the map and gives it focus, so Enter marks the spot. Checked live:
+  "125 Mill Street" returned Grass Valley first, in English and Spanish at
+  390 px. `OPENPLAN_PUBLIC_PLACE_SEARCH=off` removes it; the self-hosting
+  provider table names the data sent.
+- **What happened to a comment.** The open comment shows the team's published
+  response that cites it, with its translation caveat, and its approved
+  replies. Each "We did" entry on the about page lists the comments it answers,
+  linking to each on the map. This closes the September gap 7 (public response
+  without inspectable sources). Not seen in a browser: no local campaign has a
+  published response citing comments, or any approved reply, and creating them
+  would have written into the shared database. Tests and mutation checks cover
+  it.
+
 ## How it was checked
 
 - Browser, dev server on port 3530 from this worktree (base `565cd983`),
@@ -101,12 +118,9 @@ In the browser, three problems showed up that the sweep had not listed:
 
 ## What remains
 
-- **Address search.** Social Point has it; OpenPlan does not. The existing
-  place resolver finds cities and counties, not street addresses. Options are
-  Mapbox geocoding on the existing token or the Census geocoder (US only).
-- **Map without a Mapbox key** (roadmap requirement), close-loop source links,
-  anti-abuse that does not block a shared connection, catalogs beyond Spanish,
-  and replies shown on the map.
+- **Map without a Mapbox key** (roadmap requirement), anti-abuse that does not
+  block a shared connection, catalogs beyond Spanish, and replying from the
+  map.
 - **People.** No resident, screen-reader user or agency moderator has used
   either product for this comparison. A superiority claim needs that
   observation; this note supports a development target only.

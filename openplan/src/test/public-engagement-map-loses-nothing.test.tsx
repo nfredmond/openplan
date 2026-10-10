@@ -313,7 +313,6 @@ describe("the vote a resident can reach from the map", () => {
         onSupport={onSupport}
         hasVoted={() => false}
         previewMode={false}
-        detailsHref="/engage/share-token-12345/about"
         translator={createPortalTranslator(EN_MESSAGES)}
         {...overrides}
       />

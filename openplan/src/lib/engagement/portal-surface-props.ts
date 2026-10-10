@@ -45,6 +45,7 @@ import type { SidebarCategory } from "@/components/engagement/public-map-sidebar
 import { resolvePublicBasemapConfig } from "@/lib/cartographic/basemaps";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { groupApprovedItems } from "@/lib/engagement/approved-item-grouping";
+import { placeSearchEnabled } from "@/lib/engagement/place-search";
 import {
   resolveParticipantCategoryColors,
   UNCATEGORIZED_MAP_COLOR,
@@ -65,6 +66,8 @@ export type PortalMapShellProps = {
   campaignDescription: PortalText | null;
   detailsContents: { survey: boolean; comments: boolean; closeLoop: boolean };
   mapAvailable: boolean;
+  /** "Find a street or place" on the map: a map, and the operator has not switched it off. */
+  placeSearchAvailable: boolean;
   basemapChoices: readonly PublicBasemapChoice[];
   defaultBasemapId: PublicBasemapId | null;
 };
@@ -105,6 +108,16 @@ export function buildPortalMapShellProps(
   // Each pin in its topic's colour. A comment whose topic was since deleted
   // reads as having no topic, not as a topic the resident cannot find.
   const categoryColors = resolveParticipantCategoryColors(portalProps.categories);
+
+  // The team's published responses, filed under each comment they answer.
+  const responsesByItem = new Map<string, NonNullable<PublicMapShellItem["teamResponses"]>>();
+  for (const entry of portalProps.closeLoopEntries) {
+    for (const itemId of entry.sourceItemIds ?? []) {
+      const bucket = responsesByItem.get(itemId) ?? [];
+      bucket.push({ id: entry.id, themeTitleText: entry.themeTitleText, weDidText: entry.weDidText });
+      responsesByItem.set(itemId, bucket);
+    }
+  }
   const mapItems: PublicMapShellItem[] = topLevel.map((item) => {
     const categoryId = item.categoryId && categoryColors.has(item.categoryId) ? item.categoryId : null;
     return {
@@ -112,6 +125,13 @@ export function buildPortalMapShellProps(
       categoryId,
       color: categoryId ? categoryColors.get(categoryId) : UNCATEGORIZED_MAP_COLOR,
       replyCount: repliesByParent.get(item.id)?.length ?? 0,
+      replies: (repliesByParent.get(item.id) ?? []).map((reply) => ({
+        id: reply.id,
+        body: reply.body,
+        submittedBy: reply.submittedBy,
+        createdAt: reply.createdAt,
+      })),
+      teamResponses: responsesByItem.get(item.id) ?? [],
     };
   });
 
@@ -150,6 +170,7 @@ export function buildPortalMapShellProps(
     campaignDescription: campaignText.publicDescription ?? campaignText.summary ?? null,
     detailsContents,
     mapAvailable: Boolean(mapboxToken),
+    placeSearchAvailable: Boolean(mapboxToken) && placeSearchEnabled(env),
     basemapChoices: basemapConfig.choices,
     defaultBasemapId: basemapConfig.defaultId,
   };
