@@ -43,7 +43,7 @@ sql(source.read_text(), timeout=30)
 baseline = json.loads(sql("SELECT jsonb_build_object('migrationRecords', (SELECT count(*) FROM supabase_migrations.schema_migrations), 'latestMigrationRecord', (SELECT max(version) FROM supabase_migrations.schema_migrations), 'postgres', current_setting('server_version'), 'bytes', pg_database_size(current_database()));"))
 recorded_versions = set(sql('SELECT version FROM supabase_migrations.schema_migrations;').splitlines())
 baseline['filesWithoutMigrationRecord'] = sorted(path.name for path in source.parent.glob('*.sql') if path.name.split('_')[0] not in recorded_versions)
-baseline['boundary'] = 'Prior owned fixture clone includes GTFS DDL applied outside its migration ledger. This is not a clean installation or current-main upgrade proof.'
+baseline['boundary'] = 'Candidate DDL is applied directly to an owned clone. Missing migration records are listed; source schema custody belongs to its separate upgrade record. This is not an empty-platform installation or restore proof.'
 workspace, actor = str(uuid.uuid4()), str(uuid.uuid4())
 sql(f"""INSERT INTO auth.users(id,email) VALUES('{actor}','{actor}@example.invalid');
 INSERT INTO public.workspaces(id,name,slug) VALUES('{workspace}','Synthetic native worker recovery','proof-{workspace}');

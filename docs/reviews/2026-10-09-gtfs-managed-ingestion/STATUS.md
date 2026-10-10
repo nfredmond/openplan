@@ -263,3 +263,19 @@ The clone has 393 recorded migrations plus GTFS DDL outside that ledger. This
 adds native recovery evidence, not current-main upgrade, concurrent replacement,
 adoption, browser, scientific or release acceptance. No application source or
 candidate migration changes, import enrollment or main merge occur here.
+
+## October 10: current-main schema and concurrent replacement
+
+[The current-main checkpoint](CURRENT_MAIN_DATABASE.md) records an exact CLI
+upgrade through all 399 main migrations, followed by the populated candidate
+upgrade to 400. Six-table GTFS records remain unchanged, repeat migration is
+safe in the fixture, and existing imports remain unenrolled. Three altered
+migrations fail the data-preservation assertion; baseline, harmless and restored
+runs pass. Native completion and batch recovery pass again on that main-derived
+schema with their HTTP refusals and observation controls.
+
+Two real PostgreSQL connections prove replacement serialization in both orders.
+The observer sees the expected blocking backend, and stale tokens cannot renew
+or write after replacement. Synthetic expiry is explicitly advanced; this is not
+a complete replacement worker journey or a real-clock expiry test. Mixed
+legacy/managed promotion and termination lock ordering remains the next concern.

@@ -1,0 +1,644 @@
+{
+  "proofSources": {
+    "verify_worker_database.py": "c4297de97e5ac46deac464c4a9dc7effc73981be4d81f0c6c352267bbacc170e",
+    "verify_worker_database.mts": "6fa8513b0bb65a3d37b8cf5af6c29113c3a0113338cbb7e8fdf2a1af8fca878d"
+  },
+  "migrationSha256": "34d5b658aa276a47cb49adf71d5aaeaaa44be76077a1524752b4ef4a2a48eb82",
+  "sources": {
+    "parsed-artifact": "aa84b1b0121dffd96bdd9e64fe1daec2055c618791933ac3c58b4ee8e3421276",
+    "managed-worker-publication": "9ae7de33dfd4d55bde295156bd18c0cc3bcd7c4d563d403f44f4affe8a0f2e8e",
+    "managed-worker-service": "4b4495984fa41fc5ecccd1481c9dbb08c270aa189564897b9e0bda1fd3d83342",
+    "managed-worker-artifact": "f7559028fa95e6443fb7b46bb88ffe12626f8f8b5944720d7e22e52a327b972c",
+    "managed-worker-attempt": "0eaf5621853e6225bb8f7ca7581483e41265127610f7b3e50cea4cae83633e17",
+    "managed-worker-dispatch": "b8ea6691bce0b26764077ba79a43b9785e101181946066d97af975a58c941b91",
+    "managed-worker-journal": "b2eac2d56b24166a8cf2b8932e8df087380fab9faaa8bd30f447b7e048c2b578"
+  },
+  "baseline": {
+    "bytes": 53480595,
+    "postgres": "17.6",
+    "migrationRecords": 399,
+    "latestMigrationRecord": "20261016000027",
+    "filesWithoutMigrationRecord": [
+      "20261016000028_gtfs_managed_execution.sql"
+    ],
+    "boundary": "Candidate DDL is applied directly to an owned clone. Missing migration records are listed; source schema custody belongs to its separate upgrade record. This is not an empty-platform installation or restore proof."
+  },
+  "archiveSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+  "archiveBytes": 892312,
+  "committedBeforeKill": {
+    "command": "b746768e-9e01-41f9-9247-9e4a88eb4d4c",
+    "requestSha256": "97f165dfbbf386fd7a9a298d71259a830d32d21f93bf1e19c0a0943baa811619",
+    "receipt": {
+      "status": "ready",
+      "command": "b746768e-9e01-41f9-9247-9e4a88eb4d4c",
+      "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+      "stopRows": 717,
+      "routeRows": 95,
+      "tractOutcome": {
+        "rows": 0,
+        "command": "143427b9-30a7-491f-a034-52abba3c9e8b",
+        "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+        "computed": true,
+        "errorCode": null,
+        "computedAt": "2026-10-10T06:57:09.71188+00:00",
+        "errorDetail": null
+      }
+    },
+    "downloads": 1,
+    "workCalls": 1,
+    "calls": [
+      "claim_gtfs_ingest",
+      "read_gtfs_ingest_attempt",
+      "renew_gtfs_ingest",
+      "renew_gtfs_ingest",
+      "confirm_gtfs_archive",
+      "stage_gtfs_ingest",
+      "renew_gtfs_ingest",
+      "renew_gtfs_ingest",
+      "renew_gtfs_ingest",
+      "renew_gtfs_ingest",
+      "renew_gtfs_ingest",
+      "renew_gtfs_ingest",
+      "renew_gtfs_ingest",
+      "prepare_gtfs_derived",
+      "write_gtfs_ingest_batch",
+      "write_gtfs_ingest_batch",
+      "write_gtfs_ingest_batch",
+      "write_gtfs_ingest_batch",
+      "write_gtfs_ingest_batch",
+      "write_gtfs_ingest_batch",
+      "write_gtfs_ingest_batch",
+      "write_gtfs_ingest_batch",
+      "write_gtfs_ingest_batch",
+      "compute_managed_gtfs_tracts",
+      "renew_gtfs_ingest",
+      "complete_gtfs_ingest"
+    ]
+  },
+  "databaseBeforeRecovery": {
+    "stops": 717,
+    "routes": 95,
+    "batches": 9,
+    "version": {
+      "status": "ready",
+      "current": false,
+      "stopRows": 717,
+      "routeRows": 95,
+      "stopCount": 287,
+      "tractRows": 0,
+      "routeCount": 14
+    },
+    "stopHash": "726e9b34c08d702be752d30269296374",
+    "execution": {
+      "state": "ready",
+      "token": null,
+      "attempt": 1
+    },
+    "routeHash": "c68f52fdf089561676d040b891993471",
+    "completion": [
+      {
+        "token": "e882f3d4-fce2-4282-ad5b-ceb77ab02c35",
+        "response": {
+          "status": "ready",
+          "command": "b746768e-9e01-41f9-9247-9e4a88eb4d4c",
+          "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+          "stopRows": 717,
+          "routeRows": 95,
+          "tractOutcome": {
+            "rows": 0,
+            "command": "143427b9-30a7-491f-a034-52abba3c9e8b",
+            "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+            "computed": true,
+            "errorCode": null,
+            "computedAt": "2026-10-10T06:57:09.71188+00:00",
+            "errorDetail": null
+          }
+        },
+        "command_id": "b746768e-9e01-41f9-9247-9e4a88eb4d4c",
+        "version_id": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+        "payload_hash": "8889f459e5bd8e0cccc4e6d08ff85ff8a4f0b1cec997c56d940e6b15cd9ac550"
+      }
+    ],
+    "feedPointer": null,
+    "writeContexts": 0
+  },
+  "runs": [
+    {
+      "mode": "recover",
+      "outcome": {
+        "state": "recovered_terminal",
+        "operation": "complete",
+        "result": {
+          "commandId": "b746768e-9e01-41f9-9247-9e4a88eb4d4c",
+          "receipt": {
+            "command": "b746768e-9e01-41f9-9247-9e4a88eb4d4c",
+            "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+            "status": "ready",
+            "routeRows": 95,
+            "stopRows": 717,
+            "tractOutcome": {
+              "command": "143427b9-30a7-491f-a034-52abba3c9e8b",
+              "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+              "computed": true,
+              "rows": 0,
+              "computedAt": "2026-10-10T06:57:09.71188+00:00",
+              "errorCode": null,
+              "errorDetail": null
+            }
+          },
+          "retained": false
+        },
+        "snapshotBeforeDelivery": {
+          "schemaVersion": 1,
+          "versionId": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+          "feedId": "1eb666d5-1dd6-480e-a104-decdf6d1d784",
+          "workspaceId": "c67e7497-2ff3-4703-956e-45d7fbf99280",
+          "requestId": "91cdf015-adbf-4b50-b02f-1aea3d6e7df7",
+          "actorId": "39d9138b-1edb-436e-9474-47531afc89e8",
+          "state": "ready",
+          "stage": "ready",
+          "attempts": 1,
+          "claim": {
+            "token": "e882f3d4-fce2-4282-ad5b-ceb77ab02c35",
+            "version_id": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+            "attempt": 1,
+            "claimed_at": "2026-10-10T06:57:08.388066+00:00",
+            "initial_lease_until": "2026-10-10T06:59:08.388066+00:00"
+          },
+          "active": false,
+          "prepared": true,
+          "source": {
+            "kind": "upload",
+            "provisionalName": "Public BART recovery fixture",
+            "uploadSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+            "uploadBytes": 892312
+          },
+          "archive": {
+            "path": "c67e7497-2ff3-4703-956e-45d7fbf99280/1eb666d5-1dd6-480e-a104-decdf6d1d784/52b896ad-7945-437f-a42d-1cb5cbf46134.zip",
+            "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+            "bytes": 892312
+          },
+          "archiveConfirmed": true,
+          "plan": {
+            "sha256": "4fe98f719fda4ad93d834cae2b286a95200b9389da935608b847dfbdcb59f189",
+            "bytes": 495655,
+            "routeRows": 95,
+            "stopRows": 717,
+            "routeBatches": 1,
+            "stopBatches": 8
+          },
+          "tract": {
+            "command": "143427b9-30a7-491f-a034-52abba3c9e8b",
+            "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+            "computed": true,
+            "rows": 0,
+            "computedAt": "2026-10-10T06:57:09.71188+00:00",
+            "errorCode": null,
+            "errorDetail": null
+          },
+          "completion": {
+            "command": "b746768e-9e01-41f9-9247-9e4a88eb4d4c",
+            "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+            "status": "ready",
+            "routeRows": 95,
+            "stopRows": 717,
+            "tractOutcome": {
+              "command": "143427b9-30a7-491f-a034-52abba3c9e8b",
+              "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+              "computed": true,
+              "rows": 0,
+              "computedAt": "2026-10-10T06:57:09.71188+00:00",
+              "errorCode": null,
+              "errorDetail": null
+            }
+          }
+        }
+      },
+      "calls": [
+        "claim_gtfs_ingest",
+        "read_gtfs_ingest_attempt",
+        "complete_gtfs_ingest"
+      ],
+      "downloads": 0,
+      "workCalls": 0,
+      "terminalCommand": "b746768e-9e01-41f9-9247-9e4a88eb4d4c",
+      "outputSha256": "4fe98f719fda4ad93d834cae2b286a95200b9389da935608b847dfbdcb59f189",
+      "maxRssKiB": 124772
+    },
+    {
+      "mode": "retained",
+      "outcome": {
+        "state": "recovered_terminal",
+        "operation": "complete",
+        "result": {
+          "commandId": "b746768e-9e01-41f9-9247-9e4a88eb4d4c",
+          "receipt": {
+            "command": "b746768e-9e01-41f9-9247-9e4a88eb4d4c",
+            "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+            "status": "ready",
+            "routeRows": 95,
+            "stopRows": 717,
+            "tractOutcome": {
+              "command": "143427b9-30a7-491f-a034-52abba3c9e8b",
+              "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+              "computed": true,
+              "rows": 0,
+              "computedAt": "2026-10-10T06:57:09.71188+00:00",
+              "errorCode": null,
+              "errorDetail": null
+            }
+          },
+          "retained": true
+        },
+        "snapshotBeforeDelivery": {
+          "schemaVersion": 1,
+          "versionId": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+          "feedId": "1eb666d5-1dd6-480e-a104-decdf6d1d784",
+          "workspaceId": "c67e7497-2ff3-4703-956e-45d7fbf99280",
+          "requestId": "91cdf015-adbf-4b50-b02f-1aea3d6e7df7",
+          "actorId": "39d9138b-1edb-436e-9474-47531afc89e8",
+          "state": "ready",
+          "stage": "ready",
+          "attempts": 1,
+          "claim": {
+            "token": "e882f3d4-fce2-4282-ad5b-ceb77ab02c35",
+            "version_id": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+            "attempt": 1,
+            "claimed_at": "2026-10-10T06:57:08.388066+00:00",
+            "initial_lease_until": "2026-10-10T06:59:08.388066+00:00"
+          },
+          "active": false,
+          "prepared": true,
+          "source": {
+            "kind": "upload",
+            "provisionalName": "Public BART recovery fixture",
+            "uploadSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+            "uploadBytes": 892312
+          },
+          "archive": {
+            "path": "c67e7497-2ff3-4703-956e-45d7fbf99280/1eb666d5-1dd6-480e-a104-decdf6d1d784/52b896ad-7945-437f-a42d-1cb5cbf46134.zip",
+            "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+            "bytes": 892312
+          },
+          "archiveConfirmed": true,
+          "plan": {
+            "sha256": "4fe98f719fda4ad93d834cae2b286a95200b9389da935608b847dfbdcb59f189",
+            "bytes": 495655,
+            "routeRows": 95,
+            "stopRows": 717,
+            "routeBatches": 1,
+            "stopBatches": 8
+          },
+          "tract": {
+            "command": "143427b9-30a7-491f-a034-52abba3c9e8b",
+            "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+            "computed": true,
+            "rows": 0,
+            "computedAt": "2026-10-10T06:57:09.71188+00:00",
+            "errorCode": null,
+            "errorDetail": null
+          },
+          "completion": {
+            "command": "b746768e-9e01-41f9-9247-9e4a88eb4d4c",
+            "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+            "status": "ready",
+            "routeRows": 95,
+            "stopRows": 717,
+            "tractOutcome": {
+              "command": "143427b9-30a7-491f-a034-52abba3c9e8b",
+              "version": "52b896ad-7945-437f-a42d-1cb5cbf46134",
+              "computed": true,
+              "rows": 0,
+              "computedAt": "2026-10-10T06:57:09.71188+00:00",
+              "errorCode": null,
+              "errorDetail": null
+            }
+          }
+        }
+      },
+      "calls": [
+        "claim_gtfs_ingest",
+        "read_gtfs_ingest_attempt"
+      ],
+      "downloads": 0,
+      "workCalls": 0,
+      "terminalCommand": "b746768e-9e01-41f9-9247-9e4a88eb4d4c",
+      "outputSha256": "4fe98f719fda4ad93d834cae2b286a95200b9389da935608b847dfbdcb59f189",
+      "maxRssKiB": 123820
+    }
+  ],
+  "databaseUnchangedAfterRecovery": true,
+  "partialBatchRecovery": {
+    "partialBeforeKill": {
+      "stops": 0,
+      "routes": 95,
+      "batches": 1,
+      "version": {
+        "status": "parsing",
+        "current": false,
+        "stopRows": 0,
+        "routeRows": 0,
+        "stopCount": 0,
+        "tractRows": null,
+        "routeCount": 0
+      },
+      "stopHash": "d41d8cd98f00b204e9800998ecf8427e",
+      "execution": {
+        "state": "running",
+        "token": "5c9347ff-23b6-4408-96d6-f7016b9ecc03",
+        "attempt": 1
+      },
+      "routeHash": "d3723ea80e0d14f9192d52f491c9a050",
+      "completion": null,
+      "feedPointer": null,
+      "writeContexts": 0
+    },
+    "completed": {
+      "stops": 717,
+      "routes": 95,
+      "batches": 9,
+      "version": {
+        "status": "ready",
+        "current": false,
+        "stopRows": 717,
+        "routeRows": 95,
+        "stopCount": 287,
+        "tractRows": 0,
+        "routeCount": 14
+      },
+      "stopHash": "8bb7b8fddcb12cb6d8e176c3a0b57fdf",
+      "execution": {
+        "state": "ready",
+        "token": null,
+        "attempt": 1
+      },
+      "routeHash": "d3723ea80e0d14f9192d52f491c9a050",
+      "completion": [
+        {
+          "token": "5c9347ff-23b6-4408-96d6-f7016b9ecc03",
+          "response": {
+            "status": "ready",
+            "command": "38e3bb76-65ff-4d79-ad68-91700bd45685",
+            "version": "61b563c5-420a-4c8c-ac82-9820072a1c03",
+            "stopRows": 717,
+            "routeRows": 95,
+            "tractOutcome": {
+              "rows": 0,
+              "command": "25050497-7a19-4103-a4a8-b071e9c00b20",
+              "version": "61b563c5-420a-4c8c-ac82-9820072a1c03",
+              "computed": true,
+              "errorCode": null,
+              "computedAt": "2026-10-10T06:57:15.299315+00:00",
+              "errorDetail": null
+            }
+          },
+          "command_id": "38e3bb76-65ff-4d79-ad68-91700bd45685",
+          "version_id": "61b563c5-420a-4c8c-ac82-9820072a1c03",
+          "payload_hash": "6efa7c3b86ceeca4ec7101f05d641bda2f88cf1959277a5791b1b0fe5c98c453"
+        }
+      ],
+      "feedPointer": null,
+      "writeContexts": 0
+    },
+    "resume": {
+      "mode": "resume-batch",
+      "outcome": {
+        "state": "finished",
+        "operation": "complete",
+        "result": {
+          "commandId": "38e3bb76-65ff-4d79-ad68-91700bd45685",
+          "receipt": {
+            "command": "38e3bb76-65ff-4d79-ad68-91700bd45685",
+            "version": "61b563c5-420a-4c8c-ac82-9820072a1c03",
+            "status": "ready",
+            "routeRows": 95,
+            "stopRows": 717,
+            "tractOutcome": {
+              "command": "25050497-7a19-4103-a4a8-b071e9c00b20",
+              "version": "61b563c5-420a-4c8c-ac82-9820072a1c03",
+              "computed": true,
+              "rows": 0,
+              "computedAt": "2026-10-10T06:57:15.299315+00:00",
+              "errorCode": null,
+              "errorDetail": null
+            }
+          },
+          "retained": false
+        }
+      },
+      "calls": [
+        "claim_gtfs_ingest",
+        "read_gtfs_ingest_attempt",
+        "renew_gtfs_ingest",
+        "renew_gtfs_ingest",
+        "write_gtfs_ingest_batch",
+        "write_gtfs_ingest_batch",
+        "write_gtfs_ingest_batch",
+        "write_gtfs_ingest_batch",
+        "write_gtfs_ingest_batch",
+        "write_gtfs_ingest_batch",
+        "write_gtfs_ingest_batch",
+        "write_gtfs_ingest_batch",
+        "write_gtfs_ingest_batch",
+        "compute_managed_gtfs_tracts",
+        "renew_gtfs_ingest",
+        "complete_gtfs_ingest"
+      ],
+      "downloads": 0,
+      "workCalls": 1,
+      "terminalCommand": "38e3bb76-65ff-4d79-ad68-91700bd45685",
+      "outputSha256": "13c9c828956f2632fdebb1966e0327ecba3c529368e57a835e85639aeaed9c60",
+      "maxRssKiB": 136144
+    },
+    "retained": {
+      "mode": "retained-batch",
+      "outcome": {
+        "state": "recovered_terminal",
+        "operation": "complete",
+        "result": {
+          "commandId": "38e3bb76-65ff-4d79-ad68-91700bd45685",
+          "receipt": {
+            "command": "38e3bb76-65ff-4d79-ad68-91700bd45685",
+            "version": "61b563c5-420a-4c8c-ac82-9820072a1c03",
+            "status": "ready",
+            "routeRows": 95,
+            "stopRows": 717,
+            "tractOutcome": {
+              "command": "25050497-7a19-4103-a4a8-b071e9c00b20",
+              "version": "61b563c5-420a-4c8c-ac82-9820072a1c03",
+              "computed": true,
+              "rows": 0,
+              "computedAt": "2026-10-10T06:57:15.299315+00:00",
+              "errorCode": null,
+              "errorDetail": null
+            }
+          },
+          "retained": true
+        },
+        "snapshotBeforeDelivery": {
+          "schemaVersion": 1,
+          "versionId": "61b563c5-420a-4c8c-ac82-9820072a1c03",
+          "feedId": "e37c5c74-3d4c-44c1-b70b-affa6e0d7ffb",
+          "workspaceId": "c67e7497-2ff3-4703-956e-45d7fbf99280",
+          "requestId": "94db1d27-a475-4d67-8afc-2a3525d320ca",
+          "actorId": "39d9138b-1edb-436e-9474-47531afc89e8",
+          "state": "ready",
+          "stage": "ready",
+          "attempts": 1,
+          "claim": {
+            "token": "5c9347ff-23b6-4408-96d6-f7016b9ecc03",
+            "version_id": "61b563c5-420a-4c8c-ac82-9820072a1c03",
+            "attempt": 1,
+            "claimed_at": "2026-10-10T06:57:13.58579+00:00",
+            "initial_lease_until": "2026-10-10T06:59:13.58579+00:00"
+          },
+          "active": false,
+          "prepared": true,
+          "source": {
+            "kind": "upload",
+            "provisionalName": "Public BART recovery fixture",
+            "uploadSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+            "uploadBytes": 892312
+          },
+          "archive": {
+            "path": "c67e7497-2ff3-4703-956e-45d7fbf99280/e37c5c74-3d4c-44c1-b70b-affa6e0d7ffb/61b563c5-420a-4c8c-ac82-9820072a1c03.zip",
+            "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+            "bytes": 892312
+          },
+          "archiveConfirmed": true,
+          "plan": {
+            "sha256": "13c9c828956f2632fdebb1966e0327ecba3c529368e57a835e85639aeaed9c60",
+            "bytes": 495655,
+            "routeRows": 95,
+            "stopRows": 717,
+            "routeBatches": 1,
+            "stopBatches": 8
+          },
+          "tract": {
+            "command": "25050497-7a19-4103-a4a8-b071e9c00b20",
+            "version": "61b563c5-420a-4c8c-ac82-9820072a1c03",
+            "computed": true,
+            "rows": 0,
+            "computedAt": "2026-10-10T06:57:15.299315+00:00",
+            "errorCode": null,
+            "errorDetail": null
+          },
+          "completion": {
+            "command": "38e3bb76-65ff-4d79-ad68-91700bd45685",
+            "version": "61b563c5-420a-4c8c-ac82-9820072a1c03",
+            "status": "ready",
+            "routeRows": 95,
+            "stopRows": 717,
+            "tractOutcome": {
+              "command": "25050497-7a19-4103-a4a8-b071e9c00b20",
+              "version": "61b563c5-420a-4c8c-ac82-9820072a1c03",
+              "computed": true,
+              "rows": 0,
+              "computedAt": "2026-10-10T06:57:15.299315+00:00",
+              "errorCode": null,
+              "errorDetail": null
+            }
+          }
+        }
+      },
+      "calls": [
+        "claim_gtfs_ingest",
+        "read_gtfs_ingest_attempt"
+      ],
+      "downloads": 0,
+      "workCalls": 0,
+      "terminalCommand": "38e3bb76-65ff-4d79-ad68-91700bd45685",
+      "outputSha256": "13c9c828956f2632fdebb1966e0327ecba3c529368e57a835e85639aeaed9c60",
+      "maxRssKiB": 125472
+    },
+    "artifactUnchanged": true,
+    "committedRouteRowsUnchanged": true
+  },
+  "observationControls": [
+    {
+      "name": "harmless-timestamp",
+      "result": "pass"
+    },
+    {
+      "name": "public-status",
+      "result": "intended assertion failure",
+      "assertion": "Committed ready status missing"
+    },
+    {
+      "name": "execution-state",
+      "result": "intended assertion failure",
+      "assertion": "Committed ready execution missing"
+    },
+    {
+      "name": "silent-adoption",
+      "result": "intended assertion failure",
+      "assertion": "Completion adopted without a decision"
+    },
+    {
+      "name": "missing-route",
+      "result": "intended assertion failure",
+      "assertion": "Stored route rows incomplete"
+    },
+    {
+      "name": "missing-stop",
+      "result": "intended assertion failure",
+      "assertion": "Stored stop rows incomplete"
+    },
+    {
+      "name": "parser-count",
+      "result": "intended assertion failure",
+      "assertion": "Parser counts changed"
+    },
+    {
+      "name": "missing-completion",
+      "result": "intended assertion failure",
+      "assertion": "Completion receipt missing or duplicated"
+    },
+    {
+      "name": "missing-batch",
+      "result": "intended assertion failure",
+      "assertion": "Batch receipts incomplete"
+    }
+  ],
+  "httpRefusals": [
+    {
+      "name": "anonymous-completion",
+      "status": 401,
+      "code": "42501",
+      "databaseUnchanged": true
+    },
+    {
+      "name": "member-completion",
+      "status": 403,
+      "code": "42501",
+      "databaseUnchanged": true
+    },
+    {
+      "name": "changed-completion-replay",
+      "status": 400,
+      "code": "22023",
+      "databaseUnchanged": true
+    },
+    {
+      "name": "new-completion-after-close",
+      "status": 500,
+      "code": "55000",
+      "databaseUnchanged": true
+    },
+    {
+      "name": "batch-after-close",
+      "status": 500,
+      "code": "55000",
+      "databaseUnchanged": true
+    },
+    {
+      "name": "direct-service-row-write",
+      "status": 500,
+      "code": "55000",
+      "databaseUnchanged": true
+    }
+  ],
+  "sourceCandidateSchemaAbsent": true,
+  "ownedHttpAndStorageRemoved": true,
+  "scope": "Actual committed PostgreSQL lifecycle RPCs through PostgREST, native isolated Storage, parser child and worker kill before final acknowledgement. Fresh clone retained privately. No browser, adoption, concurrent replacement, scientific, practitioner or full release acceptance."
+}
