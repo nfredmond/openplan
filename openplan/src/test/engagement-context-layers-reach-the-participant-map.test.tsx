@@ -92,13 +92,14 @@ const mapboxMocks = vi.hoisted(() => {
     return { extend: vi.fn(), isEmpty: vi.fn(() => false) };
   });
 
-  return { Map, NavigationControl: vi.fn(), Popup, Marker, LngLatBounds, instances };
+  return { Map, NavigationControl: vi.fn(), GeolocateControl: vi.fn(), Popup, Marker, LngLatBounds, instances };
 });
 
 vi.mock("mapbox-gl", () => ({
   default: { AttributionControl: class {},
     Map: mapboxMocks.Map,
     NavigationControl: mapboxMocks.NavigationControl,
+    GeolocateControl: mapboxMocks.GeolocateControl,
     Popup: mapboxMocks.Popup,
     Marker: mapboxMocks.Marker,
     LngLatBounds: mapboxMocks.LngLatBounds,
@@ -106,6 +107,7 @@ vi.mock("mapbox-gl", () => ({
   },
   Map: mapboxMocks.Map,
   NavigationControl: mapboxMocks.NavigationControl,
+  GeolocateControl: mapboxMocks.GeolocateControl,
 }));
 
 const ORIGINAL_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;

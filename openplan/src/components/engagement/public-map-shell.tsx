@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EngagementGeometry } from "@/lib/engagement/geometry";
@@ -19,6 +19,7 @@ import { PortalOperatorText } from "./portal-operator-text";
 import { PortalPendingCopyNotice } from "./portal-pending-copy-notice";
 import { PARTICIPANT_MAP_CAN_DRAW, PublicMapStage, type ParticipantMapItem } from "./public-map-stage";
 import { PublicMapSidebar, type SidebarCategory } from "./public-map-sidebar";
+import { NO_TOPIC_FILTER_ID, PublicMapFeedButton, PublicMapFeedPanel } from "./public-map-feed";
 
 export type PublicMapShellItem = ParticipantMapItem & { parentItemId?: string | null };
 
@@ -218,6 +219,80 @@ export function PublicMapShell({
     [items, voteCounts]
   );
 
+  /*
+    THE COMMENT LIST AND THE MAP SHARE ONE SELECTION AND ONE FILTER, so what the
+    list says is shown and what the map draws are always the same comments.
+  */
+  const [feedOpen, setFeedOpen] = useState(false);
+  /*
+    ON A PHONE THE COMMENT LIST AND THE INPUT SHEET TAKE TURNS. Both want most
+    of a 390px screen; open together, the list was squeezed into a strip above
+    the sheet. Opening one closes the other. The sheet still opens without
+    JavaScript; this only adds the courtesy once the page has hydrated.
+  */
+  const sheetToggleRef = useRef<HTMLInputElement>(null);
+  const openFeed = useCallback(() => {
+    setFeedOpen(true);
+    if (sheetToggleRef.current) sheetToggleRef.current.checked = false;
+  }, []);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [feedQuery, setFeedQuery] = useState("");
+  const [hiddenCategoryIds, setHiddenCategoryIds] = useState<string[]>([]);
+
+  const topicsInUse = useMemo(
+    () => [...new Set(mapItems.map((item) => item.categoryId ?? NO_TOPIC_FILTER_ID))],
+    [mapItems]
+  );
+
+  const visibleItems = useMemo(() => {
+    const needle = feedQuery.trim().toLocaleLowerCase();
+    const hidden = new Set(hiddenCategoryIds);
+    return mapItems.filter((item) => {
+      if (hidden.has(item.categoryId ?? NO_TOPIC_FILTER_ID)) return false;
+      if (!needle) return true;
+      return `${item.title ?? ""} ${item.body}`.toLocaleLowerCase().includes(needle);
+    });
+  }, [mapItems, feedQuery, hiddenCategoryIds]);
+
+  /*
+    A COMMENT HAS ITS OWN ADDRESS: `?item=<id>` opens it, and opening one puts
+    it in the address bar, so a resident can send a neighbour the exact comment.
+    Read after hydration because the route above is shared with the preview.
+  */
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("item");
+    if (requested && items.some((item) => item.id === requested)) {
+      setSelectedItemId(requested);
+      setFeedOpen(true);
+    }
+  }, [items]);
+
+  const selectItem = useCallback((itemId: string | null) => {
+    setSelectedItemId(itemId);
+    if (itemId) openFeed();
+    const url = new URL(window.location.href);
+    if (itemId) url.searchParams.set("item", itemId);
+    else url.searchParams.delete("item");
+    window.history.replaceState(window.history.state, "", url);
+  }, [openFeed]);
+
+  const closeFeed = useCallback(() => {
+    setFeedOpen(false);
+    selectItem(null);
+  }, [selectItem]);
+
+  const toggleCategory = useCallback((categoryId: string) => {
+    setHiddenCategoryIds((previous) =>
+      previous.includes(categoryId) ? previous.filter((id) => id !== categoryId) : [...previous, categoryId]
+    );
+  }, []);
+
+  // A filter that hides the open comment closes it rather than leaving the
+  // panel showing a comment the map no longer draws.
+  useEffect(() => {
+    if (selectedItemId && !visibleItems.some((item) => item.id === selectedItemId)) selectItem(null);
+  }, [visibleItems, selectedItemId, selectItem]);
+
   const [basemapId, setBasemapId] = useState<PublicBasemapId | null>(defaultBasemapId);
   const selectedBasemapId = basemapId ?? defaultBasemapId ?? basemapChoices[0]?.id ?? "streets";
 
@@ -271,48 +346,16 @@ export function PublicMapShell({
 
   /*
     THE LABEL ON THE ONE DOOR, chosen from what this campaign actually has.
-    Survey and comments are what a resident came for; the close-the-loop record
-    is what keeps them coming back, and it is the hint rather than the label
-    because a resident who has not yet said anything is not looking for it.
+    Comments are on the map now, so the door names what is only behind it: the
+    survey first, then the team's published response, then everything else.
   */
   const detailsLabel = t(
-    detailsContents.survey && detailsContents.comments
-      ? "portal.openDetailsSurveyAndComments"
-      : detailsContents.survey
-        ? "portal.openDetailsSurvey"
-        : detailsContents.comments
-          ? "portal.openDetailsComments"
-          : "portal.openDetails"
+    detailsContents.survey
+      ? "portal.openDetailsSurvey"
+      : detailsContents.closeLoop
+        ? "portal.openDetailsHint"
+        : "portal.openDetails"
   );
-
-  /*
-    WHERE THE MAP OPENS, IN THE RESIDENT'S LANGUAGE.
-
-    `mapFraming.summary` is English prose composed server-side, and printing it
-    was two defects in one line: it was English on a page that declares Spanish,
-    Farsi or Arabic, and it was written in an administrator's vocabulary — "No
-    study area has been set for this campaign" names two things that exist in
-    this software and nowhere in a resident's life. The resolver already carries
-    the STRUCTURE of that sentence (`origin`, `originLabel`, and whether any
-    candidate failed), so it is rebuilt here from catalog keys instead of
-    translated as a blob.
-
-    A named place is never translated — `{place}` is the agency's own name for
-    the area, and rendering it through the catalog would be inventing a name.
-
-    The English prose is not deleted: it is still what the operator preview's
-    other readers and a survey question's framing note use, and it is still the
-    only thing that can describe a partially-failed lookup in detail. What it no
-    longer does is speak to a resident.
-
-    IT IS NO LONGER BUILT HERE. This block used to hold the whole switch over
-    `origin`, which made it a shared capability living inside one of its two
-    callers — and the other caller, the classic submission form, went on printing
-    the English prose to Spanish readers for exactly as long as that was true.
-    `portalMapFramingSentence` is the one implementation; see
-    `portal-i18n/map-framing-words.ts`.
-  */
-  const framingSentence = portalMapFramingSentence(mapFraming, translator);
 
   /**
    * The scrolling body of the rail.
@@ -418,23 +461,14 @@ export function PublicMapShell({
         </div>
 
         {/*
-          WHERE THE MAP OPENS, AND WHAT IT WILL ACCEPT — beside the map, which is
-          now the whole screen, so the submission rule is finally next to the
-          thing it governs. Both sentences are SUPPRESSED with no map: each names
-          "this map", and printing them above an absent one is the defect this
-          rebuild inherited rather than a new one.
-
-          The first sentence is now the catalog's, built above from the
-          resolver's structured answer. The remaining two are still English prose
-          composed server-side, and are still marked as the English they are —
-          a real gap, narrowed rather than closed, and `unreadableNote` in
-          particular is an operator's diagnostic that a resident should never
-          have needed to read.
+          SAID ONLY WHEN IT HELPS. A map that opened on a real place shows that
+          place, so it is not narrated. A map that opens wide, because nothing
+          framed it or the lookup failed, says so and asks the resident to zoom
+          in. The agency's submission rule, when there is one, is always said.
         */}
-        {canShowMap ? (
+        {canShowMap && (mapFraming.origin === "none" || mapFraming.submissionRule) ? (
           <div className="space-y-1 px-5 pt-3 text-xs text-muted-foreground" data-testid="portal-map-framing">
-            <p>{framingSentence}</p>
-            {mapFraming.unreadableNote ? <p lang="en">{mapFraming.unreadableNote}</p> : null}
+            {mapFraming.origin === "none" ? <p>{portalMapFramingSentence(mapFraming, translator)}</p> : null}
             {mapFraming.submissionRule ? <p lang="en">{mapFraming.submissionRule}</p> : null}
           </div>
         ) : null}
@@ -491,12 +525,7 @@ export function PublicMapShell({
         className="flex min-h-14 shrink-0 items-center justify-between gap-3 border-t border-border/60 bg-background px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
       >
-        <span className="flex flex-col">
-          {detailsLabel}
-          {detailsContents.closeLoop ? (
-            <span className="text-xs font-normal text-muted-foreground">{t("portal.openDetailsHint")}</span>
-          ) : null}
-        </span>
+        <span>{detailsLabel}</span>
         <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
       </a>
   );
@@ -531,9 +560,42 @@ export function PublicMapShell({
       <div className="relative min-h-0 lg:row-span-1">
         <PublicMapStage
           key={`stage-${clearToken}`}
-          items={mapItems}
-          onSupport={onSupport}
-          hasVoted={hasVoted}
+          items={visibleItems}
+          selectedItemId={selectedItemId}
+          onSelectItem={selectItem}
+          feed={{
+            button: (
+              <PublicMapFeedButton
+                open={feedOpen}
+                total={items.length}
+                readFailed={readFailures.comments}
+                onOpen={openFeed}
+                translator={translator}
+              />
+            ),
+            panel: (
+              <PublicMapFeedPanel
+                open={feedOpen}
+                onClose={closeFeed}
+                items={visibleItems}
+                totalCount={items.length}
+                readFailed={readFailures.comments}
+                categories={categories}
+                topicsInUse={topicsInUse}
+                hiddenCategoryIds={hiddenCategoryIds}
+                onToggleCategory={toggleCategory}
+                query={feedQuery}
+                onQueryChange={setFeedQuery}
+                selectedItemId={selectedItemId}
+                onSelect={selectItem}
+                onSupport={(itemId) => void onSupport(itemId)}
+                hasVoted={hasVoted}
+                previewMode={previewMode}
+                detailsHref={detailsHref}
+                translator={translator}
+              />
+            ),
+          }}
           contextLayers={contextLayers}
           initialView={initialView}
           drawEnabled={acceptingSubmissions && !previewMode}
@@ -597,6 +659,10 @@ export function PublicMapShell({
         <input
           type="checkbox"
           id="portal-sheet-toggle"
+          ref={sheetToggleRef}
+          onChange={(event) => {
+            if (event.currentTarget.checked) setFeedOpen(false);
+          }}
           aria-label={t("portal.addYourInput")}
           className="peer sr-only lg:hidden"
           defaultChecked={false}

@@ -24,7 +24,7 @@ import { submitPortalInput } from "@/lib/engagement/submit-portal-input";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { PORTAL_DEFAULT_LOCALE, PORTAL_LOCALE_DIRECTION } from "@/lib/engagement/portal-i18n/locales";
 import type { PortalTranslator } from "@/lib/engagement/portal-i18n/translator";
-import { formatPortalMegabytes, formatPortalNumber } from "@/lib/engagement/portal-i18n/format";
+import { formatPortalDateTime, formatPortalMegabytes, formatPortalNumber } from "@/lib/engagement/portal-i18n/format";
 import { portalMapFramingSentence } from "@/lib/engagement/portal-i18n/map-framing-words";
 import { buildGeometryPickerWords } from "@/lib/engagement/portal-i18n/drawing-map-words";
 import {
@@ -546,13 +546,26 @@ export function PortalSubmissionForm({
       <div className={cn("space-y-3 p-5 text-center", className)} data-testid="portal-sidebar-received">
         <CheckCircle2 className="mx-auto h-9 w-9 text-[color:var(--pine)]" aria-hidden="true" />
         <h2 className="text-lg font-semibold text-foreground">{t("portal.received")}</h2>
-        <p className="text-sm text-muted-foreground">{t("portal.receivedDetail")}</p>
         <p className="text-sm text-muted-foreground">{t("portal.reviewNotice")}</p>
         {/* The one promise the agency must not let a resident infer wrongly:
             being read is not the same as being written back to. */}
         <p className="text-sm text-muted-foreground">{t("portal.followUpHint")}</p>
-        {receipt ? <div className="break-words text-sm"><p><PortalRecoveryCopy translator={translator} message="recovery.receipt"/>: <span className="break-all">{receipt.submissionId}</span></p><p><PortalRecoveryCopy translator={translator} message="recovery.received"/> {receipt.receivedAt ?? <PortalRecoveryCopy translator={translator} message="recovery.dateUnavailable"/>}. <PortalRecoveryCopy translator={translator} message="recovery.receiptMeaning"/></p>
-          <a download={`engagement-receipt-${receipt.submissionId}.json`} href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify({ ...receipt, body: composeBody(), title, campaign: shareToken }, null, 2))}`} className="underline"><PortalRecoveryCopy translator={translator} message="recovery.saveReceipt"/></a></div> : null}
+        {receipt ? (
+          <div className="space-y-1 break-words text-xs text-muted-foreground" data-testid="portal-receipt">
+            <p>
+              <PortalRecoveryCopy translator={translator} message="recovery.receipt" />{" "}
+              <span className="break-all font-mono">{receipt.submissionId.slice(0, 8)}</span>
+              {receipt.receivedAt ? <> · {formatPortalDateTime(receipt.receivedAt, bcp47)}</> : null}
+            </p>
+            <a
+              download={`engagement-receipt-${receipt.submissionId}.json`}
+              href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify({ ...receipt, body: composeBody(), title, campaign: shareToken }, null, 2))}`}
+              className="font-medium text-foreground underline"
+            >
+              <PortalRecoveryCopy translator={translator} message="recovery.saveReceipt" />
+            </a>
+          </div>
+        ) : null}
         <Button type="button" variant="outline" className="min-h-11" onClick={resetForm}>
           {t("portal.shareAnother")}
         </Button>
@@ -583,12 +596,10 @@ export function PortalSubmissionForm({
     send: t("portal.stepSendTitle"),
   };
 
-  const stepHelp: Record<StepId, string> = {
+  // Only the first step needs a sentence. Every later field is labelled, and
+  // the optional ones say so on the label.
+  const stepHelp: Partial<Record<StepId, string>> = {
     where: canDraw ? t("portal.stepWhereHelp") : t("portal.stepWhereHelpNoMap"),
-    what: t("portal.stepWhatHelp"),
-    extras: t("portal.stepExtrasHelp"),
-    you: t("portal.stepYouHelp"),
-    send: t("portal.stepSendHelp"),
   };
 
   /**
@@ -640,26 +651,27 @@ export function PortalSubmissionForm({
       </div>
     );
 
-    const locationStatus = (
-      <>
-        <p
-          className="flex items-center gap-1.5 text-sm text-muted-foreground"
-          data-testid="portal-location-status"
+    // Said only once there is something to say. "No place marked yet" under a
+    // map that plainly has no mark on it was a sentence nobody needed.
+    const locationStatus = geometry ? (
+      <p
+        className="flex flex-wrap items-center gap-x-3 text-sm text-foreground"
+        data-testid="portal-location-status"
+        aria-live="polite"
+      >
+        <span className="inline-flex items-center gap-1.5">
+          <MapPin className="h-4 w-4 text-[color:var(--pine)]" aria-hidden="true" />
+          {t("portal.locationSet")}
+        </span>
+        <button
+          type="button"
+          onClick={clearGeometry}
+          className="min-h-11 text-sm font-medium text-destructive underline-offset-2 hover:underline"
         >
-          <MapPin className="h-4 w-4" aria-hidden="true" />
-          {geometry ? t("portal.locationSet") : t("portal.locationNone")}
-        </p>
-        {geometry ? (
-          <button
-            type="button"
-            onClick={clearGeometry}
-            className="min-h-11 text-sm font-medium text-destructive underline-offset-2 hover:underline"
-          >
-            {t("portal.clearLocation")}
-          </button>
-        ) : null}
-      </>
-    );
+          {t("portal.clearLocation")}
+        </button>
+      </p>
+    ) : null;
 
     if (place.source === "stage") {
       if (!canDraw) return wordsField;
@@ -672,7 +684,7 @@ export function PortalSubmissionForm({
             vocabulary.
           */}
           <fieldset className="space-y-1.5">
-            <legend className="text-sm font-medium">{t("portal.drawModeLabel")}</legend>
+            <legend className="sr-only">{t("portal.drawModeLabel")}</legend>
             <div className="flex flex-wrap gap-1.5">
               {(
                 [
@@ -706,9 +718,6 @@ export function PortalSubmissionForm({
 
     return (
       <div className="space-y-3">
-        <p className="text-sm font-medium">
-          {t("survey.mapHint")} <span className="text-xs text-muted-foreground">({optionalHint})</span>
-        </p>
 
         {/*
           WHERE THIS MAP OPENS, AND WHAT IT WILL ACCEPT. Both sentences are
@@ -724,8 +733,8 @@ export function PortalSubmissionForm({
         */}
         {canDraw ? (
           <div className="space-y-1 text-xs text-muted-foreground" data-testid="portal-map-framing">
-            <p>{portalMapFramingSentence(place.mapFraming, translator)}</p>
-            {place.mapFraming.origin === "none" ? <p>{t("portal.mapZoomHint")}</p> : null}
+            {/* Said only when the map opens wide; a framed map shows its place. */}
+            {place.mapFraming.origin === "none" ? <p>{portalMapFramingSentence(place.mapFraming, translator)}</p> : null}
             {place.mapFraming.unreadableNote ? (
               <p lang={PORTAL_DEFAULT_LOCALE} dir={PORTAL_LOCALE_DIRECTION[PORTAL_DEFAULT_LOCALE]}>
                 {place.mapFraming.unreadableNote}
@@ -777,7 +786,12 @@ export function PortalSubmissionForm({
       onSubmit={handleSubmit}
       data-testid="portal-guided-form"
     >
-      <p className="px-5 text-xs text-muted-foreground"><PortalRecoveryCopy translator={translator} message={draftWarning ?? "recovery.local"}/></p>
+      {/* Drafts save quietly. Only a problem with saving is worth a sentence. */}
+      {draftWarning ? (
+        <p className="text-xs text-muted-foreground" role="status">
+          <PortalRecoveryCopy translator={translator} message={draftWarning} />
+        </p>
+      ) : null}
       {/*
         WHOSE COMMENT THIS ANSWERS, first in the form. A reply that lost its
         banner is a reply a resident cannot tell from a new comment, and the way
@@ -806,46 +820,49 @@ export function PortalSubmissionForm({
         </div>
       ) : null}
 
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">{t("portal.stepsHeading")}</h2>
-        {/* The counter is the promise that this ends. Without it a stepper is an
-            unbounded corridor, which is worse than a long form. */}
-        <p className="mt-0.5 text-xs font-medium text-muted-foreground">
-          {t("portal.stepCounter", {
-            step: formatPortalNumber(stepIndex + 1, bcp47),
-            total: formatPortalNumber(steps.length, bcp47),
-          })}
-        </p>
+      {/*
+        A PROGRESS BAR WHOSE SEGMENTS ARE THE STEPS. Each segment is a real
+        button named for its step, so a confident resident can still jump
+        straight to the one they want, and the counter still promises this ends.
+        It replaced a heading, a counter line and five labelled chips that took
+        three rows before the first question.
+      */}
+      <div className="space-y-2">
+        <ol className="flex gap-1" data-testid="portal-step-list" aria-label={t("portal.stepsHeading")}>
+          {steps.map((id, index) => (
+            <li key={id} className="flex-1">
+              <button
+                type="button"
+                onClick={() => goToStep(id)}
+                aria-current={id === step ? "step" : undefined}
+                aria-label={`${formatPortalNumber(index + 1, bcp47)}. ${stepTitle[id]}`}
+                className="flex h-6 w-full items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "h-1.5 w-full rounded-full transition",
+                    index <= stepIndex ? "bg-[color:var(--pine)]" : "bg-border"
+                  )}
+                />
+              </button>
+            </li>
+          ))}
+        </ol>
       </div>
-
-      {/* Every step is a real button, so somebody who wants the whole form can
-          jump straight to the one they care about. A stepper that traps a
-          confident person is a stepper they fight. */}
-      <ol className="flex flex-wrap gap-1.5" data-testid="portal-step-list">
-        {steps.map((id, index) => (
-          <li key={id}>
-            <button
-              type="button"
-              onClick={() => goToStep(id)}
-              aria-current={id === step ? "step" : undefined}
-              className={cn(
-                "min-h-9 rounded-full border px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                id === step
-                  ? "border-[color:var(--pine)] bg-[color:var(--pine)]/10 text-foreground"
-                  : "border-border/70 text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <span className="me-1 tabular-nums">{formatPortalNumber(index + 1, bcp47)}</span>
-              {stepTitle[id]}
-            </button>
-          </li>
-        ))}
-      </ol>
 
       <div className="space-y-3" data-testid={`portal-step-${step}`}>
         <div>
-          <h3 className="text-base font-semibold text-foreground">{stepTitle[step]}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">{stepHelp[step]}</p>
+          <h2 className="flex items-baseline justify-between gap-3 text-base font-semibold text-foreground">
+            {stepTitle[step]}
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">
+              {t("portal.stepCounter", {
+                step: formatPortalNumber(stepIndex + 1, bcp47),
+                total: formatPortalNumber(steps.length, bcp47),
+              })}
+            </span>
+          </h2>
+          {stepHelp[step] ? <p className="mt-1 text-sm text-muted-foreground">{stepHelp[step]}</p> : null}
         </div>
 
         {step === "where" ? whereStep() : null}
@@ -1151,13 +1168,7 @@ export function PortalSubmissionForm({
                 {geometry || whereWords.trim() ? t("portal.locationSet") : t("portal.reviewNoLocation")}
               </p>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-foreground">{t("portal.whatHappensNext")}</p>
-              <ul className="mt-1.5 space-y-1.5 text-xs text-muted-foreground">
-                <li>{t("portal.reviewNotice")}</li>
-                <li>{t("portal.followUpHint")}</li>
-              </ul>
-            </div>
+            <p className="text-xs text-muted-foreground">{t("portal.reviewNotice")}</p>
           </div>
         ) : null}
       </div>

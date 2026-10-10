@@ -45,6 +45,10 @@ import type { SidebarCategory } from "@/components/engagement/public-map-sidebar
 import { resolvePublicBasemapConfig } from "@/lib/cartographic/basemaps";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { groupApprovedItems } from "@/lib/engagement/approved-item-grouping";
+import {
+  resolveParticipantCategoryColors,
+  UNCATEGORIZED_MAP_COLOR,
+} from "@/lib/engagement/participant-category-colors";
 
 export type PortalMapShellProps = {
   shareToken: string;
@@ -94,9 +98,22 @@ export function buildPortalMapShellProps(
 
   // Replies belong to a thread, not to a place: a reply inherits no geometry and
   // showing one as its own pin would double-count a conversation on the map.
-  const { topLevel } = groupApprovedItems(
+  const { topLevel, repliesByParent } = groupApprovedItems(
     portalProps.approvedItems.map((item) => ({ ...item, parentItemId: item.parentItemId ?? null }))
   );
+
+  // Each pin in its topic's colour. A comment whose topic was since deleted
+  // reads as having no topic, not as a topic the resident cannot find.
+  const categoryColors = resolveParticipantCategoryColors(portalProps.categories);
+  const mapItems: PublicMapShellItem[] = topLevel.map((item) => {
+    const categoryId = item.categoryId && categoryColors.has(item.categoryId) ? item.categoryId : null;
+    return {
+      ...item,
+      categoryId,
+      color: categoryId ? categoryColors.get(categoryId) : UNCATEGORIZED_MAP_COLOR,
+      replyCount: repliesByParent.get(item.id)?.length ?? 0,
+    };
+  });
 
   /*
     WHAT IS BEHIND THE ONE DOOR, computed rather than written, because the label
@@ -119,8 +136,11 @@ export function buildPortalMapShellProps(
     shareToken: portalProps.shareToken,
     configurationVersionId: portalProps.configurationVersionId,
     acceptingSubmissions,
-    categories: portalProps.categories,
-    items: topLevel,
+    categories: portalProps.categories.map((category) => ({
+      ...category,
+      color: categoryColors.get(category.id) ?? null,
+    })),
+    items: mapItems,
     readFailures: portalProps.readFailures,
     demographicsEnabled: portalProps.demographicsEnabled,
     mapFraming: portalProps.mapFraming,

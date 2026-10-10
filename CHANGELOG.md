@@ -20,7 +20,35 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No additional changes beyond the development candidate below.
+**Public engagement map.** Residents can now read comments beside the map. A
+Comments button opens a list with search, topic filters, previous and next, and a
+support button. The list and the map show the same comments, and a filter
+applies to both. Tapping a pin opens its comment. Each comment has its own link
+(`?item=<id>`). Pins take their topic's colour, using a colour-blind-safe
+palette when the operator set none. Close pins group into a count until the
+resident zooms in. The map adds find-my-location, a compass, and a 3D buildings
+switch. Mapbox's own buttons now speak the resident's language.
+
+**Fixed.** Tapping someone else's pin to read it also moved the resident's own
+mark onto that pin. A tap on a pin or a line now opens the comment and marks
+nothing. A tap on empty map still marks.
+
+**Privacy.** Uploaded engagement photos are re-encoded before storage, which
+removes EXIF location, device and timestamp metadata. The original bytes are
+not stored. A file that cannot be decoded is refused with a 415. `sharp` is now
+a direct dependency at 0.35.5. Photos uploaded before this change are not
+altered.
+
+**Less text.** The map rail drops the camera-framing sentence (kept only when
+the map opens wide), the always-on draft-saving note, step-by-step help that
+repeated "optional", and the five step chips, now a progress bar. The about page
+drops the posture card, fact tiles and mode labels. Tabs read "Add a comment"
+and "Comments". A comment count is withheld, not shown as zero, when comments
+could not be read. The public-claims guard now follows relative imports.
+
+Not done: address search, a map that works without a Mapbox key, replies on the
+map, and observation with residents. See
+`docs/reviews/2026-10-10-engagement-map-sweep/README.md`.
 
 ## 0.68.0 (development candidate)
 
