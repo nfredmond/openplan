@@ -200,3 +200,13 @@ prepared verifier, and the exact stored identity reaches the SDK. The existing
 19 dispatcher controls and three current native read snapshots. The worker still
 needs actual polling, live ownership, artifacts, parser and publication flow;
 no import route is enrolled.
+
+## Live-ownership attempt coordinator
+
+[The attempt checkpoint](WORKER_ATTEMPT.md) joins saved identity to live claim,
+read and renewal calls. It aborts processing on renewal uncertainty, refuses
+unfinished work writes and waits for renewal before terminal delivery. Twenty-nine
+tests and 19 controls pass. Controlled SDK transport and real private journals
+do not establish a native database worker journey. Retained-terminal inspection,
+actual archive/parser/output flow, adoption recovery and queue polling remain
+open; no import route is enrolled.
