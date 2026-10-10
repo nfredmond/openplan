@@ -179,3 +179,14 @@ snapshots, the advisor comparison, scoped TypeScript and ESLint pass. Earlier
 records retain their original source identities. Durable journals and actual
 worker/route enrollment remain unfinished, including live HTTP, restart,
 concurrency, Storage cancellation and operation-budget evidence.
+
+## Private attempt and command journal
+
+[The journal checkpoint](WORKER_JOURNAL.md) retains attempt and command identities
+before delivery, refuses changed scope or payload, and revalidates retained
+receipts without resending. Forty tests and 27 source controls pass. A
+native child-process termination check recovers the same identities in a new
+process and then reads the retained receipt without dispatch. This uses synthetic
+delivery and does not establish database or power-loss recovery. The next step
+connects the typed operation dispatcher and live attempt ownership; no import
+route is enrolled.
