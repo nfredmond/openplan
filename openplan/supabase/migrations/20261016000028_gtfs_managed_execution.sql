@@ -886,7 +886,7 @@ BEGIN
  END IF;
  SELECT plan INTO output_plan FROM openplan_gtfs.prepare_receipts WHERE token=p_token AND version_id=p_version;
  RETURN jsonb_build_object('schemaVersion',1,'versionId',v.id,'feedId',v.feed_id,'workspaceId',v.workspace_id,
-  'requestId',s.request_id,'state',j.state,'stage',v.status,'attempts',j.attempt,'claim',to_jsonb(claim),
+  'requestId',s.request_id,'actorId',s.actor_id,'state',j.state,'stage',v.status,'attempts',j.attempt,'claim',to_jsonb(claim),
   'active',openplan_gtfs.owns_attempt(p_version,p_token),'prepared',coalesce(j.prepared_token=p_token,false),
   'source',s.payload->'source','archive',j.archive_identity,'archiveConfirmed',j.archive_available,
   'plan',output_plan,'tract',(SELECT response FROM openplan_gtfs.tract_receipts WHERE token=p_token AND version_id=p_version),

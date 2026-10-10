@@ -61,7 +61,7 @@ BEGIN
  END LOOP;
  SET LOCAL ROLE service_role;
  original:=public.read_gtfs_ingest_attempt(running,claim_token);
- IF original->>'active' IS DISTINCT FROM 'true' OR original->>'prepared' IS DISTINCT FROM 'true'
+ IF original->>'actorId' IS DISTINCT FROM actor::text OR original->>'active' IS DISTINCT FROM 'true' OR original->>'prepared' IS DISTINCT FROM 'true'
   OR original->>'stage' IS DISTINCT FROM 'parsing' OR original->>'archiveConfirmed' IS DISTINCT FROM 'true'
   OR original->'claim'->>'token' IS DISTINCT FROM claim_token::text OR original->'plan'->>'routeRows' IS DISTINCT FROM '2' THEN
   RAISE EXCEPTION 'active attempt snapshot incorrect'; END IF;

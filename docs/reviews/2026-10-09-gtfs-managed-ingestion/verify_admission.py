@@ -160,6 +160,7 @@ cases = [
     ('attempt-client-read', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.read_gtfs_ingest_attempt(uuid,uuid) TO anon;\nCOMMIT;'), 'client called attempt read'),
     ('status-client-read', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.read_gtfs_ingest_status(uuid,uuid,uuid) TO anon;\nCOMMIT;'), 'client called status read'),
     ('queue-awaiting-archive', mutation("WHERE (j.state='queued' OR (j.state='running' AND j.lease_until<=clock_timestamp()))", "WHERE (j.state IN ('queued','awaiting_archive') OR (j.state='running' AND j.lease_until<=clock_timestamp()))"), 'queue selected ineligible or out-of-order work'),
+    ('attempt-original-actor', mutation("'requestId',s.request_id,'actorId',s.actor_id,'state',j.state", "'requestId',s.request_id,'state',j.state"), 'active attempt snapshot incorrect'),
     ('restored', source, None),
 ]
 

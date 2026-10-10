@@ -168,3 +168,14 @@ bounds acknowledgements independently of transport compliance, and preserves
 unknown outcomes for later reconciliation. Sixty-four focused tests, 36 source
 controls, three actual PostgreSQL response snapshots, scoped TypeScript and ESLint
 pass. Durable journals, mutation calls and worker/route enrollment remain open.
+
+## Typed worker mutations
+
+[The mutation checkpoint](WORKER_MUTATIONS.md) adds scoped calls for archive,
+derived batches, tract computation, completion, failure and ordinary adoption.
+The private attempt snapshot carries the original submitter identity. One hundred
+SDK tests, 51 worker source controls, 121 native SQL controls, three native read
+snapshots, the advisor comparison, scoped TypeScript and ESLint pass. Earlier
+records retain their original source identities. Durable journals and actual
+worker/route enrollment remain unfinished, including live HTTP, restart,
+concurrency, Storage cancellation and operation-budget evidence.

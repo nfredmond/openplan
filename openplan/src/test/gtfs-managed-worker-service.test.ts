@@ -8,7 +8,7 @@ const scope = { versionId: id(1), token: id(2) }, workspaceId = id(3), feedId = 
 const start = "2026-10-09T12:00:00.123456+00:00", until = "2026-10-09T12:02:00.123456+00:00";
 const claim = () => ({ token: scope.token, version_id: scope.versionId, attempt: 1, claimed_at: start, initial_lease_until: until });
 const tract = () => ({ command: id(6), version: scope.versionId, computed: true, rows: 0, computedAt: until, errorCode: null, errorDetail: null });
-const snapshot = () => ({ schemaVersion: 1, versionId: scope.versionId, feedId, workspaceId, requestId: id(7), state: "running", stage: "parsing", attempts: 1, claim: claim(), active: true, prepared: true,
+const snapshot = () => ({ schemaVersion: 1, versionId: scope.versionId, feedId, workspaceId, requestId: id(7), actorId, state: "running", stage: "parsing", attempts: 1, claim: claim(), active: true, prepared: true,
   source: { kind: "upload", provisionalName: " Synthetic source ", uploadSha256: "a".repeat(64), uploadBytes: 99 },
   archive: { path: `${workspaceId}/${feedId}/${scope.versionId}.zip`, sha256: "a".repeat(64), bytes: 99 }, archiveConfirmed: true,
   plan: { sha256: "b".repeat(64), bytes: 200, routeRows: 2, stopRows: 2, routeBatches: 1, stopBatches: 1 }, tract: tract(), completion: null });
@@ -120,5 +120,108 @@ describe("managed GTFS worker boundaries", () => {
     expect(m.fetcher.mock.calls[0][1]?.signal?.aborted).toBe(true); resolve(new Response("true",{headers:{"Content-Type":"application/json"}}));
     await vi.advanceTimersByTimeAsync(0); expect(m.fetcher).toHaveBeenCalledTimes(1); expect(vi.getTimerCount()).toBe(0);
     } finally { controller.abort(); await refused; }
+  });
+});
+
+import { adoptGtfsAttempt, completeGtfsAttempt, computeGtfsTracts, confirmGtfsArchive, failGtfsAttempt,
+  prepareGtfsArchive, prepareGtfsOutput, stageGtfsAttempt, verifyGtfsManifest, writeGtfsBatch } from "@/lib/gtfs/managed-worker-service";
+const fullScope = { ...scope, workspaceId, feedId, actorId };
+const manifest = () => [{ kind: "route" as const, ordinal: 0, rows: 2, hash: "c".repeat(64) },
+  { kind: "stop" as const, ordinal: 0, rows: 2, hash: "d".repeat(64) }];
+const metadata = () => ({ agency_count: 1, route_count: 2, stop_count: 2, trip_count: 2, stop_time_row_count: 2,
+  calendar_service_count: 1, frequency_trip_count: 0, scheduled_trip_count: 2, parse_warnings: [] });
+const batchRows = () => [1, 2].map(n => ({ workspace_id: workspaceId, feed_version_id: scope.versionId, route_id: `R${n}` }));
+const basis = () => ({ feedId, versionId: scope.versionId, routeCount: 2, stopCount: 2,
+  previousVersionId: null as string | null, previousRouteCount: null as number | null, previousStopCount: null as number | null });
+const commandId = id(20);
+const commands = () => {
+  const archive = snapshot().archive, plan = snapshot().plan;
+  return [
+    { name: "stage", rpc: "stage_gtfs_ingest", reply: { versionId: scope.versionId, stage: "parsing" }, args: { p_version: scope.versionId, p_token: scope.token, p_stage: "parsing" },
+      run: (m: ReturnType<typeof client>) => stageGtfsAttempt(m.service, scope, "parsing", signal()) },
+    { name: "archive-prepare", rpc: "prepare_gtfs_archive", reply: { versionId: scope.versionId, archive, preparedAt: start }, args: { p_version: scope.versionId, p_token: scope.token, p_archive: archive },
+      run: (m: ReturnType<typeof client>) => prepareGtfsArchive(m.service, fullScope, archive, signal()) },
+    { name: "archive-confirm", rpc: "confirm_gtfs_archive", reply: { versionId: scope.versionId, archive, confirmedAt: start }, args: { p_version: scope.versionId, p_token: scope.token, p_archive: archive },
+      run: (m: ReturnType<typeof client>) => confirmGtfsArchive(m.service, fullScope, archive, signal()) },
+    { name: "prepare", rpc: "prepare_gtfs_derived", reply: { version: scope.versionId, token: scope.token, removedRoutes: 0, removedStops: 0, removedTracts: 0, plan }, args: { p_version: scope.versionId, p_token: scope.token, p_plan: plan },
+      run: (m: ReturnType<typeof client>) => prepareGtfsOutput(m.service, scope, plan, signal()) },
+    { name: "batch", rpc: "write_gtfs_ingest_batch", reply: { command: commandId, rows: 2, hash: "c".repeat(64) }, args: { p_version: scope.versionId, p_token: scope.token, p_command: commandId, p_kind: "route", p_ordinal: 0, p_rows: batchRows() },
+      run: (m: ReturnType<typeof client>) => writeGtfsBatch(m.service, fullScope, { id: commandId, kind: "route", ordinal: 0, rows: batchRows() }, signal()) },
+    { name: "tract", rpc: "compute_managed_gtfs_tracts", reply: { ...tract(), command: commandId }, args: { p_version: scope.versionId, p_token: scope.token, p_command: commandId, p_plan: plan, p_manifest: manifest() },
+      run: (m: ReturnType<typeof client>) => computeGtfsTracts(m.service, scope, { id: commandId, plan, manifest: manifest() }, signal()) },
+    { name: "complete", rpc: "complete_gtfs_ingest", reply: { command: commandId, version: scope.versionId, status: "ready", routeRows: 2, stopRows: 2, tractOutcome: tract() }, args: { p_version: scope.versionId, p_token: scope.token, p_command: commandId, p_archive: archive, p_plan: plan, p_manifest: manifest(), p_metadata: metadata(), p_tract_command: tract().command },
+      run: (m: ReturnType<typeof client>) => completeGtfsAttempt(m.service, fullScope, { id: commandId, archive, plan, manifest: manifest(), metadata: metadata(), tract: tract() }, signal()) },
+    { name: "fail", rpc: "fail_gtfs_ingest", reply: { command: commandId, version: scope.versionId, state: "failed", closure: { recorded: true, feedStatusChanged: false }, cleanupPending: true, closedAt: start }, args: { p_version: scope.versionId, p_token: scope.token, p_command: commandId, p_code: "partial_write", p_detail: "Synthetic failure" },
+      run: (m: ReturnType<typeof client>) => failGtfsAttempt(m.service, scope, { id: commandId, code: "partial_write", detail: "Synthetic failure" }, signal()) },
+    { name: "adopt", rpc: "adopt_gtfs_ingest", reply: { command: commandId, version: scope.versionId, adopted: true, alreadyCurrent: false, basis: basis(), reviewAccepted: false, adoptedAt: start }, args: { p_workspace: workspaceId, p_version: scope.versionId, p_actor: actorId, p_command: commandId, p_review: null },
+      run: (m: ReturnType<typeof client>) => adoptGtfsAttempt(m.service, fullScope, { id: commandId, routeCount: 2, stopCount: 2 }, signal()) },
+  ];
+};
+
+describe("managed GTFS mutation receipts", () => {
+  it.each(commands())("binds $name to its exact native payload", async command => {
+    const m = client(command.reply); expect(await command.run(m)).toEqual(command.reply);
+    expect(m.fetcher).toHaveBeenCalledTimes(1);
+    expect(String(m.fetcher.mock.calls[0][0])).toBe(`http://127.0.0.1:54321/rest/v1/rpc/${command.rpc}`);
+    expect(m.fetcher.mock.calls[0][1]?.method).toBe("POST");
+    expect(JSON.parse(String(m.fetcher.mock.calls[0][1]?.body))).toEqual(command.args);
+  });
+  it.each(commands())("refuses a foreign $name receipt", async command => {
+    const changed = { ...command.reply } as Record<string, unknown>;
+    if ("command" in changed) changed.command = id(99);
+    else if ("versionId" in changed) changed.versionId = id(99);
+    else changed.version = id(99);
+    const m = client(changed); await expect(command.run(m)).rejects.toThrow();
+  });
+  it.each(["order", "ordinal", "totals"])("refuses malformed manifest %s", kind => {
+    const value = manifest(); if (kind === "order") value.reverse(); if (kind === "ordinal") value[0].ordinal = 1; if (kind === "totals") value[0].rows = 1;
+    expect(() => verifyGtfsManifest(value, snapshot().plan)).toThrow();
+  });
+  it("refuses a foreign batch before sending", async () => {
+    const m = client({ command: commandId, rows: 2, hash: "c".repeat(64) });
+    await expect(writeGtfsBatch(m.service, fullScope, { id: commandId, kind: "route", ordinal: 0, rows: batchRows().map(row => ({ ...row, workspace_id: id(99) })) }, signal())).rejects.toThrow("row scope");
+    expect(m.fetcher).not.toHaveBeenCalled();
+  });
+  it("refuses truncated batch receipts", async () => {
+    const c = commands().find(c => c.name === "batch")!; const m = client({ ...c.reply, rows: 1 }); await expect(c.run(m)).rejects.toThrow("batch receipt");
+  });
+  it("freezes batch payload before transport", async () => {
+    const m = client({ command: commandId, rows: 2, hash: "c".repeat(64) }), rows = batchRows();
+    const pending = writeGtfsBatch(m.service, fullScope, { id: commandId, kind: "route", ordinal: 0, rows }, signal()); rows[0].route_id = "changed";
+    await pending; expect(JSON.parse(String(m.fetcher.mock.calls[0][1]?.body)).p_rows[0].route_id).toBe("R1");
+  });
+  it.each(["archive-prepare", "archive-confirm"])("refuses changed archive metadata: %s", async name => {
+    const c = commands().find(c => c.name === name)!; const m = client({ ...c.reply, archive: { ...snapshot().archive, bytes: 98 } }); await expect(c.run(m)).rejects.toThrow();
+  });
+  it("refuses changed preparation identity", async () => {
+    const c = commands().find(c => c.name === "prepare")!; const m = client({ ...c.reply, plan: { ...snapshot().plan, bytes: 201 } }); await expect(c.run(m)).rejects.toThrow("preparation receipt");
+  });
+  it("refuses changed finalization evidence", async () => {
+    const c = commands().find(c => c.name === "complete")!; const m = client({ ...c.reply, tractOutcome: { ...tract(), rows: 1 } }); await expect(c.run(m)).rejects.toThrow("finalization receipt");
+  });
+  it("keeps a failed tract outcome nonnumeric", async () => {
+    const c = commands().find(c => c.name === "tract")!, reply = { ...tract(), command: commandId, computed: false, rows: null, computedAt: null, errorCode: "08006", errorDetail: "Synthetic outage" };
+    expect(await c.run(client(reply))).toEqual(reply);
+  });
+  it("preserves withheld adoption and does not send review acceptance", async () => {
+    const m = client({ command: commandId, version: scope.versionId, adopted: false, withheld: true,
+      basis: { ...basis(), previousVersionId: id(99), previousRouteCount: 10, previousStopCount: 10 } });
+    const command = { id: commandId, routeCount: 2, stopCount: 2, review: { acceptMaterialShrinkage: true } };
+    expect((await adoptGtfsAttempt(m.service, fullScope, command, signal())).adopted).toBe(false);
+    expect(JSON.parse(String(m.fetcher.mock.calls[0][1]?.body)).p_review).toBeNull();
+  });
+  it("allows the exact existing twenty-percent boundary", async () => {
+    const reply = { command: commandId, version: scope.versionId, adopted: true, alreadyCurrent: false, reviewAccepted: false, adoptedAt: start,
+      basis: { ...basis(), routeCount: 8, stopCount: 8, previousVersionId: id(99), previousRouteCount: 10, previousStopCount: 10 } };
+    expect((await adoptGtfsAttempt(client(reply).service, fullScope, { id: commandId, routeCount: 8, stopCount: 8 }, signal())).adopted).toBe(true);
+  });
+  it.each(["scope", "predecessor", "outcome", "current", "review"])("refuses inconsistent adoption %s", async kind => {
+    const c = commands().find(c => c.name === "adopt")!, reply = { ...c.reply, basis: basis() } as Record<string, unknown>;
+    if (kind === "scope") reply.basis = { ...basis(), feedId: id(99) };
+    if (kind === "predecessor") reply.basis = { ...basis(), previousRouteCount: 3 };
+    if (kind === "outcome") reply.basis = { ...basis(), previousVersionId: id(99), previousRouteCount: 10, previousStopCount: 10 };
+    if (kind === "current") { reply.alreadyCurrent = true; delete reply.reviewAccepted; }
+    if (kind === "review") reply.reviewAccepted = true;
+    await expect(c.run(client(reply))).rejects.toThrow();
   });
 });

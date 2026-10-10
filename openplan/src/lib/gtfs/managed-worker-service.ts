@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { GTFS_FAILURE_CODES } from "./types";
+import { assessFeedVersionCollapse } from "./persist";
 
 const id = z.string().uuid().transform(value => value.toLowerCase());
 const date = z.iso.datetime({ offset: true });
@@ -22,7 +24,7 @@ const completionSchema = z.object({ command: id, version: id, status: z.literal(
   stopRows: positive, tractOutcome: tractSchema }).strict();
 const state = z.enum(["awaiting_archive", "queued", "running", "ready", "failed", "cancelled"]);
 const stage = z.enum(["pending", "fetching", "parsing", "ready", "failed"]);
-const attemptSchema = z.object({ schemaVersion: z.literal(1), versionId: id, feedId: id, workspaceId: id, requestId: id,
+const attemptSchema = z.object({ schemaVersion: z.literal(1), versionId: id, feedId: id, workspaceId: id, requestId: id, actorId: id,
   state, stage, attempts: positive, claim: claimSchema, active: z.boolean(), prepared: z.boolean(),
   source: sourceSchema, archive: archiveSchema.nullable(), archiveConfirmed: z.boolean(), plan: planSchema.nullable(),
   tract: tractSchema.nullable(), completion: completionSchema.nullable() }).strict();
@@ -35,6 +37,10 @@ export type GtfsWorkerService = Pick<SupabaseClient, "rpc">;
 export type GtfsAttemptScope = { versionId: string; token: string };
 export type GtfsAttemptSnapshot = z.infer<typeof attemptSchema>;
 export type GtfsMemberStatus = z.infer<typeof statusSchema>;
+export type GtfsArchiveScope = { workspaceId: string; feedId: string; versionId: string };
+export type GtfsArchiveIdentity = z.infer<typeof archiveSchema>;
+export type GtfsOutputPlan = z.infer<typeof planSchema>;
+export type GtfsTractOutcome = z.infer<typeof tractSchema>;
 
 function requireMatch(condition: boolean, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -81,7 +87,7 @@ export function verifyGtfsAttempt(raw: unknown, scope: GtfsAttemptScope): GtfsAt
   requireMatch(!value.archiveConfirmed || value.archive !== null, "GTFS confirmed archive missing");
   requireMatch(value.stage !== "parsing" || value.archiveConfirmed, "GTFS parsing archive unconfirmed");
   if (value.archive) {
-    requireMatch(value.archive.path === `${value.workspaceId}/${value.feedId}/${value.versionId}.zip`, "GTFS archive scope differs");
+    verifyGtfsArchive(value.archive, value);
   }
   if (value.source.kind === "upload") {
     requireMatch(value.source.sourceUrl == null && value.source.normalizedSourceUrl == null && value.archive !== null
@@ -94,9 +100,7 @@ export function verifyGtfsAttempt(raw: unknown, scope: GtfsAttemptScope): GtfsAt
     requireMatch(value.source.kind !== "catalog" || !!value.source.catalogSourceId?.trim(), "GTFS catalog identity missing");
   }
   if (value.plan) {
-    requireMatch(value.plan.routeBatches >= Math.ceil(value.plan.routeRows / 1000) && value.plan.routeBatches <= value.plan.routeRows
-      && value.plan.stopBatches >= Math.ceil(value.plan.stopRows / 1000) && value.plan.stopBatches <= value.plan.stopRows,
-    "GTFS output plan capacity differs");
+    verifyGtfsOutputPlan(value.plan);
   }
   if (value.tract) verifyTract(value.tract, value.versionId);
   if (value.completion) {
@@ -179,4 +183,159 @@ export async function readGtfsStatus(service: GtfsWorkerService, scope: { worksp
   return verifyGtfsStatus(await call(service, "read_gtfs_ingest_status", {
     p_workspace: expected.workspaceId, p_version: expected.versionId, p_actor: expected.actorId,
   }, signal), expected);
+}
+
+export function verifyGtfsArchive(raw: unknown, scope: GtfsArchiveScope): GtfsArchiveIdentity {
+  const archive = archiveSchema.parse(raw);
+  const path = `${id.parse(scope.workspaceId)}/${id.parse(scope.feedId)}/${id.parse(scope.versionId)}.zip`;
+  requireMatch(archive.path === path, "GTFS archive scope differs");
+  return archive;
+}
+
+export function verifyGtfsOutputPlan(raw: unknown): GtfsOutputPlan {
+  const plan = planSchema.parse(raw);
+  requireMatch(plan.routeBatches >= Math.ceil(plan.routeRows / 1000) && plan.routeBatches <= plan.routeRows
+    && plan.stopBatches >= Math.ceil(plan.stopRows / 1000) && plan.stopBatches <= plan.stopRows,
+  "GTFS output plan capacity differs");
+  return plan;
+}
+
+const manifestSchema = z.array(z.object({ kind: z.enum(["route", "stop"]), ordinal: count,
+  rows: positive.max(1000), hash }).strict()).min(1);
+export type GtfsBatchManifest = z.infer<typeof manifestSchema>;
+
+export function verifyGtfsManifest(raw: unknown, plan: GtfsOutputPlan): GtfsBatchManifest {
+  const manifest = manifestSchema.parse(raw), rows = { route: 0, stop: 0 }, batches = { route: 0, stop: 0 };
+  let sawStops = false;
+  for (const batch of manifest) {
+    requireMatch(batch.ordinal === batches[batch.kind] && !(sawStops && batch.kind === "route"), "GTFS manifest order differs");
+    sawStops ||= batch.kind === "stop";
+    batches[batch.kind]++;
+    rows[batch.kind] += batch.rows;
+  }
+  requireMatch(rows.route === plan.routeRows && rows.stop === plan.stopRows
+    && batches.route === plan.routeBatches && batches.stop === plan.stopBatches, "GTFS manifest totals differ");
+  return manifest;
+}
+
+function attemptArgs(scope: GtfsAttemptScope) {
+  return { p_version: id.parse(scope.versionId), p_token: id.parse(scope.token) };
+}
+
+export async function stageGtfsAttempt(service: GtfsWorkerService, scope: GtfsAttemptScope, next: "fetching" | "parsing", signal: AbortSignal) {
+  const args = { ...attemptArgs(scope), p_stage: z.enum(["fetching", "parsing"]).parse(next) };
+  const receipt = z.object({ versionId: id, stage: z.enum(["fetching", "parsing"]) }).strict().parse(
+    await call(service, "stage_gtfs_ingest", args, signal));
+  requireMatch(receipt.versionId === args.p_version && receipt.stage === args.p_stage, "GTFS stage receipt differs");
+  return receipt;
+}
+
+export async function prepareGtfsArchive(service: GtfsWorkerService, scope: GtfsAttemptScope & GtfsArchiveScope, raw: GtfsArchiveIdentity, signal: AbortSignal) {
+  const args = { ...attemptArgs(scope), p_archive: verifyGtfsArchive(raw, scope) };
+  const receipt = z.object({ versionId: id, archive: archiveSchema, preparedAt: date }).strict().parse(
+    await call(service, "prepare_gtfs_archive", args, signal));
+  requireMatch(receipt.versionId === args.p_version && JSON.stringify(receipt.archive) === JSON.stringify(args.p_archive), "GTFS archive preparation receipt differs");
+  return receipt;
+}
+
+/** Confirmation records verified bytes. The caller must first reconcile actual
+ * private Storage contents; a returned metadata receipt cannot do that check.
+ */
+export async function confirmGtfsArchive(service: GtfsWorkerService, scope: GtfsAttemptScope & GtfsArchiveScope, raw: GtfsArchiveIdentity, signal: AbortSignal) {
+  const args = { ...attemptArgs(scope), p_archive: verifyGtfsArchive(raw, scope) };
+  const receipt = z.object({ versionId: id, archive: archiveSchema, confirmedAt: date }).strict().parse(
+    await call(service, "confirm_gtfs_archive", args, signal));
+  requireMatch(receipt.versionId === args.p_version && JSON.stringify(receipt.archive) === JSON.stringify(args.p_archive), "GTFS archive confirmation receipt differs");
+  return receipt;
+}
+
+export async function prepareGtfsOutput(service: GtfsWorkerService, scope: GtfsAttemptScope, raw: GtfsOutputPlan, signal: AbortSignal) {
+  const args = { ...attemptArgs(scope), p_plan: verifyGtfsOutputPlan(raw) };
+  const receipt = z.object({ version: id, token: id, removedRoutes: count, removedStops: count, removedTracts: count, plan: planSchema }).strict().parse(
+    await call(service, "prepare_gtfs_derived", args, signal));
+  requireMatch(receipt.version === args.p_version && receipt.token === args.p_token
+    && JSON.stringify(receipt.plan) === JSON.stringify(args.p_plan), "GTFS output preparation receipt differs");
+  return receipt;
+}
+
+export async function writeGtfsBatch(service: GtfsWorkerService, scope: GtfsAttemptScope & { workspaceId: string },
+  command: { id: string; kind: "route" | "stop"; ordinal: number; rows: ReadonlyArray<Record<string, unknown>> }, signal: AbortSignal) {
+  const args = { ...attemptArgs(scope), p_command: id.parse(command.id), p_kind: z.enum(["route", "stop"]).parse(command.kind),
+    p_ordinal: count.parse(command.ordinal), p_rows: z.array(z.record(z.string(), z.json())).min(1).max(1000).parse(command.rows) };
+  const workspaceId = id.parse(scope.workspaceId);
+  requireMatch(args.p_rows.every(row => row.workspace_id === workspaceId && row.feed_version_id === args.p_version), "GTFS batch row scope differs");
+  const receipt = z.object({ command: id, rows: positive.max(1000), hash }).strict().parse(await call(service, "write_gtfs_ingest_batch", args, signal));
+  requireMatch(receipt.command === args.p_command && receipt.rows === args.p_rows.length, "GTFS batch receipt differs");
+  return receipt;
+}
+
+export async function computeGtfsTracts(service: GtfsWorkerService, scope: GtfsAttemptScope,
+  command: { id: string; plan: GtfsOutputPlan; manifest: GtfsBatchManifest }, signal: AbortSignal) {
+  const plan = verifyGtfsOutputPlan(command.plan);
+  const args = { ...attemptArgs(scope), p_command: id.parse(command.id), p_plan: plan, p_manifest: verifyGtfsManifest(command.manifest, plan) };
+  const receipt = tractSchema.parse(await call(service, "compute_managed_gtfs_tracts", args, signal));
+  verifyTract(receipt, args.p_version);
+  requireMatch(receipt.command === args.p_command, "GTFS tract command receipt differs");
+  return receipt;
+}
+
+const metadataSchema = z.object({ agency_count: count, route_count: positive, stop_count: positive, trip_count: count,
+  stop_time_row_count: count, calendar_service_count: count, frequency_trip_count: count, scheduled_trip_count: count,
+  service_start_date: z.string().nullable().optional(), service_end_date: z.string().nullable().optional(),
+  feed_info_version: z.string().nullable().optional(), feed_info_publisher_name: z.string().nullable().optional(),
+  feed_info_start_date: z.string().nullable().optional(), feed_info_end_date: z.string().nullable().optional(), parse_warnings: z.array(z.json()) }).strict();
+export type GtfsCompletionMetadata = z.infer<typeof metadataSchema>;
+
+export async function completeGtfsAttempt(service: GtfsWorkerService, scope: GtfsAttemptScope & GtfsArchiveScope,
+  command: { id: string; archive: GtfsArchiveIdentity; plan: GtfsOutputPlan; manifest: GtfsBatchManifest;
+    metadata: GtfsCompletionMetadata; tract: GtfsTractOutcome }, signal: AbortSignal) {
+  const plan = verifyGtfsOutputPlan(command.plan), tract = tractSchema.parse(command.tract);
+  const args = { ...attemptArgs(scope), p_command: id.parse(command.id), p_archive: verifyGtfsArchive(command.archive, scope), p_plan: plan,
+    p_manifest: verifyGtfsManifest(command.manifest, plan), p_metadata: metadataSchema.parse(command.metadata), p_tract_command: tract.command };
+  verifyTract(tract, args.p_version);
+  const receipt = completionSchema.parse(await call(service, "complete_gtfs_ingest", args, signal));
+  requireMatch(receipt.command === args.p_command && receipt.version === args.p_version && receipt.routeRows === plan.routeRows
+    && receipt.stopRows === plan.stopRows && JSON.stringify(receipt.tractOutcome) === JSON.stringify(tract), "GTFS finalization receipt differs");
+  return receipt;
+}
+
+export async function failGtfsAttempt(service: GtfsWorkerService, scope: GtfsAttemptScope,
+  command: { id: string; code: typeof GTFS_FAILURE_CODES[number]; detail: string }, signal: AbortSignal) {
+  const args = { ...attemptArgs(scope), p_command: id.parse(command.id), p_code: z.enum(GTFS_FAILURE_CODES).parse(command.code),
+    p_detail: z.string().min(1).max(2000).refine(value => value.trim().length > 0).parse(command.detail) };
+  const receipt = z.object({ command: id, version: id, state: z.literal("failed"),
+    closure: z.object({ recorded: z.literal(true), feedStatusChanged: z.boolean() }).strict(), cleanupPending: z.boolean(), closedAt: date }).strict().parse(
+    await call(service, "fail_gtfs_ingest", args, signal));
+  requireMatch(receipt.command === args.p_command && receipt.version === args.p_version, "GTFS failure receipt differs");
+  return receipt;
+}
+
+const basisSchema = z.object({ feedId: id, versionId: id, routeCount: positive, stopCount: positive,
+  previousVersionId: id.nullable(), previousRouteCount: count.nullable(), previousStopCount: count.nullable() }).strict();
+const adoptionSchema = z.union([
+  z.object({ command: id, version: id, adopted: z.literal(false), withheld: z.literal(true), basis: basisSchema }).strict(),
+  z.object({ command: id, version: id, adopted: z.literal(true), alreadyCurrent: z.literal(true), basis: basisSchema, adoptedAt: date.nullable() }).strict(),
+  z.object({ command: id, version: id, adopted: z.literal(true), alreadyCurrent: z.literal(false), basis: basisSchema,
+    reviewAccepted: z.literal(false), adoptedAt: date }).strict(),
+]);
+
+/** Workers may attempt ordinary adoption. This interface cannot send review
+ * acceptance or override the existing material-shrinkage safeguard.
+ */
+export async function adoptGtfsAttempt(service: GtfsWorkerService, scope: GtfsArchiveScope & { actorId: string },
+  command: { id: string; routeCount: number; stopCount: number }, signal: AbortSignal) {
+  const args = { p_workspace: id.parse(scope.workspaceId), p_version: id.parse(scope.versionId), p_actor: id.parse(scope.actorId),
+    p_command: id.parse(command.id), p_review: null };
+  const feedId = id.parse(scope.feedId), routeCount = positive.parse(command.routeCount), stopCount = positive.parse(command.stopCount);
+  const receipt = adoptionSchema.parse(await call(service, "adopt_gtfs_ingest", args, signal));
+  const basis = receipt.basis;
+  requireMatch(receipt.command === args.p_command && receipt.version === args.p_version && basis.feedId === feedId
+    && basis.versionId === args.p_version && basis.routeCount === routeCount && basis.stopCount === stopCount, "GTFS adoption receipt scope differs");
+  requireMatch(basis.previousVersionId === null ? basis.previousRouteCount === null && basis.previousStopCount === null
+    : basis.previousRouteCount !== null && basis.previousStopCount !== null, "GTFS adoption predecessor differs");
+  const previous = basis.previousVersionId === null ? null : { routeCount: basis.previousRouteCount!, stopCount: basis.previousStopCount! };
+  const collapsed = assessFeedVersionCollapse(previous, { routeCount, stopCount }).collapsed;
+  requireMatch(receipt.adopted !== collapsed, "GTFS adoption outcome differs from shrinkage evidence");
+  requireMatch(!receipt.adopted || !receipt.alreadyCurrent || basis.previousVersionId === args.p_version, "GTFS current adoption predecessor differs");
+  return receipt;
 }
