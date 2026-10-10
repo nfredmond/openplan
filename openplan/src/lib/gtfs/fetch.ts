@@ -162,6 +162,8 @@ export type GtfsFetchOutcome = GtfsFetchSuccess | GtfsFetchFailure;
  * route passes none of them.
  */
 export type CappedFetchOptions = {
+  /** Worker interruption rejects with this signal's reason, never a feed failure. */
+  signal?: AbortSignal;
   /** Hard ceiling. The reader cancels the response the moment this is passed. */
   maxBytes: number;
   /** Wall-clock budget for the whole fetch, connection and body together. */
@@ -183,6 +185,8 @@ export type CappedFetchOptions = {
 
 /** What a caller of the GTFS-specific wrappers may set. Bounds come from limits.ts. */
 export type GtfsFetchOptions = {
+  /** Stop intake when the worker loses ownership or shuts down. */
+  signal?: AbortSignal;
   env?: GtfsLimitEnv;
   now?: () => number;
   fetchImpl?: typeof fetch;
@@ -224,6 +228,7 @@ export async function fetchGtfsFeedBytes(
     // gets this deployment's budget.
     timeoutMs: Math.min(options.timeoutMs ?? limits.parseBudgetMs, limits.parseBudgetMs),
     subjectLabel: "feed",
+    signal: options.signal,
     now: options.now,
     fetchImpl: options.fetchImpl,
     lookup: options.lookup,
@@ -253,6 +258,7 @@ export async function fetchCappedBytes(
     timeoutMs: clampTimerDelay(rawOptions.timeoutMs),
   };
 
+  options.signal?.throwIfAborted();
   const now = options.now ?? Date.now;
   const startedAt = now();
 
@@ -261,6 +267,7 @@ export async function fetchCappedBytes(
   // only an abort on the request itself gets control back. `timedOut` is what
   // tells the catch block that the AbortError was ours and not the caller's.
   const controller = new AbortController();
+  const signal = options.signal ? AbortSignal.any([controller.signal, options.signal]) : controller.signal;
   let timedOut = false;
   const timer = setTimeout(() => {
     timedOut = true;
@@ -270,7 +277,7 @@ export async function fetchCappedBytes(
   try {
     const fetched = await fetchPublicUrl(
       url,
-      { method: "GET", signal: controller.signal, redirect: "manual" },
+      { method: "GET", signal, redirect: "manual" },
       {
         fetchImpl: options.fetchImpl,
         lookup: options.lookup,
@@ -282,6 +289,8 @@ export async function fetchCappedBytes(
       },
     );
 
+    if (options.signal?.aborted && fetched.ok) void discard(fetched.response);
+    options.signal?.throwIfAborted();
     if (!fetched.ok) {
       if (fetched.code === "too_many_redirects") {
         return { ok: false, code: "fetch_failed", detail: fetched.detail, hops: fetched.hops };
@@ -318,7 +327,7 @@ export async function fetchCappedBytes(
     const { response, finalUrl, hops } = fetched;
 
     if (!response.ok) {
-      await discard(response);
+      void discard(response);
       return {
         ok: false,
         code: "fetch_failed",
@@ -329,7 +338,8 @@ export async function fetchCappedBytes(
       };
     }
 
-    const body = await readCappedBody(response, options, now, startedAt, () => timedOut);
+    const body = await readCappedBody(response, options, now, startedAt, () => timedOut, signal);
+    options.signal?.throwIfAborted();
     if (!body.ok) {
       return { ...body, hops };
     }
@@ -517,6 +527,7 @@ async function readCappedBody(
   now: () => number,
   startedAt: number,
   armedTimeoutFired: () => boolean,
+  signal: AbortSignal,
 ): Promise<{ ok: true; bytes: Uint8Array; checksumSha256: string } | GtfsFetchFailure> {
   const hash = createHash("sha256");
   const chunks: Uint8Array[] = [];
@@ -524,21 +535,28 @@ async function readCappedBody(
 
   const reader = response.body?.getReader();
   if (!reader) return emptyBodyRefusal(options);
+  // Cancelling a reader settles pending reads even if the underlying source
+  // never acknowledges cancellation. Do not await that source's cleanup.
+  const stop = () => { void cancel(reader); };
+  signal.addEventListener("abort", stop, { once: true });
+  if (signal.aborted) stop();
 
   try {
     for (;;) {
+      signal.throwIfAborted();
       if (now() - startedAt > options.timeoutMs) {
-        await cancel(reader);
+        void cancel(reader);
         return { ok: false, code: "fetch_timed_out", detail: timeoutDetail(options), hops: [] };
       }
 
       const { done, value } = await reader.read();
+      signal.throwIfAborted();
       if (done) break;
       if (!value || value.byteLength === 0) continue;
 
       total += value.byteLength;
       if (total > options.maxBytes) {
-        await cancel(reader);
+        void cancel(reader);
         return {
           ok: false,
           code: "too_large",
@@ -554,6 +572,7 @@ async function readCappedBody(
       chunks.push(value);
     }
   } catch (error) {
+    options.signal?.throwIfAborted();
     // An abort we armed lands here; so does a connection dropped mid-body. They
     // are different things to a planner and must not share a code.
     return {
@@ -564,6 +583,9 @@ async function readCappedBody(
         : `The ${options.subjectLabel} download stopped part-way: ${error instanceof Error ? error.message : "unknown error"}.`,
       hops: [],
     };
+  } finally {
+    signal.removeEventListener("abort", stop);
+    reader.releaseLock();
   }
 
   if (total === 0) return emptyBodyRefusal(options);

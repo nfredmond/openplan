@@ -1,5 +1,10 @@
 # Managed GTFS ingestion implementation checkpoint
 
+Latest source-intake preparation, October 10: [interruptible downloads](FETCH_CANCELLATION.md)
+now accept the owned worker signal, bound stalled DNS and dispose interrupted
+bodies without publishing partial bytes. Durable source intake, exact-byte upload
+reconciliation and managed route enrollment remain unfinished.
+
 Latest implementation, October 10: [recurring archive cleanup](ARCHIVE_RECONCILIATION.md)
 now retains authorized keys after acknowledgment and parent deletion. The actual
 application sweep rediscovers late native uploads while preserving open, ready

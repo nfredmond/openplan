@@ -1,0 +1,87 @@
+{
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/fetch.ts": "2deb8a78497ea0a28b7ddbad61ab52c0a83eb459e8c49cb786e2f2548ee4ae99",
+    "openplan/src/lib/http/outbound-url.ts": "b708b52a4f9159d22212b1769ac71904c7bacef736908ba90f0478cef10e37a6"
+  },
+  "testSha256": "05d44af6a3f7f4a54fba940e588a7687cdad41a2bc626eee019e55f86fb1ce11",
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "wrapper-signal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "owned feed download cancellation does not resolve or connect for a pre-cancelled feed wrapper",
+        "owned feed download cancellation cancels a late response from a transport that ignores interruption"
+      ]
+    },
+    {
+      "variant": "unbounded-resolver",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "owned feed download cancellation interrupts DNS and never connects when its abandoned lookup finishes",
+        "owned feed download cancellation bounds an unresolved DNS lookup by the existing download deadline",
+        "owned feed download cancellation cancels a late response from a transport that ignores interruption",
+        "owned feed download cancellation interrupts redirect cleanup without requesting the next URL"
+      ]
+    },
+    {
+      "variant": "late-dns-connect",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "owned feed download cancellation interrupts DNS and never connects when its abandoned lookup finishes"
+      ]
+    },
+    {
+      "variant": "late-response-leak",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "owned feed download cancellation cancels a late response from a transport that ignores interruption"
+      ]
+    },
+    {
+      "variant": "body-not-cancelled",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "owned feed download cancellation stops a partial body without converting its prefix to a successful archive",
+        "owned feed download cancellation bounds a stalled body even when its transport ignores the deadline signal"
+      ]
+    },
+    {
+      "variant": "wait-for-cleanup",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "owned feed download cancellation returns an oversized-body refusal without awaiting a stalled producer cleanup"
+      ]
+    },
+    {
+      "variant": "listener-retained",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "owned feed download cancellation cleans cancellation listeners after success and retains the completed bytes"
+      ]
+    },
+    {
+      "variant": "reader-lock-retained",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "owned feed download cancellation stops a partial body without converting its prefix to a successful archive",
+        "owned feed download cancellation bounds a stalled body even when its transport ignores the deadline signal",
+        "owned feed download cancellation returns an oversized-body refusal without awaiting a stalled producer cleanup"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ]
+}

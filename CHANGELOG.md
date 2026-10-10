@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Transit downloads stop when their worker is cancelled. The existing download
+deadline now also bounds stalled DNS and redirect cleanup, and an interrupted
+response cannot publish partial archive bytes.
+
 Transit import cleanup retains deletion keys so it can remove uploads that
 finish after cancellation, abandonment or feed/workspace deletion. Recurring
 cleanup preserves open imports, ready feeds and files without recorded deletion

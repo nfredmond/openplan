@@ -553,17 +553,40 @@ export async function fetchPublicUrl(
   init: RequestInit = {},
   options: OutboundFetchOptions = {},
 ): Promise<OutboundFetchOutcome> {
+  const signal = init.signal;
+  const hops: string[] = [];
+  let abort: () => void = () => {};
+  const cancelled = new Promise<never>((_, reject) => {
+    abort = () => reject(signal?.reason);
+    if (signal?.aborted) abort();
+    else signal?.addEventListener("abort", abort, { once: true });
+  });
+  try {
+    return await Promise.race([fetchValidatedHops(raw, init, options, hops), cancelled]);
+  } catch {
+    return { ok: false, code: "network_error", detail: "The outbound request was interrupted.", hops: [...hops] };
+  } finally {
+    signal?.removeEventListener("abort", abort);
+  }
+}
+
+// DNS promises cannot be cancelled. Check ownership again when they settle so
+// an abandoned lookup cannot open a later connection. Dispose late responses.
+async function fetchValidatedHops(
+  raw: string, init: RequestInit, options: OutboundFetchOptions, hops: string[],
+): Promise<OutboundFetchOutcome> {
   const fetchImpl = options.fetchImpl ?? fetch;
   const maxRedirects = Math.max(0, Math.min(options.maxRedirects ?? MAX_OUTBOUND_REDIRECTS, MAX_OUTBOUND_REDIRECTS));
 
-  const hops: string[] = [];
   let target = raw;
   let method = (init.method ?? "GET").toUpperCase();
   let body = init.body;
   let headers = new Headers(init.headers ?? undefined);
 
   for (let hop = 0; hop <= maxRedirects; hop += 1) {
+    init.signal?.throwIfAborted();
     const checked = await assertPublicHttpUrl(target, options);
+    init.signal?.throwIfAborted();
     if (!checked.ok) {
       return { ok: false, code: checked.code, detail: checked.detail, hops };
     }
@@ -582,6 +605,10 @@ export async function fetchPublicUrl(
       };
     }
 
+    if (init.signal?.aborted) {
+      void discardBody(response);
+      init.signal.throwIfAborted();
+    }
     const location = REDIRECT_STATUSES.has(response.status) ? response.headers.get("location") : null;
     if (!location) {
       // Includes a 3xx with no Location, which is the server's answer, not a
@@ -590,6 +617,7 @@ export async function fetchPublicUrl(
     }
 
     await discardBody(response);
+    init.signal?.throwIfAborted();
 
     let next: URL;
     try {
