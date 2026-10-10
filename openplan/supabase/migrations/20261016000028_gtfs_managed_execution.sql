@@ -655,6 +655,100 @@ END $$;
 REVOKE ALL ON FUNCTION public.complete_gtfs_ingest(uuid,uuid,uuid,jsonb,jsonb,jsonb,jsonb,uuid) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.complete_gtfs_ingest(uuid,uuid,uuid,jsonb,jsonb,jsonb,jsonb,uuid) TO service_role;
 
+-- Adoption receipts survive individual feed removal; command identity must not
+-- be reused to make a different service decision after a lost reply.
+CREATE TABLE openplan_gtfs.adoption_receipts (
+ command_id uuid PRIMARY KEY,
+ workspace_id uuid NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
+ actor_id uuid NOT NULL,
+ version_id uuid NOT NULL,
+ payload_hash text NOT NULL,
+ response jsonb NOT NULL,
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp()
+);
+CREATE INDEX gtfs_adoption_receipts_workspace ON openplan_gtfs.adoption_receipts(workspace_id);
+CREATE INDEX gtfs_adoption_receipts_version ON openplan_gtfs.adoption_receipts(version_id);
+ALTER TABLE openplan_gtfs.adoption_receipts ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON openplan_gtfs.adoption_receipts FROM PUBLIC,anon,authenticated,service_role;
+
+-- A trusted route must bind p_actor to its authenticated user. Review is an
+-- exact acceptance of the returned basis, never an agent-accessible force flag.
+-- Legacy ready versions remain eligible, including a deliberate rollback.
+CREATE FUNCTION public.adopt_gtfs_ingest(p_workspace uuid,p_version uuid,p_command uuid,p_actor uuid,p_review jsonb DEFAULT NULL)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE saved openplan_gtfs.adoption_receipts%ROWTYPE; feed public.gtfs_feeds%ROWTYPE;
+ incoming public.gtfs_feed_versions%ROWTYPE; previous public.gtfs_feed_versions%ROWTYPE;
+ hash text; basis jsonb; result jsonb; shrinks boolean; target_feed_id uuid; adopted_at timestamptz;
+BEGIN
+ IF p_workspace IS NULL OR p_version IS NULL OR p_command IS NULL OR p_actor IS NULL THEN
+  RAISE EXCEPTION 'GTFS adoption requires its complete identity' USING ERRCODE='22023';
+ END IF;
+ IF openplan_gtfs.actor_can_write(p_workspace,p_actor) IS NOT TRUE THEN
+  RAISE EXCEPTION 'GTFS adoption write access is unavailable' USING ERRCODE='42501';
+ END IF;
+ PERFORM pg_advisory_xact_lock(hashtextextended('gtfs-adoption:'||p_command::text,0));
+ hash:=encode(extensions.digest(jsonb_build_object('workspace',p_workspace,'version',p_version,'actor',p_actor,'review',p_review)::text,'sha256'),'hex');
+ SELECT * INTO saved FROM openplan_gtfs.adoption_receipts WHERE command_id=p_command;
+ IF FOUND THEN
+  IF saved.payload_hash IS DISTINCT FROM hash THEN
+   RAISE EXCEPTION 'GTFS adoption command payload changed' USING ERRCODE='22023'; END IF;
+  RETURN saved.response;
+ END IF;
+ SELECT v.feed_id INTO target_feed_id FROM public.gtfs_feed_versions v WHERE v.id=p_version AND v.workspace_id=p_workspace;
+ IF NOT FOUND THEN
+  RAISE EXCEPTION 'GTFS adoption version is unavailable' USING ERRCODE='42501'; END IF;
+ SELECT * INTO feed FROM public.gtfs_feeds WHERE id=target_feed_id AND workspace_id=p_workspace FOR UPDATE;
+ IF NOT FOUND THEN
+  RAISE EXCEPTION 'GTFS adoption feed is unavailable' USING ERRCODE='42501'; END IF;
+ PERFORM v.id FROM public.gtfs_feed_versions v WHERE v.id IN (p_version,feed.current_version_id) ORDER BY v.id FOR UPDATE;
+ SELECT * INTO incoming FROM public.gtfs_feed_versions WHERE id=p_version AND feed_id=feed.id AND workspace_id=p_workspace;
+ IF NOT FOUND OR incoming.status IS DISTINCT FROM 'ready' OR incoming.ingest_closed_at IS NOT NULL OR incoming.ingest_abandoned_at IS NOT NULL THEN
+  RAISE EXCEPTION 'GTFS adoption requires a ready version' USING ERRCODE='55000';
+ END IF;
+ IF EXISTS(SELECT 1 FROM openplan_gtfs.executions WHERE version_id=p_version) AND NOT EXISTS(
+   SELECT 1 FROM openplan_gtfs.executions j JOIN openplan_gtfs.completion_receipts c ON c.version_id=j.version_id
+   WHERE j.version_id=p_version AND j.state='ready') THEN
+  RAISE EXCEPTION 'Managed GTFS adoption requires its completion receipt' USING ERRCODE='55000';
+ END IF;
+ SELECT * INTO previous FROM public.gtfs_feed_versions WHERE id=feed.current_version_id;
+ IF (feed.current_version_id IS NOT NULL AND (previous.id IS NULL OR previous.feed_id IS DISTINCT FROM feed.id
+     OR previous.workspace_id IS DISTINCT FROM p_workspace OR previous.status IS DISTINCT FROM 'ready'
+     OR previous.is_current IS DISTINCT FROM true OR feed.status IS DISTINCT FROM previous.status
+     OR previous.route_count IS NULL OR previous.stop_count IS NULL))
+   OR (feed.current_version_id IS NULL AND EXISTS(SELECT 1 FROM public.gtfs_feed_versions WHERE feed_id=feed.id AND is_current)) THEN
+  RAISE EXCEPTION 'GTFS current feed evidence is inconsistent' USING ERRCODE='55000';
+ END IF;
+ basis:=jsonb_build_object('feedId',feed.id,'versionId',incoming.id,'routeCount',incoming.route_count,'stopCount',incoming.stop_count,
+  'previousVersionId',previous.id,'previousRouteCount',previous.route_count,'previousStopCount',previous.stop_count);
+ -- Same policy as assessFeedVersionCollapse: a reduction greater than 20 percent.
+ shrinks:=previous.id IS NOT NULL AND ((previous.route_count>0 AND incoming.route_count<previous.route_count*0.8)
+   OR (previous.stop_count>0 AND incoming.stop_count<previous.stop_count*0.8));
+ IF p_review IS NOT NULL AND p_review IS DISTINCT FROM jsonb_build_object('acceptMaterialShrinkage',true,'basis',basis) THEN
+  RAISE EXCEPTION 'GTFS adoption review no longer matches current evidence' USING ERRCODE='22023';
+ END IF;
+ IF shrinks AND p_review IS NULL THEN
+  result:=jsonb_build_object('command',p_command,'version',p_version,'adopted',false,'withheld',true,'basis',basis);
+ ELSIF feed.current_version_id=p_version THEN
+  result:=jsonb_build_object('command',p_command,'version',p_version,'adopted',true,'alreadyCurrent',true,'basis',basis,'adoptedAt',feed.loaded_at);
+ ELSE
+  INSERT INTO openplan_gtfs.write_context(transaction_id,version_id,kind,operation,token)
+  SELECT txid_current(),v.id,'version','UPDATE',NULL FROM public.gtfs_feed_versions v
+  WHERE v.feed_id=feed.id AND (v.id=p_version OR v.is_current);
+  INSERT INTO openplan_gtfs.write_context VALUES(txid_current(),p_version,'adoption','UPDATE',NULL);
+  PERFORM public.promote_gtfs_feed_version(p_version);
+  DELETE FROM openplan_gtfs.write_context WHERE transaction_id=txid_current()
+   AND version_id IN (SELECT id FROM public.gtfs_feed_versions WHERE feed_id=feed.id);
+  SELECT loaded_at INTO adopted_at FROM public.gtfs_feeds WHERE id=feed.id;
+  result:=jsonb_build_object('command',p_command,'version',p_version,'adopted',true,'alreadyCurrent',false,
+    'basis',basis,'reviewAccepted',p_review IS NOT NULL,'adoptedAt',adopted_at);
+ END IF;
+ INSERT INTO openplan_gtfs.adoption_receipts(command_id,workspace_id,actor_id,version_id,payload_hash,response)
+ VALUES(p_command,p_workspace,p_actor,p_version,hash,result);
+ RETURN result;
+END $$;
+REVOKE ALL ON FUNCTION public.adopt_gtfs_ingest(uuid,uuid,uuid,uuid,jsonb) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.adopt_gtfs_ingest(uuid,uuid,uuid,uuid,jsonb) TO service_role;
+
 -- Lifecycle commands will populate this private transaction context. Until
 -- they are connected, enrollment refuses every legacy mutation of managed work.
 CREATE FUNCTION openplan_gtfs.guard_version() RETURNS trigger

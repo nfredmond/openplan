@@ -127,3 +127,14 @@ tract-command items above. Its 67 native control outcomes identify the current
 candidate. Adoption, terminal failure/cancellation, worker connection and the
 stated independent recovery/acceptance checks remain open. The earlier records
 retain the source hashes and limits that applied at their own checkpoint.
+
+## Exact adoption review and retained decisions
+
+[The adoption checkpoint](ADOPTION.md) adds the existing material-shrinkage policy,
+exact predecessor review and historical decision receipts. Current membership is
+required on every call, including replay. Completed managed imports and retained
+legacy ready versions can become current through the existing atomic promotion
+function. No route or worker is enrolled. The 83-case combined native record and
+advisor comparison identify this checkpoint; earlier records remain historical.
+Failure/cancellation/cleanup, queue/read commands, committed concurrency/recovery,
+worker integration, upgrade/restore and actual browser review remain unfinished.

@@ -18,6 +18,7 @@ source = (root / 'openplan/supabase/migrations/20261016000028_gtfs_managed_execu
 checks = (Path(__file__).parent / 'admission-checks.sql').read_text()
 checks += '\n' + (Path(__file__).parent / 'batch-checks.sql').read_text()
 checks += '\n' + (Path(__file__).parent / 'completion-checks.sql').read_text()
+checks += '\n' + (Path(__file__).parent / 'adoption-checks.sql').read_text()
 results = []
 
 
@@ -46,7 +47,7 @@ cases = [
     ('archive-byte-type', mutation("IF jsonb_typeof(p_archive->'bytes') IS DISTINCT FROM 'number' THEN", 'IF false THEN'), 'invalid archive byte count accepted'),
     ('archive-byte-integrity', mutation("IF (p_archive->>'bytes')::numeric NOT BETWEEN 1 AND 9007199254740991\n    OR trunc((p_archive->>'bytes')::numeric)<>(p_archive->>'bytes')::numeric THEN", 'IF false THEN'), 'invalid archive byte count accepted'),
     ('changed-admission', mutation('IF saved.payload IS DISTINCT FROM payload THEN', 'IF false THEN'), 'changed request replay accepted'),
-    ('viewer-admission', mutation('IF openplan_gtfs.actor_can_write(p_workspace,p_actor) IS NOT TRUE THEN', 'IF false THEN'), 'viewer admitted work'),
+    ('viewer-admission', mutation("IF openplan_gtfs.actor_can_write(p_workspace,p_actor) IS NOT TRUE THEN\n    RAISE EXCEPTION 'GTFS workspace write access is unavailable'", "IF false THEN\n    RAISE EXCEPTION 'GTFS workspace write access is unavailable'"), 'viewer admitted work'),
     ('token-rebinding', mutation('IF saved.version_id<>p_version THEN', 'IF false THEN'), 'token rebound to another version'),
     ('live-replacement', mutation('OR j.lease_until>clock_timestamp()', ''), 'live owner replaced'),
     ('expired-revival', mutation('OR j.lease_until<=clock_timestamp()', ''), 'expired token revived'),
@@ -104,6 +105,22 @@ cases = [
     ('completion-execution-state', mutation("UPDATE openplan_gtfs.executions SET state='ready',token=NULL,lease_until=NULL WHERE version_id=p_version;", 'UPDATE openplan_gtfs.executions SET token=NULL,lease_until=NULL WHERE version_id=p_version;'), 'completion state or adoption incorrect'),
     ('completion-client-execution', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.complete_gtfs_ingest(uuid,uuid,uuid,jsonb,jsonb,jsonb,jsonb,uuid) TO anon;\nCOMMIT;'), 'client called completion'),
     ('tract-client-execution', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.compute_managed_gtfs_tracts(uuid,uuid,uuid,jsonb,jsonb) TO anon;\nCOMMIT;'), 'client called tract computation'),
+    ('adoption-identity', remove_guard('GTFS adoption requires its complete identity'), 'GTFS adoption write access is unavailable'),
+    ('adoption-actor', remove_guard('GTFS adoption write access is unavailable'), 'viewer adopted feed'),
+    ('adoption-payload', remove_guard('GTFS adoption command payload changed'), 'changed adoption command accepted'),
+    ('adoption-version-scope', mutation('v.id=p_version AND v.workspace_id=p_workspace;', 'v.id=p_version;'), 'GTFS adoption feed is unavailable'),
+    ('adoption-ready', remove_guard('GTFS adoption requires a ready version'), 'Managed GTFS adoption requires its completion receipt'),
+    ('adoption-completion', remove_guard('Managed GTFS adoption requires its completion receipt'), 'managed version without completion adopted'),
+    ('adoption-current-evidence', remove_guard('GTFS current feed evidence is inconsistent'), 'inconsistent current feed accepted'),
+    ('adoption-review', remove_guard('GTFS adoption review no longer matches current evidence'), 'changed adoption review accepted'),
+    ('adoption-route-shrink', mutation('previous.route_count>0 AND incoming.route_count<previous.route_count*0.8', 'false'), 'material route shrink adopted without review'),
+    ('adoption-stop-shrink', mutation('previous.stop_count>0 AND incoming.stop_count<previous.stop_count*0.8', 'false'), 'material stop shrink adopted without review'),
+    ('adoption-exact-boundary', mutation('incoming.route_count<previous.route_count*0.8', 'incoming.route_count<=previous.route_count*0.8'), 'exact twenty percent shrink withheld'),
+    ('adoption-promotion', mutation('PERFORM public.promote_gtfs_feed_version(p_version);', 'NULL;'), 'first adoption pointer missing'),
+    ('adoption-context-cleanup', mutation("DELETE FROM openplan_gtfs.write_context WHERE transaction_id=txid_current()\n   AND version_id IN (SELECT id FROM public.gtfs_feed_versions WHERE feed_id=feed.id);", 'NULL;'), 'adoption context leaked'),
+    ('adoption-client-execution', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.adopt_gtfs_ingest(uuid,uuid,uuid,uuid,jsonb) TO anon;\nCOMMIT;'), 'client called adoption'),
+    ('adoption-current-rewrite', mutation('ELSIF feed.current_version_id=p_version THEN', 'ELSIF false THEN'), 'current adoption changed timestamp'),
+    ('adoption-destructive-replay', source.replace('SELECT * INTO saved FROM openplan_gtfs.adoption_receipts WHERE command_id=p_command;', 'SELECT * INTO saved FROM openplan_gtfs.adoption_receipts WHERE false;').replace('VALUES(p_command,p_workspace,p_actor,p_version,hash,result);', 'VALUES(p_command,p_workspace,p_actor,p_version,hash,result) ON CONFLICT(command_id) DO UPDATE SET response=excluded.response;'), 'adoption replay changed receipt'),
     ('restored', source, None),
 ]
 

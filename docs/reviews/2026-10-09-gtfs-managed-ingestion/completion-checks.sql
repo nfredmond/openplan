@@ -190,6 +190,7 @@ BEGIN
   IF mode=3 AND EXISTS(SELECT 1 FROM public.gtfs_feed_versions WHERE id=version AND (tract_service_rows IS NOT NULL OR tract_service_computed_at IS NOT NULL)) THEN
    RAISE EXCEPTION 'failed tract analysis published numeric result'; END IF;
  END LOOP;
+ EXECUTE original_tract;
  DELETE FROM public.workspaces WHERE id=workspace;
  DELETE FROM public.census_tracts WHERE geoid=tract_geoid;
 END $proof$;
