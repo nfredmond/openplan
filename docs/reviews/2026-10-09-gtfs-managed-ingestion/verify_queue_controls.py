@@ -26,6 +26,8 @@ variants = [
     ('replacement-source-path', change('source: join(jobDirectory, "source")', 'source: join(attemptDirectory, "source")'), 'replaces an expired attempt'),
     ('terminal-observation', change('if (!snapshot.active && ["ready", "failed", "cancelled"].includes(snapshot.state) && snapshot.claim.attempt < snapshot.attempts)', 'if (false)'), 'later terminal attempt'),
     ('queue-fairness', change('const priority = root.next === "retained" ? [retained, candidates] : [candidates, retained];', 'const priority = [retained, candidates];'), 'rotates retained errors'),
+    ('discovery-cursor', change('root.discovery = candidates.filter(version => considered.has(version)).at(-1) ?? root.discovery;', '// Repeat the first candidate page.'), 'first eligible page persistently fails'),
+    ('discovery-input', change('maxJobs, signal, root.discovery)', 'maxJobs, signal, null)'), 'first eligible page persistently fails'),
     ('queue-binding', change('root.installationId === binding.installationId && root.target === binding.target', 'true'), 'changed installationId queue binding'),
     ('attempt-scope', change('identity.target === binding.target && identity.installationId === binding.installationId && identity.versionId === versionId', 'true'), 'journal rebound'),
     ('job-scope', change('requireMatch(job.versionId === version, "GTFS queue job scope differs");', '// Ignore inventory scope.'), 'mismatched job identity'),

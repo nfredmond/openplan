@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "files": 52,
+  "tests": 1292,
+  "passed": 1275,
+  "skipped": 17,
+  "failed": 0,
+  "sourceReport": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/admission-regression.json",
+  "runtimeSeconds": 67.507,
+  "memoryPeakMiB": 417.1
+}

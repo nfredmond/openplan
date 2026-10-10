@@ -1,0 +1,255 @@
+{
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/managed-worker-queue.ts": "0e42a4a61a011a3ab22e26e7dc0aa9ed8d4bfcf7bba7fe7800b9d11e17f07674",
+    "openplan/scripts/workers/gtfs-ingestion.ts": "9d181958a574f00c34e4c989c8e8f97fd6e9197bc95a403ecc17b3ceccb07a7e"
+  },
+  "testSha256": "d582fd9c478382d58936b9d729c2fd1ddd7dc7096ee76b0355e07fffd7ad6ffd",
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "no-retained-scan",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue recovers a lost terminal reply even when the version is absent from the candidate queue",
+        "managed GTFS queue does not replace an inactive claim absent from candidate eligibility",
+        "managed GTFS queue observes a later terminal attempt without replaying stale terminal input",
+        "managed GTFS queue a bounded pass rotates retained errors and new queue work",
+        "managed GTFS queue discovers later candidates when the first eligible page persistently fails",
+        "managed GTFS queue upgrades a retained queue journal without discarding its existing attempt",
+        "managed GTFS queue refuses a journal rebound to another version without claiming or doing work"
+      ]
+    },
+    {
+      "variant": "terminal-not-settled",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue retains job and attempt identities before claims, processes serially and never adopts",
+        "managed GTFS queue discovers later candidates when the first eligible page persistently fails",
+        "managed GTFS queue upgrades a retained queue journal without discarding its existing attempt"
+      ]
+    },
+    {
+      "variant": "replacement-disabled",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue replaces an expired attempt only after candidate eligibility and retains its original files",
+        "managed GTFS queue a competing live claim still refuses replacement after a stale queue hint"
+      ]
+    },
+    {
+      "variant": "replacement-without-hint",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue does not replace an inactive claim absent from candidate eligibility"
+      ]
+    },
+    {
+      "variant": "delete-old-history",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue replaces an expired attempt only after candidate eligibility and retains its original files"
+      ]
+    },
+    {
+      "variant": "replacement-source-path",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue retains job and attempt identities before claims, processes serially and never adopts",
+        "managed GTFS queue replaces an expired attempt only after candidate eligibility and retains its original files"
+      ]
+    },
+    {
+      "variant": "terminal-observation",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue observes a later terminal attempt without replaying stale terminal input"
+      ]
+    },
+    {
+      "variant": "queue-fairness",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue a bounded pass rotates retained errors and new queue work",
+        "managed GTFS queue discovers later candidates when the first eligible page persistently fails"
+      ]
+    },
+    {
+      "variant": "discovery-cursor",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue discovers later candidates when the first eligible page persistently fails"
+      ]
+    },
+    {
+      "variant": "discovery-input",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue discovers later candidates when the first eligible page persistently fails"
+      ]
+    },
+    {
+      "variant": "queue-binding",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue refuses changed installationId queue binding before any service access",
+        "managed GTFS queue refuses changed target queue binding before any service access"
+      ]
+    },
+    {
+      "variant": "attempt-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue refuses a journal rebound to another version without claiming or doing work"
+      ]
+    },
+    {
+      "variant": "job-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue refuses mismatched job identity"
+      ]
+    },
+    {
+      "variant": "private-directory",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue refuses public job directories"
+      ]
+    },
+    {
+      "variant": "directory-symlink",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue refuses symlink job directories"
+      ]
+    },
+    {
+      "variant": "inventory-cap",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue refuses an inventory beyond its installation cap"
+      ]
+    },
+    {
+      "variant": "queue-relative",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue refuses relative queue directories before service I/O"
+      ]
+    },
+    {
+      "variant": "shutdown-signal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue shutdown cancels active work without creating a feed failure"
+      ]
+    },
+    {
+      "variant": "installation-lock",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue refuses an inventory beyond its installation cap",
+        "managed GTFS queue a second process cannot concurrently use the installation queue"
+      ]
+    },
+    {
+      "variant": "once-status",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue a successful --once pass reports a bounded pass, not a drain"
+      ]
+    },
+    {
+      "variant": "poll-stop",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue polling exits during an interrupted queue read"
+      ]
+    },
+    {
+      "variant": "error-report",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue reports queue transport errors without exposing the exception or dispatching work"
+      ]
+    },
+    {
+      "variant": "diagnostic-drop",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS queue keeps optional error diagnostics outside planner-facing outcomes"
+      ]
+    },
+    {
+      "variant": "help-refusal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS worker configuration offers help without loading credentials and binds the durable directory to its target",
+        "GTFS worker configuration the installed worker CLI prints help without a configured database or credentials"
+      ]
+    },
+    {
+      "variant": "target-directory",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS worker configuration offers help without loading credentials and binds the durable directory to its target"
+      ]
+    },
+    {
+      "variant": "arguments",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS worker configuration refuses invalid arguments configuration"
+      ]
+    },
+    {
+      "variant": "relative-config",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS worker configuration refuses invalid relative configuration"
+      ]
+    },
+    {
+      "variant": "credential-url",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS worker configuration refuses invalid credentials configuration"
+      ]
+    },
+    {
+      "variant": "installation-config",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS worker configuration refuses invalid installation configuration"
+      ]
+    },
+    {
+      "variant": "build-config",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS worker configuration refuses invalid build configuration"
+      ]
+    },
+    {
+      "variant": "cli-help-creds",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS worker configuration the installed worker CLI prints help without a configured database or credentials"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ]
+}

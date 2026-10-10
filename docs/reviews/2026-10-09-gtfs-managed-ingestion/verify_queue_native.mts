@@ -80,7 +80,7 @@ if (mode === "seed") {
     if (!job.settled) console.error(JSON.stringify({ result, calls, staleWhileRunning, uploads }));
     assert.equal(job.settled, true); assert.equal(result.pendingCount, 0);
     if (mode === "retained") {
-      assert.deepEqual(result.outcomes, []); assert.equal(uploads, 0); assert.deepEqual(calls, ["list_gtfs_ingest_candidates"]);
+      assert.deepEqual(result.outcomes, []); assert.equal(uploads, 0); assert.deepEqual(calls, ["scan_gtfs_ingest_candidates"]);
     } else {
       assert.deepEqual(result.outcomes, [{ versionId: identity.versionId, state: "finished" }]); assert.equal(uploads, 1);
       const source = JSON.parse(await readFile(join(jobDirectory, "source/pending.json"), "utf8")); assert.equal(source.archive.sha256, sha256);

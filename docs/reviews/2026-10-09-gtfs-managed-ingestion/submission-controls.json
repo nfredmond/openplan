@@ -1,0 +1,305 @@
+{
+  "sourceSha256": "bd4362ce04c67b81991021225fdf2af9d7e3e905826a853afd90f97f1670a497",
+  "testSha256": "86c127fd436b2852bbc78dbcf126dbc15d1ab3a79301061360ad8b0c895b4091",
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "binding",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses changed workspaceId binding before SQL",
+        "managed GTFS admission refuses changed actorId binding before SQL",
+        "managed GTFS admission refuses changed requestId binding before SQL",
+        "managed GTFS admission refuses changed installationId binding before SQL",
+        "managed GTFS admission refuses changed target binding before SQL",
+        "managed GTFS admission refuses changed intent binding before SQL"
+      ]
+    },
+    {
+      "variant": "uploaded-hash",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses different upload bytes under the retained request before SQL"
+      ]
+    },
+    {
+      "variant": "mutable-resolution",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission recovers saved upload bytes without a second client upload or mutable resolution",
+        "managed GTFS admission retains resolved URL and original new-feed intent across a lost admission reply",
+        "managed GTFS admission rechecks SQL authorization instead of accepting only the local admission receipt",
+        "managed GTFS admission recovers a lost archive confirmation reply without uploading again",
+        "managed GTFS admission refuses altered local bytes before SQL even after admission",
+        "managed GTFS admission refuses changed local archive size before SQL",
+        "managed GTFS admission refuses a missing saved archive when the client does not supply exact bytes",
+        "managed GTFS admission refuses a changed retained admission receipt"
+      ]
+    },
+    {
+      "variant": "authorization-replay",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission rechecks SQL authorization instead of accepting only the local admission receipt",
+        "managed GTFS admission recovers a lost archive confirmation reply without uploading again",
+        "managed GTFS admission refuses a changed retained admission receipt"
+      ]
+    },
+    {
+      "variant": "response-retention",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses a changed retained admission receipt"
+      ]
+    },
+    {
+      "variant": "source-bytes",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses resolved ZIP identity that differs from saved bytes"
+      ]
+    },
+    {
+      "variant": "local-hash",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses altered local bytes before SQL even after admission"
+      ]
+    },
+    {
+      "variant": "local-size",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses changed local archive size before SQL"
+      ]
+    },
+    {
+      "variant": "private-file",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses public local archive files"
+      ]
+    },
+    {
+      "variant": "nofollow",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses symlink local archive files"
+      ]
+    },
+    {
+      "variant": "unbound-file",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses an existing archive without a private request binding"
+      ]
+    },
+    {
+      "variant": "provided-cap",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission checks the provided upload against the current size cap before SQL",
+        "managed GTFS admission checks the retained upload against the current size cap before SQL"
+      ]
+    },
+    {
+      "variant": "retained-cap",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission checks the retained upload against the current size cap before SQL"
+      ]
+    },
+    {
+      "variant": "journal-bound",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses oversized intent before resolving source or sending SQL"
+      ]
+    },
+    {
+      "variant": "file-sync",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission retains private synced upload bytes before admission and verifies custody before queuing",
+        "managed GTFS admission recovers saved upload bytes without a second client upload or mutable resolution",
+        "managed GTFS admission reconciles an uncertain upload response against actual object bytes",
+        "managed GTFS admission refuses path-only upload success without actual bytes",
+        "managed GTFS admission refuses mismatched remote bytes without attempting an overwrite",
+        "managed GTFS admission recovers a lost archive confirmation reply without uploading again",
+        "managed GTFS admission refuses different upload bytes under the retained request before SQL",
+        "managed GTFS admission refuses altered local bytes before SQL even after admission",
+        "managed GTFS admission refuses changed local archive size before SQL",
+        "managed GTFS admission refuses a missing saved archive when the client does not supply exact bytes",
+        "managed GTFS admission refuses public local archive files",
+        "managed GTFS admission refuses symlink local archive files",
+        "managed GTFS admission checks the retained upload against the current size cap before SQL",
+        "managed GTFS admission refuses a changed workspaceId status before archive I/O",
+        "managed GTFS admission refuses a changed feedId status before archive I/O",
+        "managed GTFS admission refuses a changed requestId status before archive I/O",
+        "managed GTFS admission refuses changed archive confirmation receipt",
+        "managed GTFS admission refuses changed archive confirmation status",
+        "managed GTFS admission passes cancellation through the upload transport and refuses confirmation",
+        "managed GTFS admission bounds a stalled upload acknowledgement and leaves custody unconfirmed"
+      ]
+    },
+    {
+      "variant": "parent-sync",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission retains private synced upload bytes before admission and verifies custody before queuing",
+        "managed GTFS admission recovers saved upload bytes without a second client upload or mutable resolution",
+        "managed GTFS admission reconciles an uncertain upload response against actual object bytes",
+        "managed GTFS admission refuses path-only upload success without actual bytes",
+        "managed GTFS admission refuses mismatched remote bytes without attempting an overwrite",
+        "managed GTFS admission recovers a lost archive confirmation reply without uploading again",
+        "managed GTFS admission refuses different upload bytes under the retained request before SQL",
+        "managed GTFS admission refuses altered local bytes before SQL even after admission",
+        "managed GTFS admission refuses changed local archive size before SQL",
+        "managed GTFS admission refuses a missing saved archive when the client does not supply exact bytes",
+        "managed GTFS admission refuses public local archive files",
+        "managed GTFS admission refuses symlink local archive files",
+        "managed GTFS admission checks the retained upload against the current size cap before SQL",
+        "managed GTFS admission refuses a changed workspaceId status before archive I/O",
+        "managed GTFS admission refuses a changed feedId status before archive I/O",
+        "managed GTFS admission refuses a changed requestId status before archive I/O",
+        "managed GTFS admission refuses changed archive confirmation receipt",
+        "managed GTFS admission refuses changed archive confirmation status",
+        "managed GTFS admission passes cancellation through the upload transport and refuses confirmation",
+        "managed GTFS admission bounds a stalled upload acknowledgement and leaves custody unconfirmed"
+      ]
+    },
+    {
+      "variant": "remote-verification",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses path-only upload success without actual bytes",
+        "managed GTFS admission bounds a stalled upload acknowledgement and leaves custody unconfirmed"
+      ]
+    },
+    {
+      "variant": "existing-object",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses mismatched remote bytes without attempting an overwrite"
+      ]
+    },
+    {
+      "variant": "immutable-upload",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission retains private synced upload bytes before admission and verifies custody before queuing",
+        "managed GTFS admission recovers saved upload bytes without a second client upload or mutable resolution",
+        "managed GTFS admission reconciles an uncertain upload response against actual object bytes",
+        "managed GTFS admission recovers a lost archive confirmation reply without uploading again",
+        "managed GTFS admission refuses different upload bytes under the retained request before SQL",
+        "managed GTFS admission refuses altered local bytes before SQL even after admission",
+        "managed GTFS admission refuses changed local archive size before SQL",
+        "managed GTFS admission refuses a missing saved archive when the client does not supply exact bytes",
+        "managed GTFS admission refuses public local archive files",
+        "managed GTFS admission refuses symlink local archive files",
+        "managed GTFS admission checks the retained upload against the current size cap before SQL",
+        "managed GTFS admission refuses changed archive confirmation receipt",
+        "managed GTFS admission refuses changed archive confirmation status"
+      ]
+    },
+    {
+      "variant": "upload-signal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission passes cancellation through the upload transport and refuses confirmation",
+        "managed GTFS admission bounds a stalled upload acknowledgement and leaves custody unconfirmed"
+      ]
+    },
+    {
+      "variant": "acknowledgement",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission passes cancellation through the upload transport and refuses confirmation",
+        "managed GTFS admission bounds a stalled upload acknowledgement and leaves custody unconfirmed"
+      ]
+    },
+    {
+      "variant": "confirmation-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses changed archive confirmation receipt"
+      ]
+    },
+    {
+      "variant": "confirmation-status",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses changed archive confirmation status"
+      ]
+    },
+    {
+      "variant": "status-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses a changed feedId status before archive I/O",
+        "managed GTFS admission refuses a changed requestId status before archive I/O"
+      ]
+    },
+    {
+      "variant": "receipt-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "admission command scope verifies original request and existing feed receipts"
+      ]
+    },
+    {
+      "variant": "target",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses target admission before source work"
+      ]
+    },
+    {
+      "variant": "harmless-redundant-relative",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "relative-normalization",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses relative admission before source work"
+      ]
+    },
+    {
+      "variant": "pre-cancellation",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses cancelled admission before source work"
+      ]
+    },
+    {
+      "variant": "lock",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS admission refuses a second admission process while the same request is resolving"
+      ]
+    },
+    {
+      "variant": "source-metadata",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "admission command scope refuses inconsistent source metadata {\"normalizedSourceUrl\":\"https://other.invalid/\"}"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ]
+}

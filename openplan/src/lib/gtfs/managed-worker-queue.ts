@@ -13,7 +13,8 @@ import type { GtfsArtifactOptions } from "./managed-worker-artifact";
 import type { GtfsDurableMutation } from "./managed-worker-dispatch";
 
 const id = z.string().uuid().transform(value => value.toLowerCase());
-const rootSchema = z.object({ schemaVersion: z.literal(1), installationId: id, target: z.string(), cursor: id.nullable(), next: z.enum(["retained", "candidates"]) }).strict();
+const rootSchema = z.object({ schemaVersion: z.literal(1), installationId: id, target: z.string(), cursor: id.nullable(),
+  discovery: id.nullable().default(null), next: z.enum(["retained", "candidates"]) }).strict();
 const jobSchema = z.object({ schemaVersion: z.literal(1), versionId: id, attempt: id, settled: z.boolean() }).strict();
 const identitySchema = z.object({ schemaVersion: z.literal(1), installationId: id, target: z.string(), versionId: id, token: id }).strict();
 type Terminal = Extract<GtfsDurableMutation, { operation: "complete" | "fail" }>;
@@ -58,10 +59,10 @@ export async function runGtfsQueuePass(options: GtfsQueueOptions, work?: (owned:
   try {
     signal.throwIfAborted();
     const rawRoot = await optionalRecord(join(directory, "pending.json"));
-    const root = rawRoot === null ? { ...binding, cursor: null, next: "retained" as const } : rootSchema.parse(rawRoot);
+    const root = rawRoot === null ? { ...binding, cursor: null, discovery: null, next: "retained" as const } : rootSchema.parse(rawRoot);
     requireMatch(root.installationId === binding.installationId && root.target === binding.target, "GTFS queue binding differs");
     await writeConnectorJournal(directory, root);
-    const candidates = await listGtfsCandidates(options.service, maxJobs, signal);
+    const candidates = await listGtfsCandidates(options.service, maxJobs, signal, root.discovery);
     const eligible = new Set(candidates);
     const entries = await readdir(directory, { withFileTypes: true });
     requireMatch(entries.length <= maxRecords + 2, "GTFS queue inventory exceeds configured bound");
@@ -93,6 +94,7 @@ export async function runGtfsQueuePass(options: GtfsQueueOptions, work?: (owned:
     }
     root.next = root.next === "retained" ? "candidates" : "retained";
     await writeConnectorJournal(directory, root);
+    const considered = new Set<string>();
     for (const versionId of selected) {
       signal.throwIfAborted();
       const jobDirectory = join(directory, `version-${versionId}`);
@@ -144,6 +146,8 @@ export async function runGtfsQueuePass(options: GtfsQueueOptions, work?: (owned:
         options.onUnconfirmed?.(versionId, error);
         outcomes.push({ versionId, state: "unconfirmed" });
       } finally {
+        considered.add(versionId);
+        root.discovery = candidates.filter(version => considered.has(version)).at(-1) ?? root.discovery;
         root.cursor = versionId; await writeConnectorJournal(directory, root);
       }
     }

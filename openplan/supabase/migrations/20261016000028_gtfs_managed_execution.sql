@@ -864,6 +864,27 @@ BEGIN
  ORDER BY s.created_at,v.id LIMIT p_limit;
 END $$;
 
+-- UUID pagination rotates eligible discovery beyond a persistently failing
+-- first page. The cursor grants no ownership; each claim still checks its lease.
+CREATE FUNCTION public.scan_gtfs_ingest_candidates(p_limit integer,p_after uuid)
+RETURNS TABLE(version_id uuid) LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+BEGIN
+ IF p_limit IS NULL OR p_limit NOT BETWEEN 1 AND 100 THEN
+  RAISE EXCEPTION 'GTFS queue limit must be between 1 and 100' USING ERRCODE='22023';
+ END IF;
+ RETURN QUERY
+ SELECT v.id FROM openplan_gtfs.executions j
+ JOIN openplan_gtfs.submissions s ON s.request_id=j.request_id
+ JOIN public.gtfs_feed_versions v ON v.id=j.version_id AND v.workspace_id=s.workspace_id
+ WHERE (j.state='queued' OR (j.state='running' AND j.lease_until<=clock_timestamp()))
+  AND v.status IN ('pending','fetching','parsing') AND v.ingest_closed_at IS NULL AND v.ingest_abandoned_at IS NULL
+  AND EXISTS(SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=s.workspace_id
+    AND m.user_id=s.actor_id AND m.role IN ('owner','admin','member'))
+ ORDER BY CASE WHEN p_after IS NULL OR v.id>p_after THEN 0 ELSE 1 END,v.id LIMIT p_limit;
+END $$;
+REVOKE ALL ON FUNCTION public.scan_gtfs_ingest_candidates(integer,uuid) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.scan_gtfs_ingest_candidates(integer,uuid) TO service_role;
+
 -- Retained tokens can inspect their own historical claim and preparation.
 -- No response exposes the replacement worker's token or changes a lease.
 CREATE FUNCTION public.read_gtfs_ingest_attempt(p_version uuid,p_token uuid)

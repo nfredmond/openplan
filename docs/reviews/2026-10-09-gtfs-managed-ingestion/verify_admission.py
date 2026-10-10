@@ -25,13 +25,22 @@ results = []
 
 
 def mutation(old, new):
+    legacy = source.split('CREATE FUNCTION public.list_gtfs_ingest_candidates')[1].split('-- UUID pagination rotates eligible discovery')[0]
+    scan = source.split('CREATE FUNCTION public.scan_gtfs_ingest_candidates')[1].split('-- Retained tokens can inspect')[0]
+    if source.count(old) == 2 and legacy.count(old) == 1 and scan.count(old) == 1:
+        # Preserve the original list's custody controls. Native scan controls
+        # independently mutate the second copy of these eligibility predicates.
+        return source.replace(legacy, legacy.replace(old, new))
     assert source.count(old) == 1, ('mutation target changed', old)
     return source.replace(old, new)
 
 
 def remove_guard(message):
     marker = "RAISE EXCEPTION '" + message + "'"
-    assert source.count(marker) == 1, ('guard message changed', message)
+    expected_count = 2 if message == 'GTFS queue limit must be between 1 and 100' else 1
+    assert source.count(marker) == expected_count, ('guard message changed', message)
+    # The legacy list precedes the independently proven rotating scan.
+    # This historical queue control continues to mutate that original list.
     position = source.index(marker)
     start = max(source.rfind('\n IF ', 0, position), source.rfind('\n  IF ', 0, position), source.rfind('\n   IF ', 0, position))
     assert start >= 0, message

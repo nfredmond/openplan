@@ -24,7 +24,11 @@ async function fixture() {
   const receipts = new Map<string, object>();
   const events: { name: string; args: Record<string, unknown> }[] = [];
   const respond = vi.fn(async (name: string, args: Record<string, unknown>): Promise<unknown> => {
-    if (name === "list_gtfs_ingest_candidates") return [...candidates].slice(0, Number(args.p_limit)).map(version_id => ({ version_id }));
+    if (name === "scan_gtfs_ingest_candidates") {
+      const ordered = [...candidates].sort(), after = args.p_after as string | null;
+      return [...ordered.filter(version => after === null || version > after), ...ordered.filter(version => after !== null && version <= after)]
+        .slice(0, Number(args.p_limit)).map(version_id => ({ version_id }));
+    }
     const versionId = String(args.p_version), token = String(args.p_token);
     let snapshot = versions.get(versionId);
     if (name === "claim_gtfs_ingest") {
@@ -136,6 +140,25 @@ describe("managed GTFS queue", () => {
     f.candidates.clear(); const third = await f.run(); expect(third.outcomes[0].versionId).toBe(id(1));
     expect(third.outcomes).toHaveLength(1);
   });
+  it("discovers later candidates when the first eligible page persistently fails", async () => {
+    const f = await fixture(); f.options.maxJobs = 1; f.candidates.add(id(10)); f.candidates.add(id(11));
+    const normal = f.respond.getMockImplementation()!;
+    f.respond.mockImplementation(async (name, args) => {
+      if (name === "claim_gtfs_ingest" && args.p_version !== id(11)) throw new Error("Persistent admission transport failure");
+      return normal(name, args);
+    });
+    for (let pass = 0; pass < 4; pass++) await f.run();
+    expect((await f.job(id(11))).settled).toBe(true);
+    expect(f.events.filter(event => event.name === "scan_gtfs_ingest_candidates").map(event => event.args.p_after))
+      .toEqual([null, id(1), id(10), id(10)]);
+    expect(f.work).toHaveBeenCalledTimes(1);
+  });
+  it("upgrades a retained queue journal without discarding its existing attempt", async () => {
+    const f = await fixture(); f.work.mockRejectedValueOnce(new Error("Interrupted")); await f.run();
+    const path = join(f.directory, "pending.json"), root = JSON.parse(await readFile(path, "utf8")); delete root.discovery;
+    await writeFile(path, JSON.stringify(root));
+    expect((await f.run()).outcomes[0].state).toBe("finished"); expect((await f.job()).settled).toBe(true);
+  });
   it.each(["installationId", "target"])("refuses changed %s queue binding before any service access", async field => {
     const f = await fixture(); await f.run(); const before = f.events.length;
     if (field === "installationId") f.options.installationId = id(99); else f.options.target = "http://other.invalid";
@@ -146,7 +169,7 @@ describe("managed GTFS queue", () => {
     const path = join(f.directory, `version-${id(1)}/attempt-${job.attempt}/commands/pending.json`);
     const identity = JSON.parse(await readFile(path, "utf8")); identity.versionId = id(99); await writeFile(path, JSON.stringify(identity));
     f.events.length = 0; expect((await f.run()).outcomes[0].state).toBe("unconfirmed");
-    expect(f.events.map(event => event.name)).toEqual(["list_gtfs_ingest_candidates"]); expect(f.work).toHaveBeenCalledTimes(1);
+    expect(f.events.map(event => event.name)).toEqual(["scan_gtfs_ingest_candidates"]); expect(f.work).toHaveBeenCalledTimes(1);
   });
   it("refuses mismatched job identity", async () => {
     const f = await fixture(); f.work.mockRejectedValueOnce(new Error("Interrupted work")); await f.run(); const job = await f.job(); job.versionId = id(99);

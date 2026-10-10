@@ -154,9 +154,11 @@ async function call(service: GtfsWorkerService, name: string, args: Record<strin
   });
 }
 
-export async function listGtfsCandidates(service: GtfsWorkerService, limit: number, signal: AbortSignal) {
+export async function listGtfsCandidates(service: GtfsWorkerService, limit: number, signal: AbortSignal, after?: string | null) {
   const boundedLimit = z.number().int().min(1).max(100).parse(limit);
-  const raw = await call(service, "list_gtfs_ingest_candidates", { p_limit: boundedLimit }, signal);
+  const raw = after === undefined
+    ? await call(service, "list_gtfs_ingest_candidates", { p_limit: boundedLimit }, signal)
+    : await call(service, "scan_gtfs_ingest_candidates", { p_limit: boundedLimit, p_after: after === null ? null : id.parse(after) }, signal);
   const rows = z.array(z.object({ version_id: id }).strict()).max(boundedLimit).parse(raw);
   const versions = rows.map(row => row.version_id);
   requireMatch(new Set(versions).size === versions.length, "GTFS queue duplicated a version");
@@ -363,7 +365,7 @@ export function adoptGtfsAttemptCommand(scope: GtfsArchiveScope & { actorId: str
 
 
 export type GtfsPreparedCommand = {
-  name: "stage_gtfs_ingest" | "prepare_gtfs_archive" | "confirm_gtfs_archive" | "prepare_gtfs_derived"
+  name: "admit_gtfs_ingest" | "stage_gtfs_ingest" | "prepare_gtfs_archive" | "confirm_gtfs_archive" | "prepare_gtfs_derived"
     | "write_gtfs_ingest_batch" | "compute_managed_gtfs_tracts" | "complete_gtfs_ingest" | "fail_gtfs_ingest" | "adopt_gtfs_ingest";
   args: Record<string, unknown>;
   verify: (raw: unknown) => unknown;

@@ -32,6 +32,9 @@ def sql(query,database=None):
 
 assert sql('SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid();',source['database']) == '0'
 sql(f'CREATE DATABASE {config["database"]} TEMPLATE {source["database"]};','postgres')
+migration=root/'openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql'
+scan=migration.read_text().split('-- UUID pagination rotates eligible discovery')[1].split('-- Retained tokens can inspect')[0]
+sql('-- UUID pagination rotates eligible discovery'+scan)
 workspace,actor = str(uuid.uuid4()),str(uuid.uuid4())
 sql(f"INSERT INTO auth.users(id,email) VALUES('{actor}','{actor}@example.invalid'); INSERT INTO public.workspaces(id,name,slug) VALUES('{workspace}','Synthetic queue recovery','proof-{workspace}'); INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES('{workspace}','{actor}','owner');")
 records=[]
@@ -89,6 +92,6 @@ with storage(config) as native,gateway('public',database=config['database'],subj
             deleted=requests.delete(native['url']+'/object/gtfs-uploads',headers={'Authorization':'Bearer '+native['token']},json={'prefixes':paths},timeout=10)
             assert deleted.status_code==200,'Native queue object cleanup failed'
 summary={'records':records,'syntheticDebugExpiry':os.environ.get('OPENPLAN_GTFS_PROOF_DEBUG_EXPIRY')=='1','sourceSha256':{str(path.relative_to(root)):hashlib.sha256(path.read_bytes()).hexdigest() for path in
- [root/'openplan/src/lib/gtfs/managed-worker-queue.ts',root/'openplan/src/lib/gtfs/managed-worker-intake.ts',here/'verify_queue_native.mts',Path(__file__).resolve()]},
+ [root/'openplan/src/lib/gtfs/managed-worker-queue.ts',root/'openplan/src/lib/gtfs/managed-worker-intake.ts',root/'openplan/src/lib/gtfs/managed-worker-service.ts',migration,here/'verify_queue_native.mts',Path(__file__).resolve()]},
  'boundary':('Synthetic debug expiry, not real-clock acceptance. ' if os.environ.get('OPENPLAN_GTFS_PROOF_DEBUG_EXPIRY')=='1' else 'Actual server-clock expiry. ') + 'Actual database queue, process loss, live ownership recovery/replacement, local HTTP, Storage and parser. No application routes, full restore, capacity or browser acceptance.'}
 (out/'result.json').write_text(json.dumps(summary,indent=2)+'\n')

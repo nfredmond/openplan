@@ -343,3 +343,19 @@ The first candidate page can still hide later eligible work when errors persist.
 Paginated discovery, route admission/progress/recovery/adoption and all stated
 role, capacity, restore, browser and release boundaries remain open. Submission
 helper work starts separately and is not included in this queue checkpoint.
+
+## October 10: retained submissions and paginated queue discovery
+
+[Submission recovery](SUBMISSION_RECOVERY.md) retains exact intent, resolved
+source and private ZIP bytes before enrollment, reconciles immutable uploads,
+and rechecks original-actor authority on every replay. Six native interruptions
+preserve request/version identity; ZIP cases publish without client resupply or
+adoption, and URL/catalog cases remain queued. Paginated discovery reaches later
+candidates despite persistent first-page refusals. Native scan, actual-expiry
+replacement and all 121 lifecycle controls preserve their expected outcomes.
+The 52-file regression records 1,275 passes, 17 skipped live cases and no failures.
+
+Older first-page and submission-helper paragraphs remain historical. Routes,
+retained-submission polling, planner progress/recovery/adoption, full restore,
+capacity, role and browser journeys remain unfinished. Draft route helpers and
+migration 29 are outside this verified checkpoint. Nothing is merged or released.
