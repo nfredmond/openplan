@@ -1,5 +1,12 @@
 # Managed GTFS ingestion implementation checkpoint
 
+Latest investigation, October 10: the [native late-upload counterexample](LATE_STORAGE_UPLOAD.md)
+shows an object arriving after cancellation and successful cleanup acknowledgment,
+including with an active-state Storage policy. The installed provider checks that
+policy before the upload body, not at completion. Recurring bounded object
+reconciliation is required before source intake can claim cleanup. This evidence
+does not enable managed routes or close the remaining worker/release boundaries.
+
 This unfinished M3 implementation stays outside v0.68 and has no connected
 route or worker. Migration 28 is a candidate in this isolated worktree. Do not
 apply it to the demo or enable admission before the complete lifecycle is wired.
