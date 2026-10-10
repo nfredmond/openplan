@@ -190,3 +190,13 @@ process and then reads the retained receipt without dispatch. This uses syntheti
 delivery and does not establish database or power-loss recovery. The next step
 connects the typed operation dispatcher and live attempt ownership; no import
 route is enrolled.
+
+## Typed journal dispatch
+
+[The dispatcher checkpoint](WORKER_DISPATCH.md) connects all nine typed mutation
+operations to private command records. Fresh and retained responses use the same
+prepared verifier, and the exact stored identity reaches the SDK. The existing
+100 service tests and 51 source controls pass, along with 33 dispatcher tests,
+19 dispatcher controls and three current native read snapshots. The worker still
+needs actual polling, live ownership, artifacts, parser and publication flow;
+no import route is enrolled.

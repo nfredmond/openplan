@@ -222,61 +222,73 @@ function attemptArgs(scope: GtfsAttemptScope) {
   return { p_version: id.parse(scope.versionId), p_token: id.parse(scope.token) };
 }
 
-export async function stageGtfsAttempt(service: GtfsWorkerService, scope: GtfsAttemptScope, next: "fetching" | "parsing", signal: AbortSignal) {
+export function stageGtfsAttemptCommand(scope: GtfsAttemptScope, next: "fetching" | "parsing") {
   const args = { ...attemptArgs(scope), p_stage: z.enum(["fetching", "parsing"]).parse(next) };
-  const receipt = z.object({ versionId: id, stage: z.enum(["fetching", "parsing"]) }).strict().parse(
-    await call(service, "stage_gtfs_ingest", args, signal));
-  requireMatch(receipt.versionId === args.p_version && receipt.stage === args.p_stage, "GTFS stage receipt differs");
-  return receipt;
+  return { name: "stage_gtfs_ingest" as const, args, verify(raw: unknown) {
+    const receipt = z.object({ versionId: id, stage: z.enum(["fetching", "parsing"]) }).strict().parse(
+      raw);
+    requireMatch(receipt.versionId === args.p_version && receipt.stage === args.p_stage, "GTFS stage receipt differs");
+    return receipt;
+  } };
 }
 
-export async function prepareGtfsArchive(service: GtfsWorkerService, scope: GtfsAttemptScope & GtfsArchiveScope, raw: GtfsArchiveIdentity, signal: AbortSignal) {
+export function prepareGtfsArchiveCommand(scope: GtfsAttemptScope & GtfsArchiveScope, raw: GtfsArchiveIdentity) {
   const args = { ...attemptArgs(scope), p_archive: verifyGtfsArchive(raw, scope) };
-  const receipt = z.object({ versionId: id, archive: archiveSchema, preparedAt: date }).strict().parse(
-    await call(service, "prepare_gtfs_archive", args, signal));
-  requireMatch(receipt.versionId === args.p_version && JSON.stringify(receipt.archive) === JSON.stringify(args.p_archive), "GTFS archive preparation receipt differs");
-  return receipt;
+  return { name: "prepare_gtfs_archive" as const, args, verify(raw: unknown) {
+    const receipt = z.object({ versionId: id, archive: archiveSchema, preparedAt: date }).strict().parse(
+      raw);
+    requireMatch(receipt.versionId === args.p_version && JSON.stringify(receipt.archive) === JSON.stringify(args.p_archive), "GTFS archive preparation receipt differs");
+    return receipt;
+  } };
 }
 
 /** Confirmation records verified bytes. The caller must first reconcile actual
  * private Storage contents; a returned metadata receipt cannot do that check.
  */
-export async function confirmGtfsArchive(service: GtfsWorkerService, scope: GtfsAttemptScope & GtfsArchiveScope, raw: GtfsArchiveIdentity, signal: AbortSignal) {
+export function confirmGtfsArchiveCommand(scope: GtfsAttemptScope & GtfsArchiveScope, raw: GtfsArchiveIdentity) {
   const args = { ...attemptArgs(scope), p_archive: verifyGtfsArchive(raw, scope) };
-  const receipt = z.object({ versionId: id, archive: archiveSchema, confirmedAt: date }).strict().parse(
-    await call(service, "confirm_gtfs_archive", args, signal));
-  requireMatch(receipt.versionId === args.p_version && JSON.stringify(receipt.archive) === JSON.stringify(args.p_archive), "GTFS archive confirmation receipt differs");
-  return receipt;
+  return { name: "confirm_gtfs_archive" as const, args, verify(raw: unknown) {
+    const receipt = z.object({ versionId: id, archive: archiveSchema, confirmedAt: date }).strict().parse(
+      raw);
+    requireMatch(receipt.versionId === args.p_version && JSON.stringify(receipt.archive) === JSON.stringify(args.p_archive), "GTFS archive confirmation receipt differs");
+    return receipt;
+  } };
 }
 
-export async function prepareGtfsOutput(service: GtfsWorkerService, scope: GtfsAttemptScope, raw: GtfsOutputPlan, signal: AbortSignal) {
+export function prepareGtfsOutputCommand(scope: GtfsAttemptScope, raw: GtfsOutputPlan) {
   const args = { ...attemptArgs(scope), p_plan: verifyGtfsOutputPlan(raw) };
-  const receipt = z.object({ version: id, token: id, removedRoutes: count, removedStops: count, removedTracts: count, plan: planSchema }).strict().parse(
-    await call(service, "prepare_gtfs_derived", args, signal));
-  requireMatch(receipt.version === args.p_version && receipt.token === args.p_token
-    && JSON.stringify(receipt.plan) === JSON.stringify(args.p_plan), "GTFS output preparation receipt differs");
-  return receipt;
+  return { name: "prepare_gtfs_derived" as const, args, verify(raw: unknown) {
+    const receipt = z.object({ version: id, token: id, removedRoutes: count, removedStops: count, removedTracts: count, plan: planSchema }).strict().parse(
+      raw);
+    requireMatch(receipt.version === args.p_version && receipt.token === args.p_token
+      && JSON.stringify(receipt.plan) === JSON.stringify(args.p_plan), "GTFS output preparation receipt differs");
+    return receipt;
+  } };
 }
 
-export async function writeGtfsBatch(service: GtfsWorkerService, scope: GtfsAttemptScope & { workspaceId: string },
-  command: { id: string; kind: "route" | "stop"; ordinal: number; rows: ReadonlyArray<Record<string, unknown>> }, signal: AbortSignal) {
+export function writeGtfsBatchCommand(scope: GtfsAttemptScope & { workspaceId: string },
+  command: { id: string; kind: "route" | "stop"; ordinal: number; rows: ReadonlyArray<Record<string, unknown>> }) {
   const args = { ...attemptArgs(scope), p_command: id.parse(command.id), p_kind: z.enum(["route", "stop"]).parse(command.kind),
     p_ordinal: count.parse(command.ordinal), p_rows: z.array(z.record(z.string(), z.json())).min(1).max(1000).parse(command.rows) };
   const workspaceId = id.parse(scope.workspaceId);
   requireMatch(args.p_rows.every(row => row.workspace_id === workspaceId && row.feed_version_id === args.p_version), "GTFS batch row scope differs");
-  const receipt = z.object({ command: id, rows: positive.max(1000), hash }).strict().parse(await call(service, "write_gtfs_ingest_batch", args, signal));
-  requireMatch(receipt.command === args.p_command && receipt.rows === args.p_rows.length, "GTFS batch receipt differs");
-  return receipt;
+  return { name: "write_gtfs_ingest_batch" as const, args, verify(raw: unknown) {
+    const receipt = z.object({ command: id, rows: positive.max(1000), hash }).strict().parse(raw);
+    requireMatch(receipt.command === args.p_command && receipt.rows === args.p_rows.length, "GTFS batch receipt differs");
+    return receipt;
+  } };
 }
 
-export async function computeGtfsTracts(service: GtfsWorkerService, scope: GtfsAttemptScope,
-  command: { id: string; plan: GtfsOutputPlan; manifest: GtfsBatchManifest }, signal: AbortSignal) {
+export function computeGtfsTractsCommand(scope: GtfsAttemptScope,
+  command: { id: string; plan: GtfsOutputPlan; manifest: GtfsBatchManifest }) {
   const plan = verifyGtfsOutputPlan(command.plan);
   const args = { ...attemptArgs(scope), p_command: id.parse(command.id), p_plan: plan, p_manifest: verifyGtfsManifest(command.manifest, plan) };
-  const receipt = tractSchema.parse(await call(service, "compute_managed_gtfs_tracts", args, signal));
-  verifyTract(receipt, args.p_version);
-  requireMatch(receipt.command === args.p_command, "GTFS tract command receipt differs");
-  return receipt;
+  return { name: "compute_managed_gtfs_tracts" as const, args, verify(raw: unknown) {
+    const receipt = tractSchema.parse(raw);
+    verifyTract(receipt, args.p_version);
+    requireMatch(receipt.command === args.p_command, "GTFS tract command receipt differs");
+    return receipt;
+  } };
 }
 
 const metadataSchema = z.object({ agency_count: count, route_count: positive, stop_count: positive, trip_count: count,
@@ -286,28 +298,32 @@ const metadataSchema = z.object({ agency_count: count, route_count: positive, st
   feed_info_start_date: z.string().nullable().optional(), feed_info_end_date: z.string().nullable().optional(), parse_warnings: z.array(z.json()) }).strict();
 export type GtfsCompletionMetadata = z.infer<typeof metadataSchema>;
 
-export async function completeGtfsAttempt(service: GtfsWorkerService, scope: GtfsAttemptScope & GtfsArchiveScope,
+export function completeGtfsAttemptCommand(scope: GtfsAttemptScope & GtfsArchiveScope,
   command: { id: string; archive: GtfsArchiveIdentity; plan: GtfsOutputPlan; manifest: GtfsBatchManifest;
-    metadata: GtfsCompletionMetadata; tract: GtfsTractOutcome }, signal: AbortSignal) {
+    metadata: GtfsCompletionMetadata; tract: GtfsTractOutcome }) {
   const plan = verifyGtfsOutputPlan(command.plan), tract = tractSchema.parse(command.tract);
   const args = { ...attemptArgs(scope), p_command: id.parse(command.id), p_archive: verifyGtfsArchive(command.archive, scope), p_plan: plan,
     p_manifest: verifyGtfsManifest(command.manifest, plan), p_metadata: metadataSchema.parse(command.metadata), p_tract_command: tract.command };
   verifyTract(tract, args.p_version);
-  const receipt = completionSchema.parse(await call(service, "complete_gtfs_ingest", args, signal));
-  requireMatch(receipt.command === args.p_command && receipt.version === args.p_version && receipt.routeRows === plan.routeRows
-    && receipt.stopRows === plan.stopRows && JSON.stringify(receipt.tractOutcome) === JSON.stringify(tract), "GTFS finalization receipt differs");
-  return receipt;
+  return { name: "complete_gtfs_ingest" as const, args, verify(raw: unknown) {
+    const receipt = completionSchema.parse(raw);
+    requireMatch(receipt.command === args.p_command && receipt.version === args.p_version && receipt.routeRows === plan.routeRows
+      && receipt.stopRows === plan.stopRows && JSON.stringify(receipt.tractOutcome) === JSON.stringify(tract), "GTFS finalization receipt differs");
+    return receipt;
+  } };
 }
 
-export async function failGtfsAttempt(service: GtfsWorkerService, scope: GtfsAttemptScope,
-  command: { id: string; code: typeof GTFS_FAILURE_CODES[number]; detail: string }, signal: AbortSignal) {
+export function failGtfsAttemptCommand(scope: GtfsAttemptScope,
+  command: { id: string; code: typeof GTFS_FAILURE_CODES[number]; detail: string }) {
   const args = { ...attemptArgs(scope), p_command: id.parse(command.id), p_code: z.enum(GTFS_FAILURE_CODES).parse(command.code),
     p_detail: z.string().min(1).max(2000).refine(value => value.trim().length > 0).parse(command.detail) };
-  const receipt = z.object({ command: id, version: id, state: z.literal("failed"),
-    closure: z.object({ recorded: z.literal(true), feedStatusChanged: z.boolean() }).strict(), cleanupPending: z.boolean(), closedAt: date }).strict().parse(
-    await call(service, "fail_gtfs_ingest", args, signal));
-  requireMatch(receipt.command === args.p_command && receipt.version === args.p_version, "GTFS failure receipt differs");
-  return receipt;
+  return { name: "fail_gtfs_ingest" as const, args, verify(raw: unknown) {
+    const receipt = z.object({ command: id, version: id, state: z.literal("failed"),
+      closure: z.object({ recorded: z.literal(true), feedStatusChanged: z.boolean() }).strict(), cleanupPending: z.boolean(), closedAt: date }).strict().parse(
+      raw);
+    requireMatch(receipt.command === args.p_command && receipt.version === args.p_version, "GTFS failure receipt differs");
+    return receipt;
+  } };
 }
 
 const basisSchema = z.object({ feedId: id, versionId: id, routeCount: positive, stopCount: positive,
@@ -322,20 +338,88 @@ const adoptionSchema = z.union([
 /** Workers may attempt ordinary adoption. This interface cannot send review
  * acceptance or override the existing material-shrinkage safeguard.
  */
-export async function adoptGtfsAttempt(service: GtfsWorkerService, scope: GtfsArchiveScope & { actorId: string },
-  command: { id: string; routeCount: number; stopCount: number }, signal: AbortSignal) {
+export function adoptGtfsAttemptCommand(scope: GtfsArchiveScope & { actorId: string },
+  command: { id: string; routeCount: number; stopCount: number }) {
   const args = { p_workspace: id.parse(scope.workspaceId), p_version: id.parse(scope.versionId), p_actor: id.parse(scope.actorId),
     p_command: id.parse(command.id), p_review: null };
   const feedId = id.parse(scope.feedId), routeCount = positive.parse(command.routeCount), stopCount = positive.parse(command.stopCount);
-  const receipt = adoptionSchema.parse(await call(service, "adopt_gtfs_ingest", args, signal));
-  const basis = receipt.basis;
-  requireMatch(receipt.command === args.p_command && receipt.version === args.p_version && basis.feedId === feedId
-    && basis.versionId === args.p_version && basis.routeCount === routeCount && basis.stopCount === stopCount, "GTFS adoption receipt scope differs");
-  requireMatch(basis.previousVersionId === null ? basis.previousRouteCount === null && basis.previousStopCount === null
-    : basis.previousRouteCount !== null && basis.previousStopCount !== null, "GTFS adoption predecessor differs");
-  const previous = basis.previousVersionId === null ? null : { routeCount: basis.previousRouteCount!, stopCount: basis.previousStopCount! };
-  const collapsed = assessFeedVersionCollapse(previous, { routeCount, stopCount }).collapsed;
-  requireMatch(receipt.adopted !== collapsed, "GTFS adoption outcome differs from shrinkage evidence");
-  requireMatch(!receipt.adopted || !receipt.alreadyCurrent || basis.previousVersionId === args.p_version, "GTFS current adoption predecessor differs");
-  return receipt;
+  return { name: "adopt_gtfs_ingest" as const, args, verify(raw: unknown) {
+    const receipt = adoptionSchema.parse(raw);
+    const basis = receipt.basis;
+    requireMatch(receipt.command === args.p_command && receipt.version === args.p_version && basis.feedId === feedId
+      && basis.versionId === args.p_version && basis.routeCount === routeCount && basis.stopCount === stopCount, "GTFS adoption receipt scope differs");
+    requireMatch(basis.previousVersionId === null ? basis.previousRouteCount === null && basis.previousStopCount === null
+      : basis.previousRouteCount !== null && basis.previousStopCount !== null, "GTFS adoption predecessor differs");
+    const previous = basis.previousVersionId === null ? null : { routeCount: basis.previousRouteCount!, stopCount: basis.previousStopCount! };
+    const collapsed = assessFeedVersionCollapse(previous, { routeCount, stopCount }).collapsed;
+    requireMatch(receipt.adopted !== collapsed, "GTFS adoption outcome differs from shrinkage evidence");
+    requireMatch(!receipt.adopted || !receipt.alreadyCurrent || basis.previousVersionId === args.p_version, "GTFS current adoption predecessor differs");
+    return receipt;
+  } };
+}
+
+
+export type GtfsPreparedCommand = {
+  name: "stage_gtfs_ingest" | "prepare_gtfs_archive" | "confirm_gtfs_archive" | "prepare_gtfs_derived"
+    | "write_gtfs_ingest_batch" | "compute_managed_gtfs_tracts" | "complete_gtfs_ingest" | "fail_gtfs_ingest" | "adopt_gtfs_ingest";
+  args: Record<string, unknown>;
+  verify: (raw: unknown) => unknown;
+};
+
+/** Return raw evidence for durable storage. The prepared verifier must accept
+ * it before a caller resolves its journal or uses the returned state.
+ */
+export async function sendGtfsPreparedCommand(service: GtfsWorkerService, command: GtfsPreparedCommand, signal: AbortSignal): Promise<unknown> {
+  return call(service, command.name, command.args, signal);
+}
+
+export async function stageGtfsAttempt(service: GtfsWorkerService, scope: GtfsAttemptScope, next: "fetching" | "parsing", signal: AbortSignal) {
+  const prepared = stageGtfsAttemptCommand(scope, next);
+  return prepared.verify(await sendGtfsPreparedCommand(service, prepared, signal));
+}
+
+export async function prepareGtfsArchive(service: GtfsWorkerService, scope: GtfsAttemptScope & GtfsArchiveScope, raw: GtfsArchiveIdentity, signal: AbortSignal) {
+  const prepared = prepareGtfsArchiveCommand(scope, raw);
+  return prepared.verify(await sendGtfsPreparedCommand(service, prepared, signal));
+}
+
+export async function confirmGtfsArchive(service: GtfsWorkerService, scope: GtfsAttemptScope & GtfsArchiveScope, raw: GtfsArchiveIdentity, signal: AbortSignal) {
+  const prepared = confirmGtfsArchiveCommand(scope, raw);
+  return prepared.verify(await sendGtfsPreparedCommand(service, prepared, signal));
+}
+
+export async function prepareGtfsOutput(service: GtfsWorkerService, scope: GtfsAttemptScope, raw: GtfsOutputPlan, signal: AbortSignal) {
+  const prepared = prepareGtfsOutputCommand(scope, raw);
+  return prepared.verify(await sendGtfsPreparedCommand(service, prepared, signal));
+}
+
+export async function writeGtfsBatch(service: GtfsWorkerService, scope: GtfsAttemptScope & { workspaceId: string },
+  command: { id: string; kind: "route" | "stop"; ordinal: number; rows: ReadonlyArray<Record<string, unknown>> }, signal: AbortSignal) {
+  const prepared = writeGtfsBatchCommand(scope, command);
+  return prepared.verify(await sendGtfsPreparedCommand(service, prepared, signal));
+}
+
+export async function computeGtfsTracts(service: GtfsWorkerService, scope: GtfsAttemptScope,
+  command: { id: string; plan: GtfsOutputPlan; manifest: GtfsBatchManifest }, signal: AbortSignal) {
+  const prepared = computeGtfsTractsCommand(scope, command);
+  return prepared.verify(await sendGtfsPreparedCommand(service, prepared, signal));
+}
+
+export async function completeGtfsAttempt(service: GtfsWorkerService, scope: GtfsAttemptScope & GtfsArchiveScope,
+  command: { id: string; archive: GtfsArchiveIdentity; plan: GtfsOutputPlan; manifest: GtfsBatchManifest;
+    metadata: GtfsCompletionMetadata; tract: GtfsTractOutcome }, signal: AbortSignal) {
+  const prepared = completeGtfsAttemptCommand(scope, command);
+  return prepared.verify(await sendGtfsPreparedCommand(service, prepared, signal));
+}
+
+export async function failGtfsAttempt(service: GtfsWorkerService, scope: GtfsAttemptScope,
+  command: { id: string; code: typeof GTFS_FAILURE_CODES[number]; detail: string }, signal: AbortSignal) {
+  const prepared = failGtfsAttemptCommand(scope, command);
+  return prepared.verify(await sendGtfsPreparedCommand(service, prepared, signal));
+}
+
+export async function adoptGtfsAttempt(service: GtfsWorkerService, scope: GtfsArchiveScope & { actorId: string },
+  command: { id: string; routeCount: number; stopCount: number }, signal: AbortSignal) {
+  const prepared = adoptGtfsAttemptCommand(scope, command);
+  return prepared.verify(await sendGtfsPreparedCommand(service, prepared, signal));
 }
