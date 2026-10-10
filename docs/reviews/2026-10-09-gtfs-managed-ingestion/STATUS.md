@@ -235,3 +235,15 @@ Parsed-domain validation, row publication, source acquisition, Storage-write
 reconciliation, adoption, polling and the stated native/browser boundaries remain
 unfinished. Interrupted local files need a cleanup policy before unattended
 operation. No import route is enrolled.
+
+## Parsed output and guarded publication
+
+[The publication checkpoint](WORKER_PUBLICATION.md) validates the complete parser
+protocol and connects existing row mapping to ordered journaled batches, tract
+outcomes and explicit terminal requests. Parser route/stop counts remain separate
+from stored service rows. The 426-test combined suite, 99 control runs, scoped
+TypeScript and ESLint pass. A composed BART proof uses actual Storage and the
+parser child, then recovers a lost completion reply across processes without
+reprocessing. Its database replies remain controlled. Native lifecycle RPCs,
+source acquisition, Storage reconciliation, cleanup, adoption, polling and the
+previously stated database/browser boundaries remain unfinished.

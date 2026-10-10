@@ -297,13 +297,16 @@ const metadataSchema = z.object({ agency_count: count, route_count: positive, st
   feed_info_version: z.string().nullable().optional(), feed_info_publisher_name: z.string().nullable().optional(),
   feed_info_start_date: z.string().nullable().optional(), feed_info_end_date: z.string().nullable().optional(), parse_warnings: z.array(z.json()) }).strict();
 export type GtfsCompletionMetadata = z.infer<typeof metadataSchema>;
+export function verifyGtfsCompletionMetadata(raw: unknown): GtfsCompletionMetadata {
+  return metadataSchema.parse(raw);
+}
 
 export function completeGtfsAttemptCommand(scope: GtfsAttemptScope & GtfsArchiveScope,
   command: { id: string; archive: GtfsArchiveIdentity; plan: GtfsOutputPlan; manifest: GtfsBatchManifest;
     metadata: GtfsCompletionMetadata; tract: GtfsTractOutcome }) {
   const plan = verifyGtfsOutputPlan(command.plan), tract = tractSchema.parse(command.tract);
   const args = { ...attemptArgs(scope), p_command: id.parse(command.id), p_archive: verifyGtfsArchive(command.archive, scope), p_plan: plan,
-    p_manifest: verifyGtfsManifest(command.manifest, plan), p_metadata: metadataSchema.parse(command.metadata), p_tract_command: tract.command };
+    p_manifest: verifyGtfsManifest(command.manifest, plan), p_metadata: verifyGtfsCompletionMetadata(command.metadata), p_tract_command: tract.command };
   verifyTract(tract, args.p_version);
   return { name: "complete_gtfs_ingest" as const, args, verify(raw: unknown) {
     const receipt = completionSchema.parse(raw);
