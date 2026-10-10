@@ -311,3 +311,19 @@ upgrade, native worker recovery and the pinned advisor comparison pass against
 the revised migration. The advisor's unprotected-table control fails as intended.
 The branch remains an unenrolled implementation checkpoint, with intake,
 reconciliation, polling, complete worker replacement and release checks open.
+
+## October 10: exact source intake and upload recovery
+
+[Source intake](SOURCE_INTAKE.md) now saves private exact bytes before preparation
+and immutable upload, reconciles actual remote size/hash, confirms through owned
+commands and refreshes scope before the existing parser/publication path. Thirty
+controls include three positive runs and 27 intended assertion failures. Actual
+PostgreSQL/Storage/parser recovery survives four process interruption boundaries
+without contacting a changed publisher. Each version retains 95 route rows,
+717 stop rows, nine batch receipts and one completion receipt without adoption.
+The 49-file regression records 1,190 passing tests and 17 skipped live cases.
+
+Earlier open intake paragraphs remain historical. Queue polling/CLI, route
+enrollment, complete replacement/adoption/recovery journeys and relevant full
+branch, role, restore, capacity and browser checks remain unfinished. No import
+route is enabled and migration 28 remains an unreleased candidate.
