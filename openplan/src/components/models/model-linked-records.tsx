@@ -97,7 +97,7 @@ export function ModelLinkedRecordsBoard({
             Review the linked evidence chain without wading through repetitive empty-state blocks.
           </p>
         </div>
-        <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground">
           <FolderKanban className="h-3.5 w-3.5" />
           {linkSetUnavailable ? "links unreadable" : `${totalLinkCount} explicit links`}
         </span>
@@ -123,7 +123,7 @@ export function ModelLinkedRecordsBoard({
             <div key={section.title} className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-label font-semibold text-muted-foreground">
                     {section.title}
                   </p>
                   <p className="mt-2 text-base font-semibold text-foreground">{section.count} linked</p>

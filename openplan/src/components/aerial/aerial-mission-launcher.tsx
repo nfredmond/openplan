@@ -84,7 +84,7 @@ export function AerialMissionLauncher({
       <div className="max-w-md space-y-1.5">
         <label
           htmlFor="aerial-mission-launcher-project"
-          className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+          className="text-label font-semibold text-muted-foreground"
         >
           Project this mission is for
         </label>

@@ -37,9 +37,9 @@ export async function TopNav() {
           href="/"
           className="grid gap-2 border-l-2 border-[color:var(--pine)] pl-4 transition-colors hover:border-[color:var(--pine-deep)]"
         >
-          <span className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Free and open source</span>
+          <span className="text-label font-semibold text-muted-foreground">Free and open source</span>
           <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-            <span className="text-lg font-semibold tracking-[0.01em] text-foreground sm:text-[1.1rem]">OpenPlan</span>
+            <span className="text-lg font-semibold text-foreground sm:text-[1.1rem]">OpenPlan</span>
             <span className="text-sm text-muted-foreground">Maps, engagement, reporting</span>
           </div>
           <span className="hidden max-w-3xl text-sm text-muted-foreground sm:block">
@@ -49,7 +49,7 @@ export async function TopNav() {
 
         <div className="grid gap-3 lg:justify-items-end">
           <div className="hidden space-y-1 text-left sm:block lg:text-right">
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="text-label font-semibold text-muted-foreground">
               {user ? "Your workspace" : "Public pages"}
             </p>
             <p className="text-sm text-muted-foreground">

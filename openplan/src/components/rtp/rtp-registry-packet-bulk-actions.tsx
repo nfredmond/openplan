@@ -72,7 +72,7 @@ export function RtpRegistryPacketBulkActions({
 
       <div className="mt-5 space-y-4">
         <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
-          <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Queued cycles</p>
+          <p className="text-label font-semibold text-muted-foreground">Queued cycles</p>
           <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{cycleCount}</p>
           <p className="mt-1 text-sm text-muted-foreground">
             This converts registry-level &quot;Needs reset&quot; cycles back to the recommended preset for their current RTP phase. Packet regeneration can happen afterward if freshness is still flagged.

@@ -27,7 +27,7 @@ export function ReportPacketCommandQueue({
     <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <p className="text-label font-semibold text-muted-foreground">
             {title}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">{description}</p>

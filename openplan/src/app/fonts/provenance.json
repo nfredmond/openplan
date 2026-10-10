@@ -59,6 +59,35 @@
       "url": "https://raw.githubusercontent.com/google/fonts/7085eb89a950e85db5b166b7a58d414544b4140c/ofl/jetbrainsmono/METADATA.pb",
       "bytes": 3203,
       "sha256": "220f22dd4d2a3d9c77183fbbcb250779267725d90d9be673b403dc6bcfada0af"
+    },
+    {
+      "file": "publicsans/PublicSans[wght].ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/7085eb89a950e85db5b166b7a58d414544b4140c/ofl/publicsans/PublicSans%5Bwght%5D.ttf",
+      "bytes": 103316,
+      "sha256": "d75a7dc1a27eb9e336d5b33f55489d2ecb5621bf694d5c43b2415bce2ca830a8",
+      "family": "Public Sans Thin",
+      "version": "Version 2.001",
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 100.0,
+          "max": 900.0
+        }
+      ],
+      "unicodeCodepoints": 565,
+      "retrievedAt": "2026-10-10T23:22:00+00:00"
+    },
+    {
+      "file": "publicsans/OFL.txt",
+      "url": "https://raw.githubusercontent.com/google/fonts/7085eb89a950e85db5b166b7a58d414544b4140c/ofl/publicsans/OFL.txt",
+      "bytes": 4390,
+      "sha256": "157a9e77f7580246e97c769490e2e977ae94399f9d30f4556015c41fe8c28bac"
+    },
+    {
+      "file": "publicsans/METADATA.pb",
+      "url": "https://raw.githubusercontent.com/google/fonts/7085eb89a950e85db5b166b7a58d414544b4140c/ofl/publicsans/METADATA.pb",
+      "bytes": 1330,
+      "sha256": "a6bf37ce312a499068a820ae995601242aaf7c6d92fbcfe1e4c609392c1defb7"
     }
   ]
 }

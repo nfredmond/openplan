@@ -115,7 +115,7 @@ export function ModelRunEngagementPanel({ modelId, modelRunId }: Props) {
               ) : null}
 
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nearest comments</p>
+                <p className="text-xs font-semibold text-muted-foreground">Nearest comments</p>
                 {summary.nearest.map((n) => (
                   <div key={n.id} className="border-l-2 border-border/60 pl-3">
                     <p className="text-xs leading-relaxed text-foreground">{n.snippet || "(no text)"}</p>

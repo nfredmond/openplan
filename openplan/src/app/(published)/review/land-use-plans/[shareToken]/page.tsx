@@ -46,7 +46,7 @@ export default async function LandUsePlanReviewPage({ params }: { params: Promis
 
   return <main className="mx-auto max-w-4xl px-5 py-12 print:max-w-none">
     <header className="border-b pb-8">
-      <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Public review round {packet.release.roundNumber} · {packet.release.status}</p>
+      <p className="text-sm font-semibold text-muted-foreground">Public review round {packet.release.roundNumber} · {packet.release.status}</p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight">{packet.plan.title}</h1>
       <p className="mt-3 text-lg text-muted-foreground">{packet.plan.authorityLabel} · {packet.plan.geographyLabel}</p>
       <p className="mt-4">Review period: {packet.release.reviewOpenOn} through {packet.release.reviewCloseOn}. Method: {packet.release.reviewMethod.replaceAll("_", " ")}.</p>

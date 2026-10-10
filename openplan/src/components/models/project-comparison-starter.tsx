@@ -198,21 +198,21 @@ export function ProjectComparisonStarter({
 
       <dl className="mt-4 grid gap-3 md:grid-cols-3">
         <div>
-          <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Traffic change</dt>
+          <dt className="text-xs font-semibold text-muted-foreground">Traffic change</dt>
           <dd className="mt-1 text-sm leading-6 text-foreground">{summary.trafficAnswer}</dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Miles driven</dt>
+          <dt className="text-xs font-semibold text-muted-foreground">Miles driven</dt>
           <dd className="mt-1 text-sm leading-6 text-foreground">{summary.vmtAnswer}</dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Is it worth it?</dt>
+          <dt className="text-xs font-semibold text-muted-foreground">Is it worth it?</dt>
           <dd className="mt-1 text-sm leading-6 text-foreground">{summary.valueAnswer}</dd>
         </div>
       </dl>
 
       <div className="mt-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">What remains uncertain</p>
+        <p className="text-xs font-semibold text-muted-foreground">What remains uncertain</p>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted-foreground">
           {summary.uncertainties.map((uncertainty) => <li key={uncertainty}>{uncertainty}</li>)}
         </ul>

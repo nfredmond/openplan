@@ -81,7 +81,7 @@ export function ScenarioLinkedReportsSection({
                 : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
             }`}
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="text-xs font-semibold text-muted-foreground">
               Reports built on this scenario set
             </p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">

@@ -145,7 +145,7 @@ export function StaffAndRatesPanel({
     <div id="staff-time-access" className="grid gap-4 lg:grid-cols-2">
       <div className="space-y-3 border border-border/60 bg-background/70 px-4 py-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Staff</p>
+          <p className="text-xs font-semibold text-muted-foreground">Staff</p>
           {canWrite && !staffOpen ? (
             <button type="button" className="openplan-inline-label" onClick={() => setStaffOpen(true)}>
               Add staff
@@ -213,7 +213,7 @@ export function StaffAndRatesPanel({
 
       <div className="space-y-3 border border-border/60 bg-background/70 px-4 py-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Rate tables</p>
+          <p className="text-xs font-semibold text-muted-foreground">Rate tables</p>
           {canWrite && !tableOpen ? (
             <button type="button" className="openplan-inline-label" onClick={() => setTableOpen(true)}>
               Add rate table

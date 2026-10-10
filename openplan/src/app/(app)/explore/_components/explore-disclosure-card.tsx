@@ -18,7 +18,7 @@ export function ExploreDisclosureCard({ disclosureItems }: ExploreDisclosureCard
           <StatusBadge tone="info">Human approval required</StatusBadge>
         </div>
         <div className="space-y-2">
-          <CardTitle className="text-[1.02rem] font-semibold tracking-[-0.02em] text-white">Methods, Assumptions &amp; AI Disclosure</CardTitle>
+          <CardTitle className="text-[1.02rem] font-semibold text-white">Methods, Assumptions &amp; AI Disclosure</CardTitle>
           <CardDescription className="max-w-xl text-sm leading-6 text-slate-300/78">
             Audit notes that should travel with this result before it becomes a client memo, grant attachment, or public-facing narrative.
           </CardDescription>
@@ -26,7 +26,7 @@ export function ExploreDisclosureCard({ disclosureItems }: ExploreDisclosureCard
       </CardHeader>
       <CardContent className="space-y-4 px-6 py-5">
         <div className="rounded-[0.5rem] border border-amber-400/18 bg-amber-400/8 p-4">
-          <p className="text-label font-semibold uppercase tracking-[0.12em] text-amber-200/80">Operator release note</p>
+          <p className="text-label font-semibold text-amber-200/80">Operator release note</p>
           <p className="mt-3 text-sm leading-6 text-slate-100/88">
             Treat the cards above as working analysis surfaces, not self-certifying deliverables. Before external use, verify citations, source posture, and equity implications.
           </p>

@@ -73,17 +73,17 @@ export function ProjectFundingProfileEditor({
     <div className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor="project-funding-need-amount" className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Funding need</label>
+          <label htmlFor="project-funding-need-amount" className="text-label font-semibold text-muted-foreground">Funding need</label>
           <Input id="project-funding-need-amount" value={fundingNeedAmount} onChange={(event) => setFundingNeedAmount(event.target.value)} inputMode="decimal" placeholder="2500000" />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor="project-local-match-need-amount" className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Local match need</label>
+          <label htmlFor="project-local-match-need-amount" className="text-label font-semibold text-muted-foreground">Local match need</label>
           <Input id="project-local-match-need-amount" value={localMatchNeedAmount} onChange={(event) => setLocalMatchNeedAmount(event.target.value)} inputMode="decimal" placeholder="500000" />
         </div>
       </div>
 
       <div className="mt-3 space-y-1.5">
-        <label htmlFor="project-funding-profile-notes" className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Notes</label>
+        <label htmlFor="project-funding-profile-notes" className="text-label font-semibold text-muted-foreground">Notes</label>
         <Textarea id="project-funding-profile-notes" rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Capture the target funding need or any funding stack assumptions for this project." />
       </div>
 

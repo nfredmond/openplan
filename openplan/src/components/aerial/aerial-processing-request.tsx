@@ -260,7 +260,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
       ) : (
         <div className="space-y-1.5">
           <label
-            className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+            className="text-label font-semibold text-muted-foreground"
             htmlFor="aerial-imagery-zip-url"
           >
             Imagery ZIP URL
@@ -289,7 +289,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
       <div className={`grid gap-3 ${usingStoredPhotos ? "sm:grid-cols-1" : "sm:grid-cols-3"}`}>
         <div className="space-y-1.5">
           <label
-            className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+            className="text-label font-semibold text-muted-foreground"
             htmlFor="aerial-preset"
           >
             Preset
@@ -311,7 +311,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
           <>
             <div className="space-y-1.5">
               <label
-                className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                className="text-label font-semibold text-muted-foreground"
                 htmlFor="aerial-image-count"
               >
                 Image count (optional)
@@ -326,7 +326,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
             </div>
             <div className="space-y-1.5">
               <label
-                className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                className="text-label font-semibold text-muted-foreground"
                 htmlFor="aerial-size-bytes"
               >
                 ZIP size in bytes (optional)
@@ -345,7 +345,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
 
       <div className="space-y-1.5">
         <label
-          className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+          className="text-label font-semibold text-muted-foreground"
           htmlFor="aerial-processing-notes"
         >
           Notes for the worker (optional)

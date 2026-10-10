@@ -159,7 +159,7 @@ export function PilotWorkflowHandoff({
                 ) : (
                   <Icon className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
                 )}
-                <span className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <span className="text-label font-semibold text-muted-foreground">
                   {statusLabel}
                 </span>
               </div>

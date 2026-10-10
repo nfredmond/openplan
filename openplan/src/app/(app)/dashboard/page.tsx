@@ -51,7 +51,7 @@ import {
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 
-export const metadata = moduleMetadata("Overview");
+export const metadata = moduleMetadata("Dashboard");
 
 // The percentage and date formatters that used to live here moved into
 // `lib/dashboard/run-figures.ts` with the tiles they format, so the honest and
@@ -86,8 +86,8 @@ export default async function DashboardPage({
   if (!membership || !workspace) {
     return (
       <WorkspaceMembershipRequired
-        moduleLabel="Overview"
-        title="Overview needs a workspace"
+        moduleLabel="Dashboard"
+        title="The dashboard needs a workspace"
         description="Dashboard metrics, run history, and workspace KPIs only appear once this account is in a workspace. Create a project workspace first, or ask an owner/admin to add you to the correct one."
         primaryHref="/projects"
         primaryLabel="Create or open project workspace"
@@ -391,7 +391,7 @@ export default async function DashboardPage({
         dismissible={homeGeographyIsSet}
       >
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 dark:bg-primary/10">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">Get started</p>
+          <p className="text-xs font-semibold text-primary">Get started</p>
           <h2 className="mt-1 text-lg font-semibold text-foreground">
             {/* `workspaceName` carries a generic fallback for the intro card;
                 reading "Set up Your workspace" would be worse than reading

@@ -333,7 +333,7 @@ function HorizonBandForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-[0.5rem] border border-border/60 bg-muted/20 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{heading}</p>
+      <p className="text-xs font-semibold text-muted-foreground">{heading}</p>
 
       {shownError ? (
         <p

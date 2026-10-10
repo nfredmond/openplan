@@ -98,7 +98,7 @@ export function DashboardInsights({ userId, workspaceId, tiles, series }: Dashbo
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {tiles.map((tile) => (
           <div key={tile.label} className="rounded-2xl border border-border/70 bg-card/70 p-4">
-            <p className="flex items-center gap-1.5 text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="flex items-center gap-1.5 text-label font-semibold text-muted-foreground">
               {toneIcon(tile.tone)}
               {tile.label}
             </p>

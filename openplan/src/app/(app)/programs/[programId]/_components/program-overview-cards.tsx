@@ -75,7 +75,7 @@ export function ProgramReadinessCard({
           </div>
 
           <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Workflow summary</p>
+            <p className="text-label font-semibold text-muted-foreground">Workflow summary</p>
             <p className="mt-2 text-base font-semibold text-foreground">{workflow.label}</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{workflow.reason}</p>
             <div className="mt-4 space-y-2">
@@ -133,35 +133,35 @@ export function ProgramCycleMetadataCard({
 
       <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Funding classification</p>
+          <p className="text-label font-semibold text-muted-foreground">Funding classification</p>
           <p className="mt-1 text-sm font-semibold text-foreground">
             {formatProgramFundingClassificationLabel(program.funding_classification)}
           </p>
         </div>
         <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Sponsor</p>
+          <p className="text-label font-semibold text-muted-foreground">Sponsor</p>
           <p className="mt-1 text-sm font-semibold text-foreground">{program.sponsor_agency || "Not set"}</p>
         </div>
         <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Owner</p>
+          <p className="text-label font-semibold text-muted-foreground">Owner</p>
           <p className="mt-1 text-sm font-semibold text-foreground">{program.owner_label || "Unassigned"}</p>
         </div>
         <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Cadence</p>
+          <p className="text-label font-semibold text-muted-foreground">Cadence</p>
           <p className="mt-1 text-sm font-semibold text-foreground">{program.cadence_label || "Not set"}</p>
         </div>
         <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Fiscal window</p>
+          <p className="text-label font-semibold text-muted-foreground">Fiscal window</p>
           <p className="mt-1 text-sm font-semibold text-foreground">
             {formatFiscalWindow(program.fiscal_year_start, program.fiscal_year_end)}
           </p>
         </div>
         <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Nomination due</p>
+          <p className="text-label font-semibold text-muted-foreground">Nomination due</p>
           <p className="mt-1 text-sm font-semibold text-foreground">{formatProgramDateTime(program.nomination_due_at)}</p>
         </div>
         <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Adoption target</p>
+          <p className="text-label font-semibold text-muted-foreground">Adoption target</p>
           <p className="mt-1 text-sm font-semibold text-foreground">{formatProgramDateTime(program.adoption_target_at)}</p>
         </div>
       </div>

@@ -39,7 +39,7 @@ function GroupColumn({
 }) {
   return (
     <div className="space-y-1">
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
+      <p className="text-xs font-semibold text-muted-foreground">{title}</p>
       <p className="text-lg font-semibold text-foreground">
         {vmtPerCapita === null ? "—" : vmtPerCapita.toFixed(2)}
         <span className="ml-1 text-xs font-normal text-muted-foreground">VMT/capita</span>

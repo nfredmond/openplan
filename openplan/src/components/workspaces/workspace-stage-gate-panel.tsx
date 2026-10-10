@@ -48,7 +48,7 @@ type WorkspaceStageGatePanelProps = {
 function GateList({ label, gates }: { label: string; gates: readonly StageGateGateRef[] }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
       <ul className="mt-1 space-y-0.5">
         {gates.map((gate) => (
           <li key={gate.gateId} className="text-sm text-foreground">
@@ -367,7 +367,7 @@ export function WorkspaceStageGatePanel({
         <div className="mt-4 space-y-3">
           {matchingOptions.length > 0 ? (
             <fieldset className="space-y-2">
-              <legend className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <legend className="text-xs font-semibold text-muted-foreground">
                 Templates registered for this jurisdiction
               </legend>
               {matchingOptions.map((option) => (

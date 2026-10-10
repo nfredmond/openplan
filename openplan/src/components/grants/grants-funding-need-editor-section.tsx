@@ -55,7 +55,7 @@ export function GrantsFundingNeedEditorSection({
               {fundingNeedEditorProject.project.name} already has linked opportunities but still needs a recorded
               funding-need anchor before funding gaps and award coverage can be calculated.
             </p>
-            <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-sky-700/80 dark:text-sky-200/80">
+            <p className="mt-1 text-xs font-medium text-sky-700/80 dark:text-sky-200/80">
               {fundingNeedEditorProject.opportunityCount} linked opportunit
               {fundingNeedEditorProject.opportunityCount === 1 ? "y" : "ies"}
               {fundingNeedEditorProject.localMatchNeedAmount > 0
