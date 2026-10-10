@@ -327,3 +327,19 @@ Earlier open intake paragraphs remain historical. Queue polling/CLI, route
 enrollment, complete replacement/adoption/recovery journeys and relevant full
 branch, role, restore, capacity and browser checks remain unfinished. No import
 route is enabled and migration 28 remains an unreleased candidate.
+
+## October 10: bounded queue and actual-expiry replacement
+
+[Worker polling](WORKER_QUEUE.md) joins retained journals and database candidates,
+serializes bounded passes and recovers a live attempt absent from the candidate
+list. Actual server-clock expiry permits a replacement using the same saved
+source and a new attempt directory. Native stale-token writes fail during that
+replacement. Both cases publish 95 route rows, 717 stop rows, nine batches and
+one completion without adoption or publisher refetch. Thirty-two controls
+include three positive runs and 29 intended failures. Fifty-file regression
+records 1,220 passes and 17 skipped live cases. TypeScript and lint pass.
+
+The first candidate page can still hide later eligible work when errors persist.
+Paginated discovery, route admission/progress/recovery/adoption and all stated
+role, capacity, restore, browser and release boundaries remain open. Submission
+helper work starts separately and is not included in this queue checkpoint.

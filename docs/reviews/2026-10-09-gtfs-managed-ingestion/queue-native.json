@@ -1,0 +1,184 @@
+{
+  "records": [
+    {
+      "case": "live",
+      "initialLeaseSecondsRemaining": 119.815637,
+      "actualWaitSeconds": 0,
+      "resumed": {
+        "mode": "resume-live",
+        "result": {
+          "outcomes": [
+            {
+              "versionId": "ff953cd9-ab66-4783-aac5-0f90ff6707f9",
+              "state": "finished"
+            }
+          ],
+          "pendingCount": 0,
+          "candidateCount": 0
+        },
+        "sourceRequests": 0,
+        "uploads": 1,
+        "calls": [
+          "list_gtfs_ingest_candidates",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_archive",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_derived",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "compute_managed_gtfs_tracts",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest"
+        ],
+        "staleWhileRunning": false,
+        "attemptDirectory": "a5808c9d-76a7-4a62-83e0-ff0471fcbc48",
+        "retainedAttempts": 1,
+        "maxRssKiB": 148956
+      },
+      "retained": {
+        "mode": "retained",
+        "result": {
+          "outcomes": [],
+          "pendingCount": 0,
+          "candidateCount": 0
+        },
+        "sourceRequests": 0,
+        "uploads": 0,
+        "calls": [
+          "list_gtfs_ingest_candidates"
+        ],
+        "staleWhileRunning": false,
+        "attemptDirectory": "a5808c9d-76a7-4a62-83e0-ff0471fcbc48",
+        "retainedAttempts": 1,
+        "maxRssKiB": 102032
+      },
+      "database": {
+        "stops": 717,
+        "routes": 95,
+        "status": "ready",
+        "attempt": 1,
+        "batches": 9,
+        "current": false,
+        "completion": 1
+      }
+    },
+    {
+      "case": "expired",
+      "initialLeaseSecondsRemaining": 119.797838,
+      "actualWaitSeconds": 120.21727145400655,
+      "resumed": {
+        "mode": "resume-expired",
+        "result": {
+          "outcomes": [
+            {
+              "versionId": "60d8f86d-843f-4c6f-bf3b-34703c1a7ce9",
+              "state": "finished"
+            }
+          ],
+          "pendingCount": 0,
+          "candidateCount": 1
+        },
+        "sourceRequests": 0,
+        "uploads": 1,
+        "calls": [
+          "list_gtfs_ingest_candidates",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_archive",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_derived",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "compute_managed_gtfs_tracts",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest"
+        ],
+        "staleWhileRunning": true,
+        "attemptDirectory": "8a98d641-0b2e-42d2-a3e7-9d52f4e1dba2",
+        "retainedAttempts": 2,
+        "maxRssKiB": 147648
+      },
+      "retained": {
+        "mode": "retained",
+        "result": {
+          "outcomes": [],
+          "pendingCount": 0,
+          "candidateCount": 0
+        },
+        "sourceRequests": 0,
+        "uploads": 0,
+        "calls": [
+          "list_gtfs_ingest_candidates"
+        ],
+        "staleWhileRunning": false,
+        "attemptDirectory": "8a98d641-0b2e-42d2-a3e7-9d52f4e1dba2",
+        "retainedAttempts": 2,
+        "maxRssKiB": 100364
+      },
+      "database": {
+        "stops": 717,
+        "routes": 95,
+        "status": "ready",
+        "attempt": 2,
+        "batches": 9,
+        "current": false,
+        "completion": 1
+      }
+    }
+  ],
+  "syntheticDebugExpiry": false,
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/managed-worker-queue.ts": "915a1b895c85ede8262c7d4aad29ec549a066dcdc4573406f93615a2ee84e23f",
+    "openplan/src/lib/gtfs/managed-worker-intake.ts": "5f104b03240e2b7143c097a9bc51686c45eaee0eeaf20efbcf71a9bc3d79673e",
+    "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_queue_native.mts": "66286f1cdd738e9ac89adb63557b50c31cbdcbb788a89710eba9767da740acb4",
+    "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_queue_native.py": "d7b70f9a5267e654a9d2e137070c2d26e8a17c4c647d7226f8c8920f0090c45c"
+  },
+  "boundary": "Actual server-clock expiry. Actual database queue, process loss, live ownership recovery/replacement, local HTTP, Storage and parser. No application routes, full restore, capacity or browser acceptance."
+}

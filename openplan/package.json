@@ -46,6 +46,7 @@
     "worker:provider-api": "node --env-file=.env.local --conditions=react-server --import tsx scripts/workers/provider-api.ts",
     "worker:translation-generation": "node --env-file=.env.local --conditions=react-server --import tsx scripts/workers/translation-generation.ts",
     "worker:synthesis-preparation": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/workers/synthesis-preparation.ts",
+    "worker:gtfs-ingestion": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/workers/gtfs-ingestion.ts",
     "worker:synthesis-generation": "node --env-file=.env.local --conditions=react-server --import tsx scripts/workers/synthesis-generation.ts",
     "worker:contract-calculations": "node --env-file=.env.local --conditions=react-server --import tsx scripts/workers/contract-calculations.ts",
     "test:provider-connector": "node --test ../workers/planner_agent_connector/test/*.test.mjs",
