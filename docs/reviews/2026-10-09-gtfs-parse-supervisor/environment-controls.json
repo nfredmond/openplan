@@ -1,0 +1,114 @@
+{
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/parse-supervisor.ts": "b78ec100ac08e3198f2621622e833a91d06fd27c12f6998f1a8ec1121d7ab84c",
+    "openplan/scripts/workers/gtfs-parse-child.mts": "0b6bdac78555ea21d1fdc9379a1dde316abe2ee54ea3c6af508282e33c7984dc"
+  },
+  "checks": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "expectedPass": true,
+      "selection": null,
+      "logSha256": "d305d7434f3dabaff4bfcd5ba91b25c8e56dbb17b72a623f2bb394c6b071d46b"
+    },
+    {
+      "name": "harmless_comment",
+      "exitCode": 0,
+      "expectedPass": true,
+      "selection": null,
+      "logSha256": "0764bb83cf41af06a8aadb27041161019d2a71a191ae6b0fa96ea661989465c6"
+    },
+    {
+      "name": "parent_environment_inherited",
+      "exitCode": 1,
+      "expectedPass": false,
+      "selection": "gives the child only the explicit production environment",
+      "logSha256": "0abde02388041862eb16014a47af249c046124c7d82fad17a1ac828c365a0e79"
+    },
+    {
+      "name": "production_environment_omitted",
+      "exitCode": 1,
+      "expectedPass": false,
+      "selection": "gives the child only the explicit production environment",
+      "logSha256": "d0ce55216925176e2737396d99b2d35e7c82d30dbb6f1a01d00a7c7e99d75a09"
+    },
+    {
+      "name": "checksum_removed",
+      "exitCode": 1,
+      "expectedPass": false,
+      "selection": "refuses changed archive bytes",
+      "logSha256": "e2950f23d3b11fa3ea085ae8946ee728da1bc889a79f956cb8515382b11adf03"
+    },
+    {
+      "name": "output_reuse_allowed",
+      "exitCode": 1,
+      "expectedPass": false,
+      "selection": "refuses changed archive bytes",
+      "logSha256": "1c443167fddd0f284bfef4f44e8f66f9bbd85f05c99408fa57eafd9fc19068d5"
+    },
+    {
+      "name": "output_bound_removed",
+      "exitCode": 1,
+      "expectedPass": false,
+      "selection": "refuses output beyond",
+      "logSha256": "8afda8565b0e6e2edc8dcc062ea151af7d3d1c116d2f6ba939ab48c40abc7804"
+    },
+    {
+      "name": "renewal_refusal_ignored",
+      "exitCode": 1,
+      "expectedPass": false,
+      "selection": "renews during a CPU-blocked child",
+      "logSha256": "da36b85d1e85c6fbdd4c60e259e193bfab47e23fd17fbc0218d2c3c07d5d75b6"
+    },
+    {
+      "name": "hung_renewal_accepted",
+      "exitCode": 1,
+      "expectedPass": false,
+      "selection": "bounds an unresponsive renewal",
+      "logSha256": "7e316508ad6b02ad4f4cf2c897501ef6e598e573919c443c2fd84826936428c1"
+    },
+    {
+      "name": "final_confirmation_removed",
+      "exitCode": 1,
+      "expectedPass": false,
+      "selection": "requires final ownership confirmation",
+      "logSha256": "017345b67c4aaad881e84dbddc0f15d9830f4a1b2ff583ab1c0bc02598db73a5"
+    },
+    {
+      "name": "output_digest_unchecked",
+      "exitCode": 1,
+      "expectedPass": false,
+      "selection": "refuses a child receipt with wrong_digest",
+      "logSha256": "bff822165b6bc900a29fde3d53cce35b8cbc77263319853c81eab22e5dca4e69"
+    },
+    {
+      "name": "failed_exit_accepted",
+      "exitCode": 1,
+      "expectedPass": false,
+      "selection": "refuses a child receipt with failed_exit",
+      "logSha256": "f74ac3318090c4581b5efae3b12df208e6cb89c8e34badb71eb99a9c08dffa32"
+    },
+    {
+      "name": "deadline_disabled",
+      "exitCode": 1,
+      "expectedPass": false,
+      "selection": "enforces a parent deadline",
+      "logSha256": "aa03cd3f03e2cc55b0dac7c4d420cff942d648b3d46a75642b4c14cede336715"
+    },
+    {
+      "name": "active_cancellation_ignored",
+      "exitCode": 1,
+      "expectedPass": false,
+      "selection": "cancels active parsing",
+      "logSha256": "8036417cd34a4405665d54612f0c1f56f53d4ac1e2708f4e007726c3da6ffc5e"
+    },
+    {
+      "name": "restored",
+      "exitCode": 0,
+      "expectedPass": true,
+      "selection": null,
+      "logSha256": "abf3ecc750074b47470bac9876169d7a98a767dd6e579d1cece86ee080dcab49"
+    }
+  ],
+  "restored": true
+}

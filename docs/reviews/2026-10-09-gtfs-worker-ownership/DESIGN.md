@@ -201,3 +201,14 @@ The database finished recovery. The native suite now passes baseline, harmless-c
 An earlier full-object assertion attempted to format the returned ZIP bytes when the checksum mutation succeeded. The bounded verification service hit its 1 GB memory limit in that case. Assertions now compare the boolean result before the small error code, avoiding archive-byte diagnostics. The corrected service completes in 11.9 seconds with a journal-reported 172.6M memory peak under the same limit. Native Storage has a separate 512 MB limit. The earlier interrupted test in T3's process group coincided with a system-wide OOM killing a process with about 18.6 GiB resident anonymous memory; the matching checksum-control failure makes the diagnostic formatting the likely cause. No successful result is claimed for either interrupted run.
 
 This proves retained-object reading and integrity checking with a real local Storage server and one publisher archive. It does not prove durable worker-journal recovery, database version enrollment, end-user RLS, largest-feed capacity or a full import journey. The process handoff supplies the identity through environment state. Those remaining boundaries still govern connection to the application worker.
+
+## Independent parser process, October 9
+
+The [parser supervision checkpoint](../2026-10-09-gtfs-parse-supervisor/VERIFICATION.md)
+now runs the production parser in a separate Node process while the parent
+renews through a bounded callback. It preserves descriptor-bound input/output,
+verifies retained hashes, refuses uncertain ownership and waits for child
+termination. Native CPU-blocking controls and the retained BART archive pass.
+The callback is not yet connected to a database attempt; admission, lifecycle
+commands, durable journals, guarded writes, adoption and planner journeys remain
+required before the inline import doors move to managed execution.
