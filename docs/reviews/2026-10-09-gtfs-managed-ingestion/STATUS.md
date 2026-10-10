@@ -222,3 +222,16 @@ scoped TypeScript and ESLint pass. Transport remains controlled, and the native
 process proof covers the journal rather than a database worker. Actual artifacts,
 publication, adoption recovery, queue polling and the previously stated native
 and browser boundaries remain unfinished. No import route is enrolled.
+
+## Retained archive and parser artifacts
+
+[The artifact checkpoint](WORKER_ARTIFACT.md) connects verified retained Storage
+bytes, private attempt/build bindings and the supervised parser. A new process
+recovers the same saved BART output after an owned parent-process termination,
+without downloading or parsing again, and refuses changed output. The 196-test
+combined suite, 34 artifact controls, scoped TypeScript and ESLint pass. Native
+Storage and parsing are real; database lifecycle replies remain controlled.
+Parsed-domain validation, row publication, source acquisition, Storage-write
+reconciliation, adoption, polling and the stated native/browser boundaries remain
+unfinished. Interrupted local files need a cleanup policy before unattended
+operation. No import route is enrolled.
